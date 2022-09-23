@@ -416,12 +416,9 @@ export const Lineup = ({
     const data = [...items, ...skeletonItems]
 
     if (data.length === 0) {
-      return [
-        {
-          delineate: false,
-          data: prependFeedTipTileIfNeeded([])
-        }
-      ]
+      const data = prependFeedTipTileIfNeeded([])
+      if (data.length === 0) return []
+      return [{ delineate: false, data }]
     }
 
     return [
