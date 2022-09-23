@@ -33,8 +33,8 @@ PROD_CREATOR_NODES = (
     "prod-creator-1",
     "prod-creator-2",
     "prod-creator-3",
-    "prod-creator-4",
-    "prod-creator-5",  # prod-canary
+    "prod-creator-4",  # prod-canary
+    "prod-creator-5",
     "user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
@@ -59,6 +59,12 @@ PROD_IDENTITY_NODES = ("prod-identity",)
 IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
+CANARIES = (
+    "stage-creator-4",  # canary
+    "stage-discovery-4",  # canary
+    "prod-creator-4",  # prod-canary
+    "prod-discovery-4",  # prod-canary
+)
 
 MASTER = "master"
 MISSING = "missing"
@@ -295,6 +301,11 @@ def update_release_summary(
                 release_summary["upgradeable"].append(host)
             else:
                 release_summary["skipped"][host] = metadata
+        release_summary["upgradeable"].sort()
+        for canary in CANARIES:
+            if canary in release_summary["upgradeable"]:
+                release_summary["upgradeable"].remove(canary)
+                release_summary["upgradeable"].insert(0, canary)
 
 
 def print_release_summary(release_summary):
