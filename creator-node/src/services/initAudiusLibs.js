@@ -13,8 +13,7 @@ module.exports = async ({
   enableContracts = true,
   enableDiscovery = true,
   enableIdentity = true,
-  logger = genericLogger,
-  delegatePrivateKeyOverride
+  logger = genericLogger
 }) => {
   /**
    * Define all config variables
@@ -33,7 +32,6 @@ module.exports = async ({
   const ethOwnerWallet = config.get('ethOwnerWallet')
   const dataRegistryAddress = config.get('dataRegistryAddress')
   const dataProviderUrl = config.get('dataProviderUrl')
-  const delegatePrivateKey = config.get('delegatePrivateKey')
   const oldDelegatePrivateKey = config.get('oldDelegatePrivateKey')
   const creatorNodeIsDebug = config.get('creatorNodeIsDebug')
 
