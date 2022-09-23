@@ -1196,7 +1196,6 @@ workflows:
             - build-creator-node
             - build-discovery-provider
             - build-identity-service
-            - build-libs
             - verified
       - noop:
           name: tests
@@ -1207,18 +1206,17 @@ workflows:
             - test-discovery-provider
             - test-identity-service
             - test-libs
-            # removing these for now as they take a bit long and are flaky
-            # - test-contracts
-            # - test-solana-programs
-            # - test-solana-programs-anchor
-            # - test-eth-contracts
-            # - test-mad-dog-e2e
-            # - test-sdk
+            - test-contracts
+            - test-solana-programs
+            - test-solana-programs-anchor
+            - test-eth-contracts
+            - test-mad-dog-e2e
+            - test-sdk
 
       # Auto-deploy `master` to staging
       - deploy:
-          name: 🚧-🏠
-          service: all
+          name: 🚧-🏠-discovery
+          service: discovery
           context:
             - slack-secrets
             - gh-tokens
@@ -1227,8 +1225,55 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built
+            - build-discovery-provider
+            - test-discovery-provider
+      - deploy:
+          name: 🚧-🏠-creator
+          service: creator
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - build-creator-node
+            - test-creator-node
+      - deploy:
+          name: 🚧-🏠-identity
+          service: identity
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - build-identity-service
+            - test-identity-service
       # Force deploy `master` to staging (by service)
+      - noop:
+          name: 💪-🚧-🏠-all-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - 🚧-🏠-discovery
+            - 🚧-🏠-creator
+            - 🚧-🏠-identity
+      - deploy:
+          name: 💪-🚧-🏠-all
+          service: all
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          requires:
+            - 💪-🚧-🏠-all-🕹️
       - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
           type: approval
@@ -1237,9 +1282,9 @@ workflows:
               only: /(^master$)/
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - 🚧-🏠
+            - 🚧-🏠-<< matrix.service >>
       - deploy:
           name: 💪-🚧-🏠-<< matrix.service >>
           params: --force
@@ -1249,10 +1294,10 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
             - 💪-🚧-🏠-<< matrix.service >>-🕹️
-      # Force deploy `master` to staging (by host)
+      # Force deploy `master` to staging (by host) - discovery
       - noop:
           name: 💪-🚧-🏠-<< matrix.host >>-🕹️
           type: approval
@@ -1261,9 +1306,9 @@ workflows:
               only: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🏠
+            - 🚧-🏠-discovery
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
@@ -1273,7 +1318,31 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+      # Force deploy `master` to staging (by host) - creator
+      - noop:
+          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - 🚧-🏠-creator
+      - deploy:
+          name: 💪-🚧-🏠-<< matrix.host >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
@@ -1285,7 +1354,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - 🚧-🏠
+            - verified
       - noop:
           name: cut-release
           requires:
