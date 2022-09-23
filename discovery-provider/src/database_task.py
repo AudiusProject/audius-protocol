@@ -42,7 +42,7 @@ class DatabaseTask(Task):
 
     @property
     def eth_abi_values(self):
-        return self._eth_manager
+        return self._eth_abi_values
 
     @property
     def web3(self):
@@ -86,4 +86,4 @@ class DatabaseTask(Task):
 
     @property
     def eth_manager(self) -> EthManager:
-        return self._eth_abi_values
+        return self._eth_manager

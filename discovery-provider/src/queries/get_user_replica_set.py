@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from src.models.users.user import User
 from src.utils.db_session import get_db_read_replica
@@ -13,7 +14,7 @@ def get_user_replica_set(args):
     with db.scoped_session() as session:
 
         # Don't return the user if they have no wallet (user creation did not finish properly on chain)
-        users = (
+        users: List[User] = (
             session.query(User)
             .filter(
                 User.is_current == True, User.wallet != None, User.user_id == user_id
@@ -21,7 +22,7 @@ def get_user_replica_set(args):
             .all()
         )
         if len(users) != 1:
-            return None
+            return {}
 
         user = users[0]
         endpoints = user.creator_node_endpoint.split(",")

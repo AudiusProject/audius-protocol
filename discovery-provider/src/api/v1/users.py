@@ -1490,8 +1490,6 @@ class FullGetReplicaSet(Resource):
         decoded_id = decode_with_abort(id, full_ns)
         args = {"user_id": decoded_id}
         replica_set = get_user_replica_set(args)
-        if not replica_set:
-            abort_not_found(decoded_id, full_ns)
         return success_response(replica_set)
 
     @full_ns.doc(
