@@ -70,6 +70,9 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
       navigation.navigate('Collection', { id })
     },
+    [OverflowAction.VIEW_PLAYLIST_PAGE]: () => {
+      navigation.navigate('Collection', { id })
+    },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       navigation.navigate('Profile', { handle })
     },
