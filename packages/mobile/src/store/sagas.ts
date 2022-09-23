@@ -55,14 +55,14 @@ import { all, fork } from 'typed-redux-saga'
 
 import accountSagas from './account/sagas'
 import initKeyboardEvents from './keyboard/sagas'
+import mobileUiSagas from './mobileUi/sagas'
 import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import settingsSagas from './settings/sagas'
 import signOutSagas from './sign-out/sagas'
-import themeSagas, { setupTheme } from './theme/sagas'
+import themeSagas from './theme/sagas'
 
 export default function* rootSaga() {
-  yield* fork(setupTheme)
   const sagas = [
     // Config
     ...backendSagas(),
@@ -140,6 +140,7 @@ export default function* rootSaga() {
     ...vipDiscordModalSagas(),
     ...themeSagas(),
     ...tokenDashboardSagas(),
+    ...mobileUiSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),
