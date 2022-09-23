@@ -3,7 +3,8 @@ import {
   accountSelectors,
   searchResultsPageActions as searchPageActions,
   searchResultsPageTracksLineupActions as tracksLineupActions,
-  waitForAccount
+  waitForAccount,
+  SearchKind
 } from '@audius/common'
 import { select, call, takeLatest, put, getContext } from 'redux-saga/effects'
 
@@ -46,26 +47,43 @@ export function* getTagSearchResults(tag, kind, limit, offset) {
 
 export function* fetchSearchPageTags(action) {
   yield call(waitForBackendSetup)
-  const tag = trimToAlphaNumeric(action.tag)
+  const query = trimToAlphaNumeric(action.tag)
 
-  const results = yield call(
+  const rawResults = yield call(
     getTagSearchResults,
-    tag,
+    query,
     action.kind,
     action.limit,
     action.offset
   )
-  if (results) {
-    results.users = results.users.map(({ user_id: id }) => id)
-    results.tracks = results.tracks.map(({ track_id: id }) => id)
-    yield put(searchPageActions.fetchSearchPageTagsSucceeded(results, tag))
+  if (rawResults) {
+    const results = {
+      users:
+        action.searchKind === SearchKind.USERS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.users.map(({ user_id: id }) => id)
+          : undefined,
+      tracks:
+        action.searchKind === SearchKind.TRACKS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.tracks.map(({ track_id: id }) => id)
+          : undefined
+    }
     yield put(
-      tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
-        category: action.kind,
-        query: tag,
-        isTagSearch: true
-      })
+      searchPageActions.fetchSearchPageTagsSucceeded(results, action.tag)
     )
+    if (
+      action.searchKind === SearchKind.TRACKS ||
+      action.searchKind === SearchKind.ALL
+    ) {
+      yield put(
+        tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
+          category: action.kind,
+          query,
+          isTagSearch: true
+        })
+      )
+    }
   } else {
     yield put(searchPageActions.fetchSearchPageTagsFailed())
   }
@@ -100,31 +118,54 @@ export function* getSearchResults(searchText, kind, limit, offset) {
 function* fetchSearchPageResults(action) {
   yield call(waitForBackendSetup)
 
-  const results = yield call(
+  const rawResults = yield call(
     getSearchResults,
     action.searchText,
     action.searchKind,
     action.limit,
     action.offset
   )
-  if (results) {
-    results.users = results.users.map(({ user_id: id }) => id)
-    results.tracks = results.tracks.map(({ track_id: id }) => id)
-    results.albums = results.albums.map(({ playlist_id: id }) => id)
-    results.playlists = results.playlists.map(({ playlist_id: id }) => id)
+  if (rawResults) {
+    const results = {
+      users:
+        action.searchKind === SearchKind.USERS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.users.map(({ user_id: id }) => id)
+          : undefined,
+      tracks:
+        action.searchKind === SearchKind.TRACKS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.tracks.map(({ track_id: id }) => id)
+          : undefined,
+      albums:
+        action.searchKind === SearchKind.ALBUMS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.albums.map(({ playlist_id: id }) => id)
+          : undefined,
+      playlists:
+        action.searchKind === SearchKind.PLAYLISTS ||
+        action.searchKind === SearchKind.ALL
+          ? rawResults.playlists.map(({ playlist_id: id }) => id)
+          : undefined
+    }
     yield put(
       searchPageActions.fetchSearchPageResultsSucceeded(
         results,
         action.searchText
       )
     )
-    yield put(
-      tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
-        category: action.searchKind,
-        query: action.searchText,
-        isTagSearch: false
-      })
-    )
+    if (
+      action.searchKind === SearchKind.TRACKS ||
+      action.searchKind === SearchKind.ALL
+    ) {
+      yield put(
+        tracksLineupActions.fetchLineupMetadatas(0, 10, false, {
+          category: action.searchKind,
+          query: action.searchText,
+          isTagSearch: false
+        })
+      )
+    }
   } else {
     yield put(searchPageActions.fetchSearchPageResultsFailed())
   }
