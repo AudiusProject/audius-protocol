@@ -139,7 +139,7 @@ function* fetchLineupMetadatasAsync(
 ) {
   const initLineup = yield select(lineupSelector)
   const initSource = sourceSelector
-    ? yield select(sourceSelector)
+    ? yield select((state) => sourceSelector(state, action.handle))
     : initLineup.prefix
 
   const task = yield fork(function* () {
