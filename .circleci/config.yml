@@ -1370,7 +1370,7 @@ workflows:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-🔍-prod-🕹️
+          name: 🚧-🎁-to-dn-prod-🕹️
           type: approval
           filters:
             branches:
@@ -1378,7 +1378,7 @@ workflows:
           requires:
             - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-🔍-prod
+          name: 🚧-🎁-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: discovery
@@ -1387,10 +1387,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-🔍-prod-🕹️
+            - 🚧-🎁-to-dn-prod-🕹️
       # Deploy Identity to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-🆔🪪-prod-🕹️
+          name: 🚧-🎁-to-is-prod-🕹️
           type: approval
           filters:
             branches:
@@ -1398,7 +1398,7 @@ workflows:
           requires:
             - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-🆔🪪-prod
+          name: 🚧-🎁-to-is-prod
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: identity
@@ -1407,10 +1407,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-🆔🪪-prod-🕹️
+            - 🚧-🎁-to-is-prod-🕹️
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-💿-prod-🕹️
+          name: 🚧-🎁-to-cn-prod-🕹️
           type: approval
           filters:
             branches:
@@ -1419,9 +1419,9 @@ workflows:
             - bump-hotfix-tags
       # no-op currently since Content Nodes have manual version patching
       - noop:
-          name: 🚧-🎁-to-💿-prod
+          name: 🚧-🎁-to-cn-prod
           requires:
-            - 🚧-🎁-to-💿-prod-🕹️
+            - 🚧-🎁-to-cn-prod-🕹️
       # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
       - noop:
           name: 🚧-🎁-to-SPs-🕹️
