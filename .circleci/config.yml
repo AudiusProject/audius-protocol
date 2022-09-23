@@ -1511,6 +1511,8 @@ workflows:
       - docker-build-and-push:
           name: build-libs
           repo: libs
+          requires:
+            - build
 
       - test-contracts:
           name: test-contracts
