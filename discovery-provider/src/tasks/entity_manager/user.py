@@ -93,8 +93,8 @@ def update_user(params: ManageEntityParameters):
     existing_user = params.existing_records[EntityType.USER][user_id]
     existing_user.is_current = False  # invalidate
     if (
-        user_id in params.new_records[EntityType.USER] and
-        params.new_records[EntityType.USER][user_id]
+        user_id in params.new_records[EntityType.USER]
+        and params.new_records[EntityType.USER][user_id]
     ):  # override with last updated user is in this block
         existing_user = params.new_records[EntityType.USER][user_id][-1]
 
