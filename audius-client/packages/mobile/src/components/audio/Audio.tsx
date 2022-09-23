@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 
-import type { CommonState } from '@audius/common'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -17,8 +16,7 @@ import MusicControl from 'react-native-music-control'
 import { Command } from 'react-native-music-control/lib/types'
 import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
-import { connect, useSelector } from 'react-redux'
-import type { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
@@ -26,7 +24,7 @@ import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
 
 const { getUser } = cacheUsersSelectors
-const { getPlaying, getSeek, makeGetCurrent } = playerSelectors
+const { getPlaying, getSeek, getCurrentTrack } = playerSelectors
 const { getIndex, getLength, getRepeat, getShuffle, getShuffleIndex } =
   queueSelectors
 
@@ -59,28 +57,36 @@ const styles = StyleSheet.create({
   }
 })
 
-type AudioProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
-const Audio = ({
-  track,
-  index,
-  queueLength,
-  playing,
-  seek,
-  play,
-  pause,
-  next,
-  previous,
-  reset,
-  repeatMode,
-  isShuffleOn,
-  shuffleIndex
-}: AudioProps) => {
-  const trackOwner = useSelector((state) =>
-    getUser(state, { id: track?.owner_id })
+export const Audio = () => {
+  const track = useSelector(getCurrentTrack)
+  const index = useSelector(getIndex)
+  const queueLength = useSelector(getLength)
+  const playing = useSelector(getPlaying)
+  const seek = useSelector(getSeek)
+  const repeatMode = useSelector(getRepeat)
+  const isShuffleOn = useSelector(getShuffle)
+  const shuffleIndex = useSelector(getShuffleIndex)
+  const trackOwner = useSelector(
+    (state) => getUser(state, { id: track?.owner_id }),
+    // Equality function to prevent audio restart when visiting profile screen
+    (left, right) => left?.user_id === right?.user_id
   )
   const currentUserId = useSelector(getUserId)
+
+  const dispatch = useDispatch()
+
+  const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
+  const pause = useCallback(() => dispatch(playerActions.pause()), [dispatch])
+  const next = useCallback(() => dispatch(queueActions.next()), [dispatch])
+  const previous = useCallback(
+    () => dispatch(queueActions.previous()),
+    [dispatch]
+  )
+  const reset = useCallback(
+    () => dispatch(playerActions.reset({ shouldAutoplay: false })),
+    [dispatch]
+  )
+
   const videoRef = useRef<Video>(null)
   // Keep track of whether we have ever started playback.
   // Only then is it safe to set OS music control stuff.
@@ -375,30 +381,3 @@ const Audio = ({
     </View>
   )
 }
-
-const getCurrent = makeGetCurrent()
-
-const mapStateToProps = (state: CommonState) => {
-  const { track, user } = getCurrent(state)
-  return {
-    track,
-    user,
-    index: getIndex(state),
-    queueLength: getLength(state),
-    playing: getPlaying(state),
-    seek: getSeek(state),
-    repeatMode: getRepeat(state),
-    isShuffleOn: getShuffle(state),
-    shuffleIndex: getShuffleIndex(state)
-  }
-}
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  play: () => dispatch(playerActions.play()),
-  pause: () => dispatch(playerActions.pause()),
-  next: () => dispatch(queueActions.next()),
-  previous: () => dispatch(queueActions.previous()),
-  reset: () => dispatch(playerActions.reset({ shouldAutoplay: false }))
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Audio)
