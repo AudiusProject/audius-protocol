@@ -1223,14 +1223,6 @@ workflows:
             # - test-sdk
 
       # Auto-deploy `master` to staging
-      - noop:
-          name: deploy-master-hold
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - built
       - deploy:
           name: 🚧-🏠
           service: all
@@ -1242,7 +1234,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - deploy-master-hold
+            - built
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
