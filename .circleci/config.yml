@@ -1016,10 +1016,7 @@ jobs:
         type: string
         default: ""
     steps:
-      - slack-basic:
-          channel: C03STD3UXMG
-          event: always
-          slack_mentions_user: "@joaquin"
+      - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1168,13 +1165,9 @@ jobs:
           command: |
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
-      - slack-fail:
-          channel: C03STD3UXMG
-          slack_mentions_user: "@joaquin"
+      - slack-fail
       - slack-success:
-          channel: C03STD3UXMG
           detail: ${SLACK_DETAIL}
-          slack_mentions_user: "@joaquin"
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1223,14 +1216,6 @@ workflows:
             # - test-sdk
 
       # Auto-deploy `master` to staging
-      - noop:
-          name: deploy-master-hold
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - built
       - deploy:
           name: 🚧-🏠
           service: all
@@ -1242,7 +1227,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - deploy-master-hold
+            - built
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
