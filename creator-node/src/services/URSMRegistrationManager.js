@@ -28,11 +28,15 @@ class URSMRegistrationManager {
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
+    this.oldDelegateOwnerWallet = this.nodeConfig.get('oldDelegateOwnerWallet')
+    this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
 
     if (
       !this.audiusLibs ||
       !this.delegateOwnerWallet ||
       !this.delegatePrivateKey ||
+      !this.oldDelegateOwnerWallet ||
+      !this.oldDelegatePrivateKey ||
       !this.spOwnerWallet
     ) {
       throw new Error(
@@ -119,7 +123,7 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+    if (this.oldDelegateOwnerWallet === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
@@ -129,89 +133,8 @@ class URSMRegistrationManager {
       return
     }
 
-    /**
-     * 3. Fetch list of all nodes registered on URSM, in order to submit requests for proposal
-     *  a. Randomize list to minimize bias
-     *  b. Remove duplicates by owner_wallet key due to on-chain uniqueness constraint
-     */
-    let URSMContentNodes =
-      await this.audiusLibs.discoveryProvider.getURSMContentNodes()
-
-    URSMContentNodes = URSMContentNodes.filter((node) => node.endpoint)
-    URSMContentNodes = _.shuffle(URSMContentNodes)
-    URSMContentNodes = Object.values(_.keyBy(URSMContentNodes, 'owner_wallet'))
-
-    /**
-     * 4. Request signatures from all registered nodes, in batches of 3, until 3 successful signatures received
-     */
-    let receivedSignatures = []
-    for (let i = 0; i < URSMContentNodes.length; i += NumSignaturesRequired) {
-      if (receivedSignatures.length >= 3) {
-        break
-      }
-
-      const nodesToAttempt = URSMContentNodes.slice(i, NumSignaturesRequired)
-      let responses = await Promise.all(
-        nodesToAttempt.map(async (node) => {
-          try {
-            const resp = await this._submitRequestForSignature(
-              node.endpoint,
-              spID
-            )
-            this.logInfo(
-              `Successfully received signature from ${node.endpoint}`
-            )
-            return resp
-          } catch (e) {
-            this.logError(
-              `Failed to receive signature from ${node.endpoint} with error ${e}`
-            )
-            return null
-          }
-        })
-      )
-      responses = responses.filter(Boolean)
-
-      receivedSignatures = receivedSignatures.concat(responses)
-    }
-
-    /**
-     * 4-a. Error if all available nodes contacted without 3 successful signatures
-     */
-    if (receivedSignatures.length < 3) {
-      throw new Error(
-        'Failed to receive 3 signatures after requesting from all available nodes'
-      )
-    }
-
-    /**
-     * 5. Submit registration transaction to URSM with signatures
-     */
-    const proposerSpIDs = receivedSignatures.map(
-      (signatureObj) => signatureObj.spID
-    )
-    const proposerNonces = receivedSignatures.map(
-      (signatureObj) => signatureObj.nonce
-    )
-    try {
-      // internally this call will retry
-      await this.audiusLibs.contracts.UserReplicaSetManagerClient.addOrUpdateContentNode(
-        spID,
-        [this.delegateOwnerWallet, this.spOwnerWallet],
-        proposerSpIDs,
-        proposerNonces,
-        receivedSignatures[0].sig,
-        receivedSignatures[1].sig,
-        receivedSignatures[2].sig
-      )
-
-      // Update config
-      this.nodeConfig.set('isRegisteredOnURSM', true)
-
-      this.logInfo('Successfully registered self on URSM')
-    } catch (e) {
-      throw new Error(`URSMRegistration contract call failed ${e}`)
-    }
+    // New node registration is disabled
+    throw new Error('Something went wrong if we got here')
   }
 
   /**

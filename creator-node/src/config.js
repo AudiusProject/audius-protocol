@@ -294,6 +294,19 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  // wallet information
+  oldDelegateOwnerWallet: {
+    doc: 'wallet address',
+    format: String,
+    env: 'oldDelegateOwnerWallet',
+    default: null
+  },
+  oldDelegatePrivateKey: {
+    doc: 'private key string',
+    format: String,
+    env: 'oldDelegatePrivateKey',
+    default: null
+  },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
     format: String,
@@ -347,6 +360,12 @@ const config = convict({
     doc: 'Service provider owner wallet',
     format: String,
     env: 'spOwnerWallet',
+    default: null
+  },
+  oldSpOwnerWallet: {
+    doc: 'Service provider owner wallet',
+    format: String,
+    env: 'oldSpOwnerWallet',
     default: null
   },
   ethWallets: {
