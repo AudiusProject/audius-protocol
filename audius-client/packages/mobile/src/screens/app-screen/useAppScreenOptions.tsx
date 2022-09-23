@@ -88,6 +88,13 @@ const messages = {
   earlyAccess: 'Early Access'
 }
 
+type ParamList = AppScreenParamList & Pick<AppTabScreenParamList, 'Search'>
+
+type Options = {
+  navigation: NativeStackNavigationProp<ParamList>
+  route: RouteProp<ParamListBase>
+}
+
 export const useAppScreenOptions = (
   overrides?: Partial<NativeStackNavigationOptions>
 ) => {
@@ -95,9 +102,7 @@ export const useAppScreenOptions = (
   const { accentOrangeLight1, neutralLight4 } = useThemeColors()
   const dispatch = useDispatch()
   const notificationCount = useSelector(getNotificationUnviewedCount)
-  const navigation = useNavigation<
-    AppScreenParamList & AppTabScreenParamList['Search']
-  >()
+  const navigation = useNavigation<AppScreenParamList>()
   const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
 
   const handlePressNotification = useCallback(() => {
@@ -109,133 +114,129 @@ export const useAppScreenOptions = (
     navigation.navigate('trending')
   }, [navigation])
 
-  const handlePressSearch = useCallback(() => {
-    navigation.push('Search')
-  }, [navigation])
-
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
 
-  const screenOptions: (options: {
-    navigation: NativeStackNavigationProp<AppScreenParamList>
-    route: RouteProp<ParamListBase>
-  }) => NativeStackNavigationOptions = useCallback(
-    ({ navigation, route }) => {
-      // The manual typing is unfortunate here. There may be a better way, but
-      // the tricky bit is that StackNavigationOptions aren't known to the RouteProp.
-      // A better solution may be to wrap <Stack.Screen> in our own variant that
-      // can do some better generics & inference.
-      const params = route.params
-      // Notifications uses this in order to remove animations when going from the drawer
-      // to a nested stack screen.
-      const isFromNotifs =
-        params &&
-        'fromNotifications' in params &&
-        (params as ContextualParams).fromNotifications
+  const screenOptions: (options: Options) => NativeStackNavigationOptions =
+    useCallback(
+      (options) => {
+        const { navigation, route } = options
+        // The manual typing is unfortunate here. There may be a better way, but
+        // the tricky bit is that StackNavigationOptions aren't known to the RouteProp.
+        // A better solution may be to wrap <Stack.Screen> in our own variant that
+        // can do some better generics & inference.
+        const params = route.params
+        // Notifications uses this in order to remove animations when going from the drawer
+        // to a nested stack screen.
+        const isFromNotifs =
+          params &&
+          'fromNotifications' in params &&
+          (params as ContextualParams).fromNotifications
 
-      return {
-        animation: isFromNotifs ? 'none' : 'default',
-        gestureEnabled: !isFromNotifs,
-        fullScreenGestureEnabled: true,
-        detachPreviousScreen: false,
-        cardOverlayEnabled: true,
-        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-        headerShadowVisible: false,
-        headerTitleAlign: 'center',
-        headerBackVisible: false,
-        headerLeft: (props) => {
-          const { canGoBack, ...other } = props
-          if (canGoBack) {
+        const handlePressSearch = () => navigation.push('Search')
+
+        return {
+          animation: isFromNotifs ? 'none' : 'default',
+          gestureEnabled: !isFromNotifs,
+          fullScreenGestureEnabled: true,
+          detachPreviousScreen: false,
+          cardOverlayEnabled: true,
+          cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerBackVisible: false,
+          headerLeft: (props) => {
+            const { canGoBack, ...other } = props
+            if (canGoBack) {
+              return (
+                <View style={styles.headerLeft}>
+                  <IconButton
+                    icon={IconCaretRight}
+                    fill={neutralLight4}
+                    styles={{ icon: styles.iconArrowBack }}
+                    {...other}
+                    onPress={() => {
+                      if (isFromNotifs) {
+                        drawerHelpers?.openDrawer()
+                      }
+
+                      navigation.goBack()
+                    }}
+                  />
+                </View>
+              )
+            }
             return (
               <View style={styles.headerLeft}>
                 <IconButton
-                  icon={IconCaretRight}
+                  icon={IconNotification}
+                  styles={{ icon: styles.iconNotification }}
+                  fill={
+                    notificationCount > 0 ? accentOrangeLight1 : neutralLight4
+                  }
+                  onPress={handlePressNotification}
+                />
+                {notificationCount > 0 ? (
+                  <View style={styles.notificationCount}>
+                    <Text style={styles.notificationCountText}>
+                      {formatCount(notificationCount)}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            )
+          },
+          title: '',
+          headerTitle: ({ children }) => {
+            if (children === 'none') return null
+            if (children) {
+              return (
+                <Text style={styles.title} accessibilityRole='header'>
+                  {children}
+                </Text>
+              )
+            }
+            return (
+              <View>
+                <IconButton
+                  icon={AudiusLogo}
                   fill={neutralLight4}
-                  styles={{ icon: styles.iconArrowBack }}
-                  {...other}
-                  onPress={() => {
-                    if (isFromNotifs) {
-                      drawerHelpers?.openDrawer()
-                    }
-
-                    navigation.goBack()
-                  }}
+                  styles={{ icon: styles.audiusLogo }}
+                  onPress={handlePressHome}
+                />
+                {isEarlyAccess ? (
+                  <Text style={styles.earlyAccess}>{messages.earlyAccess}</Text>
+                ) : null}
+              </View>
+            )
+          },
+          headerRightContainerStyle: styles.headerRight,
+          headerRight: () => {
+            return (
+              <View style={styles.headerRight}>
+                <IconButton
+                  icon={IconSearch}
+                  fill={neutralLight4}
+                  styles={{ icon: styles.iconSearch }}
+                  onPress={handlePressSearch}
                 />
               </View>
             )
-          }
-          return (
-            <View style={styles.headerLeft}>
-              <IconButton
-                icon={IconNotification}
-                styles={{ icon: styles.iconNotification }}
-                fill={
-                  notificationCount > 0 ? accentOrangeLight1 : neutralLight4
-                }
-                onPress={handlePressNotification}
-              />
-              {notificationCount > 0 ? (
-                <View style={styles.notificationCount}>
-                  <Text style={styles.notificationCountText}>
-                    {formatCount(notificationCount)}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          )
-        },
-        title: '',
-        headerTitle: ({ children }) => {
-          if (children === 'none') return null
-          if (children) {
-            return (
-              <Text style={styles.title} accessibilityRole='header'>
-                {children}
-              </Text>
-            )
-          }
-          return (
-            <View>
-              <IconButton
-                icon={AudiusLogo}
-                fill={neutralLight4}
-                styles={{ icon: styles.audiusLogo }}
-                onPress={handlePressHome}
-              />
-              {isEarlyAccess ? (
-                <Text style={styles.earlyAccess}>{messages.earlyAccess}</Text>
-              ) : null}
-            </View>
-          )
-        },
-        headerRightContainerStyle: styles.headerRight,
-        headerRight: () => {
-          return (
-            <View style={styles.headerRight}>
-              <IconButton
-                icon={IconSearch}
-                fill={neutralLight4}
-                styles={{ icon: styles.iconSearch }}
-                onPress={handlePressSearch}
-              />
-            </View>
-          )
-        },
-        ...overrides
-      }
-    },
-    [
-      drawerHelpers,
-      handlePressNotification,
-      handlePressHome,
-      handlePressSearch,
-      styles,
-      neutralLight4,
-      accentOrangeLight1,
-      notificationCount,
-      overrides,
-      isEarlyAccess
-    ]
-  )
+          },
+          ...overrides
+        }
+      },
+      [
+        drawerHelpers,
+        handlePressNotification,
+        handlePressHome,
+        styles,
+        neutralLight4,
+        accentOrangeLight1,
+        notificationCount,
+        overrides,
+        isEarlyAccess
+      ]
+    )
 
   return screenOptions
 }
