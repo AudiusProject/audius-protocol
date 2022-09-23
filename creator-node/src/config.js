@@ -1,6 +1,6 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const _ = require('lodash')

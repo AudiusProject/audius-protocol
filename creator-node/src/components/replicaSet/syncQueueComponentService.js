@@ -4,6 +4,7 @@
  */
 const enqueueSync = async (params) => {
   const { serviceRegistry } = params
+  // eslint-disable-next-line node/no-sync
   await serviceRegistry.syncQueue.enqueueSync(params)
 }
 
@@ -13,6 +14,7 @@ const enqueueSync = async (params) => {
  */
 const processManualImmediateSync = async (params) => {
   const { serviceRegistry } = params
+  // eslint-disable-next-line node/no-sync
   await serviceRegistry.syncImmediateQueue.processManualImmediateSync(params)
 }
 

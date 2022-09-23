@@ -1,5 +1,5 @@
 const config = require('./config')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const ffmpeg = require('ffmpeg-static').path
 const spawn = require('child_process').spawn
@@ -13,7 +13,7 @@ const { logger: genericLogger } = require('./logging')
  * @param {string} params.fileDir the directory of the uploaded track artifact
  * @param {string} params.fileName the uploaded track artifact filename
  * @param {Object} params.logContext the log context used to instantiate a logger
- * @returns {Object} response in the structure 
+ * @returns {Promise<Object>} response in the structure 
   {
     segments: {
       fileNames: segmentFileNames {string[]}: the segment file names only, 
@@ -24,6 +24,7 @@ const { logger: genericLogger } = require('./logging')
  */
 function segmentFile(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
+
   return new Promise((resolve, reject) => {
     const absolutePath = path.resolve(fileDir, fileName)
     logger.info(`Segmenting file ${absolutePath}...`)
@@ -63,24 +64,27 @@ function segmentFile(fileDir, fileName, { logContext }) {
     proc.stderr.on('data', (data) => (stderr += data.toString()))
 
     proc.on('close', (code) => {
-      if (code === 0) {
-        const segmentFileNames = fs.readdirSync(fileDir + '/segments')
-        const segmentFilePaths = segmentFileNames.map((filename) =>
-          path.resolve(fileDir, 'segments', filename)
-        )
+      async function asyncFn() {
+        if (code === 0) {
+          const segmentFileNames = await fs.readdir(fileDir + '/segments')
+          const segmentFilePaths = segmentFileNames.map((filename) =>
+            path.resolve(fileDir, 'segments', filename)
+          )
 
-        resolve({
-          segments: {
-            fileNames: segmentFileNames,
-            filePaths: segmentFilePaths
-          },
-          m3u8FilePath
-        })
-      } else {
-        logger.error('Error when processing file with ffmpeg')
-        logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
-        reject(new Error('FFMPEG Error'))
+          resolve({
+            segments: {
+              fileNames: segmentFileNames,
+              filePaths: segmentFilePaths
+            },
+            m3u8FilePath
+          })
+        } else {
+          logger.error('Error when processing file with ffmpeg')
+          logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
+          reject(new Error('FFMPEG Error'))
+        }
       }
+      asyncFn()
     })
   })
 }
@@ -92,21 +96,22 @@ function segmentFile(fileDir, fileName, { logContext }) {
  * @param {string} params.fileDir the directory of the uploaded track artifact
  * @param {string} params.fileName the uploaded track artifact filename
  * @param {Object} params.logContext the log context used to instantiate a logger
- * @returns {string} the path to the transcode
+ * @returns {Promise<string>} the path to the transcode
  */
-function transcodeFileTo320(fileDir, fileName, { logContext }) {
+async function transcodeFileTo320(fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
+
+  const sourcePath = path.resolve(fileDir, fileName)
+  const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
+  logger.info(`Transcoding file ${sourcePath}...`)
+
+  // Exit if dl-copy file already exists at target path.
+  if (await fs.pathExists(targetPath)) {
+    logger.info(`Downloadable copy already exists at ${targetPath}.`)
+    return targetPath
+  }
+
   return new Promise((resolve, reject) => {
-    const sourcePath = path.resolve(fileDir, fileName)
-    const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
-    logger.info(`Transcoding file ${sourcePath}...`)
-
-    // Exit if dl-copy file already exists at target path.
-    if (fs.existsSync(targetPath)) {
-      logger.info(`Downloadable copy already exists at ${targetPath}.`)
-      resolve(targetPath)
-    }
-
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
     const args = [
       '-i',
@@ -130,20 +135,23 @@ function transcodeFileTo320(fileDir, fileName, { logContext }) {
     proc.stderr.on('data', (data) => (stderr += data.toString()))
 
     proc.on('close', (code) => {
-      if (code === 0) {
-        if (fs.existsSync(targetPath)) {
-          logger.info(`Transcoded file ${targetPath}`)
-          resolve(targetPath)
+      async function asyncFn() {
+        if (code === 0) {
+          if (await fs.pathExists(targetPath)) {
+            logger.info(`Transcoded file ${targetPath}`)
+            resolve(targetPath)
+          } else {
+            logger.error('Error when processing file with ffmpeg')
+            logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
+            reject(new Error('FFMPEG Error'))
+          }
         } else {
           logger.error('Error when processing file with ffmpeg')
           logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
           reject(new Error('FFMPEG Error'))
         }
-      } else {
-        logger.error('Error when processing file with ffmpeg')
-        logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
-        reject(new Error('FFMPEG Error'))
       }
+      asyncFn()
     })
   })
 }
