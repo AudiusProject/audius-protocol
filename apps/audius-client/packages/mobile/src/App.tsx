@@ -5,7 +5,7 @@ import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 
-import Audio from 'app/components/audio/Audio'
+import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import OAuth from 'app/components/oauth/OAuth'
