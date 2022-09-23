@@ -4,8 +4,7 @@ import {
   lineupSelectors,
   SearchKind,
   searchResultsPageSelectors,
-  searchResultsPageTracksLineupActions as tracksActions,
-  trimToAlphaNumeric
+  searchResultsPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -30,7 +29,7 @@ export const TracksTab = () => {
       dispatch(
         tracksActions.fetchLineupMetadatas(offset, limit, false, {
           category: SearchKind.TRACKS,
-          query: trimToAlphaNumeric(query),
+          query,
           isTagSearch
         })
       )
