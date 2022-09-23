@@ -1128,7 +1128,7 @@ export class DiscoveryProvider {
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
     if (blockNumber && parsedResponse.latest_indexed_block < blockNumber) {
-      return null
+      throw new Error(`Requested blocknumer ${blockNumber}, but discovery is beind at ${parsedResponse.latest_indexed_block}`)
     }
     if (notInRegressedMode && blockDiff) {
       const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
@@ -1171,8 +1171,9 @@ export class DiscoveryProvider {
   }
 
   /**
-   * get whether a JWT given by Audius Oauth popup is valid
-   * @param token - JWT
+   * Retrieves the user's replica se
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
    * @return profile info of user attached to JWT payload if the JWT is valid, else false
    */
   async getUserReplicaSet({

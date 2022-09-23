@@ -438,7 +438,7 @@ export class Users extends Base {
           spIds.join(',')
         )
 
-      await this._waitForReplicaSetDiscoveryIndexing(
+      await this.waitForReplicaSetDiscoveryIndexing(
         userId,
         spIds,
         manageEntityResponse.txReceipt.blockNumber
@@ -806,13 +806,13 @@ export class Users extends Base {
         )
         if (useEntityManager) {
           startMs = Date.now()
-          await this._waitForReplicaSetDiscoveryIndexing(
+          await this.waitForReplicaSetDiscoveryIndexing(
             userId,
             replicaSetSPIDs,
             txReceipt.blockNumber
           )
           console.log(
-            `${logPrefix} [phase: ${phase}] _waitForReplicaSetDiscoveryIndexing() completed in ${
+            `${logPrefix} [phase: ${phase}] waitForReplicaSetDiscoveryIndexing() completed in ${
               Date.now() - startMs
             }ms`
           )
@@ -955,7 +955,7 @@ export class Users extends Base {
     }
   }
 
-  async _waitForReplicaSetDiscoveryIndexing(
+  async waitForReplicaSetDiscoveryIndexing(
     userId: number,
     replicaSetSPIDs: number[],
     blockNumber: number,
