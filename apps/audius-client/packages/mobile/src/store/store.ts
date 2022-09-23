@@ -1,4 +1,4 @@
-import type { RemoteConfigState, CommonState } from '@audius/common'
+import type { RemoteConfigState } from '@audius/common'
 import {
   remoteConfigReducer as remoteConfig,
   reducers as commonReducers
@@ -14,13 +14,14 @@ import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
 
-import { reducer as common } from './common/reducer'
 import type { DownloadState } from './download/slice'
 import downloads from './download/slice'
 import type { DrawersState } from './drawers/slice'
 import drawers from './drawers/slice'
 import type { KeyboardState } from './keyboard/slice'
 import keyboard from './keyboard/slice'
+import mobileUi from './mobileUi/slice'
+import type { MobileUiState } from './mobileUi/slice'
 import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
 import rootSaga from './sagas'
@@ -35,13 +36,13 @@ export type AppState = {
   confirmer: ConfirmerState
   searchBar: SearchBarState
 
-  common: CommonState
   drawers: DrawersState
   downloads: DownloadState
   keyboard: KeyboardState
   oauth: OAuthState
   remoteConfig: RemoteConfigState
   search: SearchState
+  mobileUi: MobileUiState
 }
 
 const commonStoreReducers = commonReducers()
@@ -55,13 +56,13 @@ const createRootReducer = () =>
     signOn: signOnReducer,
     searchBar,
 
-    common,
     drawers,
     downloads,
     keyboard,
     oauth,
     remoteConfig,
-    search
+    search,
+    mobileUi
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })

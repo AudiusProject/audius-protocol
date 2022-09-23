@@ -22,9 +22,9 @@ import Drawer, {
   FULL_DRAWER_HEIGHT
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
-import { useAndroidNavigationBarHeight } from 'app/hooks/useAndroidNavigationBarHeight'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
 import { ActionsBar } from './ActionsBar'
@@ -85,7 +85,7 @@ type NowPlayingDrawerProps = {
 const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
-  const androidNavigationBarHeight = useAndroidNavigationBarHeight()
+  const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const staticTopInset = useRef(insets.top)
   const bottomBarHeight = BOTTOM_BAR_HEIGHT + insets.bottom
   const styles = useStyles()

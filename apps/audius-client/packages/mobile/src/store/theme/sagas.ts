@@ -51,7 +51,7 @@ function* watchSetTheme() {
   yield* takeEvery(setTheme, setThemeAsync)
 }
 
-export function* setupTheme() {
+function* setupTheme() {
   const savedTheme = yield* call([localStorage, 'getItem'], 'theme')
 
   if (!savedTheme) {
@@ -64,5 +64,5 @@ export function* setupTheme() {
 }
 
 export default function sagas() {
-  return [watchSetTheme]
+  return [setupTheme, watchSetTheme]
 }

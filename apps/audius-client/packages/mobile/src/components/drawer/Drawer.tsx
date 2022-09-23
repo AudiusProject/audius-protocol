@@ -22,11 +22,12 @@ import {
 } from 'react-native'
 import type { Edge } from 'react-native-safe-area-context'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
-import { useAndroidNavigationBarHeight } from 'app/hooks/useAndroidNavigationBarHeight'
 import type { ThemeColors } from 'app/hooks/useThemedStyles'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { attachToDy } from 'app/utils/animation'
 import { useColor } from 'app/utils/theme'
 
@@ -337,7 +338,7 @@ export const Drawer: DrawerComponent = ({
   disableSafeAreaView
 }: DrawerProps) => {
   const styles = useThemedStyles(createStyles(zIndex, shouldAnimateShadow))
-  const androidNavigationBarHeight = useAndroidNavigationBarHeight()
+  const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
 
   const [drawerHeight, setDrawerHeight] = useState(
     isFullscreen ? FULL_DRAWER_HEIGHT : 0
