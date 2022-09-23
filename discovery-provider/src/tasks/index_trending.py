@@ -64,6 +64,7 @@ genre_allowlist = {
     "Hardstyle",
     "Hip-Hop/Rap",
     "House",
+    "Hyperpop",
     "Jazz",
     "Jersey Club",
     "Jungle",
