@@ -120,10 +120,12 @@ class URSMRegistrationManager {
       )
     ).delegateOwnerWallet.toLowerCase()
 
+    this.logError(`oldDelegateOwnerWallet: ${this.oldDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`)
+
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    if (this.oldDelegateOwnerWallet === delegateOwnerWalletFromURSM) {
+    if (this.oldDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
