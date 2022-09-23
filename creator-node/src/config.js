@@ -745,10 +745,10 @@ const config = convict({
     default: ''
   },
   reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: ''
+    default: '1,2,3,4,27'
   }
   /**
    * unsupported options at the moment

@@ -1210,15 +1210,15 @@ workflows:
       - noop:
           name: verified
           requires:
-            - test-contracts
             - test-creator-node
             - test-discovery-provider
-            - test-eth-contracts
             - test-identity-service
             - test-libs
-            - test-solana-programs
-            - test-solana-programs-anchor
             # removing these for now as they take a bit long and are flaky
+            # - test-contracts
+            # - test-solana-programs
+            # - test-solana-programs-anchor
+            # - test-eth-contracts
             # - test-mad-dog-e2e
             # - test-sdk
 
