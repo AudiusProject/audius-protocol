@@ -106,7 +106,8 @@ function* getTracks({ offset, limit, payload, handle }) {
   }
 }
 
-const sourceSelector = (state) => `${PREFIX}:${getProfileUserId(state)}`
+const sourceSelector = (state, handle) =>
+  `${PREFIX}:${getProfileUserId(state, handle)}`
 
 class TracksSagas extends LineupSagas {
   constructor() {
