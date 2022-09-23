@@ -2,7 +2,8 @@ import {
   cacheTracksSelectors,
   searchResultsPageSelectors,
   SearchKind,
-  searchResultsPageTracksLineupActions as tracksActions
+  searchResultsPageTracksLineupActions as tracksActions,
+  trimToAlphaNumeric
 } from '@audius/common'
 import { select, all, call, getContext } from 'redux-saga/effects'
 
@@ -29,7 +30,7 @@ function* getSearchPageResultsTracks({
     if (isTagSearch) {
       const { tracks } = yield call(
         getTagSearchResults,
-        query,
+        trimToAlphaNumeric(query),
         category,
         limit,
         offset
