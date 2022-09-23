@@ -533,7 +533,7 @@ PODS:
     - React-Core
   - RNReanimated (1.13.4):
     - React-Core
-  - RNScreens (3.13.0):
+  - RNScreens (3.16.0):
     - React-Core
     - React-RCTImage
   - RNScrypt (1.2.1):
@@ -911,7 +911,7 @@ SPEC CHECKSUMS:
   RNPermissions: 3e5bb8afd93c787681bbacbf54d586a6272ecc92
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: c1b56d030d1616239861534d9adb531f8cffab68
-  RNScreens: aa12070b21c1d6011b3627a0b1d09b627232b070
+  RNScreens: ee31ecdf23fe81e93c74feaa086cf173d758ab58
   RNScrypt: 5090216bbf2ebb7baea2f42fdd26011dc2c4c7b1
   RNSentry: fe878ca3982d7871e502ccbb90072fe764c8d07d
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
