@@ -10,8 +10,8 @@ const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusToken = artifacts.require('AudiusToken')
 
-const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
-const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
+const serviceTypeCN = web3.utils.utf8ToHex('content-node')
+const serviceTypeDP = web3.utils.utf8ToHex('discovery-node')
 
 contract('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
@@ -252,7 +252,7 @@ contract('Random testing', async (accounts) => {
 
     const addNewServiceForUser = async (user) => {
         try {
-            // 50% chance of disc prov, 50% chance of creator node
+            // 50% chance of disc prov, 50% chance of content node
             let serviceTypeDiceRoll = rand(0, 100)
             let amount
             let serviceType

@@ -20,15 +20,15 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
 // Known service types
 const serviceTypeCN = web3.utils.utf8ToHex('content-node')
-// Creator node 
+// Content node 
 // Minimum: 200,000
 // Maximum: 3,000,000
 const cnTypeMin = _lib.audToWei(200000)
 const cnTypeMax = _lib.audToWei(3000000)
-// Discovery provider
+// Discovery node
 // Minimum: 200,000
 // Maximum: 2,000,000
-const serviceTypeDP = web3.utils.utf8ToHex('discovery-node')
+const serviceTypeDN = web3.utils.utf8ToHex('discovery-node')
 const dpTypeMin = _lib.audToWei(200000)
 const dpTypeMax = _lib.audToWei(2000000)
 // stake lockup duration = 1 wk in blocks
@@ -93,7 +93,7 @@ module.exports = (deployer, network, accounts) => {
 
     const callDataDP = _lib.abiEncode(
       ['bytes32', 'uint256', 'uint256'],
-      [serviceTypeDP, dpTypeMin, dpTypeMax]
+      [serviceTypeDN, dpTypeMin, dpTypeMax]
     )
     await governance.guardianExecuteTransaction(
       serviceTypeManagerProxyKey,
@@ -102,7 +102,7 @@ module.exports = (deployer, network, accounts) => {
       callDataDP,
       { from: guardianAddress }
     )
-    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeDP)
+    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeDN)
     assert.ok(_lib.toBN(dpTypeMin).eq(serviceTypeDPInfo.minStake), 'Expected same minStake')
     assert.ok(_lib.toBN(dpTypeMax).eq(serviceTypeDPInfo.maxStake), 'Expected same maxStake')
 

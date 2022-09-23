@@ -19,7 +19,7 @@ const governanceKey = web3.utils.utf8ToHex('Governance')
 const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
-const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+const testDiscProvType = web3.utils.utf8ToHex('discovery-node')
 const serviceTypeMinStake = _lib.audToWei(5)
 const serviceTypeMaxStake = _lib.audToWei(10000000)
 const testEndpoint = 'https://localhost:5000'
