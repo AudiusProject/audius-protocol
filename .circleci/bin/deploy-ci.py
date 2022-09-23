@@ -516,7 +516,7 @@ def cli(
                         host, f"audius-cli health-check {service}", show_output=False
                     )
                     health_check = health_check.split("\n")[-1]
-                    logger.info(f"health_check: {health_check}")
+                    logger.info(f"{host}: health_check: {health_check}")
 
                     if health_check != "Service is healthy":
                         failed_post_check = True
