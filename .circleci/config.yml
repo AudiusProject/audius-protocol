@@ -1016,12 +1016,13 @@ jobs:
         type: string
         default: ""
     steps:
-      # only send Starting slack message when prod and/or --force
+      # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
             or:
               - equal: [ prod, << parameters.environment >> ]
               - << parameters.params >>
+              - << parameters.deploy_args >>
           steps:
             - slack-basic
       - add_ssh_keys:
@@ -1173,12 +1174,13 @@ jobs:
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
       - slack-fail
-      # only send Success slack message when prod and/or --force
+      # only send Success slack message when prod, --force, or custom args are used
       - when:
           condition:
             or:
               - equal: [ prod, << parameters.environment >> ]
               - << parameters.params >>
+              - << parameters.deploy_args >>
           steps:
             - slack-success:
                 detail: ${SLACK_DETAIL}
