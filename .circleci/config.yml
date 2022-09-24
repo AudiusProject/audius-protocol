@@ -1404,8 +1404,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - build-<< matrix.service >>
-            - test-<< matrix.service >>
+            - built-<< matrix.service >>
       - deploy:
           name: 💪-🚧-🌿-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
