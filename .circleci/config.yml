@@ -1016,7 +1016,14 @@ jobs:
         type: string
         default: ""
     steps:
-      - slack-basic
+      # only send Starting slack message when prod and/or --force
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+          steps:
+            - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1166,8 +1173,15 @@ jobs:
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
       - slack-fail
-      - slack-success:
-          detail: ${SLACK_DETAIL}
+      # only send Success slack message when prod and/or --force
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+          steps:
+            - slack-success:
+                detail: ${SLACK_DETAIL}
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
