@@ -1235,7 +1235,7 @@ workflows:
 
       # Auto-deploy `master` to staging
       - deploy:
-          name: 🚧-🏠-discovery
+          name: 🚧-🏠-stage-discovery
           service: discovery
           context:
             - slack-secrets
@@ -1247,7 +1247,7 @@ workflows:
           requires:
             - built-discovery
       - deploy:
-          name: 🚧-🏠-creator
+          name: 🚧-🏠-stage-creator
           service: creator
           context:
             - slack-secrets
@@ -1259,7 +1259,7 @@ workflows:
           requires:
             - built-creator
       - deploy:
-          name: 🚧-🏠-identity
+          name: 🚧-🏠-stage-identity
           service: identity
           context:
             - slack-secrets
