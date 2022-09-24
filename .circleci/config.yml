@@ -1191,11 +1191,26 @@ workflows:
       - noop:
           name: build
       - noop:
-          name: built
+          name: built-creator
           requires:
             - build-creator
+            - test-creator
+      - noop:
+          name: built-discovery
+          requires:
             - build-discovery
+            - test-discovery
+      - noop:
+          name: built-identity
+          requires:
             - build-identity
+            - test-identity
+      - noop:
+          name: built
+          requires:
+            - built-creator
+            - built-discovery
+            - built-identity
             - verified
       - noop:
           name: tests
@@ -1225,8 +1240,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-discovery
-            - test-discovery
+            - built-discovery
       - deploy:
           name: 🚧-🏠-creator
           service: creator
@@ -1238,8 +1252,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-creator
-            - test-creator
+            - built-creator
       - deploy:
           name: 🚧-🏠-identity
           service: identity
@@ -1251,8 +1264,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-identity
-            - test-identity
+            - built-identity
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-all-🕹️
@@ -1368,12 +1380,9 @@ workflows:
             branches:
               ignore: /(^master|release-.*$)/
           requires:
-            - build-discovery
-            - build-identity
-            - build-creator
-            - test-discovery
-            - test-creator
-            - test-identity
+            - built-discovery
+            - built-identity
+            - built-creator
       - deploy:
           name: 💪-🚧-🌿-all
           service: all
@@ -1421,8 +1430,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - build-discovery
-            - test-discovery
+            - built-discovery
       - deploy:
           name: 💪-🚧-🌿-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
@@ -1450,8 +1458,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - build-creator
-            - test-creator
+            - built-creator
       - deploy:
           name: 💪-🚧-🌿-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
