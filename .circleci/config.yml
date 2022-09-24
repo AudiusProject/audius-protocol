@@ -1189,6 +1189,12 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
     jobs:
       - noop:
+          name: creator
+      - noop:
+          name: discovery
+      - noop:
+          name: identity
+      - noop:
           name: built-creator
           requires:
             - build-creator
@@ -1218,6 +1224,7 @@ workflows:
       - noop:
           name: verified
           requires:
+            - build-libs
             - test-libs
             - test-contracts
             - test-solana-programs
@@ -1583,21 +1590,33 @@ workflows:
 
       - test-creator:
           name: test-creator
+          requires:
+            - creator
       - docker-build-and-push:
           name: build-creator
           repo: creator-node
+          requires:
+            - creator
 
       - test-discovery:
           name: test-discovery
+          requires:
+            - discovery
       - docker-build-and-push-updated:
           name: build-discovery
           repo: discovery-provider
+          requires:
+            - discovery
 
       - test-identity:
           name: test-identity
+          requires:
+            - identity
       - docker-build-and-push:
           name: build-identity
           repo: identity-service
+          requires:
+            - identity
 
       - test-solana-programs:
           name: test-solana-programs
