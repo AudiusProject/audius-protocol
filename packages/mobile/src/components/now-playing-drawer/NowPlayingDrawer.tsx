@@ -7,6 +7,7 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type {
   Animated,
   GestureResponderEvent,
@@ -23,7 +24,7 @@ import Drawer, {
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { useNavigation } from 'app/hooks/useNavigation'
+import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -80,16 +81,17 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type NowPlayingDrawerProps = {
   translationAnim: Animated.Value
+  navigation: NativeStackNavigationProp<AppTabScreenParamList>
 }
 
-const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
+const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
+  const { translationAnim, navigation } = props
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const staticTopInset = useRef(insets.top)
   const bottomBarHeight = BOTTOM_BAR_HEIGHT + insets.bottom
   const styles = useStyles()
-  const navigation = useNavigation()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
   const playCounter = useSelector(getCounter)
