@@ -1207,6 +1207,9 @@ workflows:
             - test-identity
       - noop:
           name: built
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
             - built-creator
             - built-discovery
@@ -1584,8 +1587,6 @@ workflows:
 
       - test-creator:
           name: test-creator
-          requires:
-            - tests
       - docker-build-and-push:
           name: build-creator
           repo: creator-node
@@ -1594,8 +1595,6 @@ workflows:
 
       - test-discovery:
           name: test-discovery
-          requires:
-            - tests
       - docker-build-and-push-updated:
           name: build-discovery
           repo: discovery-provider
@@ -1604,8 +1603,6 @@ workflows:
 
       - test-identity:
           name: test-identity
-          requires:
-            - tests
       - docker-build-and-push:
           name: build-identity
           repo: identity-service
