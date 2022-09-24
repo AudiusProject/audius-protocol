@@ -1272,7 +1272,7 @@ workflows:
             - built-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-<< matrix.service >>-🕹️
+          name: 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
@@ -1281,9 +1281,9 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 🚧-🏠-<< matrix.service >>
+            - 🚧-🏠-stage-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.service >>
+          name: 💪-🚧-🏠-stage-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1293,7 +1293,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-<< matrix.service >>-🕹️
+            - 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
       # Force deploy `master` to staging (by host) - discovery
       - noop:
           name: 💪-🚧-🏠-<< matrix.host >>-🕹️
@@ -1305,7 +1305,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🏠-discovery
+            - 🚧-🏠-stage-discovery
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
@@ -1329,7 +1329,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 🚧-🏠-creator
+            - 🚧-🏠-stage-creator
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
