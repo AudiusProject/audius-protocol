@@ -1217,9 +1217,6 @@ workflows:
       - noop:
           name: verified
           requires:
-            - test-creator
-            - test-discovery
-            - test-identity
             - test-libs
             - test-contracts
             - test-solana-programs
