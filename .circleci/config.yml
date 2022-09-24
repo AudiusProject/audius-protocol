@@ -580,7 +580,7 @@ jobs:
       # - coveralls/upload:
       #     path_to_lcov: ./eth-contracts/coverage/lcov.info
 
-  test-creator-node:
+  test-creator:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.16
@@ -620,7 +620,7 @@ jobs:
       # - coveralls/upload:
       #     path_to_lcov: ./creator-node/coverage/lcov.info
 
-  test-discovery-provider:
+  test-discovery:
     docker:
       - image: cimg/python:3.9-node
       # Discovery provider dependencies
@@ -715,7 +715,7 @@ jobs:
             mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
 
-  test-identity-service:
+  test-identity:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.17.5
@@ -1193,18 +1193,18 @@ workflows:
       - noop:
           name: built
           requires:
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
+            - build-creator
+            - build-discovery
+            - build-identity
             - verified
       - noop:
           name: tests
       - noop:
           name: verified
           requires:
-            - test-creator-node
-            - test-discovery-provider
-            - test-identity-service
+            - test-creator
+            - test-discovery
+            - test-identity
             - test-libs
             - test-contracts
             - test-solana-programs
@@ -1225,8 +1225,8 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-discovery-provider
-            - test-discovery-provider
+            - build-discovery
+            - test-discovery
       - deploy:
           name: 🚧-🏠-creator
           service: creator
@@ -1238,8 +1238,8 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-creator-node
-            - test-creator-node
+            - build-creator
+            - test-creator
       - deploy:
           name: 🚧-🏠-identity
           service: identity
@@ -1251,8 +1251,8 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - build-identity-service
-            - test-identity-service
+            - build-identity
+            - test-identity
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-all-🕹️
@@ -1362,18 +1362,43 @@ workflows:
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 🚧-🌿-<< matrix.service >>-🕹️
+          name: 💪-🚧-🌿-all-🕹️
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
+          requires:
+            - build-discovery
+            - build-identity
+            - build-creator
+            - test-discovery
+            - test-creator
+            - test-identity
+      - deploy:
+          name: 💪-🚧-🌿-all
+          service: all
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          requires:
+            - 💪-🚧-🌿-all-🕹️
+      - noop:
+          name: 💪-🚧-🌿-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - built
+            - build-<< matrix.service >>
+            - test-<< matrix.service >>
       - deploy:
-          name: 🚧-🌿-<< matrix.service >>
+          name: 💪-🚧-🌿-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1382,23 +1407,24 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - 🚧-🌿-<< matrix.service >>-🕹️
-      # Deploy branch to staging (by host)
+            - 💪-🚧-🌿-<< matrix.service >>-🕹️
+      # Deploy branch to staging (by host) - discovery
       - noop:
-          name: 🚧-🌿-<< matrix.host >>-🕹️
+          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
           type: approval
           filters:
             branches:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - built
+            - build-discovery
+            - test-discovery
       - deploy:
-          name: 🚧-🌿-<< matrix.host >>
+          name: 💪-🚧-🌿-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1410,9 +1436,38 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🌿-<< matrix.host >>-🕹️
+            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+      # Deploy branch to staging (by host) - creator
+      - noop:
+          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - build-creator
+            - test-creator
+      - deploy:
+          name: 💪-🚧-🌿-<< matrix.host >>
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - 💪-🚧-🌿-<< matrix.host >>-🕹️
 
       # Bump Tags (for release branch hot-fixes)
       - noop:
@@ -1524,32 +1579,32 @@ workflows:
           requires:
             - tests
 
-      - test-creator-node:
-          name: test-creator-node
+      - test-creator:
+          name: test-creator
           requires:
             - tests
       - docker-build-and-push:
-          name: build-creator-node
+          name: build-creator
           repo: creator-node
           requires:
             - build
 
-      - test-discovery-provider:
-          name: test-discovery-provider
+      - test-discovery:
+          name: test-discovery
           requires:
             - tests
       - docker-build-and-push-updated:
-          name: build-discovery-provider
+          name: build-discovery
           repo: discovery-provider
           requires:
             - build
 
-      - test-identity-service:
-          name: test-identity-service
+      - test-identity:
+          name: test-identity
           requires:
             - tests
       - docker-build-and-push:
-          name: build-identity-service
+          name: build-identity
           repo: identity-service
           requires:
             - build
@@ -1658,12 +1713,12 @@ workflows:
           name: test-contracts-nightly
       - test-eth-contracts:
           name: test-eth-contracts-nightly
-      - test-creator-node:
-          name: test-creator-node-nightly
-      - test-discovery-provider:
-          name: test-discovery-provider-nightly
-      - test-identity-service:
-          name: test-identity-service-nightly
+      - test-creator:
+          name: test-creator-nightly
+      - test-discovery:
+          name: test-discovery-nightly
+      - test-identity:
+          name: test-identity-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
       - test-mad-dog-e2e:
