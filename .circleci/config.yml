@@ -1359,7 +1359,7 @@ workflows:
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 💪-🚧-🌿-<< matrix.service >>-🕹️
+          name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
@@ -1370,7 +1370,7 @@ workflows:
           requires:
             - built-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.service >>
+          name: 💪-🚧-🌿-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1381,7 +1381,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🌿-<< matrix.service >>-🕹️
+            - 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
       # Deploy branch to staging (by host) - discovery
       - noop:
           name: 💪-🚧-🌿-<< matrix.host >>-🕹️
