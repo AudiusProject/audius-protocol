@@ -1272,26 +1272,6 @@ workflows:
             - built-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-all-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - 🚧-🏠-discovery
-            - 🚧-🏠-creator
-            - 🚧-🏠-identity
-      - deploy:
-          name: 💪-🚧-🏠-all
-          service: all
-          params: --force
-          context:
-            - slack-secrets
-            - gh-tokens
-            - open-vpn
-          requires:
-            - 💪-🚧-🏠-all-🕹️
-      - noop:
           name: 💪-🚧-🏠-<< matrix.service >>-🕹️
           type: approval
           filters:
@@ -1378,27 +1358,6 @@ workflows:
             - cut-release-🕹️
 
       # Deploy branch to staging (by service)
-      - noop:
-          name: 💪-🚧-🌿-all-🕹️
-          type: approval
-          filters:
-            branches:
-              ignore: /(^master|release-.*$)/
-          requires:
-            - built-discovery
-            - built-identity
-            - built-creator
-      - deploy:
-          name: 💪-🚧-🌿-all
-          service: all
-          git_tag: ${CIRCLE_SHA1}
-          params: --force
-          context:
-            - slack-secrets
-            - gh-tokens
-            - open-vpn
-          requires:
-            - 💪-🚧-🌿-all-🕹️
       - noop:
           name: 💪-🚧-🌿-<< matrix.service >>-🕹️
           type: approval
