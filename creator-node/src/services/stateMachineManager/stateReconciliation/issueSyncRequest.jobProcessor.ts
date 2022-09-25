@@ -363,7 +363,7 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: `${logMsgString} || Error issuing sync request: ${e.message}`,
+      error: `${logMsgString} || Error issuing sync request: ${e.message} - ${e.response?.data}`,
       syncReqsToEnqueue,
       additionalSync
     }
