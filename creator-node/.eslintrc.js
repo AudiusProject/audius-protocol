@@ -3,7 +3,8 @@ module.exports = {
   parserOptions: {
     tsconfigRootDir: __dirname,
     ecmaVersion: 2020,
-    project: ['./tsconfig.json']
+    project: ['./tsconfig.json'],
+    tsconfigRootDir: __dirname
   },
   extends: [
     'standard',

@@ -264,6 +264,12 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected)',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {

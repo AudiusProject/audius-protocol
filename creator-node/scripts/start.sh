@@ -65,6 +65,11 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
     openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
+# Postinstall applies patches in the patches/ folder via patch-package. This fixes a bug in BullMQ:
+# https://github.com/taskforcesh/bullmq/issues/1424
+npm run postinstall
+# index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
+
 if [[ "$loadTest" == "true" ]]; then 
     ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
 fi
