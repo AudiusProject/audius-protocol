@@ -71,6 +71,14 @@ export const typeDefs = gql`
       sort_direction: SortDirection
     ): [Track!]!
 
+    reposted_tracks(
+      query: String
+      limit: Int = 3
+      offset: Int = 0
+      sort: TrackSort
+      sort_direction: SortDirection
+    ): [Track!]!
+
     playlists(
       query: String
       limit: Int = 3
@@ -78,6 +86,8 @@ export const typeDefs = gql`
       sort: PlaylistSort
       sort_direction: SortDirection
     ): [Playlist!]!
+
+    reposted_playlists: [Playlist!]!
 
     followers(
       query: String

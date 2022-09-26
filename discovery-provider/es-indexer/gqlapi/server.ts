@@ -158,6 +158,32 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
     return tracks as any
   },
 
+  reposted_tracks: async (user, args, ctx) => {
+    // TODO: currently this queries `tracks` index via `reposted_by`
+    // this is great for querying + sorting on track fields...
+    // but really the default sort should be `reposted_at desc`
+    //
+    // so we probably want to:
+    //   - in the default case, just get `n` most recent reposts and then load the tracks for them
+    //   - if args does a sort or query on track field... load all reposts, and query tracks with the plucked repost_item_id + additional criteria
+    //
+    // alternatively:
+    //   - use sql here instead
+    //
+    const bb = bodybuilder()
+      .filter('term', 'reposted_by', user.user_id.toString())
+      .filter('term', 'is_delete', false)
+      .filter('term', 'is_unlisted', false)
+      .size(args.limit)
+      .from(args.offset)
+      .sort(args.sort || 'created_at', args.sort_direction || 'desc')
+    if (args.query) {
+      bb.query('match', 'suggest', args.query)
+    }
+    const tracks = await bbSearch<Track>(indexNames.tracks, bb)
+    return tracks
+  },
+
   playlists: async (user, args) => {
     // sort enum rewrite
     const sortRewrite: Record<string, string> = {

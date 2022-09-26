@@ -130,6 +130,8 @@ export type User = {
   location?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   playlists: Array<Playlist>;
+  reposted_playlists: Array<Playlist>;
+  reposted_tracks: Array<Track>;
   tracks: Array<Track>;
 };
 
@@ -157,6 +159,15 @@ export type UserPlaylistsArgs = {
   offset?: InputMaybe<Scalars['Int']>;
   query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<PlaylistSort>;
+  sort_direction?: InputMaybe<SortDirection>;
+};
+
+
+export type UserReposted_TracksArgs = {
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
+  sort?: InputMaybe<TrackSort>;
   sort_direction?: InputMaybe<SortDirection>;
 };
 
@@ -339,6 +350,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType, RequireFields<UserPlaylistsArgs, 'limit' | 'offset'>>;
+  reposted_playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType>;
+  reposted_tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserReposted_TracksArgs, 'limit' | 'offset'>>;
   tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserTracksArgs, 'limit' | 'offset'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
