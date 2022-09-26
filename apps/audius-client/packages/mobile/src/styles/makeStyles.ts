@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 import { isEqual } from 'lodash'
+import hash from 'object-hash'
 import type { TextStyle, ViewStyle, ImageStyle } from 'react-native'
 import { StyleSheet } from 'react-native'
 
@@ -49,6 +50,8 @@ type Styles<T extends NamedStyles<T>, PropsT> = (
   props?: PropsT
 ) => T | NamedStyles<T>
 
+const styleCache = {}
+
 export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
   styles: Styles<T, PropsT>
 ) => {
@@ -61,7 +64,14 @@ export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
     const stylesheet = useMemo(() => {
       const theme = { palette, typography, spacing, type: themeVariant }
       const namedStyles = styles(theme, memoizedProps)
-      return StyleSheet.create(namedStyles)
+      const namedStylesHash = hash(namedStyles)
+      const cachedStyle = styleCache[namedStylesHash]
+      if (cachedStyle) {
+        return cachedStyle
+      }
+      const stylesheet = StyleSheet.create(namedStyles)
+      styleCache[namedStylesHash] = stylesheet
+      return stylesheet
     }, [palette, themeVariant, memoizedProps])
 
     return stylesheet
