@@ -72,11 +72,12 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
     statusCode: resp.statusCode
   })
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  // if (resp.statusCode === 200) {
+  //   if (requestNotExcludedFromLogging(req.originalUrl)) {
+  //     logger.info('Success')
+  //   }
+  // } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     })
