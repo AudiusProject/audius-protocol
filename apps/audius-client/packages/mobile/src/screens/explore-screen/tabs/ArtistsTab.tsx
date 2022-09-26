@@ -1,5 +1,4 @@
-import { explorePageSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { explorePageSelectors, useProxySelector } from '@audius/common'
 
 import { ArtistCard } from 'app/components/artist-card'
 import { CardList } from 'app/components/core'
@@ -12,7 +11,7 @@ const messages = {
 }
 
 export const ArtistsTab = () => {
-  const profiles = useSelector(getExploreArtists)
+  const profiles = useProxySelector(getExploreArtists, [])
 
   return (
     <CardList
