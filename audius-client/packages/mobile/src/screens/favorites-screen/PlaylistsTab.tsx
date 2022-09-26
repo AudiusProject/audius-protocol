@@ -7,11 +7,11 @@ import { useEffectOnce } from 'react-use'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView, Button } from 'app/components/core'
+import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
-import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import { getAccountCollections } from './selectors'
 
@@ -48,7 +48,7 @@ export const PlaylistsTab = () => {
   return (
     <VirtualizedScrollView listKey='favorites-playlists-view'>
       {!userPlaylists?.length && !filterValue ? (
-        <EmptyTab message={messages.emptyTabText} />
+        <EmptyTileCTA message={messages.emptyTabText} />
       ) : (
         <FilterInput
           value={filterValue}
