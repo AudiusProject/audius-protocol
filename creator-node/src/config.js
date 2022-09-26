@@ -300,6 +300,19 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  // wallet information
+  oldDelegateOwnerWallet: {
+    doc: 'wallet address',
+    format: String,
+    env: 'oldDelegateOwnerWallet',
+    default: ''
+  },
+  oldDelegatePrivateKey: {
+    doc: 'private key string',
+    format: String,
+    env: 'oldDelegatePrivateKey',
+    default: ''
+  },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
     format: String,

@@ -28,6 +28,8 @@ class URSMRegistrationManager {
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
+    this.oldDelegateOwnerWallet = this.nodeConfig.get('oldDelegateOwnerWallet')
+    this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
 
     if (
       !this.audiusLibs ||
@@ -119,7 +121,14 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+    const activeDelegateOwnerWallet =
+      this.oldDelegateOwnerWallet || this.delegateOwnerWallet
+    this.logError(
+      `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
+    )
+    if (
+      activeDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM
+    ) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
@@ -127,6 +136,11 @@ class URSMRegistrationManager {
         `Node already registered on URSM with same delegateOwnerWallet`
       )
       return
+    }
+
+    if (this.oldDelegateOwnerWallet) {
+      // New node registration is disabled if using oldDelegateOwnerWallet and above URSM check failed
+      throw new Error('Something went wrong if we got here')
     }
 
     /**
