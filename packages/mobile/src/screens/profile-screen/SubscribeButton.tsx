@@ -32,10 +32,8 @@ type SubscribeButtonProps = {
 export const SubscribeButton = (props: SubscribeButtonProps) => {
   const styles = useStyles()
   const { profile } = props
-  const isSubscribed = useSelector((state) =>
-    getIsSubscribed(state, profile.handle)
-  )
-  const { user_id } = profile
+  const { handle, user_id } = profile
+  const isSubscribed = useSelector((state) => getIsSubscribed(state, handle))
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
