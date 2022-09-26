@@ -356,7 +356,8 @@ export class Users extends Base {
   async uploadProfileImages(
     profilePictureFile: File,
     coverPhotoFile: File,
-    metadata: UserMetadata
+    metadata: UserMetadata,
+    useEntityManager: boolean
   ) {
     let didMetadataUpdate = false
     if (profilePictureFile) {
@@ -373,7 +374,8 @@ export class Users extends Base {
     if (didMetadataUpdate) {
       await this.updateAndUploadMetadata({
         newMetadata: metadata,
-        userId: metadata.user_id
+        userId: metadata.user_id,
+        useEntityManager
       })
     }
 
@@ -677,23 +679,49 @@ export class Users extends Base {
         updateEndpointTxBlockNumber
       )
 
-    // Write metadata multihash to chain
-    const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt } =
-      await this.contracts.UserFactoryClient.updateMultihash(
-        userId,
-        updatedMultihashDecoded.digest
-      )
+    let txReceipt
+    let latestBlockHash
+    let latestBlockNumber
 
-    // Write remaining metadata fields to chain
-    let { latestBlockHash, latestBlockNumber } =
-      await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    if (!useEntityManager) {
+      // Write metadata multihash to chain
+
+      const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+      const updateMultiHashResp =
+        await this.contracts.UserFactoryClient.updateMultihash(
+          userId,
+          updatedMultihashDecoded.digest
+        )
+      txReceipt = updateMultiHashResp.txReceipt
+
+      // Write remaining metadata fields to chain
+      const updateUserResp = await this._updateUserOperations(
+        newMetadata,
+        oldMetadata,
+        userId
+      )
+      latestBlockHash = updateUserResp.latestBlockHash
+      latestBlockNumber = Math.max(
+        txReceipt.blockNumber,
+        updateUserResp.latestBlockNumber
+      )
+    } else {
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        userId,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.UPDATE,
+        metadataMultihash
+      )
+      txReceipt = response.txReceipt
+      latestBlockNumber = txReceipt.blockNumber
+    }
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(
       userId,
       metadataFileUUID,
-      Math.max(txReceipt.blockNumber, latestBlockNumber)
+      latestBlockNumber
     )
 
     // Update libs instance with new user metadata object

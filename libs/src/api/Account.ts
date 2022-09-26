@@ -214,10 +214,19 @@ export class Account extends Base {
         await this.User.uploadProfileImages(
           profilePictureFile!,
           coverPhotoFile!,
-          metadata
+          metadata,
+          useEntityManager
         )
       } else {
-        await this.User.createEntityManagerUser({ metadata })
+        const newMetadata = await this.User.createEntityManagerUser({
+          metadata
+        })
+        await this.User.uploadProfileImages(
+          profilePictureFile!,
+          coverPhotoFile!,
+          newMetadata,
+          useEntityManager
+        )
       }
     } catch (e: any) {
       return {
