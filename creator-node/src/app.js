@@ -116,7 +116,7 @@ const initializeApp = (port, serviceRegistry) => {
 
   // Rate limit routes
   app.use('/users/', userReqLimiter)
-  app.use('/track*', trackReqLimiter)
+  // app.use('/track*', trackReqLimiter)
   app.use('/audius_user/', audiusUserReqLimiter)
   app.use('/metadata', metadataReqLimiter)
   app.use('/image_upload', imageReqLimiter)
