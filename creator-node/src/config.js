@@ -386,6 +386,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: null
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,

@@ -752,7 +752,6 @@ async function getReplicaSetSpIDs({
     const RETRY_TIMEOUT_MS = 1000 // 1 seconds
 
     let errorMsg = null
-    let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
         `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
@@ -779,12 +778,10 @@ async function getReplicaSetSpIDs({
                 ]
               }
               errorMsg = null
-              blockNumberIndexed = true
               break
             } else {
               // The blocknumber was indexed by discovery, but there's still no user replica set returned
               errorMsg = `User replica not found in discovery`
-              blockNumberIndexed = true
               break
             }
           }
@@ -795,7 +792,6 @@ async function getReplicaSetSpIDs({
               blockNumber
             )
           errorMsg = null
-          blockNumberIndexed = true
           break
         }
       } catch (e) {
@@ -807,20 +803,12 @@ async function getReplicaSetSpIDs({
 
     // Error if indexed blockNumber but didn't find any replicaSet for user
     if (
-      blockNumberIndexed &&
-      (!replicaSet ||
-        !replicaSet.hasOwnProperty('primaryId') ||
-        !replicaSet.primaryId)
+      !replicaSet ||
+      !replicaSet.hasOwnProperty('primaryId') ||
+      !replicaSet.primaryId
     ) {
       throw new Error(
         `${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`
-      )
-    }
-
-    // Error if failed to index target blockNumber
-    if (!blockNumberIndexed) {
-      throw new Error(
-        `${logPrefix} ERROR || Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpID) {
