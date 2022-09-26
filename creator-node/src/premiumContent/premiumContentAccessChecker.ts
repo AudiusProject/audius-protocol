@@ -109,7 +109,7 @@ export class PremiumContentAccessChecker implements AccessChecker {
 
     return {
       doesUserHaveAccess: true,
-      trackId: trackId as number,
+      trackId,
       isPremium,
       error: null
     }
