@@ -9,6 +9,12 @@ const { QueryTypes } = require('sequelize')
 
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
+/**
+ * Return whether the CID is for a premium track by
+ * checking if it's for a 'track' or 'copy320' file
+ * and getting the track metadataJSON for the
+ * track blockchain id to see if it is premium.
+ */
 export async function isCIDForPremiumTrack(cid: string): Promise<
   | {
       trackId: null

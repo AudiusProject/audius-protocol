@@ -10,11 +10,7 @@ import {
 } from './types'
 import { recoverWallet } from '../apiSigning'
 
-export interface AccessChecker {
-  checkPremiumContentAccess(args: CheckAccessArgs): Promise<CheckAccessResponse>
-}
-
-export class PremiumContentAccessChecker implements AccessChecker {
+export class PremiumContentAccessChecker {
   /**
    * Checks that all premium content headers are passed in.
    * Checks that discovery node that generated signature is registered.

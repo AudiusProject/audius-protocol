@@ -39,15 +39,15 @@ export const premiumContentMiddleware = async (
     }
 
     const premiumContentHeaders = req.headers['x-premium-content'] as string
-    const premiumContentAccessChecker = req.app.get(
-      'premiumContentAccessChecker'
-    ) as PremiumContentAccessChecker
-    const libs = req.app.get('audiusLibs')
-    const redis = req.app.get('redisClient')
+    const serviceRegistry = req.app.get('serviceRegistry')
+    const { premiumContentAccessChecker, libs, redis } = serviceRegistry
+    // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
+    const accessChecker =
+      premiumContentAccessChecker as PremiumContentAccessChecker
     const logger = (req as any).logger as Logger
 
     const { doesUserHaveAccess, trackId, isPremium, error } =
-      await premiumContentAccessChecker.checkPremiumContentAccess({
+      await accessChecker.checkPremiumContentAccess({
         cid,
         premiumContentHeaders,
         libs,
@@ -98,7 +98,9 @@ export const premiumContentMiddleware = async (
     const error = `Could not validate premium content access: ${
       (e as Error).message
     }`
-    console.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
+    ;(req as any).logger.error(
+      `${error}.\nError: ${JSON.stringify(e, null, 2)}`
+    )
     return sendResponse(req, res, errorResponseServerError(error))
   }
 }

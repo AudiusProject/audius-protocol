@@ -122,6 +122,8 @@ const streamFromFileSystem = async (
 
     // If content is premium, set cache-control to no-cache.
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
+    // The premiumContentMiddleware sets the req.premiumContent object so that we do not
+    // have to make another database round trip to get this info.
     if (req.premiumContent?.isPremium) {
       res.setHeader('cache-control', 'no-cache')
     } else {

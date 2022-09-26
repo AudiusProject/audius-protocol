@@ -2,7 +2,6 @@ import { premiumContentMiddleware } from './premiumContentMiddleware'
 import assert from 'assert'
 import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 import { Request, Response } from 'express'
-import { AccessChecker } from '../../premiumContent/premiumContentAccessChecker'
 import Logger from 'bunyan'
 import { Redis } from 'ioredis'
 import {
@@ -11,7 +10,7 @@ import {
   PremiumContentAccessError
 } from '../../premiumContent/types'
 
-class StubPremiumContentAccessChecker implements AccessChecker {
+class StubPremiumContentAccessChecker {
   accessCheckReturnsWith: CheckAccessResponse = {} as CheckAccessResponse
   checkPremiumContentAccess(args: CheckAccessArgs) {
     return Promise.resolve(this.accessCheckReturnsWith)
@@ -20,6 +19,7 @@ class StubPremiumContentAccessChecker implements AccessChecker {
 
 describe('Test premium content middleware', function () {
   let app: any
+  let serviceRegistry: any
   let libs: any
   let logger: Logger
   let redis: Redis
@@ -40,10 +40,13 @@ describe('Test premium content middleware', function () {
     redis = new Map() as unknown as Redis
     headers = {}
     premiumContentAccessChecker = new StubPremiumContentAccessChecker()
+    serviceRegistry = {
+      premiumContentAccessChecker,
+      libs,
+      redis
+    }
     app = new Map()
-    app.set('audiusLibs', libs)
-    app.set('redisClient', redis)
-    app.set('premiumContentAccessChecker', premiumContentAccessChecker)
+    app.set('serviceRegistry', serviceRegistry)
     mockReq = {
       logger,
       headers,
