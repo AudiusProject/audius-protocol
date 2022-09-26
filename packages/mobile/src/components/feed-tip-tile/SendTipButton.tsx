@@ -47,7 +47,8 @@ type SendTipButtonProps = {
   receiver: User
 }
 
-export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
+export const SendTipButton = (props: SendTipButtonProps) => {
+  const { receiver } = props
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
