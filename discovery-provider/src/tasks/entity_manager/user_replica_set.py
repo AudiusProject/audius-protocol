@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import List, Tuple
 
 from src.tasks.entity_manager.utils import (
@@ -59,8 +58,12 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
             raise Exception("Invalid tx signer")
 
     current_sp_ids, updated_sp_ids = parse_update_sp_id(params)
-    if current_sp_ids[0] != user_sp_ids[0] or set(current_sp_ids[1:]) != set(user_sp_ids[1:]):
-        raise Exception(f"Current sp ids does not match parameters, current: {current_sp_ids} and requested {user_sp_ids}")
+    if current_sp_ids[0] != user_sp_ids[0] or set(current_sp_ids[1:]) != set(
+        user_sp_ids[1:]
+    ):
+        raise Exception(
+            f"Current sp ids does not match parameters, current: {current_sp_ids} and requested {user_sp_ids}"
+        )
 
     if len(set(updated_sp_ids)) != len(updated_sp_ids):
         raise Exception("Duplicate sp ids not allowed")

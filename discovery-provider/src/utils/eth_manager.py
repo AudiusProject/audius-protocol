@@ -70,13 +70,12 @@ class EthManager:
             logger.info(
                 f"eth_manager.py | Found cached value for spID={sp_id} - {sp_info_cached}"
             )
-            sp_info: SPInfo = {
+            return {
                 "operator_wallet": sp_info_cached[0],
                 "endpoint": sp_info_cached[1],
                 "block_number": sp_info_cached[2],
                 "delegator_wallet": sp_info_cached[3],
             }
-            return sp_info
 
         endpoint_info = self.sp_factory.functions.getServiceEndpointInfo(
             sp_type, sp_id

@@ -74,8 +74,7 @@ module.exports = async ({
           // pass as array
           [dataProviderUrl],
           // TODO - formatting this private key here is not ideal
-          (oldDelegatePrivateKey || delegatePrivateKey).replace('0x', '')
-          delegatePrivateKey.replace('0x', ''),
+          (oldDelegatePrivateKey || delegatePrivateKey).replace('0x', ''),
           entityManagerAddress
         )
       : null,
