@@ -53,6 +53,12 @@ def playlist_state_update(
                 existing_playlist_record = None
                 playlist_id = helpers.get_tx_arg(entry, "_playlistId")
                 try:
+                    if playlist_id >= PLAYLIST_ID_OFFSET:
+                        logger.info(
+                            f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {PLAYLIST_ID_OFFSET}. Skipping transaction."
+                        )
+                        continue
+
                     # look up or populate existing record
                     if playlist_id in playlist_events_lookup:
                         existing_playlist_record = playlist_events_lookup[playlist_id][
@@ -73,11 +79,6 @@ def playlist_state_update(
                         block_timestamp,
                         session,
                     )
-                    if playlist_record.playlist_id >= PLAYLIST_ID_OFFSET:
-                        logger.info(
-                            f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {PLAYLIST_ID_OFFSET}. Skipping transaction."
-                        )
-                        continue
 
                     # process playlist record
                     if playlist_record is not None:

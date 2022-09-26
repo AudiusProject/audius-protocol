@@ -23,6 +23,8 @@ from src.utils.track_event_constants import (
     track_event_types_lookup,
 )
 
+from discovery-provider.src.tasks.entity_manager.utils import TRACK_ID_OFFSET
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,6 +69,12 @@ def track_state_update(
                 existing_track_record = None
                 track_metadata = None
                 try:
+                    if track_id >= TRACK_ID_OFFSET:
+                        logger.info(
+                            f"index.py | tracks.py | Track {track_id} is above the track ID offset {TRACK_ID_OFFSET}. Skipping transaction."
+                        )
+                        continue
+
                     # look up or populate existing record
                     if track_id in track_events:
                         existing_track_record = track_events[track_id]["track"]

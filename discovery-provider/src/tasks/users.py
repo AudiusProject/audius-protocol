@@ -82,6 +82,13 @@ def user_state_update(
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         process_user_txs_futures = {}
         for user_id in user_transactions_lookup.keys():
+            if track_id >= TRACK_ID_OFFSET:
+                logger.info(
+                    f"index.py | tracks.py | Track {track_id} is above the track ID offset {TRACK_ID_OFFSET}. Skipping transaction."
+                )
+                continue
+
+
             user_txs = user_transactions_lookup[user_id]
             process_user_txs_futures[
                 executor.submit(
