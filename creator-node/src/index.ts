@@ -119,6 +119,8 @@ const startAppForPrimary = async () => {
     })
   }
 
+  // Respawn workers and update each worker's knowledge of who the special worker is.
+  // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
   cluster.on('exit', (worker, code, signal) => {
     logger.info(
       `Worker process with pid=${worker.process.pid} died because ${
