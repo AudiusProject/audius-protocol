@@ -11,24 +11,16 @@ const getExplore = (state: CommonState) => state.pages.explore
 
 export const getExplorePlaylists = createSelector(
   (state: CommonState) => state.pages.explore.playlists,
-  getCollections,
-  getUsers,
-  (playlists, collections, users) => {
-    const explorePlaylists = playlists
-      .map((id) => collections[id])
-      .filter(Boolean)
-      .map((collection) => ({
-        ...collection,
-        user: users[collection.playlist_owner_id] || {}
-      }))
-    return explorePlaylists
-  }
+  (state: CommonState) => state.collections.entries,
+  (playlists, collections) =>
+    playlists.map((id) => collections[id].metadata).filter(removeNullable)
 )
 
 export const getExploreArtists = createSelector(
   (state: CommonState) => state.pages.explore.profiles,
-  getUsers,
-  (artists, users) => artists.map((id) => users[id]).filter(removeNullable)
+  (state: CommonState) => state.users.entries,
+  (artists, users) =>
+    artists.map((id) => users[id].metadata).filter(removeNullable)
 )
 
 export type GetExplore = {
