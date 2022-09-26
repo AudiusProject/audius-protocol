@@ -7,14 +7,6 @@ The native project can be built & run against a local client (serving at localho
 
 ## Setup
 
-Copy the environment variables and replace missing values. (You will need an FCM sender id as well as a Segment write key for those services to work properly, but any value will suffice if the data is not important to you.)
-
-```bash
-cp .env.dev.tmpl .env.dev
-cp .env.stage.tmpl .env.stage
-cp .env.prod.tmpl .env.prod
-```
-
 ### Extra iOS Setup
 
 ```bash
