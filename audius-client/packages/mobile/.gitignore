@@ -3,10 +3,6 @@
 .DS_Store
 
 # Env
-.env
-.env.prod
-.env.stage
-.env.dev
 .eslintcache
 .yalc
 yalc.lock
