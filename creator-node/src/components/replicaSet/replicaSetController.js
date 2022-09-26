@@ -221,7 +221,7 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
     }
   }
 
-  await recurringSyncQueue.add({
+  await recurringSyncQueue.add('recurring-sync', {
     syncType,
     syncMode,
     syncRequestParameters

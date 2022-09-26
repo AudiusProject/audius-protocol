@@ -1,8 +1,10 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
+
 const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
+const { clusterUtils } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -23,28 +25,29 @@ const MONITORING_QUEUE_HISTORY = 500
  */
 class MonitoringQueue {
   constructor() {
-    this.queue = new Bull('monitoring-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('monitoring-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: MONITORING_QUEUE_HISTORY,
         removeOnFail: MONITORING_QUEUE_HISTORY
       }
     })
 
-    // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
+    // Clean up anything that might be still stuck in the queue on restart and run once instantly
+    if (clusterUtils.isThisWorkerInit()) {
+      this.queue.drain(true)
+      this.seedInitialValues()
+    }
 
-    this.seedInitialValues()
-
-    this.queue.process(
-      PROCESS_NAMES.monitor,
-      /* concurrency */ 1,
-      async (job, done) => {
+    const worker = new Worker(
+      'monitoring-queue',
+      async (job) => {
         try {
-          this.logStatus('Starting')
+          await this.logStatus('Starting')
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
@@ -55,13 +58,11 @@ class MonitoringQueue {
               this.logStatus(`Error on ${monitor.name} ${e}`)
             }
           })
-
-          done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
-          done(e)
         }
-      }
+      },
+      { connection }
     )
   }
 
@@ -84,16 +85,16 @@ class MonitoringQueue {
     if (isFresh) return
 
     const value = await monitor.func()
-    this.logStatus(`Computed value for ${monitor.name} ${value}`)
+    await this.logStatus(`Computed value for ${monitor.name} ${value}`)
 
     // Set the value
-    redis.set(key, value)
+    await redis.set(key, value)
 
     if (monitor.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      await redis.set(ttlKey, 1, 'EX', monitor.ttl)
     }
   }
 
@@ -115,12 +116,12 @@ class MonitoringQueue {
   async start() {
     try {
       // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.monitor)
+      await this.queue.add(PROCESS_NAMES.monitor, {})
 
       // Then enqueue the job to run on a regular interval
       setInterval(async () => {
         try {
-          await this.queue.add(PROCESS_NAMES.monitor)
+          await this.queue.add(PROCESS_NAMES.monitor, {})
         } catch (e) {
           this.logStatus('Failed to enqueue!')
         }

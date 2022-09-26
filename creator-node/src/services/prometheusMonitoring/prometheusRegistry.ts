@@ -1,4 +1,4 @@
-import type { Job, Queue } from 'bull'
+import type { Job, Queue, Worker } from 'bullmq'
 
 import {
   NAMESPACE_PREFIX,
@@ -8,6 +8,8 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from './prometheus.constants'
 import * as PrometheusClient from 'prom-client'
+
+const cluster = require('cluster')
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
@@ -103,49 +105,28 @@ export class PrometheusRegistry {
 
   /**
    * @param queue the bull queue to collect metrics on
-   * @param useGlobal whether to search jobs via global callbacks or not
+   * @param worker the bull worker to collect metrics on
    *
    * This function is used to collect prometheus metrics on bull queues
    * by registering callbacks when jobs fail, wait, or complete
    */
-  public startQueueMetrics(queue: Queue, useGlobal = false) {
+  public startQueueMetrics(queue: Queue, worker: Worker) {
     const labels = {
       queue_name: queue.name
     }
 
-    if (useGlobal) {
-      queue.on('global:completed', async (jobId: number) => {
-        const job = await queue.getJob(jobId)
-        const job_name = job?.data?.task || job?.name || ''
-        this.recordJobMetrics(
-          { job_name, ...labels },
-          JOB_STATUS.COMPLETED,
-          job!
-        )
-      })
-      queue.on('global:failed', async (jobId: number) => {
-        const job = await queue.getJob(jobId)
-        const job_name = job?.data?.task || job?.name || ''
-        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job!)
-      })
-    } else {
-      queue.on('completed', (job: Job) => {
-        const job_name = job?.data?.task || job.name
-        this.recordJobMetrics(
-          { job_name, ...labels },
-          JOB_STATUS.COMPLETED,
-          job
-        )
-      })
-      queue.on('failed', (job: Job) => {
-        const job_name = job?.data?.task || job.name
-        this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job)
-      })
-    }
+    worker.on('completed', (job: Job, result: any, prev: string) => {
+      const job_name = job?.data?.task || job.name
+      this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.COMPLETED, job)
+    })
+    worker.on('failed', (job: Job, error: Error, prev: string) => {
+      const job_name = job?.data?.task || job.name
+      this.recordJobMetrics({ job_name, ...labels }, JOB_STATUS.FAILED, job)
+    })
 
     const metricInterval = setInterval(() => {
       queue
-        .getJobCounts()
+        .getJobCounts('completed', 'failed', 'delayed', 'active', 'waiting')
         .then(({ completed, failed, delayed, active, waiting }) => {
           this.getMetric(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).set(
             labels,
