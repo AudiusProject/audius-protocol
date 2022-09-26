@@ -198,7 +198,6 @@ export class Account extends Base {
           }
         })()
       }
-
       // Add user to chain
       if (!useEntityManager) {
         phase = phases.ADD_USER

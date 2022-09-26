@@ -605,7 +605,7 @@ export class Users extends Base {
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
-    const logPrefix = `[User:updateCreator()] [userId: ${userId}]`
+    const logPrefix = `[User:updateCreator()] [userId: ${userId}] [useEntityManager: ${useEntityManager}]`
     const fnStartMs = Date.now()
     let startMs = fnStartMs
 
@@ -641,7 +641,7 @@ export class Users extends Base {
         await this._updateReplicaSetOnChain(
           userId,
           newMetadata.creator_node_endpoint,
-          true
+          useEntityManager
         )
       updateEndpointTxBlockNumber = updateEndpointTxReceipt?.blockNumber
       console.log(
@@ -650,11 +650,18 @@ export class Users extends Base {
         }ms`
       )
       startMs = Date.now()
-
-      await this._waitForURSMCreatorNodeEndpointIndexing(
-        userId,
-        replicaSetSPIDs
-      )
+      if (useEntityManager) {
+        await this.waitForReplicaSetDiscoveryIndexing(
+          userId,
+          replicaSetSPIDs,
+          updateEndpointTxBlockNumber
+        )
+      } else {
+        await this._waitForURSMCreatorNodeEndpointIndexing(
+          userId,
+          replicaSetSPIDs
+        )
+      }
       console.log(
         `${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${
           Date.now() - startMs
@@ -811,6 +818,9 @@ export class Users extends Base {
             replicaSetSPIDs,
             txReceipt.blockNumber
           )
+          // @ts-expect-error
+          newMetadata.primary_id = replicaSetSPIDs[0]
+          newMetadata.secondary_ids = replicaSetSPIDs.slice(1)
           console.log(
             `${logPrefix} [phase: ${phase}] waitForReplicaSetDiscoveryIndexing() completed in ${
               Date.now() - startMs
@@ -1204,16 +1214,37 @@ export class Users extends Base {
       this._retrieveSpIDFromEndpoint(secondaries[1]!)
     ])
     let txReceipt
+    const currentUser = this.userStateManager.getCurrentUser()
+    if (!currentUser) throw new Error('Current user missing')
+
     // Update in new contract
     if (useEntityManager) {
-      const currentUser = this.userStateManager.getCurrentUser()
-      if (!currentUser) throw new Error('Current user missing')
+      const currentPrimaryEndpoint = CreatorNode.getPrimary(
+        currentUser.creator_node_endpoint
+      )
+      const currentSecondaries = CreatorNode.getSecondaries(
+        currentUser.creator_node_endpoint
+      )
+
+      if (currentSecondaries.length < 2) {
+        throw new Error(
+          `Invalid number of secondaries found - received ${currentSecondaries}`
+        )
+      }
+
+      const [oldPrimary, oldSecondary1SpID, oldSecondary2SpID] =
+        await Promise.all([
+          this._retrieveSpIDFromEndpoint(currentPrimaryEndpoint!),
+          this._retrieveSpIDFromEndpoint(currentSecondaries[0]!),
+          this._retrieveSpIDFromEndpoint(currentSecondaries[1]!)
+        ])
+
       txReceipt = await this.updateEntityManagerReplicaSet({
         userId,
         primary: primarySpID,
         secondaries: [secondary1SpID, secondary2SpID],
-        oldPrimary: currentUser.primary_id,
-        oldSecondaries: currentUser.secondary_ids
+        oldPrimary: oldPrimary,
+        oldSecondaries: [oldSecondary1SpID, oldSecondary2SpID]
       })
     } else {
       txReceipt =

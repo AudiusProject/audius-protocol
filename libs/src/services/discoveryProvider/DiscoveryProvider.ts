@@ -1128,7 +1128,9 @@ export class DiscoveryProvider {
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
     if (blockNumber && parsedResponse.latest_indexed_block < blockNumber) {
-      throw new Error(`Requested blocknumer ${blockNumber}, but discovery is beind at ${parsedResponse.latest_indexed_block}`)
+      throw new Error(
+        `Requested blocknumer ${blockNumber}, but discovery is beind at ${parsedResponse.latest_indexed_block}`
+      )
     }
     if (notInRegressedMode && blockDiff) {
       const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
