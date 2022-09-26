@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import List, Tuple
 
 from src.tasks.entity_manager.utils import (
@@ -36,7 +37,6 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
     if user_id not in params.existing_records[EntityType.USER]:
         # user does not exist
         raise Exception("User does not exist")
-
     # Validate the signer is the user or in the current replica set of content nodes
     user = params.existing_records[EntityType.USER][user_id]
     user_sp_ids = [user.primary_id]
@@ -59,8 +59,8 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
             raise Exception("Invalid tx signer")
 
     current_sp_ids, updated_sp_ids = parse_update_sp_id(params)
-    if current_sp_ids != user_sp_ids:
-        raise Exception("Current sp ids does not match parameters")
+    if current_sp_ids[0] != user_sp_ids[0] or set(current_sp_ids[1:]) != set(user_sp_ids[1:]):
+        raise Exception(f"Current sp ids does not match parameters, current: {current_sp_ids} and requested {user_sp_ids}")
 
     if len(set(updated_sp_ids)) != len(updated_sp_ids):
         raise Exception("Duplicate sp ids not allowed")

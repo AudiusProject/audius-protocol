@@ -459,7 +459,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
-        logger.info(f"index.py | checking {tx_type} vs {tx_target_contract_address}")
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
         if tx_is_type:
             contract_type = tx_type
