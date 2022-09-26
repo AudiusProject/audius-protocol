@@ -175,20 +175,13 @@ const startAppForWorker = async () => {
     }
   })
 
-  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-
   await serviceRegistry.initServices()
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
   logger.info(`Initialized services (Node running in ${nodeMode})`)
+  serviceRegistry.initServicesAsynchronously()
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
-
-  // Make the first worker wait for some services to be fully up before spinning up other workers
-  serviceRegistry.initServicesAsynchronously()
-  if (clusterUtils.isThisWorkerInit()) {
-    await serviceRegistry.initServicesThatRequireServer(appInfo.app)
-  } else {
-    serviceRegistry.initServicesThatRequireServer(appInfo.app)
-  }
+  await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 
   if (clusterUtils.isThisWorkerInit() && process.send) {
     process.send({ cmd: 'initComplete' })
