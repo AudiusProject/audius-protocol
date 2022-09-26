@@ -778,9 +778,7 @@ router.get(
           return sendResponse(
             req,
             res,
-            errorResponseServerError(
-              'Missing or malformatted track fetched from discovery node.'
-            )
+            errorResponseServerError('File not found in db')
           )
         }
 
