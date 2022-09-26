@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import { tippingActions } from '@audius/common'
+import { tippingActions, cacheUsersSelectors } from '@audius/common'
 import { Platform } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import { Button } from 'app/components/core'
@@ -11,6 +11,7 @@ import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from './selectors'
 const { beginTip } = tippingActions
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   title: 'Tip $AUDIO',
@@ -28,13 +29,14 @@ const useStyles = makeStyles(() => ({
 
 export const TipAudioButton = () => {
   const navigation = useNavigation()
-  const profile = useSelectProfile(['user_id'])
+  const { user_id } = useSelectProfile(['user_id'])
+  const user = useSelector((state) => getUser(state, { id: user_id }))
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatch(beginTip({ user: profile, source: 'profile' }))
+    dispatch(beginTip({ user, source: 'profile' }))
     navigation.navigate('TipArtist')
-  }, [dispatch, profile, navigation])
+  }, [dispatch, user, navigation])
 
   const styles = useStyles()
 
