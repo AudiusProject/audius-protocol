@@ -18,13 +18,13 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
+import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
-import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 const { getPlaying, getUid } = playerSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
@@ -122,7 +122,7 @@ export const TracksTab = () => {
     <WithLoader loading={isLoading}>
       <VirtualizedScrollView listKey='favorites-screen'>
         {!isLoading && hasNoFavorites && !filterValue ? (
-          <EmptyTab message={messages.emptyTabText} />
+          <EmptyTileCTA message={messages.emptyTabText} />
         ) : (
           <>
             <FilterInput
