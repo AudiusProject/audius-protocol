@@ -33,6 +33,7 @@ module.exports = async ({
   const dataRegistryAddress = config.get('dataRegistryAddress')
   const dataProviderUrl = config.get('dataProviderUrl')
   const delegatePrivateKey = config.get('delegatePrivateKey')
+  const oldDelegatePrivateKey = config.get('oldDelegatePrivateKey')
   const creatorNodeIsDebug = config.get('creatorNodeIsDebug')
 
   const discoveryProviderWhitelist = discoveryProviderWhitelistConfig
@@ -72,7 +73,7 @@ module.exports = async ({
           // pass as array
           [dataProviderUrl],
           // TODO - formatting this private key here is not ideal
-          delegatePrivateKey.replace('0x', '')
+          (oldDelegatePrivateKey || delegatePrivateKey).replace('0x', '')
         )
       : null,
     discoveryProviderConfig: enableDiscovery

@@ -1093,16 +1093,19 @@ describe('test ContentBlacklist', function () {
       .send({ metadata: trackMetadata, source_file: sourceFile })
 
     // Make chain recognize wallet as owner of track
-    const getTrackStub = sinon.stub().callsFake((blockchainTrackId) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
-      if (blockchainTrackId === trackId) {
+      if (trackIds[0] === trackId) {
         trackOwnerId = inputUserId
       }
-      return {
-        trackOwnerId
-      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // associate track metadata with track
     await request(app)

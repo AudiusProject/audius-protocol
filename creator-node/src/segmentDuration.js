@@ -1,8 +1,5 @@
 const path = require('path')
-const fs = require('fs')
-const { promisify } = require('util')
-
-const readFile = promisify(fs.readFile)
+const fs = require('fs-extra')
 
 const SEGMENT_REGEXP = /(segment[0-9]*.ts)/
 
@@ -12,7 +9,7 @@ async function getSegmentsDuration(filename, filedir) {
     const splitResults = filename.split('.')
     const fileRandomName = splitResults[0]
     const manifestPath = path.join(filedir, `${fileRandomName}.m3u8`)
-    const manifestContents = await readFile(manifestPath)
+    const manifestContents = await fs.readFile(manifestPath)
     const splitManifest = manifestContents.toString().split('\n')
 
     const segmentDurations = {}

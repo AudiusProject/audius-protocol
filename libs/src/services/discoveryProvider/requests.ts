@@ -576,6 +576,21 @@ export const getMostLovedTracks = (
   }
 }
 
+export const getFeelingLuckyTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/feeling_lucky`,
+    queryParams: {
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
 export const getTopFolloweeSaves = (
   type: string,
   limit: string,

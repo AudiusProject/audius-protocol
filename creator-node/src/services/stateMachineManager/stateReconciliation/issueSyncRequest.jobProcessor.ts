@@ -107,16 +107,23 @@ async function issueSyncRequest({
 
   const startTimeMs = Date.now()
 
-  const { syncReqsToEnqueue, additionalSync, result, error } =
+  const { syncReqsToEnqueue, additionalSync, result, error, abort } =
     await _handleIssueSyncRequest({
       syncType,
       syncMode,
       syncRequestParameters,
       logger
     })
+
   if (error) {
     logger.error(
       `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
+  }
+
+  if (abort) {
+    logger.warn(
+      `Issuing sync request abort: ${abort}. Prometheus result: ${result}`
     )
   }
 
@@ -190,6 +197,7 @@ async function _handleIssueSyncRequest({
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
    */
+  // eslint-disable-next-line node/no-sync
   SyncRequestDeDuplicator.removeSync(
     syncType,
     userWallet,

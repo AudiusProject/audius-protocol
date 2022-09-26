@@ -76,6 +76,17 @@ type InAppAudioPurchaseMetadata = {
   cleanupTransactionId?: string
 }
 
+type CreateStripeSessionRequest = {
+  destinationWallet: string
+  amount: string
+}
+
+type CreateStripeSessionResponse = {
+  id: string
+  client_secret: string
+  status: string
+}
+
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
@@ -550,6 +561,19 @@ export class IdentityService {
 
     return await this._makeRequest({
       url: '/transaction_metadata',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
+  async createStripeSession(
+    data: CreateStripeSessionRequest
+  ): Promise<CreateStripeSessionResponse> {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/stripe/session',
       method: 'post',
       data,
       headers

@@ -195,16 +195,19 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Make chain recognize wallet as owner of track
       const blockchainTrackId = 1
-      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
         let trackOwnerId = -1
-        if (blockchainTrackIdArg === blockchainTrackId) {
+        if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return {
-          trackOwnerId
-        }
+        return [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
       })
-      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+      libsMock.Track = { getTracks: getTrackStub }
 
       // associate track + track metadata with blockchain ID
       await request(app)
@@ -870,8 +873,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
       return session.cnodeUserUUID
     }
 
-    const unpackSampleExportData = (sampleExportFilePath) => {
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
+    const unpackSampleExportData = async (sampleExportFilePath) => {
+      const sampleExport = JSON.parse(await fs.readFile(sampleExportFilePath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
       const { audiusUsers, tracks, files, clockRecords } = cnodeUser
 
@@ -1094,7 +1097,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDPath)
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
 
       setupMocks(sampleExport)
 
@@ -1140,7 +1143,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
       setupMocks(sampleExport)
 
       // Call secondarySyncFromPrimary
@@ -1177,7 +1180,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
+      } = await unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
 
       setupMocks(sampleExport)
 
@@ -1237,7 +1240,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDPath)
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
 
       setupMocks(sampleExport)
 
@@ -1284,7 +1287,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
 
       setupMocks(sampleExport)
 
@@ -1352,7 +1355,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDPath)
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
 
       setupMocks(sampleExport, false)
 
@@ -1475,8 +1478,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const assetsDirPath = path.resolve(__dirname, 'sync/assets')
   const exportFilePath = path.resolve(assetsDirPath, 'realExport.json')
 
-  const unpackExportDataFromFile = (exportDataFilePath) => {
-    const exportObj = JSON.parse(fs.readFileSync(exportDataFilePath))
+  const unpackExportDataFromFile = async (exportDataFilePath) => {
+    const exportObj = JSON.parse(await fs.readFile(exportDataFilePath))
     const cnodeUserInfo = Object.values(exportObj.data.cnodeUsers)[0]
     const cnodeUser = _.omit(cnodeUserInfo, [
       'audiusUsers',
@@ -1778,7 +1781,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1817,7 +1820,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1947,7 +1950,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -2025,7 +2028,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -2098,7 +2101,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -2206,7 +2209,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks(false)

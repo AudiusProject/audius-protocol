@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 from pprint import pprint
 from subprocess import PIPE, Popen
 from threading import Thread
@@ -15,9 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger("cli")
 
 
-ENVIRONMENTS = ("staging",)
+ENVIRONMENTS = ("staging", "prod")
 SERVICES = ("all", "discovery", "creator", "identity")
-CREATOR_NODES = (
+STAGE_CREATOR_NODES = (
     "stage-creator-4",  # canary
     "stage-creator-5",
     "stage-creator-6",
@@ -28,15 +29,42 @@ CREATOR_NODES = (
     "stage-creator-11",
     "stage-user-metadata",
 )
-DISCOVERY_NODES = (
+PROD_CREATOR_NODES = (
+    "prod-creator-1",
+    "prod-creator-2",
+    "prod-creator-3",
+    "prod-creator-4",  # prod-canary
+    "prod-creator-5",
+    "user-metadata",
+)
+CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
+
+STAGE_DISCOVERY_NODES = (
     "stage-discovery-1",
     "stage-discovery-2",
     "stage-discovery-3",
     "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
-IDENTITY_NODES = ("stage-identity",)
+PROD_DISCOVERY_NODES = (
+    "prod-discovery-1",
+    "prod-discovery-2",
+    "prod-discovery-3",
+    "prod-discovery-4",  # prod-canary
+)
+DISCOVERY_NODES = STAGE_DISCOVERY_NODES + PROD_DISCOVERY_NODES
+
+STAGE_IDENTITY_NODES = ("stage-identity",)
+PROD_IDENTITY_NODES = ("prod-identity",)
+IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
+
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
+CANARIES = (
+    "stage-creator-4",  # canary
+    "stage-discovery-4",  # canary
+    "prod-creator-4",  # prod-canary
+    "prod-discovery-4",  # prod-canary
+)
 
 MASTER = "master"
 MISSING = "missing"
@@ -273,6 +301,11 @@ def update_release_summary(
                 release_summary["upgradeable"].append(host)
             else:
                 release_summary["skipped"][host] = metadata
+        release_summary["upgradeable"].sort()
+        for canary in CANARIES:
+            if canary in release_summary["upgradeable"]:
+                release_summary["upgradeable"].remove(canary)
+                release_summary["upgradeable"].insert(0, canary)
 
 
 def print_release_summary(release_summary):
@@ -292,17 +325,26 @@ def print_release_summary(release_summary):
         pprint(release_summary["failed"], sort_dicts=True)
 
 
-def generate_deploy_list(services, hosts):
+def generate_deploy_list(environment, services, hosts):
     """Create a set of hosts to be deployed to, given possibly conflicting CLI parameters."""
 
     deploy_list = []
     for service in services:
         if service in ["all", "creator"]:
-            deploy_list += CREATOR_NODES
+            if environment == "prod":
+                deploy_list += PROD_CREATOR_NODES
+            else:
+                deploy_list += STAGE_CREATOR_NODES
         if service in ["all", "discovery"]:
-            deploy_list += DISCOVERY_NODES
+            if environment == "prod":
+                deploy_list += PROD_DISCOVERY_NODES
+            else:
+                deploy_list += STAGE_DISCOVERY_NODES
         if service in ["all", "identity"]:
-            deploy_list += IDENTITY_NODES
+            if environment == "prod":
+                deploy_list += PROD_IDENTITY_NODES
+            else:
+                deploy_list += STAGE_IDENTITY_NODES
 
     # make sure hosts is not a superset of deploy_list
     for host in hosts:
@@ -398,7 +440,7 @@ def cli(
 
     # gather and display current release state, pre-deploy
     release_summary = {
-        "deploy_list": generate_deploy_list(services, hosts),
+        "deploy_list": generate_deploy_list(environment, services, hosts),
         "git_tag": git_tag,
     }
     update_release_summary(
@@ -415,6 +457,7 @@ def cli(
     print("v" * 40)
     release_summary["upgraded"] = []
     release_summary["failed_pre_check"] = []
+    release_summary["failed_post_check"] = []
     release_summary["failed"] = []
     for host in release_summary["upgradeable"]:
         try:
@@ -459,10 +502,33 @@ def cli(
                 dry_run=dry_run,
             )
 
-            # command for production, coming soon
-            # # ssh(host, "yes | audius-cli upgrade", show_output=True, dry_run=dry_run)
+            if environment == "prod":
+                # check healthcheck post-deploy
+                wait_time = time.time() + (5 * 60)
+                while time.time() < wait_time:
+                    # throttle the amount of logs and request load during startup
+                    time.sleep(30)
+
+                    # this resets on each loop since we only care about the last run
+                    failed_post_check = False
+
+                    health_check = ssh(
+                        host, f"audius-cli health-check {service}", show_output=False
+                    )
+                    health_check = health_check.split("\n")[-1]
+                    logger.info(f"{host}: health_check: {health_check}")
+
+                    if health_check != "Service is healthy":
+                        failed_post_check = True
 
             release_summary["upgraded"].append(host)
+
+            if environment == "prod":
+                # if the post-check fails, add it to the above `upgraded` list,
+                # but end the release early
+                if failed_post_check:
+                    release_summary["failed_post_check"].append(host)
+                    break
         except:
             release_summary["failed"].append(host)
         print("-" * 40)
@@ -481,11 +547,18 @@ def cli(
     # save release states as artifacts
     format_artifacts("Failed precheck (unhealthy)", release_summary["failed_pre_check"])
     format_artifacts(
+        "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
+    )
+    format_artifacts(
         f"Upgraded to `{git_tag if git_tag else 'master'}`",
         release_summary["upgraded"],
     )
     format_artifacts("Failed", release_summary["failed"])
     format_artifacts(release_summary=release_summary)
+
+    # report back to CircleCI that this deployment has failed
+    if release_summary["failed_post_check"]:
+        exit(1)
 
 
 if __name__ == "__main__":

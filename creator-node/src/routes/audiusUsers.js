@@ -1,6 +1,5 @@
 const express = require('express')
-const fs = require('fs')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
 const models = require('../models')
 const { saveFileFromBufferToDisk } = require('../fileManager')
@@ -21,8 +20,6 @@ const {
   issueAndWaitForSecondarySyncRequests
 } = require('../middlewares')
 const DBManager = require('../dbManager')
-
-const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
@@ -141,7 +138,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
     } catch (e) {
       return errorResponseServerError(

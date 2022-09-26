@@ -40,10 +40,6 @@ const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const { promisify } = require('util')
-
-const fsStat = promisify(fs.stat)
-
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
@@ -74,7 +70,7 @@ const streamFromFileSystem = async (
     // Stream file from file system
     let fileStream
 
-    const stat = fsStats || (await fsStat(path))
+    const stat = fsStats || (await fs.stat(path))
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -204,7 +200,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = DiskManager.computeFilePath(CID, false)
+    storagePath = await DiskManager.computeFilePath(CID, false)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })

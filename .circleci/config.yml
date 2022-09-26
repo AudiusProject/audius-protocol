@@ -269,6 +269,9 @@ parameters:
   sdk_release_commit:
     type: string
     default: ""
+  deploy_args:
+    type: string
+    default: ""
   slack_mentions_user:
     type: string
     default: ""
@@ -577,7 +580,7 @@ jobs:
       # - coveralls/upload:
       #     path_to_lcov: ./eth-contracts/coverage/lcov.info
 
-  test-creator-node:
+  test-creator:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.16
@@ -617,7 +620,7 @@ jobs:
       # - coveralls/upload:
       #     path_to_lcov: ./creator-node/coverage/lcov.info
 
-  test-discovery-provider:
+  test-discovery:
     docker:
       - image: cimg/python:3.9-node
       # Discovery provider dependencies
@@ -712,7 +715,7 @@ jobs:
             mkdir ${PROMETHEUS_MULTIPROC_DIR}
             ./scripts/circle-ci.sh
 
-  test-identity-service:
+  test-identity:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.17.5
@@ -1008,11 +1011,20 @@ jobs:
         description: Additional parameters for deploy-ci.py
         type: string
         default: ""
+      deploy_args:
+        description: When present, the only parameters used for deploy-ci.py
+        type: string
+        default: ""
     steps:
-      - slack-basic:
-          channel: C03STD3UXMG
-          event: always
-          slack_mentions_user: "@joaquin"
+      # only send Starting slack message when prod, --force, or custom args are used
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+              - << parameters.deploy_args >>
+          steps:
+            - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1108,10 +1120,13 @@ jobs:
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
       - when:
-          condition: << parameters.host >>
+          condition:
+            and:
+              - << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
-                name: Perform Deployment
+                name: Perform Deployment (<< parameters.host >>)
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1123,8 +1138,11 @@ jobs:
                     --services "<< parameters.service >>" \
                     --hosts "<< parameters.host >>" \
                     << parameters.params >>
-      - unless:
-          condition: << parameters.host >>
+      - when:
+          condition:
+            and:
+              - not: << parameters.host >>
+              - not: << parameters.deploy_args >>
           steps:
             - run:
                 name: Perform Deployment
@@ -1138,18 +1156,34 @@ jobs:
                     --environment "<< parameters.environment >>" \
                     --services "<< parameters.service >>" \
                     << parameters.params >>
+      - when:
+          condition: << parameters.deploy_args >>
+          steps:
+            - run:
+                name: "Perform Deployment (deploy_args: << parameters.deploy_args >>)"
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    << parameters.deploy_args >>
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
-      - slack-fail:
-          channel: C03STD3UXMG
-          slack_mentions_user: "@joaquin"
-      - slack-success:
-          channel: C03STD3UXMG
-          detail: ${SLACK_DETAIL}
-          slack_mentions_user: "@joaquin"
+      - slack-fail
+      # only send Success slack message when prod, --force, or custom args are used
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+              - << parameters.deploy_args >>
+          steps:
+            - slack-success:
+                detail: ${SLACK_DETAIL}
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1161,51 +1195,64 @@ jobs:
           command: |
             sudo killall openvpn || true
           when: always
+
 workflows:
   workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
          - not: << pipeline.parameters.sdk_release_commit >>
+         - not: << pipeline.parameters.deploy_args >>
     jobs:
       - noop:
-          name: build
+          name: creator
+      - noop:
+          name: discovery
+      - noop:
+          name: identity
+      - noop:
+          name: built-creator
+          requires:
+            - build-creator
+            - test-creator
+      - noop:
+          name: built-discovery
+          requires:
+            - build-discovery
+            - test-discovery
+      - noop:
+          name: built-identity
+          requires:
+            - build-identity
+            - test-identity
       - noop:
           name: built
+          filters:
+            branches:
+              only: /(^release-.*$)/
           requires:
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
-            - build-libs
+            - built-creator
+            - built-discovery
+            - built-identity
             - verified
       - noop:
           name: tests
       - noop:
           name: verified
           requires:
-            - test-contracts
-            - test-creator-node
-            - test-discovery-provider
-            - test-eth-contracts
-            - test-identity-service
+            - build-libs
             - test-libs
-            - test-mad-dog-e2e
-            - test-sdk
+            - test-contracts
             - test-solana-programs
             - test-solana-programs-anchor
+            - test-eth-contracts
+            - test-mad-dog-e2e
+            - test-sdk
 
       # Auto-deploy `master` to staging
-      - noop:
-          name: 🚧-🏠-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - built
       - deploy:
-          name: 🚧-master
-          service: all
+          name: 🚧-🏠-stage-discovery
+          service: discovery
           context:
             - slack-secrets
             - gh-tokens
@@ -1214,21 +1261,45 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - 🚧-🏠-🕹️
+            - built-discovery
+      - deploy:
+          name: 🚧-🏠-stage-creator
+          service: creator
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - built-creator
+      - deploy:
+          name: 🚧-🏠-stage-identity
+          service: identity
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - built-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-<< matrix.service >>-🕹️
+          name: 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
               only: /(^master$)/
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - 🚧-master
+            - 🚧-🏠-stage-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.service >>
+          name: 💪-🚧-🏠-stage-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1236,10 +1307,10 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-<< matrix.service >>-🕹️
-      # Force deploy `master` to staging (by host)
+            - 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+      # Force deploy `master` to staging (by host) - discovery
       - noop:
           name: 💪-🚧-🏠-<< matrix.host >>-🕹️
           type: approval
@@ -1248,9 +1319,9 @@ workflows:
               only: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-master
+            - 🚧-🏠-stage-discovery
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
@@ -1260,24 +1331,62 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          requires:
+            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+      # Force deploy `master` to staging (by host) - creator
+      - noop:
+          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - 🚧-🏠-stage-creator
+      - deploy:
+          name: 💪-🚧-🏠-<< matrix.host >>
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
+      # Cut release from `master`
+      - noop:
+          name: cut-release-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+          requires:
+            - verified
+      - noop:
+          name: cut-release
+          requires:
+            - cut-release-🕹️
+
       # Deploy branch to staging (by service)
       - noop:
-          name: 🚧-🌿-<< matrix.service >>-🕹️
+          name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
           type: approval
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - built
+            - built-<< matrix.service >>
       - deploy:
-          name: 🚧-🌿-<< matrix.service >>
+          name: 💪-🚧-🌿-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1286,23 +1395,23 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              service: [all, discovery, creator, identity]
+              service: [discovery, creator, identity]
           requires:
-            - 🚧-🌿-<< matrix.service >>-🕹️
-      # Deploy branch to staging (by host)
+            - 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+      # Deploy branch to staging (by host) - discovery
       - noop:
-          name: 🚧-🌿-<< matrix.host >>-🕹️
+          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
           type: approval
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - built
+            - built-discovery
       - deploy:
-          name: 🚧-🌿-<< matrix.host >>
+          name: 💪-🚧-🌿-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1314,23 +1423,127 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata, stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🌿-<< matrix.host >>-🕹️
-      # Deploy to prod (for release branches, after deploying to staging)
+            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+      # Deploy branch to staging (by host) - creator
       - noop:
-          name: 🚧-prod-🕹️
+          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - built-creator
+      - deploy:
+          name: 💪-🚧-🌿-<< matrix.host >>
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          filters:
+            branches:
+              ignore: /(^master$)/
+          matrix:
+            parameters:
+              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          requires:
+            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+
+      # Bump Tags (for release branch hot-fixes)
+      - noop:
+          name: bump-hotfix-tags
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - built
+      # Deploy Discovery Nodes to prod (for release branches)
+      - noop:
+          name: 🚧-🎁-to-dn-prod-🕹️
           type: approval
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
-            - 🚧-🌿-all
+            - bump-hotfix-tags
       - deploy:
-          name: 🚧-prod
+          name: 🚧-🎁-to-dn-prod
+          git_tag: ${CIRCLE_SHA1}
           environment: prod
+          service: discovery
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
           requires:
-            - 🚧-prod-🕹️
+            - 🚧-🎁-to-dn-prod-🕹️
+      # Deploy Identity to prod (for release branches)
+      - noop:
+          name: 🚧-🎁-to-is-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
+      - deploy:
+          name: 🚧-🎁-to-is-prod
+          git_tag: ${CIRCLE_SHA1}
+          environment: prod
+          service: identity
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          requires:
+            - 🚧-🎁-to-is-prod-🕹️
+      # Deploy Creator Nodes to prod (for release branches)
+      - noop:
+          name: 🚧-🎁-to-cn-prod-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
+      # no-op currently since Content Nodes have manual version patching
+      - noop:
+          name: 🚧-🎁-to-cn-prod
+          requires:
+            - 🚧-🎁-to-cn-prod-🕹️
+      # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
+      - noop:
+          name: 🚧-🎁-to-SPs-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - bump-hotfix-tags
+      - noop:
+          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+          name: 🚧-🎁-to-SPs
+          requires:
+            - 🚧-🎁-to-SPs-🕹️
+      # Execute Governance Proposal (for release branches)
+      - noop:
+          name: execute-proposal-🕹️
+          type: approval
+          filters:
+            branches:
+              only: /(^release-.*$)/
+          requires:
+            - 🚧-🎁-to-SPs
+      - noop:
+          name: execute-proposal
+          requires:
+            - execute-proposal-🕹️
 
       - test-libs:
           name: test-libs
@@ -1350,35 +1563,35 @@ workflows:
           requires:
             - tests
 
-      - test-creator-node:
-          name: test-creator-node
+      - test-creator:
+          name: test-creator
           requires:
-            - tests
+            - creator
       - docker-build-and-push:
-          name: build-creator-node
+          name: build-creator
           repo: creator-node
           requires:
-            - build
+            - creator
 
-      - test-discovery-provider:
-          name: test-discovery-provider
+      - test-discovery:
+          name: test-discovery
           requires:
-            - tests
+            - discovery
       - docker-build-and-push-updated:
-          name: build-discovery-provider
+          name: build-discovery
           repo: discovery-provider
           requires:
-            - build
+            - discovery
 
-      - test-identity-service:
-          name: test-identity-service
+      - test-identity:
+          name: test-identity
           requires:
-            - tests
+            - identity
       - docker-build-and-push:
-          name: build-identity-service
+          name: build-identity
           repo: identity-service
           requires:
-            - build
+            - identity
 
       - test-solana-programs:
           name: test-solana-programs
@@ -1405,19 +1618,38 @@ workflows:
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to your branch of choice
+  # 2. go to the `master` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string paramter "sdk_release_commit" and set to a valid git commit
   sdk-release:
     when: << pipeline.parameters.sdk_release_commit >>
     jobs:
       - publish-sdk:
-          context:
-            - Audius Client
-            - slack-secrets
           name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
           sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
+          context:
+            - Audius Client
+            - slack-secrets
+          filters:
+            branches:
+              only: /(^master$)/
+
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. go to the `master` branch
+  # 3. click "Trigger Pipeline"
+  # 4. Add string paramter "deploy_args" to be passed to deploy-ci.py
+  deploy-args:
+    when: << pipeline.parameters.deploy_args >>
+    jobs:
+      - deploy:
+          name: deploy (<< pipeline.parameters.deploy_args >>)
+          deploy_args: << pipeline.parameters.deploy_args >>
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
           filters:
             branches:
               only: /(^master$)/
@@ -1465,12 +1697,12 @@ workflows:
           name: test-contracts-nightly
       - test-eth-contracts:
           name: test-eth-contracts-nightly
-      - test-creator-node:
-          name: test-creator-node-nightly
-      - test-discovery-provider:
-          name: test-discovery-provider-nightly
-      - test-identity-service:
-          name: test-identity-service-nightly
+      - test-creator:
+          name: test-creator-nightly
+      - test-discovery:
+          name: test-discovery-nightly
+      - test-identity:
+          name: test-identity-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
       - test-mad-dog-e2e:

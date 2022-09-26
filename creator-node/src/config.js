@@ -1,6 +1,6 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const _ = require('lodash')
@@ -293,6 +293,19 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+  // wallet information
+  oldDelegateOwnerWallet: {
+    doc: 'wallet address',
+    format: String,
+    env: 'oldDelegateOwnerWallet',
+    default: ''
+  },
+  oldDelegatePrivateKey: {
+    doc: 'private key string',
+    format: String,
+    env: 'oldDelegatePrivateKey',
+    default: ''
   },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
@@ -745,10 +758,10 @@ const config = convict({
     default: ''
   },
   reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: ''
+    default: '1,2,3,4,27'
   }
   /**
    * unsupported options at the moment
