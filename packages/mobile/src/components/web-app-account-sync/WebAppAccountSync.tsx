@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-
+import { getErrorMessage } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
@@ -7,6 +6,7 @@ import Config from 'react-native-config'
 import StaticServer from 'react-native-static-server'
 import { WebView } from 'react-native-webview'
 import type { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
+import { useAsync } from 'react-use'
 
 import { ENTROPY_KEY } from 'app/store/account/sagas'
 
@@ -16,9 +16,7 @@ const injected = `
 (function() {
   const entropy = window.localStorage.getItem('${ENTROPY_KEY}')
   window.ReactNativeWebView.postMessage(
-    JSON.stringify({
-      entropy
-    })
+    JSON.stringify({ entropy })
   )
 })();
 `
@@ -33,19 +31,24 @@ type WebAppAccountSyncProps = {
  *
  * This can be removed when a reasonable amount of time has passed
  */
-export const WebAppAccountSync = ({
-  setIsReadyToSetupBackend
-}: WebAppAccountSyncProps) => {
-  const [uri, setUri] = useState('')
-  useEffect(() => {
+export const WebAppAccountSync = (props: WebAppAccountSyncProps) => {
+  const { setIsReadyToSetupBackend } = props
+
+  const { value: uri, error } = useAsync(async () => {
     const server = new StaticServer(OLD_WEB_APP_STATIC_SERVER_PORT, {
       localOnly: true,
       keepAlive: true
     })
-    server.start().then((url: string) => {
-      setUri(url)
-    })
-  }, [setUri])
+
+    return await server.start()
+  }, [])
+
+  if (error) {
+    console.error(
+      'WebAppAccountSync Error -- StaticServer: ',
+      getErrorMessage(error)
+    )
+  }
 
   const onMessageHandler = async (
     event: NativeSyntheticEvent<WebViewMessage>
@@ -61,7 +64,10 @@ export const WebAppAccountSync = ({
         setIsReadyToSetupBackend(true)
       }
     } catch (e) {
-      console.error(e)
+      console.error(
+        'WebAppAcountSync Error -- onMessageHandler: ',
+        getErrorMessage(e)
+      )
       // do nothing
     }
   }
@@ -71,9 +77,7 @@ export const WebAppAccountSync = ({
       <WebView
         injectedJavaScript={injected}
         onMessage={onMessageHandler}
-        source={{
-          uri
-        }}
+        source={{ uri }}
       />
     </View>
   ) : null
