@@ -184,13 +184,13 @@ const startAppForWorker = async () => {
 
   // Make the first worker wait for some services to be fully up before spinning up other workers
   serviceRegistry.initServicesAsynchronously()
-  if (cluster.worker?.id === 1) {
+  if (clusterUtils.isThisWorkerInit()) {
     await serviceRegistry.initServicesThatRequireServer(appInfo.app)
   } else {
     serviceRegistry.initServicesThatRequireServer(appInfo.app)
   }
 
-  if (cluster.worker?.id === 1 && process.send) {
+  if (clusterUtils.isThisWorkerInit() && process.send) {
     process.send({ cmd: 'initComplete' })
   }
 }

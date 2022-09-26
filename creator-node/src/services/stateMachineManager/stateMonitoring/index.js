@@ -1,5 +1,4 @@
 const _ = require('lodash')
-const cluster = require('cluster')
 
 const config = require('../../../config')
 const {
@@ -10,6 +9,7 @@ const {
 const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
+const { clusterUtils } = require('../../../utils')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
@@ -116,7 +116,7 @@ class StateMonitoringManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await cNodeEndpointToSpIdMapQueue.obliterate({ force: true })
       await monitorStateQueue.obliterate({ force: true })
       await findSyncRequestsQueue.obliterate({ force: true })
@@ -173,7 +173,7 @@ class StateMonitoringManager {
     const lastProcessedUserId = _.random(0, latestUserId)
 
     // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await queue.add(
         'first-job',
         {
@@ -200,7 +200,7 @@ class StateMonitoringManager {
     }
 
     // Enqueue first job, which requeues itself upon completion or failure
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await queue.add('first-job', {})
     }
   }

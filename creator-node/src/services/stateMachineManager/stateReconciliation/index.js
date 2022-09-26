@@ -1,10 +1,9 @@
-const cluster = require('cluster')
-
 const config = require('../../../config')
 const { QUEUE_HISTORY, QUEUE_NAMES } = require('../stateMachineConstants')
 const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
+const { clusterUtils } = require('../../../utils')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 const {
@@ -107,7 +106,7 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await manualSyncQueue.obliterate({ force: true })
       await recurringSyncQueue.obliterate({ force: true })
       await updateReplicaSetQueue.obliterate({ force: true })
@@ -143,7 +142,7 @@ class StateReconciliationManager {
     }
 
     // Enqueue first recoverOrphanedData job after a delay. This job requeues itself upon completion or failure
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await queue.add('first-job', { discoveryNodeEndpoint })
     }
   }

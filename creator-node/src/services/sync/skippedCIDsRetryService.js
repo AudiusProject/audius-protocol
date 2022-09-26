@@ -1,9 +1,9 @@
 const { Queue, Worker } = require('bullmq')
-const cluster = require('cluster')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
+const { clusterUtils } = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
@@ -50,7 +50,7 @@ class SkippedCIDsRetryQueue {
       }
 
       // Clean up anything that might be still stuck in the queue on restart
-      if (cluster.worker?.id === 1) {
+      if (clusterUtils.isThisWorkerInit()) {
         await this.queue.drain(true)
       }
 

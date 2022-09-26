@@ -1,10 +1,10 @@
 const { Queue, Worker } = require('bullmq')
-const cluster = require('cluster')
 
 const redis = require('../redis')
 const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
+const { clusterUtils } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -38,7 +38,7 @@ class MonitoringQueue {
     })
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       this.queue.drain(true)
       this.seedInitialValues()
     }

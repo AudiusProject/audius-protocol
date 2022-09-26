@@ -1,9 +1,8 @@
-const cluster = require('cluster')
-
 const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
+const { clusterUtils } = require('./utils')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
@@ -32,7 +31,7 @@ class BlacklistManager {
       this._log('Initializing BlacklistManager...')
 
       // Adding to redis only needs to be done once, but multiple workers all run the app with their own BlacklistManager instance
-      if (cluster.worker?.id === 1) {
+      if (clusterUtils.isThisWorkerInit()) {
         const { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist } =
           await this._getDataToBlacklist()
         await this._fetchCIDsAndAddToRedis({

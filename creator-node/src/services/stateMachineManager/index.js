@@ -1,5 +1,4 @@
 const _ = require('lodash')
-const cluster = require('cluster')
 const { QueueEvents } = require('bullmq')
 
 const config = require('../../config')
@@ -53,10 +52,10 @@ class StateMachineManager {
       prometheusRegistry
     )
 
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await SyncRequestDeDuplicator.clear()
     }
-    if (clusterUtils.isThisProcessSpecial()) {
+    if (clusterUtils.isThisWorkerSpecial()) {
       // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
       const queueNameToQueueMap = {
         [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {

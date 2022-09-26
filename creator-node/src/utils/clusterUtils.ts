@@ -20,7 +20,15 @@ class ClusterUtils {
     this._specialWorkerId = specialWorkerId
   }
 
-  isThisProcessSpecial() {
+  /**
+   * Returns true if this current worker process is the first worker, which performs
+   * some special initialization logic that other workers don't need to duplicate.
+   */
+  isThisWorkerInit() {
+    return cluster.worker?.id === 1
+  }
+
+  isThisWorkerSpecial() {
     return cluster.worker?.id === this._specialWorkerId
   }
 

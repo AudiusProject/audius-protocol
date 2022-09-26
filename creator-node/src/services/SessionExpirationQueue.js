@@ -1,6 +1,5 @@
 const { Queue, Worker } = require('bullmq')
 const Sequelize = require('sequelize')
-const cluster = require('cluster')
 
 const sessionManager = require('../sessionManager')
 const config = require('../config')
@@ -68,7 +67,7 @@ class SessionExpirationQueue {
     }
 
     // Clean up anything that might be still stuck in the queue on restart
-    if (cluster.worker?.id === 1) {
+    if (clusterUtils.isThisWorkerInit()) {
       await this.queue.drain(true)
     }
 
@@ -111,7 +110,7 @@ class SessionExpirationQueue {
     )
 
     try {
-      if (clusterUtils.isThisProcessSpecial()) {
+      if (clusterUtils.isThisWorkerSpecial()) {
         // Run the job immediately
         await this.queue.add(PROCESS_NAMES.expire_sessions, {})
 
