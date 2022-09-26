@@ -65,18 +65,19 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
     openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
+if [[ "$loadTest" == "true" ]]; then 
+    ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+fi
+
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]; then
         cd ../audius-libs
         npm link
         cd ../app
         npm link @audius/sdk
-        ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
-        # npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
     else
-
-        ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
-        # npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
     node --max-old-space-size=4096 build/src/index.js | tee >(logger)
