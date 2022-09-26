@@ -4,7 +4,8 @@ import {
   Status,
   explorePageCollectionsSelectors,
   ExploreCollectionsVariant,
-  explorePageCollectionsActions
+  explorePageCollectionsActions,
+  useProxySelector
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -34,8 +35,10 @@ export const MoodCollectionScreen = ({
     getStatus(state, { variant: ExploreCollectionsVariant.MOOD })
   )
 
-  const exploreData = useSelector((state) =>
-    getCollections(state, { variant: ExploreCollectionsVariant.MOOD })
+  const exploreData = useProxySelector(
+    (state) =>
+      getCollections(state, { variant: ExploreCollectionsVariant.MOOD }),
+    []
   )
 
   return (
