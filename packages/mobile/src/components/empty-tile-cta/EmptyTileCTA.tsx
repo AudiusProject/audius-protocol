@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Button, EmptyTile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import type { AppScreenParamList } from '../app-screen'
+import type { AppScreenParamList } from '../../screens/app-screen'
 
 const messages = {
   afterSaved: "Once you have, this is where you'll find them!",
@@ -14,7 +14,8 @@ type EmptyTabProps = {
   message: string
 }
 
-export const EmptyTab = ({ message }: EmptyTabProps) => {
+export const EmptyTileCTA = (props: EmptyTabProps) => {
+  const { message } = props
   const navigation = useNavigation<AppScreenParamList>()
 
   const onPress = useCallback(() => {

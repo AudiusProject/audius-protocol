@@ -6,6 +6,7 @@ import type { SvgProps } from 'react-native-svg'
 
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: { flexDirection: 'row', alignItems: 'center' },
@@ -13,8 +14,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   icon: {
     height: spacing(4),
     width: spacing(4),
-    marginRight: spacing(1),
-    fill: palette.neutral
+    marginRight: spacing(1)
   }
 }))
 
@@ -33,6 +33,7 @@ type SettingsRowLabelProps =
 
 export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
   const { label, styles: stylesProp, style } = props
+  const { neutral } = useThemeColors()
   const styles = useStyles()
 
   const renderIcon = () => {
@@ -46,7 +47,7 @@ export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
         <Icon
           height={styles.icon.height}
           width={styles.icon.width}
-          fill={styles.icon.fill}
+          fill={neutral}
           style={styles.icon}
         />
       )

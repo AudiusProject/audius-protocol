@@ -7,8 +7,8 @@ import { useEffectOnce } from 'react-use'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
+import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 
-import { EmptyTab } from './EmptyTab'
 import { FilterInput } from './FilterInput'
 import { getAccountCollections } from './selectors'
 
@@ -39,7 +39,7 @@ export const AlbumsTab = () => {
   return (
     <VirtualizedScrollView listKey='favorites-albums-view'>
       {!userAlbums?.length && !filterValue ? (
-        <EmptyTab message={messages.emptyTabText} />
+        <EmptyTileCTA message={messages.emptyTabText} />
       ) : (
         <>
           <FilterInput
