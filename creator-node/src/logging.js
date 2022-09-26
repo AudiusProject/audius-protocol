@@ -90,9 +90,6 @@ function loggingMiddleware(req, res, next) {
   req.logContext = getRequestLoggingContext(req, requestID)
   req.logger = logger.child(req.logContext)
 
-  // if (requestNotExcludedFromLogging(req.originalUrl)) {
-  //   req.logger.info('Begin processing request')
-  // }
   next()
 }
 
