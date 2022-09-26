@@ -1,5 +1,5 @@
-import { explorePageSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
+import type { UserCollection } from '@audius/common'
+import { explorePageSelectors, useProxySelector } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list'
 
@@ -11,12 +11,12 @@ const messages = {
 }
 
 export const PlaylistsTab = () => {
-  const playlists = useSelector(getExplorePlaylists)
+  const playlists = useProxySelector(getExplorePlaylists, [])
 
   return (
     <CollectionList
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
-      collection={playlists}
+      collection={playlists as UserCollection[]}
     />
   )
 }
