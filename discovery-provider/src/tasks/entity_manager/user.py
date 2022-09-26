@@ -117,6 +117,7 @@ def update_user(params: ManageEntityParameters):
             # Invalid user handle - should not continue to save...
             return
         user_record.handle = user_metadata["handle"]
+        user_record.handle_lc = user_metadata["handle"].lower()
 
     user_record = update_user_metadata(
         params.session,

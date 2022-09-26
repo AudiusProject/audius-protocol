@@ -390,7 +390,7 @@ const config = convict({
     doc: 'entity manager registry address',
     format: String,
     env: 'entityManagerAddress',
-    default: null
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
   },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
@@ -474,7 +474,7 @@ const config = convict({
     doc: 'whether or not to use entity manager to update the replica set',
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
-    default: false
+    default: true
   },
 
   /** sync / snapback configs */
