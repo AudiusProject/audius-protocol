@@ -1460,7 +1460,7 @@ workflows:
           name: bump-hotfix-tags
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
@@ -1469,7 +1469,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - bump-hotfix-tags
       - deploy:
@@ -1489,7 +1489,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - bump-hotfix-tags
       - deploy:
@@ -1509,9 +1509,9 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v.*-patch-.*$)/
           requires:
-            - bump-hotfix-tags
+            - built
       # no-op currently since Content Nodes have manual version patching
       - noop:
           name: 🚧-🎁-to-cn-prod
@@ -1523,7 +1523,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - bump-hotfix-tags
       - noop:
@@ -1537,7 +1537,7 @@ workflows:
           type: approval
           filters:
             branches:
-              only: /(^release-.*$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - 🚧-🎁-to-SPs
       - noop:
