@@ -1,15 +1,13 @@
 
 set -ex
 
-COMPOSE_PROJECT_NAME="cn2"
-CREATOR_NODE_HOST_PORT=4040
-CREATOR_NODE_DB_HOST_PORT=4433
-CREATOR_NODE_REDIS_HOST_PORT=4380
-CREATOR_NODE_DEBUGGER_PORT=9292
-SP_OWNER_WALLET_INDEX=2
-
+export delegateOwnerWallet=$(printenv "CN_LOAD_TEST_SP_OWNER_ADDRESS")
+export delegatePrivateKey=$(printenv "CN_LOAD_TEST_SP_OWNER_PRIVATE_KEY")
+export spOwnerWallet=$(printenv "CN_LOAD_TEST_SP_OWNER_ADDRESS")
+export creatorNodeEndpoint="http://audius-protocol-creator-node-load-test:4000"
 
 docker run \
+  -it \
   --name audius-protocol-creator-node-load-test \
   --network audius-protocol_default \
   --env-file $PROTOCOL_DIR/.env \

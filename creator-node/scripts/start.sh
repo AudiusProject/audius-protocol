@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -ex
 
 link_libs=true
 
@@ -71,7 +71,8 @@ npm run postinstall
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 
 if [[ "$loadTest" == "true" ]]; then 
-    node ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+    NO_INSIGHT=true node ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+    # exit
 fi
 
 if [[ "$devMode" == "true" ]]; then
