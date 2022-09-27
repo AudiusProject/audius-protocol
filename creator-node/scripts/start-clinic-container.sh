@@ -1,9 +1,9 @@
 
 set -ex
 
-export delegateOwnerWallet=$(printenv "CN_LOAD_TEST_SP_OWNER_ADDRESS")
-export delegatePrivateKey=$(printenv "CN_LOAD_TEST_SP_OWNER_PRIVATE_KEY")
-export spOwnerWallet=$(printenv "CN_LOAD_TEST_SP_OWNER_ADDRESS")
+export delegateOwnerWallet='0x1B569e8f1246907518Ff3386D523dcF373e769B6'
+export delegatePrivateKey='0x1166189cdf129cdcb011f2ad0e5be24f967f7b7026d162d7c36073b12020b61c'
+export spOwnerWallet='0x1B569e8f1246907518Ff3386D523dcF373e769B6'
 export creatorNodeEndpoint="http://audius-protocol-creator-node-load-test:4000"
 
 docker run \
@@ -11,6 +11,10 @@ docker run \
   --name audius-protocol-creator-node-load-test \
   --network audius-protocol_default \
   --env-file $PROTOCOL_DIR/.env \
+  -e delegateOwnerWallet=${delegateOwnerWallet} \
+  -e delegatePrivateKey=${delegatePrivateKey} \
+  -e spOwnerWallet=${spOwnerWallet} \
+  -e creatorNodeEndpoint=${creatorNodeEndpoint} \
   -e logLevel="debug" \
   -e devMode="true" \
   -e creatorNodeIsDebug="true" \
@@ -37,3 +41,10 @@ docker run \
   -v $PROTOCOL_DIR/creator-node/clinic:/usr/src/app/.clinic \
   --rm \
   audius-protocol-creator-node
+
+
+# wait for container to come online
+
+# run maddog against the load testing container
+
+# display results

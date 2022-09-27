@@ -71,8 +71,13 @@ npm run postinstall
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 
 if [[ "$loadTest" == "true" ]]; then 
-    NO_INSIGHT=true node ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
-    # exit
+    # NO_INSIGHT=true node ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
+    # NO_INSIGHT=true node ./node_modules/.bin/clinic flame --autocannon --on-port 'autocannon -c 5 -a 500 localhost:$PORT' -- node build/src/index.js
+    # NO_INSIGHT=true node ./node_modules/.bin/clinic bubbleprof --on-port 'autocannon -c 5 -a 500 localhost:$PORT' -- node build/src/index.js
+    node --prof build/src/index.js &
+    sleep 25
+    ./node_modules/.bin/autocannon -c 100 localhost:4000/health_check | node --prof-process *.log > .clinic/processed.txt 
+    exit
 fi
 
 if [[ "$devMode" == "true" ]]; then
