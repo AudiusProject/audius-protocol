@@ -1,6 +1,8 @@
 'use strict'
 
 import type { Cluster } from 'cluster'
+import express from 'express'
+import { AggregatorRegistry } from 'prom-client'
 import { clusterUtils } from './utils'
 const cluster: Cluster = require('cluster')
 
@@ -18,6 +20,9 @@ const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
+
+const metricsServer = express()
+const aggregatorRegistry = new AggregatorRegistry()
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -138,6 +143,23 @@ const startAppForPrimary = async () => {
       }
     }
   })
+
+  const metricsPort = config.get('metricsPort')
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  metricsServer.get('/prometheus_metrics_cluster', async (req, res) => {
+    try {
+      const metrics = await aggregatorRegistry.clusterMetrics()
+      res.set('Content-Type', aggregatorRegistry.contentType)
+      res.send(metrics)
+    } catch (ex: any) {
+      res.statusCode = 500
+      res.send(ex.message)
+    }
+  })
+  metricsServer.listen(metricsPort)
+  console.log(
+    `Cluster metrics server listening to ${metricsPort}, metrics exposed on /prometheus_metrics_cluster`
+  )
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry

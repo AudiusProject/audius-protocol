@@ -9,8 +9,6 @@ import {
 } from './prometheus.constants'
 import * as PrometheusClient from 'prom-client'
 
-const cluster = require('cluster')
-
 /**
  * See `prometheusMonitoring/README.md` for usage details
  */
