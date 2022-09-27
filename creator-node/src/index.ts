@@ -1,7 +1,6 @@
 'use strict'
 
-import type { Cluster } from 'cluster'
-import express from 'express'
+import type { Cluster, Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
 import { clusterUtils } from './utils'
 const cluster: Cluster = require('cluster')
@@ -21,7 +20,9 @@ const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
 
-const metricsServer = express()
+// This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
+// However, a bug currently requires instantiating this in workers as well:
+// https://github.com/siimon/prom-client/issues/501
 const aggregatorRegistry = new AggregatorRegistry()
 
 const exitWithError = (...msg: any[]) => {
@@ -116,13 +117,25 @@ const startAppForPrimary = async () => {
     }
   })
 
-  for (const worker of Object.values(cluster.workers || {})) {
-    worker?.on('message', (msg) => {
-      if (msg?.cmd === 'setSpecialWorkerId') {
-        clusterUtils.specialWorkerId = msg?.val
+  const sendAggregatedMetricsToWorker = async (worker: Worker) => {
+    const metrics = await aggregatorRegistry.clusterMetrics()
+    const contentType = aggregatorRegistry.contentType
+    worker.send({
+      cmd: 'receiveAggregatePrometheusMetrics',
+      val: {
+        metrics,
+        contentType
       }
     })
   }
+
+  // Handle message received from worker to primary
+  cluster.on('message', (workerWhoSentMsg, msg) => {
+    if (msg?.cmd === 'requestAggregatedPrometheusMetrics') {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      sendAggregatedMetricsToWorker(workerWhoSentMsg)
+    }
+  })
 
   // Respawn workers and update each worker's knowledge of who the special worker is.
   // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
@@ -143,23 +156,6 @@ const startAppForPrimary = async () => {
       }
     }
   })
-
-  const metricsPort = config.get('metricsPort')
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  metricsServer.get('/prometheus_metrics_cluster', async (req, res) => {
-    try {
-      const metrics = await aggregatorRegistry.clusterMetrics()
-      res.set('Content-Type', aggregatorRegistry.contentType)
-      res.send(metrics)
-    } catch (ex: any) {
-      res.statusCode = 500
-      res.send(ex.message)
-    }
-  })
-  metricsServer.listen(metricsPort)
-  console.log(
-    `Cluster metrics server listening to ${metricsPort}, metrics exposed on /prometheus_metrics_cluster`
-  )
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
@@ -204,6 +200,17 @@ const startAppForWorker = async () => {
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+
+  cluster.worker!.on('message', (msg) => {
+    if (msg?.cmd === 'setSpecialWorkerId') {
+      clusterUtils.specialWorkerId = msg?.val
+    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+      const { metrics, contentType } = msg?.val
+      const { prometheusRegistry } = serviceRegistry
+      prometheusRegistry.setCustomAggregateContentType(contentType)
+      prometheusRegistry.setCustomAggregateMetricData(metrics)
+    }
+  })
 
   if (clusterUtils.isThisWorkerInit() && process.send) {
     process.send({ cmd: 'initComplete' })

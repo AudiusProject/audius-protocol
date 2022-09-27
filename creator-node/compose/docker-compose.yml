@@ -21,7 +21,6 @@ services:
       - dbUrl=postgres://postgres:postgres@${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432/audius_creator_node
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432, ${COMPOSE_PROJECT_NAME}_creator-node-redis_1:6379
       - port=${CREATOR_NODE_HOST_PORT}
-      - metricsPort=${CREATOR_NODE_HOST_METRICS_PORT}
       - debuggerPort=${CREATOR_NODE_DEBUGGER_PORT}
       - spOwnerWalletIndex=${SP_OWNER_WALLET_INDEX}
       - delegateOwnerWallet=${delegateOwnerWallet}
@@ -35,7 +34,6 @@ services:
       - ./env/base.env
     ports:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
-      - '${CREATOR_NODE_HOST_METRICS_PORT}:${CREATOR_NODE_HOST_METRICS_PORT}'
       - '${CREATOR_NODE_DEBUGGER_PORT}:${CREATOR_NODE_DEBUGGER_PORT}'
     volumes:
       - ./env/tmp/file-storage-${SP_OWNER_WALLET_INDEX}:/file_storage

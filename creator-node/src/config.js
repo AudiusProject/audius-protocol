@@ -96,12 +96,6 @@ const config = convict({
     env: 'port',
     default: null
   },
-  metricsPort: {
-    doc: 'Port to expose Prometheus metrics on via /prometheus_metrics_cluster',
-    format: 'port',
-    env: 'metricsPort',
-    default: 3001
-  },
   setTimeout: {
     doc: `
       Sets the timeout value (in ms) for sockets

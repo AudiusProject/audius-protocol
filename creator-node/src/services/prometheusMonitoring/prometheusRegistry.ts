@@ -8,6 +8,7 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from './prometheus.constants'
 import * as PrometheusClient from 'prom-client'
+import { isEmpty } from 'lodash'
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
@@ -22,6 +23,10 @@ export class PrometheusRegistry {
   registry: any
   metricNames: Record<string, string>
   namespacePrefix: string
+  customAggregateContentType: any
+  customAggregateMetricData: any
+  resolveGetCustomAggregateMetrics: any
+  getCustomAggregateMetricsPromise: Promise<any> | undefined
 
   public constructor() {
     // Use default global registry to register metrics
@@ -152,6 +157,54 @@ export class PrometheusRegistry {
     return {
       stop: () => clearInterval(metricInterval)
     }
+  }
+
+  async getCustomAggregateMetricData() {
+    if (this.getCustomAggregateMetricsPromise === undefined) {
+      this.getCustomAggregateMetricsPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          this.resolveGetCustomAggregateMetrics = undefined
+          this.getCustomAggregateMetricsPromise = undefined
+          reject(
+            new Error(
+              'Took too long to get aggregated metrics. This can happen if not all workers have initialized yet.'
+            )
+          )
+        }, 20_000)
+        this.resolveGetCustomAggregateMetrics = () => {
+          if (timeout) {
+            clearTimeout(timeout)
+          }
+          this.resolveGetCustomAggregateMetrics = undefined
+          this.getCustomAggregateMetricsPromise = undefined
+          resolve({})
+        }
+        if (process.send) {
+          process.send({ cmd: 'requestAggregatedPrometheusMetrics' })
+        } else {
+          this.resolveGetCustomAggregateMetrics = undefined
+          this.getCustomAggregateMetricsPromise = undefined
+          reject(new Error('This process is somehow not a worker'))
+        }
+      })
+    }
+    if (isEmpty(this.customAggregateMetricData)) {
+      await this.getCustomAggregateMetricsPromise
+    }
+    return this.customAggregateMetricData
+  }
+
+  setCustomAggregateMetricData(metricsData: any) {
+    this.customAggregateMetricData = metricsData
+    this.resolveGetCustomAggregateMetrics()
+  }
+
+  getCustomAggregateContentType() {
+    return this.customAggregateContentType
+  }
+
+  setCustomAggregateContentType(contentType: any) {
+    this.customAggregateContentType = contentType
   }
 }
 
