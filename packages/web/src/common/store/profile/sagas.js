@@ -61,7 +61,11 @@ function* fetchProfileCustomizedCollectibles(user) {
   )
   const cid = user?.metadata_multihash ?? null
   if (cid) {
-    const { is_verified: ignored_is_verified, ...metadata } = yield call(
+    const {
+      is_verified: ignored_is_verified,
+      creator_node_endpoint: ignored_creator_node_endpoint,
+      ...metadata
+    } = yield call(
       audiusBackendInstance.fetchCID,
       cid,
       gateways,
