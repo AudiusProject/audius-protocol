@@ -22,14 +22,20 @@
 ## Development
 
 There are 3 environments you can develop against
-- development (local net, see the [Audius Protocol](https://github.com/AudiusProject/audius-protocol))
-- staging (test net)
-- production (main net)
+- dev (local net, see the [Audius Protocol](https://github.com/AudiusProject/audius-protocol))
+- stage (test net)
+- prod (main net)
 
 ### Running
 
 ```bash
 npm run start:<environment>
+```
+
+When running against a dev environment on a remote machine, enable a network proxy:
+
+```bash
+networksetup -setautoproxyurl "Wi-Fi" "http://$AUDIUS_REMOTE_DEV_HOST:8080/proxy.pac"
 ```
 
 ### Building
