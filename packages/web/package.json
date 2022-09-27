@@ -127,7 +127,7 @@
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
     "start": "craco --max-old-space-size=8076 start",
-    "start:dev": "npm run write-sha && npm run publish-scripts && env-cmd --no-override ./.env/.env.dev.local npm start",
+    "start:dev": "npm run write-sha && npm run publish-scripts && env-cmd --no-override ./.env/.env.dev npm start",
     "start:stage": "npm run write-sha && npm run publish-scripts && env-cmd --no-override ./.env/.env.stage npm start",
     "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd --no-override ./.env/.env.prod npm start",
     "start:ipfs-prod": "env-cmd ./.env/.env.ipfs.prod npm run start:prod",
