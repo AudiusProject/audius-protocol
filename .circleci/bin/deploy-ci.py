@@ -431,7 +431,7 @@ def format_artifacts(
         # display reservation list
         click.clear()
         with open("/tmp/summary.md", "a") as f:
-            f.write(f"Reservation List:\n")
+            f.write("Reservation List:\n")
             for h in hosts:
                 host = release_summary[PRE_DEPLOY][h]
                 if "author" in host:
