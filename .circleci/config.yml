@@ -1662,7 +1662,7 @@ workflows:
   # 1. go to the CircleCI dashboard
   # 2. click "Trigger Pipeline"
   # 3. Add string parameter "reservations" with any non-null value
-  deploy-args:
+  reservations:
     when: << pipeline.parameters.reservations >>
     jobs:
       - deploy:
