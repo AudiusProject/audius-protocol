@@ -8,6 +8,7 @@ import type {
   CommonState
 } from '@audius/common'
 import {
+  removeNullable,
   useProxySelector,
   playerSelectors,
   FavoriteSource,
@@ -160,19 +161,13 @@ const CollectionTileComponent = ({
       return
     }
     const overflowActions = [
-      has_current_user_reposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
-      has_current_user_saved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
       is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,
       isOwner && !is_album ? OverflowAction.PUBLISH_PLAYLIST : null,
       isOwner && !is_album ? OverflowAction.DELETE_PLAYLIST : null,
       OverflowAction.VIEW_ARTIST_PAGE
-    ].filter(Boolean) as OverflowAction[]
+    ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
@@ -181,14 +176,7 @@ const CollectionTileComponent = ({
         overflowActions
       })
     )
-  }, [
-    playlist_id,
-    dispatch,
-    isOwner,
-    has_current_user_reposted,
-    has_current_user_saved,
-    is_album
-  ])
+  }, [playlist_id, dispatch, isOwner, is_album])
 
   const handlePressShare = useCallback(() => {
     if (playlist_id === undefined) {

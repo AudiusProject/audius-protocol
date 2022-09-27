@@ -2,14 +2,14 @@ import { useCallback, useMemo, useState } from 'react'
 
 import type { ID } from '@audius/common'
 import {
-  accountSelectors,
+  removeNullable,
   OverflowAction,
   OverflowSource,
   mobileOverflowMenuUIActions
 } from '@audius/common'
 import type { NativeSyntheticEvent, NativeTouchEvent } from 'react-native'
 import { Text, TouchableOpacity, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import IconDrag from 'app/assets/images/iconDrag.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -24,7 +24,6 @@ import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
 import type { TrackMetadata } from './types'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
-const getUserId = accountSelectors.getUserId
 
 export type TrackItemAction = 'save' | 'overflow' | 'remove'
 
@@ -116,14 +115,13 @@ export const TrackListItem = ({
 }: TrackListItemProps) => {
   const {
     _cover_art_sizes,
-    has_current_user_reposted,
     has_current_user_saved,
     is_delete,
     is_unlisted,
     title,
     track_id,
     uid,
-    user: { name, is_deactivated, user_id }
+    user: { name, is_deactivated }
   } = track
   const isDeleted = is_delete || !!is_deactivated || is_unlisted
 
@@ -131,7 +129,6 @@ export const TrackListItem = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const themeColors = useThemeColors()
-  const currentUserId = useSelector(getUserId)
   const [titleWidth, setTitleWidth] = useState(0)
 
   const deletedTextWidth = useMemo(
@@ -146,23 +143,11 @@ export const TrackListItem = ({
   }
 
   const handleOpenOverflowMenu = useCallback(() => {
-    const isOwner = currentUserId === user_id
-
     const overflowActions = [
-      !isOwner
-        ? has_current_user_reposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST
-        : null,
-      !isOwner
-        ? has_current_user_saved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE
-        : null,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE
-    ].filter(Boolean) as OverflowAction[]
+    ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
@@ -171,14 +156,7 @@ export const TrackListItem = ({
         overflowActions
       })
     )
-  }, [
-    currentUserId,
-    user_id,
-    has_current_user_reposted,
-    has_current_user_saved,
-    dispatch,
-    track_id
-  ])
+  }, [dispatch, track_id])
 
   const handlePressSave = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
     e.stopPropagation()

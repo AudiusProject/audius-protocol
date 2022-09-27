@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Track, User } from '@audius/common'
 import {
+  removeNullable,
   playerSelectors,
   PlaybackSource,
   FavoriteSource,
@@ -9,7 +10,6 @@ import {
   ShareSource,
   FavoriteType,
   SquareSizes,
-  accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
@@ -33,7 +33,6 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
-const getUserId = accountSelectors.getUserId
 
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
@@ -67,7 +66,6 @@ const TrackTileComponent = ({
 }: TrackTileProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const currentUserId = useSelector(getUserId)
   const playingUid = useSelector(getUid)
   const isPlayingUid = playingUid === lineupTileProps.uid
 
@@ -86,10 +84,6 @@ const TrackTileComponent = ({
   const currentScreen = navigation.getState().history?.[0]
   // @ts-expect-error -- history returning unknown[]
   const isOnArtistsTracksTab = currentScreen?.key.includes('Tracks')
-
-  const { user_id } = user
-
-  const isOwner = user_id === currentUserId
 
   const imageUrl = useTrackCoverArt({
     id: track_id,
@@ -119,21 +113,10 @@ const TrackTileComponent = ({
       return
     }
     const overflowActions = [
-      !isOwner
-        ? has_current_user_reposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST
-        : null,
-      !isOwner
-        ? has_current_user_saved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE
-        : null,
-      OverflowAction.SHARE,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE
-    ].filter(Boolean) as OverflowAction[]
+    ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
@@ -142,14 +125,7 @@ const TrackTileComponent = ({
         overflowActions
       })
     )
-  }, [
-    track_id,
-    dispatch,
-    has_current_user_reposted,
-    has_current_user_saved,
-    isOwner,
-    isOnArtistsTracksTab
-  ])
+  }, [track_id, dispatch, isOnArtistsTracksTab])
 
   const handlePressShare = useCallback(() => {
     if (track_id === undefined) {

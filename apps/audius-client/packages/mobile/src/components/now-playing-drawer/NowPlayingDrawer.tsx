@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import {
   Genre,
@@ -25,6 +25,7 @@ import Drawer, {
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
+import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -85,7 +86,8 @@ type NowPlayingDrawerProps = {
 }
 
 const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
-  const { translationAnim, navigation } = props
+  const { translationAnim } = props
+  const { navigation } = useContext(AppTabNavigationContext)
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
@@ -215,7 +217,7 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
     if (!user) {
       return
     }
-    navigation.push('Profile', { handle: user.handle })
+    navigation?.push('Profile', { handle: user.handle })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, user])
 
@@ -223,7 +225,7 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
     if (!trackId) {
       return
     }
-    navigation.push('Track', { id: trackId })
+    navigation?.push('Track', { id: trackId })
     handleDrawerCloseFromSwipe()
   }, [handleDrawerCloseFromSwipe, navigation, trackId])
 

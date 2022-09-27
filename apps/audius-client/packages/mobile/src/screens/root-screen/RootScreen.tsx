@@ -16,7 +16,7 @@ import useAppState from 'app/hooks/useAppState'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import PushNotifications from 'app/notifications'
 import type { AppScreenParamList } from 'app/screens/app-screen'
-import { AppScreen } from 'app/screens/app-screen'
+import { AppScreen, AppTabNavigationProvider } from 'app/screens/app-screen'
 import {
   NotificationsScreen,
   NotificationsDrawerNavigationContextProvider
@@ -78,16 +78,18 @@ const MainStack = (props: MainStackProps) => {
   const { navigation: drawerHelpers } = props
   const drawerNavigation = useNavigation()
   return (
-    <NotificationsDrawerNavigationContextProvider
-      drawerNavigation={drawerNavigation}
-      drawerHelpers={drawerHelpers}
-    >
-      <Stack.Navigator
-        screenOptions={{ gestureEnabled: false, headerShown: false }}
+    <AppTabNavigationProvider>
+      <NotificationsDrawerNavigationContextProvider
+        drawerNavigation={drawerNavigation}
+        drawerHelpers={drawerHelpers}
       >
-        <Stack.Screen name='MainStack' component={AppScreen} />
-      </Stack.Navigator>
-    </NotificationsDrawerNavigationContextProvider>
+        <Stack.Navigator
+          screenOptions={{ gestureEnabled: false, headerShown: false }}
+        >
+          <Stack.Screen name='MainStack' component={AppScreen} />
+        </Stack.Navigator>
+      </NotificationsDrawerNavigationContextProvider>
+    </AppTabNavigationProvider>
   )
 }
 

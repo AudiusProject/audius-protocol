@@ -1,3 +1,5 @@
+import { useContext } from 'react'
+
 import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
   FavoriteSource,
@@ -15,7 +17,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { AppTabNavigationContext } from 'app/screens/app-screen'
+
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
 const { followUser, unfollowUser } = usersSocialActions
@@ -30,7 +33,7 @@ type Props = {
 
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
-  const navigation = useNavigation()
+  const { navigation } = useContext(AppTabNavigationContext)
   const dispatch = useDispatch()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
@@ -66,11 +69,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(openAddToPlaylistModal(id, title)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
       closeNowPlayingDrawer()
-      navigation.navigate('Track', { id })
+      navigation?.push('Track', { id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()
-      navigation.navigate('Profile', { handle })
+      navigation?.push('Profile', { handle })
     },
     [OverflowAction.FOLLOW_ARTIST]: () =>
       dispatch(followUser(owner_id, FollowSource.OVERFLOW)),

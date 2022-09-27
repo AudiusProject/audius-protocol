@@ -92,8 +92,6 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { name, handle, does_current_user_follow, does_follow_current_user } =
     profile
 
-  console.log('handle?', handle)
-
   const actionButtons = isOwner ? (
     <EditProfileButton style={styles.followButton} />
   ) : (
