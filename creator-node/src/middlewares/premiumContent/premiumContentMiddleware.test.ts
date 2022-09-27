@@ -4,18 +4,8 @@ import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 import { Request, Response } from 'express'
 import Logger from 'bunyan'
 import { Redis } from 'ioredis'
-import {
-  CheckAccessArgs,
-  CheckAccessResponse,
-  PremiumContentAccessError
-} from '../../premiumContent/types'
-
-class StubPremiumContentAccessChecker {
-  accessCheckReturnsWith: CheckAccessResponse = {} as CheckAccessResponse
-  checkPremiumContentAccess(args: CheckAccessArgs) {
-    return Promise.resolve(this.accessCheckReturnsWith)
-  }
-}
+import { PremiumContentAccessError } from '../../premiumContent/types'
+import { StubPremiumContentAccessChecker } from '../../premiumContent/stubPremiumContentAccessChecker'
 
 describe('Test premium content middleware', function () {
   let app: any
