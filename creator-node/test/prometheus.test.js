@@ -121,9 +121,9 @@ describe('test Prometheus metrics', async function () {
 
   it('Checks the duration of a bull queue job', async function () {
     const genericBullQueue = new GenericBullQueue()
-    const job = await genericBullQueue.addTask({ timeout: 500 })
+    const job = await genericBullQueue.addTask('job-name', { timeout: 500 })
 
-    await job.finished()
+    await job.waitUntilFinished(genericBullQueue.queueEvents)
 
     const resp = await request(app).get('/prometheus_metrics').expect(200)
     assert.ok(
