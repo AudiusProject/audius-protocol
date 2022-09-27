@@ -1018,6 +1018,10 @@ jobs:
         description: When present, the only parameters used for deploy-ci.py
         type: string
         default: ""
+      reservations:
+        description: Show current reservation status
+        type: boolean
+        default: false
     steps:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
@@ -1127,6 +1131,7 @@ jobs:
             and:
               - << parameters.host >>
               - not: << parameters.deploy_args >>
+              - not: << parameters.reservations >>
           steps:
             - run:
                 name: Perform Deployment (<< parameters.host >>)
@@ -1146,6 +1151,7 @@ jobs:
             and:
               - not: << parameters.host >>
               - not: << parameters.deploy_args >>
+              - not: << parameters.reservations >>
           steps:
             - run:
                 name: Perform Deployment
@@ -1160,7 +1166,10 @@ jobs:
                     --services "<< parameters.service >>" \
                     << parameters.params >>
       - when:
-          condition: << parameters.deploy_args >>
+          condition:
+            and:
+              - << parameters.deploy_args >>
+              - not: << parameters.reservations >>
           steps:
             - run:
                 name: "Perform Deployment (deploy_args: << parameters.deploy_args >>)"
@@ -1171,6 +1180,19 @@ jobs:
                     --github-user ${GH_USER} \
                     --github-token ${GH_TOKEN} \
                     << parameters.deploy_args >>
+      - when:
+          condition: << parameters.reservations >>
+          steps:
+            - run:
+                name: "Reservation List"
+                command: |
+                  cd ~/audius-protocol
+                  set -x
+                  .circleci/bin/deploy-ci.py \
+                    --github-user ${GH_USER} \
+                    --github-token ${GH_TOKEN} \
+                    --dry-run \
+                    --list-reservations
       - run:
           name: Set Slack Detail from /tmp/summary.md
           command: |
@@ -1667,7 +1689,7 @@ workflows:
     jobs:
       - deploy:
           name: reservations
-          deploy_args: --dry-run --list-reservations
+          reservations: true
           context:
             - slack-secrets
             - gh-tokens
