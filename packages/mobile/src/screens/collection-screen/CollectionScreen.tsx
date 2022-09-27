@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import type { Collection, User } from '@audius/common'
 import {
+  removeNullable,
   FavoriteSource,
   RepostSource,
   ShareSource,
@@ -135,23 +136,13 @@ const CollectionScreenComponent = ({
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
-      isOwner || is_private
-        ? null
-        : has_current_user_reposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
-      isOwner || is_private
-        ? null
-        : has_current_user_saved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
       !is_album && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
       isOwner && !is_album && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
       isOwner && !is_album ? OverflowAction.DELETE_PLAYLIST : null,
       OverflowAction.VIEW_ARTIST_PAGE
-    ].filter(Boolean) as OverflowAction[]
+    ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
@@ -160,15 +151,7 @@ const CollectionScreenComponent = ({
         overflowActions
       })
     )
-  }, [
-    dispatch,
-    playlist_id,
-    isOwner,
-    is_album,
-    is_private,
-    has_current_user_reposted,
-    has_current_user_saved
-  ])
+  }, [dispatch, playlist_id, isOwner, is_album, is_private])
 
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {

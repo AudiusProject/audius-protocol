@@ -1,3 +1,5 @@
+import { useContext } from 'react'
+
 import type { ID, OverflowActionCallbacks } from '@audius/common'
 import {
   FavoriteSource,
@@ -14,7 +16,8 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useNavigation } from 'app/hooks/useNavigation'
+import { AppTabNavigationContext } from 'app/screens/app-screen'
+
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
@@ -36,7 +39,7 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
-  const navigation = useNavigation()
+  const { navigation } = useContext(AppTabNavigationContext)
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -68,16 +71,16 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatch(shareCollection(id, ShareSource.OVERFLOW)),
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
-      navigation.navigate('Collection', { id })
+      navigation?.push('Collection', { id })
     },
     [OverflowAction.VIEW_PLAYLIST_PAGE]: () => {
-      navigation.navigate('Collection', { id })
+      navigation?.push('Collection', { id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
-      navigation.navigate('Profile', { handle })
+      navigation?.push('Profile', { handle })
     },
     [OverflowAction.EDIT_PLAYLIST]: () => {
-      navigation.navigate('EditPlaylist', { id })
+      navigation?.push('EditPlaylist', { id })
       dispatch(openEditPlaylist(id))
     },
     [OverflowAction.DELETE_PLAYLIST]: () =>

@@ -2,10 +2,10 @@ import { useCallback, useLayoutEffect } from 'react'
 
 import type { Track } from '@audius/common'
 import {
+  removeNullable,
   FavoriteSource,
   RepostSource,
   ShareSource,
-  accountSelectors,
   castSelectors,
   castActions,
   tracksSocialActions,
@@ -34,7 +34,6 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { updateMethod } = castActions
 const { getMethod: getCastMethod, getIsCasting } = castSelectors
-const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
@@ -66,7 +65,6 @@ type ActionsBarProps = {
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useStyles()
-  const currentUserId = useSelector(getUserId)
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
   const { neutral, primary } = useThemeColors()
@@ -78,7 +76,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [castMethod, dispatch])
 
-  const onToggleFavorite = useCallback(() => {
+  const handleFavorite = useCallback(() => {
     if (track) {
       if (track.has_current_user_saved) {
         dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
@@ -88,7 +86,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [dispatch, track])
 
-  const onToggleRepost = useCallback(() => {
+  const handleRepost = useCallback(() => {
     if (track) {
       if (track.has_current_user_reposted) {
         dispatch(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
@@ -98,7 +96,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [dispatch, track])
 
-  const onPressShare = useCallback(() => {
+  const handleShare = useCallback(() => {
     if (track) {
       dispatch(
         requestOpenShareModal({
@@ -112,23 +110,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const onPressOverflow = useCallback(() => {
     if (track) {
-      const isOwner = currentUserId === track.owner_id
       const overflowActions = [
-        !isOwner
-          ? track.has_current_user_reposted
-            ? OverflowAction.UNREPOST
-            : OverflowAction.REPOST
-          : null,
-        !isOwner
-          ? track.has_current_user_saved
-            ? OverflowAction.UNFAVORITE
-            : OverflowAction.FAVORITE
-          : null,
-        OverflowAction.SHARE,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
-      ].filter(Boolean) as OverflowAction[]
+      ].filter(removeNullable)
 
       dispatch(
         openOverflowMenu({
@@ -138,7 +124,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [track, currentUserId, dispatch])
+  }, [track, dispatch])
 
   const { openAirplayDialog } = useAirplay()
 
@@ -168,7 +154,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <RepostButton
         iconIndex={track.has_current_user_reposted ? 1 : 0}
-        onPress={onToggleRepost}
+        onPress={handleRepost}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
       />
@@ -179,7 +165,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <FavoriteButton
         iconIndex={track.has_current_user_saved ? 1 : 0}
-        onPress={onToggleFavorite}
+        onPress={handleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
       />
@@ -191,7 +177,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       <IconButton
         icon={IconShare}
         styles={{ icon: styles.icon, root: styles.button }}
-        onPress={onPressShare}
+        onPress={handleShare}
       />
     )
   }
