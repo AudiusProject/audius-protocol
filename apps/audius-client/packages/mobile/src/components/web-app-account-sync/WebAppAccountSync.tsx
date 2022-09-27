@@ -2,15 +2,12 @@ import { getErrorMessage } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeSyntheticEvent } from 'react-native'
 import { View } from 'react-native'
-import Config from 'react-native-config'
 import StaticServer from 'react-native-static-server'
 import { WebView } from 'react-native-webview'
 import type { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
 import { useAsync } from 'react-use'
 
 import { ENTROPY_KEY } from 'app/store/account/sagas'
-
-const OLD_WEB_APP_STATIC_SERVER_PORT = Config.OLD_WEB_APP_STATIC_SERVER_PORT
 
 const injected = `
 (function() {
@@ -35,7 +32,8 @@ export const WebAppAccountSync = (props: WebAppAccountSyncProps) => {
   const { setIsReadyToSetupBackend } = props
 
   const { value: uri, error } = useAsync(async () => {
-    const server = new StaticServer(OLD_WEB_APP_STATIC_SERVER_PORT, {
+    // Hardcoding port here to test bonce app loading issue
+    const server = new StaticServer(3101, {
       localOnly: true,
       keepAlive: true
     })
