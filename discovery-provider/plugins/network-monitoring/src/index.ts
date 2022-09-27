@@ -1,5 +1,5 @@
 
-import { setupTracing, tracing } from './tracer'
+import { instrumentTracing, setupTracing, tracing } from './tracer'
 setupTracing()
 
 import {
@@ -45,4 +45,7 @@ const main = async () => {
     }
 }
 
-main()
+instrumentTracing({
+    name: 'network-monitoring-run',
+    fn: main,
+})()
