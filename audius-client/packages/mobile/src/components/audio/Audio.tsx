@@ -66,10 +66,8 @@ export const Audio = () => {
   const repeatMode = useSelector(getRepeat)
   const isShuffleOn = useSelector(getShuffle)
   const shuffleIndex = useSelector(getShuffleIndex)
-  const trackOwner = useSelector(
-    (state) => getUser(state, { id: track?.owner_id }),
-    // Equality function to prevent audio restart when visiting profile screen
-    (left, right) => left?.user_id === right?.user_id
+  const trackOwner = useSelector((state) =>
+    getUser(state, { id: track?.owner_id })
   )
   const currentUserId = useSelector(getUserId)
 
