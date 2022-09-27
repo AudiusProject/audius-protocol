@@ -33,14 +33,26 @@ Here is what I do:
 
     PYTHONPATH=. python scripts/search_quality.py 
 
+If you want to focus on a specific search, specify a filter as second arg:
 
+    PYTHONPATH=. python scripts/search_quality.py stereo
 
 """
 
+import sys
+
 from src.queries.search_es import search_es_full
+
+filter = ""
+if len(sys.argv) == 2:
+    filter = sys.argv[1].lower()
+    print("filter:", filter)
 
 
 def test_search(args, asserts=None):
+    if filter and filter not in args["query"].lower():
+        return
+
     print("\n\n==========", args)
     found = search_es_full(args)
     search_type = args.get("kind", "all")
@@ -230,6 +242,19 @@ test_search(
     {
         "tracks": ["Sunny Side of the Street stereosteve stereosteve"],
         "saved_tracks": ["Sunny Side of the Street stereosteve stereosteve"],
+    },
+)
+
+test_search(
+    {
+        "query": "guitar garbage",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    },
+    {
+        # still comes in second place... but I'm okay with that :(
+        # "tracks": ["Guitar Garbage stereosteve stereosteve"],
     },
 )
 
