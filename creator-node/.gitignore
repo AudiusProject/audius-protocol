@@ -20,4 +20,5 @@ build_test/
 test/segments/
 test/testTrack.m3u8
 
-clinic
+.clinic/
+clinic/
