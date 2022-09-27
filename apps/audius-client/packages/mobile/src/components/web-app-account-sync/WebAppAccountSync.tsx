@@ -36,7 +36,7 @@ export const WebAppAccountSync = (props: WebAppAccountSyncProps) => {
 
   const { value: uri, error } = useAsync(async () => {
     const server = new StaticServer(
-      OLD_WEB_APP_STATIC_SERVER_PORT,
+      Number(OLD_WEB_APP_STATIC_SERVER_PORT),
       RNFS.DocumentDirectoryPath,
       {
         localOnly: true,
