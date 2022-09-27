@@ -1,9 +1,6 @@
 # Audius Mobile Client
 
-The Audius React Native mobile client.
-
-This project is a React Native wrapper around the Audius web client, and requires a web client to be running.
-The native project can be built & run against a local client (serving at localhost) or against a vendored staging/production build.
+The Audius React Native mobile client
 
 ## Setup
 
@@ -48,8 +45,6 @@ npm run android:dev
 adb devices
 # Connect device to dev server
 adb -s <device name> reverse tcp:8081 tcp:8081
-# If connecting to localhost, set up port forwarding
-adb -s <device name> reverse tcp:3001 tcp:3001
 # Run on device
 npm run android
 ```
@@ -62,8 +57,7 @@ cd android && ./gradlew clean && cd ..
 
 ## Debugging
 
-- To debug the native-layer of the app, install [React Native Debugger](https://github.com/jhen0409/react-native-debugger) and enable debugging (Cmd + D) in the simulator.
-- Safari can also be used to debug against the WebView running the dapp. This can be seen by opening Safari > Develop > Device > Localhost.
+- To debug the app, install [React Native Debugger](https://github.com/jhen0409/react-native-debugger) and enable debugging (Cmd + D) in the simulator.
 
 On Android, you can use the adb Android Studio tool or
 
@@ -97,5 +91,3 @@ watchman watch-del-all
 npm start -- --reset-cache
 npm run ios:dev
 ```
-
-- Debugging Android webview: https://github.com/react-native-webview/react-native-webview/blob/master/docs/Debugging.md#android--chrome
