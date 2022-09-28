@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
+  useProxySelector,
+  collectionPageActions,
   playerSelectors,
   Status,
   Name,
@@ -11,6 +13,7 @@ import {
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -23,7 +26,9 @@ import { TrackList } from 'app/components/track-list'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
-const { getCollectionTracksLineup } = collectionPageSelectors
+const { getCollectionTracksLineup, getCollectionUid, getUserUid } =
+  collectionPageSelectors
+const { resetCollection } = collectionPageActions
 const { makeGetTableMetadatas } = lineupSelectors
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 
@@ -83,15 +88,23 @@ export const CollectionScreenDetailsTile = ({
   const styles = useStyles()
   const dispatch = useDispatch()
 
-  useEffect(() => {
+  const collectionUid = useSelector(getCollectionUid)
+  const userUid = useSelector(getUserUid)
+  const { entries, status } = useProxySelector(getTracksLineup, [])
+  const tracksLoading = status === Status.LOADING
+  const numTracks = entries.length
+
+  const resetCollectionLineup = useCallback(() => {
+    if (collectionUid && userUid) {
+      dispatch(resetCollection(collectionUid, userUid))
+    }
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
-  const tracksLineup = useSelector(getTracksLineup)
-  const tracksLoading = tracksLineup.status === Status.LOADING
-  const numTracks = tracksLineup.entries.length
+  useFocusEffect(resetCollectionLineup)
 
-  const duration = tracksLineup.entries?.reduce(
+  const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,
     0
   )
@@ -120,9 +133,7 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getCurrentTrack)
   const trackId = playingTrack?.track_id
 
-  const isQueued = tracksLineup.entries.some(
-    (entry) => playingUid === entry.uid
-  )
+  const isQueued = entries.some((entry) => playingUid === entry.uid)
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
@@ -131,11 +142,11 @@ export const CollectionScreenDetailsTile = ({
     } else if (!isPlaying && isQueued) {
       dispatch(tracksActions.play())
       recordPlay(trackId)
-    } else if (tracksLineup.entries.length > 0) {
-      dispatch(tracksActions.play(tracksLineup.entries[0].uid))
-      recordPlay(tracksLineup.entries[0].track_id)
+    } else if (entries.length > 0) {
+      dispatch(tracksActions.play(entries[0].uid))
+      recordPlay(entries[0].track_id)
     }
-  }, [dispatch, isPlaying, trackId, tracksLineup, isQueued])
+  }, [dispatch, isPlaying, trackId, entries, isQueued])
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -178,7 +189,7 @@ export const CollectionScreenDetailsTile = ({
         </>
       )
 
-    return tracksLineup.entries.length === 0 ? (
+    return entries.length === 0 ? (
       <Text style={styles.empty}>{messages.empty}</Text>
     ) : (
       <>
@@ -187,7 +198,7 @@ export const CollectionScreenDetailsTile = ({
           hideArt
           showDivider
           togglePlay={handlePressTrackListItemPlay}
-          tracks={tracksLineup.entries}
+          tracks={entries}
         />
       </>
     )
