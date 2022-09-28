@@ -379,10 +379,7 @@ def update_user_metadata(
         user_record.location = metadata["location"]
 
     # Fields with no on-chain counterpart
-    if (
-        "profile_picture_sizes" in metadata
-        and metadata["profile_picture_sizes"]
-    ):
+    if "profile_picture_sizes" in metadata and metadata["profile_picture_sizes"]:
         user_record.profile_picture = metadata["profile_picture_sizes"]
 
     if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
@@ -432,6 +429,7 @@ def update_user_metadata(
             challenge_event_bus,
         )
     return user_record
+
 
 def update_legacy_user_images(user_record):
     # All incoming profile photos intended to be a directory
