@@ -80,11 +80,7 @@ export const ProfileScreen = () => {
     dispatch(fetchProfileAction(handle, null, true, true, false))
   }, [dispatch, handle])
 
-  const handleLoadProfile = useCallback(() => {
-    fetchProfile()
-  }, [fetchProfile])
-
-  useFocusEffect(handleLoadProfile)
+  useFocusEffect(fetchProfile)
 
   const handleRefresh = useCallback(() => {
     if (profile) {
