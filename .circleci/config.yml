@@ -25,15 +25,15 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job started. :crossed_fingers:"
+        default: 'Job started. :crossed_fingers:'
       detail:
         description: Markdown formatted Slack detail
         type: string
-        default: ""
+        default: ''
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
-        default: ""
+        default: ''
     steps:
       - slack/notify:
           channel: << parameters.channel >>
@@ -116,15 +116,15 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job Failed. :red_circle:"
+        default: 'Job Failed. :red_circle:'
       detail:
         description: Markdown formatted Slack detail
         type: string
-        default: ""
+        default: ''
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
-        default: ""
+        default: ''
     steps:
       - slack-basic:
           event: << parameters.event >>
@@ -150,15 +150,15 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Deployment Successful! :tada:"
+        default: 'Deployment Successful! :tada:'
       detail:
         description: Markdown formatted Slack detail
         type: string
-        default: ""
+        default: ''
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
-        default: ""
+        default: ''
     steps:
       - slack-basic:
           event: << parameters.event >>
@@ -187,7 +187,7 @@ commands:
       command:
         description: The command to run on the gcp instance
         type: string
-      instance-name: 
+      instance-name:
         description: The name of the gcp instance
         type: string
         default: ci-job
@@ -198,11 +198,11 @@ commands:
       interactive-command:
         description: The command to run initially on the gcp instance that requires an interactive terminal
         type: string
-        default: ""
+        default: ''
       post-gcp-command:
         description: The command to run after exiting the gcp ssh session
         type: string
-        default: ""
+        default: ''
       fast:
         description: If A setup will be run with the --fast flag
         type: boolean
@@ -263,21 +263,20 @@ commands:
 
             << parameters.post-gcp-command >>
 
-
 # global parameters
 parameters:
   sdk_release_commit:
     type: string
-    default: ""
+    default: ''
   deploy_args:
     type: string
-    default: ""
+    default: ''
   reservations:
     type: string
-    default: ""
+    default: ''
   slack_mentions_user:
     type: string
-    default: ""
+    default: ''
   full_ci:
     type: boolean
     default: false
@@ -337,7 +336,7 @@ jobs:
               --storage-location=us
       - slack-fail:
           branch_pattern: master
-          slack_mentions_user: "@Dheeraj"
+          slack_mentions_user: '@Dheeraj'
 
   publish-sdk:
     docker:
@@ -347,17 +346,17 @@ jobs:
       sdk_release_commit:
         description: The git commit to build and release
         type: string
-        default: ""
+        default: ''
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
-        default: ""
+        default: ''
     steps:
       - checkout
       - setup_remote_docker
       - add_ssh_keys:
           fingerprints:
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+            - 'd0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb'
       - run:
           name: npm Auth
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
@@ -995,29 +994,29 @@ jobs:
       git_tag:
         description: Git_tag to deploy. Latest commit on `master` otherwise.
         type: string
-        default: ""
+        default: ''
       environment:
         description: Target environment
         type: enum
         enum: [staging, prod]
-        default: "staging"
+        default: 'staging'
       service:
         description: Target service
         type: enum
         enum: [all, discovery, creator, identity]
-        default: "all"
+        default: 'all'
       host:
-        description: "Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata"
+        description: 'Optional options: stage-creator-X|stage-discovery-X|stage-identity|stage-user-metadata'
         type: string
-        default: ""
+        default: ''
       params:
         description: Additional parameters for deploy-ci.py
         type: string
-        default: ""
+        default: ''
       deploy_args:
         description: When present, the only parameters used for deploy-ci.py
         type: string
-        default: ""
+        default: ''
       reservations:
         description: Show current reservation status
         type: boolean
@@ -1027,7 +1026,7 @@ jobs:
       - when:
           condition:
             or:
-              - equal: [ prod, << parameters.environment >> ]
+              - equal: [prod, << parameters.environment >>]
               - << parameters.params >>
               - << parameters.deploy_args >>
           steps:
@@ -1035,11 +1034,11 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
-            - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42"
+            - 'df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42'
             # ~/.ssh/google_compute_engine
-            - "d1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3"
+            - 'd1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3'
             # github.com
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+            - 'd0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb'
       - run:
           name: Install OpenVPN
           command: |
@@ -1172,7 +1171,7 @@ jobs:
               - not: << parameters.reservations >>
           steps:
             - run:
-                name: "Perform Deployment (deploy_args: << parameters.deploy_args >>)"
+                name: 'Perform Deployment (deploy_args: << parameters.deploy_args >>)'
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1184,7 +1183,7 @@ jobs:
           condition: << parameters.reservations >>
           steps:
             - run:
-                name: "Reservation List"
+                name: 'Reservation List'
                 command: |
                   cd ~/audius-protocol
                   set -x
@@ -1203,7 +1202,7 @@ jobs:
       - when:
           condition:
             or:
-              - equal: [ prod, << parameters.environment >> ]
+              - equal: [prod, << parameters.environment >>]
               - << parameters.params >>
               - << parameters.deploy_args >>
           steps:
@@ -1225,10 +1224,10 @@ workflows:
   workflows:
     when:
       and:
-         - not: << pipeline.parameters.full_ci >>
-         - not: << pipeline.parameters.sdk_release_commit >>
-         - not: << pipeline.parameters.deploy_args >>
-         - not: << pipeline.parameters.reservations >>
+        - not: << pipeline.parameters.full_ci >>
+        - not: << pipeline.parameters.sdk_release_commit >>
+        - not: << pipeline.parameters.deploy_args >>
+        - not: << pipeline.parameters.reservations >>
     jobs:
       - noop:
           name: creator
@@ -1277,7 +1276,7 @@ workflows:
 
       # Auto-deploy `master` to staging
       - deploy:
-          name: 🚧-🏠-stage-discovery
+          name: d-m-stage-discovery
           service: discovery
           context:
             - slack-secrets
@@ -1289,7 +1288,7 @@ workflows:
           requires:
             - built-discovery
       - deploy:
-          name: 🚧-🏠-stage-creator
+          name: d-m-stage-creator
           service: creator
           context:
             - slack-secrets
@@ -1301,7 +1300,7 @@ workflows:
           requires:
             - built-creator
       - deploy:
-          name: 🚧-🏠-stage-identity
+          name: d-m-stage-identity
           service: identity
           context:
             - slack-secrets
@@ -1314,7 +1313,7 @@ workflows:
             - built-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+          name: f-d-m-stage-<< matrix.service >>-apr
           type: approval
           filters:
             branches:
@@ -1323,9 +1322,9 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 🚧-🏠-stage-<< matrix.service >>
+            - d-m-stage-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>
+          name: f-d-m-stage-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1335,21 +1334,28 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+            - f-d-m-stage-<< matrix.service >>-apr
       # Force deploy `master` to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: f-d-m-<< matrix.host >>-apr
           type: approval
           filters:
             branches:
               only: /(^master$)/
           matrix:
             parameters:
-              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host:
+                [
+                  stage-discovery-1,
+                  stage-discovery-2,
+                  stage-discovery-3,
+                  stage-discovery-4,
+                  stage-discovery-5,
+                ]
           requires:
-            - 🚧-🏠-stage-discovery
+            - d-m-stage-discovery
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: f-d-m-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1357,23 +1363,41 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host:
+                [
+                  stage-discovery-1,
+                  stage-discovery-2,
+                  stage-discovery-3,
+                  stage-discovery-4,
+                  stage-discovery-5,
+                ]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - f-d-m-<< matrix.host >>-apr
       # Force deploy `master` to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: f-d-m-<< matrix.host >>-apr
           type: approval
           filters:
             branches:
               only: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+              host:
+                [
+                  stage-creator-4,
+                  stage-creator-5,
+                  stage-creator-6,
+                  stage-creator-7,
+                  stage-creator-8,
+                  stage-creator-9,
+                  stage-creator-10,
+                  stage-creator-11,
+                  stage-user-metadata,
+                ]
           requires:
-            - 🚧-🏠-stage-creator
+            - d-m-stage-creator
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: f-d-m-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1381,13 +1405,24 @@ workflows:
             - open-vpn
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+              host:
+                [
+                  stage-creator-4,
+                  stage-creator-5,
+                  stage-creator-6,
+                  stage-creator-7,
+                  stage-creator-8,
+                  stage-creator-9,
+                  stage-creator-10,
+                  stage-creator-11,
+                  stage-user-metadata,
+                ]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - f-d-m-<< matrix.host >>-apr
 
       # Cut release from `master`
       - noop:
-          name: cut-release-🕹️
+          name: cut-release-apr
           type: approval
           filters:
             branches:
@@ -1397,11 +1432,11 @@ workflows:
       - noop:
           name: cut-release
           requires:
-            - cut-release-🕹️
+            - cut-release-apr
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+          name: f-d-b-stage-<< matrix.service >>-apr
           type: approval
           filters:
             branches:
@@ -1412,7 +1447,7 @@ workflows:
           requires:
             - built-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>
+          name: f-d-b-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1423,21 +1458,28 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+            - f-d-b-stage-<< matrix.service >>-apr
       # Deploy branch to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: f-d-b-<< matrix.host >>-apr
           type: approval
           filters:
             branches:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host:
+                [
+                  stage-discovery-1,
+                  stage-discovery-2,
+                  stage-discovery-3,
+                  stage-discovery-4,
+                  stage-discovery-5,
+                ]
           requires:
             - built-discovery
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: f-d-b-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1449,23 +1491,41 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              host:
+                [
+                  stage-discovery-1,
+                  stage-discovery-2,
+                  stage-discovery-3,
+                  stage-discovery-4,
+                  stage-discovery-5,
+                ]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - f-d-b-<< matrix.host >>-apr
       # Deploy branch to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: f-d-b-<< matrix.host >>-apr
           type: approval
           filters:
             branches:
               ignore: /(^master|release-.*$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+              host:
+                [
+                  stage-creator-4,
+                  stage-creator-5,
+                  stage-creator-6,
+                  stage-creator-7,
+                  stage-creator-8,
+                  stage-creator-9,
+                  stage-creator-10,
+                  stage-creator-11,
+                  stage-user-metadata,
+                ]
           requires:
             - built-creator
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: f-d-b-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1477,9 +1537,20 @@ workflows:
               ignore: /(^master$)/
           matrix:
             parameters:
-              host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+              host:
+                [
+                  stage-creator-4,
+                  stage-creator-5,
+                  stage-creator-6,
+                  stage-creator-7,
+                  stage-creator-8,
+                  stage-creator-9,
+                  stage-creator-10,
+                  stage-creator-11,
+                  stage-user-metadata,
+                ]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - f-d-b-<< matrix.host >>-apr
 
       # Bump Tags (for release branch hot-fixes)
       - noop:
@@ -1491,7 +1562,7 @@ workflows:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-dn-prod-🕹️
+          name: d-p-to-dn-prod-apr
           type: approval
           filters:
             branches:
@@ -1499,7 +1570,7 @@ workflows:
           requires:
             - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-dn-prod
+          name: d-p-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: discovery
@@ -1508,10 +1579,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-dn-prod-🕹️
+            - d-p-to-dn-prod-apr
       # Deploy Identity to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-is-prod-🕹️
+          name: d-p-to-is-prod-apr
           type: approval
           filters:
             branches:
@@ -1519,7 +1590,7 @@ workflows:
           requires:
             - bump-hotfix-tags
       - deploy:
-          name: 🚧-🎁-to-is-prod
+          name: d-p-to-is-prod
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: identity
@@ -1528,10 +1599,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-is-prod-🕹️
+            - d-p-to-is-prod-apr
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-cn-prod-🕹️
+          name: d-p-to-cn-prod-apr
           type: approval
           filters:
             branches:
@@ -1540,12 +1611,12 @@ workflows:
             - built
       # no-op currently since Content Nodes have manual version patching
       - noop:
-          name: 🚧-🎁-to-cn-prod
+          name: d-p-to-cn-prod
           requires:
-            - 🚧-🎁-to-cn-prod-🕹️
+            - d-p-to-cn-prod-apr
       # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
       - noop:
-          name: 🚧-🎁-to-SPs-🕹️
+          name: d-p-to-SPs-apr
           type: approval
           filters:
             branches:
@@ -1554,22 +1625,22 @@ workflows:
             - bump-hotfix-tags
       - noop:
           # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
-          name: 🚧-🎁-to-SPs
+          name: d-p-to-SPs
           requires:
-            - 🚧-🎁-to-SPs-🕹️
+            - d-p-to-SPs-apr
       # Execute Governance Proposal (for release branches)
       - noop:
-          name: execute-proposal-🕹️
+          name: execute-proposal-apr
           type: approval
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - 🚧-🎁-to-SPs
+            - d-p-to-SPs
       - noop:
           name: execute-proposal
           requires:
-            - execute-proposal-🕹️
+            - execute-proposal-apr
 
       - test-libs:
           name: test-libs
@@ -1640,7 +1711,6 @@ workflows:
             - GCP2
           requires:
             - tests
-
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
