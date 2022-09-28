@@ -56,6 +56,32 @@ export interface GetTrendingTracksRequest {
     time?: GetTrendingTracksTimeEnum;
 }
 
+export interface GetUndergroundTrendingTracksRequest {
+    /**
+     * The number of items to skip. Useful for pagination (page number * limit)
+     */
+    offset?: number;
+    /**
+     * The number of items to fetch
+     */
+    limit?: number;
+}
+
+export interface GetUndergroundTrendingTracksWithVersionRequest {
+    /**
+     * The strategy version of trending to user
+     */
+    version: string;
+    /**
+     * The number of items to skip. Useful for pagination (page number * limit)
+     */
+    offset?: number;
+    /**
+     * The number of items to fetch
+     */
+    limit?: number;
+}
+
 export interface SearchTracksRequest {
     /**
      * The search query
@@ -141,6 +167,58 @@ export class TracksApi extends runtime.BaseAPI {
 
         return this.request({
             path: `/tracks/trending`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<TracksResponse["data"]>>;
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius
+     */
+    async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}): Promise<NonNullable<TracksResponse["data"]>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/tracks/trending/underground`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<TracksResponse["data"]>>;
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
+     */
+    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest): Promise<NonNullable<TracksResponse["data"]>> {
+        if (requestParameters.version === null || requestParameters.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/tracks/trending/underground/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
