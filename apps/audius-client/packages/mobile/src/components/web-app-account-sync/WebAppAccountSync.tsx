@@ -1,8 +1,7 @@
 import { getErrorMessage } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeSyntheticEvent } from 'react-native'
-import { View } from 'react-native'
-import Config from 'react-native-config'
+import { Platform, View } from 'react-native'
 import RNFS from 'react-native-fs'
 import StaticServer from 'react-native-static-server'
 import { WebView } from 'react-native-webview'
@@ -19,7 +18,6 @@ const injected = `
   )
 })();
 `
-const OLD_WEB_APP_STATIC_SERVER_PORT = Config.OLD_WEB_APP_STATIC_SERVER_PORT
 
 type WebAppAccountSyncProps = {
   setIsReadyToSetupBackend: (isReadyToSetupBackend: boolean) => void
@@ -35,14 +33,20 @@ export const WebAppAccountSync = (props: WebAppAccountSyncProps) => {
   const { setIsReadyToSetupBackend } = props
 
   const { value: uri, error } = useAsync(async () => {
-    const server = new StaticServer(
-      Number(OLD_WEB_APP_STATIC_SERVER_PORT),
-      RNFS.DocumentDirectoryPath,
-      {
-        localOnly: true,
-        keepAlive: true
-      }
-    )
+    const server =
+      Platform.OS === 'android'
+        ? new StaticServer(3100, RNFS.DocumentDirectoryPath, {
+            localOnly: true,
+            keepAlive: true
+          })
+        : new StaticServer(
+            // Hardcoding to prod port because ios crashes otherwise
+            3100,
+            {
+              localOnly: true,
+              keepAlive: true
+            }
+          )
 
     return await server.start()
   }, [])
