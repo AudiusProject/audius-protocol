@@ -1011,6 +1011,10 @@ export class Users extends Base {
         const encodedUserId = Utils.encodeHashId(userId)
         let replicaSet
         try {
+          // If the discovery node has not yet indexed the blocknumber,
+          // this method will throw an error
+          // If the user replica set does not exist, it will return an empty object
+          // which should lead to the method throwing an error
           replicaSet = await this.discoveryProvider.getUserReplicaSet({
             encodedUserId: encodedUserId!,
             blockNumber
