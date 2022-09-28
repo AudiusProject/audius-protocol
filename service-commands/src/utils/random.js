@@ -69,7 +69,9 @@ const getRandomTrackMetadata = userId => {
     license: '',
     isrc: '',
     iswc: '',
-    track_segments: []
+    track_segments: [],
+    is_premium: false,
+    premium_conditions: null
   }
 }
 

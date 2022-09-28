@@ -1,8 +1,9 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
+const { clusterUtils } = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
@@ -17,40 +18,19 @@ class SkippedCIDsRetryQueue {
     if (!nodeConfig || !libs) {
       throw new Error(`${LogPrefix} Cannot start without nodeConfig, libs`)
     }
-
-    this.queue = new Bull('skipped-cids-retry-queue', {
-      redis: {
-        port: nodeConfig.get('redisPort'),
-        host: nodeConfig.get('redisHost')
-      },
+    this.nodeConfig = nodeConfig
+    this.libs = libs
+    const connection = {
+      host: nodeConfig.get('redisHost'),
+      port: nodeConfig.get('redisPort')
+    }
+    this.queue = new Queue('skipped-cids-retry-queue', {
+      connection,
       defaultJobOptions: {
         // these required since completed/failed jobs data set can grow infinitely until memory exhaustion
         removeOnComplete: RETRY_QUEUE_HISTORY,
         removeOnFail: RETRY_QUEUE_HISTORY
       }
-    })
-
-    // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
-
-    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get(
-      'skippedCIDsRetryQueueJobIntervalMs'
-    )
-    const CIDMaxAgeMs =
-      nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
-
-    this.queue.process(async (job, done) => {
-      try {
-        await this.process(CIDMaxAgeMs, libs)
-      } catch (e) {
-        this.logError(`Failed to process job || Error: ${e.message}`)
-      }
-
-      // Re-enqueue job after some interval
-      await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
-      await this.queue.add({ startTime: Date.now() })
-
-      done()
     })
   }
 
@@ -62,10 +42,42 @@ class SkippedCIDsRetryQueue {
     logger.error(`${LogPrefix} ${msg}`)
   }
 
-  // Add first job to queue
   async init() {
     try {
-      await this.queue.add({ startTime: Date.now() })
+      const connection = {
+        host: this.nodeConfig.get('redisHost'),
+        port: this.nodeConfig.get('redisPort')
+      }
+
+      // Clean up anything that might be still stuck in the queue on restart
+      if (clusterUtils.isThisWorkerInit()) {
+        await this.queue.drain(true)
+      }
+
+      const SkippedCIDsRetryQueueJobIntervalMs = this.nodeConfig.get(
+        'skippedCIDsRetryQueueJobIntervalMs'
+      )
+      const CIDMaxAgeMs =
+        this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
+
+      const worker = new Worker(
+        'skipped-cids-retry-queue',
+        async (job) => {
+          try {
+            await this.process(CIDMaxAgeMs, this.libs)
+          } catch (e) {
+            this.logError(`Failed to process job || Error: ${e.message}`)
+          }
+
+          // Re-enqueue job after some interval
+          await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
+          await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
+        },
+        { connection }
+      )
+
+      // Add first job to queue
+      await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
       this.logInfo(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
       this.logError(`Failed to start`)

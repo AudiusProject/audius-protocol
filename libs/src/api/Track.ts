@@ -17,7 +17,9 @@ const TRACK_PROPS = [
   'mood',
   'credits_splits',
   'release_date',
-  'file_type'
+  'file_type',
+  'is_premium',
+  'premium_conditions'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 

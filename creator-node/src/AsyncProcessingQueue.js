@@ -1,7 +1,8 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
+const { clusterUtils } = require('./utils')
 
 // Processing fns
 const {
@@ -27,6 +28,7 @@ const PROCESS_STATES = Object.freeze({
   DONE: 'DONE',
   FAILED: 'FAILED'
 })
+const QUEUE_NAME = 'async-processing'
 
 const ASYNC_PROCESSING_QUEUE_HISTORY = 500
 
@@ -39,48 +41,55 @@ const ASYNC_PROCESSING_QUEUE_HISTORY = 500
 
 class AsyncProcessingQueue {
   constructor(libs, prometheusRegistry) {
-    this.queue = new Bull('asyncProcessing', {
-      redis: {
-        host: config.get('redisHost'),
-        port: config.get('redisPort')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue(QUEUE_NAME, {
+      connection,
       defaultJobOptions: {
         removeOnComplete: ASYNC_PROCESSING_QUEUE_HISTORY,
         removeOnFail: ASYNC_PROCESSING_QUEUE_HISTORY
       }
     })
 
-    prometheusRegistry.startQueueMetrics(this.queue)
-
     this.libs = libs
 
     const untracedProcessTask = this.processTask
-    this.queue.process(MAX_CONCURRENCY, async (job, done) => {
-      const { logContext, parentSpanContext, task } = job.data
-      const processTask = instrumentTracing({
-        name: `AsyncProcessingQueue.process ${task}`,
-        fn: untracedProcessTask,
-        context: this,
-        options: {
-          // if a parentSpanContext is provided
-          // reference it so the async queue job can remember
-          // who enqueued it
-          links: parentSpanContext
-            ? [
-                {
-                  context: parentSpanContext
-                }
-              ]
-            : [],
-          attributes: {
-            requestID: logContext.requestID,
-            [tracing.CODE_FILEPATH]: __filename
+    const worker = new Worker(
+      QUEUE_NAME,
+      async (job) => {
+        const { logContext, parentSpanContext, task } = job.data
+        const processTask = instrumentTracing({
+          name: `AsyncProcessingQueue.process ${task}`,
+          fn: untracedProcessTask,
+          context: this,
+          options: {
+            // if a parentSpanContext is provided
+            // reference it so the async queue job can remember
+            // who enqueued it
+            links: parentSpanContext
+              ? [
+                  {
+                    context: parentSpanContext
+                  }
+                ]
+              : [],
+            attributes: {
+              requestID: logContext.requestID,
+              [tracing.CODE_FILEPATH]: __filename
+            }
           }
-        }
-      })
+        })
 
-      await processTask(job, done)
-    })
+        await processTask(job)
+      },
+      {
+        connection,
+        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+      }
+    )
+    prometheusRegistry.startQueueMetrics(this.queue, worker)
 
     this.PROCESS_NAMES = PROCESS_NAMES
     this.PROCESS_STATES = PROCESS_STATES
@@ -90,7 +99,7 @@ class AsyncProcessingQueue {
     this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
   }
 
-  async processTask(job, done) {
+  async processTask(job) {
     const { logContext, task } = job.data
 
     const func = this.getFn(task)
@@ -107,7 +116,6 @@ class AsyncProcessingQueue {
           logContext,
           req: job.data.req
         })
-        done(null, {})
       } else {
         this.logStatus(
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
@@ -117,12 +125,12 @@ class AsyncProcessingQueue {
           logContext,
           req: { ...job.data.req, transcodeFilePath, segmentFileNames }
         })
-        done(null, { response: { transcodeFilePath, segmentFileNames } })
+        return { response: { transcodeFilePath, segmentFileNames } }
       }
     } else {
       try {
         const response = await this.monitorProgress(task, func, job.data)
-        done(null, { response })
+        return { response }
       } catch (e) {
         tracing.recordException(e)
         this.logError(
@@ -131,7 +139,7 @@ class AsyncProcessingQueue {
           }: ${e.toString()}`,
           logContext
         )
-        done(e.toString())
+        return e.toString()
       }
     }
   }
@@ -185,12 +193,12 @@ class AsyncProcessingQueue {
   async addTask(params) {
     const { logContext, task } = params
 
-    this.logStatus(
+    await this.logStatus(
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
 
-    const job = await this.queue.add(params)
+    const job = await this.queue.add(QUEUE_NAME, params)
 
     return job
   }

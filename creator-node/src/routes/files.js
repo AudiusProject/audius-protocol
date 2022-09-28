@@ -40,9 +40,9 @@ const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const { promisify } = require('util')
-
-const fsStat = promisify(fs.stat)
+const {
+  premiumContentMiddleware
+} = require('../middlewares/premiumContent/premiumContentMiddleware')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -74,7 +74,7 @@ const streamFromFileSystem = async (
     // Stream file from file system
     let fileStream
 
-    const stat = fsStats || (await fsStat(path))
+    const stat = fsStats || (await fs.stat(path))
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -120,8 +120,15 @@ const streamFromFileSystem = async (
       )
     }
 
-    // Set the CID cache-control so that client caches the response for 30 days
-    res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    // If content is premium, set cache-control to no-cache.
+    // Otherwise, set the CID cache-control so that client caches the response for 30 days.
+    // The premiumContentMiddleware sets the req.premiumContent object so that we do not
+    // have to make another database round trip to get this info.
+    if (req.premiumContent?.isPremium) {
+      res.setHeader('cache-control', 'no-cache')
+    } else {
+      res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    }
 
     await new Promise((resolve, reject) => {
       fileStream
@@ -162,14 +169,6 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
-  if (!(req.params && req.params.CID)) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(`Invalid request, no CID provided`)
-    )
-  }
-
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
@@ -204,7 +203,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = DiskManager.computeFilePath(CID, false)
+    storagePath = await DiskManager.computeFilePath(CID, false)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
@@ -753,13 +752,18 @@ router.post(
  * Serve data hosted by creator node and create download route using query string pattern
  * `...?filename=<file_name.mp3>`.
  * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
+ *
+ * This route uses the premium content middleware to check if content requested is premium.
+ * If so, the middleware ensures that the user does have access to the content before
+ * proceeding to the getCID logic that returns the premium content.
+ *
  * @param req
  * @param req.query
  * @param {string} req.query.filename filename to set as the content-disposition header
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], getCID)
+router.get(['/ipfs/:CID', '/content/:CID'], premiumContentMiddleware, getCID)
 
 /**
  * Serve images hosted by content node.

@@ -8,8 +8,6 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 
-const blockRelayAbuseErrorCodes = new Set(['0', '8', '9', '10'])
-
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
@@ -20,7 +18,7 @@ module.exports = function (app) {
     // TODO: Use auth middleware to derive this
     const user = await models.User.findOne({
       where: { walletAddress: body.senderAddress },
-      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive', 'isAbusiveErrorCode']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isBlockedFromRelay', 'isBlockedFromNotifications', 'appliedRules']
     })
 
     let optimizelyClient
@@ -34,11 +32,13 @@ module.exports = function (app) {
       req.logger.error(`failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`)
     }
 
+    // Handle abusive users
+
+    const userFlaggedAsAbusive = user && (user.isBlockedFromRelay || user.isBlockedFromNotifications)
     if (
       blockAbuseOnRelay &&
       user &&
-      user.isAbusiveErrorCode &&
-      blockRelayAbuseErrorCodes.has(user.isAbusiveErrorCode)
+      userFlaggedAsAbusive
     ) {
       // allow previously abusive users to redeem themselves for next relays
       if (detectAbuseOnRelay) {
@@ -46,9 +46,12 @@ module.exports = function (app) {
         detectAbuse(user, 'relay', reqIP) // fired & forgotten
       }
 
-      return errorResponseForbidden(
-        `Forbidden ${user.isAbusiveErrorCode}`
-      )
+      // Only reject relay for users explicitly blocked from relay
+      if (user.isBlockedFromRelay) {
+        return errorResponseForbidden(
+          `Forbidden ${user.appliedRules}`
+        )
+      }
     }
 
     if (body && body.contractRegistryKey && body.contractAddress && body.senderAddress && body.encodedABI) {

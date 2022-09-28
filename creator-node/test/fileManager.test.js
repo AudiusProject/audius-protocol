@@ -558,12 +558,12 @@ describe('test fileManager', () => {
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
       const segmentCID = 'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd'
-      const syncedSegmentPath = DiskManager.computeFilePath(segmentCID)
-      assert.ok(fs.existsSync(syncedSegmentPath))
+      const syncedSegmentPath = await DiskManager.computeFilePath(segmentCID)
+      assert.ok(await fs.pathExists(syncedSegmentPath))
 
       // the segment content should match the original sourcefile
-      const syncedSegmentBuf = fs.readFileSync(syncedSegmentPath)
-      const originalSegmentBuf = fs.readFileSync(srcPath)
+      const syncedSegmentBuf = await fs.readFile(syncedSegmentPath)
+      const originalSegmentBuf = await fs.readFile(srcPath)
       assert.deepStrictEqual(originalSegmentBuf.compare(syncedSegmentBuf), 0)
     })
   })
@@ -654,11 +654,11 @@ describe('test fileManager', () => {
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = DiskManager.computeFilePath(resp.cid)
-      assert.ok(fs.existsSync(metadataPath))
+      const metadataPath = await DiskManager.computeFilePath(resp.cid)
+      assert.ok(await fs.pathExists(metadataPath))
 
       // check that the contents of the metadata file is what we expect
-      let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+      let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
       metadataFileData = sortKeys(JSON.parse(metadataFileData))
       assert.deepStrictEqual(metadataFileData, metadata)
     })
@@ -685,13 +685,13 @@ describe('test removeTrackFolder()', async function () {
     // Ensure expected dir state before calling removeTrackFolder()
     // Note that the contents of these files are never checked as only the dir structure/file naming matters here.
     //    The file contents don't matter as these files are never accessed after completing track upload.
-    assert.ok(fs.existsSync(trackSourceFileDir))
-    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'segments')))
-    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'master.mp3')))
+    assert.ok(await fs.pathExists(trackSourceFileDir))
+    assert.ok(await fs.pathExists(path.join(trackSourceFileDir, 'segments')))
+    assert.ok(await fs.pathExists(path.join(trackSourceFileDir, 'master.mp3')))
     assert.ok(
-      fs.existsSync(path.join(trackSourceFileDir, 'trackManifest.m3u8'))
+      await fs.pathExists(path.join(trackSourceFileDir, 'trackManifest.m3u8'))
     )
-    assert.ok(fs.existsSync(path.join(trackSourceFileDir, 'transcode.mp3')))
+    assert.ok(await fs.pathExists(path.join(trackSourceFileDir, 'transcode.mp3')))
 
     // Call removeTrackFolder + expect success
     try {
@@ -701,6 +701,6 @@ describe('test removeTrackFolder()', async function () {
     }
 
     // Ensure dir has been removed
-    assert.ok(!fs.existsSync(trackSourceFileDir))
+    assert.ok(!await fs.pathExists(trackSourceFileDir))
   })
 })

@@ -1,7 +1,7 @@
 const request = require('supertest')
 const path = require('path')
 const assert = require('assert')
-const fs = require('fs')
+const fs = require('fs-extra')
 
 const models = require('../src/models')
 
@@ -80,13 +80,13 @@ describe('Test Playlists', function () {
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePath(
       resp.body.data.metadataMultihash
     )
-    assert.ok(fs.existsSync(metadataPath))
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
 
@@ -112,13 +112,13 @@ describe('Test Playlists', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePath(
       resp.body.data.metadataMultihash
     )
-    assert.ok(fs.existsSync(metadataPath))
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
 
@@ -146,7 +146,7 @@ describe('Test Playlists', function () {
 
   it('successfully completes Audius playlist creation with imageDirCID', async function () {
     const testPicture = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
-    const file = fs.readFileSync(testPicture)
+    const file = await fs.readFile(testPicture)
     // Upload test cover image
     const resp = await request(app)
       .post('/image_upload')
@@ -157,8 +157,8 @@ describe('Test Playlists', function () {
       .set('User-Id', session.userId)
 
     const imageDirCID = resp.body.data.dirCID
-    const playlistImagePath = DiskManager.computeFilePath(imageDirCID)
-    assert.ok(fs.existsSync(playlistImagePath))
+    const playlistImagePath = await DiskManager.computeFilePath(imageDirCID)
+    assert.ok(await fs.pathExists(playlistImagePath))
     const fileRecord = await models.File.findOne({
       where: {
         multihash: imageDirCID,
@@ -182,13 +182,13 @@ describe('Test Playlists', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePath(
       resp2.body.data.metadataMultihash
     )
-    assert.ok(fs.existsSync(metadataPath))
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
     const metadataFileRecord = await models.File.findOne({

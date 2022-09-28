@@ -12,9 +12,6 @@ logger = logging.getLogger(__name__)
 # The logic here is to ensure a robust connection from an active indexer
 # to all active entities in the network.
 # This is to ensure minimal retrieval time within the actual indexing flow itself
-# NOTE - The terminology of "peer" in this file overlaps with ipfs swarm peers
-#   Even though we 'swarm connect' to an ipfs node embedded within our protocol the
-#   concept is very much distinct.
 
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
@@ -52,12 +49,6 @@ def update_network_peers(self):
             )
             # Combine the set of known peers from ethereum and within local database
             all_peers = peers_from_ethereum
-
-            # Legacy user metadata node is always added to set of known peers
-            user_metadata_url = update_network_peers.shared_config["discprov"][
-                "user_metadata_service_url"
-            ]
-            all_peers.add(user_metadata_url)
 
             logger.info(f"index_network_peers.py | All known peers {all_peers}")
             peers_list = list(all_peers)
