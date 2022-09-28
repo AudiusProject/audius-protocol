@@ -28,5 +28,6 @@ export type Modals =
   | 'BuyAudio'
   | 'TransactionDetails'
   | 'VipDiscord'
+  | 'StripeOnRamp'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

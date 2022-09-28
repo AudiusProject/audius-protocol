@@ -31,7 +31,8 @@ const initialState: ModalsState = {
   FeatureFlagOverride: false,
   BuyAudio: false,
   TransactionDetails: false,
-  VipDiscord: false
+  VipDiscord: false,
+  StripeOnRamp: false
 }
 
 const slice = createSlice({

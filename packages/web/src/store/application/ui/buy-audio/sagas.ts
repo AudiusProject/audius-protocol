@@ -69,14 +69,16 @@ const {
   precalculateSwapFees
 } = buyAudioActions
 
-const { getBuyAudioFlowStage, getFeesCache } = buyAudioSelectors
+const { getBuyAudioFlowStage, getFeesCache, getBuyAudioProvider } =
+  buyAudioSelectors
 const { increaseBalance } = walletActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const SLIPPAGE = 3 // The slippage amount to allow for exchanges
 
 const MEMO_MESSAGES = {
-  [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase'
+  [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase',
+  [OnRampProvider.STRIPE]: 'In-App $AUDIO Purchase: Stripe'
 }
 
 /**
@@ -153,6 +155,7 @@ function* getTransactionFees({
         fromAccount: rootAccount,
         // eslint-disable-next-line new-cap
         amount: new u64(JSBI.toNumber(route.outAmount)),
+        // The provider here doesn't matter, we're not sending this transaction
         memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
       }
     )
@@ -438,9 +441,14 @@ function* startBuyAudioFlow({
 }: ReturnType<typeof onRampOpened>) {
   try {
     // Record start
+    const provider = yield* select(getBuyAudioProvider)
+    if (provider === undefined) {
+      console.error('BuyAudio flow started without a provider - aborting...')
+      return
+    }
     yield* put(
       make(Name.BUY_AUDIO_ON_RAMP_OPENED, {
-        provider: 'coinbase'
+        provider
       })
     )
 
@@ -484,12 +492,10 @@ function* startBuyAudioFlow({
 
     // If the user didn't complete the on ramp flow, return early
     if (result.canceled) {
-      yield* put(
-        make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider: 'coinbase' })
-      )
+      yield* put(make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider }))
       return
     }
-    yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider: 'coinbase' }))
+    yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider }))
 
     // Wait for the SOL funds to come through
     const newBalance = yield* call(pollForSolBalanceChange, {
@@ -605,7 +611,7 @@ function* startBuyAudioFlow({
         userBank,
         fromAccount: rootAccount.publicKey,
         amount: transferAmount,
-        memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
+        memo: MEMO_MESSAGES[provider]
       }
     )
 
