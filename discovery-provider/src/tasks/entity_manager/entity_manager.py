@@ -54,7 +54,7 @@ def entity_manager_update(
     block_number: int,
     block_timestamp,
     block_hash: str,
-    ipfs_metadata: Dict,
+    metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
@@ -107,7 +107,7 @@ def entity_manager_update(
                         new_records,  # actions below populate these records
                         existing_records,
                         pending_track_routes,
-                        ipfs_metadata,
+                        metadata,
                         block_timestamp,
                         block_number,
                         event_blockhash,

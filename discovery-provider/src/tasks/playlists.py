@@ -27,7 +27,7 @@ def playlist_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _metadata,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     blockhash = update_task.web3.toHex(block_hash)
@@ -323,7 +323,7 @@ def parse_playlist_event(
             event_args._playlistImageMultihashDigest
         )
 
-        # All incoming playlist images are set to ipfs dir in column playlist_image_sizes_multihash
+        # All incoming playlist images are set to the images dir in column playlist_image_sizes_multihash
         if playlist_record.playlist_image_multihash:
             logger.info(
                 f"index.py | playlists.py | Processing playlist image \

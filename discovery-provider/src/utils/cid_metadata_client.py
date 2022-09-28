@@ -64,7 +64,7 @@ class CIDMetadataClient:
         return metadata
 
     async def _get_metadata_async(self, async_session, multihash, gateway_endpoint):
-        url = gateway_endpoint + "/ipfs/" + multihash
+        url = gateway_endpoint + "/content/" + multihash
         # Skip URL if invalid
         try:
             validate_url = urlparse(url)

@@ -126,7 +126,7 @@ def create_track(params: ManageEntityParameters):
 
     track_id = params.entity_id
     owner_id = params.user_id
-    track_metadata = params.ipfs_metadata[params.metadata_cid]
+    track_metadata = params.metadata[params.metadata_cid]
 
     track_record = Track(
         track_id=track_id,
@@ -159,7 +159,7 @@ def update_track(params: ManageEntityParameters):
         return
     # TODO ignore updates on deleted playlists?
 
-    track_metadata = params.ipfs_metadata[params.metadata_cid]
+    track_metadata = params.metadata[params.metadata_cid]
     track_id = params.entity_id
     existing_track = params.existing_records[EntityType.TRACK][track_id]
     existing_track.is_current = False  # invalidate
