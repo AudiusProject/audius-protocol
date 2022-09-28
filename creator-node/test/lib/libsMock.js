@@ -83,7 +83,6 @@ function getLibsMock() {
     discoveryProvider: {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000',
       getUserReplicaSet: sinon.mock().atLeast(1)
-      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
     },
     web3Manager: {
       verifySignature: () => '0x7c95A677106218A296EcEF1F577c3aE27f0340cd'
