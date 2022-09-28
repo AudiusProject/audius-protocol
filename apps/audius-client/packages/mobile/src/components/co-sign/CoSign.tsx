@@ -79,7 +79,7 @@ const CoSign = ({ size, children, style }: CoSignProps) => {
   const { size: iconSize, position } = layoutBySize[size]
 
   return (
-    <View style={style}>
+    <View style={[style, { flex: 1 }]}>
       <View>{children}</View>
       <View style={[styles.check, position]}>
         <IconCoSign fill={primary} fillSecondary={staticWhite} {...iconSize} />
