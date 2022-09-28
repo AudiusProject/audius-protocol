@@ -79,7 +79,7 @@ commands:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Mentions*: << parameters.slack_mentions_user >>"
+                      "text": "*Mentions*: << parameters.slack_mentions_user >> "
                     }
                   ]
                 },
