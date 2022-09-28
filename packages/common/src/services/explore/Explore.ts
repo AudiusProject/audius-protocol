@@ -175,7 +175,7 @@ export class Explore {
     }
   }
 
-  async getFeelingLuckyTracks(userId: ID, limit = 25) {
+  async getFeelingLuckyTracks(userId: ID | null, limit = 25) {
     try {
       let tracks: APITrack[]
       const libs = await this.audiusBackendInstance.getAudiusLibs()
