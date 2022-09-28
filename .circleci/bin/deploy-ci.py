@@ -572,9 +572,7 @@ def cli(
             output = ssh(host, "cat /tmp/deploy.lock", exit_on_error=RAISE)
             if output != deployment_id:
                 release_summary[UPDATE_IN_PROGRESS].append(host)
-                logger.error(
-                    f"{host} is now being upgraded by another deployment job."
-                )
+                logger.error(f"{host} is now being upgraded by another deployment job.")
                 continue
 
             # log additional information
