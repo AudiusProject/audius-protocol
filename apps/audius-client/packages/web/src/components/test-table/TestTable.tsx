@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { ID, Kind } from '@audius/common'
 import cn from 'classnames'
-import { debounce } from 'lodash'
+import { debounce, range } from 'lodash'
 import moment from 'moment'
 import {
   useTable,
@@ -19,6 +19,8 @@ import {
 } from 'react-virtualized'
 
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
+import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
 import Draggable from 'components/dragndrop/Draggable'
 import Droppable from 'components/dragndrop/Droppable'
@@ -70,6 +72,7 @@ type TestTableProps = {
   defaultSorter?: (a: any, b: any) => number
   fetchBatchSize?: number
   fetchMore?: (offset: number, limit: number) => void
+  fetchPage?: (page: number) => void
   fetchThreshold?: number
   getRowClassName?: (rowIndex: number) => string
   isPaginated?: boolean
@@ -78,8 +81,11 @@ type TestTableProps = {
   loading?: boolean
   onClickRow?: (e: any, rowInfo: any, index: number) => void
   onReorder?: (source: number, destination: number) => void
+  onShowMoreToggle?: (setting: boolean) => void
   onSort?: (...props: any[]) => void
+  pageSize?: number
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
+  showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number
   wrapperClassName?: string
@@ -92,6 +98,7 @@ export const TestTable = ({
   defaultSorter,
   fetchBatchSize = FETCH_BATCH_SIZE,
   fetchMore,
+  fetchPage,
   fetchThreshold = FETCH_THRESHOLD,
   getRowClassName,
   isPaginated = false,
@@ -100,8 +107,11 @@ export const TestTable = ({
   loading = false,
   onClickRow,
   onReorder,
+  onShowMoreToggle,
   onSort,
+  pageSize = 50,
   scrollRef,
+  showMoreLimit,
   tableClassName,
   totalRowCount = 9999,
   wrapperClassName
@@ -120,6 +130,12 @@ export const TestTable = ({
     [fetchMore]
   )
 
+  // Pagination page
+  const [currentPage, setCurrentPage] = useState<number>(0)
+  const maxPage = useMemo(() => {
+    return Math.floor(totalRowCount / pageSize)
+  }, [pageSize, totalRowCount])
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -134,11 +150,15 @@ export const TestTable = ({
       defaultColumn,
       autoResetSortBy: false,
       autoResetResize: false,
-      manualSortBy: true
+      manualSortBy: Boolean(onSort)
     },
     useSortBy,
     useResizeColumns,
     useFlexLayout
+  )
+
+  const [showMore, setShowMore] = useState(
+    !showMoreLimit || pageSize < showMoreLimit
   )
 
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
@@ -366,12 +386,21 @@ export const TestTable = ({
   )
 
   const renderRows = useCallback(() => {
-    return rows.map((row) => {
+    const displayRows = !showMore ? rows.slice(0, showMoreLimit) : rows
+    return displayRows.map((row) => {
       prepareRow(row)
       const render = isReorderable ? renderDraggableRow : renderTableRow
       return render(row, row.id, { ...row.getRowProps() })
     })
-  }, [rows, prepareRow, isReorderable, renderDraggableRow, renderTableRow])
+  }, [
+    showMoreLimit,
+    showMore,
+    rows,
+    prepareRow,
+    isReorderable,
+    renderDraggableRow,
+    renderTableRow
+  ])
 
   // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
   // It currently does not, but there are no issues with this currently so will fix if issues pop up
@@ -391,7 +420,89 @@ export const TestTable = ({
     [rows]
   )
 
-  const renderContent = () => {
+  // Pagination Functions
+  const goToPage = useCallback(
+    (page: number) => {
+      if (page !== currentPage) setCurrentPage(page)
+    },
+    [currentPage]
+  )
+
+  const nextPage = useCallback(() => {
+    if (currentPage < maxPage) goToPage(currentPage + 1)
+  }, [currentPage, goToPage, maxPage])
+
+  const prevPage = useCallback(() => {
+    if (currentPage > 0) goToPage(currentPage - 1)
+  }, [currentPage, goToPage])
+
+  useEffect(() => {
+    fetchPage?.(currentPage)
+  }, [currentPage, fetchPage])
+
+  const renderPaginationControls = useCallback(() => {
+    if (!isPaginated || maxPage === 0 || !showMore) return null
+
+    return (
+      <div className={styles.pageButtonContainer}>
+        <IconCaretLeft
+          className={cn(styles.pageCaret, {
+            [styles.disabled]: currentPage <= 0
+          })}
+          onClick={prevPage}
+        />
+        {range(maxPage + 1).map((idx) => (
+          <div
+            key={`pageButton_${idx}`}
+            className={cn(styles.pageButton, {
+              [styles.active]: currentPage === idx
+            })}
+            onClick={() => goToPage(idx)}
+          >
+            {idx + 1}
+          </div>
+        ))}
+        <IconCaretRight
+          className={cn(styles.pageCaret, {
+            [styles.disabled]: currentPage >= maxPage
+          })}
+          onClick={nextPage}
+        />
+      </div>
+    )
+  }, [
+    currentPage,
+    goToPage,
+    isPaginated,
+    maxPage,
+    nextPage,
+    prevPage,
+    showMore
+  ])
+
+  const renderShowMoreControl = useCallback(() => {
+    if (!showMoreLimit || rows.length <= showMoreLimit) return null
+
+    const handleShowMoreToggle = () => {
+      onShowMoreToggle?.(!showMore)
+      setShowMore(!showMore)
+    }
+
+    return (
+      <div className={styles.showMoreContainer} onClick={handleShowMoreToggle}>
+        <p className={styles.showMoreText}>
+          {showMore ? 'Show Less' : 'Show More'}
+        </p>
+        {showMore ? (
+          <IconCaretUp className={styles.showMoreCaret} />
+        ) : (
+          <IconCaretDown className={styles.showMoreCaret} />
+        )}
+      </div>
+    )
+  }, [onShowMoreToggle, rows.length, showMore, showMoreLimit])
+
+  const renderContent = useCallback(() => {
     return (
       <div className={cn(styles.tableWrapper, wrapperClassName)}>
         <table
@@ -407,12 +518,23 @@ export const TestTable = ({
             </tbody>
           )}
         </table>
-        {isPaginated ? <p>Render the pagination controls here</p> : null}
+        {renderPaginationControls()}
+        {renderShowMoreControl()}
       </div>
     )
-  }
+  }, [
+    getTableBodyProps,
+    getTableProps,
+    loading,
+    renderHeader,
+    renderPaginationControls,
+    renderRows,
+    renderShowMoreControl,
+    tableClassName,
+    wrapperClassName
+  ])
 
-  const renderVirtualizedContent = () => {
+  const renderVirtualizedContent = useCallback(() => {
     return (
       <InfiniteLoader
         isRowLoaded={isRowLoaded}
@@ -467,16 +589,29 @@ export const TestTable = ({
                     </tbody>
                   )}
                 </table>
-                {isPaginated ? (
-                  <p>Render the pagination controls here</p>
-                ) : null}
               </div>
             )}
           </WindowScroller>
         )}
       </InfiniteLoader>
     )
-  }
+  }, [
+    debouncedFetchMore,
+    fetchBatchSize,
+    fetchThreshold,
+    getTableBodyProps,
+    getTableProps,
+    isRowLoaded,
+    loadMoreRows,
+    loading,
+    renderHeader,
+    renderRow,
+    rows.length,
+    scrollRef,
+    tableClassName,
+    totalRowCount,
+    wrapperClassName
+  ])
 
   return isVirtualized ? renderVirtualizedContent() : renderContent()
 }

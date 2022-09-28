@@ -2,6 +2,7 @@ import { Status, Collection, Track } from '@audius/common'
 
 export default interface ArtistDashboardState {
   status: Status
+  tracksStatus: Status
   tracks: Track[]
   unlistedTracks: Track[]
   collections: Collection
