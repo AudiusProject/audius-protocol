@@ -24,10 +24,10 @@ router.get('/prometheus_metrics', async (req, res) => {
     const { metricsData, contentType } =
       await prometheusRegistry.getCustomAggregateMetricData()
     res.setHeader('Content-Type', contentType)
-    res.end(metricsData)
+    return res.end(metricsData)
   } catch (ex) {
     res.statusCode = 500
-    res.send(ex.message)
+    return res.end(ex.message)
   }
 })
 
