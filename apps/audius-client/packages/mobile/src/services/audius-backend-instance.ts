@@ -1,8 +1,5 @@
-import EventEmitter from 'events'
-
 import { audiusBackend } from '@audius/common'
 import * as nativeLibs from '@audius/sdk/dist/native-libs'
-import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Config from 'react-native-config'
 import scrypt from 'react-native-scrypt'
@@ -10,41 +7,17 @@ import scrypt from 'react-native-scrypt'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
+import { withEagerOption } from './eagerLoadUtils'
 import { env } from './env'
+import {
+  libsInitEventEmitter,
+  LIBS_INITTED_EVENT,
+  setLibs,
+  waitForLibsInit
+} from './libs'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
-
-// TODO: declare this at the root and use actual audiusLibs type
-declare global {
-  interface Window {
-    audiusLibs: any
-  }
-}
-
-const libsInitEventEmitter = new EventEmitter()
-
-export let audiusLibs: AudiusLibs
-
-const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
-
-/**
- * Wait for the `LIBS_INITTED_EVENT` or pass through if there
- * already exists a mounted `window.audiusLibs` object.
- */
-const waitForLibsInit = async () => {
-  // If libs is already defined, it has already loaded & initted
-  // so do nothing
-  if (audiusLibs) return
-  // Add an event listener and resolve when that returns
-  return new Promise<void>((resolve) => {
-    if (audiusLibs) {
-      resolve()
-    } else {
-      libsInitEventEmitter.addListener(LIBS_INITTED_EVENT, resolve)
-    }
-  })
-}
 
 function bufferFromHexString(hexString: string) {
   const byteArray = hexString
@@ -121,7 +94,7 @@ export const audiusBackendInstance = audiusBackend({
   monitoringCallbacks,
   nativeMobile: true,
   onLibsInit: (libs) => {
-    audiusLibs = libs
+    setLibs(libs)
     libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
   },
   recaptchaSiteKey: Config.RECAPTCHA_SITE_KEY,
@@ -158,10 +131,6 @@ export const audiusBackendInstance = audiusBackend({
   },
   getLibs: async () => nativeLibs,
   waitForLibsInit,
-  withEagerOption: ({ normal }, ...args) => {
-    if (audiusLibs) {
-      return normal(audiusLibs)(...args)
-    }
-  },
+  withEagerOption,
   disableImagePreload: true
 })
