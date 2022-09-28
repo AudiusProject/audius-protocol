@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { UID, Track, User } from '@audius/common'
 import {
+  removeNullable,
   playerSelectors,
   FavoriteSource,
   RepostSource,
@@ -255,22 +256,12 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressOverflow = () => {
     const overflowActions = [
-      isOwner || is_unlisted
-        ? null
-        : has_current_user_reposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
-      isOwner || is_unlisted
-        ? null
-        : has_current_user_saved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
       OverflowAction.ADD_TO_PLAYLIST,
       user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
       OverflowAction.VIEW_ARTIST_PAGE
-    ].filter(Boolean) as OverflowAction[]
+    ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({

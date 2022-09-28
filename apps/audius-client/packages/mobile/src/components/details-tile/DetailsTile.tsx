@@ -53,7 +53,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: 4,
-    overflow: 'hidden',
     height: 195,
     width: 195,
     marginBottom: spacing(6)
