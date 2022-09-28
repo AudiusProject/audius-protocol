@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import {
   trackPageLineupActions,
   trackPageActions,
-  trackPageSelectors
+  trackPageSelectors,
+  useProxySelector
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
@@ -67,7 +68,7 @@ export const TrackScreen = () => {
 
   const lineup = useSelector(getLineup)
 
-  const remixParentTrack = useSelector(getRemixParentTrack)
+  const remixParentTrack = useProxySelector(getRemixParentTrack, [])
 
   const handleFetchTrack = useCallback(() => {
     dispatch(tracksActions.reset())
