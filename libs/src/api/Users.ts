@@ -1002,17 +1002,26 @@ export class Users extends Base {
     const asyncFn = async () => {
       while (true) {
         const encodedUserId = Utils.encodeHashId(userId)
-        const replicaSet = await this.discoveryProvider.getUserReplicaSet({
-          encodedUserId: encodedUserId!,
-          blockNumber
-        })
-        if (
-          replicaSet &&
-          replicaSet.primarySpID === replicaSetSPIDs[0] &&
-          replicaSet.secondary1SpID === replicaSetSPIDs[1] &&
-          replicaSet.secondary2SpID === replicaSetSPIDs[2]
-        ) {
-          break
+        try {
+          const replicaSet = await this.discoveryProvider.getUserReplicaSet({
+            encodedUserId: encodedUserId!,
+            blockNumber
+          })
+          if (replicaSet) {
+            if (
+              replicaSet.primarySpID === replicaSetSPIDs[0] &&
+              replicaSet.secondary1SpID === replicaSetSPIDs[1] &&
+              replicaSet.secondary2SpID === replicaSetSPIDs[2]
+            ) {
+              break
+            } else {
+              throw new Error(
+                `[User:waitForReplicaSetDiscoveryIndexing()] Indexed block ${blockNumber}, but did not find matching sp ids`
+              )
+            }
+          }
+        } catch (err) {
+          // Do nothing on error
         }
         await Utils.wait(500)
       }
@@ -1020,7 +1029,7 @@ export class Users extends Base {
     await Utils.racePromiseWithTimeout(
       asyncFn(),
       timeoutMs,
-      `[User:_waitForURSMCreatorNodeEndpointIndexing()] Timeout error after ${timeoutMs}ms`
+      `[User:waitForReplicaSetDiscoveryIndexing()] Timeout error after ${timeoutMs}ms`
     )
   }
 
