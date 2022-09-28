@@ -118,12 +118,12 @@ const startAppForPrimary = async () => {
   })
 
   const sendAggregatedMetricsToWorker = async (worker: Worker) => {
-    const metrics = await aggregatorRegistry.clusterMetrics()
+    const metricsData = await aggregatorRegistry.clusterMetrics()
     const contentType = aggregatorRegistry.contentType
     worker.send({
       cmd: 'receiveAggregatePrometheusMetrics',
       val: {
-        metrics,
+        metricsData,
         contentType
       }
     })
@@ -205,10 +205,14 @@ const startAppForWorker = async () => {
     if (msg?.cmd === 'setSpecialWorkerId') {
       clusterUtils.specialWorkerId = msg?.val
     } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
-      const { metrics, contentType } = msg?.val
-      const { prometheusRegistry } = serviceRegistry
-      prometheusRegistry.setCustomAggregateContentType(contentType)
-      prometheusRegistry.setCustomAggregateMetricData(metrics)
+      try {
+        const { prometheusRegistry } = serviceRegistry
+        prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
+      } catch (error: any) {
+        logger.error(
+          `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
     }
   })
 

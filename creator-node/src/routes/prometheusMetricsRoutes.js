@@ -21,12 +21,10 @@ router.get('/prometheus_metrics_worker', async (req, res) => {
 router.get('/prometheus_metrics', async (req, res) => {
   try {
     const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-    const metrics = await prometheusRegistry.getCustomAggregateMetricData()
-    res.setHeader(
-      'Content-Type',
-      prometheusRegistry.getCustomAggregateContentType()
-    )
-    res.end(metrics)
+    const { metricsData, contentType } =
+      await prometheusRegistry.getCustomAggregateMetricData()
+    res.setHeader('Content-Type', contentType)
+    res.end(metricsData)
   } catch (ex) {
     res.statusCode = 500
     res.send(ex.message)
