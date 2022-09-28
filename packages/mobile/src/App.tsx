@@ -7,7 +7,7 @@ import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
-import { useAsync } from 'react-use'
+import { useAsync, useEffectOnce } from 'react-use'
 
 import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
@@ -19,12 +19,15 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { store } from 'app/store'
 import { ENTROPY_KEY } from 'app/store/account/sagas'
-
-import 'app/utils/connectivity'
+import {
+  refreshConnectivity,
+  subscribeToNetworkStatusUpdates
+} from 'app/utils/connectivity'
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { NotificationReminder } from './components/notification-reminder/NotificationReminder'
+import { useEnterForeground } from './hooks/useAppState'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -57,6 +60,14 @@ const App = () => {
     const entropy = await AsyncStorage.getItem(ENTROPY_KEY)
     setIsReadyToSetupBackend(!entropy)
   }, [])
+
+  useEffectOnce(() => {
+    subscribeToNetworkStatusUpdates()
+  })
+
+  useEnterForeground(() => {
+    refreshConnectivity()
+  })
 
   return (
     <SafeAreaProvider>

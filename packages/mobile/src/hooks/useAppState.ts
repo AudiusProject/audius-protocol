@@ -19,8 +19,8 @@ type OnEnterBackground = () => any
 const NotActive = /inactive|background/g
 
 export const useAppState = (
-  onEnterForeground: OnEnterForeground,
-  onEnterBackground: OnEnterBackground
+  onEnterForeground: OnEnterForeground | null,
+  onEnterBackground: OnEnterBackground | null
 ) => {
   const [appState, setAppState] = useState<AppStateStatus>(
     AppState.currentState
@@ -57,6 +57,14 @@ export const useAppState = (
   }, [handleAppStateChange])
 
   return appState
+}
+
+export const useEnterForeground = (onEnterForeground: OnEnterForeground) => {
+  return useAppState(onEnterForeground, null)
+}
+
+export const useEnterBackground = (onEnterBackground: OnEnterBackground) => {
+  return useAppState(null, onEnterBackground)
 }
 
 export default useAppState
