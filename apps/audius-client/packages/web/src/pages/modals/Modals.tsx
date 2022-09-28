@@ -19,6 +19,7 @@ import PasswordResetModal from 'components/password-reset/PasswordResetModal'
 import ServiceSelectionModal from 'components/service-selection/ServiceSelectionModal'
 import { ShareModal } from 'components/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
+import { StripeOnRampModal } from 'components/stripe-on-ramp-modal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -87,6 +88,7 @@ const Modals = () => {
       <TipAudioModal />
       <BuyAudioModal />
       <TransactionDetailsModal />
+      <StripeOnRampModal />
     </>
   )
 }

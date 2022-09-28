@@ -15,7 +15,8 @@ export type JupiterTokenListing = {
 }
 
 export enum OnRampProvider {
-  COINBASE = 'coinbase'
+  COINBASE = 'coinbase',
+  STRIPE = 'stripe'
 }
 
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP

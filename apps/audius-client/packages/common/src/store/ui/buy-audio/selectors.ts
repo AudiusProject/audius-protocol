@@ -1,5 +1,8 @@
 import { CommonState } from '../../../store/reducers'
 
+export const getBuyAudioProvider = (state: CommonState) =>
+  state.ui.buyAudio.provider
+
 export const getBuyAudioFlowStage = (state: CommonState) =>
   state.ui.buyAudio.stage
 

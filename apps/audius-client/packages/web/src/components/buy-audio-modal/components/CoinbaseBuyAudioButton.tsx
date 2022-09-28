@@ -1,13 +1,16 @@
 import { useCallback, useContext } from 'react'
 
-import { buyAudioActions, buyAudioSelectors, Status } from '@audius/common'
+import {
+  buyAudioActions,
+  buyAudioSelectors,
+  OnRampProvider,
+  Status
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import {
-  CoinbasePayContext,
-  CoinbasePayButtonCustom
-} from 'components/coinbase-pay-button'
+import { CoinbasePayContext } from 'components/coinbase-pay-button'
+import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
 import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
 
@@ -25,23 +28,19 @@ const messages = {
   belowSolThreshold: 'Coinbase requires a purchase minimum of 0.05 SOL'
 }
 
-export const CoinbaseBuyAudioButton = ({
-  amount
-}: {
-  amount: number | undefined
-}) => {
+export const CoinbaseBuyAudioButton = () => {
   const dispatch = useDispatch()
   const coinbasePay = useContext(CoinbasePayContext)
   const rootAccount = useAsync(getRootSolanaAccount)
   const purchaseInfoStatus = useSelector(getAudioPurchaseInfoStatus)
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
-  const belowSolThreshold =
-    !purchaseInfo?.isError && purchaseInfo?.estimatedSOL
-      ? purchaseInfo.estimatedSOL.uiAmount < 0.05
-      : false
-  const isDisabled =
-    purchaseInfoStatus === Status.LOADING ||
-    (belowSolThreshold && amount !== undefined)
+  const amount =
+    purchaseInfo?.isError === false
+      ? purchaseInfo.estimatedSOL.uiAmount
+      : undefined
+
+  const belowSolThreshold = amount !== undefined && amount < 0.05
+  const isDisabled = purchaseInfoStatus === Status.LOADING || belowSolThreshold
 
   const handleExit = useCallback(() => {
     dispatch(onRampCanceled())
@@ -88,7 +87,8 @@ export const CoinbaseBuyAudioButton = ({
       shouldWrapContent={false}
     >
       <div>
-        <CoinbasePayButtonCustom
+        <OnRampButton
+          provider={OnRampProvider.COINBASE}
           className={styles.coinbasePayButton}
           disabled={isDisabled}
           isDisabled={isDisabled}

@@ -7,7 +7,8 @@ import {
   walletSelectors,
   tokenDashboardPageSelectors,
   formatWei,
-  buyAudioActions
+  buyAudioActions,
+  OnRampProvider
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -19,9 +20,9 @@ import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
-import { CoinbasePayButtonCustom } from 'components/coinbase-pay-button'
 import { CollapsibleContent } from 'components/collapsible-content'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import { isMobile } from 'utils/clientUtil'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
@@ -30,6 +31,7 @@ const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
 const { getAccountBalance, getAccountTotalBalance } = walletSelectors
+const { precalculateSwapFees, setProvider } = buyAudioActions
 
 const messages = {
   receiveLabel: 'Receive',
@@ -39,13 +41,11 @@ const messages = {
   connectWallets: 'Connect Other Wallets',
   totalAudio: 'Total $AUDIO',
   buyAudio: 'Buy $AUDIO',
-  checkoutWithCoinbase: 'Checkout with Coinbase',
+  checkoutWithCoinbase: 'Checkout with a credit card or Coinbase Pay',
   showAdvanced: 'Show Advanced',
   hideAdvanced: 'Hide Advanced',
   advancedOptions: 'Advanced Options'
 }
-
-const { precalculateSwapFees } = buyAudioActions
 
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
@@ -144,9 +144,15 @@ export const WalletManagementTile = () => {
     setOpen(true)
   }, [setOpen])
 
-  const onBuyAudioClicked = useCallback(() => {
+  const onBuyWithCoinbaseClicked = useCallback(() => {
+    dispatch(setProvider({ provider: OnRampProvider.COINBASE }))
     setBuyAudioModalOpen(true)
-  }, [setBuyAudioModalOpen])
+  }, [dispatch, setBuyAudioModalOpen])
+
+  const onBuyWithStripeClicked = useCallback(() => {
+    dispatch(setProvider({ provider: OnRampProvider.STRIPE }))
+    setBuyAudioModalOpen(true)
+  }, [dispatch, setBuyAudioModalOpen])
 
   useEffect(() => {
     dispatch(precalculateSwapFees())
@@ -193,10 +199,18 @@ export const WalletManagementTile = () => {
             </div>
           </div>
         </div>
-        <CoinbasePayButtonCustom
-          className={styles.payWithCoinbaseButton}
-          onClick={onBuyAudioClicked}
-        />
+        <div className={styles.onRampButtons}>
+          <OnRampButton
+            provider={OnRampProvider.STRIPE}
+            className={styles.payWithStripeButton}
+            onClick={onBuyWithStripeClicked}
+          />
+          <OnRampButton
+            provider={OnRampProvider.COINBASE}
+            className={styles.payWithCoinbaseButton}
+            onClick={onBuyWithCoinbaseClicked}
+          />
+        </div>
         <CollapsibleContent
           id='advanced-wallet-actions'
           className={styles.toggle}

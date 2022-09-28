@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from '../../../models/Status'
 
-import { BuyAudioStage, PurchaseInfoErrorType } from './types'
+import { BuyAudioStage, OnRampProvider, PurchaseInfoErrorType } from './types'
 
 type AmountObject = {
   amount: number
@@ -45,6 +45,7 @@ type BuyAudioState = {
     associatedTokenAccountCache: Record<string, boolean>
     transactionFees: number
   }
+  provider?: OnRampProvider
 }
 
 const initialState: BuyAudioState = {
@@ -60,6 +61,12 @@ const slice = createSlice({
   name: 'ui/buy-audio',
   initialState,
   reducers: {
+    setProvider: (
+      state,
+      action: PayloadAction<{ provider: OnRampProvider }>
+    ) => {
+      state.provider = action.payload.provider
+    },
     calculateAudioPurchaseInfo: (
       state,
       _action: PayloadAction<CalculateAudioPurchaseInfoPayload>
@@ -139,6 +146,7 @@ const slice = createSlice({
 })
 
 export const {
+  setProvider,
   calculateAudioPurchaseInfo,
   calculateAudioPurchaseInfoSucceeded,
   calculateAudioPurchaseInfoFailed,

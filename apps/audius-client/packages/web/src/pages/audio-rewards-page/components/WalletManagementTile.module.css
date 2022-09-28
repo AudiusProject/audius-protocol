@@ -139,7 +139,16 @@
   background-color: hsla(0, 0%, 100%, 0.1);
 }
 
+.onRampButtons {
+  display: flex;
+  gap: 8px;
+}
+.onRampButtons > * {
+  flex: 1;
+}
+
 .manageWalletsButton:hover,
-.payWithCoinbaseButton:hover {
+.payWithCoinbaseButton:hover,
+.payWithStripeButton:hover {
   transform: perspective(1px) scale3d(1.02, 1.02, 1.02) !important;
 }
