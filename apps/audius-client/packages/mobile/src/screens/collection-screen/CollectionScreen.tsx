@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { Collection, User } from '@audius/common'
 import {
@@ -21,6 +21,7 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Screen, VirtualizedScrollView } from 'app/components/core'
@@ -62,9 +63,11 @@ export const CollectionScreen = () => {
   // params is incorrectly typed and can sometimes be undefined
   const { id, searchCollection } = params ?? {}
 
-  useEffect(() => {
+  const handleFetchCollection = useCallback(() => {
     dispatch(fetchCollection(id))
   }, [dispatch, id])
+
+  useFocusEffect(handleFetchCollection)
 
   const cachedCollection = useSelector((state) =>
     getCollection(state, { id })
