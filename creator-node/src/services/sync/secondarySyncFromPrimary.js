@@ -3,7 +3,10 @@ const _ = require('lodash')
 const { logger: genericLogger, createChildLogger } = require('../../logging')
 const config = require('../../config')
 const models = require('../../models')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const {
+  saveFileForMultihashToFS,
+  deleteAllCNodeUserDataFromDisk
+} = require('../../fileManager')
 const {
   getOwnEndpoint,
   getUserReplicaSetEndpointsFromDiscovery
@@ -114,6 +117,21 @@ const handleSyncFromPrimary = async ({
           abort: 'Stopping sync early because syncForceWipeEnabled=false',
           result: 'abort_force_wipe_disabled'
         }
+      }
+
+      try {
+        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
+          wallet,
+          logger
+        )
+        logger.info(`Deleted ${numFilesDeleted} for ${wallet}`)
+      } catch (error) {
+        errorResponse = {
+          error,
+          result: 'failure_delete_disk_data'
+        }
+
+        throw error
       }
 
       /**

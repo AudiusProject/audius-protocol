@@ -59,14 +59,12 @@ class DBManager {
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
    * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
-   * @param {?Transaction} externalTransaction sequelize transaction object
    */
-  static async deleteAllCNodeUserDataFromDB(
-    { lookupCNodeUserUUID, lookupWallet },
-    externalTransaction = null
-  ) {
-    const transaction =
-      externalTransaction || (await models.sequelize.transaction())
+  static async deleteAllCNodeUserDataFromDB({
+    lookupCNodeUserUUID,
+    lookupWallet
+  }) {
+    const transaction = await models.sequelize.transaction()
     const log = (msg) =>
       logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
@@ -154,7 +152,7 @@ class DBManager {
       if (error) {
         await transaction.rollback()
         log(`rolling back transaction due to error ${error}`)
-      } else if (!externalTransaction) {
+      } else {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
         log(`commited internal transaction`)

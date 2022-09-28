@@ -4,8 +4,10 @@ const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
 
+const models = require('./models')
 const config = require('./config')
 const Utils = require('./utils')
+const redisClient = require('./redis')
 const { libs: audiusLibs } = require('@audius/sdk')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
@@ -748,6 +750,89 @@ async function removeFile(storagePath) {
   }
 }
 
+/**
+ * Adds path to redis set for every file of the given user and then deletes each path from disk.
+ * Uses pagination to avoid loading all files in memory for users with a lot of data.
+ * @param {string} walletPublicKey the wallet of the user to delete all data for
+ * @param {bunyan.Logger} logger the logger to print messages to
+ * @return number of files deleted
+ */
+async function deleteAllCNodeUserDataFromDisk(walletPublicKey, logger) {
+  const FILES_PER_QUERY = 10_000
+  const redisSetKey = `filePathsToDeleteFor${walletPublicKey}`
+  await redisClient.del(redisSetKey)
+
+  const cnodeUser = await models.CNodeUser.findOne({
+    where: { walletPublicKey }
+  })
+  if (!cnodeUser) throw new Error('No cnodeUser found')
+
+  const { cnodeUserUUID } = cnodeUser
+  logger.info(
+    `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
+  )
+
+  try {
+    // Add file paths to redis
+    const numFilesToDelete = await models.File.count({
+      where: { cnodeUserUUID }
+    })
+    let files = []
+    // Paginate on multihash because we have an index on it. Start at the lowest real character (space)
+    let prevMultihash = ' '
+    for (let i = 0; i < numFilesToDelete; i += FILES_PER_QUERY) {
+      files = await models.File.findAll({
+        attributes: ['multihash', 'dirMultihash', 'storagePath'],
+        order: [['multihash', 'ASC']],
+        where: {
+          cnodeUserUUID,
+          multihash: {
+            [models.Sequelize.Op.gt]: prevMultihash
+          }
+        },
+        limit: FILES_PER_QUERY
+      })
+
+      if (files?.length) {
+        // Save the file paths to a redis set
+        // TODO: Might need to prepend file.dirMultihash for nested paths?
+        const filePaths = files.map((file) => file.storagePath)
+        await redisClient.sadd(redisSetKey, filePaths)
+
+        // Move pagination cursor to the end
+        prevMultihash = files[files.length - 1].multihash
+      }
+    }
+
+    // Read file paths from redis and delete them
+    let numFilesDeleted = 0
+    for (let i = 0; i < numFilesToDelete; i += FILES_PER_QUERY) {
+      const filePathsToDelete = await redisClient.spop(
+        redisSetKey,
+        FILES_PER_QUERY
+      )
+      if (!filePathsToDelete?.length) return numFilesDeleted
+
+      // TODO: Should we batch this? Maybe there's an fs function to do it or we can do Promise.allSettled
+      for (const filePath of filePathsToDelete) {
+        try {
+          await removeFile(filePath)
+          numFilesDeleted++
+        } catch (errDelFile) {
+          logger.error(
+            `Skipping ${filePath} because it couldn't be deleted: ${errDelFile}`
+          )
+        }
+      }
+    }
+    return numFilesDeleted
+  } catch (e) {
+    throw e
+  } finally {
+    await redisClient.del(redisSetKey)
+  }
+}
+
 module.exports = {
   saveFileFromBufferToDisk,
   saveFileForMultihashToFS,
@@ -762,5 +847,6 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
-  fetchFileFromNetworkAndWriteToDisk
+  fetchFileFromNetworkAndWriteToDisk,
+  deleteAllCNodeUserDataFromDisk
 }

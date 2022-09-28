@@ -663,6 +663,10 @@ describe('test fileManager', () => {
       assert.deepStrictEqual(metadataFileData, metadata)
     })
   })
+
+  describe('test deleteAllCNodeUserDataFromDisk()', function () {
+    // TODO
+  })
 })
 
 describe('test removeTrackFolder()', async function () {
