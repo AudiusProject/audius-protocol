@@ -4,9 +4,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
   background-color: var(--white);
-  margin-bottom: 35px;
   padding-top: 24px;
-  padding-bottom: 5px;
   overflow: hidden;
 }
 
@@ -15,6 +13,7 @@
   overflow: hidden;
   width: 100%;
   background-color: var(--white);
+  padding-bottom: 5px;
 
   display: flex;
   flex-direction: column;
@@ -75,6 +74,88 @@
 .sortCaret {
   height: 8px;
   width: 8px;
+}
+
+.pageButtonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.pageButton {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24px;
+  width: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--neutral-light-2);
+  cursor: pointer;
+}
+.pageButton:not(.active):hover {
+  color: var(--neutral);
+}
+.pageButton.active {
+  background-color: var(--secondary);
+  color: var(--static-white);
+  cursor: default;
+}
+
+.pageCaret {
+  height: 16px;
+  width: 16px;
+  margin: 0 8px;
+  cursor: pointer;
+}
+.pageCaret path {
+  fill: var(--neutral-light-4);
+}
+.pageCaret:not(.disabled):hover path {
+  fill: var(--neutral);
+}
+.pageCaret.disabled {
+  cursor: default;
+}
+.pageCaret.disabled path {
+  fill: var(--neutral-light-7);
+}
+
+.showMoreContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 15px 0;
+  background-color: var(--neutral-light-10);
+  border-top: 1px solid var(--neutral-light-8);
+  cursor: pointer;
+}
+.showMoreContainer:hover .showMoreText {
+  color: var(--neutral);
+}
+.showMoreContainer:hover .showMoreCaret path {
+  fill: var(--neutral);
+}
+
+.showMoreText {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral-light-4);
+  transition: all 0.07s ease-in-out;
+}
+
+.showMoreCaret {
+  height: 16px;
+  width: 16px;
+}
+.showMoreCaret path {
+  transition: all 0.07s ease-in-out;
+  fill: var(--neutral-light-4);
 }
 
 .tableBody {

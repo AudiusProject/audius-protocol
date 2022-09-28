@@ -86,19 +86,28 @@
 }
 
 .tabBorderProvider {
+  position: relative;
   width: 100%;
+  background-color: var(--neutral-light-10);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
 .tabContainer {
   width: 100%;
   display: flex;
-  padding-top: 8px;
+  padding-top: 32px;
   margin-left: 8px;
 }
 
 .tracksTableWrapper {
   margin-top: 50px;
+}
+
+.filterInputContainer {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 24px;
 }
 
 .tabBodyWrapper {
