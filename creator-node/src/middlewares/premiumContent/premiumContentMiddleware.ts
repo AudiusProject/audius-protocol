@@ -1,5 +1,5 @@
 import {
-  sendResponse,
+  sendResponseWithMetric,
   errorResponseServerError,
   errorResponseForbidden,
   errorResponseUnauthorized,
@@ -31,10 +31,11 @@ export const premiumContentMiddleware = async (
   try {
     const cid = req.params?.CID
     if (!cid) {
-      return sendResponse(
+      return sendResponseWithMetric(
         req,
         res,
-        errorResponseBadRequest(`Invalid request, no CID provided.`)
+        errorResponseBadRequest('Invalid request, no CID provided.'),
+        'abort_no_cid'
       )
     }
 
@@ -69,29 +70,32 @@ export const premiumContentMiddleware = async (
 
     switch (error) {
       case PremiumContentAccessError.MISSING_HEADERS:
-        return sendResponse(
+        return sendResponseWithMetric(
           req,
           res,
           errorResponseUnauthorized(
             'Missing request headers for premium content.'
-          )
+          ),
+          'abort_premium_content_missing_headers'
         )
       case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
-        return sendResponse(
+        return sendResponseWithMetric(
           req,
           res,
           errorResponseForbidden(
             'Failed discovery node signature validation for premium content.'
-          )
+          ),
+          'abort_premium_content_invalid_discovery_node_validation'
         )
       case PremiumContentAccessError.FAILED_MATCH:
       default:
-        return sendResponse(
+        return sendResponseWithMetric(
           req,
           res,
           errorResponseForbidden(
             'Failed match verification for premium content.'
-          )
+          ),
+          'abort_premium_content_failed_match_verification'
         )
     }
   } catch (e) {
@@ -101,6 +105,11 @@ export const premiumContentMiddleware = async (
     ;(req as any).logger.error(
       `${error}.\nError: ${JSON.stringify(e, null, 2)}`
     )
-    return sendResponse(req, res, errorResponseServerError(error))
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseServerError(error),
+      'failure_premium_content_error'
+    )
   }
 }

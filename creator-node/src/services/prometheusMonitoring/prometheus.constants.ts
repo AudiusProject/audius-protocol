@@ -48,6 +48,7 @@ const metricNames: Record<string, string> = {
   WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
   SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
     'secondary_sync_from_primary_duration_seconds',
+  STREAM_CONTENT_HISTOGRAM: 'stream_content_duration_seconds',
   JOBS_ACTIVE_TOTAL_GAUGE: 'jobs_active_total',
   JOBS_WAITING_TOTAL_GAUGE: 'jobs_waiting_total',
   JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
@@ -61,6 +62,7 @@ const metricNames: Record<string, string> = {
   RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
   STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes'
 }
+
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
 for (const jobName of Object.values(
@@ -102,6 +104,28 @@ export const METRIC_LABELS = Object.freeze({
       'failure_inconsistent_clock'
     ],
     // 5 buckets in the range of 1 second to max seconds before timing out write quorum
+    buckets: exponentialBucketsRange(0.1, 60, 10)
+  },
+  [METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]: {
+    mode: ['new_storage_path', 'legacy_storage_path', 'default'],
+    result: [
+      'success_found_in_fs',
+      'success_found_in_network',
+      'abort_no_cid',
+      'abort_premium_content_missing_headers',
+      'abort_premium_content_invalid_discovery_node_validation',
+      'abort_premium_content_failed_match_verification',
+      'abort_delisted',
+      'abort_bad_cid',
+      'abort_cid_is_directory',
+      'abort_cid_is_not_file',
+      'abort_cid_not_found_in_db',
+      'abort_cid_is_directory_from_db_query',
+      'abort_cid_not_found_network',
+      'failure_cid_db_query',
+      'failure_premium_content_error',
+      'failure_stream'
+    ],
     buckets: exponentialBucketsRange(0.1, 60, 10)
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
@@ -316,6 +340,14 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         ]
     }
   },
+  [METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
+    metricConfig: {
+      name: METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
+      help: 'Time spent to stream content (seconds)',
+      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]
+    }
+  },
   [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -406,6 +438,11 @@ export const METRICS: Record<string, Metric> = Object.freeze({
   }
 })
 
+export const ROUTE_TO_METRIC_NAME = Object.freeze({
+  '/ipfs': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
+  '/content': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM
+})
+
 module.exports = {
   NAMESPACE_PREFIX,
   METRIC_TYPES,
@@ -413,5 +450,6 @@ module.exports = {
   METRIC_LABELS,
   METRIC_RECORD_TYPE,
   METRICS,
-  QUEUE_INTERVAL
+  QUEUE_INTERVAL,
+  ROUTE_TO_METRIC_NAME
 }
