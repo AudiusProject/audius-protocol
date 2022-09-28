@@ -440,7 +440,7 @@ export class Users extends Base {
           spIds.join(',')
         )
 
-        await this.waitForReplicaSetDiscoveryIndexing(
+      await this.waitForReplicaSetDiscoveryIndexing(
         userId,
         spIds,
         manageEntityResponse.txReceipt.blockNumber
@@ -1011,7 +1011,7 @@ export class Users extends Base {
         const encodedUserId = Utils.encodeHashId(userId)
         let replicaSet
         try {
-           replicaSet = await this.discoveryProvider.getUserReplicaSet({
+          replicaSet = await this.discoveryProvider.getUserReplicaSet({
             encodedUserId: encodedUserId!,
             blockNumber
           })
