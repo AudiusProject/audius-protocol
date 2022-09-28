@@ -23,7 +23,7 @@ from src.utils.track_event_constants import (
     track_event_types_lookup,
 )
 
-from discovery-provider.src.tasks.entity_manager.utils import TRACK_ID_OFFSET
+from src.tasks.entity_manager.utils import TRACK_ID_OFFSET
 
 logger = logging.getLogger(__name__)
 

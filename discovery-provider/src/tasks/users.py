@@ -22,6 +22,7 @@ from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingE
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
+from src.tasks.entity_manager.utils import USER_ID_OFFSET
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,6 @@ def user_state_update(
                     f"index.py | tracks.py | Track {track_id} is above the track ID offset {TRACK_ID_OFFSET}. Skipping transaction."
                 )
                 continue
-
 
             user_txs = user_transactions_lookup[user_id]
             process_user_txs_futures[
