@@ -1,4 +1,11 @@
-import { Suspense, Component, useMemo, ReactNode } from 'react'
+import React, {
+  Suspense,
+  Component,
+  useMemo,
+  ReactNode,
+  useCallback,
+  useState
+} from 'react'
 
 import {
   ID,
@@ -7,22 +14,29 @@ import {
   Track,
   User,
   formatCount,
-  themeSelectors
+  themeSelectors,
+  FeatureFlags
 } from '@audius/common'
+import { IconFilter, IconNote, IconHidden } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { each } from 'lodash'
 import moment, { Moment } from 'moment'
-import { connect } from 'react-redux'
+import { connect, useDispatch, useSelector } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import Header from 'components/header/desktop/Header'
+import { Input } from 'components/input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
+import { TestTracksTable } from 'components/test-tracks-table'
+import { TracksTableColumn } from 'components/test-tracks-table/TestTracksTable'
 import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
+import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { AppState } from 'store/types'
 import lazyWithPreload from 'utils/lazyWithPreload'
 import { profilePage, TRENDING_PAGE } from 'utils/route'
@@ -33,11 +47,13 @@ import ArtistProfile from './components/ArtistProfile'
 import {
   fetchDashboard,
   fetchDashboardListenData,
+  fetchDashboardTracks,
   resetDashboard
 } from './store/actions'
 import {
   getDashboardListenData,
   getDashboardStatus,
+  getDashboardTracksStatus,
   makeGetDashboard
 } from './store/selectors'
 const { getTheme } = themeSelectors
@@ -88,6 +104,7 @@ type TracksTableProps = {
 export const messages = {
   publicTracksTabTitle: 'PUBLIC TRACKS',
   unlistedTracksTabTitle: 'HIDDEN TRACKS',
+  filterInputPlacehoder: 'Filter Tracks',
   thisYear: 'This Year'
 }
 
@@ -159,26 +176,64 @@ const makeColumns = (account: User, isUnlisted: boolean) => {
   return [...columns, overflowColumn]
 }
 
+const tableColumns: TracksTableColumn[] = [
+  'trackName',
+  'releaseDate',
+  'length',
+  'plays',
+  'reposts',
+  'overflowMenu'
+]
+
+// Pagination Constants
+const tablePageSize = 50
+
 const TracksTableContainer = ({
   onClickRow,
   listedDataSource,
   unlistedDataSource,
   account
 }: TracksTableProps) => {
+  const [filterText, setFilterText] = useState('')
+  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
+  const dispatch = useDispatch()
+  const tracksStatus = useSelector(getDashboardTracksStatus)
   const tabRecalculator = useTabRecalculator()
 
   const tabHeaders = useMemo(
     () => [
       {
         text: messages.publicTracksTabTitle,
+        icon: <IconNote />,
         label: messages.publicTracksTabTitle
       },
       {
         text: messages.unlistedTracksTabTitle,
+        icon: <IconHidden />,
         label: messages.unlistedTracksTabTitle
       }
     ],
     []
+  )
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setFilterText(val)
+  }
+
+  const filteredListedData = listedDataSource.filter((data) =>
+    data.title.toLowerCase().includes(filterText.toLowerCase())
+  )
+
+  const filteredUnlistedData = unlistedDataSource.filter((data) =>
+    data.title.toLowerCase().includes(filterText.toLowerCase())
+  )
+
+  const handleFetchPage = useCallback(
+    (page: number) => {
+      dispatch(fetchDashboardTracks(page * tablePageSize, tablePageSize))
+    },
+    [dispatch]
   )
 
   const tabElements = useMemo(
@@ -187,32 +242,69 @@ const TracksTableContainer = ({
         key='listed'
         className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
       >
-        <TracksTable
-          dataSource={listedDataSource}
-          limit={5}
-          columns={makeColumns(account, false)}
-          onClickRow={onClickRow}
-          didToggleShowTracks={() => {
-            tabRecalculator.recalculate()
-          }}
-          animateTransitions={false}
-        />
+        {isNewTablesEnabled ? (
+          <TestTracksTable
+            data={filteredListedData}
+            columns={tableColumns}
+            onClickRow={onClickRow}
+            loading={tracksStatus === Status.LOADING}
+            fetchPage={handleFetchPage}
+            pageSize={tablePageSize}
+            showMoreLimit={5}
+            onShowMoreToggle={tabRecalculator.recalculate}
+            totalRowCount={account.track_count}
+            isPaginated
+          />
+        ) : (
+          <TracksTable
+            dataSource={filteredListedData}
+            limit={5}
+            columns={makeColumns(account, false)}
+            onClickRow={onClickRow}
+            didToggleShowTracks={() => tabRecalculator.recalculate()}
+            animateTransitions={false}
+          />
+        )}
       </div>,
       <div
         key='unlisted'
         className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
       >
-        <TracksTable
-          dataSource={unlistedDataSource}
-          limit={5}
-          columns={makeColumns(account, true)}
-          onClickRow={onClickRow}
-          didToggleShowTracks={() => tabRecalculator.recalculate()}
-          animateTransitions={false}
-        />
+        {isNewTablesEnabled ? (
+          <TestTracksTable
+            data={filteredUnlistedData}
+            columns={tableColumns}
+            onClickRow={onClickRow}
+            loading={tracksStatus === Status.LOADING}
+            fetchPage={handleFetchPage}
+            pageSize={tablePageSize}
+            showMoreLimit={5}
+            onShowMoreToggle={tabRecalculator.recalculate}
+            totalRowCount={account.track_count}
+            isPaginated
+          />
+        ) : (
+          <TracksTable
+            dataSource={filteredUnlistedData}
+            limit={5}
+            columns={makeColumns(account, true)}
+            onClickRow={onClickRow}
+            didToggleShowTracks={() => tabRecalculator.recalculate()}
+            animateTransitions={false}
+          />
+        )}
       </div>
     ],
-    [account, listedDataSource, onClickRow, unlistedDataSource, tabRecalculator]
+    [
+      account,
+      filteredListedData,
+      filteredUnlistedData,
+      handleFetchPage,
+      isNewTablesEnabled,
+      onClickRow,
+      tabRecalculator,
+      tracksStatus
+    ]
   )
 
   const { tabs, body } = useTabs({
@@ -226,6 +318,16 @@ const TracksTableContainer = ({
   return (
     <div className={styles.tableContainer}>
       <div className={styles.tabBorderProvider}>
+        <div className={styles.filterInputContainer}>
+          <Input
+            placeholder={messages.filterInputPlacehoder}
+            prefix={<IconFilter />}
+            onChange={handleFilterChange}
+            value={filterText}
+            size='small'
+            variant='bordered'
+          />
+        </div>
         <div className={styles.tabContainer}>{tabs}</div>
       </div>
       {body}
@@ -250,7 +352,8 @@ export class ArtistDashboardPage extends Component<
   }
 
   componentDidMount() {
-    this.props.fetchDashboard()
+    const newTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES) ?? false
+    this.props.fetchDashboard(0, newTablesEnabled ? tablePageSize : 500)
     TotalPlaysChart.preload()
   }
 
@@ -417,7 +520,8 @@ const makeMapStateToProps = () => {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  fetchDashboard: () => dispatch(fetchDashboard()),
+  fetchDashboard: (offset?: number, limit?: number) =>
+    dispatch(fetchDashboard(offset, limit)),
   fetchDashboardListenData: (trackIds: ID[], start: string, end: string) =>
     dispatch(fetchDashboardListenData(trackIds, start, end, 'month')),
   resetDashboard: () => dispatch(resetDashboard()),

@@ -18,18 +18,38 @@ import * as dashboardActions from './actions'
 const { getBalance } = walletActions
 const getAccountUser = accountSelectors.getAccountUser
 
-function* fetchDashboardAsync() {
+function* fetchDashboardTracksAsync(action) {
+  const account = yield call(waitForValue, getAccountUser)
+  const { offset, limit } = action
+
+  const tracks = yield call(retrieveUserTracks, {
+    handle: account.handle,
+    currentUserId: account.user_id,
+    offset,
+    limit,
+    getUnlisted: true
+  })
+  const listedTracks = tracks.filter((t) => t.is_unlisted === false)
+  const unlistedTracks = tracks.filter((t) => t.is_unlisted === true)
+
+  yield put(
+    dashboardActions.fetchDashboardTracksSucceeded(listedTracks, unlistedTracks)
+  )
+}
+
+function* fetchDashboardAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForBackendSetup)
 
   const account = yield call(waitForValue, getAccountUser)
+  const { offset, limit } = action
 
   const [tracks, playlists] = yield all([
     call(retrieveUserTracks, {
       handle: account.handle,
       currentUserId: account.user_id,
-      // TODO: This only supports up to 500, we need to redesign / paginate
-      // the dashboard
+      offset,
+      limit,
       getUnlisted: true
     }),
     call(audiusBackendInstance.getPlaylists, account.user_id, [])
@@ -131,6 +151,13 @@ function* pollForBalance() {
   chan.close()
 }
 
+function* watchFetchDashboardTracks() {
+  yield takeEvery(
+    dashboardActions.FETCH_DASHBOARD_TRACKS,
+    requiresAccount(fetchDashboardTracksAsync, DASHBOARD_PAGE)
+  )
+}
+
 function* watchFetchDashboard() {
   yield takeEvery(
     dashboardActions.FETCH_DASHBOARD,
@@ -146,5 +173,9 @@ function* watchFetchDashboardListenData() {
 }
 
 export default function sagas() {
-  return [watchFetchDashboard, watchFetchDashboardListenData]
+  return [
+    watchFetchDashboard,
+    watchFetchDashboardTracks,
+    watchFetchDashboardListenData
+  ]
 }

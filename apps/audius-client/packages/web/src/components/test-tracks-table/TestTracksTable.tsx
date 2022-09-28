@@ -29,6 +29,7 @@ export type TracksTableColumn =
   | 'length'
   | 'listenDate'
   | 'overflowActions'
+  | 'overflowMenu'
   | 'playButton'
   | 'plays'
   | 'releaseDate'
@@ -41,8 +42,10 @@ type TestTracksTableProps = {
   defaultSorter?: (a: any, b: any) => number
   fetchBatchSize?: number
   fetchMoreTracks?: (offset: number, limit: number) => void
+  fetchPage?: (page: number) => void
   fetchThreshold?: number
   isVirtualized?: boolean
+  isPaginated?: boolean
   isReorderable?: boolean
   loading?: boolean
   onClickArtistName?: (track: any) => void
@@ -57,11 +60,14 @@ type TestTracksTableProps = {
   onClickRow?: (track: any, index: number) => void
   onClickTrackName?: (track: any) => void
   onReorderTracks?: (source: number, destination: number) => void
+  onShowMoreToggle?: (setting: boolean) => void
   onSortTracks?: (...props: any[]) => void
+  pageSize?: number
   playing?: boolean
   playingIndex?: number
   removeText?: string
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
+  showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number
   userId?: number | null
@@ -84,9 +90,11 @@ export const TestTracksTable = ({
   columns = defaultColumns,
   data,
   defaultSorter,
+  isPaginated = false,
   isReorderable = false,
   fetchBatchSize,
   fetchMoreTracks,
+  fetchPage,
   fetchThreshold,
   isVirtualized = false,
   loading = false,
@@ -97,11 +105,14 @@ export const TestTracksTable = ({
   onClickRow,
   onClickTrackName,
   onReorderTracks,
+  onShowMoreToggle,
   onSortTracks,
+  pageSize,
   playing = false,
   playingIndex = -1,
   removeText,
   scrollRef,
+  showMoreLimit,
   tableClassName,
   totalRowCount,
   userId,
@@ -289,7 +300,7 @@ export const TestTracksTable = ({
   const renderOverflowMenuCell = useCallback(
     (cellInfo) => {
       const track = cellInfo.row.original
-      const deleted = track.is_delete || !!track.user.is_deactivated
+      const deleted = track.is_delete || !!track.user?.is_deactivated
       return (
         <div ref={overflowMenuRef}>
           <OverflowMenuButton
@@ -303,8 +314,8 @@ export const TestTracksTable = ({
             date={track.date}
             isFavorited={track.has_current_user_saved}
             isOwner={track.owner_id === userId}
-            isOwnerDeactivated={!!track.user.is_deactivated}
-            isArtistPick={track.user._artist_pick === track.track_id}
+            isOwnerDeactivated={!!track.user?.is_deactivated}
+            isArtistPick={track.user?._artist_pick === track.track_id}
             index={cellInfo.row.index}
             trackTitle={track.name}
             albumId={null}
@@ -426,6 +437,15 @@ export const TestTracksTable = ({
         disableResizing: true,
         disableSortBy: true
       },
+      overflowMenu: {
+        id: 'overflowMenu',
+        Cell: renderOverflowMenuCell,
+        minWidth: 64,
+        maxWidth: 64,
+        width: 64,
+        disableResizing: true,
+        disableSortBy: true
+      },
       length: {
         id: 'time',
         Header: 'Length',
@@ -456,6 +476,7 @@ export const TestTracksTable = ({
       renderDateCell,
       renderLengthCell,
       renderListenDateCell,
+      renderOverflowMenuCell,
       renderPlayButtonCell,
       renderPlaysCell,
       renderReleaseDateCell,
@@ -503,15 +524,20 @@ export const TestTracksTable = ({
       defaultSorter={defaultSorter}
       fetchBatchSize={fetchBatchSize}
       fetchMore={fetchMoreTracks}
+      fetchPage={fetchPage}
       fetchThreshold={fetchThreshold}
       getRowClassName={getRowClassName}
+      isPaginated={isPaginated}
       isReorderable={isReorderable}
       isVirtualized={isVirtualized}
       loading={loading}
       onClickRow={handleClickRow}
       onReorder={onReorderTracks}
+      onShowMoreToggle={onShowMoreToggle}
       onSort={onSortTracks}
+      pageSize={pageSize}
       scrollRef={scrollRef}
+      showMoreLimit={showMoreLimit}
       tableClassName={tableClassName}
       totalRowCount={totalRowCount}
       wrapperClassName={wrapperClassName}
