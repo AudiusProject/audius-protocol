@@ -392,6 +392,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -468,6 +474,12 @@ const config = convict({
     doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
     format: Boolean,
     env: 'considerNodeUnhealthy',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
     default: false
   },
 

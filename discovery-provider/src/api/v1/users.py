@@ -77,6 +77,7 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
@@ -1470,3 +1471,49 @@ class GetTokenVerification(Resource):
 
         # 5. Send back the decoded payload
         return success_response(payload)
+
+
+GET_REPLICA_SET = "/<string:id>/replica_set"
+user_replica_set_full_response = make_full_response(
+    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
+)
+user_replica_set_response = make_response(
+    "users_by_content_node", ns, fields.Nested(user_replica_set)
+)
+
+
+@full_ns.route(GET_REPLICA_SET)
+class FullGetReplicaSet(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id: str):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = {"user_id": decoded_id}
+        replica_set = get_user_replica_set(args)
+        return success_response(replica_set)
+
+    @full_ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(user_replica_set_full_response)
+    def get(self, id: str):
+        return self._get(id)
+
+
+@ns.route(GET_REPLICA_SET)
+class GetReplicaSet(FullGetReplicaSet):
+    @ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @ns.marshal_with(user_replica_set_response)
+    def get(self, id: str):
+        return super()._get(id)
