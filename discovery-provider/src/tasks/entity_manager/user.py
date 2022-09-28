@@ -88,7 +88,7 @@ def create_user(params: ManageEntityParameters):
 def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
-    user_metadata = params.ipfs_metadata[params.metadata_cid]
+    user_metadata = params.metadata[params.metadata_cid]
     user_id = params.entity_id
     existing_user = params.existing_records[EntityType.USER][user_id]
     existing_user.is_current = False  # invalidate
