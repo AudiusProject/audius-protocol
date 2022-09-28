@@ -336,7 +336,7 @@ def parse_user_event(
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
-        # Look up metadata multihash in IPFS and override with metadata fields
+        # Look up metadata multihash and override with metadata fields
         if metadata:
             # Fields also stored on chain
             if "profile_picture" in metadata and metadata["profile_picture"]:

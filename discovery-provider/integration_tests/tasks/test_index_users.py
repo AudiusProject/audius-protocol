@@ -461,7 +461,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         assert user_record.is_deactivated == True
 
-        associated_wallets = metadata["associated_wallets"]
+        metadata_associated_wallets = metadata["associated_wallets"]
         associated_wallets = (
             session.query(AssociatedWallet)
             .filter_by(
@@ -473,10 +473,10 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             .all()
         )
         for associated_wallet in associated_wallets:
-            assert associated_wallet.wallet in associated_wallets
+            assert associated_wallet.wallet in metadata_associated_wallets
         assert len(associated_wallets) == len(associated_wallets)
 
-        associated_sol_wallets = metadata["associated_sol_wallets"]
+        metadata_associated_sol_wallets = metadata["associated_sol_wallets"]
         associated_sol_wallets = (
             session.query(AssociatedWallet)
             .filter_by(
@@ -488,7 +488,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             .all()
         )
         for associated_wallet in associated_sol_wallets:
-            assert associated_wallet.wallet in associated_sol_wallets
+            assert associated_wallet.wallet in metadata_associated_sol_wallets
         assert len(associated_sol_wallets) == len(associated_sol_wallets)
 
         user_events = (

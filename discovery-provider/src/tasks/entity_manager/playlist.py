@@ -48,7 +48,7 @@ def create_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
     playlist_id = params.entity_id
-    metadata = params.ipfs_metadata[params.metadata_cid]
+    metadata = params.metadata[params.metadata_cid]
     tracks = metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
     last_added_to = None
@@ -103,7 +103,7 @@ def update_playlist(params: ManageEntityParameters):
     # TODO ignore updates on deleted playlists?
 
     playlist_id = params.entity_id
-    metadata = params.ipfs_metadata[params.metadata_cid]
+    metadata = params.metadata[params.metadata_cid]
     existing_playlist = params.existing_records[EntityType.PLAYLIST][playlist_id]
     if (
         playlist_id in params.new_records[EntityType.PLAYLIST]
