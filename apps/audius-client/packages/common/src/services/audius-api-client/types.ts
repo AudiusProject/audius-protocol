@@ -11,7 +11,8 @@ import {
   SolanaWalletAddress,
   WalletAddress,
   Supporter,
-  Supporting
+  Supporting,
+  UserTip
 } from 'models'
 import { Nullable } from 'utils'
 
@@ -237,4 +238,11 @@ export type SupportingResponse = Omit<Supporting, 'receiver_id'> & {
 }
 export type SupporterResponse = Omit<Supporter, 'sender_id'> & {
   sender: APIUser
+}
+
+type UserTipOmitIds = 'sender_id' | 'receiver_id' | 'followee_supporter_ids'
+export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
+  sender: APIUser
+  receiver: APIUser
+  followee_supporters: APIUser[]
 }
