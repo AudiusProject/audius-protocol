@@ -78,6 +78,7 @@ type UpdateLineupOrderAction = {
 type AddAction<T> = {
   type: typeof ADD
   entry: LineupStateTrack<T>
+  shouldPrepend?: boolean
 }
 
 type RemoveAction = {
@@ -201,12 +202,21 @@ export const actionsMap = {
     }
   },
   [ADD]<T>(state: LineupState<T>, action: AddAction<T>) {
+    const { entry, shouldPrepend } = action
     const newState = { ...state }
-    newState.entries = newState.entries.concat({
-      ...action.entry
-    })
     newState.order = { ...state.order }
-    newState.order[action.entry.uid] = newState.entries.length
+
+    if (shouldPrepend) {
+      newState.entries = [entry, ...newState.entries]
+      newState.entries.forEach((newEntry, index) => {
+        newState.order[newEntry.uid] = index
+      })
+    } else {
+      newState.entries = newState.entries.concat({
+        ...entry
+      })
+      newState.order[entry.uid] = newState.entries.length
+    }
     return newState
   },
   [REMOVE]<T>(state: LineupState<T>, action: RemoveAction) {

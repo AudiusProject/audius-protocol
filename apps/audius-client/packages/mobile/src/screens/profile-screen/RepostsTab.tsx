@@ -15,6 +15,7 @@ const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
   const { handle } = useSelectProfile(['handle'])
+
   const lineup = useProxySelector(
     (state) => getProfileFeedLineup(state, handle),
     [handle]

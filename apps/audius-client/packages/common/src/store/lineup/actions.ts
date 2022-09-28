@@ -203,19 +203,22 @@ export class LineupActions {
     }
   }
 
-  add(entry: unknown, id: ID) {
+  add(entry: unknown, id: ID, handle?: string, shouldPrepend?: boolean) {
     return {
       type: addPrefix(this.prefix, ADD),
       entry,
-      id
+      id,
+      handle,
+      shouldPrepend
     }
   }
 
-  remove(kind: string, uid: UID) {
+  remove(kind: string, uid: UID, handle?: string) {
     return {
       type: addPrefix(this.prefix, REMOVE),
       kind,
-      uid
+      uid,
+      handle
     }
   }
 
