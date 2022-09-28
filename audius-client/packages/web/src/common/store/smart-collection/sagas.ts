@@ -15,7 +15,6 @@ import { takeEvery, put, call, select } from 'typed-redux-saga'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
-import { getLuckyTracks } from 'common/store/recommendation/sagas'
 import { requiresAccount } from 'common/utils/requiresAccount'
 
 import { EXPLORE_PAGE } from '../../../utils/route'
@@ -142,11 +141,14 @@ function* fetchMostLoved() {
 }
 
 function* fetchFeelingLucky() {
-  const tracks = yield* call(getLuckyTracks, COLLECTIONS_LIMIT)
+  yield* waitForAccount()
+  const currentUserId = yield* select(getUserId)
+  const explore = yield* getContext('explore')
 
+  const tracks = yield* call([explore, 'getFeelingLuckyTracks'], currentUserId)
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
-    .map((track: Track) => ({
+    .map((track: UserTrackMetadata) => ({
       time: track.created_at,
       track: track.track_id
     }))
