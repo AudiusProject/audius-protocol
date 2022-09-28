@@ -15,7 +15,6 @@ import {
   weiToAudioString,
   weiToString,
   decodeHashId,
-  encodeHashId,
   accountSelectors,
   cacheActions,
   RefreshSupportPayloadAction,
@@ -26,13 +25,11 @@ import {
   getContext,
   waitForAccount,
   waitForValue,
+  GetTipsArgs,
+  GetSupportingArgs,
+  GetSupportersArgs,
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
-  MAX_PROFILE_TOP_SUPPORTERS,
-  fetchRecentUserTips,
-  fetchSupporters,
-  fetchSupporting,
-  SupportRequest,
-  UserTipRequest
+  MAX_PROFILE_TOP_SUPPORTERS
 } from '@audius/common'
 import BN from 'bn.js'
 import {
@@ -322,90 +319,84 @@ function* refreshSupportAsync({
   payload: RefreshSupportPayloadAction
   type: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const encodedSenderUserId = encodeHashId(senderUserId)
-  const encodedReceiverUserId = encodeHashId(receiverUserId)
+  const apiClient = yield* getContext('apiClient')
 
-  if (encodedSenderUserId && encodedReceiverUserId) {
-    const supportingParams: SupportRequest = {
-      encodedUserId: encodedSenderUserId,
-      audiusBackendInstance
-    }
-    if (supportingLimit) {
-      supportingParams.limit = supportingLimit
-    } else {
-      yield* waitForAccount()
-      const account = yield* select(getAccountUser)
-      supportingParams.limit =
-        account?.user_id === senderUserId
-          ? account?.supporting_count
-          : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
-    }
-
-    const supportersParams: SupportRequest = {
-      encodedUserId: encodedReceiverUserId,
-      audiusBackendInstance
-    }
-    if (supportersLimit) {
-      supportersParams.limit = supportersLimit
-    }
-
-    const supportingForSenderList = yield* call(
-      fetchSupporting,
-      supportingParams
-    )
-    const supportersForReceiverList = yield* call(
-      fetchSupporters,
-      supportersParams
-    )
-
-    const userIds = [
-      ...supportingForSenderList.map((supporting) =>
-        decodeHashId(supporting.receiver.id)
-      ),
-      ...supportersForReceiverList.map((supporter) =>
-        decodeHashId(supporter.sender.id)
-      )
-    ]
-
-    yield call(fetchUsers, userIds)
-
-    const supportingForSenderMap: Record<string, Supporting> = {}
-    supportingForSenderList.forEach((supporting) => {
-      const supportingUserId = decodeHashId(supporting.receiver.id)
-      if (supportingUserId) {
-        supportingForSenderMap[supportingUserId] = {
-          receiver_id: supportingUserId,
-          rank: supporting.rank,
-          amount: supporting.amount
-        }
-      }
-    })
-    const supportersForReceiverMap: Record<string, Supporter> = {}
-    supportersForReceiverList.forEach((supporter) => {
-      const supporterUserId = decodeHashId(supporter.sender.id)
-      if (supporterUserId) {
-        supportersForReceiverMap[supporterUserId] = {
-          sender_id: supporterUserId,
-          rank: supporter.rank,
-          amount: supporter.amount
-        }
-      }
-    })
-
-    yield put(
-      setSupportingForUser({
-        id: senderUserId,
-        supportingForUser: supportingForSenderMap
-      })
-    )
-    yield put(
-      setSupportersForUser({
-        id: receiverUserId,
-        supportersForUser: supportersForReceiverMap
-      })
-    )
+  const supportingParams: GetSupportingArgs = {
+    userId: senderUserId
   }
+  if (supportingLimit) {
+    supportingParams.limit = supportingLimit
+  } else {
+    yield* waitForAccount()
+    const account = yield* select(getAccountUser)
+    supportingParams.limit =
+      account?.user_id === senderUserId
+        ? account?.supporting_count
+        : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
+  }
+
+  const supportersParams: GetSupportersArgs = {
+    userId: receiverUserId
+  }
+  if (supportersLimit) {
+    supportersParams.limit = supportersLimit
+  }
+
+  const supportingForSenderList = yield* call(
+    [apiClient, apiClient.getSupporting],
+    supportingParams
+  )
+  const supportersForReceiverList = yield* call(
+    [apiClient, apiClient.getSupporters],
+    supportersParams
+  )
+
+  const userIds = [
+    ...(supportingForSenderList || []).map((supporting) =>
+      decodeHashId(supporting.receiver.id)
+    ),
+    ...(supportersForReceiverList || []).map((supporter) =>
+      decodeHashId(supporter.sender.id)
+    )
+  ]
+
+  yield call(fetchUsers, userIds)
+
+  const supportingForSenderMap: Record<string, Supporting> = {}
+  ;(supportingForSenderList || []).forEach((supporting) => {
+    const supportingUserId = decodeHashId(supporting.receiver.id)
+    if (supportingUserId) {
+      supportingForSenderMap[supportingUserId] = {
+        receiver_id: supportingUserId,
+        rank: supporting.rank,
+        amount: supporting.amount
+      }
+    }
+  })
+  const supportersForReceiverMap: Record<string, Supporter> = {}
+  ;(supportersForReceiverList || []).forEach((supporter) => {
+    const supporterUserId = decodeHashId(supporter.sender.id)
+    if (supporterUserId) {
+      supportersForReceiverMap[supporterUserId] = {
+        sender_id: supporterUserId,
+        rank: supporter.rank,
+        amount: supporter.amount
+      }
+    }
+  })
+
+  yield put(
+    setSupportingForUser({
+      id: senderUserId,
+      supportingForUser: supportingForSenderMap
+    })
+  )
+  yield put(
+    setSupportersForUser({
+      id: receiverUserId,
+      supportersForUser: supportersForReceiverMap
+    })
+  )
 }
 
 function* fetchSupportingForUserAsync({
@@ -414,11 +405,7 @@ function* fetchSupportingForUserAsync({
   payload: { userId: ID }
   type: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const encodedUserId = encodeHashId(userId)
-  if (!encodedUserId) {
-    return
-  }
+  const apiClient = yield* getContext('apiClient')
 
   yield* waitForAccount()
   /**
@@ -434,19 +421,18 @@ function* fetchSupportingForUserAsync({
     account?.user_id === userId
       ? account.supporting_count
       : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
-  const supportingList = yield* call(fetchSupporting, {
-    encodedUserId,
-    limit,
-    audiusBackendInstance
+  const supportingList = yield* call([apiClient, apiClient.getSupporting], {
+    userId,
+    limit
   })
-  const userIds = supportingList.map((supporting) =>
-    decodeHashId(supporting.receiver.id)
-  )
+  const userIds =
+    supportingList?.map((supporting) => decodeHashId(supporting.receiver.id)) ??
+    []
 
   yield call(fetchUsers, userIds)
 
   const map: Record<string, Supporting> = {}
-  supportingList.forEach((supporting) => {
+  supportingList?.forEach((supporting) => {
     const supportingUserId = decodeHashId(supporting.receiver.id)
     if (supportingUserId) {
       map[supportingUserId] = {
@@ -592,29 +578,27 @@ export const checkTipToDisplay = ({
 }
 
 function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
   const localStorage = yield* getContext('localStorage')
   const { storage } = action.payload
   const minSlot = storage?.minSlot ?? null
 
   const account: User = yield* call(waitForValue, getAccountUser)
 
-  const encodedUserId = encodeHashId(account.user_id)
-  if (!encodedUserId) {
-    return
-  }
-
-  const params: UserTipRequest = {
-    userId: encodedUserId,
+  const params: GetTipsArgs = {
+    userId: account.user_id,
     currentUserFollows: 'receiver',
-    uniqueBy: 'receiver',
-    audiusBackendInstance
+    uniqueBy: 'receiver'
   }
   if (minSlot) {
     params.minSlot = minSlot
   }
 
-  const userTips = yield* call(fetchRecentUserTips, params)
+  const userTips = yield* call([apiClient, apiClient.getTips], params)
+
+  if (!userTips) {
+    return
+  }
 
   const recentTips = userTips
     .map((userTip) => {

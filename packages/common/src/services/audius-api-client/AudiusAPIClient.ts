@@ -28,8 +28,10 @@ import {
   APIStem,
   APITrack,
   APIUser,
+  GetTipsResponse,
   OpaqueID,
-  SupporterResponse
+  SupporterResponse,
+  SupportingResponse
 } from './types'
 
 // TODO: declare this at the root and use actual audiusLibs type
@@ -95,7 +97,10 @@ const FULL_ENDPOINT_MAP = {
     `/users/${userId}/supporters/${supporterUserId}`,
   getUserSupporting: (userId: OpaqueID, supporterUserId: OpaqueID) =>
     `/users/${userId}/supporting/${supporterUserId}`,
-  getReaction: '/reactions'
+  getReaction: '/reactions',
+  getSupporting: (userId: OpaqueID) => `/users/${userId}/supporting`,
+  getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
+  getTips: '/tips'
 }
 
 const ENDPOINT_MAP = {
@@ -111,7 +116,7 @@ type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
 }
 
-export type GetTrackArgs = {
+type GetTrackArgs = {
   id: ID
   currentUserId?: Nullable<ID>
   unlistedArgs?: {
@@ -392,6 +397,31 @@ type GetReactionResponse = [
     reacted_to: string
   }
 ]
+
+export type GetSupportingArgs = {
+  userId: ID
+  limit?: number
+  offset?: number
+}
+
+export type GetSupportersArgs = {
+  userId: ID
+  limit?: number
+  offset?: number
+}
+
+export type GetTipsArgs = {
+  userId: ID
+  limit?: number
+  offset?: number
+  receiverMinFollowers?: number
+  receiverIsVerified?: boolean
+  currentUserFollows?: 'sender' | 'receiver' | 'sender_or_receiver'
+  uniqueBy?: 'sender' | 'receiver'
+  minSlot?: number
+  maxSlot?: number
+  txSignatures?: string[]
+}
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -1442,6 +1472,70 @@ export class AudiusAPIClient {
     }))[0]
 
     return adapted
+  }
+
+  async getSupporting({ userId, limit = 25, offset = 0 }: GetSupportingArgs) {
+    const encodedUserId = this._encodeOrThrow(userId)
+    this._assertInitialized()
+    const params = {
+      limit,
+      offset
+    }
+
+    const response: Nullable<APIResponse<SupportingResponse[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getSupporting(encodedUserId),
+        params
+      )
+    return response ? response.data : null
+  }
+
+  async getSupporters({ userId, limit = 25, offset = 0 }: GetSupportersArgs) {
+    const encodedUserId = this._encodeOrThrow(userId)
+    this._assertInitialized()
+    const params = {
+      limit,
+      offset
+    }
+
+    const response: Nullable<APIResponse<SupporterResponse[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getSupporters(encodedUserId),
+        params
+      )
+    return response ? response.data : null
+  }
+
+  async getTips({
+    userId,
+    limit,
+    offset,
+    receiverMinFollowers,
+    receiverIsVerified,
+    currentUserFollows,
+    uniqueBy,
+    minSlot,
+    maxSlot,
+    txSignatures
+  }: GetTipsArgs) {
+    const encodedUserId = this._encodeOrThrow(userId)
+    this._assertInitialized()
+    const params = {
+      user_id: encodedUserId,
+      limit,
+      offset,
+      receiver_min_followers: receiverMinFollowers,
+      receiver_is_verififed: receiverIsVerified,
+      current_user_follows: currentUserFollows,
+      unique_by: uniqueBy,
+      min_slot: minSlot,
+      max_slot: maxSlot,
+      tx_signatures: txSignatures
+    }
+
+    const response: Nullable<APIResponse<GetTipsResponse[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.getTips, params)
+    return response ? response.data : null
   }
 
   async init() {
