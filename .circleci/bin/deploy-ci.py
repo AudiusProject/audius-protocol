@@ -8,6 +8,7 @@ import logging
 import shlex
 import time
 from pprint import pprint
+from random import randint
 from subprocess import PIPE, Popen
 from threading import Thread, Timer
 
@@ -74,6 +75,7 @@ MASTER = "master"
 MISSING = "missing"
 RELEASE = "release"
 FAILED_TO_SSH = "failed_to_ssh"
+UPDATE_IN_PROGRESS = "update_in_progress"
 PRE_DEPLOY = "pre_deploy"
 POST_DEPLOY = "post_deploy"
 
@@ -98,6 +100,7 @@ def ssh(
     cmd,
     exit_on_error=RAISE,
     show_output=False,
+    show_stderr=True,
     dry_run=False,
     timeout_sec=120,
 ):
@@ -112,6 +115,7 @@ def ssh(
             msg=f">> {host}: {cmd}",
             exit_on_error=exit_on_error,
             show_output=show_output,
+            show_stderr=show_stderr,
             timeout_sec=timeout_sec,
         )
 
@@ -544,9 +548,35 @@ def cli(
     release_summary["upgraded"] = []
     release_summary["failed_pre_check"] = []
     release_summary["failed_post_check"] = []
+    release_summary[UPDATE_IN_PROGRESS] = []
     release_summary["failed"] = []
+    deployment_id = str(randint(0, 9999999999999999999999))
     for host in release_summary["upgradeable"]:
         try:
+            # check if another deployment is in progress
+            output = ssh(host, "cat /tmp/deploy.lock", exit_on_error=RAISE)
+            if output:
+                release_summary[UPDATE_IN_PROGRESS].append(host)
+                logger.error(
+                    f"{host} is currently being upgraded by another deployment job."
+                )
+                continue
+
+            # lay claim on the machine and wait for any contenders
+            output = ssh(
+                host, f"echo {deployment_id} > /tmp/deploy.lock", exit_on_error=RAISE
+            )
+            time.sleep(2)
+
+            # check if another upgrade process has just started
+            output = ssh(host, "cat /tmp/deploy.lock", exit_on_error=RAISE)
+            if output != deployment_id:
+                release_summary[UPDATE_IN_PROGRESS].append(host)
+                logger.error(
+                    f"{host} is now being upgraded by another deployment job."
+                )
+                continue
+
             # log additional information
             ssh(host, "hostname", show_output=True)
             ssh(
@@ -617,6 +647,10 @@ def cli(
                     break
         except:
             release_summary["failed"].append(host)
+        finally:
+            output = ssh(host, "cat /tmp/deploy.lock", exit_on_error=RAISE)
+            if output == deployment_id:
+                ssh(host, "rm /tmp/deploy.lock", exit_on_error=RAISE)
         print("-" * 40)
     print("^" * 40)
 
@@ -636,6 +670,7 @@ def cli(
     format_artifacts(
         "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
     )
+    format_artifacts("Update already in progress", release_summary[UPDATE_IN_PROGRESS])
     format_artifacts(
         f"Upgraded to `{git_tag if git_tag else 'master'}`",
         release_summary["upgraded"],
