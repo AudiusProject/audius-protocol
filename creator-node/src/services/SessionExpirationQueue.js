@@ -1,9 +1,11 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 const Sequelize = require('sequelize')
+
 const sessionManager = require('../sessionManager')
 const config = require('../config')
 const { logger } = require('../logging')
 const { SessionToken } = require('../models')
+const { clusterUtils } = require('../utils')
 
 const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
@@ -21,59 +23,19 @@ class SessionExpirationQueue {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
-    this.queue = new Bull('session-expiration-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+    this.logStatus = this.logStatus.bind(this)
+    this.expireSessions = this.expireSessions.bind(this)
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('session-expiration-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: true
       }
     })
-    this.logStatus = this.logStatus.bind(this)
-    this.expireSessions = this.expireSessions.bind(this)
-
-    // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
-
-    this.queue.process(
-      PROCESS_NAMES.expire_sessions,
-      /* concurrency */ 1,
-      async (job, done) => {
-        try {
-          this.logStatus('Starting')
-          let progress = 0
-          const SESSION_EXPIRED_CONDITION = {
-            where: {
-              createdAt: {
-                [Sequelize.Op.gt]: new Date(
-                  Date.now() - this.sessionExpirationAge
-                )
-              }
-            }
-          }
-          const numExpiredSessions = await SessionToken.count(
-            SESSION_EXPIRED_CONDITION
-          )
-          this.logStatus(
-            `${numExpiredSessions} expired sessions ready for deletion.`
-          )
-
-          let sessionsToDelete = numExpiredSessions
-          while (sessionsToDelete > 0) {
-            await this.expireSessions(SESSION_EXPIRED_CONDITION)
-            progress += (this.batchSize / numExpiredSessions) * 100
-            job.progress(progress)
-            sessionsToDelete -= this.batchSize
-          }
-          done(null, {})
-        } catch (e) {
-          this.logStatus(`Error ${e}`)
-          done(e)
-        }
-      }
-    )
   }
 
   async expireSessions(sessionExpiredCondition) {
@@ -99,20 +61,70 @@ class SessionExpirationQueue {
    * Starts the session expiration queue on a daily cron.
    */
   async start() {
-    try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.expire_sessions)
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
+    // Clean up anything that might be still stuck in the queue on restart
+    if (clusterUtils.isThisWorkerInit()) {
+      await this.queue.drain(true)
+    }
+
+    const worker = new Worker(
+      'session-expiration-queue',
+      async (job) => {
         try {
-          await this.queue.add(PROCESS_NAMES.expire_sessions)
+          await this.logStatus('Starting')
+          let progress = 0
+          const SESSION_EXPIRED_CONDITION = {
+            where: {
+              createdAt: {
+                [Sequelize.Op.gt]: new Date(
+                  Date.now() - this.sessionExpirationAge
+                )
+              }
+            }
+          }
+          const numExpiredSessions = await SessionToken.count(
+            SESSION_EXPIRED_CONDITION
+          )
+          await this.logStatus(
+            `${numExpiredSessions} expired sessions ready for deletion.`
+          )
+
+          let sessionsToDelete = numExpiredSessions
+          while (sessionsToDelete > 0) {
+            await this.expireSessions(SESSION_EXPIRED_CONDITION)
+            progress += (this.batchSize / numExpiredSessions) * 100
+            job.updateProgress(progress)
+            sessionsToDelete -= this.batchSize
+          }
+          return {}
         } catch (e) {
-          this.logStatus('Failed to enqueue!')
+          await this.logStatus(`Error ${e}`)
+          return e
         }
-      }, this.runInterval)
+      },
+      { connection }
+    )
+
+    try {
+      if (clusterUtils.isThisWorkerSpecial()) {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+          } catch (e) {
+            await this.logStatus('Failed to enqueue!')
+          }
+        }, this.runInterval)
+      }
     } catch (e) {
-      this.logStatus('Startup failed!')
+      await this.logStatus('Startup failed!')
     }
   }
 }
