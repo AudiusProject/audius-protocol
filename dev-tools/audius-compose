@@ -85,6 +85,12 @@ def generate_env(
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
 
+    aao_wallets = []
+    for key, value in env.items():
+        if key.startswith("AAO_WALLET_") and key.endswith("_ADDRESS"):
+            aao_wallets.append(value)
+    env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
+
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
 
@@ -157,6 +163,7 @@ def build(
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
+@click.option("-a", "--anti-abuse-oracle", is_flag=True)
 @click.pass_obj
 def up(
     protocol_dir,
@@ -164,6 +171,7 @@ def up(
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer,
+    anti_abuse_oracle,
 ):
     generate_env(
         protocol_dir,
@@ -179,6 +187,7 @@ def up(
             "compose",
             "--project-directory",
             protocol_dir,
+            *(["--profile", "anti-abuse-oracle"] if anti_abuse_oracle else []),
             "up",
             "--build",
             "-d",
@@ -195,6 +204,7 @@ def down(protocol_dir):
             "compose",
             "--project-directory",
             protocol_dir,
+            "--profile=*",
             "down",
             "-v",
         ],
@@ -241,6 +251,7 @@ def ps(protocol_dir):
             "compose",
             "--project-directory",
             protocol_dir,
+            "--profile=*",
             "ps",
             "--format=json",
         ],
