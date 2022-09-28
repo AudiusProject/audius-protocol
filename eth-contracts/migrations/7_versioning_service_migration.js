@@ -93,7 +93,7 @@ module.exports = (deployer, network, accounts) => {
 
     const callDataDP = _lib.abiEncode(
       ['bytes32', 'uint256', 'uint256'],
-      [serviceTypeDN, dpTypeMin, dpTypeMax]
+      [serviceTypeDP, dpTypeMin, dpTypeMax]
     )
     await governance.guardianExecuteTransaction(
       serviceTypeManagerProxyKey,
@@ -102,7 +102,7 @@ module.exports = (deployer, network, accounts) => {
       callDataDP,
       { from: guardianAddress }
     )
-    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeDN)
+    const serviceTypeDPInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeDP)
     assert.ok(_lib.toBN(dpTypeMin).eq(serviceTypeDPInfo.minStake), 'Expected same minStake')
     assert.ok(_lib.toBN(dpTypeMax).eq(serviceTypeDPInfo.maxStake), 'Expected same maxStake')
 

@@ -5,7 +5,7 @@ const os = require('os')
 const AudiusToken = artifacts.require('AudiusToken')
 
 const AudiusIdentityService = 'identity-service'
-const AudiusContentNode = 'content-node'
+const AudiusCreatorNode = 'content-node'
 const AudiusEthContracts = 'eth-contracts'
 const AudiusDiscoveryNode = 'discovery-node'
 
@@ -139,9 +139,9 @@ module.exports = async callback => {
 
   // output to Content Node
   try {
-    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusContentNode), '/eth-contract-config.json'))
+    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
   } catch (e) {
-    console.log("Content node doesn't exist", e)
+    console.log("Creator node doesn't exist", e)
   }
 
   // output to Discovery Node

@@ -252,7 +252,7 @@ contract('Random testing', async (accounts) => {
 
     const addNewServiceForUser = async (user) => {
         try {
-            // 50% chance of disc prov, 50% chance of content node
+            // 50% chance of disc prov, 50% chance of creator node
             let serviceTypeDiceRoll = rand(0, 100)
             let amount
             let serviceType

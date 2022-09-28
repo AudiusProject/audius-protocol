@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "audius": {
-    "releaseSHA": "cddbf59599ed672ba3047f94f910c983b2c45a1d"
+    "releaseSHA": "e85874b984816113090067e11a5524462622f3cf"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -119,7 +119,7 @@
     "nyc": "15.1.0",
     "prettier": "^2.6.1",
     "prettier-config-standard": "^5.0.0",
-    "rollup": "^2.70.1",
+    "rollup": "2.70.1",
     "rollup-plugin-dts": "4.2.0",
     "rollup-plugin-ignore": "1.0.10",
     "rollup-plugin-polyfill-node": "0.9.0",
