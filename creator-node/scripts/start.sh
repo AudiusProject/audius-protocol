@@ -53,9 +53,9 @@ if [ -z "$dbUrl" ]; then
     else
         sudo -u postgres pg_ctl start -D /db
     fi
-
+    
     sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
-
+    
     export dbUrl="postgres://postgres:${postgres_password:-postgres}@localhost:5432/audius_creator_node"
     export WAIT_HOSTS="localhost:5432"
     /usr/bin/wait
@@ -70,28 +70,33 @@ fi
 npm run postinstall
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 
-if [[ "$loadTest" == "true" ]]; then 
+function on-exit {
+    node --prof-process *.log > clinic/${debuggerPort}-processed.txt
+    exit
+}
+
+if [[ "$loadTest" == "true" ]]; then
     # NO_INSIGHT=true node ./node_modules/.bin/clinic doctor --autocannon '[ -c 100 /health_check ]' -- node build/src/index.js
     # NO_INSIGHT=true node ./node_modules/.bin/clinic flame --autocannon --on-port 'autocannon -c 5 -a 500 localhost:$PORT' -- node build/src/index.js
     # NO_INSIGHT=true node ./node_modules/.bin/clinic bubbleprof --on-port 'autocannon -c 5 -a 500 localhost:$PORT' -- node build/src/index.js
-    trap "node --prof-process *.log > .clinic/${debuggerPort}-processed.txt; exit" SIGINT
-    trap "node --prof-process *.log > .clinic/${debuggerPort}-processed.txt; exit" SIGTERM
-    trap "node --prof-process *.log > .clinic/${debuggerPort}-processed.txt; exit" EXIT
-    node --prof build/src/index.js 
-fi
-
-if [[ "$devMode" == "true" ]]; then
-    if [ "$link_libs" = true ]; then
-        cd ../audius-libs
-        npm link
-        cd ../app
-        npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
-    else
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
-    fi
+    trap 'on-exit' SIGTERM
+    trap 'on-exit' SIGKILL
+    trap 'on-exit' EXIT
+    node --prof build/src/index.js | tee >(logger)
 else
-    node --max-old-space-size=4096 build/src/index.js | tee >(logger)
+    if [[ "$devMode" == "true" ]]; then
+        if [ "$link_libs" = true ]; then
+            cd ../audius-libs
+            npm link
+            cd ../app
+            npm link @audius/sdk
+            npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
+        else
+            npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
+        fi
+    else
+        node --max-old-space-size=4096 build/src/index.js | tee >(logger)
+    fi
 fi
 
 wait

@@ -393,8 +393,9 @@ services:
 
       dataProviderUrl: "http://poa-ganache:8545"
       dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
-      loadTest: true
+      loadTest: "true"
     volumes:
+      - ./creator-node/clinic:/usr/src/app/clinic
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs
       - ./dev-tools:/tmp/dev-tools
