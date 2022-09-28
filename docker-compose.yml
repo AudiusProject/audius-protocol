@@ -164,6 +164,8 @@ services:
       ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
       ethOwnerWallet: "${ETH_OWNER_WALLET}"
       privateSignerAddress: "${AAO_WALLET_PRIVATE_KEY}"
+    env_file:
+      - "${AAO_DIR:-../anti-abuse-oracle}/.env.predeploy"
     ports:
       - "8000:8000"
     profiles: [ "anti-abuse-oracle" ]
