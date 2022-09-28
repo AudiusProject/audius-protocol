@@ -1,3 +1,4 @@
+import { paramsToQueryString } from '../../utils/paramsToQueryString'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
 
@@ -27,4 +28,57 @@ export const getEagerDiscprov = async (
       ]
   }
   return eagerDiscprov
+}
+
+/**
+ * Takes a request object provided from the audius libs API and makes the request
+ * using the fetch API.
+ */
+export const makeEagerRequest = async (
+  req: any,
+  endpoint: string,
+  requiresUser = false,
+  localStorage: LocalStorage,
+  env: Env
+) => {
+  const eagerDiscprov = await getEagerDiscprov(localStorage, env)
+  const discprovEndpoint = endpoint ?? eagerDiscprov
+  const user = await localStorage.getAudiusAccountUser()
+  if (!user && requiresUser) throw new Error('User required to continue')
+
+  const headers: { [key: string]: string } = {}
+  if (user && user.user_id) {
+    headers['X-User-ID'] = user.user_id
+  }
+
+  let baseUrl = `${discprovEndpoint}/${req.endpoint}`
+  if (req.urlParams) {
+    baseUrl = `${baseUrl}${req.urlParams}`
+  }
+
+  let res: any
+  if (req?.method?.toLowerCase() === 'post') {
+    headers['Content-Type'] = 'application/json'
+    const url = `${baseUrl}?${paramsToQueryString(
+      req.queryParams,
+      discprovEndpoint === eagerDiscprov
+    )}`
+    res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(req.data)
+    })
+  } else {
+    const url = `${baseUrl}?${paramsToQueryString(
+      req.queryParams,
+      discprovEndpoint === eagerDiscprov
+    )}`
+    res = await fetch(url, {
+      headers
+    })
+  }
+
+  const json = await res.json()
+  if (json.data) return json.data
+  return json
 }

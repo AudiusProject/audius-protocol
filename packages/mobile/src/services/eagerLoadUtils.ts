@@ -5,27 +5,9 @@
 
 import { getEagerDiscprov, makeEagerRequest } from '@audius/common'
 
-import { env } from 'services/env'
-import { localStorage } from 'services/local-storage'
-
-export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
-
-/**
- * Wait for the `LIBS_INITTED_EVENT` or pass through if there
- * already exists a mounted `window.audiusLibs` object.
- */
-export const waitForLibsInit = async () => {
-  // If libs is already defined, it has already loaded & initted
-  // so do nothing
-  // @ts-ignore
-  if (window.audiusLibs) return
-  // Add an event listener and resolve when that returns
-  return new Promise((resolve) => {
-    // @ts-ignore
-    if (window.audiusLibs) resolve()
-    window.addEventListener(LIBS_INITTED_EVENT, resolve)
-  })
-}
+import { env } from './env'
+import { audiusLibs, waitForLibsInit } from './libs'
+import { localStorage } from './local-storage'
 
 /**
  * Wraps a normal libs method call with method that calls the
@@ -49,10 +31,8 @@ export const withEagerOption = async (
 ) => {
   const disprovEndpoint =
     endpoint ?? (await getEagerDiscprov(localStorage, env))
-  // @ts-ignore
-  if (window.audiusLibs) {
-    // @ts-ignore
-    return normal(window.audiusLibs)(...args)
+  if (audiusLibs) {
+    return normal(audiusLibs)(...args)
   } else {
     try {
       const req = eager(...args)
@@ -66,8 +46,7 @@ export const withEagerOption = async (
       return res
     } catch (e) {
       await waitForLibsInit()
-      // @ts-ignore
-      return normal(window.audiusLibs)(...args)
+      return normal(audiusLibs)(...args)
     }
   }
 }
