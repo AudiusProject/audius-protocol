@@ -440,7 +440,7 @@ export class Users extends Base {
           spIds.join(',')
         )
 
-      await this.waitForReplicaSetDiscoveryIndexing(
+        await this.waitForReplicaSetDiscoveryIndexing(
         userId,
         spIds,
         manageEntityResponse.txReceipt.blockNumber
@@ -993,35 +993,43 @@ export class Users extends Base {
     }
   }
 
+  /**
+   * Waits for the input replica set to be indexed by the discovery node
+   * If then replica set matches at the requested block number -> return null
+   * If the replica set response is null at the block number -> throw error
+   * If the replica set is mismatched at the block number -> throw error
+   * If the timeout is exceeded before replica set indexed -> throw error
+   */
   async waitForReplicaSetDiscoveryIndexing(
     userId: number,
     replicaSetSPIDs: number[],
     blockNumber: number,
     timeoutMs = 60000
-  ) {
+  ): Promise<void> {
     const asyncFn = async () => {
       while (true) {
         const encodedUserId = Utils.encodeHashId(userId)
+        let replicaSet
         try {
-          const replicaSet = await this.discoveryProvider.getUserReplicaSet({
+           replicaSet = await this.discoveryProvider.getUserReplicaSet({
             encodedUserId: encodedUserId!,
             blockNumber
           })
-          if (replicaSet) {
-            if (
-              replicaSet.primarySpID === replicaSetSPIDs[0] &&
-              replicaSet.secondary1SpID === replicaSetSPIDs[1] &&
-              replicaSet.secondary2SpID === replicaSetSPIDs[2]
-            ) {
-              break
-            } else {
-              throw new Error(
-                `[User:waitForReplicaSetDiscoveryIndexing()] Indexed block ${blockNumber}, but did not find matching sp ids`
-              )
-            }
-          }
         } catch (err) {
           // Do nothing on error
+        }
+        if (replicaSet) {
+          if (
+            replicaSet.primarySpID === replicaSetSPIDs[0] &&
+            replicaSet.secondary1SpID === replicaSetSPIDs[1] &&
+            replicaSet.secondary2SpID === replicaSetSPIDs[2]
+          ) {
+            break
+          } else {
+            throw new Error(
+              `[User:waitForReplicaSetDiscoveryIndexing()] Indexed block ${blockNumber}, but did not find matching sp ids`
+            )
+          }
         }
         await Utils.wait(500)
       }
