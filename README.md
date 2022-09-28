@@ -72,30 +72,16 @@ Packages for developers to run and test Audius
 * Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
 
 ### Running the protocol
+
 ```bash
 git clone https://github.com/AudiusProject/audius-protocol.git
 cd audius-protocol
-# Add a line to your rc file of choice
-# export PROTOCOL_DIR=$(pwd)
 
-cd $PROTOCOL_DIR/service-commands
-npm i
-# This will install `A` to your command-line, an interface to the audius service-commands.
-# Ensure ~/.local/bin is in your PATH
-
-# Install all dependencies
-A init
-
-# Run the entire stack
-A up
-
-# Run an individual service
-A run discovery-provider up
-A run discovery-provider down
+bash dev-tools/setup.sh
+audius-compose up
 ```
 
-For more details on the `A` command and options, run `A --help` and checkout the service commands [README](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands).
-
+Note that the first time setup takes a bit of time to pull images, but subsequent runs are significantly faster.
 
 ## Contributing
 

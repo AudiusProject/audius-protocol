@@ -8,9 +8,10 @@ const {
   NAMESPACE_PREFIX
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
 const GenericBullQueue = require('./lib/genericBullQueueMock')
+const { StubPremiumContentAccessChecker } = require('../src/premiumContent/stubPremiumContentAccessChecker')
 
 describe('test Prometheus metrics', async function () {
-  let app, server, libsMock
+  let app, server, libsMock, mockServiceRegistry, stubPremiumContentAccessChecker
 
   /** Setup app + global test vars */
   beforeEach(async function () {
@@ -20,6 +21,16 @@ describe('test Prometheus metrics', async function () {
 
     app = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
+
+    stubPremiumContentAccessChecker = new StubPremiumContentAccessChecker()
+    stubPremiumContentAccessChecker.accessCheckReturnsWith = {
+      doesUserHaveAccess: true,
+      trackId: null,
+      isPremium: false,
+      error: null
+    }
+    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessChecker
   })
 
   afterEach(async function () {
