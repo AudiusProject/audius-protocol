@@ -4,7 +4,8 @@ import {
   NAMESPACE_PREFIX,
   METRICS,
   METRIC_NAMES,
-  QUEUE_INTERVAL
+  QUEUE_INTERVAL,
+  ROUTE_TO_METRIC_NAME
   // eslint-disable-next-line import/no-unresolved
 } from './prometheus.constants'
 import * as PrometheusClient from 'prom-client'
@@ -23,6 +24,7 @@ enum JOB_STATUS {
 export class PrometheusRegistry {
   registry: any
   metricNames: Record<string, string>
+  routeToMetricMapping: Record<string, string>
   namespacePrefix: string
 
   public constructor() {
@@ -41,6 +43,7 @@ export class PrometheusRegistry {
 
     // Expose metric names from class for access throughout application
     this.metricNames = { ...METRIC_NAMES }
+    this.routeToMetricMapping = ROUTE_TO_METRIC_NAME
 
     this.namespacePrefix = NAMESPACE_PREFIX
   }
@@ -68,6 +71,16 @@ export class PrometheusRegistry {
   /** Returns single metric instance by name */
   public getMetric(name: string) {
     return this.registry.getSingleMetric(name)
+  }
+
+  public getMetricByRoute(route: string) {
+    const metricName = this.routeToMetricMapping[route]
+
+    if (!metricName) {
+      return null
+    }
+
+    return this.getMetric(metricName)
   }
 
   public recordJobMetrics(

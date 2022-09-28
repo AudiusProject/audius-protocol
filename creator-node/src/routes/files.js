@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 const express = require('express')
 const Redis = require('ioredis')
 const fs = require('fs-extra')
@@ -10,6 +11,7 @@ const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
+  sendResponseWithMetric,
   successResponse,
   errorResponseBadRequest,
   errorResponseServerError,
@@ -28,7 +30,8 @@ const {
   authMiddleware,
   ensurePrimaryMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  ensureStorageMiddleware
+  ensureStorageMiddleware,
+  routeMetricMiddleware
 } = require('../middlewares')
 const {
   getAllRegisteredCNodes,
@@ -152,14 +155,6 @@ const streamFromFileSystem = async (
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
-const logGetCIDDecisionTree = (decisionTree, req) => {
-  try {
-    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
-  } catch (e) {
-    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
-  }
-}
-
 /**
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)
@@ -172,200 +167,98 @@ const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
-  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
-  const logPrefix = `[getCID] [CID=${CID}]`
+  const prometheusResult = { result: null, mode: 'default' }
 
   /**
    * Check if CID is servable from BlacklistManager; return error if not
    */
-  let startMs = Date.now()
   const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
-  decisionTree.push({
-    stage: `BLACKLIST_MANAGER_CHECK_IS_SERVABLE`,
-    time: `${Date.now() - startMs}ms`
-  })
   if (!isServable) {
-    decisionTree.push({
-      stage: `CID_IS_BLACKLISTED`
-    })
-
-    logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(
+    return sendResponseWithMetric(
       req,
       res,
-      errorResponseForbidden(
-        `${logPrefix} CID has been blacklisted by this node`
-      )
+      errorResponseForbidden('CID has been delisted by this node'),
+      'abort_delisted'
     )
   }
 
+  const storagePaths = []
+
   // Compute expected storagePath for CID
-  let storagePath
   try {
-    storagePath = await DiskManager.computeFilePath(CID, false)
-    decisionTree.push({
-      stage: `COMPUTE_FILE_PATH_COMPLETE`
+    const currentStoragePath = await DiskManager.computeFilePath(CID, false)
+    storagePaths.push({
+      path: currentStoragePath,
+      pathType: 'new_storage_path'
+    })
+
+    const legacyStoragePath = await DiskManager.computeLegacyFilePath(CID)
+    storagePaths.push({
+      path: legacyStoragePath,
+      pathType: 'legacy_storage_path'
     })
   } catch (e) {
-    decisionTree.push({
-      stage: `COMPUTE_FILE_PATH_FAILURE`
-    })
-    logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(
+    prometheusResult.result = 'abort_bad_cid'
+    return sendResponseWithMetric(
       req,
       res,
-      errorResponseBadRequest(`${logPrefix} Invalid CID`)
+      errorResponseBadRequest('Invalid CID'),
+      prometheusResult
     )
   }
 
   /**
-   * Check if file exists on FS at storagePath
+   * Check if file exists on FS at storagePath with the new and legacy storage paths
    * If found and not of file type, return error
    * If found and file type, continue
    * If not found, continue
    */
-  startMs = Date.now()
   let fileFoundOnFS = false
-  let fsStats
-  try {
-    /**
-     * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
-     * Throws error if nothing found
-     * https://nodejs.org/api/fs.html#fspromisesstatpath-options
-     */
-    fsStats = await fs.stat(storagePath)
-    decisionTree.push({
-      stage: `FS_STATS`,
-      time: `${Date.now() - startMs}ms`
-    })
+  let storagePath, fsStats
 
-    if (fsStats.isFile()) {
-      decisionTree.push({
-        stage: `CID_CONFIRMED_FILE`
-      })
+  for (let i = 0; i < storagePath.length; i++) {
+    const { path: _storagePath, pathType: _pathType } = storagePath[i]
 
-      if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
-        // Remove file if it is empty and force fetch from CN network
-        await fs.unlink(storagePath)
-        decisionTree.push({
-          stage: `EMPTY_FILE_FOUND_AND_REMOVED_NEW_PATH`
-        })
-      } else {
-        fileFoundOnFS = true
-      }
-    } else if (fsStats.isDirectory()) {
-      decisionTree.push({
-        stage: `CID_CONFIRMED_DIRECTORY`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('this dag node is a directory')
-      )
-    } else {
-      decisionTree.push({
-        stage: `CID_INVALID_TYPE`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('CID is of invalid file type')
-      )
-    }
-  } catch (e) {
-    decisionTree.push({
-      stage: `FS_STATS_CID_NOT_FOUND`,
-      time: `${Date.now() - startMs}ms`
-    })
-    // continue
-  }
-
-  /**
-   * If not found on FS at storagePath, check legacyStoragePath
-   */
-  if (!fileFoundOnFS) {
-    // Compute expected legacyStoragePath for CID
-    let legacyStoragePath
     try {
-      legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
-      decisionTree.push({
-        stage: `COMPUTE_LEGACY_FILE_PATH_COMPLETE`
-      })
-    } catch (e) {
-      decisionTree.push({
-        stage: `COMPUTE_LEGACY_FILE_PATH_FAILURE`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest(`${logPrefix} Invalid CID`)
-      )
-    }
-
-    /**
-     * Check if file exists on FS at legacyStoragePath
-     * If found and not of file type, return error
-     * If found and of type file, continue with legacyStoragePath
-     * If not found, continue
-     */
-    startMs = Date.now()
-    try {
-      // Will throw if path does not exist
-      // If exists, returns an instance of fs.stats class
-      fsStats = await fs.stat(legacyStoragePath)
-      decisionTree.push({
-        stage: `FS_STATS_LEGACY_STORAGE_PATH`,
-        time: `${Date.now() - startMs}ms`
-      })
-
+      /**
+       * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
+       * Throws error if nothing found
+       * https://nodejs.org/api/fs.html#fspromisesstatpath-options
+       */
+      fsStats = await fs.stat(_storagePath)
       if (fsStats.isFile()) {
-        decisionTree.push({
-          stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
-        })
         if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
           // Remove file if it is empty and force fetch from CN network
-          await fs.unlink(storagePath)
-          decisionTree.push({
-            stage: `EMPTY_FILE_FOUND_AND_REMOVED_LEGACY_PATH`
-          })
+          await fs.unlink(_storagePath)
         } else {
           fileFoundOnFS = true
+          storagePath = _storagePath
+
+          prometheusResult.mode = _pathType
+          break
         }
       } else if (fsStats.isDirectory()) {
-        decisionTree.push({
-          stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
+        prometheusResult.result = 'abort_cid_is_directory'
+        prometheusResult.mode = _pathType
+        return sendResponseWithMetric(
           req,
           res,
-          errorResponseBadRequest('this dag node is a directory')
+          errorResponseBadRequest('this dag node is a directory'),
+          prometheusResult
         )
       } else {
-        decisionTree.push({
-          stage: `CID_INVALID_TYPE_LEGACY_STORAGE_PATH`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
+        prometheusResult.result = 'abort_cid_is_not_file'
+        prometheusResult.mode = _pathType
+        return sendResponseWithMetric(
           req,
           res,
-          errorResponseBadRequest('CID is of invalid file type')
+          errorResponseBadRequest('CID is of invalid file type'),
+          prometheusResult
         )
       }
     } catch (e) {
-      decisionTree.push({
-        stage: `FS_STATS_LEGACY_STORAGE_PATH_CID_NOT_FOUND`,
-        time: `${Date.now() - startMs}ms`
-      })
-      // continue
-    }
-
-    if (fileFoundOnFS) {
-      storagePath = legacyStoragePath
+      // swallow error
     }
   }
 
@@ -373,7 +266,6 @@ const getCID = async (req, res) => {
    * If the file is found on file system, stream from file system
    */
   if (fileFoundOnFS) {
-    startMs = Date.now()
     try {
       const fsStream = await streamFromFileSystem(
         req,
@@ -382,24 +274,31 @@ const getCID = async (req, res) => {
         false,
         fsStats
       )
-      decisionTree.push({
-        stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
-        time: `${Date.now() - startMs}ms`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
+
+      if (req.endMetricTimer) {
+        try {
+          prometheusResult.result = 'success_found_in_fs'
+          req.endMetricTimer(prometheusResult)
+        } catch (e) {
+          req.logger.warn(
+            { cid: CID },
+            `Could not end stream content metric: ${e.message}`
+          )
+        }
+      }
+
       return fsStream
     } catch (e) {
-      decisionTree.push({
-        stage: `STREAM_FROM_FILE_SYSTEM_FAILED`,
-        time: `${Date.now() - startMs}ms`
-      })
+      req.logger.warn(
+        { cid: CID },
+        `Could not stream CID from local fs. Attempting to fetch and stream from network..`
+      )
     }
   }
 
   /**
    * If not found on FS, check if CID record is in DB, error if not found
    */
-  startMs = Date.now()
   try {
     const queryResults = await models.File.findOne({
       where: {
@@ -407,50 +306,33 @@ const getCID = async (req, res) => {
       },
       order: [['clock', 'DESC']]
     })
-    decisionTree.push({
-      stage: `DB_CID_QUERY`,
-      time: `${Date.now() - startMs}ms`
-    })
 
     if (!queryResults) {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CID_NOT_FOUND`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
+      prometheusResult.result = 'abort_cid_not_found_in_db'
+      return sendResponseWithMetric(
         req,
         res,
-        errorResponseNotFound(
-          `${logPrefix} No valid file found for provided CID`
-        )
+        errorResponseNotFound('No valid file found for provided CID'),
+        prometheusResult
       )
     } else if (queryResults.type === 'dir') {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CONFIRMED_DIR`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
+      prometheusResult.result = 'abort_cid_is_directory_from_db_query'
+      return sendResponseWithMetric(
         req,
         res,
-        errorResponseBadRequest('this dag node is a directory')
+        errorResponseBadRequest('this dag node is a directory'),
+        prometheusResult
       )
     } else {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CID_FOUND`
-      })
       storagePath = queryResults.storagePath
     }
   } catch (e) {
-    decisionTree.push({
-      stage: `DB_CID_QUERY_ERROR`,
-      time: `${Date.now() - startMs}ms`,
-      error: `${e.message}`
-    })
-    logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(
+    prometheusResult.result = 'failure_cid_db_query'
+    return sendResponseWithMetric(
       req,
       res,
-      errorResponseServerError(`${logPrefix} DB query failed`)
+      errorResponseServerError('DB query failed'),
+      prometheusResult
     )
   }
 
@@ -460,9 +342,7 @@ const getCID = async (req, res) => {
    * 2. If retrieved, stream from file system
    * 3. Else, error
    */
-  const blockStartMs = Date.now()
   try {
-    startMs = Date.now()
     const libs = req.app.get('audiusLibs')
     const found = await findCIDInNetwork(
       storagePath,
@@ -474,27 +354,44 @@ const getCID = async (req, res) => {
     if (!found) {
       throw new Error('Not found in network')
     }
-    decisionTree.push({
-      stage: `FIND_CID_IN_NETWORK_COMPLETE`,
-      time: `${Date.now() - startMs}ms`
-    })
+  } catch (e) {
+    prometheusResult.mode = 'abort_cid_not_found_network'
+    req.logger.error(
+      { cid: CID },
+      `Could not find cid in network: ${e.message}`
+    )
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseServerError('CID not found in network'),
+      prometheusResult
+    )
+  }
 
-    startMs = Date.now()
+  try {
     const fsStream = await streamFromFileSystem(req, res, storagePath, false)
-    decisionTree.push({
-      stage: `STREAM_FROM_FILE_SYSTEM_AFTER_FIND_CID_IN_NETWORK_COMPLETE`,
-      time: `${Date.now() - startMs}ms`
-    })
 
-    logGetCIDDecisionTree(decisionTree, req)
+    if (req.endMetricTimer) {
+      try {
+        prometheusResult.result = 'success_found_in_network'
+        req.endMetricTimer(prometheusResult)
+      } catch (e) {
+        req.logger.warn(
+          { cid: CID },
+          `Could not end stream content metric: ${e.message}`
+        )
+      }
+    }
+
     return fsStream
   } catch (e) {
-    decisionTree.push({
-      stage: `FIND_CID_IN_NETWORK_ERROR`,
-      time: `${Date.now() - blockStartMs}ms`,
-      error: `${e.message}`
-    })
-    return sendResponse(req, res, errorResponseServerError(e.message))
+    prometheusResult.mode = 'failure_stream'
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseServerError('Failed to stream track'),
+      prometheusResult
+    )
   }
 }
 
@@ -763,7 +660,12 @@ router.post(
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], premiumContentMiddleware, getCID)
+router.get(
+  ['/ipfs/:CID', '/content/:CID'],
+  routeMetricMiddleware,
+  premiumContentMiddleware,
+  getCID
+)
 
 /**
  * Serve images hosted by content node.

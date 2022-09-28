@@ -101,6 +101,26 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   res.status(resp.statusCode).send(resp.object)
 })
 
+/**
+ * Wrapper helper method to send response with metrics involved
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @param {Object} routeResponse error or success response object
+ * @param {Object} prometheusResult prometheus results to track
+ */
+module.exports.sendResponseWithMetric = (
+  req,
+  res,
+  routeResponse,
+  prometheusResult
+) => {
+  if (req.endMetricTimer) {
+    req.endMetricTimer(prometheusResult)
+  }
+
+  sendResponse(req, res, routeResponse)
+}
+
 const sendResponseWithHeartbeatTerminator =
   (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
     const duration = getDuration(req)

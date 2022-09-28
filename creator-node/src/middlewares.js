@@ -966,6 +966,26 @@ async function ensureValidSPMiddleware(req, res, next) {
   next()
 }
 
+// General middleware for routes to start tracking metrics
+async function routeMetricMiddleware(req, res, next) {
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const { prometheusRegistry } = serviceRegistry
+
+  const fullPath = req.baseUrl + req.path
+  try {
+    const metric = prometheusRegistry.getMetricByRoute(fullPath)
+
+    if (metric) {
+      const endMetricTimerFn = metric.startTimer()
+      req.endMetricTimer = endMetricTimerFn
+    }
+  } catch (e) {
+    req.logger.warn(`Could not start metric for path=${fullPath}`)
+  }
+
+  next()
+}
+
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN(url) {
   if (config.get('creatorNodeIsDebug')) return true
@@ -982,5 +1002,6 @@ module.exports = {
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
-  getUserReplicaSetEndpointsFromDiscovery
+  getUserReplicaSetEndpointsFromDiscovery,
+  routeMetricMiddleware
 }
