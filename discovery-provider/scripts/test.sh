@@ -2,8 +2,6 @@
 
 # Audius Discovery Provider / Test
 # Runs configured unit test scripts
-# NOTE - the ipfs compose files have been moved from discprov to libs.
-#   Before running this test locally, bring up ipfs pod with libs/scripts/ipfs.sh
 
 source ./scripts/utilities.sh
 source .test.env
@@ -52,7 +50,6 @@ docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
-  -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   stop
 
@@ -60,17 +57,15 @@ docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
-  -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   rm -rf
 
-# Bring up local dependencies - postgres, redis, ipfs
+# Bring up local dependencies - postgres, redis
 docker network create audius_dev
 docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
-  -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   up -d
 

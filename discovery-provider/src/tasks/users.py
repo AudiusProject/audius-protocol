@@ -35,7 +35,7 @@ def user_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata,
+    metadata,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
@@ -96,7 +96,7 @@ def user_state_update(
                     block_number,
                     block_timestamp,
                     blockhash,
-                    ipfs_metadata,
+                    metadata,
                     user_ids,
                     skipped_tx_count,
                 )
@@ -138,7 +138,7 @@ def process_user_txs_serial(
     block_number,
     block_timestamp,
     blockhash,
-    ipfs_metadata,
+    metadata,
     user_ids,
     skipped_tx_count,
 ):
@@ -179,7 +179,7 @@ def process_user_txs_serial(
                     entry,
                     event_type,
                     existing_user_record,
-                    ipfs_metadata[metadata_multihash],
+                    metadata[metadata_multihash],
                     block_timestamp,
                 )
             else:
@@ -278,7 +278,7 @@ def parse_user_event(
     entry,
     event_type,
     user_record,
-    ipfs_metadata,
+    metadata,
     block_timestamp,
 ):
     # type specific field changes
@@ -337,13 +337,13 @@ def parse_user_event(
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
-        # Look up metadata multihash in IPFS and override with metadata fields
-        if ipfs_metadata:
+        # Look up metadata multihash and override with metadata fields
+        if metadata:
             user_record = update_user_metadata(
                 session,
                 update_task.redis,
                 user_record,
-                ipfs_metadata,
+                metadata,
                 update_task.web3,
                 update_task.challenge_event_bus,
             )
@@ -358,81 +358,80 @@ def update_user_metadata(
     session,
     redis,
     user_record: User,
-    ipfs_metadata: Dict,
+    metadata: Dict,
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
 ):
     # Fields also stored on chain
-    if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
-        user_record.profile_picture = ipfs_metadata["profile_picture"]
+    if "profile_picture" in metadata and metadata["profile_picture"]:
+        user_record.profile_picture = metadata["profile_picture"]
 
-    if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo"]
+    if "cover_photo" in metadata and metadata["cover_photo"]:
+        user_record.cover_photo = metadata["cover_photo"]
 
-    if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
-        user_record.bio = ipfs_metadata["bio"]
+    if "bio" in metadata and metadata["bio"]:
+        user_record.bio = metadata["bio"]
 
-    if "name" in ipfs_metadata and ipfs_metadata["name"]:
-        user_record.name = ipfs_metadata["name"]
+    if "name" in metadata and metadata["name"]:
+        user_record.name = metadata["name"]
 
-    if "location" in ipfs_metadata and ipfs_metadata["location"]:
-        user_record.location = ipfs_metadata["location"]
+    if "location" in metadata and metadata["location"]:
+        user_record.location = metadata["location"]
 
     # Fields with no on-chain counterpart
     if (
-        "profile_picture_sizes" in ipfs_metadata
-        and ipfs_metadata["profile_picture_sizes"]
+        "profile_picture_sizes" in metadata
+        and metadata["profile_picture_sizes"]
     ):
-        user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+        user_record.profile_picture = metadata["profile_picture_sizes"]
 
-    if "cover_photo_sizes" in ipfs_metadata and ipfs_metadata["cover_photo_sizes"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+    if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
+        user_record.cover_photo = metadata["cover_photo_sizes"]
 
     if (
-        "collectibles" in ipfs_metadata
-        and ipfs_metadata["collectibles"]
-        and isinstance(ipfs_metadata["collectibles"], dict)
-        and ipfs_metadata["collectibles"].items()
+        "collectibles" in metadata
+        and metadata["collectibles"]
+        and isinstance(metadata["collectibles"], dict)
+        and metadata["collectibles"].items()
     ):
         user_record.has_collectibles = True
     else:
         user_record.has_collectibles = False
 
-    if "associated_wallets" in ipfs_metadata:
+    if "associated_wallets" in metadata:
         update_user_associated_wallets(
             session,
             web3,
             redis,
             user_record,
-            ipfs_metadata["associated_wallets"],
+            metadata["associated_wallets"],
             "eth",
         )
 
-    if "associated_sol_wallets" in ipfs_metadata:
+    if "associated_sol_wallets" in metadata:
         update_user_associated_wallets(
             session,
             web3,
             redis,
             user_record,
-            ipfs_metadata["associated_sol_wallets"],
+            metadata["associated_sol_wallets"],
             "sol",
         )
 
-    if "playlist_library" in ipfs_metadata and ipfs_metadata["playlist_library"]:
-        user_record.playlist_library = ipfs_metadata["playlist_library"]
+    if "playlist_library" in metadata and metadata["playlist_library"]:
+        user_record.playlist_library = metadata["playlist_library"]
 
-    if "is_deactivated" in ipfs_metadata:
-        user_record.is_deactivated = ipfs_metadata["is_deactivated"]
+    if "is_deactivated" in metadata:
+        user_record.is_deactivated = metadata["is_deactivated"]
 
-    if "events" in ipfs_metadata and ipfs_metadata["events"]:
+    if "events" in metadata and metadata["events"]:
         update_user_events(
             session,
             user_record,
-            ipfs_metadata["events"],
+            metadata["events"],
             challenge_event_bus,
         )
     return user_record
-
 
 def update_legacy_user_images(user_record):
     # All incoming profile photos intended to be a directory

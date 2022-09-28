@@ -86,7 +86,7 @@ class ManageEntityParameters:
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
-        ipfs_metadata: Dict[str, Dict[str, Dict]],
+        metadata: Dict[str, Dict[str, Dict]],
         eth_manager: EthManager,
         web3: Web3,
         block_timestamp: int,
@@ -111,7 +111,7 @@ class ManageEntityParameters:
         self.pending_track_routes = pending_track_routes
 
         self.event = event
-        self.ipfs_metadata = ipfs_metadata
+        self.metadata = metadata
         self.block_number = block_number
         self.event_blockhash = event_blockhash
         self.txhash = txhash
