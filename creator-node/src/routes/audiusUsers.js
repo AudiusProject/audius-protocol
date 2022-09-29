@@ -114,15 +114,12 @@ router.post(
     // Verify that wallet of the user on the blockchain for the given ID matches the user attempting to update
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs } = serviceRegistry
-    try {
+    if (config.get('entityManagerReplicaSetEnabled')) {
       const encodedUserId = libs.Utils.encodeHashId(blockchainUserId)
       const spResponse = await libs.discoveryProvider.getUserReplicaSet({
         encodedUserId,
         blockNumber
       })
-      if (!spResponse || !spResponse.primarySpID){
-        throw new Error('User replica set is not on discovery')
-      }
       if (
         (spResponse?.wallet ?? '').toLowerCase() !==
         req.session.wallet.toLowerCase()
@@ -131,7 +128,7 @@ router.post(
           `Owner wallet ${spResponse?.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
         )
       }
-    } catch (err) {
+    } else {
       const userResp = await libs.contracts.UserFactoryClient.getUser(
         blockchainUserId
       )
