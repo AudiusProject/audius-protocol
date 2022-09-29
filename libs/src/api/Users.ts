@@ -633,7 +633,7 @@ export class Users extends Base {
     const oldMetadata = { ...user }
 
     // Update user creator_node_endpoint on chain if applicable
-    let updateEndpointTxBlockNumber = null
+    const updateEndpointTxBlockNumber = null
     if (
       newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint
     ) {
@@ -1216,10 +1216,7 @@ export class Users extends Base {
   // Perform replica set update
   // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
   // This behavior is to ensure backwards compatibility prior to contract deploy
-  async _updateReplicaSetOnChain(
-    userId: number,
-    creatorNodeEndpoint: string
-  ) {
+  async _updateReplicaSetOnChain(userId: number, creatorNodeEndpoint: string) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
@@ -1254,13 +1251,13 @@ export class Users extends Base {
           primarySpID,
           [secondary1SpID, secondary2SpID]
         )
-        replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
-        updateEndpointTxBlockNumber = txReceipt?.blockNumber
+      replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+      updateEndpointTxBlockNumber = txReceipt?.blockNumber
 
-        await this._waitForURSMCreatorNodeEndpointIndexing(
-          userId,
-          replicaSetSPIDs
-        )
+      await this._waitForURSMCreatorNodeEndpointIndexing(
+        userId,
+        replicaSetSPIDs
+      )
     } catch {
       const currentPrimaryEndpoint = CreatorNode.getPrimary(
         currentUser.creator_node_endpoint
@@ -1297,7 +1294,6 @@ export class Users extends Base {
         replicaSetSPIDs,
         updateEndpointTxBlockNumber
       )
-
     }
     if (!txReceipt) {
       throw new Error('Unable to update replica set on chain')

@@ -699,7 +699,9 @@ const _issueUpdateReplicaSetOp = async (
       // Fallback to EntityManager when relay errors
       try {
         if (!config.get('entityManagerReplicaSetEnabled')) {
-          throw new Error('Fallback to URSM writes because EntityManager is disabled')
+          throw new Error(
+            'Fallback to URSM writes because EntityManager is disabled'
+          )
         }
         await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
           userId,
