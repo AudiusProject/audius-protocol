@@ -286,9 +286,6 @@ jobs:
   noop:
     docker:
       - image: alpine
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
     steps:
       - run: echo
 
@@ -1220,6 +1217,26 @@ jobs:
             sudo killall openvpn || true
           when: always
 
+  release-scripts:
+    docker:
+      - image: cimg/go:1.17
+    parameters:
+      target:
+        description: REQUIRED. Name of the script, without .sh, like bump-hotfix or cut-release
+        type: string
+        default: ""
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            # github.com
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+      - run: |
+          git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
+          audius-tooling/release-scripts/<< parameters.target >>.sh
+
 workflows:
   workflows:
     when:
@@ -1393,8 +1410,9 @@ workflows:
               only: /(^master$)/
           requires:
             - verified
-      - noop:
+      - release-scripts:
           name: cut-release
+          target: cut-release
           requires:
             - cut-release-🕹️
 
@@ -1481,8 +1499,9 @@ workflows:
             - 💪-🚧-🌿-<< matrix.host >>-🕹️
 
       # Bump Tags (for release branch hot-fixes)
-      - noop:
-          name: bump-hotfix-tags
+      - release-scripts:
+          name: bump-hotfix
+          target: bump-hotfix
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1551,9 +1570,9 @@ workflows:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - bump-hotfix-tags
-      - noop:
-          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+      - release-scripts:
           name: 🚧-🎁-to-SPs
+          target: release-to-service-providers
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1565,8 +1584,9 @@ workflows:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - 🚧-🎁-to-SPs
-      - noop:
+      - release-scripts:
           name: execute-proposal
+          target: execute-proposal
           requires:
             - execute-proposal-🕹️
 
