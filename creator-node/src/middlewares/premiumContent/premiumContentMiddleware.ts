@@ -9,6 +9,7 @@ import { NextFunction, Request, Response } from 'express'
 import { PremiumContentAccessError } from '../../premiumContent/types'
 import type Logger from 'bunyan'
 import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
+import config from '../../config'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -28,6 +29,11 @@ export const premiumContentMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
+  if (!config.get('premiumContentEnabled')) {
+    next()
+    return
+  }
+
   try {
     const cid = req.params?.CID
     if (!cid) {
