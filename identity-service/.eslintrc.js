@@ -50,7 +50,6 @@ module.exports = {
       }
     ],
     'node/no-missing-import': 'error',
-    'node/no-sync': ['warn', { allowAtRootLevel: true }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/member-delimiter-style': 'off',
@@ -63,17 +62,17 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off', // TODO: turn this on [PAY-661]
+    '@typescript-eslint/no-floating-promises': 'off', // TODO: turn this on [PAY-661]
+    '@typescript-eslint/no-misused-promises': 'off', // TODO: turn this on [PAY-661]
+    'node/no-sync': 'off', // TODO: turn this on [PAY-661]
+    '@typescript-eslint/no-extraneous-class': 'off',
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-extraneous-class': 'warn',
-    '@typescript-eslint/no-floating-promises': 'warn',
-    '@typescript-eslint/no-misused-promises': 'warn',
     '@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
 
     'no-use-before-define': 'off',
     camelcase: 'off',
-    'no-unused-vars': 'off',
     'func-call-spacing': 'off',
     semi: ['error', 'never'],
     'no-undef': 'error',
@@ -94,6 +93,8 @@ module.exports = {
     'prettier/prettier': 'error',
 
     'import/no-unresolved': 'error',
-    'import/order': 'off'
+    'import/order': 'off',
+    'no-process-exit': 'off',
+    'node/no-unpublished-require': 'off'
   }
 }
