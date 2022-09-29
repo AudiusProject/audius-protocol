@@ -61,7 +61,7 @@ def get_node_endpoint() -> Optional[str]:
             try:
                 node_info = future.result()
                 wallet = node_info[3]
-                if wallet == shared_config["delegate"]["owner_wallet"]:
+                if wallet.lower() == shared_config["delegate"]["owner_wallet"].lower():
                     endpoint = node_info[1]
                     break
             except Exception as e:
