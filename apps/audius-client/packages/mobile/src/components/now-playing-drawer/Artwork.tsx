@@ -56,7 +56,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
     })
   )
 
-  let shadowColor = 'rgba(0,0,0,0)'
+  let shadowColor = 'rgba(0,0,0,0.05)'
   const dominantColor = dominantColors ? dominantColors[0] : null
   if (dominantColor) {
     const { r, g, b } = dominantColor

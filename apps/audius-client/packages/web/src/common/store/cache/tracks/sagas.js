@@ -416,6 +416,8 @@ function* watchDeleteTrack() {
 
 function* watchFetchCoverArt() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const isNativeMobile = yield getContext('isNativeMobile')
+
   const inProgress = new Set()
   yield takeEvery(trackActions.FETCH_COVER_ART, function* ({ trackId, size }) {
     // Unique on id and size
@@ -457,14 +459,19 @@ function* watchFetchCoverArt() {
           gateways
         )
       }
-      const dominantColors = yield call(dominantColor, smallImageUrl)
 
-      yield put(
-        setDominantColors({
-          multihash,
-          colors: dominantColors
-        })
-      )
+      if (!isNativeMobile) {
+        // Disabling dominant color fetch on mobile because it requires WebWorker
+        // Can revisit this when doing glass morphism on NowPlaying
+        const dominantColors = yield call(dominantColor, smallImageUrl)
+
+        yield put(
+          setDominantColors({
+            multihash,
+            colors: dominantColors
+          })
+        )
+      }
     } catch (e) {
       console.error(`Unable to fetch cover art for track ${trackId}`)
     } finally {
