@@ -118,7 +118,9 @@ function* fetchLineupMetadatasAsync(
 ) {
   const initLineup = yield select(lineupSelector)
   const initSource = sourceSelector
-    ? yield select((state) => sourceSelector(state, action.handle))
+    ? yield select((state) =>
+        sourceSelector(state, action.handle?.toLowerCase())
+      )
     : initLineup.prefix
 
   const task = yield fork(function* () {
@@ -129,7 +131,7 @@ function* fetchLineupMetadatasAsync(
           action.limit,
           action.overwrite,
           action.payload,
-          action.handle
+          action.handle?.toLowerCase()
         )
       )
 
@@ -144,7 +146,7 @@ function* fetchLineupMetadatasAsync(
 
       if (lineupMetadatasResponse === null) return
       const lineup = yield select((state) =>
-        lineupSelector(state, action.handle)
+        lineupSelector(state, action.handle?.toLowerCase())
       )
       const source = sourceSelector
         ? yield select(sourceSelector)
@@ -271,7 +273,7 @@ function* fetchLineupMetadatasAsync(
           action.limit,
           deletedCount,
           nullCount,
-          action.handle
+          action.handle?.toLowerCase()
         )
       )
 

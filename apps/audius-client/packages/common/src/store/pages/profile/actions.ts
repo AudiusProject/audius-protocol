@@ -72,23 +72,26 @@ export function updateProfileFailed() {
   return { type: UPDATE_PROFILE_FAILED }
 }
 
-export function updateCollectionSortMode(mode: CollectionSortMode) {
-  return { type: UPDATE_COLLECTION_SORT_MODE, mode }
+export function updateCollectionSortMode(
+  mode: CollectionSortMode,
+  handle: string
+) {
+  return { type: UPDATE_COLLECTION_SORT_MODE, mode, handle }
 }
 
 export function setProfileField(field: string, value: string, handle: string) {
   return { type: SET_PROFILE_FIELD, field, value, handle }
 }
 
-export function updateCurrentUserFollows(follow = false) {
-  return { type: UPDATE_CURRENT_USER_FOLLOWS, follow }
+export function updateCurrentUserFollows(follow = false, handle: string) {
+  return { type: UPDATE_CURRENT_USER_FOLLOWS, follow, handle }
 }
 
 export function fetchFollowUsers(
   followerGroup: User[],
   limit = 15,
   offset = 0,
-  handle?: string
+  handle: string
 ) {
   return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit, handle }
 }
@@ -136,7 +139,14 @@ export function updateMostUsedTags(mostUsedTags: string[]) {
 export function setNotificationSubscription(
   userId: ID,
   isSubscribed: boolean,
-  update = false
+  update = false,
+  handle?: string
 ) {
-  return { type: SET_NOTIFICATION_SUBSCRIPTION, userId, isSubscribed, update }
+  return {
+    type: SET_NOTIFICATION_SUBSCRIPTION,
+    userId,
+    isSubscribed,
+    update,
+    handle
+  }
 }

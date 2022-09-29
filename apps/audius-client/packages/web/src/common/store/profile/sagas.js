@@ -270,7 +270,14 @@ function* fetchProfileAsync(action) {
     yield delay(2000)
 
     if (!isNativeMobile) {
-      yield put(profileActions.fetchFollowUsers(FollowType.FOLLOWEE_FOLLOWS))
+      yield put(
+        profileActions.fetchFollowUsers(
+          FollowType.FOLLOWEE_FOLLOWS,
+          undefined,
+          undefined,
+          action.handle
+        )
+      )
     }
   } catch (err) {
     const isReachable = yield select(getIsReachable)
@@ -335,12 +342,14 @@ function* fetchFolloweeFollows(action) {
   )
 
   const followerIds = yield call(cacheUsers, followeeFollows)
+
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWEE_FOLLOWS,
       followerIds,
       action.limit,
-      action.offset
+      action.offset,
+      handle
     )
   )
 }
@@ -518,12 +527,16 @@ function* watchUpdateCurrentUserFollows() {
 
 function* updateCurrentUserFollows(action) {
   yield waitForAccount()
+  const { handle } = action
   const userId = yield select(getUserId)
-  const { userIds, status } = yield select(getProfileFollowers)
+  const stuff = yield select((state) => getProfileFollowers(state, handle))
+  const { userIds, status } = stuff
   let updatedUserIds = userIds
   if (action.follow) {
     const uid = makeUid(Kind.USERS, userId)
-    const profileUser = yield select(getProfileUser)
+    const profileUser = yield select((state) =>
+      getProfileUser(state, { handle })
+    )
     if (profileUser.follower_count - 1 === userIds.length) {
       updatedUserIds = userIds.concat({ id: userId, uid })
     }
@@ -531,10 +544,11 @@ function* updateCurrentUserFollows(action) {
     updatedUserIds = userIds.filter((f) => f.id !== userId)
   }
   yield put(
-    profileActions.setProfileField(FollowType.FOLLOWERS, {
-      status,
-      userIds: updatedUserIds
-    })
+    profileActions.setProfileField(
+      FollowType.FOLLOWERS,
+      { status, userIds: updatedUserIds },
+      handle
+    )
   )
 }
 

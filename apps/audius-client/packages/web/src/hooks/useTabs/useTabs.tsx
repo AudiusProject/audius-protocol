@@ -122,7 +122,7 @@ const TabBar = memo(
     }))
 
     const resizeTabs = useCallback(() => {
-      const tabRef = refsArr.current[activeIndex].current
+      const tabRef = refsArr.current[activeIndex]?.current
       if (!tabRef) return
       const {
         clientWidth: width,

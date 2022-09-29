@@ -182,10 +182,11 @@ export class LineupActions {
     }
   }
 
-  updateLineupOrder(orderedIds: UID[]) {
+  updateLineupOrder(orderedIds: UID[], handle?: string) {
     return {
       type: addPrefix(this.prefix, UPDATE_LINEUP_ORDER),
-      orderedIds
+      orderedIds,
+      handle
     }
   }
 
@@ -249,10 +250,11 @@ export class LineupActions {
     }
   }
 
-  setPage = (page: number) => {
+  setPage = (page: number, handle?: string) => {
     return {
       type: addPrefix(this.prefix, SET_PAGE),
-      page
+      page,
+      handle
     }
   }
 }

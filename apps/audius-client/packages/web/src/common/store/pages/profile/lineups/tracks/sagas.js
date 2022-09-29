@@ -19,19 +19,17 @@ import { LineupSagas } from 'common/store/lineup/sagas'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
 const { SET_ARTIST_PICK } = tracksSocialActions
-const { getProfileUserId, getProfileTracksLineup, getProfileUserHandle } =
-  profilePageSelectors
+const { getProfileUserId, getProfileTracksLineup } = profilePageSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { DELETE_TRACK } = cacheTracksActions
-const getUserId = accountSelectors.getUserId
+const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload, handle }) {
   yield waitForAccount()
   const currentUserId = yield select(getUserId)
-  const currentProfileHandle = yield select(getProfileUserHandle)
-  const profileHandle = handle ?? currentProfileHandle
+  const profileHandle = handle.toLowerCase()
 
   // Wait for user to receive social handles
   // We need to know ahead of time whether we want to request
@@ -40,9 +38,7 @@ function* getTracks({ offset, limit, payload, handle }) {
   const user = yield call(
     waitForValue,
     getUser,
-    {
-      handle: profileHandle.toLowerCase()
-    },
+    { handle: profileHandle },
     (user) => 'twitter_handle' in user
   )
   const sort = payload?.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
@@ -125,7 +121,10 @@ class TracksSagas extends LineupSagas {
 
 function* watchSetArtistPick() {
   yield takeEvery(SET_ARTIST_PICK, function* (action) {
-    const lineup = yield select(getProfileTracksLineup)
+    const accountHandle = yield select(getUserHandle)
+    const lineup = yield select((state) =>
+      getProfileTracksLineup(state, accountHandle)
+    )
     const updatedOrderUid = []
     for (const [entryUid, order] of Object.entries(lineup.order)) {
       const track = yield select(getTrack, { uid: entryUid })
@@ -137,19 +136,26 @@ function* watchSetArtistPick() {
     updatedOrderUid.sort((a, b) => a.order - b.order)
     const updatedLineupOrder = updatedOrderUid.map(({ uid }) => uid)
 
-    yield put(lineupActions.updateLineupOrder(updatedLineupOrder))
+    yield put(
+      lineupActions.updateLineupOrder(updatedLineupOrder, accountHandle)
+    )
   })
 }
 
 function* watchDeleteTrack() {
   yield takeEvery(DELETE_TRACK, function* (action) {
     const { trackId } = action
-    const lineup = yield select(getProfileTracksLineup)
+    const accountHandle = yield select(getUserHandle)
+    const lineup = yield select((state) =>
+      getProfileTracksLineup(state, accountHandle)
+    )
     const trackLineupEntry = lineup.entries.find(
       (entry) => entry.id === trackId
     )
     if (trackLineupEntry) {
-      yield put(tracksActions.remove(Kind.TRACKS, trackLineupEntry.uid))
+      yield put(
+        tracksActions.remove(Kind.TRACKS, trackLineupEntry.uid, accountHandle)
+      )
     }
   })
 }
