@@ -644,7 +644,11 @@ def cli(
     format_artifacts(release_summary=release_summary)
 
     # report back to CircleCI that this deployment has failed
-    if release_summary["failed_post_check"]:
+    if (
+        release_summary["failed_post_check"]
+        or release_summary[FAILED_TO_SSH]
+        or release_summary["failed"]
+    ):
         exit(1)
 
 
