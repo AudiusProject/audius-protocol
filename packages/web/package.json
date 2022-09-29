@@ -271,6 +271,14 @@
     "coverageReporters": [
       "text",
       "html"
-    ]
+    ],
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/(?!hashids)"
+    ],
+    "moduleNameMapper": {
+      "^react$": "<rootDir>/node_modules/react",
+      "^react-redux$": "<rootDir>/node_modules/react-redux",
+      "^hashid$": "<rootDir>/node_modules/hashids"
+    }
   }
 }
