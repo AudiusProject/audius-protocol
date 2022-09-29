@@ -386,6 +386,7 @@ const getCID = async (req, res) => {
     return fsStream
   } catch (e) {
     prometheusResult.mode = 'failure_stream'
+    req.logger.error({ cid: CID }, `Could not stream track: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
