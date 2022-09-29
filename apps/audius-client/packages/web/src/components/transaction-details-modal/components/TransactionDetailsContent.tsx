@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 import {
   TransactionDetails,
   TransactionMethod,
@@ -10,9 +8,7 @@ import cn from 'classnames'
 
 import { ReactComponent as LogoCoinbase } from 'assets/img/LogoCoinbase.svg'
 import { ReactComponent as LogoStripe } from 'assets/img/LogoStripe.svg'
-import AppIcon from 'assets/img/appIcon.png'
-import { ReactComponent as IconCoinbaseMini } from 'assets/img/iconCoinbaseMini.svg'
-import { ReactComponent as IconStripeMini } from 'assets/img/iconStripeMini.svg'
+import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 
 import { Block, BlockContainer } from './Block'
 import styles from './TransactionDetailsContent.module.css'
@@ -28,20 +24,9 @@ const messages = {
   unknown: 'Unknown'
 }
 
-const AppLogo = () => (
-  <img src={AppIcon} alt={'Audius Logo'} width={40} height={40} />
-)
-
 // TODO: Make these not partial once other transaction types are in
 const transactionDescriptions: Partial<Record<TransactionType, string>> = {
   [TransactionType.PURCHASE]: messages.purchaseDescription
-}
-const typeIconMap: Partial<Record<TransactionType, ReactNode>> = {
-  [TransactionType.PURCHASE]: <AppLogo />
-}
-const methodIconMap: Partial<Record<TransactionMethod, ReactNode>> = {
-  [TransactionMethod.COINBASE]: <IconCoinbaseMini />,
-  [TransactionMethod.STRIPE]: <IconStripeMini />
 }
 
 export const TransactionDetailsContent = ({
@@ -56,12 +41,10 @@ export const TransactionDetailsContent = ({
         <Block header={messages.transaction}>
           {transactionDescriptions[transactionDetails.transactionType]}
         </Block>
-        <div className={styles.transactionIcon}>
-          <div className={cn(styles.transactionIconMini, styles.coinbase)}>
-            {methodIconMap[transactionDetails.method]}
-          </div>
-          {typeIconMap[transactionDetails.transactionType]}
-        </div>
+        <AudioTransactionIcon
+          type={transactionDetails.transactionType}
+          method={transactionDetails.method}
+        />
       </div>
       {transactionDetails.transactionType === TransactionType.PURCHASE ? (
         <TransactionPurchaseMetadata metadata={transactionDetails.metadata} />
