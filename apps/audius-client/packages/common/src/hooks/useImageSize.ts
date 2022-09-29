@@ -1,16 +1,17 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { Dispatch } from 'redux'
 
-import { useInstanceVar } from 'hooks/useInstanceVar'
 import {
   DefaultSizes,
   ImageSizesObject,
   SquareSizes,
   URL,
   WidthSizes
-} from 'models/ImageSizes'
-import { Maybe } from 'utils/typeUtils'
+} from '../models/ImageSizes'
+import { Maybe } from '../utils/typeUtils'
+
+import { useInstanceVar } from './useInstanceVar'
 
 type Size = SquareSizes | WidthSizes
 
@@ -40,7 +41,7 @@ const getNextImage =
     return imageSizes[next]
   }
 
-type UseImageSizeProps<
+type BaseUserImageSizeProps<
   ImageSize extends Size,
   ImageSizes extends ImageSizesObject<ImageSize>
 > = {
@@ -52,8 +53,6 @@ type UseImageSizeProps<
   id?: number | null | undefined | string
   // A flag (default = true) that will trigger the image load. Can be used to delay the load
   load?: boolean
-  // A flag that will cause the return value to be a function that will trigger the image load
-  onDemand?: boolean
   // The desired size of the image
   size: ImageSize
   // The available sizes of the image
@@ -61,6 +60,24 @@ type UseImageSizeProps<
   // Dispatch for current context. Fixes the issue when trying to use web dispatch in mobile context
   dispatch: Dispatch<any>
 }
+
+type UseImageSizeOnDemandProps<
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+> = BaseUserImageSizeProps<ImageSize, ImageSizes> & {
+  // A flag that will cause the return value to be a function that will trigger the image load
+  onDemand: true
+}
+
+type ImageType =
+  | 'empty'
+  | 'none'
+  | 'override'
+  | 'default'
+  | 'desired'
+  | 'smaller'
+  | 'larger'
+  | 'undefined'
 
 /**
  * Custom hooks that allow a component to use an image size for a
@@ -70,7 +87,15 @@ type UseImageSizeProps<
  * The desired size will be requested and returned when it becomes available
  *
  */
-export const useImageSize = <
+export function useImageSize<
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+>(props: UseImageSizeOnDemandProps<ImageSize, ImageSizes>): () => Maybe<string>
+export function useImageSize<
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+>(props: BaseUserImageSizeProps<ImageSize, ImageSizes>): Maybe<string>
+export function useImageSize<
   ImageSize extends Size,
   ImageSizes extends ImageSizesObject<ImageSize>
 >({
@@ -82,77 +107,124 @@ export const useImageSize = <
   onDemand,
   size,
   sizes
-}: UseImageSizeProps<ImageSize, ImageSizes>) => {
+}: BaseUserImageSizeProps<ImageSize, ImageSizes> & {
+  onDemand?: boolean
+}): Maybe<string> | (() => Maybe<string>) {
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
-  const fallbackImage = (url: URL) => {
-    setPreviousId(null)
-    return url
-  }
+  const getSmallerImage = useMemo(
+    () => getNextImage<ImageSize, ImageSizes>((a, b) => a < b),
+    []
+  )
+  const getLargerImage = useMemo(
+    () => getNextImage<ImageSize, ImageSizes>((a, b) => a > b),
+    []
+  )
 
-  const getSmallerImage = getNextImage<ImageSize, ImageSizes>((a, b) => a < b)
-  const getLargerImage = getNextImage<ImageSize, ImageSizes>((a, b) => a > b)
-
-  const getImageSize = (): Maybe<URL> => {
+  const getImageSize = useCallback((): {
+    url: Maybe<URL>
+    type: ImageType
+  } => {
     if (id === null || id === undefined || typeof id === 'string') {
-      return ''
+      return { url: '', type: 'empty' }
+    }
+
+    const fallbackImage = (url: URL) => {
+      setPreviousId(null)
+      return url
     }
 
     // No image sizes object
     if (!sizes) {
-      return fallbackImage('')
+      return { url: fallbackImage(''), type: 'none' }
     }
 
     // An override exists
     if (DefaultSizes.OVERRIDE in sizes) {
       const override: Maybe<URL> = sizes[DefaultSizes.OVERRIDE]
       if (override) {
-        return fallbackImage(override)
+        return { url: fallbackImage(override), type: 'override' }
       }
 
-      return defaultImage
+      return { url: defaultImage, type: 'default' }
     }
 
     // The desired size exists
     if (size in sizes) {
       const desired: Maybe<URL> = sizes[size]
       if (desired) {
-        return desired
+        return { url: desired, type: 'desired' }
       }
 
-      return defaultImage
+      return { url: defaultImage, type: 'default' }
     }
 
     // A larger size exists
     const larger: Maybe<URL> = getLargerImage(sizes, size)
     if (larger) {
-      return fallbackImage(larger)
-    }
-
-    // If no larger size exists, dispatch to get the desired size
-    // Don't dispatch twice for the same id
-    if (load && getPreviousId() !== id) {
-      setPreviousId(id)
-      // Request the desired size
-      dispatch(action(id, size))
+      return { url: fallbackImage(larger), type: 'larger' }
     }
 
     // A smaller size exists
     const smaller: Maybe<URL> = getSmallerImage(sizes, size)
     if (smaller) {
-      return fallbackImage(smaller)
+      return { url: fallbackImage(smaller), type: 'smaller' }
     }
 
-    return undefined
+    return { url: undefined, type: 'undefined' }
+  }, [
+    defaultImage,
+    getLargerImage,
+    getSmallerImage,
+    id,
+    size,
+    sizes,
+    setPreviousId
+  ])
+
+  let imageUrl: Maybe<URL>
+  let imageType: Maybe<ImageType>
+
+  if (!onDemand) {
+    const { url, type } = getImageSize()
+    imageUrl = url
+    imageType = type
   }
 
-  // TODO: sk - disambiguate the return value so it can be typed
-  if (!onDemand) return getImageSize() as any
-  return getImageSize as any
+  const previousId = getPreviousId()
+
+  const handleFetchLargeImage = useCallback(
+    (imageType: ImageType) => {
+      if (
+        load &&
+        !(id === null || id === undefined || typeof id === 'string') &&
+        previousId !== id &&
+        (imageType === 'smaller' || imageType === 'undefined')
+      ) {
+        setPreviousId(id)
+        dispatch(action(id, size))
+      }
+    },
+    [load, id, previousId, action, dispatch, setPreviousId, size]
+  )
+
+  const handleOnDemandImage = useCallback(() => {
+    const { url, type } = getImageSize()
+    handleFetchLargeImage(type)
+    return url
+  }, [getImageSize, handleFetchLargeImage])
+
+  useEffect(() => {
+    if (!onDemand && imageType !== undefined) {
+      handleFetchLargeImage(imageType)
+    }
+  }, [onDemand, handleFetchLargeImage, imageType])
+
+  if (!onDemand) return imageUrl
+  return handleOnDemandImage
 }
 
 const ARTWORK_HAS_LOADED_TIMEOUT = 1000
-
 // We don't want to indefinitely delay tile loading
 // waiting for the image, so set a timeout before
 // we call callback().

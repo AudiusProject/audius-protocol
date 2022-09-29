@@ -14,7 +14,6 @@ export const useUserProfilePicture = (
   profilePictureSizes: ProfilePictureSizes | null,
   size: SquareSizes,
   defaultImage: string = profilePicEmpty as string,
-  onDemand = false,
   load = true
 ) => {
   const dispatch = useDispatch()
@@ -25,7 +24,30 @@ export const useUserProfilePicture = (
     size,
     action: fetchProfilePicture,
     defaultImage,
-    onDemand,
     load
+  })
+}
+
+/**
+ * Like useUserProfilePicture, but onDemand is set to true, which
+ * returns a callback that can be used to fetch the image on demand.
+ */
+export const useOnUserProfilePicture = (
+  userId: number | null,
+  profilePictureSizes: ProfilePictureSizes | null,
+  size: SquareSizes,
+  defaultImage: string = profilePicEmpty as string,
+  load = true
+) => {
+  const dispatch = useDispatch()
+  return useImageSize({
+    dispatch,
+    id: userId,
+    sizes: profilePictureSizes,
+    size,
+    action: fetchProfilePicture,
+    defaultImage,
+    load,
+    onDemand: true
   })
 }

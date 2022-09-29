@@ -46,7 +46,6 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     _profile_picture_sizes,
     SquareSizes.SIZE_150_BY_150,
     undefined,
-    undefined,
     loadImage
   )
 
