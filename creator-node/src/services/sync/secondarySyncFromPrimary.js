@@ -5,7 +5,8 @@ const config = require('../../config')
 const models = require('../../models')
 const {
   saveFileForMultihashToFS,
-  deleteAllCNodeUserDataFromDisk
+  deleteAllCNodeUserDataFromDisk,
+  gatherCNodeUserDataToDelete
 } = require('../../fileManager')
 const {
   getOwnEndpoint,
@@ -119,12 +120,10 @@ const handleSyncFromPrimary = async ({
         }
       }
 
+      // Store this user's file paths in redis to delete later (after wiping db)
+      let numFilesToDelete
       try {
-        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
-          wallet,
-          logger
-        )
-        logger.info(`Deleted ${numFilesDeleted} for ${wallet}`)
+        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
       } catch (error) {
         errorResponse = {
           error,
@@ -154,6 +153,25 @@ const handleSyncFromPrimary = async ({
         errorResponse = {
           error,
           result: 'failure_delete_db_data'
+        }
+
+        throw error
+      }
+
+      // Wipe disk - delete files whose paths we stored in redis earlier
+      try {
+        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
+          wallet,
+          numFilesToDelete,
+          logger
+        )
+        logger.info(
+          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
+        )
+      } catch (error) {
+        errorResponse = {
+          error,
+          result: 'failure_delete_disk_data'
         }
 
         throw error
