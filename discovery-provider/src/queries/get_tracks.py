@@ -47,6 +47,7 @@ class GetTrackArgs(TypedDict):
     filter_deleted: bool
     exclude_premium: bool
     routes: List[RouteArgs]
+    filter_tracks: str
 
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]
@@ -130,6 +131,13 @@ def _get_tracks(session, args):
                 User.name.ilike(f"%{query.lower()}%"),
             )
         )
+
+    if "filter_tracks" in args and args.get("filter_tracks") != "all":
+        filter_tracks = args.get("filter_tracks")
+        if filter_tracks == "unlisted":
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == True)
+        else:
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
 
     if "sort_method" in args and args.get("sort_method") is not None:
         sort_method = args.get("sort_method")
