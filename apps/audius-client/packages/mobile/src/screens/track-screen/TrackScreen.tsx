@@ -54,7 +54,7 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { searchTrack, id, canBeUnlisted = true } = params ?? {}
+  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
@@ -72,8 +72,8 @@ export const TrackScreen = () => {
 
   const handleFetchTrack = useCallback(() => {
     dispatch(tracksActions.reset())
-    dispatch(fetchTrack(id, undefined, user?.handle, canBeUnlisted))
-  }, [dispatch, canBeUnlisted, id, user?.handle])
+    dispatch(fetchTrack(id, slug, handle ?? user?.handle, canBeUnlisted))
+  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
 
   useFocusEffect(handleFetchTrack)
 
