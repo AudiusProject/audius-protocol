@@ -22,6 +22,7 @@ from src.api.v1.helpers import (
     get_encoded_track_id,
     make_full_response,
     make_response,
+    pagination_parser,
     pagination_with_current_user_parser,
     search_parser,
     stem_from_track,
@@ -557,6 +558,51 @@ class FullTrending(Resource):
             TrendingType.TRACKS, version_list[0]
         )
         trending_tracks = get_full_trending(request, args, strategy)
+        return success_response(trending_tracks)
+
+
+@ns.route(
+    "/trending/underground",
+    defaults={
+        "version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name
+    },
+    strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Underground Trending Tracks""",
+            "description": """Gets the top 100 trending underground tracks on Audius""",
+        }
+    },
+)
+@ns.route(
+    "/trending/underground/<string:version>",
+    doc={
+        "get": {
+            "id": "Get Underground Trending Tracks With Version",
+            "description": "Gets the top 100 trending underground tracks on Audius using a given trending strategy version",
+            "params": {"version": "The strategy version of trending to user"},
+        }
+    },
+)
+class UndergroundTrending(Resource):
+    @record_metrics
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, version):
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.UNDERGROUND_TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, underground_trending_versions)
+        )
+        if not version_list:
+            abort_bad_path_param("version", ns)
+
+        args = pagination_parser.parse_args()
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.UNDERGROUND_TRACKS, version_list[0]
+        )
+        trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
 
