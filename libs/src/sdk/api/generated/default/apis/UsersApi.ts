@@ -318,6 +318,10 @@ export interface GetTracksByUserRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserFilterTracksEnum;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -353,6 +357,10 @@ export interface GetTracksByUserHandleRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserHandleSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
 export interface GetUserRequest {
@@ -868,6 +876,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
         }
 
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -914,6 +926,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sortDirection !== undefined) {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1143,6 +1159,15 @@ export enum GetTracksByUserSortDirectionEnum {
     * @export
     * @enum {string}
     */
+export enum GetTracksByUserFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
+}
+/**
+    * @export
+    * @enum {string}
+    */
 export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
@@ -1169,6 +1194,15 @@ export enum GetTracksByUserHandleSortMethodEnum {
 export enum GetTracksByUserHandleSortDirectionEnum {
     Asc = 'asc',
     Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
 }
 /**
     * @export
