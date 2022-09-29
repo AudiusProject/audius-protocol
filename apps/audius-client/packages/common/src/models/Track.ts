@@ -94,7 +94,16 @@ export type TrackMetadata = {
   // Added fields
   dateListened?: string
   duration: number
+
+  offline?: OfflineTrackMetadata
 } & Timestamped
+
+// This is available on mobile for offline tracks
+export type OfflineTrackMetadata = {
+  downloaded_from_collection: string[]
+  download_completed_time: EpochTimeStamp
+  last_verified_time: EpochTimeStamp
+}
 
 export type Stem = {
   track_id: ID
