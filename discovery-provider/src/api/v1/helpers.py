@@ -562,7 +562,7 @@ user_tracks_route_parser.add_argument(
     description="Filter by unlisted or public tracks",
     type=str,
     default="all",
-    choices=("all", "public", "unlisted")
+    choices=("all", "public", "unlisted"),
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
