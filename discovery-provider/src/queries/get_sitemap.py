@@ -117,13 +117,11 @@ def get_dynamic_root(max: int, base_route: str, limit: int = LIMIT):
     for num in range(num_pages):
         sitemap_el = etree.Element("sitemap")
         loc = etree.Element("loc")
-        loc.text = create_xml_url(f"sitemap/{base_route}/{num+1}.xml")
+        loc.text = create_xml_url(f"sitemaps/{base_route}/{num+1}.xml")
         sitemap_el.append(loc)
         root.append(sitemap_el)
 
-    # pretty string
-    s = etree.tostring(root, pretty_print=True)
-    return s
+    return etree.tostring(root, pretty_print=True)
 
 
 def get_entity_page(slugs: List[str]):

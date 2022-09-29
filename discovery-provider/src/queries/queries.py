@@ -658,7 +658,7 @@ def get_user_history_route(user_id):
         return api_helpers.error_response(str(e), 400)
 
 
-@bp.route("/sitemap/base.xml", methods=("GET",))
+@bp.route("/sitemaps/default.xml", methods=("GET",))
 def get_base_sitemap():
     try:
         default_sitemap = build_default()
@@ -667,7 +667,7 @@ def get_base_sitemap():
         return api_helpers.error_response(str(e), 400)
 
 
-@bp.route("/sitemap/<string:type>/base.xml", methods=("GET",))
+@bp.route("/sitemaps/<string:type>/index.xml", methods=("GET",))
 def get_type_base_sitemap(type):
     try:
         db = get_db_read_replica()
@@ -689,7 +689,7 @@ def get_type_base_sitemap(type):
         return api_helpers.error_response(str(e), 400)
 
 
-@bp.route("/sitemap/<string:type>/<string:file_name>", methods=("GET",))
+@bp.route("/sitemaps/<string:type>/<string:file_name>", methods=("GET",))
 def get_type_sitemap_page(type: str, file_name: str):
     try:
         number = re.search("(\d+)\.xml$", file_name)  # noqa: W605
