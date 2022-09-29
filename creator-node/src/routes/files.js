@@ -170,14 +170,6 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  */
 const getCID = async (req, res) => {
   const CID = req.params.CID
-  if (!CID) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(`Invalid request, no CID provided.`)
-    )
-  }
-
   const trackId = parseInt(req.query.trackId)
 
   const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]

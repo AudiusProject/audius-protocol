@@ -29,21 +29,20 @@ export const premiumContentMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
+  const cid = req.params?.CID
+  if (!cid) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(`Invalid request, no CID provided.`)
+    )
+  }
+
   if (!config.get('premiumContentEnabled')) {
-    next()
-    return
+    return next()
   }
 
   try {
-    const cid = req.params?.CID
-    if (!cid) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest(`Invalid request, no CID provided.`)
-      )
-    }
-
     const premiumContentHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
     const { premiumContentAccessChecker, libs, redis } = serviceRegistry
@@ -69,8 +68,7 @@ export const premiumContentMiddleware = async (
         trackId,
         isPremium
       }
-      next()
-      return
+      return next()
     }
 
     switch (error) {
