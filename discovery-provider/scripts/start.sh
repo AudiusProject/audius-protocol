@@ -130,7 +130,7 @@ else
     audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
-        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
 fi
 
