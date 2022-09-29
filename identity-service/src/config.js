@@ -821,7 +821,13 @@ const config = convict({
     format: Boolean,
     env: 'skipAbuseCheck',
     default: false
-  }
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'Enable replica set updates with Entity Manager',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
+  },
 })
 
 // if you wanted to load a file
