@@ -2,7 +2,11 @@ const { Queue, Worker } = require('bullmq')
 
 const redis = require('../redis')
 const config = require('../config')
-const { MONITORS, getMonitorRedisKey } = require('./monitors')
+const {
+  MONITORS,
+  PROMETHEUS_MONITORS,
+  getMonitorRedisKey
+} = require('./monitors')
 const { logger } = require('../logging')
 const { clusterUtils } = require('../utils')
 
@@ -24,7 +28,7 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor() {
+  constructor(prometheusRegistry) {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -36,6 +40,8 @@ class MonitoringQueue {
         removeOnFail: MONITORING_QUEUE_HISTORY
       }
     })
+
+    this.prometheusRegistry = prometheusRegistry
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
     if (clusterUtils.isThisWorkerInit()) {
@@ -51,6 +57,14 @@ class MonitoringQueue {
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
+          Object.entries(MONITORS).forEach(async (monitorKey, monitorProps) => {
+            try {
+              await this.refresh(monitorProps, monitorKey)
+            } catch (e) {
+              this.logStatus(`Error on ${monitor.name} ${e}`)
+            }
+          })
+
           Object.values(MONITORS).forEach(async (monitor) => {
             try {
               await this.refresh(monitor)
@@ -72,29 +86,48 @@ class MonitoringQueue {
    * them on init
    */
   async seedInitialValues() {
-    await this.refresh(MONITORS.STORAGE_PATH_SIZE)
-    await this.refresh(MONITORS.STORAGE_PATH_USED)
+    await this.refresh(MONITORS.STORAGE_PATH_SIZE, 'STORAGE_PATH_SIZE')
+    await this.refresh(MONITORS.STORAGE_PATH_USED, 'STORAGE_PATH_USED')
   }
 
-  async refresh(monitor) {
-    const key = getMonitorRedisKey(monitor)
+  /**
+   * Refresh monitor in redis and prometheus (if integer)
+   * @param {Object} monitorProps Object containing the monitor props like { func, ttl, type, name }
+   * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
+   */
+   async refresh(monitorProps, monitorKey) {
+    const key = getMonitorRedisKey(monitorProps)
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
     const isFresh = await redis.get(ttlKey)
     if (isFresh) return
 
-    const value = await monitor.func()
-    await this.logStatus(`Computed value for ${monitor.name} ${value}`)
+    const value = await monitorProps.func()
+    this.logStatus(`Computed value for ${monitorProps.name} ${value}`)
+
+    // store integer monitors in prometheus
+    try {
+      if (PROMETHEUS_MONITORS.hasOwnProperty(monitorKey)) {
+        const metric = this.prometheusRegistry.getMetric(
+          this.prometheusRegistry.metricNames[`MONITOR_${monitorKey}`]
+        )
+        metric.set({}, value)
+      }
+    } catch (e) {
+      logger.warn(
+        `MonitoringQueue - Couldn't store value: ${value} in prometheus for metric: ${monitorKey} - ${e.message}`
+      )
+    }
 
     // Set the value
     await redis.set(key, value)
 
-    if (monitor.ttl) {
+    if (monitorProps.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      await redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      await redis.set(ttlKey, 1, 'EX', monitorProps.ttl)
     }
   }
 
