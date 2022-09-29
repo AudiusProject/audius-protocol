@@ -49,6 +49,7 @@ const metricNames: Record<string, string> = {
   SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
     'secondary_sync_from_primary_duration_seconds',
   STREAM_CONTENT_HISTOGRAM: 'stream_content_duration_seconds',
+  STREAM_CONTENT_DIR_HISTOGRAM: 'stream_content_dir_duration_seconds',
   JOBS_ACTIVE_TOTAL_GAUGE: 'jobs_active_total',
   JOBS_WAITING_TOTAL_GAUGE: 'jobs_waiting_total',
   JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
@@ -121,9 +122,19 @@ export const METRIC_LABELS = Object.freeze({
       'abort_cid_is_not_file',
       'abort_cid_not_found_in_db',
       'abort_cid_is_directory_from_db_query',
-      'abort_cid_not_found_network',
+      'abort_cid_not_found_in_network',
       'failure_cid_db_query',
       'failure_premium_content_error',
+      'failure_stream'
+    ],
+    buckets: exponentialBucketsRange(0.1, 60, 10)
+  },
+  [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
+    result: [
+      'success_found_in_fs',
+      'abort_improper_parameters',
+      'abort_cid_not_found_in_db',
+      'abort_cid_not_found_in_network',
       'failure_stream'
     ],
     buckets: exponentialBucketsRange(0.1, 60, 10)
@@ -348,6 +359,14 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]
     }
   },
+  [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
+    metricConfig: {
+      name: METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM,
+      help: 'Time spent to stream content from directory (seconds)',
+      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]
+    }
+  },
   [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -438,6 +457,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
   }
 })
 
+// TODO: need regex matching
 export const ROUTE_TO_METRIC_NAME = Object.freeze({
   '/ipfs': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
   '/content': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM
