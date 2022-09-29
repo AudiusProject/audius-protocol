@@ -1,12 +1,13 @@
+/* eslint-disable import/first */
 'use strict'
+
+const { setupTracing } = require('./tracer')
+setupTracing('content-node')
 
 import type { Cluster, Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
 import { clusterUtils } from './utils'
 const cluster: Cluster = require('cluster')
-
-const { setupTracing } = require('./tracer')
-setupTracing('content-node')
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
