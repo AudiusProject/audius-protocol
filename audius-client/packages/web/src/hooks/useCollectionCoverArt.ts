@@ -13,9 +13,7 @@ export const useCollectionCoverArt = (
   collectionId: number | null | undefined,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
-  defaultImage: string = imageEmpty as string,
-  onDemand = false,
-  load = true
+  defaultImage: string = imageEmpty as string
 ) => {
   const dispatch = useDispatch()
   return useImageSize({
@@ -24,8 +22,6 @@ export const useCollectionCoverArt = (
     sizes: coverArtSizes,
     size,
     action: fetchCoverArt,
-    defaultImage,
-    onDemand,
-    load
+    defaultImage
   })
 }

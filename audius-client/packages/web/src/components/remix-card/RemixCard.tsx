@@ -13,8 +13,8 @@ const messages = {
 }
 
 type RemixCardProps = {
-  profilePictureImage: string
-  coverArtImage: string
+  profilePictureImage?: string
+  coverArtImage?: string
   coSign?: Remix | null
   artistName: string
   artistHandle: string
