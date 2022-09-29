@@ -23,8 +23,7 @@ import { localStorage } from 'app/services/local-storage'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
-import { LineupTileSkeleton } from '../lineup-tile'
-
+import { FeedTipTileSkeleton } from './FeedTipTileSkeleton'
 import { ReceiverDetails } from './ReceiverDetails'
 import { SendTipButton } from './SendTipButton'
 import { SenderDetails } from './SenderDetails'
@@ -49,7 +48,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     justifyContent: 'space-between'
   },
   skeleton: {
-    padding: 12,
     paddingBottom: 0
   },
   iconRemove: {
@@ -103,7 +101,7 @@ export const FeedTipTile = () => {
 
   return !tipToDisplay || Object.keys(usersMap).length !== tipperIds.length ? (
     <View style={styles.skeleton}>
-      <LineupTileSkeleton />
+      <FeedTipTileSkeleton />
     </View>
   ) : (
     <Tile styles={{ tile: styles.tile }}>

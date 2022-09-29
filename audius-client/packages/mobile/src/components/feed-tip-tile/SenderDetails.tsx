@@ -55,7 +55,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexShrink: 1
   },
   pressedText: {
-    textDecorationLine: 'underline'
+    opacity: 0.2
   },
   andOthers: {
     marginLeft: spacing(1)
