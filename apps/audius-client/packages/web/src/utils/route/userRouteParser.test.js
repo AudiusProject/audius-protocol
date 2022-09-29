@@ -2,6 +2,21 @@ import { parseUserRoute } from './userRouteParser'
 
 // eslint-disable-next-line
 import { mockDecode } from '__mocks__/Hashids'
+jest.mock('@audius/common', () => {
+  const originalModule = jest.requireActual('@audius/common')
+
+  return {
+    __esModule: true,
+
+    ...originalModule,
+
+    AudiusBackend: {
+      recordTrackListen: jest.fn(),
+      getSelectableCreatorNodes: jest.fn(),
+      submitAndEvaluateAttestations: jest.fn()
+    }
+  }
+})
 
 describe('parseUserRoute', () => {
   it('can decode a user handle route', () => {
