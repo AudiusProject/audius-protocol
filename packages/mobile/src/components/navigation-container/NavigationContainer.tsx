@@ -46,12 +46,8 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                   initialRouteName: 'Feed',
                   screens: {
                     Feed: 'feed',
-                    Collection: '*/playlist/*',
-                    Track: 'track',
-                    // Unfortunately routes like username/playlists
-                    // don't load properly on web. So for now deep linking
-                    // to profile tabs (other than for your own account) isn't
-                    // implemented
+                    Collection: ':handle/collection/:collectionName',
+                    Track: 'track/:handle/:slug',
                     Profile: {
                       path: ':handle',
                       screens: {
@@ -142,8 +138,17 @@ const NavigationContainer = (props: NavigationContainerProps) => {
               /^\/[^/]+\/(tracks|albums|playlists|reposts|collectibles)$/
             )
           ) {
-            path = '/track'
+            path = `/track/${path}`
           }
+        }
+
+        // If the path is a playlist or album
+        if (path.match(/^\/[^/]+\/(playlist|album)\/[^/]+$/)) {
+          // set the path as `collection`
+          path = path.replace(
+            /(^\/[^/]+\/)(playlist|album)(\/[^/]+$)/,
+            '$1collection$3'
+          )
         }
       }
 
