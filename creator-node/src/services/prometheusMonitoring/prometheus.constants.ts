@@ -376,22 +376,22 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       }
     ])
   ),
-    // Add gauge for each monitor
-    ...Object.fromEntries(
-      Object.keys(PROMETHEUS_MONITORS).map((monitor) => {
-        return [
-          METRIC_NAMES[`MONITOR_${monitor}`],
-          {
-            metricType: METRIC_TYPES.GAUGE,
-            metricConfig: {
-              name: METRIC_NAMES[`MONITOR_${monitor}`],
-              help: `Record monitor: ${monitor}`,
-              labelNames: []
-            }
+  // Add gauge for each monitor
+  ...Object.fromEntries(
+    Object.keys(PROMETHEUS_MONITORS).map((monitor) => {
+      return [
+        METRIC_NAMES[`MONITOR_${monitor}`],
+        {
+          metricType: METRIC_TYPES.GAUGE,
+          metricConfig: {
+            name: METRIC_NAMES[`MONITOR_${monitor}`],
+            help: `Record monitor: ${monitor}`,
+            labelNames: []
           }
-        ]
-      })
-    ),
+        }
+      ]
+    })
+  ),
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {

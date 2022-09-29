@@ -57,21 +57,15 @@ class MonitoringQueue {
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
-          Object.entries(MONITORS).forEach(async (monitorKey, monitorProps) => {
-            try {
-              await this.refresh(monitorProps, monitorKey)
-            } catch (e) {
-              this.logStatus(`Error on ${monitor.name} ${e}`)
+          Object.entries(MONITORS).forEach(
+            async ([monitorKey, monitorProps]) => {
+              try {
+                await this.refresh(monitorProps, monitorKey)
+              } catch (e) {
+                this.logStatus(`Error on ${monitorProps.name} ${e}`)
+              }
             }
-          })
-
-          Object.values(MONITORS).forEach(async (monitor) => {
-            try {
-              await this.refresh(monitor)
-            } catch (e) {
-              this.logStatus(`Error on ${monitor.name} ${e}`)
-            }
-          })
+          )
         } catch (e) {
           this.logStatus(`Error ${e}`)
         }
@@ -95,7 +89,7 @@ class MonitoringQueue {
    * @param {Object} monitorProps Object containing the monitor props like { func, ttl, type, name }
    * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
    */
-   async refresh(monitorProps, monitorKey) {
+  async refresh(monitorProps, monitorKey) {
     const key = getMonitorRedisKey(monitorProps)
     const ttlKey = `${key}:ttl`
 
