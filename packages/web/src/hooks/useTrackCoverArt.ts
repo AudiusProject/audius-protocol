@@ -13,9 +13,7 @@ export const useTrackCoverArt = (
   trackId: number | null | string | undefined,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
-  defaultImage: string = imageEmpty as string,
-  onDemand = false,
-  load = true
+  defaultImage: string = imageEmpty as string
 ) => {
   const dispatch = useDispatch()
   return useImageSize({
@@ -24,8 +22,6 @@ export const useTrackCoverArt = (
     sizes: coverArtSizes,
     size,
     action: fetchCoverArt,
-    defaultImage,
-    onDemand,
-    load
+    defaultImage
   })
 }
