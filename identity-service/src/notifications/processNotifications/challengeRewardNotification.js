@@ -7,7 +7,7 @@ const { notificationTypes } = require('../constants')
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processChallengeRewardNotifications (notifications, tx) {
+async function processChallengeRewardNotifications(notifications, tx) {
   for (const notification of notifications) {
     const { challenge_id: challengeId } = notification.metadata
 
