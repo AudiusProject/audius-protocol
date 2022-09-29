@@ -89,3 +89,10 @@ export const usersWithAllFoundationNodeReplicaSetGauge = new client.Gauge({
     help: 'the number of users whose entire replica set is made of foundation nodes',
     labelNames: ['run_id']
 })
+
+export const usersWithNoFoundationNodeReplicaSetGauge = new client.Gauge({
+    name: 'audius_nm_users_with_no_foundation_node_replica_set',
+    help: 'the number of users whose entire replica set is does not contain any foundation nodes',
+    labelNames: ['run_id']
+})
+

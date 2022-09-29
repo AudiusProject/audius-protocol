@@ -277,3 +277,14 @@ AND run_id = :run_id;
         secondary1spid = ANY ( '{1,2,3,4}'::int[] )
     AND 
         secondary2spid = ANY ( '{1,2,3,4}'::int[] );
+
+SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = 71
+    AND 
+        primaryspid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND
+        secondary1spid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND 
+        secondary2spid != ALL ('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[]);
