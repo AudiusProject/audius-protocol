@@ -695,7 +695,21 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      if (config.get('entityManagerReplicaSetEnabled')) {
+      // First try updateReplicaSet via URSM
+      // Fallback to EntityManager when relay errors
+      try {
+        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+          userId,
+          newReplicaSetSPIds[0], // new primary
+          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+          oldPrimarySpId || chainPrimarySpId,
+          [
+            oldSecondary1SpId || chainSecondarySpIds?.[0],
+            oldSecondary2SpId || chainSecondarySpIds?.[1]
+          ]
+        )
+      } catch (err) {
         logger.info(
           `[_issueUpdateReplicaSetOp] updating replica set now ${
             Date.now() - startTimeMs
@@ -729,18 +743,6 @@ const _issueUpdateReplicaSetOp = async (
             `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
           )
         }
-      } else {
-        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-          userId,
-          newReplicaSetSPIds[0], // new primary
-          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-          oldPrimarySpId || chainPrimarySpId,
-          [
-            oldSecondary1SpId || chainSecondarySpIds?.[0],
-            oldSecondary2SpId || chainSecondarySpIds?.[1]
-          ]
-        )
       }
 
       response.issuedReconfig = true
