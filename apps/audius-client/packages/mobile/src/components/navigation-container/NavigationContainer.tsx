@@ -8,6 +8,7 @@ import {
 } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 
+import { AppTabNavigationProvider } from 'app/screens/app-screen'
 import type { RootScreenParamList } from 'app/screens/root-screen/RootScreen'
 import { useThemeVariant } from 'app/utils/theme'
 
@@ -152,7 +153,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
   return (
     <RNNavigationContainer linking={linking} theme={navigationThemes[theme]}>
-      {children}
+      <AppTabNavigationProvider>{children}</AppTabNavigationProvider>
     </RNNavigationContainer>
   )
 }

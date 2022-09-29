@@ -1,12 +1,27 @@
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { useNavigation } from '@react-navigation/core'
 import { useDrawerStatus } from '@react-navigation/drawer'
+import { useFocusEffect } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { usePrevious } from 'react-use'
 
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
+
+type AppTabNavigation = NativeStackNavigationProp<AppTabScreenParamList>
+
+// Sets the navigation context so drawers can push onto current app-tab stack
+const useSetAppTabNavigationContext = () => {
+  const navigation = useNavigation<AppTabNavigation>()
+  const { setNavigation } = useContext(AppTabNavigationContext)
+
+  const handleSetNavigation = useCallback(() => {
+    setNavigation(navigation)
+  }, [setNavigation, navigation])
+
+  useFocusEffect(handleSetNavigation)
+}
 
 /**
  * Hook for use in top level stack screens that will reset the stack when the notifications drawer opens.
@@ -14,16 +29,11 @@ import { AppTabNavigationContext } from 'app/screens/app-screen'
  * When closing the notification drawer the stack will be back at the base screen
  */
 export const usePopToTopOnDrawerOpen = () => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<AppTabScreenParamList>>()
+  const navigation = useNavigation<AppTabNavigation>()
   const isDrawerOpen = useDrawerStatus() === 'open'
   const wasDrawerOpen = usePrevious(isDrawerOpen)
-  const { setNavigation } = useContext(AppTabNavigationContext)
 
-  // Sets the navigation context so drawers can push onto current app-tab stack
-  useEffect(() => {
-    setNavigation(navigation)
-  }, [setNavigation, navigation])
+  useSetAppTabNavigationContext()
 
   useEffect(() => {
     if (!wasDrawerOpen && isDrawerOpen) {
