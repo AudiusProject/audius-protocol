@@ -38,8 +38,8 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
     fontSize: typography.fontSize.small,
     fontFamily: typography.fontByWeight.demiBold
   },
-  textUnderline: {
-    textDecorationLine: 'underline'
+  pressed: {
+    opacity: 0.2
   }
 }))
 
@@ -64,10 +64,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
         <PressableText onPress={goToReceiverProfile}>
           {({ pressed }) => (
             <Text
-              style={[
-                styles.receiverNameContainer,
-                pressed && styles.textUnderline
-              ]}
+              style={[styles.receiverNameContainer, pressed && styles.pressed]}
             >
               <Text variant='h3' style={styles.receiverName}>
                 {receiver.name}
@@ -80,7 +77,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
           {({ pressed }) => (
             <Text
               variant='h4'
-              style={[styles.receiverHandle, pressed && styles.textUnderline]}
+              style={[styles.receiverHandle, pressed && styles.pressed]}
             >
               @{receiver.handle}
             </Text>
