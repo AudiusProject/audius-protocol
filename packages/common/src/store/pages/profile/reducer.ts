@@ -52,7 +52,7 @@ const initialProfileState = {
 const updateProfile = (state, action, data) => {
   const { currentUser, entries } = state
   const { handle } = action
-  const profileHandle = handle ?? currentUser
+  const profileHandle = handle?.toLowerCase() ?? currentUser
   const newEntry = entries[profileHandle]
 
   return {
@@ -73,25 +73,28 @@ const actionsMap = {
   [FETCH_PROFILE](state, action) {
     const { fetchOnly, shouldSetLoading, handle, userId } = action
     if (fetchOnly) return state
+    const lowerHandle = handle.toLowerCase()
 
-    const newState = {
-      status: shouldSetLoading ? Status.LOADING : state.status
+    const newState = {}
+
+    if (shouldSetLoading) {
+      newState.status = Status.LOADING
     }
     if (handle) {
-      newState.handle = handle
+      newState.handle = lowerHandle
     }
     if (userId) {
       newState.userId = userId
     }
     return {
       ...updateProfile(state, action, newState),
-      currentUser: handle
+      currentUser: lowerHandle
     }
   },
   [FETCH_PROFILE_SUCCEEDED](state, action) {
     const { currentUser } = state
     const { fetchOnly, userId, handle } = action
-    const profileHandle = handle ?? currentUser
+    const profileHandle = handle?.toLowerCase() ?? currentUser
     if (fetchOnly) return state
 
     return updateProfile(state, action, {
@@ -103,7 +106,7 @@ const actionsMap = {
   [FETCH_FOLLOW_USERS](state, action) {
     const { currentUser, entries } = state
     const { followerGroup, handle } = action
-    const profileHandle = handle ?? currentUser
+    const profileHandle = handle?.toLowerCase() ?? currentUser
     const newEntry = entries[profileHandle]
 
     return {
@@ -123,12 +126,11 @@ const actionsMap = {
   [FETCH_FOLLOW_USERS_SUCCEEDED](state, action) {
     const { currentUser, entries } = state
     const { userIds, followerGroup, handle } = action
-    const profileHandle = handle ?? currentUser
-    const filteredAddedUserIds = userIds.filter(({ id }) =>
-      state[followerGroup].userIds.every(({ id: userId }) => id !== userId)
-    )
-
+    const profileHandle = handle?.toLowerCase() ?? currentUser
     const newEntry = entries[profileHandle]
+    const filteredAddedUserIds = userIds.filter(({ id }) =>
+      newEntry[followerGroup].userIds.every(({ id: userId }) => id !== userId)
+    )
 
     return {
       ...state,
@@ -148,7 +150,7 @@ const actionsMap = {
   [FETCH_FOLLOW_USERS_FAILED](state, action) {
     const { currentUser, entries } = state
     const { followerGroup, handle } = action
-    const profileHandle = handle ?? currentUser
+    const profileHandle = handle?.toLowerCase() ?? currentUser
     const newEntry = entries[profileHandle]
 
     return {
@@ -200,7 +202,7 @@ const actionsMap = {
   [FOLLOW_USER](state, action) {
     const { currentUser, entries } = state
     const { handle, userId } = action
-    const profileHandle = handle ?? currentUser
+    const profileHandle = handle?.toLowerCase() ?? currentUser
     const newEntry = entries[profileHandle]
     const profileFollowees = newEntry[FollowType.FOLLOWEES]
 
@@ -235,7 +237,7 @@ const reducer = (state = initialState, action) => {
   const { currentUser, entries } = state
   const { handle } = action
 
-  const profileHandle = handle ?? currentUser
+  const profileHandle = handle?.toLowerCase() ?? currentUser
   if (!profileHandle) return state
 
   let newEntry = entries[profileHandle] ?? initialProfileState
