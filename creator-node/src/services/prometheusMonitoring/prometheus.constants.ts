@@ -229,7 +229,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
       help: 'Number of wallets found with data orphaned on this node',
       labelNames: [],
-      aggregator: 'sum' as AggregatorType
+      aggregator: 'max' as AggregatorType
     }
   },
   [METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE]: {
@@ -238,7 +238,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
       help: 'Number of syncs enqueued to recover data orphaned on this node',
       labelNames: [],
-      aggregator: 'sum' as AggregatorType
+      aggregator: 'max' as AggregatorType
     }
   },
   [METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE]: {
@@ -294,10 +294,10 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'first' as AggregatorType
+      aggregator: 'average' as AggregatorType
     }
   },
-  [METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTROGRAM]: {
+  [METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM]: {
     metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
       name: METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM,
@@ -305,7 +305,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'first' as AggregatorType
+      aggregator: 'average' as AggregatorType
     }
   },
   [METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM]: {
@@ -316,7 +316,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
       buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'first' as AggregatorType
+      aggregator: 'average' as AggregatorType
     }
   },
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
@@ -331,6 +331,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       aggregator: 'average' as AggregatorType
     }
   },
+  // TODO: This isn't used anywhere
   [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -356,7 +357,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         config.get('maxSyncMonitoringDurationInMs') / 1000,
         4
       ),
-      aggregator: 'first' as AggregatorType
+      aggregator: 'max' as AggregatorType
     }
   },
 
@@ -394,7 +395,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
       labelNames:
         METRIC_LABEL_NAMES[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE],
-      aggregator: 'first' as AggregatorType
+      aggregator: 'max' as AggregatorType
     }
   },
   [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
