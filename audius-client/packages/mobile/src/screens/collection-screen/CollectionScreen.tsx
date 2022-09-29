@@ -138,12 +138,11 @@ const CollectionScreenComponent = ({
 
   const currentUserId = useSelector(getUserId)
   const isOwner = currentUserId === playlist_owner_id
-
   const extraDetails = useMemo(
     () => [
       {
         label: 'Modified',
-        value: formatDate(updated_at)
+        value: formatDate(updated_at || Date.now())
       }
     ],
     [updated_at]
