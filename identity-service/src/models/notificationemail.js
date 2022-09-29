@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {}
   )
-  NotificationEmail.associate = function (models) {
+  NotificationEmail.associate = function () {
     // associations can be defined here
   }
   return NotificationEmail

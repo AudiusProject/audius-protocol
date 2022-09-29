@@ -540,14 +540,7 @@ async function cacheEmail(cacheParams) {
     const timestamp = moment().valueOf()
     const fileName = `${uuid}-${timestamp.toString()}.json`
     const filePath = path.join(emailCachePath, fileName)
-    await new Promise((resolve, reject) => {
-      fs.writeFile(filePath, JSON.stringify(cacheParams), (error) => {
-        if (error) {
-          reject(error)
-        }
-        resolve()
-      })
-    })
+    await fs.promises.writeFile(filePath, JSON.stringify(cacheParams))
   } catch (e) {
     logger.error(`Error in cacheEmail ${e}`)
   }

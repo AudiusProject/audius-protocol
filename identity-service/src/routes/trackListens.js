@@ -189,25 +189,30 @@ const getTrendingTracks = async (idList, timeFrame, limit, offset) => {
 
   const currentHour = trimToHour(new Date())
   switch (timeFrame) {
-    case 'day':
+    case 'day': {
       const oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
       break
-    case 'week':
+    }
+    case 'week': {
       const oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
       break
-    case 'month':
+    }
+    case 'month': {
       const oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
       break
-    case 'year':
+    }
+    case 'year': {
       const oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
       break
-    case 'millennium':
+    }
+    case 'millennium': {
       dbQuery.where.hour = { [models.Sequelize.Op.gte]: new Date(0) }
       break
+    }
     case undefined:
       break
     default:

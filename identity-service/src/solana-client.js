@@ -380,6 +380,8 @@ async function awaitTransactionSignatureConfirmation(
   return result
 }
 
-exports.createTrackListenTransaction = createTrackListenTransaction
-exports.getFeePayerKeypair = getFeePayerKeypair
-exports.sendAndSignTransaction = sendAndSignTransaction
+module.exports = {
+  createTrackListenTransaction,
+  getFeePayerKeypair,
+  sendAndSignTransaction
+}

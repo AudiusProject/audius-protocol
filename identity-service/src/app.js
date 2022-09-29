@@ -106,7 +106,7 @@ class App {
           cluster.fork({ WORKER_TYPE: 'web_server' })
         }
 
-        cluster.on('exit', (worker, code, signal) => {
+        cluster.on('exit', (worker) => {
           logger.info(
             `Cluster: Worker ${worker.process.pid} died, forking another worker`
           )
