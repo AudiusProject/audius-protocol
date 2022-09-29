@@ -827,7 +827,7 @@ const config = convict({
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
     default: false
-  },
+  }
 })
 
 // if you wanted to load a file

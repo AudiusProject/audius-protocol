@@ -639,31 +639,10 @@ export class Users extends Base {
     ) {
       // Perform update to new contract
       startMs = Date.now()
-      const { txReceipt: updateEndpointTxReceipt, replicaSetSPIDs } =
-        await this._updateReplicaSetOnChain(
-          userId,
-          newMetadata.creator_node_endpoint,
-          useEntityManager
-        )
-      updateEndpointTxBlockNumber = updateEndpointTxReceipt?.blockNumber
-      console.log(
-        `${logPrefix} _updateReplicaSetOnChain() completed in ${
-          Date.now() - startMs
-        }ms`
+      await this._updateReplicaSetOnChain(
+        userId,
+        newMetadata.creator_node_endpoint
       )
-      startMs = Date.now()
-      if (useEntityManager) {
-        await this.waitForReplicaSetDiscoveryIndexing(
-          userId,
-          replicaSetSPIDs,
-          updateEndpointTxBlockNumber
-        )
-      } else {
-        await this._waitForURSMCreatorNodeEndpointIndexing(
-          userId,
-          replicaSetSPIDs
-        )
-      }
       console.log(
         `${logPrefix} _waitForURSMCreatorNodeEndpointIndexing() completed in ${
           Date.now() - startMs
@@ -831,8 +810,7 @@ export class Users extends Base {
         const { txReceipt, replicaSetSPIDs } =
           await this._updateReplicaSetOnChain(
             userId,
-            newMetadata.creator_node_endpoint,
-            useEntityManager
+            newMetadata.creator_node_endpoint
           )
         console.log(
           `${logPrefix} [phase: ${phase}] _updateReplicaSetOnChain() completed in ${
@@ -1240,8 +1218,7 @@ export class Users extends Base {
   // This behavior is to ensure backwards compatibility prior to contract deploy
   async _updateReplicaSetOnChain(
     userId: number,
-    creatorNodeEndpoint: string,
-    useEntityManager: boolean
+    creatorNodeEndpoint: string
   ) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
@@ -1266,8 +1243,25 @@ export class Users extends Base {
     const currentUser = this.userStateManager.getCurrentUser()
     if (!currentUser) throw new Error('Current user missing')
 
-    // Update in new contract
-    if (useEntityManager) {
+    // First try to update with URSM
+    // Fallback to EntityManager when relay errors
+    let updateEndpointTxBlockNumber
+    let replicaSetSPIDs
+    try {
+      txReceipt =
+        await this.contracts.UserReplicaSetManagerClient?.updateReplicaSet(
+          userId,
+          primarySpID,
+          [secondary1SpID, secondary2SpID]
+        )
+        replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+        updateEndpointTxBlockNumber = txReceipt?.blockNumber
+
+        await this._waitForURSMCreatorNodeEndpointIndexing(
+          userId,
+          replicaSetSPIDs
+        )
+    } catch {
       const currentPrimaryEndpoint = CreatorNode.getPrimary(
         currentUser.creator_node_endpoint
       )
@@ -1295,18 +1289,19 @@ export class Users extends Base {
         oldPrimary: oldPrimary,
         oldSecondaries: [oldSecondary1SpID, oldSecondary2SpID]
       })
-    } else {
-      txReceipt =
-        await this.contracts.UserReplicaSetManagerClient?.updateReplicaSet(
-          userId,
-          primarySpID,
-          [secondary1SpID, secondary2SpID]
-        )
+      replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+      updateEndpointTxBlockNumber = txReceipt?.blockNumber
+
+      await this.waitForReplicaSetDiscoveryIndexing(
+        userId,
+        replicaSetSPIDs,
+        updateEndpointTxBlockNumber
+      )
+
     }
     if (!txReceipt) {
       throw new Error('Unable to update replica set on chain')
     }
-    const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
     return {
       txReceipt,
       replicaSetSPIDs
