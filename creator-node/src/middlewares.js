@@ -760,7 +760,7 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        if (config.get('entityManagerReplicaSetEnabled')) {
+        try {
           // will throw error if blocknumber not found
           const encodedUserId = libs.Utils.encodeHashId(userId)
           const spResponse = await libs.discoveryProvider.getUserReplicaSet({
@@ -782,10 +782,10 @@ async function getReplicaSetSpIDs({
             } else {
               // The blocknumber was indexed by discovery, but there's still no user replica set returned
               errorMsg = `User replica not found in discovery`
-              break
+              throw new Error(errorMsg)
             }
           }
-        } else {
+        } catch (err) {
           replicaSet =
             await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
               userId,
@@ -830,7 +830,7 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        if (config.get('entityManagerReplicaSetEnabled')) {
+        try {
           const encodedUserId = libs.Utils.encodeHashId(userId)
           const spResponse = await libs.discoveryProvider.getUserReplicaSet({
             encodedUserId
@@ -846,9 +846,9 @@ async function getReplicaSetSpIDs({
             }
             errorMsg = null
           } else {
-            errorMsg = `User replica not found in discovery`
+            throw new Error('User replica not found in discovery')
           }
-        } else {
+        } catch (err) {
           replicaSet =
             await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
               userId
@@ -897,19 +897,20 @@ async function getReplicaSetSpIDs({
 
     let errorMsg = null
     try {
-      if (config.get('entityManagerReplicaSetEnabled')) {
+      try {
         const encodedUserId = libs.Utils.encodeHashId(userId)
         const spResponse = await libs.discoveryProvider.getUserReplicaSet({
           encodedUserId
         })
-
         if (spResponse && spResponse.primarySpID) {
           replicaSet = {
             primaryId: spResponse.primarySpID,
             secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
           }
+        } else {
+          throw new Error('User replica set not found in discovery')
         }
-      } else {
+      } catch (err) {
         replicaSet =
           await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
             userId
