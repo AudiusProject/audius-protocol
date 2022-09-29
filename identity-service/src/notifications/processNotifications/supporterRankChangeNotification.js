@@ -92,8 +92,8 @@ async function processSupporterRankChangeNotification(notifications, tx) {
     }
 
     await Promise.all(promises)
-    return notifications
   }
+  return notifications
 }
 
 const getSupporters = async (receiverUserId) => {
