@@ -1,6 +1,7 @@
 'use strict'
 
-import type { Cluster } from 'cluster'
+import type { Cluster, Worker } from 'cluster'
+import { AggregatorRegistry } from 'prom-client'
 import { clusterUtils } from './utils'
 const cluster: Cluster = require('cluster')
 
@@ -18,6 +19,11 @@ const { runMigrations, clearRunningQueries } = require('./migrationManager')
 const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
+
+// This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
+// However, a bug currently requires instantiating this in workers as well:
+// https://github.com/siimon/prom-client/issues/501
+const aggregatorRegistry = new AggregatorRegistry()
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -111,13 +117,25 @@ const startAppForPrimary = async () => {
     }
   })
 
-  for (const worker of Object.values(cluster.workers || {})) {
-    worker?.on('message', (msg) => {
-      if (msg?.cmd === 'setSpecialWorkerId') {
-        clusterUtils.specialWorkerId = msg?.val
+  const sendAggregatedMetricsToWorker = async (worker: Worker) => {
+    const metricsData = await aggregatorRegistry.clusterMetrics()
+    const contentType = aggregatorRegistry.contentType
+    worker.send({
+      cmd: 'receiveAggregatePrometheusMetrics',
+      val: {
+        metricsData,
+        contentType
       }
     })
   }
+
+  // Handle message received from worker to primary
+  cluster.on('message', (workerWhoSentMsg, msg) => {
+    if (msg?.cmd === 'requestAggregatedPrometheusMetrics') {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      sendAggregatedMetricsToWorker(workerWhoSentMsg)
+    }
+  })
 
   // Respawn workers and update each worker's knowledge of who the special worker is.
   // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
@@ -182,6 +200,21 @@ const startAppForWorker = async () => {
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+
+  cluster.worker!.on('message', (msg) => {
+    if (msg?.cmd === 'setSpecialWorkerId') {
+      clusterUtils.specialWorkerId = msg?.val
+    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+      try {
+        const { prometheusRegistry } = serviceRegistry
+        prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
+      } catch (error: any) {
+        logger.error(
+          `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
+    }
+  })
 
   if (clusterUtils.isThisWorkerInit() && process.send) {
     process.send({ cmd: 'initComplete' })
