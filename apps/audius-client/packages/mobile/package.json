@@ -7,7 +7,7 @@
     "android": "ENVFILE=.env.prod react-native run-android --variant=prodDebug",
     "android:stage": "ENVFILE=.env.stage react-native run-android --variant=bounceDebug --appIdSuffix bounce",
     "android:dev": "ENVFILE=.env.dev react-native run-android --variant=prodDebug",
-    "ios": "react-native run-ios",
+    "ios": "react-native run-ios --simulator \"iPhone 14 Pro\"",
     "ios:device": "react-native run-ios --device",
     "ios:stage": "react-native run-ios --scheme 'Bounce'",
     "ios:device:stage": "react-native run-ios --scheme 'Bounce' --configuration Release --device",

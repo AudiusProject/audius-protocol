@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import type { ChallengesParamList } from 'app/utils/challenges'
-import { challengesConfig } from 'app/utils/challenges'
+import { getChallengeConfig } from 'app/utils/challenges'
 
 import Button, { ButtonType } from '../button'
 import { useDrawerState } from '../drawer/AppDrawer'
@@ -63,7 +63,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const { toast } = useContext(ToastContext)
 
   const challenge = userChallenges ? userChallenges[modalType] : null
-  const config = challengesConfig[modalType]
+  const config = getChallengeConfig(modalType)
   const hasChallengeCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
 
@@ -136,7 +136,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       contents = config?.buttonInfo && (
         <Button
           containerStyle={styles.button}
-          title={config.buttonInfo.label}
+          title={config.panelButtonText}
           renderIcon={config.buttonInfo.renderIcon}
           iconPosition='right'
           type={
@@ -160,7 +160,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       contents = config?.buttonInfo && (
         <Button
           containerStyle={styles.button}
-          title={config.buttonInfo.label}
+          title={config.panelButtonText}
           renderIcon={config.buttonInfo.renderIcon}
           iconPosition={config.buttonInfo.iconPosition}
           type={hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY}
@@ -179,7 +179,7 @@ export const ChallengeRewardsDrawerProvider = () => {
       onClose={handleClose}
       title={config.title}
       titleIcon={config.icon}
-      description={config.description}
+      description={config.description(challenge)}
       progressLabel={config.progressLabel ?? 'Completed'}
       amount={challenge.totalAmount}
       challengeState={challenge.state}
