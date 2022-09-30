@@ -24,9 +24,11 @@ export const TracksTab = () => {
     '_artist_pick'
   ])
 
+  const handleLower = handle.toLowerCase()
+
   const lineup = useProxySelector(
-    (state) => getProfileTracksLineup(state, handle),
-    [handle]
+    (state) => getProfileTracksLineup(state, handleLower),
+    [handleLower]
   )
 
   useEffect(() => {
@@ -37,11 +39,11 @@ export const TracksTab = () => {
           undefined,
           undefined,
           { userId: user_id },
-          { handle }
+          { handle: handleLower }
         )
       )
     }
-  }, [dispatch, isProfileLoaded, user_id, handle])
+  }, [dispatch, isProfileLoaded, user_id, handleLower])
 
   const loadMore = useCallback(
     (offset: number, limit: number) => {
