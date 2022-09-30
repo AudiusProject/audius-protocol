@@ -39,8 +39,8 @@ class PremiumContentAccessBatchResponse(TypedDict):
 PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
     PremiumContentConditions, Callable[[int, Any], bool]
 ] = {
-    "nft-collection": does_user_have_nft_collection,
-    "follow-user-id": does_user_follow_artist,
+    "nft_collection": does_user_have_nft_collection,
+    "follow_user_id": does_user_follow_artist,
 }
 
 

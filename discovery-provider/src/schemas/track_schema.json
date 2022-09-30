@@ -344,10 +344,10 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "nft-collection": {
+                "nft_collection": {
                     "type": "string"
                 },
-                "follow-user-id": {
+                "follow_user_id": {
                     "type": "number"
                 }
             },

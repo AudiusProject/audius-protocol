@@ -74,8 +74,8 @@ field_visibility = ns.model(
 premium_conditions = ns.model(
     "premium_conditions",
     {
-        "nft-collection": fields.String,
-        "follow-user-id": fields.Integer,
+        "nft_collection": fields.String,
+        "follow_user_id": fields.Integer,
     },
 )
 premium_content_signature = ns.model(
