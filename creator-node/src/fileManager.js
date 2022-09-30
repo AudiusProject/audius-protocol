@@ -752,13 +752,34 @@ async function removeFile(storagePath) {
   }
 }
 
-async function batchUnlink(storagePaths, batchSize) {
+async function deleteFileOrDir(pathToFileOrDir) {
+  // Base case - delete single file (not a directory)
+  if (!(await fs.lstat(pathToFileOrDir)).isDirectory()) {
+    await fs.unlink(pathToFileOrDir)
+    return
+  }
+
+  // Recursively remove all contents of directory
+  for (const file of await fs.readdir(pathToFileOrDir)) {
+    const childPath = path.join(pathToFileOrDir, file)
+    if ((await fs.lstat(childPath)).isDirectory()) {
+      await deleteFileOrDir(childPath)
+    } else {
+      await fs.unlink(childPath)
+    }
+  }
+
+  // Remove actual directory
+  await fs.rmdir(pathToFileOrDir)
+}
+
+async function batchDeleteFileOrDir(storagePaths, batchSize, logger) {
   let numFilesDeleted = 0
   const batches = chunk(storagePaths, batchSize)
   const promiseResults = []
   for (const batchOfStoragePaths of batches) {
     const promiseResultsForBatch = await Promise.allSettled(
-      batchOfStoragePaths.map((storagePath) => removeFile(storagePath))
+      batchOfStoragePaths.map((storagePath) => deleteFileOrDir(storagePath))
     )
     promiseResults.push(...promiseResultsForBatch)
   }
@@ -767,6 +788,8 @@ async function batchUnlink(storagePaths, batchSize) {
   for (const promiseResult of promiseResults) {
     if (promiseResult.status === 'fulfilled') {
       numFilesDeleted++
+    } else {
+      logger.error(`Could not delete file: ${promiseResult?.reason?.stack}`)
     }
   }
   return numFilesDeleted
@@ -804,7 +827,7 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
   let prevMultihash = ' '
   for (let i = 0; i < numFilesToDelete; i += FILES_PER_QUERY) {
     files = await models.File.findAll({
-      attributes: ['multihash', 'dirMultihash', 'storagePath'],
+      attributes: ['multihash', 'storagePath'],
       order: [['multihash', 'ASC']],
       where: {
         cnodeUserUUID,
@@ -817,7 +840,6 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
 
     if (files?.length) {
       // Save the file paths to a redis set
-      // TODO: Might need to prepend file.dirMultihash for nested paths?
       const filePaths = files.map((file) => path.normalize(file.storagePath))
       await redisClient.sadd(redisSetKey, filePaths)
 
@@ -825,6 +847,7 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
       prevMultihash = files[files.length - 1].multihash
     }
   }
+  return numFilesToDelete
 }
 
 /**
@@ -837,7 +860,8 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
  */
 async function deleteAllCNodeUserDataFromDisk(
   walletPublicKey,
-  numFilesToDelete
+  numFilesToDelete,
+  logger
 ) {
   const FILES_PER_REDIS_QUERY = 10_000
   const FILES_PER_DELETION_BATCH = 100
@@ -852,9 +876,10 @@ async function deleteAllCNodeUserDataFromDisk(
       )
       if (!filePathsToDelete?.length) return numFilesDeleted
 
-      numFilesDeleted += await batchUnlink(
+      numFilesDeleted += await batchDeleteFileOrDir(
         filePathsToDelete,
-        FILES_PER_DELETION_BATCH
+        FILES_PER_DELETION_BATCH,
+        logger
       )
     }
     return numFilesDeleted
@@ -887,5 +912,6 @@ module.exports = {
   fetchFileFromNetworkAndWriteToDisk,
   gatherCNodeUserDataToDelete,
   deleteAllCNodeUserDataFromDisk,
-  clearFilePathsToDelete
+  clearFilePathsToDelete,
+  deleteFileOrDir
 }

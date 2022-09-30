@@ -122,7 +122,7 @@ const handleSyncFromPrimary = async ({
       }
 
       // Store this user's file paths in redis to delete later (after wiping db)
-      let numFilesToDelete
+      let numFilesToDelete = 0
       try {
         numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
       } catch (error) {
@@ -165,7 +165,8 @@ const handleSyncFromPrimary = async ({
       try {
         const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
           wallet,
-          numFilesToDelete
+          numFilesToDelete,
+          logger
         )
         logger.info(
           `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`

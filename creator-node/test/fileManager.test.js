@@ -663,10 +663,6 @@ describe('test fileManager', () => {
       assert.deepStrictEqual(metadataFileData, metadata)
     })
   })
-
-  describe('test deleteAllCNodeUserDataFromDisk()', function () {
-    // TODO
-  })
 })
 
 describe('test removeTrackFolder()', async function () {
@@ -695,7 +691,9 @@ describe('test removeTrackFolder()', async function () {
     assert.ok(
       await fs.pathExists(path.join(trackSourceFileDir, 'trackManifest.m3u8'))
     )
-    assert.ok(await fs.pathExists(path.join(trackSourceFileDir, 'transcode.mp3')))
+    assert.ok(
+      await fs.pathExists(path.join(trackSourceFileDir, 'transcode.mp3'))
+    )
 
     // Call removeTrackFolder + expect success
     try {
@@ -705,6 +703,6 @@ describe('test removeTrackFolder()', async function () {
     }
 
     // Ensure dir has been removed
-    assert.ok(!await fs.pathExists(trackSourceFileDir))
+    assert.ok(!(await fs.pathExists(trackSourceFileDir)))
   })
 })
