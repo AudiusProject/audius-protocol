@@ -179,7 +179,6 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
-                    # test
                     metric_num_errors.save_time(
                         {"entity_type": params.entity_type}, start_time=start_time_tx
                     )
@@ -206,7 +205,6 @@ def entity_manager_update(
         num_total_changes += len(records_to_save)
 
         # update metrics
-        # test
         metric_latency.save_time()
         metric_num_changed.save(
             len(new_records["playlists"]), {"entity_type": EntityType.PLAYLIST.value}
