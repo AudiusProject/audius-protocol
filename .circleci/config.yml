@@ -1515,7 +1515,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1535,7 +1535,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-is-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1569,7 +1569,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - release-scripts:
           name: 🚧-🎁-to-SPs
           target: release-to-service-providers
