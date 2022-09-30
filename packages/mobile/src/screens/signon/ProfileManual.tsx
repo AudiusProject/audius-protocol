@@ -21,6 +21,7 @@ import {
   Platform,
   ScrollView
 } from 'react-native'
+import type { Asset } from 'react-native-image-picker'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -297,9 +298,18 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
   }
 
   const openPhotoMenu = useCallback(() => {
-    const handleImageSelected = (image: Image) => {
+    const handleImageSelected = (image: Image, rawResponse: Asset) => {
       setIsPhotoLoading(true)
-      dispatch(signOnActions.setField('profileImage', image))
+      dispatch(
+        signOnActions.setField('profileImage', {
+          ...image,
+          file: {
+            uri: rawResponse.uri,
+            name: rawResponse.fileName || 'ProfileImage',
+            type: rawResponse.type
+          }
+        })
+      )
     }
     launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
   }, [setIsPhotoLoading, styles.shareSheet.color, dispatch])
