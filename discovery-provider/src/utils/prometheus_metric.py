@@ -3,7 +3,7 @@ from functools import wraps
 from time import time
 from typing import Callable, Dict
 
-from prometheus_client import Histogram, Summary
+from prometheus_client import Gauge, Histogram, Summary
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def save_duration_metric(metric_group):
     # a decorator that takes the `metric_group` parameter to create:
     # * a histogram for detecting duration and latency from a decorated function
-    # * a summary for reporting the last task's duration (in seconds)
+    # * a gauge for reporting the last task's duration (in seconds)
 
     def decorator(func):
         @wraps(func)
@@ -20,7 +20,7 @@ def save_duration_metric(metric_group):
                 histogram_metric = PrometheusMetric(
                     PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS
                 )
-                summary_metric = PrometheusMetric(
+                gauge_metric = PrometheusMetric(
                     PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
                 )
             else:
@@ -33,7 +33,7 @@ def save_duration_metric(metric_group):
                     histogram_metric.save_time(
                         {"func_name": func.__name__, "success": "true"}
                     )
-                    summary_metric.save_time(
+                    gauge_metric.save_time(
                         {"func_name": func.__name__, "success": "true"}
                     )
                 except Exception as e:
@@ -48,7 +48,7 @@ def save_duration_metric(metric_group):
                     histogram_metric.save_time(
                         {"func_name": func.__name__, "success": "false"}
                     )
-                    summary_metric.save_time(
+                    gauge_metric.save_time(
                         {"func_name": func.__name__, "success": "false"}
                     )
                 except Exception as inner_e:
@@ -118,7 +118,7 @@ class PrometheusMetricNames:
 """
 Metric Types:
 
-* Prometheus Summaries: Prometheus Summaries (not to be confused with the Grafana Panel Type
+* Prometheus Gauges: Prometheus Gauges (not to be confused with the Grafana Panel Type
   which is a UI element which looks like a speedometer) will export a single metric
   which is useful for point-in-time collection.
 * Prometheus Histograms: Histograms are far more common, especially when timing how long
@@ -127,6 +127,8 @@ Metric Types:
     * When looking at the raw /prometheus_metrics endpoint for
       `audius_dn_update_aggregate_table_latency_seconds_bucket`, you can see how a
       single metric explodes into multiple statistical helpers.
+* Prometheus Summaries: Prometheus Summaries will export a single metric across all pids
+  which is useful for point-in-time collection.
 
 Labels:
 
@@ -266,6 +268,8 @@ class PrometheusMetric:
         if isinstance(this_metric, Histogram):
             # this_metric.observe(value, labels)
             this_metric.observe(value)
+        elif isinstance(this_metric, Gauge):
+            this_metric.set(value)
         elif isinstance(this_metric, Summary):
             this_metric.observe(value)
 
