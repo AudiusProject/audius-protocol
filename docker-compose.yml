@@ -181,6 +181,7 @@ services:
       ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
 
       POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
       POA_PROVIDER_URL: "http://poa-ganache:8545"
 
       SOLANA_ENDPOINT: "http://solana-test-validator:8899"
@@ -327,6 +328,7 @@ services:
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 

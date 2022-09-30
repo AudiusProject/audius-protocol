@@ -67,6 +67,9 @@ import {
     UserSearch,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UsersByContentNode,
+    UsersByContentNodeFromJSON,
+    UsersByContentNodeToJSON,
     VerifyToken,
     VerifyTokenFromJSON,
     VerifyTokenToJSON,
@@ -375,6 +378,13 @@ export interface GetUserIDFromWalletRequest {
      * Wallet address
      */
     associatedWallet: string;
+}
+
+export interface GetUserReplicaSetRequest {
+    /**
+     * A User ID
+     */
+    id: string;
 }
 
 export interface GetUsersTrackHistoryRequest {
@@ -982,6 +992,26 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
+    }
+
+    /**
+     * Gets the user\'s replica set
+     */
+    async getUserReplicaSet(requestParameters: GetUserReplicaSetRequest): Promise<NonNullable<UsersByContentNode["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserReplicaSet.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UsersByContentNode["data"]>>;
     }
 
     /**

@@ -717,3 +717,10 @@ export const verifyToken = (token: string) => {
     }
   }
 }
+
+export const getUserReplicaSet = (encodedUserId: string) => {
+  return {
+    endpoint: `/v1/full/users/${encodedUserId}/replica_set`,
+    timeout: 5000
+  }
+}

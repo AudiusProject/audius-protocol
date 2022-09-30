@@ -22,7 +22,7 @@ const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
  *   syncReqToEnqueue
  * }
  */
-const getNewOrExistingSyncReq = ({
+const getNewOrExistingSyncReq = async ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
@@ -45,12 +45,13 @@ const getNewOrExistingSyncReq = ({
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
    */
-  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    immediate
-  )
+  const duplicateSyncJobInfo =
+    await SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
   if (duplicateSyncJobInfo) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
@@ -87,7 +88,8 @@ const getNewOrExistingSyncReq = ({
     parentSpanContext: tracing.currentSpanContext()
   }
 
-  SyncRequestDeDuplicator.recordSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
@@ -112,7 +114,7 @@ const _issueSyncRequestsUntilSynced = async (
   queue
 ) => {
   // Issue syncRequest before polling secondary for replication
-  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+  const { duplicateSyncReq, syncReqToEnqueue } = await getNewOrExistingSyncReq({
     userWallet: wallet,
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
@@ -125,7 +127,7 @@ const _issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    await queue.add({
+    await queue.add('manual-sync', {
       enqueuedBy: 'issueSyncRequestsUntilSynced',
       ...syncReqToEnqueue
     })

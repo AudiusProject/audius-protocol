@@ -1,6 +1,6 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const _ = require('lodash')
@@ -264,6 +264,12 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected)',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -293,6 +299,19 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+  // wallet information
+  oldDelegateOwnerWallet: {
+    doc: 'wallet address',
+    format: String,
+    env: 'oldDelegateOwnerWallet',
+    default: ''
+  },
+  oldDelegatePrivateKey: {
+    doc: 'private key string',
+    format: String,
+    env: 'oldDelegatePrivateKey',
+    default: ''
   },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
@@ -373,6 +392,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -449,6 +474,12 @@ const config = convict({
     doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
     format: Boolean,
     env: 'considerNodeUnhealthy',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
     default: false
   },
 

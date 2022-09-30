@@ -8,7 +8,7 @@ import { instrumentTracing, tracing } from "../tracer"
  *
  * These metrics are primarily used to make prometheus
  * and grafana more readable/understandable
- */ 
+ */
 
 // Get the current user count from discovery nodes
 const _getUserCount = async (run_id: number): Promise<number> => {
@@ -17,15 +17,20 @@ const _getUserCount = async (run_id: number): Promise<number> => {
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE run_id = :run_id
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id },
+    }
+  );
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+  const usersCount = parseInt(
+    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+      .user_count
+  );
 
-    return usersCount
-}
+  return usersCount;
+};
 
 export const getUserCount = instrumentTracing({
     fn: _getUserCount,
@@ -179,15 +184,17 @@ const _getCidReplicationFactor = async (run_id: number): Promise<number> => {
                 ) as set_diff
             )
         ) as cid_counts; 
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id }
-    })
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id },
+    }
+  );
 
-    const replicationFactor = await (replicationFactorResp as number[])[0] || 0
+  const replicationFactor = (await (replicationFactorResp as number[])[0]) || 0;
 
-    return replicationFactor
-}
+  return replicationFactor;
+};
 
 export const getCidReplicationFactor = instrumentTracing({
     fn: _getCidReplicationFactor,
@@ -207,15 +214,20 @@ const _getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
             primary_clock_value = secondary1_clock_value
         AND
             secondary1_clock_value = secondary2_clock_value;
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id },
+    }
+  );
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+  const usersCount = parseInt(
+    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+      .user_count
+  );
 
-    return usersCount
-}
+  return usersCount;
+};
 
 export const getFullySyncedUsersCount = instrumentTracing({
     fn: _getFullySyncedUsersCount,
@@ -266,15 +278,20 @@ const _getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
             primary_clock_value != secondary1_clock_value
         AND
             primary_clock_value != secondary2_clock_value;
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id },
+    }
+  );
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+  const usersCount = parseInt(
+    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+      .user_count
+  );
 
-    return usersCount
-}
+  return usersCount;
+};
 
 export const getUnsyncedUsersCount = instrumentTracing({
     fn: _getUnsyncedUsersCount,
@@ -318,16 +335,152 @@ const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidS
         secondary1spid = ANY( :spidSetStr )
     AND 
         secondary2spid = ANY( :spidSetStr );
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id, spidSetStr },
-    })
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id, spidSetStr },
+    }
+  );
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+  const usersCount = parseInt(
+    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+      .user_count
+  );
 
-    return usersCount
-}
+  return usersCount;
+};
+
+export const getUsersWithEntireReplicaSetNotInSpidSetCount = async (
+  run_id: number,
+  spidSet: number[]
+): Promise<number> => {
+  const spidSetStr = `{${spidSet.join(",")}}`;
+
+  const usersResp: unknown[] = await sequelizeConn.query(
+    `
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = :run_id
+    AND 
+        primaryspid != ALL( :spidSetStr )
+    AND
+        secondary1spid != ALL( :spidSetStr )
+    AND 
+        secondary2spid != ALL( :spidSetStr );
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: { run_id, spidSetStr },
+    }
+  );
+
+  const usersCount = parseInt(
+    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+      .user_count
+  );
+
+  return usersCount;
+};
+
+export const getUserStatusByPrimary = async (
+  run_id: number
+): Promise<{
+  spid: number;
+  endpoint: string;
+  fullySyncedCount: number;
+  partiallySyncedCount: number;
+  unsyncedCount: number;
+}[]> => {
+  const userStatusByPrimaryResp: unknown[] = await sequelizeConn.query(
+    `
+            SELECT fully_synced.spid, cnodes.endpoint, fully_synced.fully_synced_count, partially_synced.partially_synced_count, unsynced.unsynced_count
+        FROM (
+            SELECT primaryspid AS spid, COUNT(*) as fully_synced_count
+            FROM network_monitoring_users
+            WHERE
+                run_id = :run_id
+            AND 
+                primary_clock_value IS NOT NULL
+            AND
+                primary_clock_value = secondary1_clock_value
+            AND
+                secondary1_clock_value = secondary2_clock_value
+            GROUP BY primaryspid
+        ) AS fully_synced
+        JOIN (
+            SELECT primaryspid AS SPID, COUNT(*) AS partially_synced_count
+            FROM network_monitoring_users
+            WHERE 
+                run_id = :run_id
+            AND 
+                primary_clock_value IS NOT NULL
+            AND ( 
+                primary_clock_value = secondary1_clock_value
+                OR
+                primary_clock_value = secondary2_clock_value
+            )
+            AND 
+                secondary1_clock_value != secondary2_clock_value
+            GROUP BY primaryspid
+        ) AS partially_synced
+        ON fully_synced.spid = partially_synced.spid
+        JOIN (
+            SELECT primaryspid AS spid, COUNT(*) AS unsynced_count
+            FROM network_monitoring_users
+            WHERE 
+                run_id = :run_id
+            AND 
+                primary_clock_value IS NOT NULL
+            AND 
+                primary_clock_value != secondary1_clock_value
+            AND
+                primary_clock_value != secondary2_clock_value
+            GROUP BY primaryspid
+        ) AS unsynced
+        ON fully_synced.spid = unsynced.spid
+        JOIN (
+            SELECT spid, endpoint
+            FROM network_monitoring_content_nodes
+            WHERE
+                run_id = :run_id
+        ) AS cnodes
+        ON cnodes.spid = fully_synced.spid
+        ORDER BY fully_synced.spid;
+        `,
+    {
+      replacements: { run_id },
+    }
+  );
+
+  const userStatusByPrimary: {
+    spid: number;
+    endpoint: string;
+    fullySyncedCount: number;
+    partiallySyncedCount: number;
+    unsyncedCount: number;
+  }[] = (
+    userStatusByPrimaryResp as {
+      spid: string;
+      endpoint: string;
+      fully_synced_count: string;
+      partially_synced_count: string;
+      unsynced_count: string;
+    }[]
+  ).map((elem) => {
+    return {
+      spid: parseInt(elem.spid),
+      endpoint: elem.endpoint,
+      fullySyncedCount: parseInt(elem.fully_synced_count),
+      partiallySyncedCount: parseInt(elem.partially_synced_count),
+      unsyncedCount: parseInt(elem.unsynced_count),
+    };
+  });
+
+  return userStatusByPrimary;
+};
 
 export const getUsersWithEntireReplicaSetInSpidSetCount = instrumentTracing({
     fn: _getUsersWithEntireReplicaSetInSpidSetCount,
 })
+
