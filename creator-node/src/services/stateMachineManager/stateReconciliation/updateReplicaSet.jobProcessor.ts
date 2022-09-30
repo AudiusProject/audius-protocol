@@ -850,22 +850,17 @@ const _canReconfig = async ({
   let error
   try {
     let chainPrimarySpId, chainSecondarySpIds
-    // Attempt to get replica set from DN when entity manager is enabled
-    // Fallback to URSM
-    try {
+    if (config.get('entityManagerReplicaSetEnabled')) {
       const encodedUserId = libs.Utils.encodeHashId(userId)
       const spResponse = await libs.discoveryProvider.getUserReplicaSet({
         encodedUserId
       })
-      if (!spResponse) {
-        throw new Error('User replica set is not on discovery')
-      }
       chainPrimarySpId = spResponse?.primarySpID
       chainSecondarySpIds = [
         spResponse?.secondary1SpID,
         spResponse?.secondary2SpID
       ]
-    } catch (err) {
+    } else {
       const response =
         await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
           userId
