@@ -175,7 +175,7 @@ PrometheusRegistry = {
     ),
     PrometheusMetricNames.HEALTH_CHECK: Summary(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
-        "Difference between the latest block and the latest indexed block",
+        "Metrics extracted from our health-checks, using similar keys.",
         ("key",),
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
