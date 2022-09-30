@@ -19,6 +19,9 @@ COPY scripts/wait /usr/bin/wait
 
 COPY . .
 
+# Compile js code to typescript based on tsconfig.build.json
+RUN npm run build
+
 ARG git_sha
 
 ENV GIT_SHA=$git_sha
