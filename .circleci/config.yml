@@ -1239,6 +1239,7 @@ jobs:
       - run: |
           git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
           audius-tooling/release-scripts/<< parameters.target >>.sh
+      - slack-fail
       - when:
           condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
@@ -1247,6 +1248,12 @@ jobs:
                 text: ":gift: Deployment Released to Service Providers! :tada:"
                 detail: "New Governance Proposals are out. :vote:"
                 slack_mentions_user: "@Dheeraj @ray @roneil @Forrest "
+      - when:
+          condition:
+            equal: [ execute-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Governance Proposal has been executed! :done:"
 
 workflows:
   workflows:
