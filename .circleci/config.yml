@@ -1242,10 +1242,16 @@ jobs:
       - slack-fail
       - when:
           condition:
+            equal: [ cut-release, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Release branch has been cut! :git-fork:"
+      - when:
+          condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
-                text: ":gift: Deployment Released to Service Providers! :tada:"
+                text: "Deployment Released to Service Providers! :gift:"
                 detail: "New Governance Proposals are out. :vote:"
                 slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
       - when:
@@ -1431,6 +1437,9 @@ workflows:
       - release-scripts:
           name: cut-release
           target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           requires:
             - cut-release-🕹️
 
@@ -1520,6 +1529,9 @@ workflows:
       - release-scripts:
           name: bump-hotfix
           target: bump-hotfix
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1591,6 +1603,9 @@ workflows:
       - release-scripts:
           name: 🚧-🎁-to-SPs
           target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1605,6 +1620,8 @@ workflows:
       - release-scripts:
           name: execute-proposal
           target: execute-proposal
+          context:
+            - slack-secrets
           requires:
             - execute-proposal-🕹️
 
