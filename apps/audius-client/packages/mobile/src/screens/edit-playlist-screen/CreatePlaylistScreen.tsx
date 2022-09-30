@@ -23,7 +23,15 @@ const messages = {
 type PlaylistValues = {
   playlist_name: string
   description: string
-  artwork: { url: string }
+  artwork: {
+    url: string
+    file?: {
+      uri: string
+      name: string
+      type: string
+    }
+    source?: 'unsplash' | 'original'
+  }
 }
 
 const CreatePlaylistForm = (props: FormikProps<PlaylistValues>) => {

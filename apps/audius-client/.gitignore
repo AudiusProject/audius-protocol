@@ -8,3 +8,6 @@ lerna-debug.log
 
 **/.hooks/*.local.json
 .log
+
+.yalc
+yalc.lock
