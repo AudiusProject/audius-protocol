@@ -286,6 +286,9 @@ jobs:
   noop:
     docker:
       - image: alpine
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
       - run: echo
 
