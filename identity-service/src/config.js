@@ -837,6 +837,9 @@ const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
 if (fs.existsSync('eth-contract-config.json')) {
+  // eslint isn't smart enought to know this is a conditional require, so this fails
+  // on CI where the file doesn't exist.
+  // eslint-disable-next-line node/no-missing-require
   const ethContractConfig = require('../eth-contract-config.json')
   config.load({
     ethTokenAddress: ethContractConfig.audiusTokenAddress,
@@ -847,6 +850,7 @@ if (fs.existsSync('eth-contract-config.json')) {
 }
 
 if (fs.existsSync('solana-program-config.json')) {
+  // eslint-disable-next-line node/no-missing-require
   const solanaContractConfig = require('../solana-program-config.json')
   config.load({
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
