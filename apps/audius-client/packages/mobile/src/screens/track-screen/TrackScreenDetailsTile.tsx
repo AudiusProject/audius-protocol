@@ -41,7 +41,7 @@ import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
-const { getPlaying, getUid } = playerSelectors
+const { getPlaying, getTrackId } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -123,9 +123,9 @@ export const TrackScreenDetailsTile = ({
 
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
-  const playingUid = useSelector(getUid)
+  const playingId = useSelector(getTrackId)
   const isPlaying = useSelector(getPlaying)
-  const isPlayingUid = playingUid === uid
+  const isPlayingId = playingId === track.track_id
 
   const {
     _co_sign,
@@ -192,17 +192,17 @@ export const TrackScreenDetailsTile = ({
   const handlePressPlay = useCallback(() => {
     if (isLineupLoading) return
 
-    if (isPlaying && isPlayingUid) {
+    if (isPlaying && isPlayingId) {
       dispatch(tracksActions.pause())
       recordPlay(track_id, false)
-    } else if (!isPlayingUid) {
+    } else if (!isPlayingId) {
       dispatch(tracksActions.play(uid))
       recordPlay(track_id)
     } else {
       dispatch(tracksActions.play())
       recordPlay(track_id)
     }
-  }, [track_id, uid, isPlayingUid, dispatch, isPlaying, isLineupLoading])
+  }, [track_id, uid, isPlayingId, dispatch, isPlaying, isLineupLoading])
 
   const handlePressFavorites = useCallback(() => {
     dispatch(setFavorite(track_id, FavoriteType.TRACK))
@@ -336,7 +336,7 @@ export const TrackScreenDetailsTile = ({
       hideFavoriteCount={is_unlisted}
       hideListenCount={is_unlisted && !field_visibility?.play_count}
       hideRepostCount={is_unlisted}
-      isPlaying={isPlaying && isPlayingUid}
+      isPlaying={isPlaying && isPlayingId}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}
