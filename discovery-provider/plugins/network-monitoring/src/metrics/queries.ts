@@ -350,7 +350,7 @@ const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidS
   return usersCount;
 };
 
-export const getUsersWithEntireReplicaSetNotInSpidSetCount = async (
+const _getUsersWithEntireReplicaSetNotInSpidSetCount = async (
   run_id: number,
   spidSet: number[]
 ): Promise<number> => {
@@ -383,7 +383,11 @@ export const getUsersWithEntireReplicaSetNotInSpidSetCount = async (
   return usersCount;
 };
 
-export const getUserStatusByPrimary = async (
+export const getUsersWithEntireReplicaSetNotInSpidSetCount = instrumentTracing({
+    fn: _getUsersWithEntireReplicaSetNotInSpidSetCount,
+});
+
+const _getUserStatusByPrimary = async (
   run_id: number
 ): Promise<{
   spid: number;
@@ -479,6 +483,10 @@ export const getUserStatusByPrimary = async (
 
   return userStatusByPrimary;
 };
+
+export const getUserStatusByPrimary = instrumentTracing({
+    fn: _getUserStatusByPrimary, 
+})
 
 export const getUsersWithEntireReplicaSetInSpidSetCount = instrumentTracing({
     fn: _getUsersWithEntireReplicaSetInSpidSetCount,
