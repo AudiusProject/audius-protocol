@@ -61,6 +61,7 @@ def _get_tracks(session, args):
         TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
     )
 
+    # Filter out tracks the user is not authorized to view
     if "routes" in args and args.get("routes") is not None:
         routes = args.get("routes")
         # Join the routes table
@@ -132,6 +133,9 @@ def _get_tracks(session, args):
             )
         )
 
+    # Allow filtering of tracks by unlisted vs public.
+    # If a user is not authorized to view unlisted tracks but has specified filter_tracks=unlisted,
+    # this will filter out all results.
     if "filter_tracks" in args and args.get("filter_tracks") != "all":
         filter_tracks = args.get("filter_tracks")
         if filter_tracks == "unlisted":
