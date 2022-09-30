@@ -418,15 +418,6 @@ def health_check_prometheus_exporter():
         health_results["web"]["blocknumber"], {"key": "blocknumber"}
     )
 
-    # store non-numeric key-value information
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_INFO).save(
-        {
-            "git": health_results["git"],
-            "version": health_results["version"],
-            "meets_min_requirements": health_results["meets_min_requirements"],
-        }
-    )
-
 
 PrometheusMetric.register_collector(
     "health_check_prometheus_exporter", health_check_prometheus_exporter

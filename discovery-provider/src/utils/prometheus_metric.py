@@ -3,7 +3,7 @@ from functools import wraps
 from time import time
 from typing import Callable, Dict
 
-from prometheus_client import Histogram, Info, Summary
+from prometheus_client import Histogram, Summary
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,6 @@ class PrometheusMetricNames:
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     FLASK_ROUTE_DURATION_SECONDS = "flask_route_duration_seconds"
     HEALTH_CHECK = "health_check"
-    HEALTH_CHECK_INFO = "health_check_info"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
@@ -128,7 +127,6 @@ Metric Types:
     * When looking at the raw /prometheus_metrics endpoint for
       `audius_dn_update_aggregate_table_latency_seconds_bucket`, you can see how a
       single metric explodes into multiple statistical helpers.
-* Prometheus Info: Info tracks key-value information, usually about a whole target.
 
 Labels:
 
@@ -178,10 +176,6 @@ PrometheusRegistry = {
     PrometheusMetricNames.HEALTH_CHECK: Summary(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
         "Difference between the latest block and the latest indexed block",
-    ),
-    PrometheusMetricNames.HEALTH_CHECK_INFO: Info(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_INFO}",
-        "Stores text based info",
         ("key",),
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
@@ -269,15 +263,11 @@ class PrometheusMetric:
         this_metric = self.metric
         if labels:
             this_metric = this_metric.labels(**labels)
-        logger.warn(labels)
-        logger.info(type(this_metric))
         if isinstance(this_metric, Histogram):
             # this_metric.observe(value, labels)
             this_metric.observe(value)
         elif isinstance(this_metric, Summary):
             this_metric.observe(value)
-        elif isinstance(this_metric, Info):
-            this_metric.info(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):
