@@ -23,9 +23,11 @@ const messages = {
     'I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards'
 }
 
-const challengeInfoMap: Record<
-  ChallengeRewardID,
-  { title: string; amount: number; iosTitle?: string }
+const challengeInfoMap: Partial<
+  Record<
+    ChallengeRewardID,
+    { title: string; amount: number; iosTitle?: string }
+  >
 > = {
   'profile-completion': {
     title: '✅️ Complete your Profile',
@@ -80,7 +82,9 @@ export const ChallengeRewardNotification = (
 ) => {
   const { notification } = props
   const { challengeId } = notification
-  const { title, amount, iosTitle } = challengeInfoMap[challengeId]
+  const info = challengeInfoMap[challengeId]
+  if (!info) return null
+  const { title, amount, iosTitle } = info
   return (
     <NotificationTile notification={notification}>
       <NotificationHeader icon={IconAudius}>

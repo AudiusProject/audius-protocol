@@ -1,9 +1,10 @@
 import { ReactNode } from 'react'
 
 import {
-  TrendingRewardID,
+  ChallengeRewardID,
   StringKeys,
-  audioRewardsPageActions
+  audioRewardsPageActions,
+  OptimisticUserChallenge
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
@@ -14,22 +15,22 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
-import { trendingRewardsConfig } from './config'
+import { getChallengeConfig } from './config'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
 type RewardPanelProps = {
   title: string
   icon: ReactNode
-  description: string
-  buttonText: string
+  description: (amount?: OptimisticUserChallenge) => string
+  panelButtonText: string
   onClickButton: () => void
-  id: TrendingRewardID
+  id: ChallengeRewardID
 }
 
 const RewardPanel = ({
   title,
   description,
-  buttonText,
+  panelButtonText,
   onClickButton,
   icon
 }: RewardPanelProps) => {
@@ -41,10 +42,10 @@ const RewardPanel = ({
         {icon}
         {title}
       </span>
-      <span className={wm(styles.rewardDescription)}>{description}</span>
+      <span className={wm(styles.rewardDescription)}>{description()}</span>
       <ButtonWithArrow
         className={wm(styles.panelButton)}
-        text={buttonText}
+        text={panelButtonText}
         onClick={onClickButton}
         textClassName={styles.panelButtonText}
       />
@@ -56,7 +57,7 @@ type RewardsTileProps = {
   className?: string
 }
 
-const validRewardIds: Set<TrendingRewardID> = new Set([
+const validRewardIds: Set<ChallengeRewardID> = new Set([
   'trending-track',
   'trending-playlist',
   'top-api',
@@ -73,8 +74,8 @@ const messages = {
 const useRewardIds = () => {
   const rewardsString = useRemoteVar(StringKeys.TRENDING_REWARD_IDS)
   if (!rewardsString) return []
-  const rewards = rewardsString.split(',') as TrendingRewardID[]
-  const filteredRewards: TrendingRewardID[] = rewards.filter((reward) =>
+  const rewards = rewardsString.split(',') as ChallengeRewardID[]
+  const filteredRewards: ChallengeRewardID[] = rewards.filter((reward) =>
     validRewardIds.has(reward)
   )
   return filteredRewards
@@ -83,7 +84,8 @@ const useRewardIds = () => {
 const RewardsTile = ({ className }: RewardsTileProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
-  const callbacksMap = {
+
+  const callbacksMap: Partial<Record<ChallengeRewardID, () => void>> = {
     'trending-track': () => {
       dispatch(setTrendingRewardsModalType({ modalType: 'tracks' }))
       setVisibility('TrendingRewardsExplainer')(true)
@@ -107,11 +109,11 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const rewardIds = useRewardIds()
 
   const rewardsTiles = rewardIds
-    .map((id) => trendingRewardsConfig[id])
+    .map((id) => getChallengeConfig(id))
     .map((props) => (
       <RewardPanel
         {...props}
-        onClickButton={callbacksMap[props.id]}
+        onClickButton={callbacksMap[props.id] ?? (() => {})}
         key={props.id}
       />
     ))
