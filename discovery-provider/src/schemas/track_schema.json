@@ -347,7 +347,7 @@
                 "nft-collection": {
                     "type": "string"
                 },
-                "follow": {
+                "follow-user-id": {
                     "type": "number"
                 }
             },

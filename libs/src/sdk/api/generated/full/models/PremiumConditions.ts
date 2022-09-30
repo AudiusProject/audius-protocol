@@ -30,6 +30,6 @@ export interface PremiumConditions {
      * @type {number}
      * @memberof PremiumConditions
      */
-    follow?: number;
+    follow_user_id?: number;
 }
 

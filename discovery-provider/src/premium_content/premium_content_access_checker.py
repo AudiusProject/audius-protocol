@@ -40,7 +40,7 @@ PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
     PremiumContentConditions, Callable[[int, Any], bool]
 ] = {
     "nft-collection": does_user_have_nft_collection,
-    "follow": does_user_follow_artist,
+    "follow-user-id": does_user_follow_artist,
 }
 
 
