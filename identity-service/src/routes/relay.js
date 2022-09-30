@@ -7,6 +7,8 @@ const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
+const { libs } = require('@audius/sdk')
+const config = require('../config.js')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -65,6 +67,15 @@ module.exports = function (app) {
           encodedABI: body.encodedABI,
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
+        }
+
+        // When EntityManager is enabled for replica sets, throw error for URSM
+        // Fallback to EntityManager
+        if (config.get('entityManagerReplicaSetEnabled') && txProps.contractRegistryKey === 'UserReplicaSetManager') {
+          const decodedABI = libs.AudiusABIDecoder.decodeMethod(txProps.contractRegistryKey, txProps.encodedABI)
+          if (decodedABI.name === 'updateReplicaSet') {
+            throw new Error('Cannot relay UserReplicaSetManager transactions when EntityManager is enabled')
+          }
         }
         receipt = await txRelay.sendTransaction(
           req,
