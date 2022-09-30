@@ -70,6 +70,7 @@ type CollapsibleTabNavigatorProps = {
   initialScreenName?: string
   children: ReactNode
   screenOptions?: MaterialTopTabNavigationOptions
+  headerHeight?: number
 }
 
 export const CollapsibleTabNavigator = ({
@@ -77,11 +78,12 @@ export const CollapsibleTabNavigator = ({
   animatedValue,
   initialScreenName,
   children,
-  screenOptions
+  screenOptions,
+  headerHeight
 }: CollapsibleTabNavigatorProps) => {
   const collapsibleOptions = useMemo(
-    () => ({ renderHeader, disableSnap: true, animatedValue }),
-    [renderHeader, animatedValue]
+    () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
+    [renderHeader, animatedValue, headerHeight]
   )
 
   return (

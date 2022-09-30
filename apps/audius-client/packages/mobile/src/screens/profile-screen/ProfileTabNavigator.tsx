@@ -21,6 +21,9 @@ import { TracksTab } from './TracksTab'
 import { useSelectProfile } from './selectors'
 import { useShouldShowCollectiblesTab } from './utils'
 
+// Height of a typical profile header
+const INITIAL_PROFILE_HEADER_HEIGHT = 1081
+
 type ProfileTabNavigatorProps = {
   /**
    * Function that renders the collapsible header
@@ -107,6 +110,7 @@ export const ProfileTabNavigator = ({
       <CollapsibleTabNavigator
         renderHeader={renderHeader}
         animatedValue={animatedValue}
+        headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
       >
         {trackScreen}
         {albumsScreen}
@@ -121,6 +125,7 @@ export const ProfileTabNavigator = ({
     <CollapsibleTabNavigator
       renderHeader={renderHeader}
       animatedValue={animatedValue}
+      headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
     >
       {repostsScreen}
       {playlistsScreen}
