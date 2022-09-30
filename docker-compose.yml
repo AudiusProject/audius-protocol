@@ -73,8 +73,6 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-
-        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
@@ -120,65 +118,6 @@ services:
     deploy:
       mode: replicas
       replicas: "${BLOCK_EXPLORER_ENABLED}"
-
-  # anti-abuse-oracle
-
-  anti-abuse-oracle-db:
-    image: postgres:11.4
-    user: postgres
-    healthcheck:
-      test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-    profiles: [ "anti-abuse-oracle" ]
-    logging: *default-logging
-    deploy:
-      mode: global
-
-  anti-abuse-oracle-redis:
-    image: redis:5.0.5
-    healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
-      interval: 10s
-      timeout: 5s
-    profiles: [ "anti-abuse-oracle" ]
-    logging: *default-logging
-    deploy:
-      mode: global
-
-  anti-abuse-oracle:
-    build: "${AAO_DIR:-../anti-abuse-oracle}"
-    environment:
-      ENVIRONMENT: "development"
-      logLevel: "debug"
-
-      port: "8000"
-
-      dbUrl: "postgres://postgres:postgres@anti-abuse-oracle-db:5432/postgres"
-      redisHost: "anti-abuse-oracle-redis"
-      redisPort: "6379"
-      identityServiceUrl: "http://identity-service:7000"
-
-      ethProviderUrl: "http://eth-ganache:8545"
-      ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
-      ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
-      ethOwnerWallet: "${ETH_OWNER_WALLET}"
-      privateSignerAddress: "${AAO_WALLET_PRIVATE_KEY}"
-    env_file:
-      - "${AAO_DIR:-../anti-abuse-oracle}/.env.predeploy"
-    ports:
-      - "8000:8000"
-    profiles: [ "anti-abuse-oracle" ]
-    depends_on:
-      anti-abuse-oracle-db:
-        condition: service_healthy
-      anti-abuse-oracle-redis:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_started
-    logging: *default-logging
-    deploy:
-      mode: global
 
   # solana-programs
 
@@ -312,10 +251,7 @@ services:
       dbUrl: "postgres://postgres:postgres@identity-service-db:5432/postgres"
 
       redisHost: "identity-service-redis"
-      redisPort: "6379"
-
-      aaoEndpoint: "http://anti-abuse-oracle:8000"
-      aaoAddress: "${AAO_WALLET_ADDRESS}"
+      redisPort: 6379
 
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
