@@ -1247,7 +1247,7 @@ jobs:
             - slack-success:
                 text: ":gift: Deployment Released to Service Providers! :tada:"
                 detail: "New Governance Proposals are out. :vote:"
-                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest "
+                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
       - when:
           condition:
             equal: [ execute-proposal, << parameters.target >> ]
