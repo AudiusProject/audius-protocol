@@ -590,7 +590,7 @@ def cli(
 
             if environment == "prod":
                 # check healthcheck post-deploy
-                wait_time = time.time() + (5 * 60)
+                wait_time = time.time() + (30 * 60)
                 while time.time() < wait_time:
                     # throttle the amount of logs and request load during startup
                     time.sleep(30)
