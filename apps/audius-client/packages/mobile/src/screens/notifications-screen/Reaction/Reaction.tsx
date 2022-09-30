@@ -1,5 +1,6 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { useDrawerStatus } from '@react-navigation/drawer'
 import type { AnimatedLottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type { StyleProp, View, ViewProps, ViewStyle } from 'react-native'
@@ -8,8 +9,6 @@ import { usePrevious } from 'react-use'
 
 import { light, medium } from 'app/haptics'
 import { makeStyles } from 'app/styles'
-
-import { NotificationsDrawerNavigationContext } from '../NotificationsDrawerNavigationContext'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -44,11 +43,11 @@ export const Reaction = (props: ReactionProps) => {
   const [status, setStatus] = useState(statusProp)
   const animationRef = useRef<LottieView | null>(null)
   const ref = useRef<View | null>(null)
-  const { state } = useContext(NotificationsDrawerNavigationContext)
   const scale = useRef(new Animated.Value(1)).current
   const previousStatus = usePrevious(status)
 
-  const isOpen = state?.history.length === 2
+  const drawerStatus = useDrawerStatus()
+  const isOpen = drawerStatus === 'open'
 
   useEffect(() => {
     setStatus(statusProp)
