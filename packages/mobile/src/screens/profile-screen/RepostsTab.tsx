@@ -15,14 +15,18 @@ const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
   const { handle } = useSelectProfile(['handle'])
+  const handleLower = handle.toLowerCase()
 
   const lineup = useProxySelector(
-    (state) => getProfileFeedLineup(state, handle),
-    [handle]
+    (state) => getProfileFeedLineup(state, handleLower),
+    [handleLower]
   )
   const { repost_count } = useSelectProfile(['repost_count'])
 
-  const extraFetchOptions = useMemo(() => ({ handle }), [handle])
+  const extraFetchOptions = useMemo(
+    () => ({ handle: handleLower }),
+    [handleLower]
+  )
 
   if (!lineup) return null
 
