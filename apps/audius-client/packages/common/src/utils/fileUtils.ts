@@ -1,9 +1,19 @@
-// convert a base64 string to a file object
-export const dataURLtoFile = (dataUrl: string) => {
+import { Buffer } from 'buffer'
+
+/** Convert a base64 string to a file object */
+export const dataURLtoFile = async (
+  dataUrl: string,
+  fileName = 'Artwork'
+): Promise<File | undefined> => {
   const arr = dataUrl.split(',')
-  const bstr = atob(arr[1])
-  const n = bstr.length
-  const u8arr = new Uint8Array(n)
-  ;[...Array(n)].forEach((_, i) => (u8arr[i] = bstr.charCodeAt(i)))
-  return new File([u8arr], 'Artwork', { type: 'image/jpeg' })
+  if (arr.length < 2) {
+    return undefined
+  }
+  const mimeArr = arr[0].match(/:(.*?);/)
+  if (!mimeArr || mimeArr.length < 2) {
+    return undefined
+  }
+  const mime = mimeArr[1]
+  const buff = Buffer.from(arr[1], 'base64')
+  return new File([buff], fileName, { type: mime })
 }

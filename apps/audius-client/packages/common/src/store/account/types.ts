@@ -42,3 +42,9 @@ export type TwitterProfile = {
 }
 
 export type AccountImage = { url: string; file: any }
+
+export type NativeAccountImage = {
+  uri: string
+  name: string
+  type?: string
+}

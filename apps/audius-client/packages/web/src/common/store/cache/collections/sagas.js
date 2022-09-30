@@ -15,7 +15,6 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  dataURLtoFile,
   getContext,
   audioRewardsPageActions
 } from '@audius/common'
@@ -87,11 +86,6 @@ function* createPlaylistAsync(action) {
   yield put(collectionActions.createPlaylistRequested())
 
   const playlist = { playlist_id: uid, ...action.formFields }
-
-  // For base64 images (coming from native), convert to a blob
-  if (playlist.artwork?.type === 'base64') {
-    playlist.artwork.file = dataURLtoFile(playlist.artwork.file)
-  }
 
   const event = make(Name.PLAYLIST_START_CREATE, {
     source: action.source,
@@ -313,11 +307,6 @@ function* editPlaylistAsync(action) {
   )
 
   const playlist = { ...action.formFields }
-
-  // For base64 images (coming from native), convert to a blob
-  if (playlist.artwork?.type === 'base64') {
-    playlist.artwork.file = dataURLtoFile(playlist.artwork.file)
-  }
 
   yield call(confirmEditPlaylist, action.playlistId, userId, playlist)
 

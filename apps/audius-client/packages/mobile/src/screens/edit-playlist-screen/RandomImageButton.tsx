@@ -41,9 +41,13 @@ export const RandomImageInput = (props: RandomImageInputProps) => {
     onProcessing(true)
     const blob = await RandomImage.get()
     if (blob) {
-      const url = URL.createObjectURL(blob)
       const file = await blobToBase64(blob)
-      setValue({ url, file, type: 'base64' })
+
+      setValue({
+        url: file,
+        file: { uri: file, name: 'Artwork', type: 'image/jpeg' },
+        source: 'unsplash'
+      })
       onProcessing(false)
     }
   }, [onProcessing, setValue])
