@@ -69,6 +69,14 @@ var challengeRewardsConfig = {
   'track-upload': {
     title: 'Upload 3 Tracks',
     icon: /*#__PURE__*/_react["default"].createElement(_Icons.MultipleMusicalNotesIcon, null)
+  },
+  'send-first-tip': {
+    title: 'Send Your First Tip',
+    icon: /*#__PURE__*/_react["default"].createElement(_Icons.MoneyMouthFaceIcon, null)
+  },
+  'first-playlist': {
+    title: 'Create a Playlist',
+    icon: /*#__PURE__*/_react["default"].createElement(_Icons.TrebleClefIcon, null)
   }
 };
 var EntityType = Object.freeze({

@@ -2,6 +2,9 @@
   "name": "creator-node",
   "description": "",
   "main": "src/index.js",
+  "engines": {
+    "node": "~14.0.0"
+  },
   "scripts": {
     "start": "nodemon --config nodemon.json src/index.ts | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh standalone_creator",
@@ -14,21 +17,26 @@
     "test:coverage:ci": "nyc --reporter=lcov --reporter=text npm run test:ci && nyc report --reporter=text-lcov | coveralls",
     "lint:fix": "eslint --fix --ext=js,ts src",
     "lint": "eslint --ext=js,ts src",
-    "build": "./node_modules/.bin/tsc --project tsconfig.build.json"
+    "build": "./node_modules/.bin/tsc --project tsconfig.build.json",
+    "postinstall": "patch-package"
   },
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/sdk": "0.0.15",
+    "@audius/sdk": "1.0.7",
+    "@bull-board/api": "^4.3.1",
     "@bull-board/express": "4.0.1",
+    "@opentelemetry/api": "^1.2.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.32.0",
     "@opentelemetry/instrumentation": "^0.31.0",
     "@opentelemetry/instrumentation-bunyan": "^0.29.0",
     "@opentelemetry/instrumentation-express": "^0.30.0",
+    "@opentelemetry/instrumentation-fs": "^0.5.0",
     "@opentelemetry/instrumentation-http": "^0.31.0",
     "@opentelemetry/instrumentation-pg": "^0.30.0",
     "@opentelemetry/instrumentation-redis": "^0.32.0",
+    "@opentelemetry/resources": "^1.7.0",
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/sdk-trace-node": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.5.0",
@@ -41,7 +49,7 @@
     "bl": "^4.1.0",
     "body-parser": "^1.18.3",
     "buffer": "5.4.2",
-    "bull": "4.8.2",
+    "bullmq": "^1.91.1",
     "bunyan": "^1.8.15",
     "cids": "0.8.0",
     "commander": "^6.2.1",
@@ -70,6 +78,7 @@
     "jimp": "^0.6.1",
     "lodash": "4.17.21",
     "multer": "^1.4.0",
+    "patch-package": "^6.4.7",
     "pg": "^8.0.3",
     "prettier-config-standard": "^4.0.0",
     "prom-client": "^14.0.1",
@@ -85,12 +94,12 @@
     "web3": "1.2.8"
   },
   "devDependencies": {
-    "@types/bull": "^3.15.8",
     "@types/bunyan": "^1.8.8",
     "@types/chai": "^4.3.3",
     "@types/eth-sig-util": "^2.1.1",
     "@types/express": "4.17.12",
     "@types/fs-extra": "^9.0.13",
+    "@types/ioredis": "^4.28.10",
     "@types/lodash": "^4.14.182",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.9",
@@ -98,7 +107,7 @@
     "@types/sinon": "^10.0.11",
     "@types/sinon-chai": "^3.2.8",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
-    "@typescript-eslint/parser": "^5.5.0",
+    "@typescript-eslint/parser": "^5.37.0",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "coveralls": "3.1.1",
@@ -126,6 +135,7 @@
       "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
     },
     "scriptsComments": {
+      "start": "Runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined",
       "coverage": "Runs nyc on tests/ dir and outputs results in ./nyc_output. Can be used for vscode extensions.",
       "report": "Generates static html files representing code coverage per test file and outputs them into /coverage."
     }

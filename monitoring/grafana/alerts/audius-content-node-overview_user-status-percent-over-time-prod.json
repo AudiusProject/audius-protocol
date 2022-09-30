@@ -1,11 +1,11 @@
 [
   {
     "annotations": {
-      "__alertId__": "Y4Tx_K3nz_056_P3_stage",
-      "__dashboardUid__": "Y4Tx_K3nz",
-      "__panelId__": "56",
+      "__alertId__": "EQvbMBg4k_038_P3_prod",
+      "__dashboardUid__": "EQvbMBg4k",
+      "__panelId__": "38",
       "description": "",
-      "runbook_url": "http://grafana.audius.co/d/Y4Tx_K3nz?viewPanel=56",
+      "runbook_url": "http://grafana.audius.co/d/EQvbMBg4k?viewPanel=38",
       "summary": ""
     },
     "condition": "B",
@@ -17,7 +17,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"stage\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"stage\"})) * 100",
+          "expr": "(sum without (run_id,instance) (audius_nm_fully_synced_user_count{environment=~\"prod\"}) / sum without (run_id,instance) (audius_nm_user_count{environment=~\"prod\"})) * 100",
           "hide": false,
           "intervalMs": 1000,
           "maxDataPoints": 43200,
@@ -79,17 +79,17 @@
     "execErrState": "Alerting",
     "folderUID": "gtl7D0W4z",
     "for": "0s",
-    "id": 705630,
+    "id": 1903831,
     "labels": {
       "alert": "p3",
-      "env": "stage",
+      "env": "prod",
       "mentions": "@johannes",
       "team": "content"
     },
     "noDataState": "OK",
     "orgID": 1,
     "ruleGroup": "group",
-    "title": "STAGE P3 | User Status Percent (over time)",
-    "uid": "Y4Tx_K3nz_056_P3_stage"
+    "title": "PROD P3 | User Status Percent (over time)",
+    "uid": "EQvbMBg4k_038_P3_prod"
   }
 ]

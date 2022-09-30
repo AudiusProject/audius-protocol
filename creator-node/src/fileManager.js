@@ -35,7 +35,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   )
 
   // Write file to disk by cid for future retrieval
-  const dstPath = DiskManager.computeFilePath(cid)
+  const dstPath = await DiskManager.computeFilePath(cid)
   await fs.writeFile(dstPath, buffer)
 
   // verify that the contents of the file match the file's cid
@@ -79,7 +79,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
  */
 async function copyMultihashToFs(multihash, srcPath, logContext) {
   const logger = genericLogger.child(logContext)
-  const dstPath = DiskManager.computeFilePath(multihash)
+  const dstPath = await DiskManager.computeFilePath(multihash)
 
   try {
     await fs.copyFile(srcPath, dstPath)
@@ -144,7 +144,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
     try {
       await asyncRetry({
-        asyncFn: async (bail) => {
+        asyncFn: async (bail, num) => {
           try {
             await fetchFileFromTargetGatewayAndWriteToDisk({
               contentUrl,
@@ -181,9 +181,16 @@ async function fetchFileFromNetworkAndWriteToDisk({
             }
 
             // Re-throw any other error to continue with retry logic
-            throw new Error(
-              `Failed to fetch content=${multihash} with statusCode=${e.response?.status}. Retrying..`
-            )
+            if (num === numRetries + 1) {
+              // Final error thrown
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+              )
+            } else {
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+              )
+            }
           }
         },
         logger,
@@ -532,13 +539,13 @@ const getRandomFileName = () => {
   return getUuid()
 }
 
-const getTmpTrackUploadArtifactsPathWithInputUUID = (fileName) => {
-  return path.join(DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
+const getTmpTrackUploadArtifactsPathWithInputUUID = async (fileName) => {
+  return path.join(await DiskManager.getTmpTrackUploadArtifactsPath(), fileName)
 }
 
-const getTmpSegmentsPath = (fileName) => {
+const getTmpSegmentsPath = async (fileName) => {
   return path.join(
-    DiskManager.getTmpTrackUploadArtifactsPath(),
+    await DiskManager.getTmpTrackUploadArtifactsPath(),
     fileName,
     'segments'
   )
@@ -561,31 +568,36 @@ const uploadTempDiskStorage = multer({
 // Custom on-disk storage for track files to prep for segmentation
 const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    let fileName
-    if (req.query.uuid) {
-      // Use the file name provided in the headers during track hand off
-      fileName = req.query.uuid
-    } else {
-      // Save file under randomly named folders to avoid collisions
-      fileName = getRandomFileName()
+    const asyncFn = async function () {
+      let fileName
+      if (req.query.uuid) {
+        // Use the file name provided in the headers during track hand off
+        fileName = req.query.uuid
+      } else {
+        // Save file under randomly named folders to avoid collisions
+        fileName = getRandomFileName()
+      }
+
+      const fileDir = await getTmpTrackUploadArtifactsPathWithInputUUID(
+        fileName
+      )
+      const segmentsDir = await getTmpSegmentsPath(fileName)
+
+      // create directories for original file and segments
+      await fs.mkdir(fileDir)
+      await fs.mkdir(segmentsDir)
+
+      req.fileDir = fileDir
+      const fileExtension = getFileExtension(file.originalname)
+      req.fileNameNoExtension = fileName
+      req.fileName = fileName + fileExtension
+
+      req.logger.info(
+        `Created track disk storage: ${req.fileDir}, ${req.fileName}`
+      )
+      cb(null, fileDir)
     }
-
-    const fileDir = getTmpTrackUploadArtifactsPathWithInputUUID(fileName)
-    const segmentsDir = getTmpSegmentsPath(fileName)
-
-    // create directories for original file and segments
-    fs.mkdirSync(fileDir)
-    fs.mkdirSync(segmentsDir)
-
-    req.fileDir = fileDir
-    const fileExtension = getFileExtension(file.originalname)
-    req.fileNameNoExtension = fileName
-    req.fileName = fileName + fileExtension
-
-    req.logger.info(
-      `Created track disk storage: ${req.fileDir}, ${req.fileName}`
-    )
-    cb(null, fileDir)
+    asyncFn()
   },
   filename: function (req, file, cb) {
     cb(null, req.fileName)

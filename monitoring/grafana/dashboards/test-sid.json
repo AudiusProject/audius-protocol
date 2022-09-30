@@ -36,6 +36,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -96,6 +98,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Mean",
             "sortDesc": true
           },
@@ -126,6 +129,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -185,7 +190,8 @@
               "mean"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "multi",
@@ -199,7 +205,7 @@
             },
             "editorMode": "builder",
             "expr": "sum by(reconfigType) (increase(audius_cn_state_machine_update_replica_set_queue_job_duration_seconds_count{environment=~\"$environment\", host=~\"$host\", uncaughtError=\"false\"}[1h]))",
-            "legendFormat": "",
+            "legendFormat": "{{reconfigType}}",
             "range": true,
             "refId": "Reconfigs Issued"
           }
@@ -214,6 +220,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -299,6 +307,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Mean",
             "sortDesc": true
           },
@@ -330,6 +339,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -390,6 +401,7 @@
             ],
             "displayMode": "table",
             "placement": "bottom",
+            "showLegend": true,
             "sortBy": "Delta",
             "sortDesc": true
           },
@@ -420,6 +432,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -509,7 +523,8 @@
               "mean"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "single",
@@ -621,7 +636,7 @@
           },
           "showUnfilled": true
         },
-        "pluginVersion": "9.0.1",
+        "pluginVersion": "9.1.0",
         "targets": [
           {
             "datasource": {
@@ -648,6 +663,8 @@
               "mode": "palette-classic"
             },
             "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
               "axisLabel": "",
               "axisPlacement": "auto",
               "barAlignment": 0,
@@ -706,7 +723,8 @@
               "lastNotNull"
             ],
             "displayMode": "list",
-            "placement": "bottom"
+            "placement": "bottom",
+            "showLegend": true
           },
           "tooltip": {
             "mode": "multi",
@@ -730,7 +748,7 @@
       }
     ],
     "refresh": "30m",
-    "schemaVersion": 36,
+    "schemaVersion": 37,
     "style": "dark",
     "tags": [],
     "templating": {

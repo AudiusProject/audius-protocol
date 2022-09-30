@@ -15,7 +15,10 @@ import type {
 import { makeHistogramToRecord } from '../stateMachineUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
 import { stringifyMap } from '../../../utils'
-import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
+import {
+  getMapOfCNodeEndpointToSpId,
+  getMapOfSpIdToChainInfo
+} from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
@@ -35,6 +38,8 @@ const initAudiusLibs = require('../../initAudiusLibs')
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
   : null
+
+const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
@@ -92,7 +97,7 @@ const updateReplicaSetJobProcessor = async function ({
       audiusLibs = await initAudiusLibs({
         enableEthContracts: true,
         enableContracts: true,
-        enableDiscovery: false,
+        enableDiscovery: true,
         enableIdentity: true,
         logger
       })
@@ -124,12 +129,24 @@ const updateReplicaSetJobProcessor = async function ({
     }
 
     try {
+      const spInfoMap = await getMapOfSpIdToChainInfo(logger)
+
+      const reconfigNodeBlacklist = new Set()
+      RECONFIG_SP_IDS_BLACKLIST.forEach((spId) => {
+        const info = spInfoMap.get(spId)
+        if (info?.endpoint) {
+          reconfigNodeBlacklist.add(info.endpoint)
+        }
+      })
+
       const { services: healthyServicesMap } =
         await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
           whitelist: reconfigNodeWhitelist,
+          blacklist: reconfigNodeBlacklist,
           log: true
         })
+
       healthyNodes = Object.keys(healthyServicesMap || {})
       if (healthyNodes.length === 0) {
         throw new Error(
@@ -643,7 +660,15 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
+    } catch (e: any) {
+      throw new Error(
+        `[_issueUpdateReplicaSetOp] Could not initialize libs ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
+      )
+    }
 
+    try {
       const oldPrimarySpId = cNodeEndpointToSpIdMap.get(primary)
       const oldSecondary1SpId = cNodeEndpointToSpIdMap.get(secondary1)
       const oldSecondary2SpId = cNodeEndpointToSpIdMap.get(secondary2)
@@ -670,17 +695,60 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-        userId,
-        newReplicaSetSPIds[0], // new primary
-        newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-        // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-        oldPrimarySpId || chainPrimarySpId,
-        [
-          oldSecondary1SpId || chainSecondarySpIds?.[0],
-          oldSecondary2SpId || chainSecondarySpIds?.[1]
-        ]
-      )
+      // First try updateReplicaSet via URSM
+      // Fallback to EntityManager when relay errors
+      try {
+        if (!config.get('entityManagerReplicaSetEnabled')) {
+          throw new Error(
+            'Fallback to URSM writes because EntityManager is disabled'
+          )
+        }
+        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+          userId,
+          newReplicaSetSPIds[0], // new primary
+          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+          oldPrimarySpId || chainPrimarySpId,
+          [
+            oldSecondary1SpId || chainSecondarySpIds?.[0],
+            oldSecondary2SpId || chainSecondarySpIds?.[1]
+          ]
+        )
+      } catch (err) {
+        logger.info(
+          `[_issueUpdateReplicaSetOp] updating replica set now ${
+            Date.now() - startTimeMs
+          }ms for userId=${userId} wallet=${wallet}`
+        )
+
+        const { blockNumber } =
+          await audiusLibs.User.updateEntityManagerReplicaSet({
+            userId,
+            primary: newReplicaSetSPIds[0], // new primary
+            secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+            // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+            oldPrimary: oldPrimarySpId || chainPrimarySpId,
+            oldSecondaries: [
+              oldSecondary1SpId || chainSecondarySpIds?.[0],
+              oldSecondary2SpId || chainSecondarySpIds?.[1]
+            ]
+          })
+        logger.info(
+          `[_issueUpdateReplicaSetOp] did call audiusLibs.User.updateEntityManagerReplicaSet waiting for ${blockNumber}`
+        )
+        // Wait for blockhash/blockNumber to be indexed
+        try {
+          await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+            userId,
+            newReplicaSetSPIds,
+            blockNumber
+          )
+        } catch (err) {
+          throw new Error(
+            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
+          )
+        }
+      }
 
       response.issuedReconfig = true
       logger.info(
@@ -698,7 +766,7 @@ const _issueUpdateReplicaSetOp = async (
 
     // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
     const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
-      getNewOrExistingSyncReq({
+      await getNewOrExistingSyncReq({
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,
@@ -782,8 +850,30 @@ const _canReconfig = async ({
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   let error
   try {
-    const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
-      await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+    let chainPrimarySpId, chainSecondarySpIds
+    // Attempt to get replica set from DN when entity manager is enabled
+    // Fallback to URSM
+    try {
+      const encodedUserId = libs.Utils.encodeHashId(userId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId
+      })
+      if (!spResponse) {
+        throw new Error('User replica set is not on discovery')
+      }
+      chainPrimarySpId = spResponse?.primarySpID
+      chainSecondarySpIds = [
+        spResponse?.secondary1SpID,
+        spResponse?.secondary2SpID
+      ]
+    } catch (err) {
+      const response =
+        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+          userId
+        )
+      chainPrimarySpId = response.primaryId
+      chainSecondarySpIds = response.secondaryIds
+    }
 
     if (
       !chainPrimarySpId ||

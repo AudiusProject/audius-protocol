@@ -65,6 +65,10 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
     openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
+# Postinstall applies patches in the patches/ folder via patch-package. This fixes a bug in BullMQ:
+# https://github.com/taskforcesh/bullmq/issues/1424
+npm run postinstall
+# index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]; then
         cd ../audius-libs
@@ -76,7 +80,7 @@ if [[ "$devMode" == "true" ]]; then
         npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
-    node build/src/index.js | tee >(logger)
+    node --max-old-space-size=4096 build/src/index.js | tee >(logger)
 fi
 
 wait

@@ -29,11 +29,13 @@ const purchaseMetadataSchema = {
     usd: { type: 'string' },
     sol: { type: 'string' },
     audio: { type: 'string' },
-    swapTransaction: { type: 'string' },
-    buyTransaction: { type: 'string' }
+    setupTransactionId: { type: ['string', 'null'] },
+    swapTransactionId: { type: 'string' },
+    cleanupTransactionId: { type: ['string', 'null'] },
+    purchaseTransactionId: { type: 'string' }
   },
   additionalProperties: false,
-  required: ['discriminator', 'usd', 'sol', 'audio', 'swapTransaction', 'buyTransaction']
+  required: ['discriminator', 'usd', 'sol', 'audio', 'swapTransactionId', 'purchaseTransactionId']
 }
 
 const validator = new Validator()

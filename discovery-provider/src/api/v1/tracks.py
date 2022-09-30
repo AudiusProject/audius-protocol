@@ -22,6 +22,7 @@ from src.api.v1.helpers import (
     get_encoded_track_id,
     make_full_response,
     make_response,
+    pagination_parser,
     pagination_with_current_user_parser,
     search_parser,
     stem_from_track,
@@ -32,6 +33,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
 from src.queries.get_max_id import get_max_id
+from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
     get_full_recommended_tracks,
@@ -556,6 +558,51 @@ class FullTrending(Resource):
             TrendingType.TRACKS, version_list[0]
         )
         trending_tracks = get_full_trending(request, args, strategy)
+        return success_response(trending_tracks)
+
+
+@ns.route(
+    "/trending/underground",
+    defaults={
+        "version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name
+    },
+    strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Underground Trending Tracks""",
+            "description": """Gets the top 100 trending underground tracks on Audius""",
+        }
+    },
+)
+@ns.route(
+    "/trending/underground/<string:version>",
+    doc={
+        "get": {
+            "id": "Get Underground Trending Tracks With Version",
+            "description": "Gets the top 100 trending underground tracks on Audius using a given trending strategy version",
+            "params": {"version": "The strategy version of trending to user"},
+        }
+    },
+)
+class UndergroundTrending(Resource):
+    @record_metrics
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, version):
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.UNDERGROUND_TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, underground_trending_versions)
+        )
+        if not version_list:
+            abort_bad_path_param("version", ns)
+
+        args = pagination_parser.parse_args()
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.UNDERGROUND_TRACKS, version_list[0]
+        )
+        trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
 
@@ -1106,6 +1153,44 @@ class MostLoved(Resource):
             "user_id": get_current_user_id(request_args),
         }
         tracks = get_top_followee_saves("track", args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+feeling_lucky_parser = current_user_parser.copy()
+feeling_lucky_parser.add_argument(
+    "limit",
+    required=False,
+    default=25,
+    type=int,
+    description="Number of tracks to fetch",
+)
+feeling_lucky_parser.add_argument(
+    "with_users",
+    required=False,
+    type=bool,
+    description="Boolean to include user info with tracks",
+)
+
+
+@full_ns.route("/feeling_lucky")
+class FeelingLucky(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Feeling Lucky Tracks""",
+        description="""Gets random tracks found on the \"Feeling Lucky\" smart playlist""",
+    )
+    @full_ns.expect(feeling_lucky_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = feeling_lucky_parser.parse_args()
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, max_limit=100, default_limit=25),
+            "user_id": get_current_user_id(request_args),
+        }
+        tracks = get_random_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 

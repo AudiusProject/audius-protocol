@@ -1,5 +1,6 @@
+import json
 from datetime import datetime
-from typing import TypedDict, cast
+from typing import TypedDict
 
 from src.api_helpers import generate_signature
 from src.premium_content.premium_content_types import PremiumContentType
@@ -19,7 +20,7 @@ class PremiumContentSignatureArgs(TypedDict):
 
 
 class PremiumContentSignature(TypedDict):
-    data: PremiumContentSignatureData
+    data: str
     signature: str
 
 
@@ -37,4 +38,4 @@ def get_premium_content_signature(
         "timestamp": _get_current_utc_timestamp_ms(),
     }
     signature = generate_signature(data)
-    return {"data": cast(PremiumContentSignatureData, data), "signature": signature}
+    return {"data": json.dumps(data), "signature": signature}

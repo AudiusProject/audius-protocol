@@ -61,7 +61,7 @@ export async function getTokenAccountInfo({
   // NOTE: Our version of spl-token omits the second argument
   // in the type definitions even though it's actually available,
   // so we suppress error until we can upgrade.
-  // @ts-ignore
+  // @ts-expect-error
   const info = await token.getAccountInfo(tokenAccountAddressKey, 'processed')
   return info
 }

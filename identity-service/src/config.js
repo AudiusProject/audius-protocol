@@ -809,6 +809,24 @@ const config = convict({
     format: String,
     env: 'cognitoRetrySecret',
     default: ''
+  },
+  stripeSecretKey: {
+    doc: 'Secret key for Stripe Crypto On-Ramp Integration',
+    format: String,
+    env: 'stripeSecretKey',
+    default: ''
+  },
+  skipAbuseCheck: {
+    doc: 'Skip AAO abuse check on relay and notifs',
+    format: Boolean,
+    env: 'skipAbuseCheck',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'Enable replica set updates with Entity Manager',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
   }
 })
 

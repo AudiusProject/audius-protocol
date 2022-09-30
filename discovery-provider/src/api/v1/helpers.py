@@ -11,7 +11,6 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
-from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
 
@@ -19,13 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
+    return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
-    if not raw_endpoint:
-        return shared_config["discprov"]["user_metadata_service_url"]
     return raw_endpoint.split(",")[0]
 
 

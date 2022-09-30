@@ -8,7 +8,7 @@ import create_tables from './migrations/create_tables'
 
 const { db } = getEnv()
 
-const dbConnectionPoolMax: number = 85
+const dbConnectionPoolMax: number = 250
 
 export const sequelizeConn = new Sequelize(
   db.name,

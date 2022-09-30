@@ -34,7 +34,7 @@ def track_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata,
+    metadata,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
@@ -91,7 +91,7 @@ def track_state_update(
                             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                         )
                         cid = multihash.to_b58_string(buf)
-                        track_metadata = ipfs_metadata[cid]
+                        track_metadata = metadata[cid]
 
                     parsed_track = parse_track_event(
                         self,

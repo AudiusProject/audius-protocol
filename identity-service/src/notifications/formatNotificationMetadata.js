@@ -380,6 +380,14 @@ const challengeInfoMap = {
   'mobile-install': {
     title: '📲 Get the App',
     amount: 1
+  },
+  'send-first-tip': {
+    title: '🤑 Send Your First Tip',
+    amount: 2
+  },
+  'first-playlist': {
+    title: '🎼 Create a Playlist',
+    amount: 2
   }
 }
 

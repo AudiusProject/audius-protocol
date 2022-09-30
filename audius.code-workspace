@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "path": "discovery-provider"
+    },
+    {
+      "path": "creator-node"
+    },
+    {
+      "path": "identity-service"
+    },
+    {
+      "path": "libs"
+    },
+    {
+      "path": "solana-programs"
+    },
+    {
+      "path": "service-commands"
+    },
+    {
+      "path": "eth-contracts"
+    },
+    {
+      "path": "contracts"
+    },
+    {
+      "path": "mad-dog"
+    },
+  ]
+}

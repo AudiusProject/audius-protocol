@@ -1,0 +1,30 @@
+diff --git a/node_modules/bullmq/dist/cjs/classes/child-pool.js b/node_modules/bullmq/dist/cjs/classes/child-pool.js
+index 2e47bee..0369e22 100644
+--- a/node_modules/bullmq/dist/cjs/classes/child-pool.js
++++ b/node_modules/bullmq/dist/cjs/classes/child-pool.js
+@@ -8,6 +8,16 @@ const process_utils_1 = require("./process-utils");
+ const interfaces_1 = require("../interfaces");
+ const utils_1 = require("../utils");
+ const CHILD_KILL_TIMEOUT = 30000;
++
++const getFreePort = async () => {
++    return new Promise((res) => {
++        const srv = require("net").createServer();
++        srv.listen(0, () => {
++            const port = srv.address().port;
++            srv.close((err) => res(port));
++        });
++    });
++};
+ const convertExecArgv = async (execArgv) => {
+     const standard = [];
+     const convertedArgs = [];
+@@ -18,7 +28,7 @@ const convertExecArgv = async (execArgv) => {
+         }
+         else {
+             const argName = arg.split('=')[0];
+-            const port = await (await Promise.resolve().then(() => require('get-port'))).default();
++	    const port = await getFreePort();
+             convertedArgs.push(`${argName}=${port}`);
+         }
+     }

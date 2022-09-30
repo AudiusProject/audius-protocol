@@ -1,35 +1,44 @@
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
-const Bull = require('bull')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 
 const config = require('../../src/config')
 
 // Mock monitoring queue that sets monitor values on construction
 class GenericBullQueue {
   constructor() {
-    this.queue = Bull('genericBullQueue', {
-      redis: {
-        host: config.get('redisHost'),
-        port: config.get('redisPort')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('genericBullQueue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: 0,
         removeOnFail: 0
       }
     })
     const prometheusRegistry = new PrometheusRegistry()
-    prometheusRegistry.startQueueMetrics(this.queue)
 
-    this.queue.process(1, async (job) => {
-      const { timeout } = job.data
-      if (timeout) {
-        console.log(`waiting ${timeout}`)
-        setTimeout(() => console.log(`done ${timeout}`), timeout)
-      }
+    const worker = new Worker(
+      'genericBullQueue',
+      async (job) => {
+        const { timeout } = job.data
+        if (timeout) {
+          console.log(`waiting ${timeout}`)
+          setTimeout(() => console.log(`done ${timeout}`), timeout)
+        }
+      },
+      { connection }
+    )
+    this.queueEvents = new QueueEvents('genericBullQueue', {
+      connection
     })
+
+    prometheusRegistry.startQueueMetrics(this.queue, worker)
   }
 
   async addTask(params) {
-    const job = await this.queue.add(params)
+    const job = await this.queue.add('mock-job', params)
 
     return job
   }

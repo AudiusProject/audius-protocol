@@ -64,6 +64,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
+        "is_premium": boolean
     }
     """
 
@@ -108,6 +109,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregatePlay.count,
             Track.created_at,
             follower_query.c.is_verified,
+            Track.is_premium,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
@@ -139,6 +141,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
+            "is_premium": record[6],
         }
         for record in base_query
     }
@@ -192,19 +195,19 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
+
+        # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
+        # belonging to premium tracks before applying the limit.
+        if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
+            track_scoring_data = list(
+                filter(lambda item: not item["is_premium"], track_scoring_data)
+            )
+
         scored_tracks = [
             strategy.get_track_score("week", track) for track in track_scoring_data
         ]
         sorted_tracks = sorted(scored_tracks, key=lambda k: k["score"], reverse=True)
-
-        # Only limit the number of sorted tracks here if we are not later
-        # filtering out the premium tracks. Otherwise, the number of
-        # tracks we return later may be smaller than the limit.
-        # If we don't limit it here, we limit it later after getting the
-        # unpopulated tracks.
-        should_apply_limit_early = not SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
-        if should_apply_limit_early:
-            sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
+        sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
         # Get unpopulated metadata
         track_ids = [track["track_id"] for track in sorted_tracks]
@@ -213,11 +216,6 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
             track_ids,
             exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
         )
-
-        # Make sure to apply the limit if not previously applied
-        # because of the filtering out of premium tracks
-        if not should_apply_limit_early:
-            tracks = tracks[:UNDERGROUND_TRENDING_LENGTH]
 
         return (tracks, track_ids)
 

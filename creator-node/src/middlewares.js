@@ -697,7 +697,7 @@ async function getUserReplicaSetEndpointsFromDiscovery({
     !user[0].hasOwnProperty('creator_node_endpoint')
   ) {
     throw new Error(
-      `Invalid return data from discovery provider for user with wallet ${wallet}.`
+      `Invalid return data from discovery provider for user with wallet ${wallet}`
     )
   }
 
@@ -752,7 +752,6 @@ async function getReplicaSetSpIDs({
     const RETRY_TIMEOUT_MS = 1000 // 1 seconds
 
     let errorMsg = null
-    let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
         `${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${
@@ -761,15 +760,40 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        // will throw error if blocknumber not found
-        replicaSet =
-          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
-            userId,
+        if (config.get('entityManagerReplicaSetEnabled')) {
+          // will throw error if blocknumber not found
+          const encodedUserId = libs.Utils.encodeHashId(userId)
+          const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+            encodedUserId,
             blockNumber
-          )
-        errorMsg = null
-        blockNumberIndexed = true
-        break
+          })
+
+          if (spResponse) {
+            if (spResponse.primarySpID) {
+              replicaSet = {
+                primaryId: spResponse.primarySpID,
+                secondaryIds: [
+                  spResponse.secondary1SpID,
+                  spResponse.secondary2SpID
+                ]
+              }
+              errorMsg = null
+              break
+            } else {
+              // The blocknumber was indexed by discovery, but there's still no user replica set returned
+              errorMsg = `User replica not found in discovery`
+              break
+            }
+          }
+        } else {
+          replicaSet =
+            await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
+              userId,
+              blockNumber
+            )
+          errorMsg = null
+          break
+        }
       } catch (e) {
         errorMsg = e.message
       } // Ignore all errors until MAX_RETRIES exceeded
@@ -779,20 +803,12 @@ async function getReplicaSetSpIDs({
 
     // Error if indexed blockNumber but didn't find any replicaSet for user
     if (
-      blockNumberIndexed &&
-      (!replicaSet ||
-        !replicaSet.hasOwnProperty('primaryId') ||
-        !replicaSet.primaryId)
+      !replicaSet ||
+      !replicaSet.hasOwnProperty('primaryId') ||
+      !replicaSet.primaryId
     ) {
       throw new Error(
         `${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`
-      )
-    }
-
-    // Error if failed to index target blockNumber
-    if (!blockNumberIndexed) {
-      throw new Error(
-        `${logPrefix} ERROR || Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpID) {
@@ -814,12 +830,30 @@ async function getReplicaSetSpIDs({
       )
 
       try {
-        replicaSet =
-          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-            userId
-          )
+        if (config.get('entityManagerReplicaSetEnabled')) {
+          const encodedUserId = libs.Utils.encodeHashId(userId)
+          const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+            encodedUserId
+          })
 
-        errorMsg = null
+          if (spResponse && spResponse.primarySpID) {
+            replicaSet = {
+              primaryId: spResponse.primarySpID,
+              secondaryIds: [
+                spResponse.secondary1SpID,
+                spResponse.secondary2SpID
+              ]
+            }
+            errorMsg = null
+          } else {
+            errorMsg = `User replica not found in discovery`
+          }
+        } else {
+          replicaSet =
+            await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+              userId
+            )
+        }
 
         if (
           replicaSet &&
@@ -863,10 +897,24 @@ async function getReplicaSetSpIDs({
 
     let errorMsg = null
     try {
-      replicaSet =
-        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-          userId
-        )
+      if (config.get('entityManagerReplicaSetEnabled')) {
+        const encodedUserId = libs.Utils.encodeHashId(userId)
+        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+          encodedUserId
+        })
+
+        if (spResponse && spResponse.primarySpID) {
+          replicaSet = {
+            primaryId: spResponse.primarySpID,
+            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          }
+        }
+      } else {
+        replicaSet =
+          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+            userId
+          )
+      }
     } catch (e) {
       errorMsg = e.message
     }

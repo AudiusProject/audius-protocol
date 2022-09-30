@@ -1,7 +1,13 @@
+/* eslint-disable import/first */
 'use strict'
 
 const { setupTracing } = require('./tracer')
 setupTracing('content-node')
+
+import type { Cluster, Worker } from 'cluster'
+import { AggregatorRegistry } from 'prom-client'
+import { clusterUtils } from './utils'
+const cluster: Cluster = require('cluster')
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
@@ -15,58 +21,19 @@ const { logger } = require('./logging')
 const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
 
+// This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
+// However, a bug currently requires instantiating this in workers as well:
+// https://github.com/siimon/prom-client/issues/501
+const aggregatorRegistry = new AggregatorRegistry()
+
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
+  // eslint-disable-next-line no-process-exit
   process.exit(1)
 }
 
-const verifyDBConnection = async () => {
-  try {
-    logger.info('Verifying DB connection...')
-    await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
-    logger.info('DB connected successfully!')
-  } catch (connectionError) {
-    exitWithError('Error connecting to DB:', connectionError)
-  }
-}
-
-const runDBMigrations = async () => {
-  try {
-    logger.info('Executing database migrations...')
-    await runMigrations()
-    logger.info('Migrations completed successfully')
-  } catch (migrationError) {
-    exitWithError('Error in migrations:', migrationError)
-  }
-}
-
-const connectToDBAndRunMigrations = async () => {
-  await verifyDBConnection()
-  await clearRunningQueries()
-  await runDBMigrations()
-}
-
-/**
- * Setting a different port is necessary for OpenResty to work. If OpenResty
- * is enabled, have the app run on port 3000. Else, run on its configured port.
- * @returns the port number to configure the Content Node app
- */
-const getPort = () => {
-  const contentCacheLayerEnabled = config.get('contentCacheLayerEnabled')
-
-  if (contentCacheLayerEnabled) {
-    return 3000
-  }
-
-  return config.get('port')
-}
-
-const startApp = async () => {
-  logger.info('Configuring service...')
-
+const verifyConfigAndDb = async () => {
   await config.asyncConfig()
-
-  // fail if delegateOwnerWallet & delegatePrivateKey not present
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
   const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -77,7 +44,7 @@ const startApp = async () => {
     )
   }
 
-  // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
+  // Fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
   const privateKeyBuffer = Buffer.from(
     config.get('delegatePrivateKey').replace('0x', ''),
     'hex'
@@ -87,16 +54,6 @@ const startApp = async () => {
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
-
-  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
-  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
-
-  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
-    exitWithError(
-      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
-    )
-  }
-
   try {
     const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
     const solDelegatePrivateKey = solDelegateKeypair.secretKey
@@ -110,14 +67,37 @@ const startApp = async () => {
     )
   }
 
-  await connectToDBAndRunMigrations()
+  // Fail if Trusted Notifier isn't configured properly
+  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
+  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
+  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
+    exitWithError(
+      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
+    )
+  }
 
-  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-  await serviceRegistry.initServices()
-  logger.info(`Initialized services (Node running in ${nodeMode})`)
+  try {
+    logger.info('Verifying DB connection...')
+    await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
+    logger.info('DB connected successfully!')
+  } catch (connectionError) {
+    exitWithError('Error connecting to DB:', connectionError)
+  }
+}
 
-  const appInfo = initializeApp(getPort(), serviceRegistry)
-  logger.info('Initialized app and server')
+// The primary process performs one-time validation and spawns worker processes that each run the Express app
+const startAppForPrimary = async () => {
+  logger.info(`Primary process with pid=${process.pid} is running`)
+
+  await verifyConfigAndDb()
+  await clearRunningQueries()
+  try {
+    logger.info('Executing database migrations...')
+    await runMigrations()
+    logger.info('Migrations completed successfully')
+  } catch (migrationError) {
+    exitWithError('Error in migrations:', migrationError)
+  }
 
   // Clear all redis locks
   try {
@@ -126,14 +106,83 @@ const startApp = async () => {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }
 
-  // Initialize services that do not require the server, but do not need to be awaited.
-  serviceRegistry.initServicesAsynchronously()
+  const numWorkers = clusterUtils.getNumWorkers()
+  logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
+  const firstWorker = cluster.fork()
+  // Wait for the first worker to perform one-time init logic before spawning other workers
+  firstWorker.on('message', (msg) => {
+    if (msg?.cmd === 'initComplete') {
+      for (let i = 0; i < numWorkers - 1; i++) {
+        cluster.fork()
+      }
+    }
+  })
 
-  // Some Services cannot start until server is up. Start them now
-  // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer(appInfo.app)
+  const sendAggregatedMetricsToWorker = async (worker: Worker) => {
+    const metricsData = await aggregatorRegistry.clusterMetrics()
+    const contentType = aggregatorRegistry.contentType
+    worker.send({
+      cmd: 'receiveAggregatePrometheusMetrics',
+      val: {
+        metricsData,
+        contentType
+      }
+    })
+  }
 
-  // when app terminates, close down any open DB connections gracefully
+  // Handle message received from worker to primary
+  cluster.on('message', (workerWhoSentMsg, msg) => {
+    if (msg?.cmd === 'requestAggregatedPrometheusMetrics') {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      sendAggregatedMetricsToWorker(workerWhoSentMsg)
+    }
+  })
+
+  // Respawn workers and update each worker's knowledge of who the special worker is.
+  // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
+  cluster.on('exit', (worker, code, signal) => {
+    logger.info(
+      `Worker process with pid=${worker.process.pid} died because ${
+        signal || code
+      }. Respawning...`
+    )
+    const newWorker = cluster.fork()
+    if (clusterUtils.specialWorkerId === worker.id) {
+      logger.info(
+        'The worker that died was the special worker. Setting a new special worker...'
+      )
+      clusterUtils.specialWorkerId = newWorker.id
+      for (const worker of Object.values(cluster.workers || {})) {
+        worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
+      }
+    }
+  })
+}
+
+// Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
+const startAppForWorker = async () => {
+  /**
+   * Setting a different port is necessary for OpenResty to work. If OpenResty
+   * is enabled, have the app run on port 3000. Else, run on its configured port.
+   * @returns the port number to configure the Content Node app
+   */
+  const getPort = () => {
+    const contentCacheLayerEnabled = config.get('contentCacheLayerEnabled')
+
+    if (contentCacheLayerEnabled) {
+      return 3000
+    }
+
+    return config.get('port')
+  }
+
+  logger.info(
+    `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
+  )
+
+  await verifyConfigAndDb()
+
+  // When app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
@@ -144,5 +193,41 @@ const startApp = async () => {
       appInfo.server.close()
     }
   })
+
+  await serviceRegistry.initServices()
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
+  serviceRegistry.initServicesAsynchronously()
+  const appInfo = initializeApp(getPort(), serviceRegistry)
+  logger.info('Initialized app and server')
+  await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+
+  cluster.worker!.on('message', (msg) => {
+    if (msg?.cmd === 'setSpecialWorkerId') {
+      clusterUtils.specialWorkerId = msg?.val
+    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+      try {
+        const { prometheusRegistry } = serviceRegistry
+        prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
+      } catch (error: any) {
+        logger.error(
+          `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
+    }
+  })
+
+  if (clusterUtils.isThisWorkerInit() && process.send) {
+    process.send({ cmd: 'initComplete' })
+  }
 }
-startApp()
+
+if (cluster.isMaster) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppForPrimary()
+} else if (cluster.isWorker) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppForWorker()
+} else {
+  throw new Error("Can't determine if process is primary or worker in cluster")
+}

@@ -8,6 +8,7 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
+const { encode, decode } = require('../src/hashids')
 const {
   SyncType,
   RECONFIG_MODES,
@@ -82,15 +83,47 @@ describe('test updateReplicaSet job processor', function () {
     const autoSelectCreatorNodesStub = sandbox
       .stub()
       .resolves({ services: healthyNodes })
+    const _updateReplicaSet = sandbox
+    .stub()
+    .resolves({ blocknumber: 10 })
+
     const audiusLibsStub = {
       ServiceProvider: {
         autoSelectCreatorNodes: autoSelectCreatorNodesStub
       },
+      User: {
+        updateEntityManagerReplicaSet: _updateReplicaSet,
+        waitForReplicaSetDiscoveryIndexing: sandbox.stub()
+      },
       contracts: {
         UserReplicaSetManagerClient: {
           updateReplicaSet: updateReplicaSetStub,
-          _updateReplicaSet: updateReplicaSetStub
+          _updateReplicaSet
         }
+      },
+      Utils: {
+        encodeHashId: sandbox
+        .mock()
+        .callsFake((id) => {
+          return encode(id)
+        })
+      },
+      discoveryProvider: {
+        getUserReplicaSet: sandbox
+        .mock()
+        .callsFake(({ encodedUserId }) => {
+          const user_id = decode(encodedUserId)
+          return {
+            user_id,
+            "wallet": '0x123456789',
+            "primary": 'http://mock-cn1.audius.co',
+            "secondary1": 'http://mock-cn2.audius.co',
+            "secondary2": 'http://mock-cn3.audius.co',
+            "primarySpID": 1,
+            "secondary1SpID": 2,
+            "secondary2SpID": 3
+          }
+        })
       }
     }
     return proxyquire(
