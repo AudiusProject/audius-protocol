@@ -17,7 +17,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddresses: process.env.antiAbuseOracleAddresses ? process.env.antiAbuseOracleAddresses.split(",") : null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
     initialNotifierEndpoint: null,
