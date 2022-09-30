@@ -286,3 +286,28 @@ export const getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number,
 
     return usersCount
 }
+
+export const getUsersWithEntireReplicaSetNotInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
+
+    const spidSetStr = `{${spidSet.join(",")}}`
+
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = :run_id
+    AND 
+        primaryspid != ALL( :spidSetStr )
+    AND
+        secondary1spid != ALL( :spidSetStr )
+    AND 
+        secondary2spid != ALL( :spidSetStr );
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id, spidSetStr },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
