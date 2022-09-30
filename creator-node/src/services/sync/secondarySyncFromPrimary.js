@@ -6,7 +6,8 @@ const models = require('../../models')
 const {
   saveFileForMultihashToFS,
   deleteAllCNodeUserDataFromDisk,
-  gatherCNodeUserDataToDelete
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete
 } = require('../../fileManager')
 const {
   getOwnEndpoint,
@@ -125,6 +126,7 @@ const handleSyncFromPrimary = async ({
       try {
         numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
       } catch (error) {
+        await clearFilePathsToDelete(wallet)
         errorResponse = {
           error,
           result: 'failure_delete_disk_data'
@@ -149,6 +151,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -162,8 +165,7 @@ const handleSyncFromPrimary = async ({
       try {
         const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
           wallet,
-          numFilesToDelete,
-          logger
+          numFilesToDelete
         )
         logger.info(
           `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`

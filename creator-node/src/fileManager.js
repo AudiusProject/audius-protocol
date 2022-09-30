@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
+const { chunk } = require('lodash')
 
 const models = require('./models')
 const config = require('./config')
@@ -751,6 +752,26 @@ async function removeFile(storagePath) {
   }
 }
 
+async function batchUnlink(storagePaths, batchSize) {
+  let numFilesDeleted = 0
+  const batches = chunk(storagePaths, batchSize)
+  const promiseResults = []
+  for (const batchOfStoragePaths of batches) {
+    const promiseResultsForBatch = await Promise.allSettled(
+      batchOfStoragePaths.map((storagePath) => removeFile(storagePath))
+    )
+    promiseResults.push(...promiseResultsForBatch)
+  }
+
+  // Count number of files successfully deleted
+  for (const promiseResult of promiseResults) {
+    if (promiseResult.status === 'fulfilled') {
+      numFilesDeleted++
+    }
+  }
+  return numFilesDeleted
+}
+
 /**
  * Adds path to redis set for every file of the given user.
  * DOES NOT DELETE. Call deleteAllCNodeUserDataFromDisk() to delete the data that was added to redis.
@@ -797,7 +818,7 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
     if (files?.length) {
       // Save the file paths to a redis set
       // TODO: Might need to prepend file.dirMultihash for nested paths?
-      const filePaths = files.map((file) => file.storagePath)
+      const filePaths = files.map((file) => path.normalize(file.storagePath))
       await redisClient.sadd(redisSetKey, filePaths)
 
       // Move pagination cursor to the end
@@ -816,32 +837,25 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
  */
 async function deleteAllCNodeUserDataFromDisk(
   walletPublicKey,
-  numFilesToDelete,
-  logger
+  numFilesToDelete
 ) {
-  const FILES_PER_QUERY = 10_000
+  const FILES_PER_REDIS_QUERY = 10_000
+  const FILES_PER_DELETION_BATCH = 100
   const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
   try {
     // Read file paths from redis and delete them
     let numFilesDeleted = 0
-    for (let i = 0; i < numFilesToDelete; i += FILES_PER_QUERY) {
+    for (let i = 0; i < numFilesToDelete; i += FILES_PER_REDIS_QUERY) {
       const filePathsToDelete = await redisClient.spop(
         redisSetKey,
-        FILES_PER_QUERY
+        FILES_PER_REDIS_QUERY
       )
       if (!filePathsToDelete?.length) return numFilesDeleted
 
-      // TODO: Should we batch this? Maybe there's an fs function to do it or we can do Promise.allSettled
-      for (const filePath of filePathsToDelete) {
-        try {
-          await removeFile(filePath)
-          numFilesDeleted++
-        } catch (errDelFile) {
-          logger.error(
-            `Skipping ${filePath} because it couldn't be deleted: ${errDelFile}`
-          )
-        }
-      }
+      numFilesDeleted += await batchUnlink(
+        filePathsToDelete,
+        FILES_PER_DELETION_BATCH
+      )
     }
     return numFilesDeleted
   } catch (e) {
@@ -849,6 +863,11 @@ async function deleteAllCNodeUserDataFromDisk(
   } finally {
     await redisClient.del(redisSetKey)
   }
+}
+
+async function clearFilePathsToDelete(walletPublicKey) {
+  const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
+  await redisClient.del(redisSetKey)
 }
 
 module.exports = {
@@ -867,5 +886,6 @@ module.exports = {
   copyMultihashToFs,
   fetchFileFromNetworkAndWriteToDisk,
   gatherCNodeUserDataToDelete,
-  deleteAllCNodeUserDataFromDisk
+  deleteAllCNodeUserDataFromDisk,
+  clearFilePathsToDelete
 }
