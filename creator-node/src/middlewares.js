@@ -972,6 +972,12 @@ async function routeMetricMiddleware(req, res, next) {
   const { prometheusRegistry } = serviceRegistry
 
   const fullPath = req.baseUrl + req.path
+
+  req.logger.debug(
+    { vicky: 'vicky', fullPath, vickyregex: req.pathRegex },
+    'i am the path',
+    'SECONDD'
+  )
   try {
     const metric = prometheusRegistry.getMetricByRoute(fullPath)
 

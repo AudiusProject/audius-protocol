@@ -138,6 +138,12 @@ const initializeApp = (port, serviceRegistry) => {
 
   const prometheusRegistry = serviceRegistry.prometheusRegistry
 
+  console.log(
+    'i am the routes with params and routes',
+    routesWithParams,
+    routes
+  )
+
   // Metric tracking middleware
   app.use(
     routes.map((route) => route.path),
@@ -165,6 +171,10 @@ const initializeApp = (port, serviceRegistry) => {
           for (const { regex, path: normalizedPath } of routesWithParams) {
             const match = path.match(regex)
             if (match) {
+              console.log('FIRST')
+              // Set the regex here to match on explicit route metric if generated
+              console.log('did you add??', regex)
+              req.pathRegex = regex
               return normalizedPath
             }
           }

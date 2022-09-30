@@ -164,6 +164,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
  * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
+  req.logger.info('vicky was here')
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
