@@ -551,7 +551,7 @@ const ProfilePage = ({
     const elements = [
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {renderProfileCompletionCard()}
-        {(userFeed.status !== Status.LOADING &&
+        {(userFeed.status === Status.SUCCESS &&
           userFeed.entries.length === 0) ||
         profile.repost_count === 0 ? (
           <EmptyTab
