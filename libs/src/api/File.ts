@@ -100,8 +100,8 @@ export class File extends Base {
                 callback!,
                 {
                   method: 'get',
-                  responseType
-                  // todo: Do we need to also set the premium content headers in this legacy flow?
+                  responseType,
+                  ...premiumContentHeaders
                 },
                 /* timeout */ null
               )
