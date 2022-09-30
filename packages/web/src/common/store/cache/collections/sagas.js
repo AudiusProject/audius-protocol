@@ -77,8 +77,10 @@ function* createPlaylistAsync(action) {
   const userId = yield select(getUserId)
   const uid = action.playlistId
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  const playlistEntityManagerIsEnabled =
-    getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
+  const playlistEntityManagerIsEnabled = yield call(
+    getFeatureEnabled,
+    FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+  ) ?? false
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
     return
@@ -337,9 +339,10 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
         const getFeatureEnabled = yield getContext('getFeatureEnabled')
-        const playlistEntityManagerIsEnabled =
-          getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
-          false
+        const playlistEntityManagerIsEnabled = yield call(
+          getFeatureEnabled,
+          FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+        ) ?? false
         if (!playlistEntityManagerIsEnabled) {
           playlistId = confirmedPlaylistId
         }
@@ -485,8 +488,10 @@ function* confirmAddTrackToPlaylist(
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
-  const playlistEntityManagerIsEnabled =
-    getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
+  const playlistEntityManagerIsEnabled = yield call(
+    getFeatureEnabled,
+    FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+  ) ?? false
 
   yield put(
     confirmerActions.requestConfirmation(
@@ -687,8 +692,10 @@ function* confirmRemoveTrackFromPlaylist(
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
-  const playlistEntityManagerIsEnabled =
-    getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ?? false
+  const playlistEntityManagerIsEnabled = yield call(
+    getFeatureEnabled,
+    FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+  ) ?? false
 
   yield put(
     confirmerActions.requestConfirmation(
@@ -841,9 +848,10 @@ function* confirmOrderPlaylist(userId, playlistId, trackIds, playlist) {
         const getFeatureEnabled = yield getContext('getFeatureEnabled')
         // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the order playlist tracks once,
         // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to order playlist
-        const playlistEntityManagerIsEnabled =
-          getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
-          false
+        const playlistEntityManagerIsEnabled = yield call(
+          getFeatureEnabled,
+          FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+        ) ?? false
         if (!playlistEntityManagerIsEnabled) {
           playlistId = confirmedPlaylistId
         }
@@ -964,9 +972,10 @@ function* confirmPublishPlaylist(userId, playlistId, playlist) {
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
         const getFeatureEnabled = yield getContext('getFeatureEnabled')
-        const playlistEntityManagerIsEnabled =
-          getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
-          false
+        const playlistEntityManagerIsEnabled = yield call(
+          getFeatureEnabled,
+          FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+        ) ?? false
         if (!playlistEntityManagerIsEnabled) {
           playlistId = confirmedPlaylistId
         }
@@ -1183,9 +1192,10 @@ function* confirmDeletePlaylist(userId, playlistId) {
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
         const getFeatureEnabled = yield getContext('getFeatureEnabled')
-        const playlistEntityManagerIsEnabled =
-          getFeatureEnabled(FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED) ??
-          false
+        const playlistEntityManagerIsEnabled = yield call(
+          getFeatureEnabled,
+          FeatureFlags.PLAYLIST_ENTITY_MANAGER_ENABLED
+        ) ?? false
         if (!playlistEntityManagerIsEnabled) {
           playlistId = confirmedPlaylistId
         }

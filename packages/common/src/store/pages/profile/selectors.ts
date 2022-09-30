@@ -75,7 +75,7 @@ export const getProfileCollections = createDeepEqualSelector(
       .filter((collection) => {
         if (collection) {
           const { is_delete, _marked_deleted, _moved } = collection
-          return !(is_delete || _marked_deleted) || _moved
+          return !(is_delete || _marked_deleted || _moved)
         }
         return false
       })
@@ -145,10 +145,10 @@ export const makeGetProfile = () => {
       // Filter out anything marked deleted on backend (is_delete) or locally (_marked_deleted)
       // Or locally moved playlists (_moved)
       let playlists = c.filter(
-        (c) => (!c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
+        (c) => !c.is_album && !(c.is_delete || c._marked_deleted) && !c._moved
       )
       let albums = c.filter(
-        (c) => (c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
+        (c) => c.is_album && !(c.is_delete || c._marked_deleted) && !c._moved
       )
 
       if (sortMode === CollectionSortMode.SAVE_COUNT) {
