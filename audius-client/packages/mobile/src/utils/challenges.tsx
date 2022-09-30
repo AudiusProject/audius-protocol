@@ -1,4 +1,5 @@
-import type { ChallengeRewardID, TrendingRewardID } from '@audius/common'
+import { challengeRewardsConfig } from '@audius/common'
+import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
@@ -10,80 +11,13 @@ import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arr
 import MoneyMouthFace from 'app/assets/images/emojis/money-mouth-face.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import NerdFace from 'app/assets/images/emojis/nerd-face.png'
-import Sparkles from 'app/assets/images/emojis/sparkles.png'
+import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
 import WhiteHeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 
-// TODO: These should be programmatic based on amount, but historically have not been
-export const challenges = {
-  // Connect Verified
-  connectVerifiedTitle: 'Link Verified Accounts',
-  connectVerifiedDescription:
-    'Get verified on Audius by linking your verified Twitter or Instagram account!',
-  connectVerifiedShortDescription:
-    'Link your verified social media accounts to earn 1 $AUDIO',
-  connectVerifiedButton: 'Verify Your Account',
-  connectVerifiedProgressLabel: 'Not Linked',
-
-  // Listen Streak
-  listenStreakTitle: 'Listening Streak: 7 Days',
-  listenStreakDescription:
-    'Sign in and listen to at least one track every day for 7 days',
-  listenStreakShortDescription:
-    'Listen to one track a day for seven days to earn 1 $AUDIO',
-  listenStreakButton: 'Trending Tracks',
-  listenStreakProgressLabel: '%0/%1 Days',
-
-  // Mobile Install
-  mobileInstallTitle: 'Get the Audius Mobile App',
-  mobileInstallDescription:
-    'Install the Audius app for iPhone and Android and Sign in to your account!',
-  mobileInstallShortDescription: 'Earn 1 $AUDIO',
-  mobileInstallButton: 'Get the App',
-  mobileInstallProgressLabel: 'Not Installed',
-
-  // Profile Completion
-  profileCompletionTitle: 'Complete Your Profile',
-  profileCompletionDescription:
-    'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
-  profileCompletionShortDescription:
-    'Complete your Audius profile to earn 1 $AUDIO',
-  profileCompletionButton: 'More Info',
-  profileCompletionProgressLabel: '%0/%1 Complete',
-
-  // Referrals
-  referreralsTitle: 'Invite your Friends',
-  referralsDescription:
-    'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-  referralsShortDescription: 'Earn 1 $AUDIO, for you and your friend',
-  referralsProgressLabel: '%0/%1 Invites Accepted',
-  referralsRemainingLabel: '%0/%1 Invites Remain',
-  referralsButton: 'Invite your Friends',
-
-  // Verified Referrals
-  referreralsVerifiedTitle: 'Invite your Fans',
-  referralsVerifiedDescription:
-    'Invite your fans! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
-  referralsVerifiedShortDescription: 'Earn up to 5,000 $AUDIO',
-  referralsVerifiedProgressLabel: '%0/%1 Invites Accepted',
-  referralsVerifiedRemainingLabel: '%0/%1 Invites Remain',
-
-  // Referred
-  referredTitle: 'You Accepted An Invite',
-  referredDescription: 'You earned $AUDIO for being invited',
-  referredShortDescription: 'You earned $AUDIO for being invited',
-  referredProgressLabel: '%0/%1 Invites',
-
-  // Track Upload
-  trackUploadTitle: 'Upload 3 Tracks',
-  trackUploadDescription: 'Upload 3 tracks to your profile',
-  trackUploadShortDescription: 'Upload 3 tracks to your profile',
-  trackUploadProgressLabel: '%0/%1 Uploaded',
-  trackUploadButton: 'Upload Tracks',
-
-  // Send First Tip
+export const messages = {
   sendFirstTipTitle: 'Send Your First Tip',
   // NOTE: Send tip -> Send $AUDIO change
   sendFirstTipTitleAlt: 'Send Your First $AUDIO', // iOS only
@@ -95,16 +29,8 @@ export const challenges = {
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
   sendFirstTipShortDescriptionAlt:
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
-  sendFirstTipProgressLabel: 'Not Earned',
   sendFirstTipButton: 'Find Someone To Tip',
-  sendFirstTipButtonAlt: 'Find Someone To Send To', // iOS only
-
-  // First Playlist
-  firstPlaylistTitle: 'Create Your First Playlist',
-  firstPlaylistDescription: 'Create a playlist and add a track to it',
-  firstPlaylistShortDescription: 'Create a playlist and add a track to it',
-  firstPlaylistProgressLabel: 'Not Earned',
-  firstPlaylistButton: 'Discover Some Tracks'
+  sendFirstTipButtonAlt: 'Find Someone To Send To' // iOS only
 }
 
 export type ChallengesParamList = {
@@ -115,184 +41,116 @@ export type ChallengesParamList = {
   params: { screen: string }
 }
 
-export type ChallengeConfig = {
-  icon: ImageSourcePropType
-  title: string
-  description: string
+export type MobileChallengeConfig = {
+  icon?: ImageSourcePropType
+  title?: string
+  description?: (amount?: OptimisticUserChallenge) => string
   shortDescription?: string
-  progressLabel?: string
-  remainingLabel?: string
-  isVerifiedChallenge?: boolean
+  panelButtonText?: string
   buttonInfo?: {
     navigation?: {
       screen: keyof ChallengesParamList
       params?: ChallengesParamList[keyof ChallengesParamList]
     }
-    label: string
     renderIcon?: (color: string) => React.ReactElement
     iconPosition?: 'left' | 'right'
   }
 }
 
-export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
-  'connect-verified': {
-    icon: WhiteHeavyCheckMark,
-    title: challenges.connectVerifiedTitle,
-    description: challenges.connectVerifiedDescription,
-    shortDescription: challenges.connectVerifiedShortDescription,
-    progressLabel: challenges.connectVerifiedProgressLabel,
-    buttonInfo: {
-      label: challenges.connectVerifiedButton,
-      navigation: {
-        screen: 'AccountVerificationScreen'
-      },
-      renderIcon: (color) => <IconCheck fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'listen-streak': {
-    icon: Headphone,
-    title: challenges.listenStreakTitle,
-    description: challenges.listenStreakDescription,
-    shortDescription: challenges.listenStreakShortDescription,
-    progressLabel: challenges.listenStreakProgressLabel,
-    buttonInfo: {
-      label: challenges.listenStreakButton,
-      navigation: {
-        screen: 'trending'
-      },
-      renderIcon: (color) => <IconArrow fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'mobile-install': {
-    icon: MobilePhoneWithArrow,
-    title: challenges.mobileInstallTitle,
-    description: challenges.mobileInstallDescription,
-    shortDescription: challenges.mobileInstallShortDescription,
-    progressLabel: challenges.mobileInstallProgressLabel,
-    buttonInfo: {
-      label: challenges.mobileInstallButton
-    }
-  },
-  'profile-completion': {
-    icon: WhiteHeavyCheckMark,
-    title: challenges.profileCompletionTitle,
-    description: challenges.profileCompletionDescription,
-    shortDescription: challenges.profileCompletionShortDescription,
-    progressLabel: challenges.profileCompletionProgressLabel,
-    buttonInfo: {
-      label: challenges.profileCompletionButton
-    }
-  },
-  referrals: {
-    icon: IncomingEnvelope,
-    title: challenges.referreralsTitle,
-    description: challenges.referralsDescription,
-    shortDescription: challenges.referralsShortDescription,
-    progressLabel: challenges.referralsProgressLabel,
-    remainingLabel: challenges.referralsRemainingLabel,
-    buttonInfo: {
-      label: challenges.referralsButton
-    }
-  },
-  'ref-v': {
-    icon: IncomingEnvelope,
-    title: challenges.referreralsVerifiedTitle,
-    description: challenges.referralsVerifiedDescription,
-    shortDescription: challenges.referralsVerifiedShortDescription,
-    progressLabel: challenges.referralsVerifiedProgressLabel,
-    remainingLabel: challenges.referralsVerifiedRemainingLabel,
-    isVerifiedChallenge: true
-  },
-  referred: {
-    icon: LoveLetter,
-    title: challenges.referredTitle,
-    description: challenges.referredDescription,
-    shortDescription: challenges.referredShortDescription,
-    progressLabel: challenges.referredProgressLabel
-  },
-  'track-upload': {
-    icon: MultipleMusicalNotes,
-    title: challenges.trackUploadTitle,
-    description: challenges.trackUploadDescription,
-    shortDescription: challenges.trackUploadShortDescription,
-    progressLabel: challenges.trackUploadProgressLabel,
-    buttonInfo: {
-      label: challenges.trackUploadButton,
-      renderIcon: (color) => <IconUpload fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'send-first-tip': {
-    icon: MoneyMouthFace,
-    title:
-      Platform.OS === 'ios'
-        ? challenges.sendFirstTipTitleAlt
-        : challenges.sendFirstTipTitle,
-    description:
-      Platform.OS === 'ios'
-        ? challenges.sendFirstTipDescriptionAlt
-        : challenges.sendFirstTipDescription,
-    shortDescription:
-      Platform.OS === 'ios'
-        ? challenges.sendFirstTipShortDescriptionAlt
-        : challenges.sendFirstTipShortDescription,
-    progressLabel: challenges.sendFirstTipProgressLabel,
-    buttonInfo: {
-      label:
-        Platform.OS === 'ios'
-          ? challenges.sendFirstTipButtonAlt
-          : challenges.sendFirstTipButton,
-      navigation: {
-        screen: 'explore',
-        params: { screen: 'HeavyRotation' }
-      }
-    }
-  },
-  'first-playlist': {
-    icon: Sparkles,
-    title: challenges.firstPlaylistTitle,
-    description: challenges.firstPlaylistDescription,
-    shortDescription: challenges.firstPlaylistShortDescription,
-    progressLabel: challenges.firstPlaylistProgressLabel,
-    buttonInfo: {
-      label: challenges.firstPlaylistButton,
-      navigation: {
-        screen: 'favorites'
-      }
-    }
-  }
-}
-
-export const trendingRewardsConfig: Record<TrendingRewardID, ChallengeConfig> =
+const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
   {
-    'trending-playlist': {
-      title: 'Top 5 Trending Playlists',
-      icon: ChartIncreasing,
-      description: 'Winners are selected every Friday at Noon PT!',
+    'connect-verified': {
+      icon: WhiteHeavyCheckMark,
       buttonInfo: {
-        label: 'See More',
+        navigation: {
+          screen: 'AccountVerificationScreen'
+        },
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'listen-streak': {
+      icon: Headphone,
+      buttonInfo: {
+        navigation: {
+          screen: 'trending'
+        },
+        renderIcon: (color) => <IconArrow fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'mobile-install': {
+      icon: MobilePhoneWithArrow
+    },
+    'profile-completion': {
+      icon: WhiteHeavyCheckMark
+    },
+    referrals: {
+      icon: IncomingEnvelope
+    },
+    'ref-v': {
+      icon: IncomingEnvelope
+    },
+    referred: {
+      icon: LoveLetter
+    },
+    'track-upload': {
+      icon: MultipleMusicalNotes,
+      buttonInfo: {
+        renderIcon: (color) => <IconUpload fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'send-first-tip': {
+      icon: MoneyMouthFace,
+      title:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipTitleAlt
+          : messages.sendFirstTipTitle,
+      description: () =>
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipDescriptionAlt
+          : messages.sendFirstTipDescription,
+      shortDescription:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipShortDescriptionAlt
+          : messages.sendFirstTipShortDescription,
+      panelButtonText:
+        Platform.OS === 'ios'
+          ? messages.sendFirstTipButtonAlt
+          : messages.sendFirstTipButton,
+      buttonInfo: {
+        navigation: {
+          screen: 'explore',
+          params: { screen: 'HeavyRotation' }
+        }
+      }
+    },
+    'first-playlist': {
+      icon: TrebleClef,
+      buttonInfo: {
+        navigation: {
+          screen: 'favorites'
+        }
+      }
+    },
+    'trending-playlist': {
+      icon: ChartIncreasing,
+      buttonInfo: {
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
     },
     'trending-track': {
-      title: 'Top 5 Trending Tracks',
       icon: ChartIncreasing,
-      description: 'Winners are selected every Friday at Noon PT!',
       buttonInfo: {
-        label: 'See More',
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
     },
     'top-api': {
-      title: 'Top 10 API Apps',
       icon: NerdFace,
-      description: 'The top 10 Audius API apps each month win',
       buttonInfo: {
-        label: 'More Info',
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
@@ -300,22 +158,21 @@ export const trendingRewardsConfig: Record<TrendingRewardID, ChallengeConfig> =
     'verified-upload': {
       title: 'First Upload With Your Verified Account',
       icon: ChartIncreasing,
-      description:
-        'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us',
       buttonInfo: {
-        label: 'See More',
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
     },
     'trending-underground': {
-      title: 'Top 5 Underground Trending',
       icon: ChartIncreasing,
-      description: 'Winners are selected every Friday at Noon PT!',
       buttonInfo: {
-        label: 'See More',
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
     }
   }
+
+export const getChallengeConfig = (id: ChallengeRewardID) => ({
+  ...challengeRewardsConfig[id],
+  ...mobileChallengeConfig[id]
+})
