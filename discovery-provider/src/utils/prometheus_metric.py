@@ -146,10 +146,11 @@ A few example labels:
 * `task_name` when similar CeleryTasks use the same helper code from different callers
 """
 PrometheusRegistry = {
-    PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Summary(
+    PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
         "How long the currently running celery task has been running",
         ("task_name",),
+        multiprocess_mode='liveall',
     ),
     PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS}",
@@ -159,7 +160,7 @@ PrometheusRegistry = {
             "success",
         ),
     ),
-    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS: Summary(
+    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS}",
         "How long the last celery_task ran",
         (
@@ -175,10 +176,11 @@ PrometheusRegistry = {
             "route",
         ),
     ),
-    PrometheusMetricNames.HEALTH_CHECK: Summary(
+    PrometheusMetricNames.HEALTH_CHECK: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
         "Metrics extracted from our health-checks, using similar keys.",
         ("key",),
+        multiprocess_mode='liveall',
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
@@ -266,8 +268,7 @@ class PrometheusMetric:
         if labels:
             this_metric = this_metric.labels(**labels)
         if isinstance(this_metric, Histogram):
-            # this_metric.observe(value, labels)
-            this_metric.observe(value)
+            this_metric.observe(value, labels)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
         elif isinstance(this_metric, Summary):
