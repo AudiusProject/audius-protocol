@@ -36,24 +36,16 @@ export const NotificationsDrawerNavigationContextProvider = (
     drawerHelpers,
     drawerNavigation,
     gesturesDisabled,
-    setGesturesDisabled,
-    state
+    setGesturesDisabled
   } = props
   const other = useMemo(
     () => ({
       drawerHelpers,
       drawerNavigation,
       gesturesDisabled,
-      setGesturesDisabled,
-      state
+      setGesturesDisabled
     }),
-    [
-      drawerHelpers,
-      drawerNavigation,
-      gesturesDisabled,
-      setGesturesDisabled,
-      state
-    ]
+    [drawerHelpers, drawerNavigation, gesturesDisabled, setGesturesDisabled]
   )
   return (
     <NotificationsDrawerNavigationContext.Provider value={other}>
