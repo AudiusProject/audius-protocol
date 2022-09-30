@@ -1024,7 +1024,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       id: ID,
       sort: TracksSortMode
     ) => {
-      console.log('refetch tracks', offset, limit, id, sort)
       dispatch(
         tracksActions.fetchLineupMetadatas(
           offset,
