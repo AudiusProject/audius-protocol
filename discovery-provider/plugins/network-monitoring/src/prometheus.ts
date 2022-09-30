@@ -1,6 +1,6 @@
 
 import client from 'prom-client';
-import { getEnv } from './utils';
+import { getEnv } from './config';
 
 const { pushGatewayUrl } = getEnv()
 
