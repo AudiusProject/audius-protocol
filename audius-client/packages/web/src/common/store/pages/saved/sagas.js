@@ -41,7 +41,10 @@ function* watchFetchSaves() {
     const sortDirection = props.sortDirection ?? ''
     const saves = yield select(getSaves)
     const getFeatureEnabled = yield getContext('getFeatureEnabled')
-    const newTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES) ?? false
+    const newTablesEnabled = yield call(
+      getFeatureEnabled,
+      FeatureFlags.NEW_TABLES
+    ) ?? false
 
     const isSameParams =
       query === currentQuery &&
