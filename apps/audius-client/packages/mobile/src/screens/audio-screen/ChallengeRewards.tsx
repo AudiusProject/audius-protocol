@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
-import { challengesConfig } from 'app/utils/challenges'
+import { getChallengeConfig } from 'app/utils/challenges'
 
 import { Panel } from './Panel'
 const { setVisibility } = modalsActions
@@ -58,7 +58,7 @@ const useRewardIds = (
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     width: '100%',
-    alignItems: 'center'
+    alignItems: 'stretch'
   },
   loading: {
     marginVertical: spacing(2)
@@ -103,7 +103,7 @@ export const ChallengeRewards = () => {
     .map((id) => userChallenges[id]?.challenge_id)
     .filter(removeNullable)
     .map((id) => {
-      const props = challengesConfig[id]
+      const props = getChallengeConfig(id)
       return (
         <Panel
           {...props}

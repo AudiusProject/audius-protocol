@@ -1,4 +1,7 @@
-import type { OptimisticUserChallenge } from '@audius/common'
+import type {
+  ChallengeRewardsInfo,
+  OptimisticUserChallenge
+} from '@audius/common'
 import { fillString, formatNumberCommas } from '@audius/common'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -7,7 +10,7 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
-import type { ChallengeConfig } from 'app/utils/challenges'
+import type { MobileChallengeConfig } from 'app/utils/challenges'
 import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
@@ -18,7 +21,6 @@ const messages = {
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
     marginVertical: spacing(2),
-    width: '100%',
     borderRadius: spacing(4),
     borderColor: palette.neutralLight7,
     borderWidth: 2,
@@ -61,7 +63,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 type PanelProps = {
   onPress: () => void
   challenge?: OptimisticUserChallenge
-} & ChallengeConfig
+} & ChallengeRewardsInfo &
+  MobileChallengeConfig
 
 export const Panel = ({
   onPress,
@@ -71,8 +74,8 @@ export const Panel = ({
   description,
   progressLabel,
   remainingLabel,
-  buttonInfo,
-  challenge
+  challenge,
+  panelButtonText
 }: PanelProps) => {
   const styles = useStyles()
   const { accentGreen, neutralLight4 } = useThemeColors()
@@ -110,10 +113,12 @@ export const Panel = ({
   return (
     <TouchableOpacity style={styles.root} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <Image style={styles.headerImage} source={icon} />
+        {icon ? <Image style={styles.headerImage} source={icon} /> : null}
         <Text style={styles.title}>{title}</Text>
       </View>
-      <Text style={styles.description}>{shortDescription || description}</Text>
+      <Text style={styles.description}>
+        {shortDescription || description(challenge)}
+      </Text>
       {shouldShowProgress ? (
         <Text
           style={[
@@ -134,17 +139,17 @@ export const Panel = ({
           />
         </View>
       ) : null}
-      {buttonInfo ? (
+      {
         <Button
           fullWidth
-          title={needsDisbursement ? messages.claimReward : buttonInfo.label}
+          title={needsDisbursement ? messages.claimReward : panelButtonText}
           variant='primary'
           iconPosition='right'
           size='medium'
           icon={IconArrow}
           onPress={onPress}
         />
-      ) : null}
+      }
     </TouchableOpacity>
   )
 }
