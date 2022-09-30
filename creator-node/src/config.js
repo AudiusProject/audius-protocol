@@ -482,6 +482,12 @@ const config = convict({
     env: 'entityManagerReplicaSetEnabled',
     default: false
   },
+  premiumContentEnabled: {
+    doc: 'whether or not to enable premium content',
+    format: Boolean,
+    env: 'premiumContentEnabled',
+    default: false
+  },
 
   /** sync / snapback configs */
 
