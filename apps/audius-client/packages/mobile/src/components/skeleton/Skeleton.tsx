@@ -17,6 +17,7 @@ type SkeletonProps = {
   height?: string
   // Optional style to pass in and override styles with
   style?: StyleProp<ViewStyle>
+  noShimmer?: boolean
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -34,14 +35,14 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
-const Skeleton = ({ width, height, style }: SkeletonProps) => {
+const Skeleton = ({ width, height, style, noShimmer }: SkeletonProps) => {
   const styles = useThemedStyles(createStyles)
   const [shimmerWidth, setShimmerWidth] = useState(0)
   const [shimmerPos, setShimmerPos] = useState(new Animated.Value(0))
   const { skeleton, skeletonHighlight } = useThemeColors()
 
   useEffect(() => {
-    if (shimmerWidth !== 0) {
+    if (shimmerWidth !== 0 && !noShimmer) {
       Animated.loop(
         Animated.timing(shimmerPos, {
           toValue: 0,
@@ -51,12 +52,13 @@ const Skeleton = ({ width, height, style }: SkeletonProps) => {
         })
       ).start()
     }
-  }, [shimmerPos, shimmerWidth])
+  }, [shimmerPos, shimmerWidth, noShimmer])
 
   return (
     <View style={[styles.view, { height, width }, style]}>
       <Animated.View
         onLayout={(e) => {
+          if (noShimmer) return
           const { width } = e.nativeEvent.layout
           setShimmerWidth(width)
           setShimmerPos(new Animated.Value(-0.75 * width))

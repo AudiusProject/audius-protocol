@@ -29,6 +29,7 @@ import { useThemeColors } from 'app/utils/theme'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ProfileHeader } from './ProfileHeader'
+import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -151,7 +152,9 @@ export const ProfileScreen = () => {
 
   return (
     <Screen topbarLeft={topbarLeft} topbarRight={topbarRight}>
-      {!profile ? null : (
+      {!profile ? (
+        <ProfileScreenSkeleton />
+      ) : (
         <>
           <View style={styles.navigator}>
             {isNotReachable ? (

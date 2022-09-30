@@ -5,9 +5,8 @@ import { makeStyles } from 'app/styles'
 
 import { Tile } from '../core'
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   tile: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -17,13 +16,11 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     paddingVertical: spacing(4)
   },
   header: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center'
   },
   metadata: {
-    display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly'
   },
