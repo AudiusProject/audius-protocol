@@ -12,7 +12,7 @@ const photoOptions: ImageLibraryOptions = {
 }
 
 export const launchSelectImageActionSheet = (
-  callback: (image: Image) => void,
+  callback: (image: Image, rawResponse: Asset) => void,
   shareSheetTintColor: string
 ) => {
   const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
@@ -30,7 +30,7 @@ export const launchSelectImageActionSheet = (
         file: `data:${response.type};base64,${response.base64}`,
         type: 'base64' as const
       }
-      callback(image)
+      callback(image, response)
     }
   }
 

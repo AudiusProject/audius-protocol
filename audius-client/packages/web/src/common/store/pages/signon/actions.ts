@@ -3,7 +3,8 @@ import {
   User,
   AccountImage,
   InstagramProfile,
-  TwitterProfile
+  TwitterProfile,
+  NativeAccountImage
 } from '@audius/common'
 
 import { FollowArtistsCategory, Pages } from './types'
@@ -267,8 +268,8 @@ export function fetchFollowArtistsFailed(error: string) {
 export function setTwitterProfile(
   twitterId: string,
   profile: TwitterProfile,
-  profileImage?: AccountImage,
-  coverPhoto?: AccountImage
+  profileImage?: AccountImage | NativeAccountImage | null,
+  coverPhoto?: AccountImage | NativeAccountImage | null
 ) {
   return {
     type: SET_TWITTER_PROFILE,
@@ -286,7 +287,7 @@ export function setTwitterProfileError(error: string) {
 export function setInstagramProfile(
   instagramId: string,
   profile: InstagramProfile,
-  profileImage?: AccountImage
+  profileImage?: AccountImage | NativeAccountImage | null
 ) {
   return {
     type: SET_INSTAGRAM_PROFILE,

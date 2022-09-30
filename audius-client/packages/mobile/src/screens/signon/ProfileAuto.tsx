@@ -305,8 +305,20 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         signOnActions.setTwitterProfile(
           twitterInfo.twitterId,
           twitterInfo.profile,
-          twitterInfo.profile.profile_image_url_https ?? null,
-          twitterInfo.profile.profile_banner_url ?? null
+          twitterInfo.profile.profile_image_url_https
+            ? {
+                uri: twitterInfo.profile.profile_image_url_https,
+                name: 'ProfileImage',
+                type: 'image/jpeg'
+              }
+            : null,
+          twitterInfo.profile.profile_banner_url
+            ? {
+                uri: twitterInfo.profile.profile_banner_url,
+                name: 'ProfileBanner',
+                type: 'image/png'
+              }
+            : null
         )
       )
     } else if (instagramInfo) {
@@ -314,7 +326,13 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         signOnActions.setInstagramProfile(
           instagramInfo.instagramId,
           instagramInfo.profile,
-          instagramInfo.profile.profile_pic_url_hd ?? null
+          instagramInfo.profile.profile_pic_url_hd
+            ? {
+                uri: instagramInfo.profile.profile_pic_url_hd,
+                name: 'ProfileImage',
+                type: 'image/jpeg'
+              }
+            : null
         )
       )
     }
