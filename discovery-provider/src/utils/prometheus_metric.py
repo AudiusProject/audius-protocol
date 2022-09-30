@@ -150,7 +150,7 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
         "How long the currently running celery task has been running",
         ("task_name",),
-        multiprocess_mode='liveall',
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS}",
@@ -180,7 +180,7 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
         "Metrics extracted from our health-checks, using similar keys.",
         ("key",),
-        multiprocess_mode='liveall',
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
