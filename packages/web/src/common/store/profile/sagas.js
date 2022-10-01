@@ -442,7 +442,6 @@ export function* updateProfileAsync(action) {
       }
     ])
   )
-  yield put(profileActions.updateProfileSucceeded(metadata.user_id))
 }
 
 function* confirmUpdateProfile(userId, metadata) {
@@ -507,6 +506,7 @@ function* confirmUpdateProfile(userId, metadata) {
             }
           ])
         )
+        yield put(profileActions.updateProfileSucceeded(metadata.user_id))
       },
       function* () {
         yield put(profileActions.updateProfileFailed())

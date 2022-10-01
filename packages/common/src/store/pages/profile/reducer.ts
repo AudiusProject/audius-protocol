@@ -178,7 +178,11 @@ const actionsMap = {
     return updateProfile(state, action, { mostUsedTags })
   },
   [UPDATE_PROFILE](state, action) {
-    return updateProfile(state, action, { updating: true })
+    return updateProfile(state, action, {
+      updating: true,
+      updateSuccess: false,
+      updateError: false
+    })
   },
   [UPDATE_PROFILE_SUCCEEDED](state, action) {
     return updateProfile(state, action, {

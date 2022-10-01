@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { UserMetadata } from '@audius/common'
 import {
   accountSelectors,
   SquareSizes,
   WidthSizes,
-  profilePageActions
+  profilePageActions,
+  profilePageSelectors,
+  Status
 } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
@@ -19,14 +21,16 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { FormTextInput, FormImageInput } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileValues, UpdatedProfile } from './types'
 
-const { getAccountUser } = accountSelectors
+const { getAccountUser, getUserHandle } = accountSelectors
 const { updateProfile } = profilePageActions
+const { getProfileEditStatus } = profilePageSelectors
 
 const useStyles = makeStyles(({ palette }) => ({
   coverPhoto: {
@@ -60,13 +64,23 @@ const useStyles = makeStyles(({ palette }) => ({
 const EditProfileForm = (props: FormikProps<ProfileValues>) => {
   const { handleSubmit, handleReset } = props
   const styles = useStyles()
+  const accountHandle = useSelector(getUserHandle)
+  const navigation = useNavigation()
+  const editStatus = useSelector((state) =>
+    getProfileEditStatus(state, accountHandle!)
+  )
+  useEffect(() => {
+    // Ensure we kick off the edit action before returning to profile screen
+    if (editStatus === Status.LOADING) {
+      navigation.goBack()
+    }
+  }, [editStatus, navigation])
 
   return (
     <FormScreen
       variant='secondary'
       onReset={handleReset}
       onSubmit={handleSubmit}
-      goBackOnSubmit
     >
       <FormImageInput
         name='cover_photo'
