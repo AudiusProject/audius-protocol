@@ -115,6 +115,19 @@ class StateMachineManager {
           )
         }
       }
+
+      // Start recurring queues that need an initial job to get started
+      await stateMonitoringManager.startEndpointToSpIdMapQueue(
+        cNodeEndpointToSpIdMapQueue
+      )
+      await stateMonitoringManager.startMonitorStateQueue(
+        monitorStateQueue,
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint
+      )
+      await stateReconciliationManager.startRecoverOrphanedDataQueue(
+        recoverOrphanedDataQueue,
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint
+      )
     }
 
     return {
