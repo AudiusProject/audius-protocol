@@ -9,7 +9,6 @@ fi
 tmpfiles=()
 updated_args=()
 for arg in "$@"; do
-	echo "$arg"
 	if [[ "$arg" == :* ]]; then
 		filename="${arg:1}"
 		tmpfile="/tmp/$RANDOM.${filename#*.}"

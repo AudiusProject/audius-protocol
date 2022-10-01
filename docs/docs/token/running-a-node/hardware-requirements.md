@@ -20,7 +20,3 @@ The minimum resource requirements per registered node are as follows.
 * 8 vCPU
 * 16 GiB of RAM
 * 2000 GiB (2 TiB) SSD
-
-
-
-History of election of node requirements can be viewed on the public governance forum: [https://gov.audius.org/t/minimum-node-requirements/169](https://gov.audius.org/t/minimum-node-requirements/169)

@@ -13,7 +13,8 @@ export enum Action {
 export enum EntityType {
   PLAYLIST = 'Playlist',
   TRACK = 'Track',
-  USER = 'User'
+  USER = 'User',
+  USER_REPLICA_SET = 'UserReplicaSet'
 }
 
 /**

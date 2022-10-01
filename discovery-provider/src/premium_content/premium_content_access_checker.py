@@ -1,11 +1,17 @@
 import json
 import logging
-from typing import Dict, List, TypedDict, cast
+from typing import Any, Callable, Dict, List, TypedDict, cast
 
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
-from src.premium_content.helpers import does_user_have_nft_collection
-from src.premium_content.premium_content_types import PremiumContentType
+from src.premium_content.helpers import (
+    does_user_follow_artist,
+    does_user_have_nft_collection,
+)
+from src.premium_content.premium_content_types import (
+    PremiumContentConditions,
+    PremiumContentType,
+)
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -28,6 +34,14 @@ PremiumTrackAccessResult = Dict[int, Dict[int, PremiumContentAccess]]
 class PremiumContentAccessBatchResponse(TypedDict):
     # track : user id -> track id -> access
     track: PremiumTrackAccessResult
+
+
+PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
+    PremiumContentConditions, Callable[[int, Any], bool]
+] = {
+    "nft_collection": does_user_have_nft_collection,
+    "follow_user_id": does_user_follow_artist,
+}
 
 
 class PremiumContentAccessChecker:
@@ -203,22 +217,26 @@ class PremiumContentAccessChecker:
 
     # There will eventually be another step prior to this one where
     # we aggregate multiple conditions and evaluate them altogether.
-    # For now, we only support one condition, which is the ownership
-    # of an NFT from a given collection.
+    # For now, we do not support aggregate conditions.
     def _evaluate_conditions(
         self, user_id: int, premium_content_owner_id: int, premium_conditions: Dict
     ):
         if len(premium_conditions) != 1:
             logging.info(
-                f"premium_content_access_checker.py | _evaluate_conditions | invalid conditions: {json.dumps(premium_conditions)}"
+                f"premium_content_access_checker.py | _evaluate_conditions | invalid number of conditions: {json.dumps(premium_conditions)}"
             )
             return False
 
+        # Indexing of the premium content should have already validated
+        # the premium conditions, but we perform additional checks here just in case.
         condition, value = list(premium_conditions.items())[0]
-        if condition != "nft-collection":
+        if condition not in set(PREMIUM_CONDITION_TO_HANDLER_MAP.keys()):
+            logging.info(
+                f"premium_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(premium_conditions)}"
+            )
             return False
 
-        return does_user_have_nft_collection(user_id, value)
+        return PREMIUM_CONDITION_TO_HANDLER_MAP[condition](user_id, value)
 
 
 premium_content_access_checker = PremiumContentAccessChecker()

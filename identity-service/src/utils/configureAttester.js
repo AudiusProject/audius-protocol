@@ -13,23 +13,30 @@ const getRemoteConfig = async (optimizely) => {
   // Fetch the challengeDenyList, used to filter out
   // arbitrary challenges by their challengeId
   const challengeIdsDenyList = (
-    (getRemoteVar(optimizely, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
-      .split(',')
+    getRemoteVar(optimizely, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || ''
+  ).split(',')
+
+  const endpointsString = getRemoteVar(
+    optimizely,
+    REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS
   )
+  const endpoints =
+    endpointsString && endpointsString.length
+      ? endpointsString.split(',')
+      : null
 
-  const endpointsString = getRemoteVar(optimizely, REMOTE_VARS.REWARDS_ATTESTATION_ENDPOINTS)
-  const endpoints = endpointsString && endpointsString.length ? endpointsString.split(',') : null
+  const aaoEndpoint =
+    getRemoteVar(optimizely, REMOTE_VARS.ORACLE_ENDPOINT) ||
+    config.get('aaoEndpoint')
+  const aaoAddress =
+    getRemoteVar(optimizely, REMOTE_VARS.ORACLE_ETH_ADDRESS) ||
+    config.get('aaoAddress')
 
-  const aaoEndpoint = getRemoteVar(
-    optimizely, REMOTE_VARS.ORACLE_ENDPOINT
-  ) || config.get('aaoEndpoint')
-  const aaoAddress = getRemoteVar(
-    optimizely, REMOTE_VARS.ORACLE_ETH_ADDRESS
-  ) || config.get('aaoAddress')
+  const runBehindSec =
+    getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_DELAY_SEC) || 0
 
-  const runBehindSec = getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_DELAY_SEC) || 0
-
-  const parallelization = getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_PARALLELIZATION) || 2
+  const parallelization =
+    getRemoteVar(optimizely, REMOTE_VARS.ATTESTER_PARALLELIZATION) || 2
 
   return {
     challengeIdsDenyList,
@@ -43,9 +50,16 @@ const getRemoteConfig = async (optimizely) => {
 
 const setupRewardsAttester = async (libs, optimizely, redisClient) => {
   // Make a more greppable child logger
-  const childLogger = logger.child({ 'service': 'RewardsAttester' })
+  const childLogger = logger.child({ service: 'RewardsAttester' })
 
-  const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
+  const {
+    challengeIdsDenyList,
+    endpoints,
+    aaoEndpoint,
+    aaoAddress,
+    runBehindSec,
+    parallelization
+  } = await getRemoteConfig(optimizely)
 
   // Fetch the last saved offset and startingBLock from the DB,
   // or create them if necessary.
@@ -81,18 +95,25 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     isSolanaChallenge: (challengeId) => challengeId === 'listen-streak',
     runBehindSec,
     updateValues: async ({ startingBlock, offset, successCount }) => {
-      childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
+      childLogger.info(
+        `Persisting offset: ${offset}, startingBlock: ${startingBlock}`
+      )
 
-      await models.RewardAttesterValues.update({
-        startingBlock,
-        offset
-      }, { where: {} })
+      await models.RewardAttesterValues.update(
+        {
+          startingBlock,
+          offset
+        },
+        { where: {} }
+      )
     },
     getStartingBlockOverride: async () => {
       // Retrieve a starting block override from redis (that is set externally, CLI, or otherwise)
       // return that starting block so that the rewards attester changes its
       // starting block, and then delete the value from redis as to stop re-reading it
-      const startBlock = await redisClient.get(REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY)
+      const startBlock = await redisClient.get(
+        REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY
+      )
       if (startBlock === undefined || startBlock === null) {
         return null
       }
@@ -120,8 +141,22 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
 
   // Periodically check for new config and update the rewards attester
   setInterval(async () => {
-    const { challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, runBehindSec, parallelization } = await getRemoteConfig(optimizely)
-    attester.updateConfig({ challengeIdsDenyList, endpoints, aaoEndpoint, aaoAddress, parallelization, runBehindSec })
+    const {
+      challengeIdsDenyList,
+      endpoints,
+      aaoEndpoint,
+      aaoAddress,
+      runBehindSec,
+      parallelization
+    } = await getRemoteConfig(optimizely)
+    attester.updateConfig({
+      challengeIdsDenyList,
+      endpoints,
+      aaoEndpoint,
+      aaoAddress,
+      parallelization,
+      runBehindSec
+    })
   }, 10000)
 
   attester.start()

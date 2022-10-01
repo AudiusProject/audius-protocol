@@ -1,6 +1,7 @@
 const express = require('express')
 const fs = require('fs-extra')
 
+const config = require('../config')
 const models = require('../models')
 const { saveFileFromBufferToDisk } = require('../fileManager')
 const {
@@ -113,16 +114,32 @@ router.post(
     // Verify that wallet of the user on the blockchain for the given ID matches the user attempting to update
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs } = serviceRegistry
-    const userResp = await libs.contracts.UserFactoryClient.getUser(
-      blockchainUserId
-    )
-    if (
-      !userResp?.wallet ||
-      userResp.wallet.toLowerCase() !== req.session.wallet.toLowerCase()
-    ) {
-      throw new Error(
-        `Owner wallet ${userResp.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      const encodedUserId = libs.Utils.encodeHashId(blockchainUserId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId,
+        blockNumber
+      })
+      if (
+        (spResponse?.wallet ?? '').toLowerCase() !==
+        req.session.wallet.toLowerCase()
+      ) {
+        throw new Error(
+          `Owner wallet ${spResponse?.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+        )
+      }
+    } else {
+      const userResp = await libs.contracts.UserFactoryClient.getUser(
+        blockchainUserId
       )
+      if (
+        !userResp?.wallet ||
+        userResp.wallet.toLowerCase() !== req.session.wallet.toLowerCase()
+      ) {
+        throw new Error(
+          `Owner wallet ${userResp.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+        )
+      }
     }
 
     const cnodeUserUUID = req.session.cnodeUserUUID

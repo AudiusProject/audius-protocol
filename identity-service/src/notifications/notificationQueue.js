@@ -1,6 +1,9 @@
 const { deviceType } = require('./constants')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
-const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
+const {
+  sendBrowserNotification,
+  sendSafariNotification
+} = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
 
 const SEND_NOTIF_TIMEOUT_MS = 20000 // 20 sec
@@ -12,28 +15,80 @@ const pushNotificationQueue = {
   PUSH_ANNOUNCEMENTS_BUFFER: []
 }
 
-async function publish (message, userId, tx, playSound = true, title = null, types) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
+async function publish(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null,
+  types
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
+    playSound,
+    title,
+    types
+  )
 }
 
-async function publishSolanaNotification (message, userId, tx, playSound = true, title = null, types) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER, playSound, title, types)
+async function publishSolanaNotification(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null,
+  types
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER,
+    playSound,
+    title,
+    types
+  )
 }
 
-async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
+async function publishAnnouncement(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER,
+    playSound,
+    title
+  )
 }
 
-async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title, types) {
+async function addNotificationToBuffer(
+  message,
+  userId,
+  tx,
+  buffer,
+  playSound,
+  title,
+  types
+) {
   const bufferObj = {
     userId,
     notificationParams: { message, title, playSound },
     types
   }
-  let existingEntriesCheck = buffer.filter(
-    entry => (
-      (entry.userId === userId) && entry.notificationParams.message === message && entry.notificationParams.title === title
-    )
+  const existingEntriesCheck = buffer.filter(
+    (entry) =>
+      entry.userId === userId &&
+      entry.notificationParams.message === message &&
+      entry.notificationParams.title === title
   )
   // Ensure no dups are added
   if (existingEntriesCheck.length > 0) return
@@ -47,7 +102,7 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
  * @notice assumes `notifFn` always returns integer indicationg number of sent notifications
  * @returns numSentNotifs
  */
-async function _sendNotification (notifFn, bufferObj, logger) {
+async function _sendNotification(notifFn, bufferObj, logger) {
   const logPrefix = `[notificationQueue:sendNotification] [${notifFn.name}] [userId ${bufferObj.userId}]`
 
   let numSentNotifs = 0
@@ -69,13 +124,19 @@ async function _sendNotification (notifFn, bufferObj, logger) {
   return numSentNotifs || 0
 }
 
-async function drainPublishedMessages (logger) {
-  logger.info(`[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`)
+async function drainPublishedMessages(logger) {
+  logger.info(
+    `[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
 
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
+  for (const bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
+      const numSentNotifs = await _sendNotification(
+        sendAwsSns,
+        bufferObj,
+        logger
+      )
       numProcessedNotifs += numSentNotifs
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
@@ -83,7 +144,9 @@ async function drainPublishedMessages (logger) {
         _sendNotification(sendBrowserNotification, bufferObj, logger),
         _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
-      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
+      numSentNotifsArr.forEach((numSentNotifs) => {
+        numProcessedNotifs += numSentNotifs
+      })
     }
   }
 
@@ -92,13 +155,19 @@ async function drainPublishedMessages (logger) {
   return numProcessedNotifs
 }
 
-async function drainPublishedSolanaMessages (logger) {
-  logger.info(`[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+async function drainPublishedSolanaMessages(logger) {
+  logger.info(
+    `[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
 
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
+  for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
+      const numSentNotifs = await _sendNotification(
+        sendAwsSns,
+        bufferObj,
+        logger
+      )
       numProcessedNotifs += numSentNotifs
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
@@ -106,7 +175,9 @@ async function drainPublishedSolanaMessages (logger) {
         _sendNotification(sendBrowserNotification, bufferObj, logger),
         _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
-      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
+      numSentNotifsArr.forEach((numSentNotifs) => {
+        numProcessedNotifs += numSentNotifs
+      })
     }
   }
 
@@ -115,17 +186,21 @@ async function drainPublishedSolanaMessages (logger) {
   return numProcessedNotifs
 }
 
-async function drainPublishedAnnouncements (logger) {
-  logger.info(`[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+async function drainPublishedAnnouncements(logger) {
+  logger.info(
+    `[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
 
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
+  for (const bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     const numSentNotifsArr = await Promise.all([
       _sendNotification(sendAwsSns, bufferObj, logger),
       _sendNotification(sendBrowserNotification, bufferObj, logger),
       _sendNotification(sendSafariNotification, bufferObj, logger)
     ])
-    numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
+    numSentNotifsArr.forEach((numSentNotifs) => {
+      numProcessedNotifs += numSentNotifs
+    })
   }
 
   pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER = []

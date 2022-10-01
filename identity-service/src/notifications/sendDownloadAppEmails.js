@@ -5,14 +5,16 @@ const models = require('../models')
 const { logger } = require('../logging')
 const fs = require('fs')
 
-const getEmailTemplate = (path) => handlebars.compile(
-  fs.readFileSync(path).toString()
-)
+const getEmailTemplate = (path) =>
+  handlebars.compile(fs.readFileSync(path).toString())
 
-const downloadAppTemplatePath = path.resolve(__dirname, './emails/downloadMobileApp.html')
+const downloadAppTemplatePath = path.resolve(
+  __dirname,
+  './emails/downloadMobileApp.html'
+)
 const downloadAppTemplate = getEmailTemplate(downloadAppTemplatePath)
 
-async function processDownloadAppEmail (expressApp, audiusLibs) {
+async function processDownloadAppEmail(expressApp, audiusLibs) {
   try {
     logger.info(`${new Date()} - processDownloadAppEmail`)
 
@@ -22,11 +24,11 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
       return
     }
     // Get all users who have not signed in mobile and not been sent native mobile email within 2 days
-    let now = moment()
-    let twoDaysAgo = now.clone().subtract(2, 'days').format()
-    let fiveDaysAgo = now.clone().subtract(5, 'days').format()
+    const now = moment()
+    const twoDaysAgo = now.clone().subtract(2, 'days').format()
+    const fiveDaysAgo = now.clone().subtract(5, 'days').format()
 
-    let emailUsersWalletAddress = await models.UserEvents.findAll({
+    const emailUsersWalletAddress = await models.UserEvents.findAll({
       attributes: ['walletAddress'],
       where: {
         hasSignedInNativeMobile: false,
@@ -36,27 +38,28 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
           [models.Sequelize.Op.gt]: fiveDaysAgo
         }
       }
-    }).map(x => x.walletAddress)
+    }).map((x) => x.walletAddress)
 
     const emailUsers = await models.User.findAll({
       attributes: ['handle', 'walletAddress', 'email', 'isEmailDeliverable'],
       where: { walletAddress: emailUsersWalletAddress }
     })
 
-    logger.info(`processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`)
+    logger.info(
+      `processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`
+    )
 
-    for (let userToEmail of emailUsers) {
+    for (const userToEmail of emailUsers) {
       if (!userToEmail.isEmailDeliverable) {
-        logger.info(`Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`)
+        logger.info(
+          `Unable to deliver download app email to ${userToEmail.handle} ${userToEmail.email}`
+        )
         continue
       }
 
-      let userEmail = userToEmail.email
+      const userEmail = userToEmail.email
 
-      let sent = await renderAndSendDownloadAppEmail(
-        sg,
-        userEmail
-      )
+      const sent = await renderAndSendDownloadAppEmail(sg, userEmail)
       if (sent) {
         await models.UserEvents.upsert({
           walletAddress: userToEmail.walletAddress,
@@ -71,10 +74,7 @@ async function processDownloadAppEmail (expressApp, audiusLibs) {
 }
 
 // Master function to render and send email for a given userId
-async function renderAndSendDownloadAppEmail (
-  sg,
-  userEmail
-) {
+async function renderAndSendDownloadAppEmail(sg, userEmail) {
   try {
     logger.info(`render and send download app email: ${userEmail}`)
 

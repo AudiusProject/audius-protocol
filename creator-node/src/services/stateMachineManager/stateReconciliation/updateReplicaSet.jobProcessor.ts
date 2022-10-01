@@ -97,7 +97,7 @@ const updateReplicaSetJobProcessor = async function ({
       audiusLibs = await initAudiusLibs({
         enableEthContracts: true,
         enableContracts: true,
-        enableDiscovery: false,
+        enableDiscovery: true,
         enableIdentity: true,
         logger
       })
@@ -695,17 +695,59 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-        userId,
-        newReplicaSetSPIds[0], // new primary
-        newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-        // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-        oldPrimarySpId || chainPrimarySpId,
-        [
-          oldSecondary1SpId || chainSecondarySpIds?.[0],
-          oldSecondary2SpId || chainSecondarySpIds?.[1]
-        ]
-      )
+      // First try updateReplicaSet via URSM
+      // Fallback to EntityManager when relay errors
+      try {
+        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+          userId,
+          newReplicaSetSPIds[0], // new primary
+          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+          oldPrimarySpId || chainPrimarySpId,
+          [
+            oldSecondary1SpId || chainSecondarySpIds?.[0],
+            oldSecondary2SpId || chainSecondarySpIds?.[1]
+          ]
+        )
+      } catch (err) {
+        if (!config.get('entityManagerReplicaSetEnabled')) {
+          throw err
+        }
+
+        logger.info(
+          `[_issueUpdateReplicaSetOp] updating replica set now ${
+            Date.now() - startTimeMs
+          }ms for userId=${userId} wallet=${wallet}`
+        )
+
+        const { blockNumber } =
+          await audiusLibs.User.updateEntityManagerReplicaSet({
+            userId,
+            primary: newReplicaSetSPIds[0], // new primary
+            secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+            // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+            oldPrimary: oldPrimarySpId || chainPrimarySpId,
+            oldSecondaries: [
+              oldSecondary1SpId || chainSecondarySpIds?.[0],
+              oldSecondary2SpId || chainSecondarySpIds?.[1]
+            ]
+          })
+        logger.info(
+          `[_issueUpdateReplicaSetOp] did call audiusLibs.User.updateEntityManagerReplicaSet waiting for ${blockNumber}`
+        )
+        // Wait for blockhash/blockNumber to be indexed
+        try {
+          await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+            userId,
+            newReplicaSetSPIds,
+            blockNumber
+          )
+        } catch (err) {
+          throw new Error(
+            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
+          )
+        }
+      }
 
       response.issuedReconfig = true
       logger.info(
@@ -807,8 +849,25 @@ const _canReconfig = async ({
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   let error
   try {
-    const { primaryId: chainPrimarySpId, secondaryIds: chainSecondarySpIds } =
-      await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+    let chainPrimarySpId, chainSecondarySpIds
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      const encodedUserId = libs.Utils.encodeHashId(userId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId
+      })
+      chainPrimarySpId = spResponse?.primarySpID
+      chainSecondarySpIds = [
+        spResponse?.secondary1SpID,
+        spResponse?.secondary2SpID
+      ]
+    } else {
+      const response =
+        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+          userId
+        )
+      chainPrimarySpId = response.primaryId
+      chainSecondarySpIds = response.secondaryIds
+    }
 
     if (
       !chainPrimarySpId ||

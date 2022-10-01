@@ -11,10 +11,13 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.utils import helpers
+from src.utils.eth_manager import EthManager
+from web3 import Web3
 from web3.datastructures import AttributeDict
 
 PLAYLIST_ID_OFFSET = 400_000
-TRACK_ID_OFFSET = 1_000_000
+TRACK_ID_OFFSET = 2_000_000
+USER_ID_OFFSET = 3_000_000
 
 
 class Action(str, Enum):
@@ -36,6 +39,7 @@ class EntityType(str, Enum):
     PLAYLIST = "Playlist"
     TRACK = "Track"
     USER = "User"
+    USER_REPLICA_SET = "UserReplicaSet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -47,6 +51,7 @@ class EntityType(str, Enum):
 class RecordDict(TypedDict):
     Playlist: Dict[int, List[Playlist]]
     Track: Dict[int, List[Track]]
+    User: Dict[int, List[User]]
     Follow: Dict[Tuple, List[Follow]]
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
@@ -75,12 +80,15 @@ class ManageEntityParameters:
     def __init__(
         self,
         session,
+        redis,
         challenge_bus: ChallengeEventBus,
         event: AttributeDict,
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
         metadata: Dict[str, Dict[str, Dict]],
+        eth_manager: EthManager,
+        web3: Web3,
         block_timestamp: int,
         block_number: int,
         event_blockhash: str,
@@ -96,7 +104,10 @@ class ManageEntityParameters:
         self.block_integer_time = int(block_timestamp)
 
         self.session = session
+        self.redis = redis
         self.challenge_bus = challenge_bus
+        self.web3 = web3
+        self.eth_manager = eth_manager
         self.pending_track_routes = pending_track_routes
 
         self.event = event
@@ -126,6 +137,50 @@ class ManageEntityParameters:
         key = get_record_key(user_id, entity_type, entity_id)
         self.new_records[record_type][key].append(record)  # type: ignore
 
+    def add_user_record(self, user_id: int, user: User):
+        self.new_records[EntityType.USER][user_id].append(user)  # type: ignore
+        self.existing_records[EntityType.USER][user_id] = user  # type: ignore
+
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
+
+
+def copy_user_record(
+    old_user: User,
+    block_number: int,
+    event_blockhash: str,
+    txhash: str,
+    block_datetime: datetime,
+):
+    return User(
+        user_id=old_user.user_id,
+        wallet=old_user.wallet,
+        created_at=old_user.created_at,
+        handle=old_user.handle,
+        name=old_user.name,
+        profile_picture=old_user.profile_picture,
+        cover_photo=old_user.cover_photo,
+        bio=old_user.bio,
+        location=old_user.location,
+        metadata_multihash=old_user.metadata_multihash,
+        creator_node_endpoint=old_user.creator_node_endpoint,
+        is_verified=old_user.is_verified,
+        handle_lc=old_user.handle_lc,
+        cover_photo_sizes=old_user.cover_photo_sizes,
+        profile_picture_sizes=old_user.profile_picture_sizes,
+        primary_id=old_user.primary_id,
+        secondary_ids=old_user.secondary_ids,
+        replica_set_update_signer=old_user.replica_set_update_signer,
+        has_collectibles=old_user.has_collectibles,
+        playlist_library=old_user.playlist_library,
+        is_deactivated=old_user.is_deactivated,
+        slot=old_user.slot,
+        user_storage_account=old_user.user_storage_account,
+        user_authority_account=old_user.user_authority_account,
+        updated_at=block_datetime,
+        blocknumber=block_number,
+        blockhash=event_blockhash,
+        txhash=txhash,
+        is_current=False,
+    )
