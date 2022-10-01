@@ -1,8 +1,5 @@
 const models = require('../../models')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../constants')
+const { notificationTypes, actionEntityTypes } = require('../constants')
 
 /**
  * Batch process follow notifications, creating a notification (if prev unread) and notification action
@@ -10,7 +7,7 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processFollowNotifications (notifications, tx) {
+async function processFollowNotifications(notifications, tx) {
   // Create a mapping of user ids of users that are followed to the user that follows them
   // This is used if there are multiple users following the same user id, then one notification is
   // made w/ multiple actions for each of the followers
@@ -24,7 +21,7 @@ async function processFollowNotifications (notifications, tx) {
   const userTargets = Object.keys(userFolloweeNotif)
 
   // Batch query the DB for non-viewed notification
-  let unreadUserNotifications = await models.Notification.findAll({
+  const unreadUserNotifications = await models.Notification.findAll({
     where: {
       isViewed: false,
       userId: { [models.Sequelize.Op.in]: userTargets },
@@ -34,25 +31,33 @@ async function processFollowNotifications (notifications, tx) {
   })
   const notificationModalObjs = unreadUserNotifications
 
-  const usersWithUnread = new Set(unreadUserNotifications.map(notif => notif.userId.toString()))
-  const notificationsToCreate = userTargets.filter(userId => !usersWithUnread.has(userId))
+  const usersWithUnread = new Set(
+    unreadUserNotifications.map((notif) => notif.userId.toString())
+  )
+  const notificationsToCreate = userTargets.filter(
+    (userId) => !usersWithUnread.has(userId)
+  )
   if (notificationsToCreate.length > 0) {
     // Insert new notification for users that didn't have a notification / have on that is already viewed
-    const createdFollowNotifications = await models.Notification.bulkCreate(notificationsToCreate.map(userId => {
-      const userIdNotifications = userFolloweeNotif[userId]
-      const lastNotification = userIdNotifications[userIdNotifications.length - 1]
-      const blocknumber = lastNotification.blocknumber
-      const timestamp = Date.parse(lastNotification.timestamp.slice(0, -2))
-      return {
-        type: notificationTypes.Follow,
-        isViewed: false,
-        isRead: false,
-        isHidden: false,
-        userId,
-        blocknumber,
-        timestamp
-      }
-    }), { transaction: tx })
+    const createdFollowNotifications = await models.Notification.bulkCreate(
+      notificationsToCreate.map((userId) => {
+        const userIdNotifications = userFolloweeNotif[userId]
+        const lastNotification =
+          userIdNotifications[userIdNotifications.length - 1]
+        const blocknumber = lastNotification.blocknumber
+        const timestamp = Date.parse(lastNotification.timestamp.slice(0, -2))
+        return {
+          type: notificationTypes.Follow,
+          isViewed: false,
+          isRead: false,
+          isHidden: false,
+          userId,
+          blocknumber,
+          timestamp
+        }
+      }),
+      { transaction: tx }
+    )
     notificationModalObjs.push(...createdFollowNotifications)
   }
 
@@ -65,7 +70,7 @@ async function processFollowNotifications (notifications, tx) {
       const timestamp = Date.parse(notification.timestamp.slice(0, -2))
 
       // Insertion into the NotificationActions table
-      let notifActionCreateTx = await models.NotificationAction.findOrCreate({
+      const notifActionCreateTx = await models.NotificationAction.findOrCreate({
         where: {
           notificationId,
           actionEntityType: actionEntityTypes.User,
@@ -74,17 +79,20 @@ async function processFollowNotifications (notifications, tx) {
         },
         transaction: tx
       })
-      let updatePerformed = notifActionCreateTx[1]
+      const updatePerformed = notifActionCreateTx[1]
       if (updatePerformed) {
         // Update Notification table timestamp
-        await models.Notification.update({
-          timestamp
-        }, {
-          where: { id: notificationId },
-          returning: true,
-          plain: true,
-          transaction: tx
-        })
+        await models.Notification.update(
+          {
+            timestamp
+          },
+          {
+            where: { id: notificationId },
+            returning: true,
+            plain: true,
+            transaction: tx
+          }
+        )
       }
     }
   }
