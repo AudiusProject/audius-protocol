@@ -38,19 +38,13 @@ class StateMachineManager {
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue
-    } = await stateMonitoringManager.init(
-      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      prometheusRegistry
-    )
+    } = await stateMonitoringManager.init(prometheusRegistry)
     const {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
       recoverOrphanedDataQueue
-    } = await stateReconciliationManager.init(
-      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      prometheusRegistry
-    )
+    } = await stateReconciliationManager.init(prometheusRegistry)
 
     if (clusterUtils.isThisWorkerInit()) {
       await SyncRequestDeDuplicator.clear()

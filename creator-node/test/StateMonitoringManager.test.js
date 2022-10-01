@@ -14,7 +14,7 @@ const StateMonitoringManager = require('../src/services/stateMachineManager/stat
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 
-describe('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
+describe.only('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
   let server, sandbox
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -68,8 +68,11 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
     const { monitorStateQueue } = await stateMonitoringManager.init(
-      discoveryNodeEndpoint,
       getPrometheusRegistry()
+    )
+    await stateMonitoringManager.startMonitorStateQueue(
+      monitorStateQueue,
+      discoveryNodeEndpoint
     )
     await monitorStateQueue.getJobs('delayed')
 
@@ -99,8 +102,11 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
     const { monitorStateQueue } = await stateMonitoringManager.init(
-      'discoveryNodeEndpoint',
       getPrometheusRegistry()
+    )
+    await stateMonitoringManager.startMonitorStateQueue(
+      monitorStateQueue,
+      'discoveryNodeEndpoint'
     )
 
     // Verify that the queue won't process or queue jobs because it's paused
@@ -114,10 +120,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     // Initialize StateMonitoringManager and stubbed queue.add()
     const discoveryNodeEndpoint = 'http://test_dn.co'
     const stateMonitoringManager = new StateMonitoringManager()
-    await stateMonitoringManager.init(
-      discoveryNodeEndpoint,
-      getPrometheusRegistry()
-    )
+    await stateMonitoringManager.init(getPrometheusRegistry())
     const queueAdd = sandbox.stub()
 
     // Call function that enqueues a new job after the previous job failed
