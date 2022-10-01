@@ -13,15 +13,13 @@ docker compose pull
 audius-compose up # About 20 seconds
 ```
 
-## Proxy Instructions
+## Port Forwarding Instructions
 
-To use the client from a mac, we need to setup a local proxy to interact with the box running the server
+To use the client from a mac, we need to setup a transparent proxy server to interact with the machine running the backend
 
-To setup the proxy from a mac:
+To setup the transparent proxy server from a mac:
+```
+sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222
+```
 
-networksetup -setautoproxyurl "Wi-Fi" "http://<instance ip>:8080/proxy.pac"
-Change "Wi-Fi" to network interface name you find in system settings
-
-Then on your local machine you can go to http://audius-protocol-creator-node-2:4000/health_check
-
-TODO: Please be careful, as unintended traffic might be proxied
+Then on your local machine you can go to http://discovery-provider:5000/health_check
