@@ -128,7 +128,8 @@ export default [
       { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true },
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
-    ...browserConfig
+    ...browserConfig,
+    watch: false,
   },
 
   /**
@@ -149,7 +150,8 @@ export default [
         plugins: [terser()]
       }
     ],
-    ...browserDistFileConfig
+    ...browserDistFileConfig,
+    watch: false,
   },
 
   /**
@@ -159,7 +161,8 @@ export default [
   {
     input: 'src/legacy.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
-    ...browserLegacyConfig
+    ...browserLegacyConfig,
+    watch: false,
   },
 
   /**
@@ -169,7 +172,8 @@ export default [
   {
     input: 'src/native-libs.ts',
     output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
-    ...browserLegacyConfig
+    ...browserLegacyConfig,
+    watch: false,
   },
 
   /**
@@ -178,6 +182,6 @@ export default [
   {
     input: 'src/core.ts',
     output: [{ file: 'dist/core.js', format: 'es', sourcemap: true }],
-    ...commonConfig
+    ...commonConfig,
   }
 ]
