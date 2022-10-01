@@ -34,9 +34,9 @@ import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction } = profilePageActions
-const { getProfileStatus } = profilePageSelectors
+const { getProfileStatus, getProfileEditStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   navigator: {
@@ -76,10 +76,15 @@ export const ProfileScreen = () => {
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const isNotReachable = useSelector(getIsReachable) === false
+  const editStatus = useSelector((state) => getProfileEditStatus(state, handle))
+  const isOwner = profile?.user_id === accountId
 
   const fetchProfile = useCallback(() => {
+    // When profile edited is being still confirmed, prevent fetch call so we
+    // don't override the optimistic profile metadata.
+    if (isOwner && editStatus === Status.LOADING) return
     dispatch(fetchProfileAction(handle, null, true, true, false))
-  }, [dispatch, handle])
+  }, [dispatch, handle, isOwner, editStatus])
 
   useFocusEffect(fetchProfile)
 
@@ -115,8 +120,6 @@ export const ProfileScreen = () => {
       )
     }
   }, [profile, dispatch])
-
-  const isOwner = profile?.user_id === accountId
 
   const topbarLeft = isOwner ? (
     <View style={styles.topBarIcons}>
