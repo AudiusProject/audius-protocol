@@ -442,6 +442,19 @@ services:
     volumes:
       - ./dev-tools:/tmp/dev-tools
 
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
+
+  sshuttle-server:
+    image: linuxserver/openssh-server:latest # don't pin
+    command: bash -c "apk add python3 && sleep inf"
+    environment:
+      PASSWORD_ACCESS: "true"
+      USER_NAME: "sshuttle"
+      USER_PASSWORD: "test"
+    ports:
+      - "2222:2222"
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
