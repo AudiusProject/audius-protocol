@@ -72,12 +72,12 @@ const download = async ({
   }
 }
 
-type DownloadTrackConfig = { urls: URL[]; filename: string }
+type DownloadTrackConfig = { urls: string[]; filename: string }
 
 const downloadTrack = async ({ urls, filename }: DownloadTrackConfig) => {
   const fileUrl = urls.find(
     (url) => url !== null && url !== undefined
-  ) as unknown as string
+  ) as string
   const fileName = filename
   const trackName = fileName.split('.').slice(0, -1).join('')
 
@@ -130,8 +130,8 @@ class TrackDownload extends TrackDownloadBase {
     creatorNodeGateways: string[],
     filename: string
   ) {
-    const urls = creatorNodeGateways.map(
-      (gateway) => new URL(`${gateway}${cid}?filename=${filename}`)
+    const urls = creatorNodeGateways.map((gateway) =>
+      encodeURI(`${gateway}${cid}?filename=${filename}`)
     )
 
     await downloadTrack({ filename, urls })
