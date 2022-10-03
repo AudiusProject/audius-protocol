@@ -28,7 +28,7 @@ const cnTypeMax = _lib.audToWei(3000000)
 // Discovery provider
 // Minimum: 200,000
 // Maximum: 2,000,000
-const serviceTypeDN = web3.utils.utf8ToHex('discovery-node')
+const serviceTypeDP = web3.utils.utf8ToHex('discovery-node')
 const dpTypeMin = _lib.audToWei(200000)
 const dpTypeMax = _lib.audToWei(2000000)
 // stake lockup duration = 1 wk in blocks
