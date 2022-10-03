@@ -272,6 +272,9 @@ parameters:
   deploy_args:
     type: string
     default: ""
+  cut_release:
+    type: string
+    default: ""
   reservations:
     type: string
     default: ""
