@@ -132,8 +132,11 @@ const SavedPage = ({
       : [[], -1]
   const { isLoading: isLoadingAlbums, setDidLoad: setDidLoadAlbums } =
     useOrderedLoad(account ? account.albums.length : 0)
-  const isEmpty = entries.length === 0
-  const tracksLoading = status === Status.LOADING && isEmpty
+  const isEmpty =
+    entries.length === 0 ||
+    !entries.some((entry: SavedPageTrack) => Boolean(entry.track_id))
+  const tracksLoading =
+    (status === Status.IDLE || status === Status.LOADING) && isEmpty
   const queuedAndPlaying = playing && isQueued
 
   // Setup play button
