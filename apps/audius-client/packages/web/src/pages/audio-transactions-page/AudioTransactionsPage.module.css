@@ -1,0 +1,27 @@
+/* Body Content Wrapper */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Track Table */
+.bodyWrapper .tableWrapper {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  background-color: var(--white);
+  margin-bottom: 35px;
+  padding-bottom: 5px;
+  overflow: hidden;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}

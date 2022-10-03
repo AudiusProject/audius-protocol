@@ -199,6 +199,7 @@
   align-items: center;
   vertical-align: middle;
   justify-content: center;
+  height: 64px;
   padding: 20px 12px;
   background: transparent;
   user-select: none;
