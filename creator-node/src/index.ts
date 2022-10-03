@@ -106,7 +106,7 @@ const getPort = () => {
 const startAppForPrimary = async () => {
   logger.info(`Primary process with pid=${process.pid} is running`)
 
-  await runOneTimePreAppStartup()
+  await setupDbAndRedis()
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
@@ -191,11 +191,11 @@ const startAppForWorker = async () => {
 
 const startAppWithoutCluster = async () => {
   logger.info(`Starting app with cluster mode disabled`)
-  await runOneTimePreAppStartup()
+  await setupDbAndRedis()
   await startApp()
 }
 
-const runOneTimePreAppStartup = async () => {
+const setupDbAndRedis = async () => {
   await verifyConfigAndDb()
   await clearRunningQueries()
   try {
@@ -238,7 +238,7 @@ const startApp = async () => {
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
 
-if (clusterUtils.isClusterDisabled()) {
+if (!clusterUtils.isClusterEnabled()) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppWithoutCluster()
 } else if (cluster.isMaster) {

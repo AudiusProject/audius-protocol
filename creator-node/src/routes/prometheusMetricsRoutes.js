@@ -11,6 +11,7 @@ const returnMetricsForSingleProcess = async (req, res) => {
   res.setHeader('Content-Type', prometheusRegistry.registry.contentType)
   return res.end(metricData)
 }
+
 /**
  * Exposes Prometheus metrics for the worker (not aggregated) at `GET /prometheus_metrics_worker`
  */
@@ -22,7 +23,7 @@ router.get('/prometheus_metrics_worker', async (req, res) => {
  * Exposes Prometheus metrics aggregated across all workers at `GET /prometheus_metrics`
  */
 router.get('/prometheus_metrics', async (req, res) => {
-  if (clusterUtils.isClusterDisabled()) {
+  if (!clusterUtils.isClusterEnabled()) {
     return returnMetricsForSingleProcess(req, res)
   }
 
