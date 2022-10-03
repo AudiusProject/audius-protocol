@@ -23,4 +23,6 @@ brew install sshuttle
 sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222
 ```
 
+The password is `sshuttle`
+
 Then on your local machine you can go to http://discovery-provider:5000/health_check
