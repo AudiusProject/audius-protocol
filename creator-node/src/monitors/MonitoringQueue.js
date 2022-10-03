@@ -48,30 +48,31 @@ class MonitoringQueue {
       this.queue.drain(true)
       this.seedInitialValues()
     }
-
-    const worker = new Worker(
-      'monitoring-queue',
-      async (job) => {
-        try {
-          await this.logStatus('Starting')
-
-          // Iterate over each monitor and set a new value if the cached
-          // value is not fresh.
-          Object.entries(MONITORS).forEach(
-            async ([monitorKey, monitorProps]) => {
-              try {
-                await this.refresh(monitorProps, monitorKey)
-              } catch (e) {
-                this.logStatus(`Error on ${monitorProps.name} ${e}`)
+    if (clusterUtils.isThisWorkerSpecial()) {
+      const worker = new Worker(
+        'monitoring-queue',
+        async (job) => {
+          try {
+            await this.logStatus('Starting')
+  
+            // Iterate over each monitor and set a new value if the cached
+            // value is not fresh.
+            Object.entries(MONITORS).forEach(
+              async ([monitorKey, monitorProps]) => {
+                try {
+                  await this.refresh(monitorProps, monitorKey)
+                } catch (e) {
+                  this.logStatus(`Error on ${monitorProps.name} ${e}`)
+                }
               }
-            }
-          )
-        } catch (e) {
-          this.logStatus(`Error ${e}`)
-        }
-      },
-      { connection }
-    )
+            )
+          } catch (e) {
+            this.logStatus(`Error ${e}`)
+          }
+        },
+        { connection }
+      )
+    }
   }
 
   /**
