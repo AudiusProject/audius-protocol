@@ -1,24 +1,32 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 const express = require('express')
+const { clusterUtils } = require('../utils')
 
 const router = express.Router()
 
-/**
- * Exposes Prometheus metrics for the worker (not aggregated) at `GET /prometheus_metrics_worker`
- */
-
-router.get('/prometheus_metrics_worker', async (req, res) => {
+const returnMetricsForSingleProcess = async (req, res) => {
   const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
   const metricData = await prometheusRegistry.getAllMetricData()
 
   res.setHeader('Content-Type', prometheusRegistry.registry.contentType)
   return res.end(metricData)
+}
+
+/**
+ * Exposes Prometheus metrics for the worker (not aggregated) at `GET /prometheus_metrics_worker`
+ */
+router.get('/prometheus_metrics_worker', async (req, res) => {
+  return returnMetricsForSingleProcess(req, res)
 })
 
 /**
  * Exposes Prometheus metrics aggregated across all workers at `GET /prometheus_metrics`
  */
 router.get('/prometheus_metrics', async (req, res) => {
+  if (!clusterUtils.isClusterEnabled()) {
+    return returnMetricsForSingleProcess(req, res)
+  }
+
   try {
     const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
     const { metricsData, contentType } =

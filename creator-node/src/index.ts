@@ -87,26 +87,26 @@ const verifyConfigAndDb = async () => {
   }
 }
 
+/**
+ * Setting a different port is necessary for OpenResty to work. If OpenResty
+ * is enabled, have the app run on port 3000. Else, run on its configured port.
+ * @returns the port number to configure the Content Node app
+ */
+const getPort = () => {
+  const contentCacheLayerEnabled = config.get('contentCacheLayerEnabled')
+
+  if (contentCacheLayerEnabled) {
+    return 3000
+  }
+
+  return config.get('port')
+}
+
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {
   logger.info(`Primary process with pid=${process.pid} is running`)
 
-  await verifyConfigAndDb()
-  await clearRunningQueries()
-  try {
-    logger.info('Executing database migrations...')
-    await runMigrations()
-    logger.info('Migrations completed successfully')
-  } catch (migrationError) {
-    exitWithError('Error in migrations:', migrationError)
-  }
-
-  // Clear all redis locks
-  try {
-    await redisClient.WalletWriteLock.clearWriteLocks()
-  } catch (e: any) {
-    logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
-  }
+  await setupDbAndRedis()
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
@@ -163,48 +163,11 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
-  /**
-   * Setting a different port is necessary for OpenResty to work. If OpenResty
-   * is enabled, have the app run on port 3000. Else, run on its configured port.
-   * @returns the port number to configure the Content Node app
-   */
-  const getPort = () => {
-    const contentCacheLayerEnabled = config.get('contentCacheLayerEnabled')
-
-    if (contentCacheLayerEnabled) {
-      return 3000
-    }
-
-    return config.get('port')
-  }
-
   logger.info(
     `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
   )
-
   await verifyConfigAndDb()
-
-  // When app terminates, close down any open DB connections gracefully
-  ON_DEATH({ uncaughtException: true })((signal, error) => {
-    // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
-    // default in `npm start` command). To see messages emitted after a kill signal, do not
-    // use the bunyan CLI.
-    logger.info('Shutting down db and express app...', signal, error)
-    sequelize.close()
-    if (appInfo) {
-      appInfo.server.close()
-    }
-  })
-
-  await serviceRegistry.initServices()
-  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-  logger.info(`Initialized services (Node running in ${nodeMode})`)
-
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  serviceRegistry.initServicesAsynchronously()
-  const appInfo = initializeApp(getPort(), serviceRegistry)
-  logger.info('Initialized app and server')
-  await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+  await startApp()
 
   cluster.worker!.on('message', (msg) => {
     if (msg?.cmd === 'setSpecialWorkerId') {
@@ -226,7 +189,59 @@ const startAppForWorker = async () => {
   }
 }
 
-if (cluster.isMaster) {
+const startAppWithoutCluster = async () => {
+  logger.info(`Starting app with cluster mode disabled`)
+  await setupDbAndRedis()
+  await startApp()
+}
+
+const setupDbAndRedis = async () => {
+  await verifyConfigAndDb()
+  await clearRunningQueries()
+  try {
+    logger.info('Executing database migrations...')
+    await runMigrations()
+    logger.info('Migrations completed successfully')
+  } catch (migrationError) {
+    exitWithError('Error in migrations:', migrationError)
+  }
+
+  // Clear all redis locks
+  try {
+    await redisClient.WalletWriteLock.clearWriteLocks()
+  } catch (e: any) {
+    logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
+  }
+}
+
+const startApp = async () => {
+  // When app terminates, close down any open DB connections gracefully
+  ON_DEATH({ uncaughtException: true })((signal, error) => {
+    // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
+    // default in `npm start` command). To see messages emitted after a kill signal, do not
+    // use the bunyan CLI.
+    logger.info('Shutting down db and express app...', signal, error)
+    sequelize.close()
+    if (appInfo) {
+      appInfo.server.close()
+    }
+  })
+
+  await serviceRegistry.initServices()
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  serviceRegistry.initServicesAsynchronously()
+  const appInfo = initializeApp(getPort(), serviceRegistry)
+  logger.info('Initialized app and server')
+  await serviceRegistry.initServicesThatRequireServer(appInfo.app)
+}
+
+if (!clusterUtils.isClusterEnabled()) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppWithoutCluster()
+} else if (cluster.isMaster) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppForPrimary()
 } else if (cluster.isWorker) {

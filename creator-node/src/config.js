@@ -265,10 +265,16 @@ const config = convict({
     default: false
   },
   expressAppConcurrency: {
-    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected)',
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
     format: 'nat',
     env: 'expressAppConcurrency',
     default: 0
+  },
+  clusterModeEnabled: {
+    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
+    format: Boolean,
+    env: 'clusterModeEnabled',
+    default: true
   },
 
   // Transcoding settings
