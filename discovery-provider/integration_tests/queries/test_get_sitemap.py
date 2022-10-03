@@ -62,21 +62,21 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             track_root = get_track_root(session, 3)
             assert (
                 track_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/track/4.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/4.xml</loc>\n  </sitemap>\n</urlset>\n'
             )
 
             # Validate that there are 6 playlist sitemaps -  10 total playlist / 2 user per sitemap = 5
             playlist_root = get_playlist_root(session, 2)
             assert (
                 playlist_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/playlist/5.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/5.xml</loc>\n  </sitemap>\n</urlset>\n'
             )
 
             # Validate that there are 2 user sitemaps -  20 total user / 12 user per sitemap = 2
             user_root = get_user_root(session, 12)
             assert (
                 user_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemap/user/2.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/2.xml</loc>\n  </sitemap>\n</urlset>\n'
             )
 
             # Validate that returns 6 track slugs
