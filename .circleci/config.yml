@@ -1225,7 +1225,7 @@ jobs:
       - image: cimg/go:1.17
     parameters:
       target:
-        description: REQUIRED. Name of the script, without .sh, like bump-hotfix or cut-release
+        description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
         enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
     steps:
