@@ -1125,7 +1125,6 @@ jobs:
       - run:
           name: Setup SSH Config
           command: |
-            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
@@ -1241,6 +1240,7 @@ jobs:
           version: 20.10.14
           docker_layer_caching: true
       - run: |
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
           git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
           audius-tooling/release-scripts/<< parameters.target >>.sh
       - slack-fail
