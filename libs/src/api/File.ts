@@ -44,7 +44,8 @@ export class File extends Base {
     creatorNodeGateways: string[],
     callback: Nullable<(url: string) => void> = null,
     responseType: ResponseType = 'blob',
-    trackId = null
+    trackId = null,
+    premiumContentHeaders = {}
   ) {
     const urls: string[] = []
 
@@ -63,19 +64,20 @@ export class File extends Base {
             callback!,
             {
               method: 'get',
-              responseType
+              responseType,
+              ...premiumContentHeaders
             },
             /* timeout */ null
           )
 
           if (!response) {
-            const allUnauthorized = errored.every(
+            const allForbidden = errored.every(
               // @ts-expect-error not valid axios error
               (error) => error.response.status === 403
             )
-            if (allUnauthorized) {
+            if (allForbidden) {
               // In the case for a 403, do not retry fetching
-              bail(new Error('Unauthorized'))
+              bail(new Error('Forbidden'))
               return
             }
             throw new Error(`Could not fetch ${cid}`)
@@ -98,7 +100,8 @@ export class File extends Base {
                 callback!,
                 {
                   method: 'get',
-                  responseType
+                  responseType,
+                  ...premiumContentHeaders
                 },
                 /* timeout */ null
               )

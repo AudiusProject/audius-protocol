@@ -590,7 +590,7 @@ def cli(
 
             if environment == "prod":
                 # check healthcheck post-deploy
-                wait_time = time.time() + (5 * 60)
+                wait_time = time.time() + (30 * 60)
                 while time.time() < wait_time:
                     # throttle the amount of logs and request load during startup
                     time.sleep(30)
@@ -644,7 +644,11 @@ def cli(
     format_artifacts(release_summary=release_summary)
 
     # report back to CircleCI that this deployment has failed
-    if release_summary["failed_post_check"]:
+    if (
+        release_summary["failed_post_check"]
+        or release_summary[FAILED_TO_SSH]
+        or release_summary["failed"]
+    ):
         exit(1)
 
 

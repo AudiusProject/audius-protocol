@@ -36,7 +36,9 @@ const getRemoteVar = (optimizelyClient, variable) => {
     return DEFAULTS[variable]
   }
   return optimizelyClient.getFeatureVariable(
-    REMOTE_CONFIG_FEATURE, variable, DUMMY_USER_ID
+    REMOTE_CONFIG_FEATURE,
+    variable,
+    DUMMY_USER_ID
   )
 }
 

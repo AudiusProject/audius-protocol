@@ -22,6 +22,7 @@ from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingE
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -338,74 +339,99 @@ def parse_user_event(
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash and override with metadata fields
         if metadata:
-            # Fields also stored on chain
-            if "profile_picture" in metadata and metadata["profile_picture"]:
-                user_record.profile_picture = metadata["profile_picture"]
+            user_record = update_user_metadata(
+                session,
+                update_task.redis,
+                user_record,
+                metadata,
+                update_task.web3,
+                update_task.challenge_event_bus,
+            )
 
-            if "cover_photo" in metadata and metadata["cover_photo"]:
-                user_record.cover_photo = metadata["cover_photo"]
+    user_record = update_legacy_user_images(user_record)
+    user_record = validate_user_record(user_record)
 
-            if "bio" in metadata and metadata["bio"]:
-                user_record.bio = metadata["bio"]
+    return user_record
 
-            if "name" in metadata and metadata["name"]:
-                user_record.name = metadata["name"]
 
-            if "location" in metadata and metadata["location"]:
-                user_record.location = metadata["location"]
+def update_user_metadata(
+    session,
+    redis,
+    user_record: User,
+    metadata: Dict,
+    web3: Web3,
+    challenge_event_bus: ChallengeEventBus,
+):
+    # Fields also stored on chain
+    if "profile_picture" in metadata and metadata["profile_picture"]:
+        user_record.profile_picture = metadata["profile_picture"]
 
-            # Fields with no on-chain counterpart
-            if (
-                "profile_picture_sizes" in metadata
-                and metadata["profile_picture_sizes"]
-            ):
-                user_record.profile_picture = metadata["profile_picture_sizes"]
+    if "cover_photo" in metadata and metadata["cover_photo"]:
+        user_record.cover_photo = metadata["cover_photo"]
 
-            if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
-                user_record.cover_photo = metadata["cover_photo_sizes"]
+    if "bio" in metadata and metadata["bio"]:
+        user_record.bio = metadata["bio"]
 
-            if (
-                "collectibles" in metadata
-                and metadata["collectibles"]
-                and isinstance(metadata["collectibles"], dict)
-                and metadata["collectibles"].items()
-            ):
-                user_record.has_collectibles = True
-            else:
-                user_record.has_collectibles = False
+    if "name" in metadata and metadata["name"]:
+        user_record.name = metadata["name"]
 
-            if "associated_wallets" in metadata:
-                update_user_associated_wallets(
-                    session,
-                    update_task,
-                    user_record,
-                    metadata["associated_wallets"],
-                    "eth",
-                )
+    if "location" in metadata and metadata["location"]:
+        user_record.location = metadata["location"]
 
-            if "associated_sol_wallets" in metadata:
-                update_user_associated_wallets(
-                    session,
-                    update_task,
-                    user_record,
-                    metadata["associated_sol_wallets"],
-                    "sol",
-                )
+    # Fields with no on-chain counterpart
+    if "profile_picture_sizes" in metadata and metadata["profile_picture_sizes"]:
+        user_record.profile_picture = metadata["profile_picture_sizes"]
 
-            if "playlist_library" in metadata and metadata["playlist_library"]:
-                user_record.playlist_library = metadata["playlist_library"]
+    if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
+        user_record.cover_photo = metadata["cover_photo_sizes"]
 
-            if "is_deactivated" in metadata:
-                user_record.is_deactivated = metadata["is_deactivated"]
+    if (
+        "collectibles" in metadata
+        and metadata["collectibles"]
+        and isinstance(metadata["collectibles"], dict)
+        and metadata["collectibles"].items()
+    ):
+        user_record.has_collectibles = True
+    else:
+        user_record.has_collectibles = False
 
-            if "events" in metadata and metadata["events"]:
-                update_user_events(
-                    session,
-                    user_record,
-                    metadata["events"],
-                    update_task.challenge_event_bus,
-                )
+    if "associated_wallets" in metadata:
+        update_user_associated_wallets(
+            session,
+            web3,
+            redis,
+            user_record,
+            metadata["associated_wallets"],
+            "eth",
+        )
 
+    if "associated_sol_wallets" in metadata:
+        update_user_associated_wallets(
+            session,
+            web3,
+            redis,
+            user_record,
+            metadata["associated_sol_wallets"],
+            "sol",
+        )
+
+    if "playlist_library" in metadata and metadata["playlist_library"]:
+        user_record.playlist_library = metadata["playlist_library"]
+
+    if "is_deactivated" in metadata:
+        user_record.is_deactivated = metadata["is_deactivated"]
+
+    if "events" in metadata and metadata["events"]:
+        update_user_events(
+            session,
+            user_record,
+            metadata["events"],
+            challenge_event_bus,
+        )
+    return user_record
+
+
+def update_legacy_user_images(user_record):
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
@@ -424,6 +450,10 @@ def parse_user_event(
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
 
+    return user_record
+
+
+def validate_user_record(user_record):
     if not all_required_fields_present(User, user_record):
         raise EntityMissingRequiredFieldError(
             "user",
@@ -435,7 +465,7 @@ def parse_user_event(
 
 
 def update_user_associated_wallets(
-    session, update_task, user_record, associated_wallets, chain
+    session, web3, redis, user_record, associated_wallets, chain
 ):
     """Updates the user associated wallets table"""
     try:
@@ -473,7 +503,7 @@ def update_user_associated_wallets(
                 continue
             is_valid_signature = validate_signature(
                 chain,
-                update_task.web3,
+                web3,
                 user_record.user_id,
                 associated_wallet,
                 wallet_metadata["signature"],
@@ -521,7 +551,7 @@ def update_user_associated_wallets(
 
         is_updated_wallets = set(previous_wallets) != added_associated_wallets
         if is_updated_wallets:
-            enqueue_immediate_balance_refresh(update_task.redis, [user_record.user_id])
+            enqueue_immediate_balance_refresh(redis, [user_record.user_id])
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",

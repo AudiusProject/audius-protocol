@@ -556,6 +556,14 @@ user_tracks_route_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
+user_tracks_route_parser.add_argument(
+    "filter_tracks",
+    required=False,
+    description="Filter by unlisted or public tracks",
+    type=str,
+    default="all",
+    choices=("all", "public", "unlisted"),
+)
 
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=True, description="The search query")

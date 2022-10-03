@@ -1035,12 +1035,15 @@ export class DiscoveryProvider {
    * }
    * @param retry whether to retry on failure
    * @param attemptedRetries number of attempted retries (stops retrying at max)
+   * @param throwError whether to throw error on error performing request or null
+   * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
    */
   async _makeRequest<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
     attemptedRetries = 0,
-    throwError = false
+    throwError = false,
+    blockNumber?: number
   ): Promise<Response | undefined | null> {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
       if (throwError) {
@@ -1126,6 +1129,11 @@ export class DiscoveryProvider {
       this.ethContracts && !this.ethContracts.isInRegressedMode()
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (blockNumber && parsedResponse.latest_indexed_block < blockNumber) {
+      throw new Error(
+        `Requested blocknumber ${blockNumber}, but discovery is behind at ${parsedResponse.latest_indexed_block}`
+      )
+    }
     if (notInRegressedMode && blockDiff) {
       const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
       if (retry) {
@@ -1164,6 +1172,30 @@ export class DiscoveryProvider {
 
     // Everything looks good, return the data!
     return parsedResponse.data
+  }
+
+  /**
+   * Retrieves the user's replica se
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
+   * @return object containing the user replica set
+   */
+  async getUserReplicaSet({
+    encodedUserId,
+    blockNumber
+  }: {
+    encodedUserId: string
+    blockNumber?: number
+  }): Promise<Object | null | undefined> {
+    const req = Requests.getUserReplicaSet(encodedUserId)
+
+    return await this._makeRequest<Object | null>(
+      req,
+      true,
+      0,
+      false,
+      blockNumber
+    )
   }
 
   /**

@@ -143,7 +143,7 @@ const initializeApp = (port, serviceRegistry) => {
     routes.map((route) => route.path),
     prometheusMiddleware({
       // Use existing registry for compatibility with custom metrics. Can see
-      // the metrics on /prometheus_metrics
+      // the metrics on /prometheus_metrics_worker
       promRegistry: prometheusRegistry.registry,
       // Override metric name to include namespace prefix
       httpDurationMetricName: `${prometheusRegistry.namespacePrefix}_http_request_duration_seconds`,
@@ -155,7 +155,7 @@ const initializeApp = (port, serviceRegistry) => {
       includeUp: false,
       // The buckets in seconds to measure requests
       buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
-      // Do not register the default /metrics route, since we have the /prometheus_metrics
+      // Do not register the default /metrics route, since we have the /prometheus_metrics_worker
       autoregister: false,
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID

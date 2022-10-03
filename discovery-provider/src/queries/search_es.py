@@ -387,6 +387,14 @@ def track_dsl(
         ],
         "should": [
             *base_match(search_str, operator="and"),
+            {
+                "match": {
+                    "title.searchable": {
+                        "query": search_str,
+                        "minimum_should_match": "100%",
+                    },
+                }
+            },
         ],
     }
 

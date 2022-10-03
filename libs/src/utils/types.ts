@@ -56,6 +56,8 @@ export type UserMetadata = {
   metadata_multihash: Nullable<CID>
   has_collectibles: boolean
   collectiblesOrderUnset?: boolean
+  primary_id: number
+  secondary_ids: number[]
 
   // Only present on the "current" account
   does_follow_current_user?: boolean
@@ -80,6 +82,16 @@ export interface Download {
   is_downloadable: Nullable<boolean>
   requires_follow: Nullable<boolean>
   cid: Nullable<string>
+}
+
+export type PremiumConditions = {
+  nft_collection?: string
+  follow_user_id?: number
+}
+
+export type PremiumContentSignature = {
+  data: string
+  signature: string
 }
 
 export type TrackMetadata = {
@@ -110,6 +122,9 @@ export type TrackMetadata = {
   cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   is_available: boolean
+  is_premium: boolean
+  premium_conditions: Nullable<PremiumConditions>
+  premium_content_signature: Nullable<PremiumContentSignature>
   listenCount?: number
   permalink: string
 
