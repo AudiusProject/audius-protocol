@@ -87,7 +87,7 @@ const artistNameCell = (val, record, props) => {
     return `${record.user?.name} [Deactivated]`
   }
   return (
-    <ArtistPopover handle={record.handle}>
+    <ArtistPopover handle={record.handle ?? ''}>
       <div
         className={styles.textContainer}
         onClick={(e) => {
@@ -133,7 +133,7 @@ const optionsButtonCell = (
   props,
   storeActionButtonRefs
 ) => {
-  const deleted = record.is_delete || !!record.user.is_deactivated
+  const deleted = record.is_delete || !!record.user?.is_deactivated
   const optionsButtonRef = createRef()
   storeActionButtonRefs(record.key, optionsButtonRef)
 
@@ -150,8 +150,8 @@ const optionsButtonCell = (
         date={val.date}
         isFavorited={val.has_current_user_saved}
         isOwner={record.owner_id === props.userId}
-        isOwnerDeactivated={!!record.user.is_deactivated}
-        isArtistPick={val.user._artist_pick === val.track_id}
+        isOwnerDeactivated={!!record.user?.is_deactivated}
+        isArtistPick={val.user?._artist_pick === val.track_id}
         index={index}
         trackTitle={val.name}
         albumId={null}
