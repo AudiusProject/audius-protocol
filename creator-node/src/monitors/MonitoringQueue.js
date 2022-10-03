@@ -54,7 +54,7 @@ class MonitoringQueue {
         async (job) => {
           try {
             await this.logStatus('Starting')
-  
+
             // Iterate over each monitor and set a new value if the cached
             // value is not fresh.
             Object.entries(MONITORS).forEach(
