@@ -450,9 +450,9 @@ services:
     image: linuxserver/openssh-server:latest # don't pin
     command: bash -c "apk add python3 && sleep inf"
     environment:
-      PASSWORD_ACCESS: "sshuttle"
+      PASSWORD_ACCESS: "true"
       USER_NAME: "sshuttle"
-      USER_PASSWORD: "test"
+      USER_PASSWORD: "sshuttle"
     ports:
       - "2222:2222"
 
