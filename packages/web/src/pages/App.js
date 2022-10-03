@@ -49,6 +49,7 @@ import TrendingGenreSelectionPage from 'components/trending-genre-selection/Tren
 import AnnouncementPage from 'pages/announcement-page/AnnoucementPage'
 import ArtistDashboardPage from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
+import { AudioTransactionsPage } from 'pages/audio-transactions-page'
 import CheckPage from 'pages/check-page/CheckPage'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
@@ -100,6 +101,7 @@ import {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
+  AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -782,6 +784,12 @@ class App extends Component {
                 path={AUDIO_PAGE}
                 isMobile={isMobileClient}
                 component={AudioRewardsPage}
+              />
+              <Route
+                exact
+                path={AUDIO_TRANSACTIONS_PAGE}
+                isMobile={isMobileClient}
+                component={AudioTransactionsPage}
               />
               <Route
                 exact
