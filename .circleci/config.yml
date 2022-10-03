@@ -1427,24 +1427,6 @@ workflows:
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
-      # Cut release from `master`
-      - noop:
-          name: cut-release-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - verified
-      - release-scripts:
-          name: cut-release
-          target: cut-release
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-          requires:
-            - cut-release-🕹️
-
       # Deploy branch to staging (by service)
       - noop:
           name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
