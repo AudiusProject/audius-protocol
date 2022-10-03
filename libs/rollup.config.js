@@ -129,7 +129,7 @@ export default [
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     ...browserConfig,
-    watch: false,
+    watch: process.env.WATCH_BROWSER != "false",
   },
 
   /**
@@ -151,7 +151,7 @@ export default [
       }
     ],
     ...browserDistFileConfig,
-    watch: false,
+    watch: process.env.WATCH_BROWSER != "false",
   },
 
   /**
@@ -162,7 +162,7 @@ export default [
     input: 'src/legacy.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig,
-    watch: false,
+    watch: process.env.WATCH_BROWSER != "false",
   },
 
   /**
@@ -173,7 +173,7 @@ export default [
     input: 'src/native-libs.ts',
     output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
     ...browserLegacyConfig,
-    watch: false,
+    watch: process.env.WATCH_BROWSER != "false",
   },
 
   /**
