@@ -25,7 +25,7 @@ def get_client_base_url():
     return "https://audius.co"
 
 
-def set_set_base_url():
+def set_base_url():
     endpoint = get_node_endpoint()
     return endpoint
 
@@ -36,7 +36,7 @@ def create_client_url(route):
 
 
 def create_xml_url(route):
-    self_base = set_set_base_url()
+    self_base = set_base_url()
     return f"{self_base}/{route}"
 
 

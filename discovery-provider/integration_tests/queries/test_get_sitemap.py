@@ -17,13 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 @mock.patch("src.queries.get_sitemap.get_client_base_url")
-@mock.patch("src.queries.get_sitemap.set_set_base_url")
-def test_get_sitemaps(mock_set_set_base_url, mock_get_client_base_url, app):
+@mock.patch("src.queries.get_sitemap.set_base_url")
+def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
     """Tests that get sitemap works"""
     with app.app_context():
         db = get_db()
 
-        mock_set_set_base_url.return_value = "https://discoveryprovider.audius.co"
+        mock_set_base_url.return_value = "https://discoveryprovider.audius.co"
         mock_get_client_base_url.return_value = "https://discoveryprovider.audius.co"
 
         test_entities = {
