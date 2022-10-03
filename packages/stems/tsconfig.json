@@ -9,6 +9,7 @@
     "allowJs": false,
     "jsx": "react-jsx",
     "declaration": true,
+    "declarationMap": true,
     "moduleResolution": "node",
     "rootDirs": ["src"],
     "forceConsistentCasingInFileNames": true,
