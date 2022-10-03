@@ -9,7 +9,7 @@ if [ "$link_libs" = true ]; then
     npm link
     cd ../app
     npm link @audius/sdk
-    exec ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "./emailCache" --watch src --watch ../audius-libs/dist src/index.js
+    npx nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'  --watch src --watch ../audius-libs/dist  --ignore "./emailCache" 
 else
-    exec ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "./emailCache" src/index.js
+    npx nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts' --ignore "./emailCache" 
 fi

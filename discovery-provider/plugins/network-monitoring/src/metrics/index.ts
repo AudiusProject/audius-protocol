@@ -15,7 +15,7 @@ import {
   usersWithAllFoundationNodeReplicaSetGauge,
   usersWithNoFoundationNodeReplicaSetGauge,
 } from "../prometheus";
-import { getEnv } from "../utils";
+import { getEnv } from "../config";
 import {
   getPrimaryUserCount,
   getAllUserCount,
@@ -29,11 +29,12 @@ import {
   getUsersWithEntireReplicaSetNotInSpidSetCount,
   getUserStatusByPrimary,
 } from "./queries";
+import { instrumentTracing, tracing } from "..//tracer"
 
-export const generateMetrics = async (run_id: number) => {
+const _generateMetrics = async (run_id: number) => {
   const { foundationNodes } = getEnv();
 
-  console.log(`[${run_id}] generating metrics`);
+  tracing.info(`[${run_id}] generating metrics`);
 
   const endTimer = generatingMetricsDurationGauge.startTimer();
 
@@ -125,24 +126,29 @@ export const generateMetrics = async (run_id: number) => {
 
   try {
     // Finish by publishing metrics to prometheus push gateway
-    console.log(`[${run_id}] pushing metrics to gateway`);
+    tracing.info(`[${run_id}] pushing metrics to gateway`);
     await gateway.pushAdd({ jobName: "network-monitoring" });
-  } catch (e) {
-    console.log(
+  } catch (e: any) {
+    tracing.recordException(e)
+    tracing.info(
       `[generateMetrics] error pushing metrics to pushgateway - ${
-        (e as Error).message
+        e.message
       }`
     );
   }
 
-  console.log(`[${run_id}] finish generating metrics`);
+  tracing.info(`[${run_id}] finish generating metrics`);
 };
+
+export const generateMetrics = instrumentTracing({
+  fn: _generateMetrics,
+})
 
 const publishSlackReport = async (metrics: Object) => {
   const { slackUrl } = getEnv();
 
   let message = `\`\`\`${JSON.stringify(metrics, null, 2)}\`\`\``;
-  console.log(message);
+  tracing.info(message);
 
   if (slackUrl === "") {
     return;
@@ -152,9 +158,10 @@ const publishSlackReport = async (metrics: Object) => {
     await axios.post(slackUrl, {
       text: message,
     });
-  } catch (e) {
-    console.log(
-      `Error posting to slack in slack reporter ${(e as Error).toString()}`
+  } catch (e: any) {
+    tracing.recordException(e)
+    tracing.error(
+      `Error posting to slack in slack reporter ${e.toString()}`
     );
   }
 };

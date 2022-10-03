@@ -15,11 +15,7 @@ const trimRightZeros = (number) => {
 }
 
 // Copied from AudiusClient
-const formatWei = (
-  amount,
-  shouldTruncate = false,
-  significantDigits = 4
-) => {
+const formatWei = (amount, shouldTruncate = false, significantDigits = 4) => {
   const aud = amount.div(WEI)
   const wei = amount.sub(aud.mul(WEI))
   if (wei.isZero()) {
@@ -41,7 +37,7 @@ const formatWei = (
   return formatNumberCommas(trimmed)
 }
 
-const capitalize = str => {
+const capitalize = (str) => {
   if (!str) return str
   if (str.length === 1) return str[0].toUpperCase()
   return `${str[0].toUpperCase()}${str.slice(1, str.length)}`

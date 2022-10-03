@@ -698,11 +698,6 @@ const _issueUpdateReplicaSetOp = async (
       // First try updateReplicaSet via URSM
       // Fallback to EntityManager when relay errors
       try {
-        if (!config.get('entityManagerReplicaSetEnabled')) {
-          throw new Error(
-            'Fallback to URSM writes because EntityManager is disabled'
-          )
-        }
         await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
           userId,
           newReplicaSetSPIds[0], // new primary
@@ -715,6 +710,10 @@ const _issueUpdateReplicaSetOp = async (
           ]
         )
       } catch (err) {
+        if (!config.get('entityManagerReplicaSetEnabled')) {
+          throw err
+        }
+
         logger.info(
           `[_issueUpdateReplicaSetOp] updating replica set now ${
             Date.now() - startTimeMs
@@ -851,22 +850,17 @@ const _canReconfig = async ({
   let error
   try {
     let chainPrimarySpId, chainSecondarySpIds
-    // Attempt to get replica set from DN when entity manager is enabled
-    // Fallback to URSM
-    try {
+    if (config.get('entityManagerReplicaSetEnabled')) {
       const encodedUserId = libs.Utils.encodeHashId(userId)
       const spResponse = await libs.discoveryProvider.getUserReplicaSet({
         encodedUserId
       })
-      if (!spResponse) {
-        throw new Error('User replica set is not on discovery')
-      }
       chainPrimarySpId = spResponse?.primarySpID
       chainSecondarySpIds = [
         spResponse?.secondary1SpID,
         spResponse?.secondary2SpID
       ]
-    } catch (err) {
+    } else {
       const response =
         await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
           userId

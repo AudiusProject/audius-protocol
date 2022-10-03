@@ -17,7 +17,7 @@ module.exports.handleResponse = (func) => {
   }
 }
 
-const sendResponse = module.exports.sendResponse = (req, res, resp) => {
+const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const endTime = process.hrtime(req.startTime)
   const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
   let logger = req.logger.child({
@@ -35,15 +35,15 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
     logger.info('Error processing request:', resp.object.error)
   }
   res.status(resp.statusCode).send(resp.object)
-}
+})
 
-const isValidResponse = module.exports.isValidResponse = (resp) => {
+const isValidResponse = (module.exports.isValidResponse = (resp) => {
   if (!resp || !resp.statusCode || !resp.object) {
     return false
   }
 
   return true
-}
+})
 
 module.exports.successResponse = (obj = {}) => {
   return {
@@ -52,12 +52,16 @@ module.exports.successResponse = (obj = {}) => {
   }
 }
 
-const errorResponse = module.exports.errorResponse = (statusCode, message, extra = {}) => {
+const errorResponse = (module.exports.errorResponse = (
+  statusCode,
+  message,
+  extra = {}
+) => {
   return {
     statusCode: statusCode,
     object: { error: message, ...extra }
   }
-}
+})
 
 module.exports.errorResponseUnauthorized = (message) => {
   return errorResponse(401, message)
