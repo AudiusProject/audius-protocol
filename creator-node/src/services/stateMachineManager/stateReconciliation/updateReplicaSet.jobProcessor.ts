@@ -715,7 +715,7 @@ const _issueUpdateReplicaSetOp = async (
         }
 
         logger.info(
-          `[_issueUpdateReplicaSetOp] updating replica set now ${
+          `[_issueUpdateReplicaSetOp] updating entity manager replica set now ${
             Date.now() - startTimeMs
           }ms for userId=${userId} wallet=${wallet}`
         )
@@ -743,8 +743,11 @@ const _issueUpdateReplicaSetOp = async (
             blockNumber
           )
         } catch (err) {
+          let message
+          if (err instanceof Error) message = err.message
+          else message = String(err)
           throw new Error(
-            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
+            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId} with error: ${message}`
           )
         }
       }
