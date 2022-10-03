@@ -78,8 +78,9 @@ class EthManager:
             }
 
         endpoint_info = self.sp_factory.functions.getServiceEndpointInfo(
-            sp_type, sp_id
+            sp_type.value, sp_id
         ).call()
+
         set_json_cached_key(redis, sp_id_key, endpoint_info, self.cnode_info_redis_ttl)
         logger.info(
             f"eth_manager.py | Configured redis {sp_id_key} - {endpoint_info} - TTL {self.cnode_info_redis_ttl}"
