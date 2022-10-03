@@ -1286,7 +1286,11 @@ jobs:
             RELEASE_HASH=$(git show-ref --hash refs/tags/@audius/discovery-provider@${RELEASE_VERSION})
             git log \
               --pretty=format:'- [ ] [%h] - %s %an %n' \
-              --abbrev-commit ${START_COMMIT}..${RELEASE_HASH}
+              --abbrev-commit ${START_COMMIT}..${RELEASE_HASH} \
+              > /tmp/release-checklist.md
+      - store_artifacts:
+          path: /tmp/release-checklist.md
+          destination: release-checklist.md
 
 workflows:
   workflows:
