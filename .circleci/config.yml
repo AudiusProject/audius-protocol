@@ -1122,6 +1122,7 @@ jobs:
       - run:
           name: Setup SSH Config
           command: |
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
             git clone git@github.com:AudiusProject/audius-ssh.git ~/audius-ssh
             # `AddKeysToAgent yes` is os-x only
             sed -e '7d' ~/audius-ssh/ssh_config >> ~/.ssh/config
