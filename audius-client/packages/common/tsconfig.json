@@ -9,6 +9,7 @@
     "sourceMap": true,
     "allowJs": true,
     "declaration": true,
+    "declarationMap": true,
     "rootDirs": ["src"],
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
