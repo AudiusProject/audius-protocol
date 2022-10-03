@@ -1220,6 +1220,47 @@ jobs:
             sudo killall openvpn || true
           when: always
 
+  release-scripts:
+    docker:
+      - image: cimg/go:1.17
+    parameters:
+      target:
+        description: Name of the script, without .sh, like bump-hotfix or cut-release
+        type: enum
+        enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            # github.com
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+      - run: |
+          git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
+          audius-tooling/release-scripts/<< parameters.target >>.sh
+      - slack-fail
+      - when:
+          condition:
+            equal: [ cut-release, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Release branch has been cut! :git-fork:"
+      - when:
+          condition:
+            equal: [ release-to-service-providers, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Deployment Released to Service Providers! :gift:"
+                detail: "New Governance Proposals are out. :vote:"
+                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
+      - when:
+          condition:
+            equal: [ execute-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Governance Proposal has been executed! :done:"
+
 workflows:
   workflows:
     when:
@@ -1393,8 +1434,12 @@ workflows:
               only: /(^master$)/
           requires:
             - verified
-      - noop:
+      - release-scripts:
           name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           requires:
             - cut-release-🕹️
 
@@ -1481,8 +1526,12 @@ workflows:
             - 💪-🚧-🌿-<< matrix.host >>-🕹️
 
       # Bump Tags (for release branch hot-fixes)
-      - noop:
-          name: bump-hotfix-tags
+      - release-scripts:
+          name: bump-hotfix
+          target: bump-hotfix
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1496,7 +1545,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1516,7 +1565,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-is-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1550,10 +1599,13 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
-      - noop:
-          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+            - bump-hotfix
+      - release-scripts:
           name: 🚧-🎁-to-SPs
+          target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1565,8 +1617,11 @@ workflows:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - 🚧-🎁-to-SPs
-      - noop:
+      - release-scripts:
           name: execute-proposal
+          target: execute-proposal
+          context:
+            - slack-secrets
           requires:
             - execute-proposal-🕹️
 
