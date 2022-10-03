@@ -414,10 +414,11 @@ services:
       replicas: "${CREATOR_NODE_REPLICAS}"
 
   # port forwarder
+  # exists for getting consistent port mappings
 
-  proxy:
+  port-forwarder:
     image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/proxy.sh
+    command: sh /tmp/dev-tools/startup/port-forwarder.sh
     ports:
       - "4000-4010:4000-4010"
       - "5000-5010:5000-5010"
@@ -449,7 +450,7 @@ services:
     image: linuxserver/openssh-server:latest # don't pin
     command: bash -c "apk add python3 && sleep inf"
     environment:
-      PASSWORD_ACCESS: "true"
+      PASSWORD_ACCESS: "sshuttle"
       USER_NAME: "sshuttle"
       USER_PASSWORD: "test"
     ports:
