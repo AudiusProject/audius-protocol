@@ -12,7 +12,9 @@ import {
   WalletAddress,
   Supporter,
   Supporting,
-  UserTip
+  UserTip,
+  PremiumConditions,
+  PremiumContentSignature
 } from 'models'
 import { Nullable } from 'utils'
 
@@ -128,6 +130,9 @@ export type APITrack = {
   play_count: number
   permalink: string
   is_available: boolean
+  is_premium: boolean
+  premium_conditions: Nullable<PremiumConditions>
+  premium_content_signature: Nullable<PremiumContentSignature>
 }
 
 export type APISearchTrack = Omit<
