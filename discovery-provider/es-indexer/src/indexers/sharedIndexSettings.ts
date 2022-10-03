@@ -5,7 +5,7 @@ import {
 
 export const sharedIndexSettings: IndicesIndexSettings = {
   analysis: {
-    filter: {
+    char_filter: {
       whitespace_remove: {
         type: 'pattern_replace',
         pattern: `\s+`,
@@ -20,7 +20,8 @@ export const sharedIndexSettings: IndicesIndexSettings = {
       },
       lower_asciifolding_no_whitespace: {
         type: 'custom',
-        filter: ['asciifolding', 'lowercase', 'whitespace_remove'],
+        char_filter: ['whitespace_remove'],
+        filter: ['asciifolding', 'lowercase'],
       },
     },
     analyzer: {
