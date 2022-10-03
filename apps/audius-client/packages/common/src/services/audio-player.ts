@@ -5,7 +5,8 @@ export type AudioInfo = {
   id: string
   title: string
   artist: string
-  artwork?: string
+  artwork: string
+  premiumContentHeaders: object
 }
 
 export enum AudioError {

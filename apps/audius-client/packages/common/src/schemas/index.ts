@@ -24,6 +24,8 @@ const trackMetadataSchema = {
   followee_saves: null,
   is_current: true,
   is_unlisted: false,
+  is_premium: false,
+  premium_conditions: null,
   field_visibility: {
     genre: true,
     mood: true,

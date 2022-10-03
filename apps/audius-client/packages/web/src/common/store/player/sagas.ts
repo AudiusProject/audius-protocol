@@ -11,7 +11,8 @@ import {
   actionChannelDispatcher,
   playerActions,
   playerSelectors,
-  Nullable
+  Nullable,
+  getPremiumContentHeaders
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -25,6 +26,7 @@ import {
 } from 'typed-redux-saga'
 
 import errorSagas from './errorSagas'
+
 const {
   play,
   playSucceeded,
@@ -76,6 +78,7 @@ export function* watchPlay() {
       // Load and set end action.
       const track = yield* select(getTrack, { id: trackId })
       if (!track) return
+      if (track.is_premium && !track.premium_content_signature) return
 
       const owner = yield* select(getUser, {
         id: track.owner_id
@@ -93,6 +96,14 @@ export function* watchPlay() {
         ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
         : null
 
+      const libs = yield* call(audiusBackendInstance.getAudiusLibs)
+      const web3Manager = libs.web3Manager
+      const premiumContentHeaders = yield* call(
+        getPremiumContentHeaders,
+        track.premium_content_signature,
+        web3Manager.sign.bind(web3Manager)
+      )
+
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           track.track_segments,
@@ -107,7 +118,9 @@ export function* watchPlay() {
           {
             id: encodedTrackId,
             title: track.title,
-            artist: owner?.name
+            artist: owner?.name,
+            artwork: '',
+            premiumContentHeaders
           },
           forceStreamMp3Url
         )
@@ -151,7 +164,8 @@ export function* watchCollectiblePlay() {
               collectible.imageUrl ??
               collectible.frameUrl ??
               collectible.gifUrl ??
-              ''
+              '',
+            premiumContentHeaders: {}
           },
           collectible.animationUrl
         )

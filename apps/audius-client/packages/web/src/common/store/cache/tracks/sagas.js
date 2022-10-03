@@ -14,7 +14,8 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  waitForValue
+  waitForValue,
+  getPremiumContentHeaders
 } from '@audius/common'
 import {
   all,
@@ -34,6 +35,7 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { dominantColor } from 'utils/imageProcessingUtil'
+
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -55,18 +57,32 @@ function* fetchRepostInfo(entries) {
 }
 
 function* fetchSegment(metadata) {
+  if (metadata.is_premium && !metadata.premium_content_signature) return
+  if (!metadata.track_segments[0]) return
+  const cid = metadata.track_segments[0].multihash
+
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const user = yield call(waitForValue, getUser, { id: metadata.owner_id })
   const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
     user.creator_node_endpoint
   )
-  if (!metadata.track_segments[0]) return
-  const cid = metadata.track_segments[0].multihash
+
+  const libs = yield call(audiusBackendInstance.getAudiusLibs)
+  const web3Manager = libs.web3Manager
+  const premiumContentHeaders = yield call(
+    getPremiumContentHeaders,
+    metadata.premium_content_signature,
+    web3Manager.sign.bind(web3Manager)
+  )
+
   return yield call(
     audiusBackendInstance.fetchCID,
     cid,
     gateways,
-    /* cache */ false
+    /* cache */ false,
+    /* asUrl */ true,
+    /* trackId */ null,
+    premiumContentHeaders
   )
 }
 

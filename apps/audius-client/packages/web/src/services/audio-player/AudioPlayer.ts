@@ -43,6 +43,7 @@ export enum AudioError {
 class fLoader extends Hls.DefaultConfig.loader {
   getFallbacks = () => []
   getTrackId = () => ''
+  getPremiumContentHeaders = () => ({})
 
   constructor(config: Hls.LoaderConfig) {
     super(config)
@@ -57,7 +58,8 @@ class fLoader extends Hls.DefaultConfig.loader {
             this.getFallbacks(),
             /* cache */ false,
             /* asUrl */ true,
-            decodeHashId(this.getTrackId()) ?? undefined
+            decodeHashId(this.getTrackId()) ?? undefined,
+            this.getPremiumContentHeaders() ?? undefined
           )
           .then((resolved) => {
             const updatedContext = { ...context, url: resolved }
@@ -196,7 +198,13 @@ export class AudioPlayer {
     onEnd: () => void,
     prefetchedSegments: string[] = [],
     gateways: string[] = [],
-    info = { id: '', title: '', artist: '' },
+    info = {
+      id: '',
+      title: '',
+      artist: '',
+      artwork: '',
+      premiumContentHeaders: {}
+    },
     forceStreamSrc: string | null = null
   ) => {
     if (forceStreamSrc) {
@@ -225,6 +233,7 @@ export class AudioPlayer {
         class creatorFLoader extends fLoader {
           getFallbacks = () => gateways as never[]
           getTrackId = () => info.id
+          getPremiumContentHeaders = () => info.premiumContentHeaders
         }
         const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
         this.hls = new Hls(hlsConfig)
