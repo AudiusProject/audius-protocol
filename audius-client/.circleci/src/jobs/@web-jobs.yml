@@ -115,6 +115,10 @@ web-test-staging:
           npx serve -l 3001 -s packages/web/build-staging &
           cd probers
           npm run test:ci
+    - store_artifacts:
+        path: /home/circleci/probers/cypress/videos
+    - store_artifacts:
+        path: /home/circleci/probers/cypress/screenshots
 
 web-build-production:
   working_directory: ~/audius-client
