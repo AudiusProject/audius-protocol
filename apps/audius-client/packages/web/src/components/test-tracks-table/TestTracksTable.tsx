@@ -271,12 +271,12 @@ export const TestTracksTable = ({
     (cellInfo) => {
       const track = cellInfo.row.original
       const deleted = track.is_delete || track.user?.is_deactivated
-      if (deleted) {
+      const isOwner = track.owner_id === userId
+      if (deleted || isOwner) {
         return <div className={styles.placeholderButton} />
       }
 
-      const isOwner = track.owner_id === userId
-      return isOwner ? null : (
+      return (
         <Tooltip
           text={track.has_current_user_reposted ? 'Unrepost' : 'Repost'}
           mount='page'
