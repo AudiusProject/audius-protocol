@@ -88,7 +88,7 @@ def entity_manager_update(
 
         # copy original record since existing_records will be modified
         original_records = copy_original_records(existing_records)
-
+        logger.info(f"asdf original_records {original_records}")
         new_records: RecordDict = defaultdict(lambda: defaultdict(list))
 
         pending_track_routes: List[TrackRoute] = []

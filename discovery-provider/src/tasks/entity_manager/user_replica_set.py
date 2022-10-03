@@ -38,6 +38,7 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
         raise Exception("User does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
     user = params.existing_records[EntityType.USER][user_id]
+    logger.info(f"asdf existing user {user}")
     user_sp_ids = [user.primary_id]
     if user.secondary_ids:
         user_sp_ids = user_sp_ids + user.secondary_ids
