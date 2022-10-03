@@ -1,24 +1,26 @@
 /* eslint-disable import/first */
 'use strict'
 
-const { setupTracing } = require('./tracer')
-setupTracing('content-node')
+import { setupTracing } from './tracer'
+setupTracing()
 
-import type { Cluster, Worker } from 'cluster'
+import type { Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
 import { clusterUtils } from './utils'
-const cluster: Cluster = require('cluster')
+import cluster from 'cluster'
 
-const ON_DEATH = require('death')
+import ON_DEATH from 'death'
+import { Keypair } from '@solana/web3.js'
+
+import initializeApp from './app'
+import config from './config'
+import { serviceRegistry } from './serviceRegistry'
+import { runMigrations, clearRunningQueries } from './migrationManager'
+
+import { logger } from './logging'
+import { sequelize } from './models'
+
 const EthereumWallet = require('ethereumjs-wallet')
-const { Keypair } = require('@solana/web3.js')
-
-const initializeApp = require('./app')
-const config = require('./config')
-const { sequelize } = require('./models')
-const { runMigrations, clearRunningQueries } = require('./migrationManager')
-const { logger } = require('./logging')
-const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
 
 // This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
@@ -183,7 +185,7 @@ const startAppForWorker = async () => {
   await verifyConfigAndDb()
 
   // When app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal: any, error: any) => {
+  ON_DEATH({ uncaughtException: true })((signal, error) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
@@ -197,6 +199,8 @@ const startAppForWorker = async () => {
   await serviceRegistry.initServices()
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
   logger.info(`Initialized services (Node running in ${nodeMode})`)
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   serviceRegistry.initServicesAsynchronously()
   const appInfo = initializeApp(getPort(), serviceRegistry)
   logger.info('Initialized app and server')
