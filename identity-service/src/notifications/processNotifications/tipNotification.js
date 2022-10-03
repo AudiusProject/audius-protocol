@@ -1,9 +1,13 @@
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
 
-async function processTipNotifications (notifications, tx) {
+async function processTipNotifications(notifications, tx) {
   for (const notification of notifications) {
-    const { slot, initiator: receiverId, metadata: { amount, entity_id: senderId, tx_signature: tipTxSignature } } = notification
+    const {
+      slot,
+      initiator: receiverId,
+      metadata: { amount, entity_id: senderId, tx_signature: tipTxSignature }
+    } = notification
 
     // Create the sender notif
     await Promise.all([

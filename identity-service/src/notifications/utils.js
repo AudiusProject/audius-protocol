@@ -17,16 +17,16 @@ const trackListenMilestonePollCount = 100
 /**
  * For any users missing blockchain id, here we query the values from discprov and fill them in
  */
-async function updateBlockchainIds () {
+async function updateBlockchainIds() {
   const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
-  let usersWithoutBlockchainId = await models.User.findAll({
+  const usersWithoutBlockchainId = await models.User.findAll({
     attributes: ['walletAddress', 'handle'],
     where: { blockchainUserId: null }
   })
-  for (let updateUser of usersWithoutBlockchainId) {
+  for (const updateUser of usersWithoutBlockchainId) {
     try {
-      let walletAddress = updateUser.walletAddress
+      const walletAddress = updateUser.walletAddress
       logger.info(`Updating user with wallet ${walletAddress}`)
       const response = await axios({
         method: 'get',
@@ -36,31 +36,34 @@ async function updateBlockchainIds () {
         }
       })
       if (response.data.data.length === 1) {
-        let respUser = response.data.data[0]
-        let missingUserId = respUser.user_id
-        let missingHandle = respUser.handle
-        let updateObject = { blockchainUserId: missingUserId }
+        const respUser = response.data.data[0]
+        const missingUserId = respUser.user_id
+        const missingHandle = respUser.handle
+        const updateObject = { blockchainUserId: missingUserId }
 
         if (updateUser.handle === null) {
-          updateObject['handle'] = missingHandle
+          updateObject.handle = missingHandle
         }
-        await models.User.update(
-          updateObject,
-          { where: { walletAddress } }
+        await models.User.update(updateObject, { where: { walletAddress } })
+        logger.info(
+          `Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`
         )
-        logger.info(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
         continue
       }
-      for (let respUser of response.data.data) {
+      for (const respUser of response.data.data) {
         // Only update if handles match
         if (respUser.handle === updateUser.handle) {
-          let missingUserId = respUser.user_id
+          const missingUserId = respUser.user_id
           await models.User.update(
             { blockchainUserId: missingUserId },
             { where: { walletAddress, handle: updateUser.handle } }
           )
-          logger.info(`Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`)
-          await models.UserNotificationSettings.findOrCreate({ where: { userId: missingUserId } })
+          logger.info(
+            `Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`
+          )
+          await models.UserNotificationSettings.findOrCreate({
+            where: { userId: missingUserId }
+          })
         }
       }
     } catch (e) {
@@ -76,13 +79,14 @@ async function updateBlockchainIds () {
  *
  * @returns Array [{trackId, listenCount}, trackId, listenCount]
  */
-async function calculateTrackListenMilestonesFromDiscovery (discoveryProvider) {
+async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
   // Pull listen count notification data from discovery provider
   const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-  const trackListenMilestones = await discoveryProvider.getTrackListenMilestones(timeout)
+  const trackListenMilestones =
+    await discoveryProvider.getTrackListenMilestones(timeout)
   const listenCountBody = trackListenMilestones.data
-  let parsedListenCounts = []
-  for (let key in listenCountBody) {
+  const parsedListenCounts = []
+  for (const key in listenCountBody) {
     parsedListenCounts.push({
       trackId: key,
       listenCount: listenCountBody[key]
@@ -97,25 +101,31 @@ async function calculateTrackListenMilestonesFromDiscovery (discoveryProvider) {
  *
  * @returns Array [{trackId, listenCount}, trackId, listenCount}]
  */
-async function calculateTrackListenMilestones () {
-  let recentListenCountQuery = {
-    attributes: [[models.Sequelize.col('trackId'), 'trackId'],
-      [models.Sequelize.fn('max', models.Sequelize.col('hour')), 'hour']],
+async function calculateTrackListenMilestones() {
+  const recentListenCountQuery = {
+    attributes: [
+      [models.Sequelize.col('trackId'), 'trackId'],
+      [models.Sequelize.fn('max', models.Sequelize.col('hour')), 'hour']
+    ],
     order: [[models.Sequelize.col('hour'), 'DESC']],
     group: ['trackId'],
     limit: trackListenMilestonePollCount
   }
 
   // Distinct tracks
-  let res = await models.TrackListenCount.findAll(recentListenCountQuery)
-  let tracksListenedTo = res.map((listenEntry) => listenEntry.trackId)
+  const res = await models.TrackListenCount.findAll(recentListenCountQuery)
+  const tracksListenedTo = res.map((listenEntry) => listenEntry.trackId)
 
   // Total listens query
-  let totalListens = {
+  const totalListens = {
     attributes: [
       [models.Sequelize.col('trackId'), 'trackId'],
       [
-        models.Sequelize.fn('date_trunc', 'millennium', models.Sequelize.col('hour')),
+        models.Sequelize.fn(
+          'date_trunc',
+          'millennium',
+          models.Sequelize.col('hour')
+        ),
         'date'
       ],
       [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
@@ -128,8 +138,8 @@ async function calculateTrackListenMilestones () {
   }
 
   // Map of listens
-  let totalListenQuery = await models.TrackListenCount.findAll(totalListens)
-  let processedTotalListens = totalListenQuery.map((x) => {
+  const totalListenQuery = await models.TrackListenCount.findAll(totalListens)
+  const processedTotalListens = totalListenQuery.map((x) => {
     return { trackId: x.trackId, listenCount: x.listens }
   })
 
@@ -140,12 +150,12 @@ async function calculateTrackListenMilestones () {
  * Get max block from the NotificationAction table
  * @returns Integer highestBlockNumber
  */
-async function getHighestBlockNumber () {
+async function getHighestBlockNumber() {
   let highestBlockNumber = await models.NotificationAction.max('blocknumber')
   if (!highestBlockNumber) {
     highestBlockNumber = startBlock
   }
-  let date = new Date()
+  const date = new Date()
   logger.info(`Highest block: ${highestBlockNumber} - ${date}`)
   return highestBlockNumber
 }
@@ -154,11 +164,11 @@ async function getHighestBlockNumber () {
  * Get max slot from the SolanaNotificationAction table
  * @returns Integer highestSlot
  */
-async function getHighestSlot () {
+async function getHighestSlot() {
   let highestSlot = await models.SolanaNotificationAction.max('slot')
   if (!highestSlot) highestSlot = startSlot
 
-  let date = new Date()
+  const date = new Date()
   logger.info(`Highest slot: ${highestSlot} - ${date}`)
   return highestSlot
 }
@@ -172,18 +182,23 @@ async function getHighestSlot () {
  * @param {Object} tx sequelize tx (optional)
  * @returns Object { notifyWeb: Boolean, notifyMobile: Boolean}
  */
-async function shouldNotifyUser (notificationTarget, prop, tx = null) {
+async function shouldNotifyUser(notificationTarget, prop, tx = null) {
   // mobile
-  let mobileQuery = { where: { userId: notificationTarget } }
+  const mobileQuery = { where: { userId: notificationTarget } }
   if (tx) mobileQuery.transaction = tx
-  let userNotifSettingsMobile = await models.UserNotificationMobileSettings.findOne(mobileQuery)
-  const notifyMobile = (userNotifSettingsMobile && userNotifSettingsMobile[prop]) || false
+  const userNotifSettingsMobile =
+    await models.UserNotificationMobileSettings.findOne(mobileQuery)
+  const notifyMobile =
+    (userNotifSettingsMobile && userNotifSettingsMobile[prop]) || false
 
   // browser push notifications
-  let browserPushQuery = { where: { userId: notificationTarget } }
+  const browserPushQuery = { where: { userId: notificationTarget } }
   if (tx) browserPushQuery.transaction = tx
-  let userNotifBrowserPushSettings = await models.UserNotificationBrowserSettings.findOne(browserPushQuery)
-  const notifyBrowserPush = (userNotifBrowserPushSettings && userNotifBrowserPushSettings[prop]) || false
+  const userNotifBrowserPushSettings =
+    await models.UserNotificationBrowserSettings.findOne(browserPushQuery)
+  const notifyBrowserPush =
+    (userNotifBrowserPushSettings && userNotifBrowserPushSettings[prop]) ||
+    false
 
   return { notifyMobile, notifyBrowserPush }
 }
@@ -200,12 +215,12 @@ const MIN_LENGTH = 5
 const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 /** Encodes an int ID into a string. */
-function encodeHashId (id) {
+function encodeHashId(id) {
   return hashids.encode([id])
 }
 
 /** Decodes a string id into an int. Returns null if an invalid ID. */
-function decodeHashId (id) {
+function decodeHashId(id) {
   const ids = hashids.decode(id)
   if (!ids.length) return null
   return ids[0]
@@ -231,18 +246,32 @@ const MAX_HOUR_TIME_DIFFERENCE = 2
  * @param {number} hrsSinceStartOfDay
  * @returns boolean
  */
-const shouldSendEmail = (frequency, currentUtcTime, lastSentTimestamp, hrsSinceStartOfDay) => {
+const shouldSendEmail = (
+  frequency,
+  currentUtcTime,
+  lastSentTimestamp,
+  hrsSinceStartOfDay
+) => {
   if (frequency === EmailFrequency.OFF) return false
   if (frequency === EmailFrequency.LIVE) return true
 
   // If this is the first email, then it should render
   if (!lastSentTimestamp) return true
 
-  const isValidFrequency = [EmailFrequency.DAILY, EmailFrequency.WEEKLY].includes(frequency)
-  const timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
+  const isValidFrequency = [
+    EmailFrequency.DAILY,
+    EmailFrequency.WEEKLY
+  ].includes(frequency)
+  const timeSinceEmail = moment
+    .duration(currentUtcTime.diff(lastSentTimestamp))
+    .asHours()
   const timeThreshold = (frequency === 'daily' ? dayInHours : weekInHours) - 1
   const hasValidTimeDifference = hrsSinceStartOfDay < MAX_HOUR_TIME_DIFFERENCE
-  return hasValidTimeDifference && isValidFrequency && timeSinceEmail >= timeThreshold
+  return (
+    hasValidTimeDifference &&
+    isValidFrequency &&
+    timeSinceEmail >= timeThreshold
+  )
 }
 
 module.exports = {

@@ -406,12 +406,16 @@ def get_elasticsearch_health_info(
 def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST).save(
-        health_results["block_difference"]
-    )
+    # store all top-level keys with numerical values
+    for key, value in health_results.items():
+        if isinstance(value, (int, float)):
+            PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK).save(
+                value, {"key": key}
+            )
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST).save(
-        health_results["web"]["blocknumber"]
+    # store a non-top-level key
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK).save(
+        health_results["web"]["blocknumber"], {"key": "blocknumber"}
     )
 
 

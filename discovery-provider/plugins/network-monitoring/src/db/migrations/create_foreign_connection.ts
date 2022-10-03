@@ -2,7 +2,7 @@
 
 import type { QueryInterface } from "sequelize"
 import type { MigrationParams, RunnableMigration } from "umzug"
-import { getEnv } from "../../utils"
+import { getEnv } from "../../config"
 
 const { fdb } = getEnv()
 

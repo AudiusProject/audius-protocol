@@ -9,6 +9,7 @@ import { NextFunction, Request, Response } from 'express'
 import { PremiumContentAccessError } from '../../premiumContent/types'
 import type Logger from 'bunyan'
 import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
+import config from '../../config'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -39,6 +40,11 @@ export const premiumContentMiddleware = async (
       )
     }
 
+  if (!config.get('premiumContentEnabled')) {
+    return next()
+  }
+
+  try {
     const premiumContentHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
     const { premiumContentAccessChecker, libs, redis } = serviceRegistry
@@ -64,8 +70,7 @@ export const premiumContentMiddleware = async (
         trackId,
         isPremium
       }
-      next()
-      return
+      return next()
     }
 
     switch (error) {

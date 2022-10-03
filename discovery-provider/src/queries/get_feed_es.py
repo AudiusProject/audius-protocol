@@ -20,6 +20,8 @@ def get_feed_es(args, limit=10):
     load_orig = feed_filter in ["original", "all"]
     exclude_premium = args.get("exclude_premium", False)
 
+    explicit_ids = args.get("followee_user_ids", [])
+
     mdsl = []
 
     if load_reposts:
@@ -30,7 +32,9 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup(current_user_id, "user_id"),
+                                following_ids_terms_lookup(
+                                    current_user_id, "user_id", explicit_ids
+                                ),
                                 {"term": {"is_delete": False}},
                                 {"range": {"created_at": {"gte": "now-30d"}}},
                             ]
@@ -59,7 +63,9 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup(current_user_id, "owner_id"),
+                                following_ids_terms_lookup(
+                                    current_user_id, "owner_id", explicit_ids
+                                ),
                                 {"term": {"is_unlisted": False}},
                                 {"term": {"is_delete": False}},
                             ],
@@ -75,7 +81,7 @@ def get_feed_es(args, limit=10):
                         "bool": {
                             "must": [
                                 following_ids_terms_lookup(
-                                    current_user_id, "playlist_owner_id"
+                                    current_user_id, "playlist_owner_id", explicit_ids
                                 ),
                                 {"term": {"is_private": False}},
                                 {"term": {"is_delete": False}},
@@ -256,18 +262,27 @@ def get_feed_es(args, limit=10):
     return sorted_feed[0:limit]
 
 
-def following_ids_terms_lookup(current_user_id, field):
+def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
     """
     does a "terms lookup" to query a field
     with the user_ids that the current user follows
     """
+    if not explicit_ids:
+        explicit_ids = []
     return {
-        "terms": {
-            field: {
-                "index": ES_USERS,
-                "id": str(current_user_id),
-                "path": "following_ids",
-            },
+        "bool": {
+            "should": [
+                {
+                    "terms": {
+                        field: {
+                            "index": ES_USERS,
+                            "id": str(current_user_id),
+                            "path": "following_ids",
+                        },
+                    }
+                },
+                {"terms": {field: explicit_ids}},
+            ]
         }
     }
 
