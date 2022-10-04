@@ -186,7 +186,6 @@ export const Lineup = ({
 
   const handleInView = useCallback(() => {
     dispatch(actions.setInView(true))
-    return () => dispatch(actions.setInView(false))
   }, [dispatch, actions])
 
   useFocusEffect(handleInView)

@@ -7,14 +7,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { usePrevious } from 'react-use'
 
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
-import { AppTabNavigationContext } from 'app/screens/app-screen'
+import { SetAppTabNavigationContext } from 'app/screens/app-screen'
 
 type AppTabNavigation = NativeStackNavigationProp<AppTabScreenParamList>
 
 // Sets the navigation context so drawers can push onto current app-tab stack
 const useSetAppTabNavigationContext = () => {
   const navigation = useNavigation<AppTabNavigation>()
-  const { setNavigation } = useContext(AppTabNavigationContext)
+  const { setNavigation } = useContext(SetAppTabNavigationContext)
 
   const handleSetNavigation = useCallback(() => {
     setNavigation(navigation)

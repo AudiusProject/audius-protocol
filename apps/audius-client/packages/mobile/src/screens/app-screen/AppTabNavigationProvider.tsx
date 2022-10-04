@@ -10,12 +10,19 @@ type AppTabNavigation = NativeStackNavigationProp<AppTabScreenParamList>
 
 type AppTabNavigationContextValue = {
   navigation: Nullable<AppTabNavigation>
-  setNavigation: (navigation: AppTabNavigation) => void
 }
 
 export const AppTabNavigationContext =
   createContext<AppTabNavigationContextValue>({
-    navigation: null,
+    navigation: null
+  })
+
+type SetAppTabNavigationContextValue = {
+  setNavigation: (navigation: AppTabNavigation) => void
+}
+
+export const SetAppTabNavigationContext =
+  createContext<SetAppTabNavigationContextValue>({
     setNavigation: () => {}
   })
 
@@ -27,14 +34,21 @@ export const AppTabNavigationProvider = (
   const { children } = props
   const [navigation, setNavigation] = useState<Nullable<AppTabNavigation>>(null)
 
-  const context = useMemo(
+  const navigationContext = useMemo(
     () => ({ navigation, setNavigation }),
     [navigation, setNavigation]
   )
 
+  const setNavigationContext = useMemo(
+    () => ({ setNavigation }),
+    [setNavigation]
+  )
+
   return (
-    <AppTabNavigationContext.Provider value={context}>
-      {children}
+    <AppTabNavigationContext.Provider value={navigationContext}>
+      <SetAppTabNavigationContext.Provider value={setNavigationContext}>
+        {children}
+      </SetAppTabNavigationContext.Provider>
     </AppTabNavigationContext.Provider>
   )
 }
