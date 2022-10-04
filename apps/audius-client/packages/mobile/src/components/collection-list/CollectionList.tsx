@@ -10,7 +10,7 @@ type ListProps = Omit<
 >
 
 type CollectionListProps = {
-  collection: UserCollection[]
+  collection: UserCollection[] | undefined
 } & ListProps
 
 export const CollectionList = (props: CollectionListProps) => {
