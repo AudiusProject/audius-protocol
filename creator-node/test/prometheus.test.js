@@ -8,10 +8,16 @@ const {
   NAMESPACE_PREFIX
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
 const GenericBullQueue = require('./lib/genericBullQueueMock')
-const { StubPremiumContentAccessChecker } = require('../src/premiumContent/stubPremiumContentAccessChecker')
+const {
+  StubPremiumContentAccessChecker
+} = require('../src/premiumContent/stubPremiumContentAccessChecker')
 
 describe('test Prometheus metrics', async function () {
-  let app, server, libsMock, mockServiceRegistry, stubPremiumContentAccessChecker
+  let app,
+    server,
+    libsMock,
+    mockServiceRegistry,
+    stubPremiumContentAccessChecker
 
   /** Setup app + global test vars */
   beforeEach(async function () {
@@ -30,7 +36,8 @@ describe('test Prometheus metrics', async function () {
       isPremium: false,
       error: null
     }
-    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessChecker
+    mockServiceRegistry.premiumContentAccessChecker =
+      stubPremiumContentAccessChecker
   })
 
   afterEach(async function () {
@@ -124,6 +131,29 @@ describe('test Prometheus metrics', async function () {
     )
 
     assert.ok(!resp.text.includes('/content/:CID'))
+  })
+
+  it('Checks that accessing /ipfs/:CID records explicit results', async function () {
+    await request(app).get('/ipfs/QmVickyWasHere')
+    await request(app).get('/ipfs/QmVickyWasHereDir/original.jpg')
+    await request(app).get('/content/QmVickyWasHere')
+    await request(app).get('/content/QmVickyWasHereDir/original.jpg')
+
+    const resp = await request(app)
+      .get('/prometheus_metrics_worker')
+      .expect(200)
+
+    assert.ok(
+      resp.text.includes(
+        'audius_cn_stream_content_duration_seconds_bucket{le="0.1",result="abort_bad_cid",mode="default"}'
+      )
+    )
+
+    assert.ok(
+      resp.text.includes(
+        'audius_cn_stream_content_dir_duration_seconds_bucket{le="0.1",result="abort_cid_not_found_in_db"}'
+      )
+    )
   })
 
   it('Checks that GET /prometheus_metrics_worker exposes bull queue metrics', async function () {

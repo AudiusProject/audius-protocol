@@ -115,7 +115,11 @@ module.exports.sendResponseWithMetric = (
   prometheusResult
 ) => {
   if (req.endMetricTimer) {
-    req.endMetricTimer(prometheusResult)
+    try {
+      req.endMetricTimer(prometheusResult)
+    } catch (e) {
+      req.logger.warn(`Could not end timer: ${e.message}`)
+    }
   }
 
   sendResponse(req, res, routeResponse)

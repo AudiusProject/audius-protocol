@@ -175,11 +175,12 @@ const getCID = async (req, res) => {
   const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
   if (!isServable) {
+    prometheusResult.result = 'abort_delisted'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseForbidden('CID has been delisted by this node'),
-      'abort_delisted'
+      prometheusResult
     )
   }
 
