@@ -30,7 +30,7 @@ STAGE_CREATOR_NODES = (
     "stage-creator-8",
     "stage-creator-9",
     "stage-creator-10",
-    "stage-creator-11",
+#     "stage-creator-11",
     "stage-user-metadata",
 )
 PROD_CREATOR_NODES = (
