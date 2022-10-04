@@ -29,16 +29,15 @@ export const premiumContentMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const cid = req.params?.CID
-    if (!cid) {
-      return sendResponseWithMetric(
-        req,
-        res,
-        errorResponseBadRequest('Invalid request, no CID provided.'),
-        'abort_no_cid'
-      )
-    }
+  const cid = req.params?.CID
+  if (!cid) {
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseBadRequest('Invalid request, no CID provided.'),
+      'abort_no_cid'
+    )
+  }
 
   if (!config.get('premiumContentEnabled')) {
     return next()

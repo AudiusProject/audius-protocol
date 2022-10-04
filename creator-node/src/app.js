@@ -125,7 +125,6 @@ const initializeApp = (port, serviceRegistry) => {
   app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
   app.use(getRateLimiterMiddleware())
 
-  // import routes
   let routers = require('./routes')()
   routers = [
     ...routers,
@@ -137,12 +136,6 @@ const initializeApp = (port, serviceRegistry) => {
   const { routesWithParams, routes } = _setupRouteDurationTracking(routers)
 
   const prometheusRegistry = serviceRegistry.prometheusRegistry
-
-  console.log(
-    'i am the routes with params and routes',
-    routesWithParams,
-    routes
-  )
 
   // Metric tracking middleware
   app.use(
@@ -171,19 +164,40 @@ const initializeApp = (port, serviceRegistry) => {
           for (const { regex, path: normalizedPath } of routesWithParams) {
             const match = path.match(regex)
             if (match) {
-              console.log('FIRST')
-              // Set the regex here to match on explicit route metric if generated
-              console.log('did you add??', regex)
-              req.pathRegex = regex
               return normalizedPath
             }
           }
         } catch (e) {
           req.logger.warn(
-            `DurationTracking || Could not match on regex: ${e.message}`
+            { middleware: 'PrometheusMiddleware', function: 'normalizePath' },
+            `Could not match on regex: ${e.message}`
           )
         }
         return path
+      },
+      // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
+      // Technically, this function is redundant because we specify the routes to match on in the first
+      // param of app.use([paths,]). This fn is used for specific metric tracking
+      bypass: function (req, opts) {
+        const path = prometheusMiddleware.normalizePath(req, opts)
+        try {
+          for (const { regex, path: normalizedPath } of routes) {
+            const match = path.match(regex)
+            if (match) {
+              req.normalizedPath = normalizedPath
+              return false
+            }
+          }
+        } catch (e) {
+          req.logger.warn(
+            { middleware: 'PrometheusMiddleware', function: 'bypass' },
+            `Could not match on regex: ${e.message}`
+          )
+        }
+
+        // Should not reach here, but in case it does, always track metrics on
+        // an explicitly defined route
+        return false
       }
     })
   )

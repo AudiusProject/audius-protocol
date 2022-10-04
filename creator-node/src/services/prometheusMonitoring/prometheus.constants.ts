@@ -371,7 +371,9 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
       help: 'Time spent to stream content (seconds)',
-      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]
+      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_HISTOGRAM],
+      buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
+      aggregator: 'average' as AggregatorType
     }
   },
   [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
@@ -379,7 +381,9 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM,
       help: 'Time spent to stream content from directory (seconds)',
-      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]
+      labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM],
+      buckets: [0.1, 0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
+      aggregator: 'average' as AggregatorType
     }
   },
   // TODO: This isn't used anywhere
@@ -479,10 +483,12 @@ export const METRICS: Record<string, Metric> = Object.freeze({
   }
 })
 
-// TODO: need regex matching
+// To add specific metrics, follow exact pattern as defined in routes files
 export const ROUTE_TO_METRIC_NAME = Object.freeze({
-  '/ipfs': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
-  '/content': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM
+  '/ipfs/:CID': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
+  '/ipfs/:dirCID/:filename': METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM,
+  '/content/:CID': METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
+  '/content/:dirCID/:filename': METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM
 })
 
 module.exports = {
