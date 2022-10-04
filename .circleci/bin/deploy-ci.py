@@ -30,7 +30,7 @@ STAGE_CREATOR_NODES = (
     "stage-creator-8",
     "stage-creator-9",
     "stage-creator-10",
-    "stage-creator-11",
+    #     "stage-creator-11",
     "stage-user-metadata",
 )
 PROD_CREATOR_NODES = (
@@ -411,8 +411,11 @@ def format_artifacts(
     if hosts:
         hosts.sort()
         summary = [f"{heading}:"]
-        for h in hosts:
-            summary.append(f"* {h}")
+        if "Upgraded to" in heading:
+            summary.append(", ".join(hosts))
+        else:
+            for h in hosts:
+                summary.append(f"• {h}")
 
         print("\n".join(summary))
         with open("/tmp/summary.md", "a") as f:
