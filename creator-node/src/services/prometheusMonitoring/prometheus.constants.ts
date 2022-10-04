@@ -372,7 +372,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.STREAM_CONTENT_HISTOGRAM,
       help: 'Time spent to stream content (seconds)',
       labelNames: METRIC_LABEL_NAMES[METRIC_NAMES.STREAM_CONTENT_HISTOGRAM],
-      buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
+      buckets: [0.1, 0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
       aggregator: 'average' as AggregatorType
     }
   },
