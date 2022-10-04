@@ -1,3 +1,4 @@
+import type { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
 import { Queue, QueueEvents, Worker } from 'bullmq'
 import path from 'path'
 import os from 'os'
@@ -5,15 +6,14 @@ import os from 'os'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { clusterUtils } from './utils'
-import resizeImage from './resizeImage'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
 )
 
-const PROCESS_NAMES = Object.freeze({
-  resizeImage: 'resizeImage'
-})
+enum ProcessNames {
+  resizeImage = 'resizeImage'
+}
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
@@ -28,7 +28,7 @@ export class ImageProcessingQueue {
   queue: Queue<any, any, string>
   queueEvents: QueueEvents
 
-  constructor(prometheusRegistry = null) {
+  constructor(prometheusRegistry: PrometheusRegistry | null = null) {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -64,7 +64,7 @@ export class ImageProcessingQueue {
    * @param {object} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus(logContext, message) {
+  async logStatus(logContext: Object, message: string) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
     logger.info(`Image Processing Queue: ${message}`)
@@ -95,8 +95,20 @@ export class ImageProcessingQueue {
    *     }
    *   ]
    */
-  async resizeImage({ file, fileName, sizes, square, logContext }) {
-    const job = await this.queue.add(PROCESS_NAMES.resizeImage, {
+  async resizeImage({
+    file,
+    fileName,
+    sizes,
+    square,
+    logContext
+  }: {
+    file: any
+    fileName: string
+    sizes: Record<string, number>
+    square: boolean
+    logContext: Object
+  }) {
+    const job = await this.queue.add(ProcessNames.resizeImage, {
       file,
       fileName,
       sizes,
