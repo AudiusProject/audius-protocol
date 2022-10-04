@@ -1,20 +1,19 @@
 import type { ReactNode } from 'react'
 import { useMemo, createContext, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 
-type AppTabNavigation = NativeStackNavigationProp<AppTabScreenParamList>
+export type AppTabNavigation = NativeStackNavigationProp<AppTabScreenParamList>
 
 type AppTabNavigationContextValue = {
-  navigation: Nullable<AppTabNavigation>
+  navigation: AppTabNavigation
 }
 
 export const AppTabNavigationContext =
   createContext<AppTabNavigationContextValue>({
-    navigation: null
+    navigation: {} as AppTabNavigation
   })
 
 type SetAppTabNavigationContextValue = {
@@ -32,7 +31,7 @@ export const AppTabNavigationProvider = (
   props: AppTabNavigationProviderProps
 ) => {
   const { children } = props
-  const [navigation, setNavigation] = useState<Nullable<AppTabNavigation>>(null)
+  const [navigation, setNavigation] = useState({} as AppTabNavigation)
 
   const navigationContext = useMemo(
     () => ({ navigation, setNavigation }),
