@@ -55,7 +55,7 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
 }
 
 describe('Staking tests', () => {
-  let testServiceType = 'discovery-provider'
+  let testServiceType = 'discovery-node'
 
   before(async function () {
     await audius0.init()
