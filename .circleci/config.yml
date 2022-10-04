@@ -5,6 +5,7 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
+  discord: antonioned/discord@0.1.0
   slack: circleci/slack@4.9.3
 
 commands:
