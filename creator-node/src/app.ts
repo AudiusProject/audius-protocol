@@ -218,5 +218,3 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
 
   return { app: app, server: server }
 }
-
-module.exports = initializeApp
