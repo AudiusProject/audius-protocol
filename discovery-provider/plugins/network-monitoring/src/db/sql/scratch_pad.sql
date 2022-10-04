@@ -277,3 +277,70 @@ AND run_id = :run_id;
         secondary1spid = ANY ( '{1,2,3,4}'::int[] )
     AND 
         secondary2spid = ANY ( '{1,2,3,4}'::int[] );
+
+SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = 71
+    AND 
+        primaryspid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND
+        secondary1spid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND 
+        secondary2spid != ALL ('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[]);
+
+-- FULLY SYNCED
+
+SELECT fully_synced.spid, cnodes.endpoint, fully_synced.fully_synced_count, partially_synced.partially_synced_count, unsynced.unsynced_count
+FROM (
+    SELECT primaryspid AS spid, COUNT(*) as fully_synced_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = 71
+    AND 
+        primary_clock_value IS NOT NULL
+    AND
+        primary_clock_value = secondary1_clock_value
+    AND
+        secondary1_clock_value = secondary2_clock_value
+    GROUP BY primaryspid
+) AS fully_synced
+JOIN (
+    SELECT primaryspid AS SPID, COUNT(*) AS partially_synced_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = 71
+    AND 
+        primary_clock_value IS NOT NULL
+    AND ( 
+        primary_clock_value = secondary1_clock_value
+        OR
+        primary_clock_value = secondary2_clock_value
+    )
+    AND 
+        secondary1_clock_value != secondary2_clock_value
+    GROUP BY primaryspid
+) AS partially_synced
+ON fully_synced.spid = partially_synced.spid
+JOIN (
+    SELECT primaryspid AS spid, COUNT(*) AS unsynced_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = 71
+    AND 
+        primary_clock_value IS NOT NULL
+    AND 
+        primary_clock_value != secondary1_clock_value
+    AND
+        primary_clock_value != secondary2_clock_value
+    GROUP BY primaryspid
+) AS unsynced
+ON fully_synced.spid = unsynced.spid
+JOIN (
+    SELECT spid, endpoint
+    FROM network_monitoring_content_nodes
+    WHERE
+        run_id = 71
+) AS cnodes
+ON cnodes.spid = fully_synced.spid
+ORDER BY fully_synced.spid;

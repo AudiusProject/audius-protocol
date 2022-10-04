@@ -3,7 +3,7 @@ from functools import wraps
 from time import time
 from typing import Callable, Dict
 
-from prometheus_client import Gauge, Histogram
+from prometheus_client import Gauge, Histogram, Summary
 
 logger = logging.getLogger(__name__)
 
@@ -99,8 +99,7 @@ class PrometheusMetricNames:
     CELERY_TASK_DURATION_SECONDS = "celery_task_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     FLASK_ROUTE_DURATION_SECONDS = "flask_route_duration_seconds"
-    HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST = "health_check_block_difference_latest"
-    HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST = "health_check_indexed_block_num_latest"
+    HEALTH_CHECK = "health_check"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
@@ -128,6 +127,8 @@ Metric Types:
     * When looking at the raw /prometheus_metrics endpoint for
       `audius_dn_update_aggregate_table_latency_seconds_bucket`, you can see how a
       single metric explodes into multiple statistical helpers.
+* Prometheus Summaries: Prometheus Summaries will export a single metric across all pids
+  which is useful for point-in-time collection.
 
 Labels:
 
@@ -149,6 +150,7 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
         "How long the currently running celery task has been running",
         ("task_name",),
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS}",
@@ -174,13 +176,11 @@ PrometheusRegistry = {
             "route",
         ),
     ),
-    PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST}",
-        "Difference between the latest block and the latest indexed block",
-    ),
-    PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST}",
-        "Latest indexed block number",
+    PrometheusMetricNames.HEALTH_CHECK: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
+        "Metrics extracted from our health-checks, using similar keys.",
+        ("key",),
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
@@ -271,6 +271,8 @@ class PrometheusMetric:
             this_metric.observe(value, labels)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
+        elif isinstance(this_metric, Summary):
+            this_metric.observe(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):

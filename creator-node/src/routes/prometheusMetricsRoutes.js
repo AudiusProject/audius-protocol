@@ -11,6 +11,7 @@ const returnMetricsForSingleProcess = async (req, res) => {
   res.setHeader('Content-Type', prometheusRegistry.registry.contentType)
   return res.end(metricData)
 }
+
 /**
  * Exposes Prometheus metrics for the worker (not aggregated) at `GET /prometheus_metrics_worker`
  */

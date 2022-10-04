@@ -261,7 +261,7 @@ def ps(protocol_dir):
     )
 
     for service in services:
-        if service["Service"] == "proxy":
+        if service["Service"] == "port-forwarder":
             continue
 
         name = service["Service"]
@@ -292,6 +292,19 @@ def ps(protocol_dir):
             status.ljust(10),
             ports,
         )
+
+
+@cli.command()
+@click.pass_obj
+def prune(protocol_dir):
+    click.secho(
+        "WARNING! This will remove all dangling images and build cache not used within the last 72h",
+        fg="yellow",
+    )
+
+    if click.confirm("Are you sure you want to continue?"):
+        subprocess.run(["docker", "image", "prune", "-f"])
+        subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
 
 
 @cli.command()

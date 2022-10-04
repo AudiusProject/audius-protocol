@@ -228,6 +228,7 @@ class TrackList(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
         sort_method = format_sort_method(args)
         sort_direction = format_sort_direction(args)
 
@@ -248,6 +249,7 @@ class TrackList(Resource):
             id=None,
             min_block_number=None,
             routes=None,
+            filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -283,6 +285,7 @@ class FullTrackList(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
         sort = args.get("sort", None)  # Deprecated
         sort_method = format_sort_method(args)
@@ -307,6 +310,7 @@ class FullTrackList(Resource):
             id=None,
             min_block_number=None,
             routes=None,
+            filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -328,6 +332,7 @@ class HandleFullTrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
         args = {
             "handle": handle,
@@ -338,6 +343,7 @@ class HandleFullTrackList(Resource):
             "sort": sort,
             "limit": limit,
             "offset": offset,
+            "filter_tracks": filter_tracks,
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))

@@ -1,4 +1,5 @@
 const bunyan = require('bunyan')
+const cluster = require('cluster')
 const shortid = require('shortid')
 
 const config = require('./config')
@@ -27,6 +28,7 @@ function RawStdOutWithLevelName() {
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
+  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker.id}`,
   streams: [
     {
       level: logLevel,
