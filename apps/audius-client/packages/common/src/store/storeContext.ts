@@ -33,7 +33,7 @@ export type CommonStoreContext = {
   remoteConfigInstance: RemoteConfigInstance
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
-  fingerprintClient: FingerprintClient
+  fingerprintClient: FingerprintClient<any>
   walletClient: WalletClient
   localStorage: LocalStorage
   isNativeMobile: boolean
