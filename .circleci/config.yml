@@ -1024,6 +1024,10 @@ jobs:
         description: Show current reservation status
         type: boolean
         default: false
+      reservation_notification:
+        description: Send Slack notification with reservation text
+        type: boolean
+        default: false
     steps:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
@@ -1212,6 +1216,15 @@ jobs:
               - << parameters.deploy_args >>
           steps:
             - slack-success:
+                detail: ${SLACK_DETAIL}
+      - when:
+          condition:
+            and:
+              - << parameters.reservations >>
+              - << parameters.reservation_notification >>
+          steps:
+            - slack-success:
+                text: Current Staging Reservations
                 detail: ${SLACK_DETAIL}
       - store_artifacts:
           path: /tmp/summary.md
@@ -1787,10 +1800,17 @@ workflows:
       - deploy:
           name: reservations
           reservations: true
+          reservation_notification: true
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+    triggers:
+      - schedule:
+          cron: '0 15 * * 1,2,3,4,5'
+          filters:
+            branches:
+              only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
