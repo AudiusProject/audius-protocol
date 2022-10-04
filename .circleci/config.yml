@@ -1200,7 +1200,8 @@ jobs:
           command: |
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
-      - slack-fail
+      - slack-fail:
+          detail: ${SLACK_DETAIL}
       # only send Success slack message when prod, --force, or custom args are used
       - when:
           condition:
