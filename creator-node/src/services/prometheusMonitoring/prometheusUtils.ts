@@ -16,7 +16,7 @@ import { round } from 'lodash'
  * @param {number} max the highest value for a bucket
  * @param {number} count the number of buckets to generate for values between min and max
  * @param {number} [precision] the number of decimal points to round each bucket to
- * @returns 'count' buckets (number[] of length 'count') for values between 'min' and 'max'
+ * @returns {number[]} 'count' buckets (number[] of length 'count') for values between 'min' and 'max'
  */
 export const exponentialBucketsRange = (
   min: number,
