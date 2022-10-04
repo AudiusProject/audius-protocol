@@ -10,7 +10,8 @@ export enum Action {
   SAVE = 'Save',
   UNSAVE = 'Unsave',
   REPOST = 'Repost',
-  UNREPOST = 'Unrepost'
+  UNREPOST = 'Unrepost',
+  ARTIST_PICK = 'ArtistPick'
 }
 
 export enum EntityType {
@@ -111,6 +112,7 @@ export class EntityManager extends Base {
   unsavePlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.UNSAVE)
   repostTrack = this.createSocialMethod(EntityType.TRACK, Action.REPOST)
   unrepostTrack = this.createSocialMethod(EntityType.TRACK, Action.UNREPOST)
+  selectArtistPick = this.createSocialMethod(EntityType.TRACK, Action.ARTIST_PICK)
 
   /** Playlist */
 

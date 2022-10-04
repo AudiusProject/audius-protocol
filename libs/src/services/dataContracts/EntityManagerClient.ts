@@ -8,6 +8,7 @@ export enum Action {
   CREATE = 'Create',
   UPDATE = 'Update',
   DELETE = 'Delete'
+  ARTIST_PICK = 'ArtistPick'
 }
 
 export enum EntityType {
