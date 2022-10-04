@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, Status } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
@@ -27,7 +27,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { SplashScreen } from '../splash-screen'
 
-const { getHasAccount } = accountSelectors
+const { getHasAccount, getAccountStatus } = accountSelectors
 
 export type RootScreenParamList = {
   signOn: undefined
@@ -138,6 +138,7 @@ type RootScreenProps = {
 export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const dispatch = useDispatch()
   const hasAccount = useSelector(getHasAccount)
+  const accountStatus = useSelector(getAccountStatus)
   const [disableGestures, setDisableGestures] = useState(false)
   const { updateRequired } = useUpdateRequired()
 
@@ -153,11 +154,15 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
     () => dispatch(enterBackground())
   )
 
+  const isAccountLoading = ![Status.IDLE, Status.LOADING].includes(
+    accountStatus
+  )
+
   return (
     <>
       <SplashScreen />
       {updateRequired ? <UpdateStack /> : null}
-      {!hasAccount ? (
+      {isAccountLoading ? null : !hasAccount ? (
         <SignOnStack />
       ) : (
         <Drawer.Navigator
