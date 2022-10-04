@@ -25,7 +25,9 @@ class URSMRegistrationManager {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
 
-    this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
+    this.delegateOwnerWallet = nodeConfig
+      .get('delegateOwnerWallet')
+      .toLowerCase()
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
     this.entityManagerReplicaSetEnabled = this.nodeConfig.get(
@@ -67,14 +69,16 @@ class URSMRegistrationManager {
    *  5. Submit registration transaction to URSM with signatures
    */
   async run() {
+    if (this.entityManagerReplicaSetEnabled) {
+      // Update config
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
+      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+
+      return
+    }
+
     this.logInfo('Beginning URSM registration process')
-    // if (this.entityManagerReplicaSetEnabled) {
-    //   this.nodeConfig.set('isRegisteredOnURSM', true)
-
-    //   this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
-
-    //   return
-    // }
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
@@ -117,6 +121,12 @@ class URSMRegistrationManager {
       throw new Error('Failed to find valid L1 record for node')
     }
 
+    if (this.delegateOwnerWallet !== delegateOwnerWalletFromSPFactory) {
+      throw new Error(
+        `Local delegateOwnerWallet config (${this.delegateOwnerWallet}) doesn't match delegateOwnerWalletFromSPFactory (${delegateOwnerWalletFromSPFactory}) for spID ${spID}`
+      )
+    }
+
     /**
      * 2. Fetch node record from L2 UserReplicaSetManager for spID
      */
@@ -129,7 +139,7 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+    if (this.delegateOwnerWallet === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 

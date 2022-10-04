@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import Any, Dict, Optional
 
@@ -162,7 +163,7 @@ def search_es_full(args: dict):
 
 
 def search_tags_es(
-    q: str, kind="all", current_user_id=None, limit=0, offset=0, exclude_premium=False
+    q: str, kind="all", current_user_id=None, limit=10, offset=0, exclude_premium=False
 ):
     if not esclient:
         raise Exception("esclient is None")
@@ -171,7 +172,7 @@ def search_tags_es(
     do_users = kind == "all" or kind == "users"
     mdsl: Any = []
 
-    def tag_match(fieldname):
+    def tag_match(fieldname, sort_by):
         match = {
             "query": {
                 "bool": {
@@ -179,25 +180,27 @@ def search_tags_es(
                     "must_not": [],
                     "should": [],
                 }
-            }
+            },
+            "sort": [{sort_by: "desc"}],
         }
         return match
 
     if do_tracks:
-        mdsl.extend([{"index": ES_TRACKS}, tag_match("tag_list")])
+        dsl = tag_match("tag_list", "repost_count")
+        if exclude_premium:
+            dsl["query"]["bool"]["must"].append(
+                {"term": {"is_premium": {"value": False}}}
+            )
+        mdsl.extend([{"index": ES_TRACKS}, dsl])
         if current_user_id:
-            dsl = tag_match("tag_list")
+            dsl = copy.deepcopy(dsl)
             dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
             mdsl.extend([{"index": ES_TRACKS}, dsl])
-        if exclude_premium:
-            mdsl.extend(
-                [{"index": ES_TRACKS}, {"term": {"is_premium": {"value": False}}}]
-            )
 
     if do_users:
-        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags")])
+        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags", "follower_count")])
         if current_user_id:
-            dsl = tag_match("tracks.tags")
+            dsl = tag_match("tracks.tags", "follower_count")
             dsl["query"]["bool"]["must"].append(be_followed(current_user_id))
             mdsl.extend([{"index": ES_USERS}, dsl])
 
