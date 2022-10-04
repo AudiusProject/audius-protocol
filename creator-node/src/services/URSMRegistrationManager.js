@@ -30,10 +30,6 @@ class URSMRegistrationManager {
       .toLowerCase()
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
-    this.oldDelegateOwnerWallet = this.nodeConfig
-      .get('oldDelegateOwnerWallet')
-      .toLowerCase()
-    this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
     this.entityManagerReplicaSetEnabled = this.nodeConfig.get(
       'entityManagerReplicaSetEnabled'
     )
@@ -143,17 +139,8 @@ class URSMRegistrationManager {
 
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
-     *
-     * @notice there is a patch for oldDelegateOwnerWallet since during Ropsten to Goerli Eth migration (only on staging), content nodes
-     *    were registered with a different delegateOwnerWallet. `oldDelegateOwnerWallet` config should only be set on staging nodes,
-     *    and only applies if entityManager is not enabled.
      */
-    const activeDelegateOwnerWallet =
-      this.oldDelegateOwnerWallet || this.delegateOwnerWallet
-    this.logError(
-      `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
-    )
-    if (activeDelegateOwnerWallet === delegateOwnerWalletFromURSM) {
+    if (this.delegateOwnerWallet === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
@@ -161,11 +148,6 @@ class URSMRegistrationManager {
         `Node already registered on URSM with same delegateOwnerWallet`
       )
       return
-    }
-
-    // New node registration is disabled if using oldDelegateOwnerWallet and above URSM check failed
-    if (this.oldDelegateOwnerWallet) {
-      throw new Error('Something went wrong if we got here')
     }
 
     /**
