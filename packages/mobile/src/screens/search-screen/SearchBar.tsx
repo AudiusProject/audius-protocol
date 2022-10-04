@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
 import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
@@ -14,6 +14,7 @@ import { getSearchQuery } from 'app/store/search/selectors'
 
 export const SearchBar = () => {
   const query = useSelector(getSearchQuery)
+  const searchResultQuery = useSelector(getSearchBarText)
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const [clearable, setClearable] = useState(query !== '')
@@ -43,6 +44,12 @@ export const SearchBar = () => {
     [dispatch, fetchSearchDebounced, setClearable]
   )
 
+  useEffect(() => {
+    if (query !== searchResultQuery && searchResultQuery !== '') {
+      handleChangeText(query)
+    }
+  }, [searchResultQuery, query, handleChangeText])
+
   const handleSubmit = useCallback(() => {
     if (query.startsWith('#')) {
       navigation.push('TagSearch', { query })
@@ -55,7 +62,6 @@ export const SearchBar = () => {
     inputRef.current?.focus()
   }, [dispatch, setClearable])
 
-  const searchResultQuery = useSelector(getSearchBarText)
   const isTagSearch = query.startsWith('#')
   const hasText = query !== ''
   const isLoading = !isTagSearch && hasText && searchResultQuery !== query

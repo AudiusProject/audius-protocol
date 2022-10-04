@@ -4,7 +4,7 @@ import type { CollectionImage } from 'app/models/Collection'
 import type { UserMultihash } from 'app/models/User'
 
 import ImageLoader from './ImageLoader'
-import { gateways, publicGateways } from './utils'
+import { gateways } from './utils'
 
 const getPlaylistImageUrl = (playlist: CollectionImage, cNode: string) => {
   if (playlist.cover_art_sizes) {
@@ -49,7 +49,6 @@ const usePlaylistImage = (playlist: CollectionImage, user: UserMultihash) => {
         .split(',')
         .filter(Boolean)
         .concat(gateways)
-        .concat(publicGateways)
         .map((gateway) => `${gateway}/ipfs/${playlist.cover_art_sizes}`)
       const legacyIdx = legacyUrls.findIndex(
         (route: string) => (source?.uri ?? '') === route

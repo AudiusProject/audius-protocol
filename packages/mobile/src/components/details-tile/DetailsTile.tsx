@@ -55,7 +55,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderRadius: 4,
     height: 195,
     width: 195,
-    marginBottom: spacing(6)
+    marginBottom: spacing(6),
+    backgroundColor: palette.neutralLight7
   },
 
   coverArt: {

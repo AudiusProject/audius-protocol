@@ -57,21 +57,30 @@ export const SearchScreen = () => {
     if (searchQuery && hasResults) {
       return <SearchResults />
     }
-    if (searchQuery && searchResultQuery && !hasResults) {
+    if (
+      searchQuery &&
+      searchResultQuery &&
+      searchQuery === searchResultQuery &&
+      !hasResults
+    ) {
       return <EmptySearch query={searchResultQuery} />
     }
     return <SearchHistory />
   }
 
+  const renderSearchBar = () => {
+    return (
+      <View style={styles.topbarRight}>
+        <View style={styles.searchBar}>
+          <SearchBar />
+        </View>
+      </View>
+    )
+  }
+
   return (
     <Screen
-      topbarRight={
-        <View style={styles.topbarRight}>
-          <View style={styles.searchBar}>
-            <SearchBar />
-          </View>
-        </View>
-      }
+      topbarRight={renderSearchBar()}
       variant='white'
       title={null}
       headerTitle={null}

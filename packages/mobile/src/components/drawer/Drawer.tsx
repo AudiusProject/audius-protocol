@@ -222,6 +222,15 @@ export type DrawerProps = {
     gestureState: PanResponderGestureState
   ) => void
   /**
+   * Optional callback attached to the drawer's onPanResponderRelease.
+   * Other UI that wishes to attach to the animation of the drawer
+   * may use this prop to respond to the drag gesture.
+   */
+  onPanResponderRelease?: (
+    e: GestureResponderEvent,
+    gestureState: PanResponderGestureState
+  ) => void
+  /**
    * Optional styles to apply to the Drawer container
    */
   drawerStyle?: ViewStyle
@@ -334,6 +343,7 @@ export const Drawer: DrawerComponent = ({
   shouldAnimateShadow,
   onPercentOpen,
   onPanResponderMove,
+  onPanResponderRelease,
   translationAnim: providedTranslationAnim,
   disableSafeAreaView
 }: DrawerProps) => {
@@ -649,6 +659,7 @@ export const Drawer: DrawerComponent = ({
           }
         }
       }
+      if (onPanResponderRelease) onPanResponderRelease(e, gestureState)
     }
   })
 

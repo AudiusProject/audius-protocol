@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import type { UserImage as UserImageType, UserMultihash } from 'app/models/User'
 
 import ImageLoader from './ImageLoader'
-import { gateways, publicGateways } from './utils'
+import { gateways } from './utils'
 
 const getUserImageUrl = (
   user: UserImageType & UserMultihash,
@@ -52,7 +52,6 @@ const useUserImage = (user: UserImageType & UserMultihash) => {
         .split(',')
         .filter(Boolean)
         .concat(gateways)
-        .concat(publicGateways)
         .map((gateway) => `${gateway}/ipfs/${user.profile_picture_sizes}`)
       const legacyIdx = legacyUrls.findIndex(
         (route: string) => (source?.uri ?? '') === route

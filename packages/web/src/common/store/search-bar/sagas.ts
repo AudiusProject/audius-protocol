@@ -82,9 +82,6 @@ function* watchSearch() {
     if (lastTask) {
       // cancel is no-op if the task has already terminated
       yield* cancel(lastTask)
-
-      // Reset the search bar state
-      yield* put(searchActions.clearSearch())
     }
     if (!cancelSearch && searchAction) {
       lastTask = yield* fork(fetchSearchAsync, searchAction)
