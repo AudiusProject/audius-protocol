@@ -1287,7 +1287,6 @@ jobs:
                 success_only: true
                 success_message: "New Proposal out now! Please vote at: https://dashboard.audius.co."
                 webhook: "${DISCORD_WEBHOOK}"
-                channel: "Non-Default Channel ID"
 
   generate-release-checklist:
     docker:
