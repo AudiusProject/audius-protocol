@@ -38,10 +38,12 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
-    navigation[navigationType]('Profile', {
-      handle: profile.handle,
-      fromNotifications: true
-    })
+    if (profile) {
+      navigation[navigationType]('Profile', {
+        handle: profile.handle,
+        fromNotifications: true
+      })
+    }
   }, [navigation, navigationType, profile])
 
   const profilePictureElement = (

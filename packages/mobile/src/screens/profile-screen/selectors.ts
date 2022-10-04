@@ -16,7 +16,7 @@ const { getAccountUser, getUserId } = accountSelectors
 /*
  * Selects profile user and ensures rerenders occur only for changes specified in deps
  */
-export const useSelectProfileRoot = (deps: Array<keyof User>) => {
+export const useSelectProfileRoot = <K extends keyof User>(deps: K[]) => {
   const { params } = useRoute<'Profile'>()
   const { handle } = params
   const isAccountUser = handle === 'accountUser'
@@ -28,7 +28,7 @@ export const useSelectProfileRoot = (deps: Array<keyof User>) => {
         : getProfileUser(state, params)
       if (!profile) return null
 
-      const profileSlice = {}
+      const profileSlice = {} as Partial<User>
       deps.forEach((dep) => {
         profileSlice[dep] = profile[dep]
       })
@@ -37,15 +37,15 @@ export const useSelectProfileRoot = (deps: Array<keyof User>) => {
     },
     [isAccountUser, ...deps]
   )
-  return profile as Nullable<User>
+  return profile as Nullable<Pick<User, K>>
 }
 
 /*
  * Assumes existance of user for convenience. To only be used for inner
  * components that wouldn't render if user wasn't present
  */
-export const useSelectProfile = (deps: Array<keyof User>) => {
-  return useSelectProfileRoot(deps) as User
+export const useSelectProfile = <K extends keyof User>(deps: K[]) => {
+  return useSelectProfileRoot(deps) as Pick<User, K>
 }
 
 export const getProfile = makeGetProfile()

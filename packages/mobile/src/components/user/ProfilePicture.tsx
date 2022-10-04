@@ -1,4 +1,4 @@
-import type { User } from '@audius/common'
+import type { Nullable, User } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 
 import type { DynamicImageProps } from 'app/components/core'
@@ -20,7 +20,7 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 export type ProfilePictureProps = Partial<DynamicImageProps> & {
-  profile: User
+  profile: Nullable<Pick<User, 'user_id' | '_profile_picture_sizes' | 'handle'>>
 }
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
