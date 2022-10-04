@@ -156,7 +156,12 @@ function LibsWrapper(walletIndex = 0) {
       metadata.profilePictureFile /* profile picture */,
       metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
-      null /* host */
+      null /* host */,
+      undefined /* handleUserBankOutcomes */, 
+      undefined /* userBankOutcomes */,
+      undefined /* feePayerOverride */,
+      undefined /* generateRecoveryLink */,
+      true /* useEntityManager */
     )
 
     // Update libs instance with associated userId
@@ -218,7 +223,8 @@ function LibsWrapper(walletIndex = 0) {
       trackFile,
       null /* image */,
       trackMetadata,
-      () => { } /* on progress */
+      () => { } /* on progress */,
+      true /* useEntityManager */
     )
     if (error) throw error
     return trackId
@@ -410,7 +416,8 @@ function LibsWrapper(walletIndex = 0) {
     assertLibsDidInit()
     return await this.libsInstance.User.updateAndUploadMetadata({
       newMetadata,
-      userId
+      userId,
+      useEntityManager: true,
     })
   }
 
