@@ -142,20 +142,22 @@ class MonitoringQueue {
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
-    try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.monitor, {})
+    if (clusterUtils.isThisWorkerSpecial()) {
+      try {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAMES.monitor, {})
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
-        try {
-          await this.queue.add(PROCESS_NAMES.monitor, {})
-        } catch (e) {
-          this.logStatus('Failed to enqueue!')
-        }
-      }, QUEUE_INTERVAL_MS)
-    } catch (e) {
-      this.logStatus('Startup failed!')
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAMES.monitor, {})
+          } catch (e) {
+            this.logStatus('Failed to enqueue!')
+          }
+        }, QUEUE_INTERVAL_MS)
+      } catch (e) {
+        this.logStatus('Startup failed!')
+      }
     }
   }
 }

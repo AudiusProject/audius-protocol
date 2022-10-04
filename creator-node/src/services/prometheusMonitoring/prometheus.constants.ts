@@ -406,7 +406,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
             name: METRIC_NAMES[`MONITOR_${monitor}`],
             help: `Record monitor: ${monitor}`,
             labelNames: [],
-            aggregator: 'sum' as AggregatorType
+            aggregator: 'max' as AggregatorType
           }
         }
       ]
