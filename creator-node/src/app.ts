@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction, IRoute } from 'express'
 import type Logger from 'bunyan'
+
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
@@ -30,12 +31,12 @@ type RequestWithLogger = Request & { logger: Logger }
 
 function errorHandler(
   err: any,
-  req: Request,
+  req: RequestWithLogger,
   res: Response,
   next: NextFunction
 ) {
-  ;(req as RequestWithLogger).logger.error('Internal server error')
-  ;(req as RequestWithLogger).logger.error(err.stack)
+  req.logger.error('Internal server error')
+  req.logger.error(err.stack)
   sendResponse(req, res, errorResponseServerError('Internal server error'))
 }
 
@@ -165,6 +166,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
       normalizePath: function (req, opts) {
+        const reqWithLogger = req as RequestWithLogger
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
           for (const { regex, path: normalizedPath } of routesWithParams) {
@@ -174,7 +176,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
             }
           }
         } catch (e: any) {
-          ;(req as RequestWithLogger).logger.warn(
+          reqWithLogger.logger.warn(
             `DurationTracking || Could not match on regex: ${e.message}`
           )
         }
@@ -187,7 +189,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
     app.use('/', router)
   }
 
-  app.use(errorHandler)
+  app.use(errorHandler as any)
 
   const storagePath = DiskManager.getConfigStoragePath()
 

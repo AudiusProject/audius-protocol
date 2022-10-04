@@ -34,7 +34,7 @@ def create_image(ctx):
         gcloud_args=[
             "--boot-disk-size=64G",
             "--no-boot-disk-auto-delete",
-            "--boot-disk-type=pd-balanced",
+            "--boot-disk-type=pd-ssd",
         ],
     )
 
@@ -75,9 +75,9 @@ def create(name, gcloud_args):
             "compute",
             "instances",
             "create",
-            "--machine-type=e2-custom-6-24576",
+            "--machine-type=n2-custom-6-24576",
             "--boot-disk-size=256G",
-            "--image=audius-protocol-dev",
+            "--boot-disk-type=pd-ssd",
             name,
             *gcloud_args,
         ],
@@ -97,8 +97,9 @@ def create_raw(name, gcloud_args):
             "compute",
             "instances",
             "create",
-            "--machine-type=e2-custom-6-24576",
+            "--machine-type=n2-custom-6-24576",
             "--boot-disk-size=256G",
+            "--boot-disk-type=pd-ssd",
             name,
             *gcloud_args,
         ],

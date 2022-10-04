@@ -10,6 +10,7 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
+import { PROMETHEUS_MONITORS } from '../../monitors/monitors'
 
 /**
  * For explanation of METRICS, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -70,6 +71,12 @@ for (const jobName of Object.values(
     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
   ] = `state_machine_${snakeCase(jobName)}_job_duration_seconds`
 }
+
+// Add gauge for each monitor
+for (const monitor of Object.keys(PROMETHEUS_MONITORS)) {
+  metricNames[`MONITOR_${monitor}`] = `monitor_${snakeCase(monitor)}`
+}
+
 export const METRIC_NAMES = Object.freeze(
   mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
 )
@@ -387,6 +394,23 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         }
       }
     ])
+  ),
+  // Add gauge for each monitor
+  ...Object.fromEntries(
+    Object.keys(PROMETHEUS_MONITORS).map((monitor) => {
+      return [
+        METRIC_NAMES[`MONITOR_${monitor}`],
+        {
+          metricType: METRIC_TYPES.GAUGE,
+          metricConfig: {
+            name: METRIC_NAMES[`MONITOR_${monitor}`],
+            help: `Record monitor: ${monitor}`,
+            labelNames: [],
+            aggregator: 'max' as AggregatorType
+          }
+        }
+      ]
+    })
   ),
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
