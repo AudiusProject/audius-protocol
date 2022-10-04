@@ -6,6 +6,7 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   slack: circleci/slack@4.9.3
+  queue: eddiewebb/queue@1.7.0
 
 commands:
   slack-basic:
@@ -1022,6 +1023,30 @@ jobs:
         type: boolean
         default: false
     steps:
+      - queue/block_workflow:
+          job-regex: '.*stage.*discovery.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*stage.*(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*stage.*identity.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*dn.*prod.*'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          job-regex: '.*cn.*prod.*'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          job-regex: '.*is.*prod.*'
+          consider-branch: false
+          dont-quit: false
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
@@ -1392,6 +1417,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1405,6 +1431,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1418,6 +1445,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1443,6 +1471,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1467,6 +1496,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1491,6 +1521,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1517,6 +1548,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1542,6 +1574,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               ignore: /(^master$)/
@@ -1570,6 +1603,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               ignore: /(^master$)/
@@ -1610,6 +1644,7 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - job-lock
           requires:
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
@@ -1631,6 +1666,7 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - job-lock
           requires:
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
@@ -1766,6 +1802,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - job-lock
           filters:
             branches:
               only: /(^master$)/
