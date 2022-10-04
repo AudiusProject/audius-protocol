@@ -272,6 +272,9 @@ parameters:
   deploy_args:
     type: string
     default: ""
+  cut_release:
+    type: string
+    default: ""
   reservations:
     type: string
     default: ""
@@ -1237,8 +1240,12 @@ jobs:
           version: 20.10.14
           docker_layer_caching: true
       - run: |
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
           git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
-          audius-tooling/release-scripts/<< parameters.target >>.sh
+          cd audius-tooling
+          mkdir -p ssh_keys
+          cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+          release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
           condition:
@@ -1269,6 +1276,7 @@ workflows:
          - not: << pipeline.parameters.sdk_release_commit >>
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
+         - not: << pipeline.parameters.cut_release >>
     jobs:
       - noop:
           name: creator
@@ -1424,24 +1432,6 @@ workflows:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
-
-      # Cut release from `master`
-      - noop:
-          name: cut-release-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - verified
-      - release-scripts:
-          name: cut-release
-          target: cut-release
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-          requires:
-            - cut-release-🕹️
 
       # Deploy branch to staging (by service)
       - noop:
@@ -1733,6 +1723,20 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
+
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. click "Trigger Pipeline"
+  # 3. Add string parameter "cut_release" with any non-null value
+  cut-release:
+    when: << pipeline.parameters.cut_release >>
+    jobs:
+      - release-scripts:
+          name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard

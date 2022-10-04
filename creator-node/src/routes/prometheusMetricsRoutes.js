@@ -22,7 +22,7 @@ router.get('/prometheus_metrics_worker', async (req, res) => {
  * Exposes Prometheus metrics aggregated across all workers at `GET /prometheus_metrics`
  */
 router.get('/prometheus_metrics', async (req, res) => {
-  if (clusterUtils.isClusterDisabled()) {
+  if (!clusterUtils.isClusterEnabled()) {
     return returnMetricsForSingleProcess(req, res)
   }
 
