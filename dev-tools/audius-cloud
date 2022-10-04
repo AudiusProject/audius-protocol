@@ -77,7 +77,6 @@ def create(name, gcloud_args):
             "create",
             "--machine-type=e2-custom-6-24576",
             "--boot-disk-size=256G",
-            "--image=audius-protocol-dev",
             name,
             *gcloud_args,
         ],
