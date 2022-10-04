@@ -195,7 +195,7 @@ function LibsWrapper(walletIndex = 0) {
 
   this.updateCreator = async (userId, metadata) => {
     assertLibsDidInit()
-    return this.libsInstance.User.updateCreator(userId, metadata)
+    return this.libsInstance.User.updateCreator(userId, metadata, true)
   }
 
   /**
@@ -240,7 +240,7 @@ function LibsWrapper(walletIndex = 0) {
       blockHash,
       blockNumber,
       trackId
-    } = await this.libsInstance.Track.updateTrack(metadata)
+    } = await this.libsInstance.Track.updateTrack(metadata, true)
     return { blockHash, blockNumber, trackId }
   }
 
