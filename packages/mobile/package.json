@@ -35,6 +35,7 @@
     "@amplitude/react-native": "2.6.0",
     "@audius/common": "1.3.7",
     "@audius/sdk": "1.0.8",
+    "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0",
     "@gorhom/portal": "1.0.9",
     "@hcaptcha/react-native-hcaptcha": "1.3.4",
     "@optimizely/optimizely-sdk": "4.0.0",

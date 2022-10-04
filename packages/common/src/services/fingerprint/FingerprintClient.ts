@@ -1,32 +1,52 @@
-import FingerprintJS, { Agent } from '@fingerprintjs/fingerprintjs-pro'
-
-type FingerprintClientConfig = {
+type FingerprintClientConfig<TFingerprintClient> = {
   apiKey: string
   endpoint: string
   identityService: string
+  initFingerprint: (
+    apiKey: string,
+    endpoint: string
+  ) => Promise<TFingerprintClient>
+  getFingerprint: (
+    client: TFingerprintClient,
+    options: { linkedId: string; tag: any }
+  ) => Promise<any>
 }
 
-export class FingerprintClient {
+export class FingerprintClient<TFingerprintClient> {
   private apiKey: string
-  private fingerprint: Agent | null
+  private fingerprint: TFingerprintClient | null
   private endpoint: string
   private identityService: string
+  private initFingerprint: (
+    apiKey: string,
+    endpoint: string
+  ) => Promise<TFingerprintClient>
 
-  constructor(config: FingerprintClientConfig) {
-    const { apiKey, endpoint, identityService } = config
+  private getFingerprint: (
+    client: TFingerprintClient,
+    options: { linkedId: string; tag: any }
+  ) => Promise<any>
+
+  constructor(config: FingerprintClientConfig<TFingerprintClient>) {
+    const {
+      apiKey,
+      endpoint,
+      identityService,
+      initFingerprint,
+      getFingerprint
+    } = config
     this.apiKey = apiKey
     this.fingerprint = null
     this.endpoint = endpoint
     this.identityService = identityService
+    this.initFingerprint = initFingerprint
+    this.getFingerprint = getFingerprint
   }
 
   async init() {
     console.log('Initializing Fingerprint client')
     try {
-      const fp = await FingerprintJS.load({
-        apiKey: this.apiKey,
-        endpoint: this.endpoint
-      })
+      const fp = await this.initFingerprint(this.apiKey, this.endpoint)
       console.log(`Fingerprint loaded`)
       this.fingerprint = fp
     } catch (e) {
@@ -59,7 +79,7 @@ export class FingerprintClient {
       }
 
       // If we haven't, fingerprint 'em
-      await this.fingerprint.get({
+      await this.getFingerprint(this.fingerprint, {
         linkedId: userId.toString(),
         tag: { origin: clientOrigin }
       })
