@@ -7,7 +7,7 @@ import type { Web3Manager } from '../web3Manager'
 export enum Action {
   CREATE = 'Create',
   UPDATE = 'Update',
-  DELETE = 'Delete'
+  DELETE = 'Delete',
   ARTIST_PICK = 'ArtistPick'
 }
 
