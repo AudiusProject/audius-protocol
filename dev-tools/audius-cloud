@@ -96,7 +96,7 @@ def create_raw(name, gcloud_args):
             "compute",
             "instances",
             "create",
-            "--machine-type=e2-custom-6-24576",
+            "--machine-type=n2-custom-6-24576",
             "--boot-disk-size=256G",
             name,
             *gcloud_args,
