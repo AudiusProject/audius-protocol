@@ -17,7 +17,6 @@ import {
 
 const useStyles = makeStyles(({ spacing }, { socialsCount }) => ({
   root: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing(3)
@@ -77,6 +76,7 @@ export const ProfileSocials = () => {
     <View pointerEvents='box-none' style={styles.root}>
       <ProfileTierTile interactive={false} />
       <Animated.View
+        pointerEvents='box-none'
         style={[
           styles.socials,
           tier !== 'none' && { justifyContent: 'center' },
