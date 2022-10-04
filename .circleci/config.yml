@@ -1226,7 +1226,6 @@ jobs:
             - slack-success:
                 text: Current Staging Reservations
                 detail: ${SLACK_DETAIL}
-                channel: "C03STD3UXMG"
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1806,6 +1805,12 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+    triggers:
+      - schedule:
+          cron: '0 16 * * 1,2,3,4,5'
+          filters:
+            branches:
+              only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
