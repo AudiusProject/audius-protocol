@@ -69,6 +69,15 @@ class URSMRegistrationManager {
    *  5. Submit registration transaction to URSM with signatures
    */
   async run() {
+    if (this.entityManagerReplicaSetEnabled) {
+      // Update config
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
+      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+
+      return
+    }
+    
     this.logInfo('Beginning URSM registration process')
 
     /**
@@ -116,16 +125,6 @@ class URSMRegistrationManager {
       throw new Error(
         `Local delegateOwnerWallet config (${this.delegateOwnerWallet}) doesn't match delegateOwnerWalletFromSPFactory (${delegateOwnerWalletFromSPFactory}) for spID ${spID}`
       )
-    }
-
-    // No further URSM checks are needed if this CN is running against Entity Manager
-    if (this.entityManagerReplicaSetEnabled) {
-      // Update config
-      this.nodeConfig.set('isRegisteredOnURSM', true)
-
-      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
-
-      return
     }
 
     /**
