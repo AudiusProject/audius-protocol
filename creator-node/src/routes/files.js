@@ -175,11 +175,12 @@ const getCID = async (req, res) => {
   const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
   if (!isServable) {
+    prometheusResult.result = 'abort_delisted'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseForbidden('CID has been delisted by this node'),
-      'abort_delisted'
+      prometheusResult
     )
   }
 
@@ -217,8 +218,8 @@ const getCID = async (req, res) => {
   let fileFoundOnFS = false
   let storagePath, fsStats
 
-  for (let i = 0; i < storagePath.length; i++) {
-    const { path: _storagePath, pathType: _pathType } = storagePath[i]
+  for (let i = 0; i < storagePaths.length; i++) {
+    const { path: _storagePath, pathType: _pathType } = storagePaths[i]
 
     try {
       /**
@@ -355,7 +356,7 @@ const getCID = async (req, res) => {
       throw new Error('Not found in network')
     }
   } catch (e) {
-    prometheusResult.mode = 'abort_cid_not_found_network'
+    prometheusResult.mode = 'abort_cid_not_found_in_network'
     req.logger.error(
       { cid: CID },
       `Could not find cid in network: ${e.message}`
@@ -386,6 +387,7 @@ const getCID = async (req, res) => {
     return fsStream
   } catch (e) {
     prometheusResult.mode = 'failure_stream'
+    req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
@@ -397,11 +399,15 @@ const getCID = async (req, res) => {
 
 // Gets a CID in a directory, streaming from the filesystem if available
 const getDirCID = async (req, res) => {
+  const prometheusResult = { result: null }
+
   if (!(req.params && req.params.dirCID && req.params.filename)) {
-    return sendResponse(
+    prometheusResult.result = 'abort_improper_parameters'
+    return sendResponseWithMetric(
       req,
       res,
-      errorResponseBadRequest(`Invalid request, no multihash provided`)
+      errorResponseBadRequest(`Invalid request, no multihash provided`),
+      prometheusResult
     )
   }
 
@@ -424,12 +430,14 @@ const getDirCID = async (req, res) => {
       order: [['clock', 'DESC']]
     })
     if (!queryResults) {
-      return sendResponse(
+      prometheusResult.result = 'abort_cid_not_found_in_db'
+      return sendResponseWithMetric(
         req,
         res,
         errorResponseNotFound(
           `No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`
-        )
+        ),
+        prometheusResult
       )
     }
     storagePath = queryResults.storagePath
@@ -439,26 +447,71 @@ const getDirCID = async (req, res) => {
   // Attempt to stream file to client
   try {
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, storagePath)
+    const fsStream = await streamFromFileSystem(req, res, storagePath)
+
+    if (req.endMetricTimer) {
+      try {
+        prometheusResult.result = 'success_found_in_fs'
+        req.endMetricTimer(prometheusResult)
+      } catch (e) {
+        req.logger.warn(
+          { cid: CID },
+          `Could not end stream content dir metric: ${e.message}`
+        )
+      }
+    }
+
+    return fsStream
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
+    req.logger.warn(`Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
+  // CID is the file CID, parse it from the storagePath
+  const CID = storagePath.split('/').slice(-1).join('')
+  const libs = req.app.get('audiusLibs')
+
   try {
-    // CID is the file CID, parse it from the storagePath
-    const CID = storagePath.split('/').slice(-1).join('')
-    const libs = req.app.get('audiusLibs')
     const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
     if (!found) throw new Error(`CID=${CID} not found in network`)
-
-    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
+    prometheusResult.result = 'abort_cid_not_found_in_network'
     req.logger.error(
-      `Error calling findCIDInNetwork for path ${storagePath}`,
-      e
+      `Error calling findCIDInNetwork for path ${storagePath}: ${e.message}`
     )
-    return sendResponse(req, res, errorResponseServerError(e.message))
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseServerError('Could not find CID in network'),
+      prometheusResult
+    )
+  }
+
+  try {
+    const fsStream = await streamFromFileSystem(req, res, storagePath)
+
+    if (req.endMetricTimer) {
+      try {
+        prometheusResult.result = 'success_found_in_network'
+        req.endMetricTimer(prometheusResult)
+      } catch (e) {
+        req.logger.warn(
+          { cid: CID },
+          `Could not end stream content metric: ${e.message}`
+        )
+      }
+    }
+
+    return fsStream
+  } catch (e) {
+    prometheusResult.mode = 'failure_stream'
+    req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseServerError('Failed to stream'),
+      prometheusResult
+    )
   }
 }
 
@@ -676,7 +729,11 @@ router.get(
  * @dev This route does not handle responses by design, so we can pipe the gateway response.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'], getDirCID)
+router.get(
+  ['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'],
+  routeMetricMiddleware,
+  getDirCID
+)
 
 /**
  * Serves information on existence of given cids

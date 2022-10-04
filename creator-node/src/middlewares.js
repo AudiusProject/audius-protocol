@@ -972,8 +972,9 @@ async function routeMetricMiddleware(req, res, next) {
   const { prometheusRegistry } = serviceRegistry
 
   const fullPath = req.baseUrl + req.path
+
   try {
-    const metric = prometheusRegistry.getMetricByRoute(fullPath)
+    const metric = prometheusRegistry.getMetricByRoute(req.normalizedPath)
 
     if (metric) {
       const endMetricTimerFn = metric.startTimer()

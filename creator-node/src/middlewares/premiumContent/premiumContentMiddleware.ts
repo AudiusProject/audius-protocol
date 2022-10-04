@@ -9,6 +9,7 @@ import { NextFunction, Request, Response } from 'express'
 import { PremiumContentAccessError } from '../../premiumContent/types'
 import type Logger from 'bunyan'
 import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
+import config from '../../config'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -28,17 +29,24 @@ export const premiumContentMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const cid = req.params?.CID
-    if (!cid) {
-      return sendResponseWithMetric(
-        req,
-        res,
-        errorResponseBadRequest('Invalid request, no CID provided.'),
-        'abort_no_cid'
-      )
-    }
+  const cid = req.params?.CID
+  const prometheusResult = { result: '', mode: 'default' }
 
+  if (!cid) {
+    prometheusResult.result = 'abort_no_cid'
+    return sendResponseWithMetric(
+      req,
+      res,
+      errorResponseBadRequest('Invalid request, no CID provided'),
+      prometheusResult
+    )
+  }
+
+  if (!config.get('premiumContentEnabled')) {
+    return next()
+  }
+
+  try {
     const premiumContentHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
     const { premiumContentAccessChecker, libs, redis } = serviceRegistry
@@ -64,52 +72,56 @@ export const premiumContentMiddleware = async (
         trackId,
         isPremium
       }
-      next()
-      return
+      return next()
     }
 
     switch (error) {
       case PremiumContentAccessError.MISSING_HEADERS:
+        prometheusResult.result = 'abort_premium_content_missing_headers'
         return sendResponseWithMetric(
           req,
           res,
           errorResponseUnauthorized(
             'Missing request headers for premium content.'
           ),
-          'abort_premium_content_missing_headers'
+          prometheusResult
         )
       case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
+        prometheusResult.result =
+          'abort_premium_content_invalid_discovery_node_validation'
         return sendResponseWithMetric(
           req,
           res,
           errorResponseForbidden(
             'Failed discovery node signature validation for premium content.'
           ),
-          'abort_premium_content_invalid_discovery_node_validation'
+          prometheusResult
         )
       case PremiumContentAccessError.FAILED_MATCH:
       default:
+        prometheusResult.result =
+          'abort_premium_content_failed_match_verification'
         return sendResponseWithMetric(
           req,
           res,
           errorResponseForbidden(
             'Failed match verification for premium content.'
           ),
-          'abort_premium_content_failed_match_verification'
+          prometheusResult
         )
     }
   } catch (e) {
-    const error = `Could not validate premium content access: ${
-      (e as Error).message
-    }`
     ;(req as any).logger.error(
-      `${error}.\nError: ${JSON.stringify(e, null, 2)}`
+      `Could not validate premium content access: ${
+        (e as Error).message
+      }.\nError: ${JSON.stringify(e, null, 2)}`
     )
+    prometheusResult.result = 'failure_premium_content_error'
     return sendResponseWithMetric(
       req,
       res,
-      errorResponseServerError(error),
-      'failure_premium_content_error'
+      errorResponseServerError('Could not validate premium content access'),
+      prometheusResult
     )
   }
 }
