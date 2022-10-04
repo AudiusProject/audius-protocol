@@ -1,13 +1,16 @@
-
 const { default: Axios } = require('axios')
 const audiusLibsWrapper = require('../../audiusLibsInstance')
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
 const { decodeHashId, encodeHashId } = require('../utils')
 
-async function processSupporterRankChangeNotification (notifications, tx) {
+async function processSupporterRankChangeNotification(notifications, tx) {
   for (const notification of notifications) {
-    const { slot, initiator: receiverUserId, metadata: { entity_id: senderUserId, rank } } = notification
+    const {
+      slot,
+      initiator: receiverUserId,
+      metadata: { entity_id: senderUserId, rank }
+    } = notification
 
     const promises = [
       // SupportingRankUp sent to the user who is supporting
@@ -89,8 +92,8 @@ async function processSupporterRankChangeNotification (notifications, tx) {
     }
 
     await Promise.all(promises)
-    return notifications
   }
+  return notifications
 }
 
 const getSupporters = async (receiverUserId) => {

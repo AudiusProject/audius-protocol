@@ -17,8 +17,8 @@ const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 
-const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
-const testCreatorNodeType = web3.utils.utf8ToHex('creator-node')
+const testDiscProvType = web3.utils.utf8ToHex('discovery-node')
+const testCreatorNodeType = web3.utils.utf8ToHex('content-node')
 const testInvalidType = web3.utils.utf8ToHex('invalid-type')
 const testEndpoint = 'https://localhost:5000'
 const testEndpoint1 = 'https://localhost:5001'

@@ -14,20 +14,21 @@ import {
     saveSecondary2UserResults,
 } from "./queries"
 import {
-    getEnv,
     generateSPSignatureParams,
     makeRequest,
 } from "../utils"
+import { getEnv } from "../config"
 import {
     missedUsersCountGauge,
     gateway,
     indexingContentDurationGauge,
     userBatchDurationGauge,
 } from "../prometheus"
+import { instrumentTracing, tracing } from "../tracer"
 
-export const indexContent = async (run_id: number) => {
+const _indexContent = async (run_id: number) => {
 
-    console.log(`[${run_id}] indexing content node`)
+    tracing.info(`[${run_id}] indexing content node`)
 
     const endTimer = indexingContentDurationGauge.startTimer()
 
@@ -78,15 +79,19 @@ export const indexContent = async (run_id: number) => {
     )
 
     endTimer({ run_id: run_id })
-    console.log(`[${run_id}] finished indexing content nodes`)
+    tracing.info(`[${run_id}] finished indexing content nodes`)
 }
+
+export const indexContent = instrumentTracing({
+    fn: _indexContent,
+})
 
 // for batch in batches
 //      get clock value
 //      save results in non-blocking way
 // make sure all results are saved
-const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
-    console.log(`[${run_id}:${spid}] check users`)
+const _checkUsers = async (run_id: number, spid: number, endpoint: string) => {
+    tracing.info(`[${run_id}:${spid}] check users`)
 
     const batchSize = 5000
 
@@ -125,7 +130,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         offset,
                         batchSize,
                     )
-                    console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
+                    tracing.info(`[getBatch:${offset}:${batchSize}:${count}]`)
 
                     if (walletBatch.length === 0) { continue }
 
@@ -140,24 +145,26 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     )
                     missedUsers += canceledUsers
 
-                    console.log(`[getUserClockValues ${run_id}:${spid}:${offset}] `)
+                    tracing.info(`[getUserClockValues ${run_id}:${spid}:${offset}] `)
 
                     missedUsers += await saveBatch(run_id, spid, results)
 
-                    console.log(`[savebatch ${run_id}:${spid}:${offset}]`)
+                    tracing.info(`[savebatch ${run_id}:${spid}:${offset}]`)
 
                     // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
 
                     try {
                         // Publish metrics to prometheus push gateway
-                        console.log(`[${run_id}] pushing metrics to gateway`);
+                        tracing.info(`[${run_id}] pushing metrics to gateway`);
                         await gateway.pushAdd({ jobName: 'network-monitoring' })
-                    } catch (e) {
-                        console.log(`[checkUsers(batch)] error pushing metrics to pushgateway - ${(e as Error).message}`)
+                    } catch (e: any) {
+                        tracing.recordException(e)
+                        tracing.info(`[checkUsers(batch)] error pushing metrics to pushgateway - ${e.message}`)
                     }
-                } catch (e) {
-                    console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
+                } catch (e: any) {
+                    tracing.recordException(e)
+                    tracing.error(`[checkUsers:${spid}] error - ${e.message}`)
                     missedUsers += batchSize
                 }
             }
@@ -165,35 +172,40 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     )
 
     // Check to make sure all users saved
-    console.log(`[${run_id}:${spid}] missed users ${missedUsers}`)
+    tracing.info(`[${run_id}:${spid}] missed users ${missedUsers}`)
 
     // Record the number of usered skipped/errored for the endpoint and export to prometheus
     missedUsersCountGauge.set({ endpoint, run_id }, missedUsers)
 
     try {
         // Finish by publishing metrics to prometheus push gateway
-        console.log(`[${run_id}] pushing metrics to gateway`);
+        tracing.info(`[${run_id}] pushing metrics to gateway`);
         await gateway.pushAdd({ jobName: 'network-monitoring' })
-    } catch (e) {
-        console.log(`[checkUsers] error pushing metrics to pushgateway - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[checkUsers] error pushing metrics to pushgateway - ${e.message}`)
     }
 
-    console.log(`[${run_id}:${spid}] finish saving user content node data to db`)
+    tracing.info(`[${run_id}:${spid}] finish saving user content node data to db`)
 }
+
+const checkUsers = instrumentTracing({
+    fn: _checkUsers,
+})
 
 // for batch in batches
 //      check cids
 //      go run sql query in background and don't block
 // end for
 // wait until sql queries are finished
-export const checkCID = async (
+const _checkCID = async (
     run_id: number,
     spid: number,
     endpoint: string,
     cidCount: number,
     imageCidCount: number
 ) => {
-    console.log(`[${run_id}:${spid}] check cids`)
+    tracing.info(`[${run_id}:${spid}] check cids`)
 
     const batchSize = 500
 
@@ -245,10 +257,14 @@ export const checkCID = async (
         })(),
     ])
 
-    console.log(`[${run_id}:${spid}] finish saving cid content node data to db`)
+    tracing.info(`[${run_id}:${spid}] finish saving cid content node data to db`)
 }
 
-const checkIfCIDsExistOnCN = async (
+export const checkCID = instrumentTracing({
+    fn: _checkCID,
+})
+
+const _checkIfCIDsExistOnCN = async (
     endpoint: string,
     batch: { cid: string, user_id: number }[],
     deregisteredCN: string[],
@@ -282,20 +298,25 @@ const checkIfCIDsExistOnCN = async (
         )
 
         if (batchResp.canceled) {
-            console.log(`[${endpoint}:checkIfCIDsExistOnCN canceled] - ${endpoint}${route} - numCIDs ${batch.length}`)
+            tracing.info(`[${endpoint}:checkIfCIDsExistOnCN canceled] - ${endpoint}${route} - numCIDs ${batch.length}`)
             return batch.map(_ => false)
         }
 
         const cidsExistBatch: boolean[] = batchResp.response!.data.data.cids
         return cidsExistBatch
 
-    } catch (e) {
-        console.log(`[${endpoint}:checkIfCIDsExistOnCN Error] - ${endpoint}${route} - numCIDs ${batch.length} - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[${endpoint}:checkIfCIDsExistOnCN Error] - ${endpoint}${route} - numCIDs ${batch.length} - ${e.message}`)
         return batch.map(_ => false)
     }
 }
 
-const getUserClockValues = async (
+const checkIfCIDsExistOnCN = instrumentTracing({
+    fn: _checkIfCIDsExistOnCN,
+})
+
+const _getUserClockValues = async (
     endpoint: string,
     walletPublicKeys: string[],
     deregisteredCN: string[],
@@ -331,7 +352,7 @@ const getUserClockValues = async (
         )
 
         if (batchClockStatusResp.canceled) {
-            console.log(`[getUsersClockValues canceled] - ${endpoint}`)
+            tracing.info(`[getUsersClockValues canceled] - ${endpoint}`)
             // Return map of wallets to -1 clock (default value)
             return {
                 canceledUsers: walletPublicKeys.length,
@@ -345,11 +366,12 @@ const getUserClockValues = async (
         const batchClockStatus = batchClockStatusResp.response!.data.data.users
         const batchClockStatusAttemptCount = batchClockStatusResp.attemptCount
 
-        console.log(`[getUserClockValues Complete] ${endpoint} - reqAttemptCount ${batchClockStatusAttemptCount}`)
+        tracing.info(`[getUserClockValues Complete] ${endpoint} - reqAttemptCount ${batchClockStatusAttemptCount}`)
         return { canceledUsers: 0, results: batchClockStatus }
 
-    } catch (e) {
-        console.log(`[getUserClockValues Error] - ${endpoint} - ${(e as Error).message}`)
+    } catch (e: any) {
+        tracing.recordException(e)
+        tracing.error(`[getUserClockValues Error] - ${endpoint} - ${e.message}`)
 
         // Return map of wallets to -1 clock (default value)
         return {
@@ -361,3 +383,7 @@ const getUserClockValues = async (
         }
     }
 }
+
+const getUserClockValues = instrumentTracing({
+    fn: _getUserClockValues,
+})

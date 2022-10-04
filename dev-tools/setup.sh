@@ -17,7 +17,18 @@ debian | ubuntu)
 
     # Install dependencies
     sudo apt-get update
-    sudo apt-get install -y git python3 python3-pip docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    sudo apt-get install -y \
+        git \
+        python3 \
+        python3-pip \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
+        docker-compose-plugin
+
+    mkdir -p ~/.docker/cli-plugins
+    curl -L "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-$(dpkg --print-architecture)" -o ~/.docker/cli-plugins/docker-buildx
+    chmod +x ~/.docker/cli-plugins/docker-buildx
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"
@@ -62,3 +73,5 @@ ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
 
 echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
+
+[[ "$ID" =~ ^(debian|ubuntu)$ ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh"

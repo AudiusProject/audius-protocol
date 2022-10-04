@@ -33,7 +33,7 @@ const generateTimestampAndSignature = (data, privateKey) => {
  * @param {string} signature signature generated with signed data
  */
 const recoverWallet = (data, signature) => {
-  let structuredData = JSON.stringify(sortKeys(data))
+  const structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
 
@@ -49,13 +49,19 @@ const signatureHasExpired = (signatureTimestamp) => {
   const currentTimestampDate = new Date()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
-  return (signatureAge >= MAX_SIGNATURE_AGE_MS)
+  return signatureAge >= MAX_SIGNATURE_AGE_MS
 }
 
-const sortKeys = x => {
-  if (typeof x !== 'object' || !x) { return x }
-  if (Array.isArray(x)) { return x.map(sortKeys) }
-  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
+const sortKeys = (x) => {
+  if (typeof x !== 'object' || !x) {
+    return x
+  }
+  if (Array.isArray(x)) {
+    return x.map(sortKeys)
+  }
+  return Object.keys(x)
+    .sort()
+    .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
 module.exports = {

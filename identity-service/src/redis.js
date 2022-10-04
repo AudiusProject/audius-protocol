@@ -14,7 +14,7 @@ class Lock {
    * @param {String} key redis key
    * @returns true if lock is set, false if lock is not set
    */
-  static async setLock (key) {
+  static async setLock(key) {
     const response = await redisClient.setnx(key, 1)
     if (response) return true
     else return false
@@ -25,13 +25,13 @@ class Lock {
    * @param {String} key redis key for lock
    * @returns true if lock exists, false if lock doesn't exist
    */
-  static async getLock (key) {
+  static async getLock(key) {
     const response = await redisClient.get(key)
     if (response) return true
     else return false
   }
 
-  static async clearLock (key) {
+  static async clearLock(key) {
     redisClient.del(key)
   }
 
@@ -39,7 +39,7 @@ class Lock {
    * Clears all locks that match a redis key pattern
    * @param {String} keyPattern redis key for lock, must include '*' to select all records for a pattern
    */
-  static async clearAllLocks (keyPattern) {
+  static async clearAllLocks(keyPattern) {
     const stream = redisClient.scanStream({
       match: keyPattern
     })

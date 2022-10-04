@@ -15,12 +15,12 @@ const logger = bunyan.createLogger({
 })
 logger.info('Loglevel set to:', logLevel)
 
-const excludedRoutes = [ '/health_check', '/balance_check' ]
-function requestNotExcludedFromLogging (url) {
-  return (excludedRoutes.indexOf(url) === -1)
+const excludedRoutes = ['/health_check', '/balance_check']
+function requestNotExcludedFromLogging(url) {
+  return excludedRoutes.indexOf(url) === -1
 }
 
-function loggingMiddleware (req, res, next) {
+function loggingMiddleware(req, res, next) {
   const providedRequestID = req.header('X-Request-ID')
   const requestID = providedRequestID || shortid.generate()
 

@@ -30,6 +30,9 @@ class URSMRegistrationManager {
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
     this.oldDelegateOwnerWallet = this.nodeConfig.get('oldDelegateOwnerWallet')
     this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
+    this.entityManagerReplicaSetEnabled = this.nodeConfig.get(
+      'entityManagerReplicaSetEnabled'
+    )
 
     if (
       !this.audiusLibs ||
@@ -127,6 +130,7 @@ class URSMRegistrationManager {
       `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
     )
     if (
+      !this.entityManagerReplicaSetEnabled &&
       activeDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM
     ) {
       // Update config

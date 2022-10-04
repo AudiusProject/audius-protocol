@@ -272,6 +272,9 @@ parameters:
   deploy_args:
     type: string
     default: ""
+  cut_release:
+    type: string
+    default: ""
   reservations:
     type: string
     default: ""
@@ -1197,7 +1200,9 @@ jobs:
           command: |
             export SLACK_DETAIL=$(awk '{printf "%s\\n", $0}' /tmp/summary.md)
             echo "export SLACK_DETAIL='${SLACK_DETAIL}'" >> "$BASH_ENV"
-      - slack-fail
+          when: always
+      - slack-fail:
+          detail: ${SLACK_DETAIL}
       # only send Success slack message when prod, --force, or custom args are used
       - when:
           condition:
@@ -1220,6 +1225,72 @@ jobs:
             sudo killall openvpn || true
           when: always
 
+  release-scripts:
+    docker:
+      - image: cimg/go:1.17
+    parameters:
+      target:
+        description: Name of the script, without .sh, like bump-hotfix or cut-release
+        type: enum
+        enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            # github.com
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+      - run: |
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
+          cd audius-tooling
+          mkdir -p ssh_keys
+          cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+          release-scripts/<< parameters.target >>.sh
+      - slack-fail
+      - when:
+          condition:
+            equal: [ cut-release, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Release branch has been cut! :git-fork:"
+      - when:
+          condition:
+            equal: [ release-to-service-providers, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Deployment Released to Service Providers! :gift:"
+                detail: "New Governance Proposals are out. :vote:"
+                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
+      - when:
+          condition:
+            equal: [ execute-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Governance Proposal has been executed! :done:"
+
+  generate-release-checklist:
+    docker:
+      - image: circleci/node:14.17.5
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Generate Release Checklist
+          command: |
+            RELEASE_VERSION=$(jq -r .version discovery-provider/.version.json)
+            OLD_VERSION=$(echo ${RELEASE_VERSION} | awk -F. '{$NF = $NF - 1;} 1' | sed 's/ /./g')
+            START_COMMIT=$(git show-ref --hash refs/tags/@audius/discovery-provider@${OLD_VERSION})
+            RELEASE_HASH=$(git show-ref --hash refs/tags/@audius/discovery-provider@${RELEASE_VERSION})
+            git log \
+              --pretty=format:'- [ ] [%h] - %s %an %n' \
+              --abbrev-commit ${START_COMMIT}..${RELEASE_HASH} \
+              > /tmp/release-checklist.md
+      - store_artifacts:
+          path: /tmp/release-checklist.md
+          destination: release-checklist.md
+
 workflows:
   workflows:
     when:
@@ -1228,6 +1299,7 @@ workflows:
          - not: << pipeline.parameters.sdk_release_commit >>
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
+         - not: << pipeline.parameters.cut_release >>
     jobs:
       - noop:
           name: creator
@@ -1384,20 +1456,6 @@ workflows:
           requires:
             - 💪-🚧-🏠-<< matrix.host >>-🕹️
 
-      # Cut release from `master`
-      - noop:
-          name: cut-release-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^master$)/
-          requires:
-            - verified
-      - noop:
-          name: cut-release
-          requires:
-            - cut-release-🕹️
-
       # Deploy branch to staging (by service)
       - noop:
           name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
@@ -1481,8 +1539,12 @@ workflows:
             - 💪-🚧-🌿-<< matrix.host >>-🕹️
 
       # Bump Tags (for release branch hot-fixes)
-      - noop:
-          name: bump-hotfix-tags
+      - release-scripts:
+          name: bump-hotfix
+          target: bump-hotfix
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1496,7 +1558,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-dn-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1516,7 +1578,7 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
+            - bump-hotfix
       - deploy:
           name: 🚧-🎁-to-is-prod
           git_tag: ${CIRCLE_SHA1}
@@ -1530,18 +1592,31 @@ workflows:
             - 🚧-🎁-to-is-prod-🕹️
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-cn-prod-🕹️
+          name: 🚧-🎁-to-<< matrix.host >>-prod-🕹️
           type: approval
           filters:
             branches:
               only: /(^release-v.*-patch-.*$)/
+          matrix:
+            parameters:
+              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, user-metadata]
           requires:
             - built
-      # no-op currently since Content Nodes have manual version patching
-      - noop:
-          name: 🚧-🎁-to-cn-prod
+      - deploy:
+          name: 🚧-🎁-to-<< matrix.host >>-prod
+          git_tag: ${CIRCLE_SHA1}
+          environment: prod
+          service: creator
+          params: --dry-run
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+          matrix:
+            parameters:
+              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, user-metadata]
           requires:
-            - 🚧-🎁-to-cn-prod-🕹️
+            - 🚧-🎁-to-<< matrix.host >>-prod-🕹️
       # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
       - noop:
           name: 🚧-🎁-to-SPs-🕹️
@@ -1550,10 +1625,13 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - bump-hotfix-tags
-      - noop:
-          # ensure Slack pings Dheeraj, Ray, Roneil, Forrest
+            - bump-hotfix
+      - release-scripts:
           name: 🚧-🎁-to-SPs
+          target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1565,8 +1643,11 @@ workflows:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - 🚧-🎁-to-SPs
-      - noop:
+      - release-scripts:
           name: execute-proposal
+          target: execute-proposal
+          context:
+            - slack-secrets
           requires:
             - execute-proposal-🕹️
 
@@ -1678,6 +1759,23 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
+
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. click "Trigger Pipeline"
+  # 3. Add string parameter "cut_release" with any non-null value
+  cut-release:
+    when: << pipeline.parameters.cut_release >>
+    jobs:
+      - release-scripts:
+          name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+      - generate-release-checklist:
+          requires:
+            - release-scripts
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard

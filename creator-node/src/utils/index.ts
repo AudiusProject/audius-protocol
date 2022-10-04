@@ -31,6 +31,7 @@ import {
 } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
+export type { ValuesOf } from './utils'
 export type { ReplicaSet } from './strToReplicaSet'
 export {
   timeout,

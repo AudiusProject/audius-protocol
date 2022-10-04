@@ -22,7 +22,7 @@ const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
 const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 const TrustedNotifierManager = require('./services/TrustedNotifierManager')
-const ImageProcessingQueue = require('./ImageProcessingQueue')
+const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
@@ -53,7 +53,7 @@ class ServiceRegistry {
     this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
