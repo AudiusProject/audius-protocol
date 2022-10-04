@@ -30,6 +30,7 @@ const initialState: ModalsState = {
   DeletePlaylistConfirmation: false,
   FeatureFlagOverride: false,
   BuyAudio: false,
+  BuyAudioRecovery: false,
   TransactionDetails: false,
   VipDiscord: false,
   StripeOnRamp: false

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import {
   Nullable,
@@ -31,7 +31,7 @@ const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
 const { getAccountBalance, getAccountTotalBalance } = walletSelectors
-const { precalculateSwapFees, setProvider } = buyAudioActions
+const { startBuyAudioFlow } = buyAudioActions
 
 const messages = {
   receiveLabel: 'Receive',
@@ -138,24 +138,17 @@ export const WalletManagementTile = () => {
     useSelector(getAccountTotalBalance) ?? null
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const [, setOpen] = useModalState('AudioBreakdown')
-  const [, setBuyAudioModalOpen] = useModalState('BuyAudio')
 
   const onClickOpen = useCallback(() => {
     setOpen(true)
   }, [setOpen])
 
   const onBuyWithCoinbaseClicked = useCallback(() => {
-    dispatch(setProvider({ provider: OnRampProvider.COINBASE }))
-    setBuyAudioModalOpen(true)
-  }, [dispatch, setBuyAudioModalOpen])
+    dispatch(startBuyAudioFlow({ provider: OnRampProvider.COINBASE }))
+  }, [dispatch])
 
   const onBuyWithStripeClicked = useCallback(() => {
-    dispatch(setProvider({ provider: OnRampProvider.STRIPE }))
-    setBuyAudioModalOpen(true)
-  }, [dispatch, setBuyAudioModalOpen])
-
-  useEffect(() => {
-    dispatch(precalculateSwapFees())
+    dispatch(startBuyAudioFlow({ provider: OnRampProvider.STRIPE }))
   }, [dispatch])
 
   return (

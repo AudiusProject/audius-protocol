@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 
-import {
-  buyAudioActions,
-  buyAudioSelectors,
-  BuyAudioStage
-} from '@audius/common'
+import { buyAudioSelectors, BuyAudioStage } from '@audius/common'
 import {
   Modal,
   ModalContentPages,
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import IconGoldBadgeSrc from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
@@ -54,7 +50,6 @@ const stageToPage = (stage: BuyAudioStage) => {
 }
 
 export const BuyAudioModal = () => {
-  const dispatch = useDispatch()
   const [isOpen, setIsOpen] = useModalState('BuyAudio')
   const stage = useSelector(getBuyAudioFlowStage)
   const provider = useSelector(getBuyAudioProvider)
@@ -66,10 +61,6 @@ export const BuyAudioModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
-  const handleClosed = useCallback(
-    () => dispatch(buyAudioActions.restart()),
-    [dispatch]
-  )
   if (provider === undefined && isOpen) {
     console.error('BuyAudio modal opened without a provider. Aborting...')
     return null
@@ -79,7 +70,6 @@ export const BuyAudioModal = () => {
     <Modal
       isOpen={isOpen && provider !== undefined}
       onClose={handleClose}
-      onClosed={handleClosed}
       bodyClassName={styles.modal}
       dismissOnClickOutside={!inProgress || error}
     >

@@ -26,6 +26,7 @@ export type Modals =
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
+  | 'BuyAudioRecovery'
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'

@@ -119,12 +119,12 @@ export const getAudioAccountInfo = async ({
 export const pollForAudioBalanceChange = async ({
   tokenAccount,
   initialBalance,
-  retryDelay = DEFAULT_RETRY_DELAY,
+  retryDelayMs = DEFAULT_RETRY_DELAY,
   maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   tokenAccount: PublicKey
   initialBalance?: u64
-  retryDelay?: number
+  retryDelayMs?: number
   maxRetryCount?: number
 }) => {
   let retries = 0
@@ -146,7 +146,7 @@ export const pollForAudioBalanceChange = async ({
         `Polling AUDIO balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${maxRetryCount}]`
       )
     }
-    await delay(retryDelay)
+    await delay(retryDelayMs)
     tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   }
   if (
@@ -167,12 +167,12 @@ export const pollForAudioBalanceChange = async ({
 export const pollForSolBalanceChange = async ({
   rootAccount,
   initialBalance,
-  retryDelay = DEFAULT_RETRY_DELAY,
+  retryDelayMs = DEFAULT_RETRY_DELAY,
   maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   rootAccount: PublicKey
   initialBalance?: number
-  retryDelay?: number
+  retryDelayMs?: number
   maxRetryCount?: number
 }) => {
   const connection = await getSolanaConnection()
@@ -187,7 +187,7 @@ export const pollForSolBalanceChange = async ({
         balance / LAMPORTS_PER_SOL
       }) [${retries}/${maxRetryCount}]`
     )
-    await delay(retryDelay)
+    await delay(retryDelayMs)
     balance = await connection.getBalance(rootAccount, 'finalized')
   }
   if (balance !== initialBalance) {
@@ -249,7 +249,14 @@ export const saveUserBankTransactionMetadata = async (
   data: InAppAudioPurchaseMetadata
 ) => {
   await waitForLibsInit()
-  // return await libs().identityService!.saveUserBankTransactionMetadata(data)
+  return await libs().identityService!.saveUserBankTransactionMetadata(data)
+}
+
+export const getUserBankTransactionMetadata = async (transactionId: string) => {
+  await waitForLibsInit()
+  return await libs().identityService!.getUserBankTransactionMetadata(
+    transactionId
+  )
 }
 
 export const createStripeSession = async ({
@@ -259,11 +266,9 @@ export const createStripeSession = async ({
   destinationWallet: string
   amount: string
 }) => {
-  throw new Error('createStripeSession: Not implemented')
-  // TODO: Update libs with this call
-  // await waitForLibsInit()
-  // return await libs().identityService!.createStripeSession({
-  //   destinationWallet,
-  //   amount
-  // })
+  await waitForLibsInit()
+  return await libs().identityService!.createStripeSession({
+    destinationWallet,
+    amount
+  })
 }

@@ -2,13 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from '../../../models/Status'
 
-import { BuyAudioStage, OnRampProvider, PurchaseInfoErrorType } from './types'
-
-type AmountObject = {
-  amount: number
-  uiAmount: number
-  uiAmountString: string
-}
+import {
+  AmountObject,
+  BuyAudioStage,
+  OnRampProvider,
+  PurchaseInfoErrorType
+} from './types'
 
 type PurchaseInfo = {
   isError: false
@@ -90,9 +89,6 @@ const slice = createSlice({
       }
       state.purchaseInfoStatus = Status.ERROR
     },
-    precalculateSwapFees: () => {
-      // Triggers a saga to calculate and cache swap fees
-    },
     cacheAssociatedTokenAccount: (
       state,
       {
@@ -112,9 +108,13 @@ const slice = createSlice({
     clearFeesCache: (state) => {
       state.feesCache = initialState.feesCache
     },
-    restart: (state) => {
+    startBuyAudioFlow: (
+      state,
+      action: PayloadAction<{ provider: OnRampProvider }>
+    ) => {
       state.stage = BuyAudioStage.START
       state.error = undefined
+      state.provider = action.payload.provider
     },
     onRampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
@@ -153,15 +153,14 @@ export const {
   cacheAssociatedTokenAccount,
   cacheTransactionFees,
   clearFeesCache,
-  restart,
+  startBuyAudioFlow,
   onRampOpened,
   onRampSucceeded,
   onRampCanceled,
   swapStarted,
   swapCompleted,
   transferStarted,
-  transferCompleted,
-  precalculateSwapFees
+  transferCompleted
 } = slice.actions
 
 export default slice.reducer
