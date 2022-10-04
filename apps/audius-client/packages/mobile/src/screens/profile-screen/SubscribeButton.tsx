@@ -26,7 +26,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type SubscribeButtonProps = {
-  profile: User
+  profile: Pick<User, 'handle' | 'user_id'>
 }
 
 export const SubscribeButton = (props: SubscribeButtonProps) => {
