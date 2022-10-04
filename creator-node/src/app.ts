@@ -29,9 +29,7 @@ import replicaSetRoutes from './components/replicaSet/replicaSetController'
 
 // Content node app adds additional fields to the Express request object. This typing
 // is a type that adds additional fields to the request object.
-type CustomRequest = Request & { logger: Logger } & {
-  normalizedPath: string
-}
+type CustomRequest = Request & { logger: Logger; normalizedPath: string }
 
 function errorHandler(
   err: any,
