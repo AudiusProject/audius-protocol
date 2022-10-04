@@ -412,7 +412,7 @@ def format_artifacts(
         hosts.sort()
         summary = [f"{heading}:"]
         for h in hosts:
-            summary.append(f"* {h}")
+            summary.append(f"• {h}")
 
         print("\n".join(summary))
         with open("/tmp/summary.md", "a") as f:
