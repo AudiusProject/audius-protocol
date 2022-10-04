@@ -119,6 +119,7 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
             onRefresh={handleRefresh}
             scrollAnim={scrollAnim}
             isRefreshDisabled={isRefreshDisabled}
+            yOffsetDisappearance={-16}
           />
         ) : null}
 

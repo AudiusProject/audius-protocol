@@ -69,22 +69,25 @@ export const ProfileScreen = () => {
     params.handle && params.handle !== 'accountUser'
       ? params.handle
       : profile?.handle
+  const handleLower = handle?.toLowerCase()
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
-  const status = useSelector((state) => getProfileStatus(state, handle))
+  const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const isNotReachable = useSelector(getIsReachable) === false
-  const editStatus = useSelector((state) => getProfileEditStatus(state, handle))
+  const editStatus = useSelector((state) =>
+    getProfileEditStatus(state, handleLower)
+  )
   const isOwner = profile?.user_id === accountId
 
   const fetchProfile = useCallback(() => {
     // When profile edited is being still confirmed, prevent fetch call so we
     // don't override the optimistic profile metadata.
     if (isOwner && editStatus === Status.LOADING) return
-    dispatch(fetchProfileAction(handle, null, true, true, false))
-  }, [dispatch, handle, isOwner, editStatus])
+    dispatch(fetchProfileAction(handleLower, null, true, true, false))
+  }, [dispatch, handleLower, isOwner, editStatus])
 
   useFocusEffect(fetchProfile)
 

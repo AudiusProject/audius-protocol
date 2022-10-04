@@ -39,9 +39,9 @@ const interpolateTranslateY = (scrollAnim: Animated.Value) =>
     extrapolateRight: 'clamp'
   })
 
-const interpolateHitTopOpacity = (scrollAnim: Animated.Value) =>
+const interpolateHitTopOpacity = (scrollAnim: Animated.Value, scrollDistance) =>
   scrollAnim.interpolate({
-    inputRange: [-60, -16, 0],
+    inputRange: [-60, scrollDistance, scrollDistance + 20],
     outputRange: [1, 1, 0],
     extrapolateRight: 'clamp'
   })
@@ -148,6 +148,7 @@ type PullToRefreshProps = {
   isRefreshDisabled?: boolean
   topOffset?: number
   color?: string
+  yOffsetDisappearance?: number
 }
 
 /**
@@ -184,10 +185,13 @@ export const PullToRefresh = ({
   isRefreshDisabled,
   scrollAnim,
   topOffset = 0,
+  yOffsetDisappearance = 0,
   color
 }: PullToRefreshProps) => {
   const styles = useStyles(topOffset)
   const { neutralLight4 } = useThemeColors()
+
+  const wasRefreshing = usePrevious(isRefreshing)
 
   const [didHitTop, setDidHitTop] = useState(false)
   const hitTop = useRef(false)
@@ -224,38 +228,44 @@ export const PullToRefresh = ({
   )
 
   useEffect(() => {
-    if (!isRefreshing && isRefreshDisabled) {
-      hitTop.current = false
+    if (
+      isRefreshDisabled !== undefined
+        ? !isRefreshing && isRefreshDisabled
+        : !isRefreshing && wasRefreshing
+    ) {
       setDidHitTop(false)
       setShouldShowSpinner(false)
       animationRef.current?.reset()
     }
-  }, [isRefreshing, hitTop, isRefreshDisabled])
+  }, [isRefreshing, hitTop, wasRefreshing, isRefreshDisabled])
 
   const listenerRef = useRef<string>()
 
-  useEffect(() => {
-    listenerRef.current = scrollAnim?.addListener(
-      ({ value }: { value: number }) => {
-        if (
-          value < -1 * PULL_DISTANCE &&
-          !hitTop.current &&
-          !isRefreshDisabled
-        ) {
-          hitTop.current = true
-          setDidHitTop(true)
-          haptics.light()
-          onRefresh?.()
-          animationRef.current?.play()
-        }
+  const handleScroll = useCallback(
+    ({ value }: { value: number }) => {
+      if (value === 0) {
+        hitTop.current = false
+        setDidHitTop(false)
       }
-    )
+      if (value < -1 * PULL_DISTANCE && !hitTop.current && !isRefreshDisabled) {
+        hitTop.current = true
+        setDidHitTop(true)
+        haptics.light()
+        onRefresh?.()
+        animationRef.current?.play()
+      }
+    },
+    [onRefresh, isRefreshDisabled]
+  )
+
+  useEffect(() => {
+    listenerRef.current = scrollAnim?.addListener(handleScroll)
     return () => {
       if (listenerRef.current) {
         scrollAnim?.removeListener(listenerRef.current)
       }
     }
-  }, [scrollAnim, onRefresh, isRefreshDisabled, didHitTop])
+  }, [scrollAnim, handleScroll])
 
   return scrollAnim ? (
     <Animated.View
@@ -268,7 +278,7 @@ export const PullToRefresh = ({
             }
           ],
           opacity: didHitTop
-            ? interpolateHitTopOpacity(scrollAnim)
+            ? interpolateHitTopOpacity(scrollAnim, yOffsetDisappearance)
             : interpolateOpacity(scrollAnim)
         }
       ]}
