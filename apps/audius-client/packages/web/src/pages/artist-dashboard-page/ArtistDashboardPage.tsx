@@ -177,6 +177,7 @@ const makeColumns = (account: User, isUnlisted: boolean) => {
 }
 
 const tableColumns: TracksTableColumn[] = [
+  'spacer',
   'trackName',
   'releaseDate',
   'length',
@@ -210,10 +211,11 @@ const TracksTableContainer = ({
       {
         text: messages.unlistedTracksTabTitle,
         icon: <IconHidden />,
-        label: messages.unlistedTracksTabTitle
+        label: messages.unlistedTracksTabTitle,
+        disabled: !unlistedDataSource.length
       }
     ],
-    []
+    [unlistedDataSource.length]
   )
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,9 +249,11 @@ const TracksTableContainer = ({
             data={filteredListedData}
             columns={tableColumns}
             onClickRow={onClickRow}
+            onClickTrackName={onClickRow}
             loading={tracksStatus === Status.LOADING}
             fetchPage={handleFetchPage}
             pageSize={tablePageSize}
+            userId={account.user_id}
             showMoreLimit={5}
             onShowMoreToggle={tabRecalculator.recalculate}
             totalRowCount={account.track_count}
@@ -275,10 +279,12 @@ const TracksTableContainer = ({
             data={filteredUnlistedData}
             columns={tableColumns}
             onClickRow={onClickRow}
+            onClickTrackName={onClickRow}
             loading={tracksStatus === Status.LOADING}
             fetchPage={handleFetchPage}
             pageSize={tablePageSize}
             showMoreLimit={5}
+            userId={account.user_id}
             onShowMoreToggle={tabRecalculator.recalculate}
             totalRowCount={account.track_count}
             isPaginated
