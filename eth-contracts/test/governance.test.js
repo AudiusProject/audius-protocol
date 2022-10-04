@@ -59,7 +59,7 @@ contract('Governance.sol', async (accounts) => {
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
-  const testDiscProvType = web3.utils.utf8ToHex('discovery-provider')
+  const testDiscProvType = web3.utils.utf8ToHex('discovery-node')
   const testEndpoint1 = 'https://localhost:5000'
   const testEndpoint2 = 'https://localhost:5001'
 
