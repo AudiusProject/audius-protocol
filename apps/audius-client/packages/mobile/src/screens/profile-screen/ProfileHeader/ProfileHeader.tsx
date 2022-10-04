@@ -1,16 +1,13 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import {
-  accountSelectors,
-  reachabilitySelectors,
-  useSelectTierInfo
-} from '@audius/common'
+import { accountSelectors, useSelectTierInfo } from '@audius/common'
 import type { Animated } from 'react-native'
 import { LayoutAnimation, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Divider } from 'app/components/core'
+import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { makeStyles } from 'app/styles'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'
@@ -26,7 +23,6 @@ import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ExpandedSection } from './ExpandedSection'
 import { TopSupporters } from './TopSupporters'
-const { getIsReachable } = reachabilitySelectors
 const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -56,7 +52,6 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpansible, setIsExpansible] = useState(false)
-  const isReachable = useSelector(getIsReachable)
 
   const {
     user_id: userId,
@@ -121,31 +116,29 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
       <ProfilePicture style={styles.profilePicture} />
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />
-        {isReachable && (
-          <>
-            <ProfileMetrics />
-            {isExpanded ? (
-              <ExpandedSection />
-            ) : (
-              <CollapsedSection
-                isExpansible={isExpansible}
-                setIsExpansible={setIsExpansible}
-              />
-            )}
-            {isExpansible ? (
-              <ExpandHeaderToggleButton
-                isExpanded={isExpanded}
-                onPress={handleToggleExpand}
-              />
-            ) : null}
-            <Divider style={styles.divider} />
-            {!hasUserFollowed ? null : (
-              <ArtistRecommendations onClose={handleCloseArtistRecs} />
-            )}
-            {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
-            <TopSupporters />
-          </>
-        )}
+        <OnlineOnly>
+          <ProfileMetrics />
+          {isExpanded ? (
+            <ExpandedSection />
+          ) : (
+            <CollapsedSection
+              isExpansible={isExpansible}
+              setIsExpansible={setIsExpansible}
+            />
+          )}
+          {isExpansible ? (
+            <ExpandHeaderToggleButton
+              isExpanded={isExpanded}
+              onPress={handleToggleExpand}
+            />
+          ) : null}
+          <Divider style={styles.divider} />
+          {!hasUserFollowed ? null : (
+            <ArtistRecommendations onClose={handleCloseArtistRecs} />
+          )}
+          {isOwner ? <UploadTrackButton /> : <TipAudioButton />}
+          <TopSupporters />
+        </OnlineOnly>
         <Divider style={styles.bottomDivider} />
       </View>
     </>
