@@ -1,11 +1,11 @@
-const { Queue, QueueEvents, Worker } = require('bullmq')
-const path = require('path')
-const os = require('os')
+import { Queue, QueueEvents, Worker } from 'bullmq'
+import path from 'path'
+import os from 'os'
 
-const config = require('./config')
-const { logger: genericLogger } = require('./logging')
-const { clusterUtils } = require('./utils')
-const resizeImage = require('./resizeImage')
+import config from './config'
+import { logger as genericLogger } from './logging'
+import { clusterUtils } from './utils'
+import resizeImage from './resizeImage'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
@@ -24,7 +24,10 @@ const MAX_CONCURRENCY =
 
 const IMAGE_PROCESSING_QUEUE_HISTORY = 500
 
-class ImageProcessingQueue {
+export class ImageProcessingQueue {
+  queue: Queue<any, any, string>
+  queueEvents: QueueEvents
+
   constructor(prometheusRegistry = null) {
     const connection = {
       host: config.get('redisHost'),
