@@ -17,7 +17,7 @@ const messages = {
 }
 
 type FollowButtonsProps = Partial<ButtonProps> & {
-  profile: User
+  profile: Pick<User, 'does_current_user_follow' | 'user_id'>
   noIcon?: boolean
   style?: StyleProp<ViewStyle>
   followSource: FollowSource
