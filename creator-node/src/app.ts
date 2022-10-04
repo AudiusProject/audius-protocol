@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction, IRoute } from 'express'
 import type Logger from 'bunyan'
+
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
