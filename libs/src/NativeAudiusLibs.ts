@@ -38,7 +38,10 @@ import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
-import { ProxyWormhole, ProxyWormholeConfig } from './services/wormhole'
+import {
+  ProxyWormhole,
+  ProxyWormholeConfig
+} from './services/wormhole/ProxyWormhole'
 
 type LibsIdentityServiceConfig = {
   url: string
