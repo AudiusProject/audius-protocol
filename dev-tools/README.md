@@ -20,7 +20,7 @@ To use the client from a mac, we need to setup a transparent proxy server to int
 To setup the transparent proxy server from a mac:
 ```
 brew install sshuttle
-sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222
+sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o "StrictHostKeyChecking=no"'
 ```
 
 The password is `sshuttle`
