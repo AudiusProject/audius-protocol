@@ -261,7 +261,7 @@ def ps(protocol_dir):
     )
 
     for service in services:
-        if service["Service"] == "proxy":
+        if service["Service"] == "port-forwarder":
             continue
 
         name = service["Service"]
