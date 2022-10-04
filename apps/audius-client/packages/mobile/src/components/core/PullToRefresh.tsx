@@ -41,7 +41,7 @@ const interpolateTranslateY = (scrollAnim: Animated.Value) =>
 
 const interpolateHitTopOpacity = (scrollAnim: Animated.Value, scrollDistance) =>
   scrollAnim.interpolate({
-    inputRange: [-60, scrollDistance, scrollDistance + 20],
+    inputRange: [-60, scrollDistance, scrollDistance + 12],
     outputRange: [1, 1, 0],
     extrapolateRight: 'clamp'
   })
