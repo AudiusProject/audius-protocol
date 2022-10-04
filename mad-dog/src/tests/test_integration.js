@@ -83,6 +83,7 @@ module.exports = coreIntegration = async ({
     const retryLimit = 10
     const retryIntervalMs = 10000 // 10sec
     while (true) {
+      break
       console.log(`Ensuring correct URSM state with interval ${retryIntervalMs} || attempt #${retryCount} ...`)
 
       const URSMContentNodes = await executeOne(0, libs => getURSMContentNodes(libs))
