@@ -130,7 +130,7 @@ class URSMRegistrationManager {
       `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
     )
     if (
-      !this.entityManagerReplicaSetEnabled &&
+      !this.entityManagerReplicaSetEnabled ||
       activeDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM
     ) {
       // Update config
