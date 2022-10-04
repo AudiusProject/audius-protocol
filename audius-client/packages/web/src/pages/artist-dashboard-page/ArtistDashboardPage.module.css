@@ -95,7 +95,7 @@
 .tabContainer {
   width: 100%;
   display: flex;
-  padding-top: 32px;
+  padding-top: 48px;
   margin-left: 8px;
 }
 
@@ -105,8 +105,7 @@
 
 .filterInputContainer {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 20px;
   right: 24px;
 }
 

@@ -34,6 +34,7 @@ export type TracksTableColumn =
   | 'plays'
   | 'releaseDate'
   | 'reposts'
+  | 'spacer'
   | 'trackName'
 
 type TestTracksTableProps = {
@@ -467,6 +468,13 @@ export const TestTracksTable = ({
         sortTitle: 'Track Name',
         sorter: alphaSorter('title'),
         align: 'left'
+      },
+      spacer: {
+        id: 'spacer',
+        maxWidth: 24,
+        minWidth: 24,
+        disableSortBy: true,
+        disableResizing: true
       }
     }),
     [
