@@ -22,19 +22,27 @@ function* fetchDashboardTracksAsync(action) {
   const account = yield call(waitForValue, getAccountUser)
   const { offset, limit } = action
 
-  const tracks = yield call(retrieveUserTracks, {
-    handle: account.handle,
-    currentUserId: account.user_id,
-    offset,
-    limit,
-    getUnlisted: true
-  })
-  const listedTracks = tracks.filter((t) => t.is_unlisted === false)
-  const unlistedTracks = tracks.filter((t) => t.is_unlisted === true)
+  try {
+    const tracks = yield call(retrieveUserTracks, {
+      handle: account.handle,
+      currentUserId: account.user_id,
+      offset,
+      limit,
+      getUnlisted: true
+    })
+    const listedTracks = tracks.filter((t) => t.is_unlisted === false)
+    const unlistedTracks = tracks.filter((t) => t.is_unlisted === true)
 
-  yield put(
-    dashboardActions.fetchDashboardTracksSucceeded(listedTracks, unlistedTracks)
-  )
+    yield put(
+      dashboardActions.fetchDashboardTracksSucceeded(
+        listedTracks,
+        unlistedTracks
+      )
+    )
+  } catch (error) {
+    console.error(error)
+    yield put(dashboardActions.fetchDashboardTracksFailed())
+  }
 }
 
 function* fetchDashboardAsync(action) {
@@ -44,43 +52,48 @@ function* fetchDashboardAsync(action) {
   const account = yield call(waitForValue, getAccountUser)
   const { offset, limit } = action
 
-  const [tracks, playlists] = yield all([
-    call(retrieveUserTracks, {
-      handle: account.handle,
-      currentUserId: account.user_id,
-      offset,
-      limit,
-      getUnlisted: true
-    }),
-    call(audiusBackendInstance.getPlaylists, account.user_id, [])
-  ])
-  const listedTracks = tracks.filter((t) => t.is_unlisted === false)
-  const unlistedTracks = tracks.filter((t) => t.is_unlisted === true)
+  try {
+    const [tracks, playlists] = yield all([
+      call(retrieveUserTracks, {
+        handle: account.handle,
+        currentUserId: account.user_id,
+        offset,
+        limit,
+        getUnlisted: true
+      }),
+      call(audiusBackendInstance.getPlaylists, account.user_id, [])
+    ])
+    const listedTracks = tracks.filter((t) => t.is_unlisted === false)
+    const unlistedTracks = tracks.filter((t) => t.is_unlisted === true)
 
-  const trackIds = listedTracks.map((t) => t.track_id)
-  const now = moment()
+    const trackIds = listedTracks.map((t) => t.track_id)
+    const now = moment()
 
-  yield call(fetchDashboardListenDataAsync, {
-    trackIds,
-    start: now.clone().subtract(1, 'years').toISOString(),
-    end: now.toISOString(),
-    period: 'month'
-  })
+    yield call(fetchDashboardListenDataAsync, {
+      trackIds,
+      start: now.clone().subtract(1, 'years').toISOString(),
+      end: now.toISOString(),
+      period: 'month'
+    })
 
-  if (
-    listedTracks.length > 0 ||
-    playlists.length > 0 ||
-    unlistedTracks.length > 0
-  ) {
-    yield put(
-      dashboardActions.fetchDashboardSucceeded(
-        listedTracks,
-        playlists,
-        unlistedTracks
+    if (
+      listedTracks.length > 0 ||
+      playlists.length > 0 ||
+      unlistedTracks.length > 0
+    ) {
+      yield put(
+        dashboardActions.fetchDashboardSucceeded(
+          listedTracks,
+          playlists,
+          unlistedTracks
+        )
       )
-    )
-    yield call(pollForBalance)
-  } else {
+      yield call(pollForBalance)
+    } else {
+      yield put(dashboardActions.fetchDashboardFailed())
+    }
+  } catch (error) {
+    console.error(error)
     yield put(dashboardActions.fetchDashboardFailed())
   }
 }
