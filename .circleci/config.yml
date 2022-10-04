@@ -1269,6 +1269,27 @@ jobs:
             - slack-success:
                 text: "Governance Proposal has been executed! :done:"
 
+  generate-release-checklist:
+    docker:
+      - image: circleci/node:14.17.5
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Generate Release Checklist
+          command: |
+            RELEASE_VERSION=$(jq -r .version discovery-provider/.version.json)
+            OLD_VERSION=$(echo ${RELEASE_VERSION} | awk -F. '{$NF = $NF - 1;} 1' | sed 's/ /./g')
+            START_COMMIT=$(git show-ref --hash refs/tags/@audius/discovery-provider@${OLD_VERSION})
+            RELEASE_HASH=$(git show-ref --hash refs/tags/@audius/discovery-provider@${RELEASE_VERSION})
+            git log \
+              --pretty=format:'- [ ] [%h] - %s %an %n' \
+              --abbrev-commit ${START_COMMIT}..${RELEASE_HASH} \
+              > /tmp/release-checklist.md
+      - store_artifacts:
+          path: /tmp/release-checklist.md
+          destination: release-checklist.md
+
 workflows:
   workflows:
     when:
@@ -1751,6 +1772,9 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens.releases
+      - generate-release-checklist:
+          requires:
+            - release-scripts
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
