@@ -6,6 +6,7 @@ const axios = require('axios')
 const { chunk } = require('lodash')
 
 const models = require('./models')
+const { sequelize } = require('./models')
 const config = require('./config')
 const Utils = require('./utils')
 const redisClient = require('./redis')
@@ -804,7 +805,7 @@ async function batchDeleteFileOrDir(storagePaths, batchSize, logger) {
  * @return number of file paths added to redis
  */
 async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
-  const FILES_PER_QUERY = 10_000
+  const FILES_PER_QUERY = 50_000
   const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
   await redisClient.del(redisSetKey)
 
@@ -818,36 +819,62 @@ async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
     `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
   )
 
-  // Add file paths to redis
-  const numFilesToDelete = await models.File.count({
-    where: { cnodeUserUUID }
-  })
+  // Add files to delete to redis, paginated by storagePath, starting at the lowest real character (space)
+  let prevStoragePath = ' '
+  let numFilesAdded = 0
   let files = []
-  // Paginate on multihash because we have an index on it. Start at the lowest real character (space)
-  let prevMultihash = ' '
-  for (let i = 0; i < numFilesToDelete; i += FILES_PER_QUERY) {
-    files = await models.File.findAll({
-      attributes: ['multihash', 'storagePath'],
-      order: [['multihash', 'ASC']],
-      where: {
-        cnodeUserUUID,
-        multihash: {
-          [models.Sequelize.Op.gt]: prevMultihash
-        }
-      },
-      limit: FILES_PER_QUERY
-    })
+  do {
+    files = (
+      await models.File.findAll({
+        attributes: [
+          // Count the number of users with this file. >1 means we should skip deleting it
+          [
+            sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID"))`),
+            'numUsersWithFile'
+          ],
+          [
+            sequelize.fn('ARRAY_AGG', sequelize.col('cnodeUserUUID')),
+            'userUUIDsWithFile'
+          ],
+          'storagePath'
+        ],
+        order: [['storagePath', 'ASC']],
+        where: {
+          storagePath: {
+            [models.Sequelize.Op.gt]: prevStoragePath
+          }
+        },
+        // Group rows by file path so we can count how many users have the same file and not delete shared files
+        group: 'storagePath',
+        limit: FILES_PER_QUERY
+      })
+    ).map((result) => result.dataValues)
 
     if (files?.length) {
-      // Save the file paths to a redis set
-      const filePaths = files.map((file) => path.normalize(file.storagePath))
-      await redisClient.sadd(redisSetKey, filePaths)
+      // Save file paths that are unique to this user to a redis set
+      const filesUniqueToUser = files.filter(
+        (file) =>
+          file.numUsersWithFile === '1' &&
+          file.userUUIDsWithFile.includes(cnodeUserUUID)
+      )
+      const filePaths = filesUniqueToUser.map((file) =>
+        path.normalize(file.storagePath)
+      )
+      if (filePaths.length) {
+        numFilesAdded = await redisClient.sadd(redisSetKey, filePaths)
+      } else numFilesAdded = 0
 
       // Move pagination cursor to the end
-      prevMultihash = files[files.length - 1].multihash
-    }
-  }
-  return numFilesToDelete
+      prevStoragePath = files[files.length - 1].storagePath
+    } else numFilesAdded = 0
+  } while (
+    // Nothing left to paginate if the last page was empty
+    files?.length &&
+    // Nothing left to paginate if the last page wasn't full length and didn't contain new files
+    (files.length === FILES_PER_QUERY || numFilesAdded > 0)
+  )
+
+  return redisClient.scard(redisSetKey)
 }
 
 /**
