@@ -37,7 +37,10 @@ export type TransactionDetails =
   | {
       signature: string
       transactionType: TransactionType.PURCHASE
-      method: TransactionMethod.COINBASE | TransactionMethod.STRIPE
+      method:
+        | TransactionMethod.COINBASE
+        | TransactionMethod.STRIPE
+        | TransactionMethod.RECEIVE
       date: string
       change: StringAudio
       balance: StringAudio

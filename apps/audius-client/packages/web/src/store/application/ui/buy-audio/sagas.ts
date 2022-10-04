@@ -21,12 +21,19 @@ import {
   StringWei,
   BNWei,
   createUserBankIfNeeded,
-  deriveUserBank
+  deriveUserBank,
+  modalsActions,
+  AmountObject
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
 import { u64 } from '@solana/spl-token'
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import {
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey
+} from '@solana/web3.js'
 import BN from 'bn.js'
 import dayjs from 'dayjs'
 import JSBI from 'jsbi'
@@ -44,6 +51,7 @@ import {
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
   getSolanaConnection,
+  getUserBankTransactionMetadata,
   pollForAudioBalanceChange,
   pollForSolBalanceChange,
   saveUserBankTransactionMetadata
@@ -56,6 +64,7 @@ const {
   calculateAudioPurchaseInfoSucceeded,
   cacheAssociatedTokenAccount,
   cacheTransactionFees,
+  startBuyAudioFlow,
   onRampOpened,
   onRampSucceeded,
   onRampCanceled,
@@ -65,9 +74,10 @@ const {
   transferCompleted,
   clearFeesCache,
   calculateAudioPurchaseInfoFailed,
-  buyAudioFlowFailed,
-  precalculateSwapFees
+  buyAudioFlowFailed
 } = buyAudioActions
+
+const { setVisibility } = modalsActions
 
 const { getBuyAudioFlowStage, getFeesCache, getBuyAudioProvider } =
   buyAudioSelectors
@@ -75,10 +85,49 @@ const { increaseBalance } = walletActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const SLIPPAGE = 3 // The slippage amount to allow for exchanges
+const BUY_AUDIO_LOCAL_STORAGE_KEY = 'buy-audio-transaction-details'
 
 const MEMO_MESSAGES = {
   [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase',
-  [OnRampProvider.STRIPE]: 'In-App $AUDIO Purchase: Stripe'
+  [OnRampProvider.STRIPE]: 'In-App $AUDIO Purchase: Stripe',
+  [OnRampProvider.UNKNOWN]: 'In-App $AUDIO Purchase: Unknown'
+}
+
+const PROVIDER_METHOD_MAP: Record<
+  OnRampProvider,
+  | TransactionMethod.COINBASE
+  | TransactionMethod.STRIPE
+  | TransactionMethod.RECEIVE
+> = {
+  [OnRampProvider.COINBASE]: TransactionMethod.COINBASE,
+  [OnRampProvider.STRIPE]: TransactionMethod.STRIPE,
+  [OnRampProvider.UNKNOWN]: TransactionMethod.RECEIVE
+}
+
+type BuyAudioLocalStorageState = {
+  transactionDetailsArgs: {
+    purchaseTransactionId?: string
+    setupTransactionId?: string
+    swapTransactionId?: string
+    cleanupTransactionId?: string
+    transferTransactionId?: string
+    estimatedUSD?: string
+    purchasedLamports?: string
+    purchasedAudioWei?: string
+  }
+  provider?: OnRampProvider
+  desiredAudioAmount?: AmountObject
+}
+const defaultBuyAudioLocalStorageState: BuyAudioLocalStorageState = {
+  transactionDetailsArgs: {
+    purchaseTransactionId: '',
+    swapTransactionId: '',
+    transferTransactionId: '',
+    estimatedUSD: '',
+    purchasedLamports: '',
+    purchasedAudioWei: ''
+  },
+  provider: OnRampProvider.UNKNOWN
 }
 
 /**
@@ -230,7 +279,10 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
   return {
     rootAccountMinBalance,
     transactionFees,
-    associatedAccountCreationFees
+    associatedAccountCreationFees,
+    totalFees: new BN(rootAccountMinBalance)
+      .add(new BN(transactionFees))
+      .add(new BN(associatedAccountCreationFees))
   }
 }
 
@@ -371,54 +423,65 @@ Total: ${estimatedLamports.toNumber() / LAMPORTS_PER_SOL} SOL ($${
   }
 }
 
-type PopulateAndSaveTransactionDetailsArgs = {
-  purchaseTransactionId: string
-  setupTransactionId?: string
-  swapTransactionId: string
-  cleanupTransactionId?: string
-  transferTransactionId: string
-  estimatedUSD: string
-  purchasedLamports: BN
-  purchasedAudioWei: BNWei
-}
-function* populateAndSaveTransactionDetails({
-  purchaseTransactionId,
-  setupTransactionId,
-  swapTransactionId,
-  cleanupTransactionId,
-  transferTransactionId,
-  estimatedUSD,
-  purchasedLamports,
-  purchasedAudioWei
-}: PopulateAndSaveTransactionDetailsArgs) {
+function* populateAndSaveTransactionDetails() {
+  // Get transaction details from local storage
+  const localStorage = yield* getContext('localStorage')
+  const localStorageState: BuyAudioLocalStorageState =
+    (yield* call(
+      [localStorage, localStorage.getJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? defaultBuyAudioLocalStorageState
+  const {
+    purchaseTransactionId,
+    setupTransactionId,
+    swapTransactionId,
+    cleanupTransactionId,
+    transferTransactionId,
+    estimatedUSD,
+    purchasedLamports,
+    purchasedAudioWei
+  } = localStorageState.transactionDetailsArgs
+
+  if (!transferTransactionId) {
+    throw new Error('Missing transactionDetailsArgs[transferTransactionId]')
+  }
+
   const postAUDIOBalanceWei: StringWei = yield* select(
     walletSelectors.getAccountTotalBalance
   )
   const postAUDIOBalance = formatWei(
     new BN(postAUDIOBalanceWei) as BNWei
   ).replaceAll(',', '')
-  const purchasedAUDIO = formatWei(purchasedAudioWei).replaceAll(',', '')
+  const purchasedAUDIO = purchasedAudioWei
+    ? formatWei(new BN(purchasedAudioWei)).replaceAll(',', '')
+    : ''
   const divisor = new BN(LAMPORTS_PER_SOL)
-  const purchasedSOL = `${purchasedLamports.div(divisor)}.${purchasedLamports
-    .mod(divisor)
-    .toString()
-    .padStart(divisor.toString().length - 1, '0')}`
+  const purchasedLamportsBN = purchasedLamports
+    ? new BN(purchasedLamports)
+    : new BN('0')
+  const purchasedSOL = purchasedLamports
+    ? `${purchasedLamportsBN.div(divisor)}.${purchasedLamportsBN
+        .mod(divisor)
+        .toString()
+        .padStart(divisor.toString().length - 1, '0')}`
+    : ''
 
   const transactionMetadata = {
     discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-    purchaseTransactionId,
+    purchaseTransactionId: purchaseTransactionId ?? '',
     setupTransactionId,
-    swapTransactionId: swapTransactionId!,
+    swapTransactionId: swapTransactionId ?? '',
     cleanupTransactionId,
-    usd: estimatedUSD,
+    usd: estimatedUSD ?? '',
     sol: purchasedSOL,
     audio: purchasedAUDIO
   }
   const transactionDetails: TransactionDetails = {
     date: dayjs().format('MM/DD/YYYY'),
-    signature: transferTransactionId!,
+    signature: transferTransactionId,
     transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.COINBASE,
+    method:
+      PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
     balance: postAUDIOBalance,
     change: purchasedAUDIO,
     metadata: transactionMetadata
@@ -426,30 +489,320 @@ function* populateAndSaveTransactionDetails({
 
   yield* put(
     fetchTransactionDetailsSucceeded({
-      transactionId: transferTransactionId!,
+      transactionId: transferTransactionId,
       transactionDetails
     })
   )
   yield* call(saveUserBankTransactionMetadata, transactionMetadata)
+
+  // Clear local storage
+  yield* call(
+    [localStorage, localStorage.setJSONValue],
+    BUY_AUDIO_LOCAL_STORAGE_KEY,
+    {}
+  )
+}
+
+type PurchaseStepParams = {
+  estimatedSOL: AmountObject
+  connection: Connection
+  rootAccount: Keypair
+  provider: OnRampProvider
+  retryDelayMs?: number
+  maxRetryCount?: number
+}
+/**
+ * Executes the purchase step of the on-ramp
+ *
+ * @throws if cannot confirm the purchase
+ * @returns the new SOL balance for the rootAccount after the purchase succeeds
+ */
+function* purchaseStep({
+  estimatedSOL,
+  connection,
+  rootAccount,
+  provider,
+  retryDelayMs,
+  maxRetryCount
+}: PurchaseStepParams) {
+  // Cache current SOL balance
+  const initialBalance = yield* call(
+    [connection, connection.getBalance],
+    rootAccount.publicKey,
+    'finalized'
+  )
+
+  // Wait for on ramp finish
+  const result = yield* race({
+    success: take(onRampSucceeded),
+    canceled: take(onRampCanceled)
+  })
+
+  // If the user didn't complete the on ramp flow, return early
+  if (result.canceled) {
+    yield* put(make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider }))
+    return
+  }
+  yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider }))
+
+  // Wait for the SOL funds to come through
+  const newBalance = yield* call(pollForSolBalanceChange, {
+    rootAccount: rootAccount.publicKey,
+    initialBalance,
+    retryDelayMs,
+    maxRetryCount
+  })
+
+  // Get the purchase transaction
+  const signatures = yield* call(
+    [connection, connection.getSignaturesForAddress],
+    rootAccount.publicKey,
+    {
+      limit: 1
+    }
+  )
+  const purchaseTransactionId = signatures[0].signature
+
+  // Check that we got the requested SOL
+  const purchasedLamports = new BN(newBalance).sub(new BN(initialBalance))
+  if (purchasedLamports !== new BN(estimatedSOL.amount)) {
+    console.warn(
+      `Warning: Purchase SOL amount differs from expected. Actual: ${
+        new BN(newBalance).sub(new BN(initialBalance)).toNumber() /
+        LAMPORTS_PER_SOL
+      } SOL. Expected: ${estimatedSOL.uiAmountString} SOL.`
+    )
+  }
+
+  const localStorage = yield* getContext('localStorage')
+  const localStorageState: BuyAudioLocalStorageState =
+    (yield* call(
+      [localStorage, localStorage.getJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? defaultBuyAudioLocalStorageState
+  localStorageState.transactionDetailsArgs.purchaseTransactionId =
+    purchaseTransactionId
+  localStorageState.transactionDetailsArgs.purchasedLamports =
+    purchasedLamports.toString()
+  yield* call(
+    [localStorage, localStorage.setJSONValue],
+    BUY_AUDIO_LOCAL_STORAGE_KEY,
+    localStorageState
+  )
+  return { purchasedLamports, purchaseTransactionId, newBalance }
+}
+
+type SwapStepParams = {
+  exchangeAmount: BN
+  desiredAudioAmount?: AmountObject
+  rootAccount: Keypair
+  transactionHandler: TransactionHandler
+  retryDelayMs?: number
+  maxRetryCount?: number
+}
+/**
+ * Executes the Jupiter exchange from SOL to $AUDIO
+ *
+ * @throws if cannot confirm the swap
+ * @returns the $AUDIO amount resulting from the swap
+ */
+function* swapStep({
+  exchangeAmount,
+  desiredAudioAmount,
+  rootAccount,
+  transactionHandler,
+  retryDelayMs,
+  maxRetryCount
+}: SwapStepParams) {
+  // Get quote adjusted for fees
+  const quote = yield* call(JupiterSingleton.getQuote, {
+    inputTokenSymbol: 'SOL',
+    outputTokenSymbol: 'AUDIO',
+    inputAmount: exchangeAmount.toNumber() / LAMPORTS_PER_SOL,
+    slippage: SLIPPAGE
+  })
+
+  // Check that we get the desired AUDIO from the quote
+  const audioAdjusted = convertJSBIToAmountObject(
+    JSBI.BigInt(
+      Math.floor(
+        (JSBI.toNumber(quote.route.outAmount) * (100 - SLIPPAGE)) / 100.0
+      )
+    ),
+    TOKEN_LISTING_MAP.AUDIO.decimals
+  )
+  if (
+    desiredAudioAmount &&
+    new BN(desiredAudioAmount.amountString).gt(
+      new BN(audioAdjusted.amountString)
+    )
+  ) {
+    console.warn(
+      `Warning: Purchase AUDIO amount may be lower than expected. Actual min: ${audioAdjusted.uiAmountString} AUDIO. Expected min: ${desiredAudioAmount.uiAmountString} AUDIO`
+    )
+  }
+
+  // Cache the AUDIO balance before swapping
+  const tokenAccount = yield* call(getAudioAccount, {
+    rootAccount: rootAccount.publicKey
+  })
+  const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
+    tokenAccount
+  })
+  const beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? new BN(0)
+
+  // Swap the SOL for AUDIO
+  yield* put(swapStarted())
+  const { transactions } = yield* call(JupiterSingleton.exchange, {
+    routeInfo: quote.route,
+    userPublicKey: rootAccount.publicKey
+  })
+  const { setupTransactionId, swapTransactionId, cleanupTransactionId } =
+    yield* call(JupiterSingleton.executeExchange, {
+      ...transactions,
+      feePayer: rootAccount.publicKey,
+      transactionHandler
+    })
+
+  // Write transaction details to local storage
+  const localStorage = yield* getContext('localStorage')
+  const localStorageState: BuyAudioLocalStorageState =
+    (yield* call(
+      [localStorage, localStorage.getJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? defaultBuyAudioLocalStorageState
+  localStorageState.transactionDetailsArgs.setupTransactionId =
+    setupTransactionId ?? undefined
+  localStorageState.transactionDetailsArgs.swapTransactionId =
+    swapTransactionId ?? undefined
+  localStorageState.transactionDetailsArgs.cleanupTransactionId =
+    cleanupTransactionId ?? undefined
+  yield* call(
+    [localStorage, localStorage.setJSONValue],
+    BUY_AUDIO_LOCAL_STORAGE_KEY,
+    localStorageState
+  )
+
+  yield* put(swapCompleted())
+
+  // Reset associated token account cache now that the swap created the accounts
+  // (can't simply set all the accounts in the route to "exists" because wSOL gets closed)
+  yield* put(clearFeesCache())
+
+  // Wait for AUDIO funds to come through
+  const audioSwappedSpl = yield* call(pollForAudioBalanceChange, {
+    tokenAccount,
+    initialBalance: beforeSwapAudioBalance,
+    retryDelayMs,
+    maxRetryCount
+  })
+  return {
+    setupTransactionId,
+    swapTransactionId,
+    cleanupTransactionId,
+    audioSwappedSpl
+  }
+}
+
+type TransferStepParams = {
+  rootAccount: Keypair
+  transferAmount: BN
+  transactionHandler: TransactionHandler
+  provider: OnRampProvider
+}
+function* transferStep({
+  rootAccount,
+  transferAmount,
+  transactionHandler,
+  provider
+}: TransferStepParams) {
+  yield* put(transferStarted())
+
+  const userBank = yield* call(deriveUserBank, audiusBackendInstance)
+  const transferTransaction = yield* call(createTransferToUserBankTransaction, {
+    userBank,
+    fromAccount: rootAccount.publicKey,
+    amount: transferAmount,
+    memo: MEMO_MESSAGES[provider]
+  })
+
+  console.debug(`Starting transfer transaction...`)
+  const { res: transferTransactionId, error: transferError } = yield* call(
+    [transactionHandler, transactionHandler.handleTransaction],
+    {
+      instructions: transferTransaction.instructions,
+      feePayerOverride: rootAccount.publicKey,
+      skipPreflight: true
+    }
+  )
+  if (transferError) {
+    console.debug(`Transfer transaction stringified: ${transferTransaction}`)
+    throw new Error(`Transfer transaction failed: ${transferError}`)
+  }
+  const audioTransferredWei = convertWAudioToWei(transferAmount)
+
+  // Write transaction details to local storage
+  const localStorage = yield* getContext('localStorage')
+  const localStorageState: BuyAudioLocalStorageState =
+    (yield* call(
+      [localStorage, localStorage.getJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? defaultBuyAudioLocalStorageState
+  localStorageState.transactionDetailsArgs.transferTransactionId =
+    transferTransactionId ?? undefined
+  localStorageState.transactionDetailsArgs.purchasedAudioWei =
+    audioTransferredWei.toString()
+  yield* call(
+    [localStorage, localStorage.setJSONValue],
+    BUY_AUDIO_LOCAL_STORAGE_KEY,
+    localStorageState
+  )
+
+  // Update wallet balance optimistically
+  yield* put(
+    increaseBalance({
+      amount: weiToString(audioTransferredWei)
+    })
+  )
+  yield* put(transferCompleted())
+
+  return { audioTransferredWei, transferTransactionId }
 }
 
 /**
  * Exchanges all but the minimum balance required for a swap from a wallet once a balance change is seen
  */
-function* startBuyAudioFlow({
+function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onRampOpened>) {
+  const provider = yield* select(getBuyAudioProvider)
+  if (provider === undefined) {
+    console.error('BuyAudio flow started without a provider - aborting...')
+    return
+  }
   try {
     // Record start
-    const provider = yield* select(getBuyAudioProvider)
-    if (provider === undefined) {
-      console.error('BuyAudio flow started without a provider - aborting...')
-      return
-    }
     yield* put(
       make(Name.BUY_AUDIO_ON_RAMP_OPENED, {
         provider
       })
+    )
+
+    // Initialize local storage
+    const localStorage = yield* getContext('localStorage')
+    const initialState: BuyAudioLocalStorageState = {
+      ...defaultBuyAudioLocalStorageState,
+      transactionDetailsArgs: {
+        ...defaultBuyAudioLocalStorageState.transactionDetailsArgs,
+        estimatedUSD: estimatedUSD.uiAmountString
+      },
+      provider,
+      desiredAudioAmount
+    }
+    yield* call(
+      [localStorage, localStorage.setJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY,
+      initialState
     )
 
     // Setup
@@ -461,9 +814,11 @@ function* startBuyAudioFlow({
       feePayerKeypairs: [rootAccount],
       skipPreflight: true
     })
+
+    // Get config
     const remoteConfigInstance = yield* getContext('remoteConfigInstance')
     yield* call(remoteConfigInstance.waitForRemoteConfig)
-    const retryDelay =
+    const retryDelayMs =
       remoteConfigInstance.getRemoteVar(
         IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS
       ) ?? undefined
@@ -477,191 +832,64 @@ function* startBuyAudioFlow({
       yield* call(createUserBankIfNeeded, track, audiusBackendInstance)
     })
 
-    // Cache current SOL balance
-    const initialBalance = yield* call(
-      [connection, connection.getBalance],
-      rootAccount.publicKey,
-      'finalized'
-    )
-
-    // Wait for on ramp finish
-    const result = yield* race({
-      success: take(onRampSucceeded),
-      canceled: take(onRampCanceled)
-    })
-
-    // If the user didn't complete the on ramp flow, return early
-    if (result.canceled) {
-      yield* put(make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider }))
-      return
-    }
-    yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider }))
-
-    // Wait for the SOL funds to come through
-    const newBalance = yield* call(pollForSolBalanceChange, {
-      rootAccount: rootAccount.publicKey,
-      initialBalance,
-      retryDelay,
+    // STEP ONE: Wait for purchase
+    // Have to do some typescript finangling here due to the "race" effect in purchaseStep
+    // See https://github.com/agiledigital/typed-redux-saga/issues/43
+    const { newBalance } = (yield* call(purchaseStep, {
+      provider,
+      estimatedSOL,
+      connection,
+      rootAccount,
+      retryDelayMs,
       maxRetryCount
-    })
+    }) as unknown as ReturnType<typeof purchaseStep>)!
 
-    // Get the purchase transaction
-    const signatures = yield* call(
-      [connection, connection.getSignaturesForAddress],
-      rootAccount.publicKey,
-      {
-        limit: 1
-      }
-    )
-    const purchaseTransactionId = signatures[0].signature
-
-    // Check that we got the requested SOL
-    const purchasedLamports = new BN(newBalance).sub(new BN(initialBalance))
-    if (purchasedLamports !== new BN(estimatedSOL.amount)) {
-      console.warn(
-        `Warning: Purchase SOL amount differs from expected. Actual: ${
-          new BN(newBalance).sub(new BN(initialBalance)).toNumber() /
-          LAMPORTS_PER_SOL
-        } SOL. Expected: ${estimatedSOL.uiAmountString} SOL.`
-      )
-    }
-
-    // Get dummy quote and calculate fees
-    let quote = yield* call(JupiterSingleton.getQuote, {
+    // Get dummy quote to calculate fees and get exchange amount
+    const quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: newBalance / LAMPORTS_PER_SOL,
       slippage: SLIPPAGE
     })
-    const {
-      rootAccountMinBalance,
-      associatedAccountCreationFees,
-      transactionFees
-    } = yield* call(getSwapFees, { route: quote.route })
-    const minSol =
-      associatedAccountCreationFees + transactionFees + rootAccountMinBalance
-    const inputAmount = (newBalance - minSol) / LAMPORTS_PER_SOL
-    console.debug(`Exchanging ${inputAmount} SOL to AUDIO`)
-
-    // Get new quote adjusted for fees
-    quote = yield* call(JupiterSingleton.getQuote, {
-      inputTokenSymbol: 'SOL',
-      outputTokenSymbol: 'AUDIO',
-      inputAmount,
-      slippage: SLIPPAGE
-    })
-
-    // Check that we get the desired AUDIO from the quote
-    const audioAdjusted = convertJSBIToAmountObject(
-      JSBI.BigInt(
-        Math.floor(
-          (JSBI.toNumber(quote.route.outAmount) * (100 - SLIPPAGE)) / 100.0
-        )
-      ),
-      TOKEN_LISTING_MAP.AUDIO.decimals
+    const { totalFees } = yield* call(getSwapFees, { route: quote.route })
+    const exchangeAmount = new BN(newBalance).sub(totalFees)
+    console.debug(
+      `Exchanging ${exchangeAmount.toNumber() / LAMPORTS_PER_SOL} SOL to AUDIO`
     )
-    if (audioAdjusted.amount < desiredAudioAmount.amount) {
-      console.warn(
-        `Warning: Purchase AUDIO amount may be lower than expected. Actual min: ${audioAdjusted.uiAmountString} AUDIO. Expected min: ${desiredAudioAmount.uiAmountString} AUDIO`
-      )
-    }
 
-    // Cache the AUDIO balance before swapping
-    const tokenAccount = yield* call(getAudioAccount, {
-      rootAccount: rootAccount.publicKey
-    })
-    const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
-      tokenAccount
-    })
-    const beforeSwapAudioBalance =
-      beforeSwapAudioAccountInfo?.amount ?? new BN(0)
-
-    // Swap the SOL for AUDIO
-    yield* put(swapStarted())
-    const { transactions } = yield* call(JupiterSingleton.exchange, {
-      routeInfo: quote.route,
-      userPublicKey: rootAccount.publicKey
-    })
-    const { setupTransactionId, swapTransactionId, cleanupTransactionId } =
-      yield* call(JupiterSingleton.executeExchange, {
-        ...transactions,
-        feePayer: rootAccount.publicKey,
-        transactionHandler
-      })
-    yield* put(swapCompleted())
-
-    // Reset associated token account cache now that the swap created the accounts
-    // (can't simply set all the accounts in the route to "exists" because wSOL gets closed)
-    yield* put(clearFeesCache())
-
-    // Wait for AUDIO funds to come through
-    const transferAmount = yield* call(pollForAudioBalanceChange, {
-      tokenAccount,
-      initialBalance: beforeSwapAudioBalance,
-      retryDelay,
+    // STEP TWO: Swap to $AUDIO
+    const { audioSwappedSpl } = yield* call(swapStep, {
+      exchangeAmount,
+      desiredAudioAmount,
+      rootAccount,
+      transactionHandler,
+      retryDelayMs,
       maxRetryCount
     })
 
-    // Transfer AUDIO to userbank
-    const userBank = yield* call(deriveUserBank, audiusBackendInstance)
-    yield* put(transferStarted())
-    const transferTransaction = yield* call(
-      createTransferToUserBankTransaction,
-      {
-        userBank,
-        fromAccount: rootAccount.publicKey,
-        amount: transferAmount,
-        memo: MEMO_MESSAGES[provider]
-      }
-    )
+    // STEP THREE: Transfer $AUDIO to user bank
+    const { audioTransferredWei } = yield* call(transferStep, {
+      transferAmount: audioSwappedSpl,
+      transactionHandler,
+      rootAccount,
+      provider
+    })
 
-    console.debug(`Starting transfer transaction...`)
-    const { res: transferTransactionId, error: transferError } = yield* call(
-      [transactionHandler, transactionHandler.handleTransaction],
-      {
-        instructions: transferTransaction.instructions,
-        feePayerOverride: rootAccount.publicKey,
-        skipPreflight: true
-      }
-    )
-    if (transferError) {
-      console.debug(`Transfer transaction stringified: ${transferTransaction}`)
-      throw new Error(`Transfer transaction failed: ${transferError}`)
-    }
-
-    yield* put(transferCompleted())
-
-    // Update wallet balance optimistically
-    const outputAmount = convertWAudioToWei(transferAmount)
-    yield* put(
-      increaseBalance({
-        amount: weiToString(outputAmount)
-      })
-    )
-
-    // Setup transaction details
-    const transactionDetailsArgs: PopulateAndSaveTransactionDetailsArgs = {
-      transferTransactionId: transferTransactionId!,
-      setupTransactionId: setupTransactionId ?? undefined,
-      swapTransactionId: swapTransactionId!,
-      cleanupTransactionId: cleanupTransactionId ?? undefined,
-      purchaseTransactionId,
-      estimatedUSD: estimatedUSD.uiAmountString,
-      purchasedLamports,
-      purchasedAudioWei: outputAmount
-    }
-    yield* call(populateAndSaveTransactionDetails, transactionDetailsArgs)
+    // Save transaction details
+    yield* call(populateAndSaveTransactionDetails)
 
     // Record success
     yield* put(
       make(Name.BUY_AUDIO_SUCCESS, {
-        provider: 'coinbase',
+        provider,
         requestedAudio: desiredAudioAmount.uiAmount,
-        actualAudio: parseFloat(formatWei(outputAmount).replaceAll(',', '')),
+        actualAudio: parseFloat(
+          formatWei(audioTransferredWei).replaceAll(',', '')
+        ),
         surplusAudio: parseFloat(
           formatWei(
             convertWAudioToWei(
-              transferAmount.sub(new BN(desiredAudioAmount.amount))
+              audioSwappedSpl.sub(new BN(desiredAudioAmount.amount))
             )
           ).replaceAll(',', '')
         )
@@ -673,7 +901,7 @@ function* startBuyAudioFlow({
     yield* put(buyAudioFlowFailed())
     yield* put(
       make(Name.BUY_AUDIO_FAILURE, {
-        provider: 'coinbase',
+        provider,
         stage,
         requestedAudio: desiredAudioAmount.uiAmount,
         error: (e as Error).message
@@ -682,31 +910,184 @@ function* startBuyAudioFlow({
   }
 }
 
+/**
+ * There are three main steps that could have failed:
+ * 1) The purchase went through, but the Jupiter swap failed, leaving some SOL in the root account
+ * 2) The purchase and swap went through, but the final transfer failed, leaving some $AUDIO in the root account
+ * 3) The purchase, swap, and final transfer all went through, but writing transaction details metadata failed
+ *
+ * This function checks for the above conditions sequentially, and pops the modal as necessary.
+ */
+function* recoverPurchaseIfNecessary() {
+  let didNeedRecovery = false
+  try {
+    // Setup
+    const rootAccount: Keypair = yield* call(getRootSolanaAccount)
+    const connection = yield* call(getSolanaConnection)
+    const transactionHandler = new TransactionHandler({
+      connection,
+      useRelay: false,
+      feePayerKeypairs: [rootAccount],
+      skipPreflight: true
+    })
+
+    // Restore local storage state, lightly sanitizing
+    const localStorage = yield* getContext('localStorage')
+    const savedLocalStorageState: BuyAudioLocalStorageState =
+      (yield* call(
+        [localStorage, localStorage.getJSONValue],
+        BUY_AUDIO_LOCAL_STORAGE_KEY
+      )) ?? {}
+    const localStorageState: BuyAudioLocalStorageState = {
+      ...defaultBuyAudioLocalStorageState,
+      ...savedLocalStorageState,
+      transactionDetailsArgs: {
+        ...defaultBuyAudioLocalStorageState,
+        ...savedLocalStorageState.transactionDetailsArgs
+      }
+    }
+    yield* call(
+      [localStorage, localStorage.setJSONValue],
+      BUY_AUDIO_LOCAL_STORAGE_KEY,
+      localStorageState
+    )
+
+    // Get config
+    const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+    yield* call(remoteConfigInstance.waitForRemoteConfig)
+    const retryDelayMs =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS
+      ) ?? undefined
+    const maxRetryCount =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES
+      ) ?? undefined
+
+    // Get existing SOL balance
+    const existingBalance = yield* call(
+      [connection, connection.getBalance],
+      rootAccount.publicKey,
+      'finalized'
+    )
+
+    // Get dummy quote and calculate fees
+    const quote = yield* call(JupiterSingleton.getQuote, {
+      inputTokenSymbol: 'SOL',
+      outputTokenSymbol: 'AUDIO',
+      inputAmount: existingBalance / LAMPORTS_PER_SOL,
+      slippage: SLIPPAGE
+    })
+    const { totalFees } = yield* call(getSwapFees, { route: quote.route })
+
+    // Check if we have an exchangable amount of SOL, and if so, exchange it to AUDIO
+    const exchangableBalance = new BN(existingBalance).sub(totalFees)
+    if (exchangableBalance.gt(new BN(0))) {
+      console.debug(
+        `Found existing SOL balance of ${
+          existingBalance / LAMPORTS_PER_SOL
+        } SOL, converting ${
+          exchangableBalance.toNumber() / LAMPORTS_PER_SOL
+        } SOL to AUDIO...`
+      )
+
+      yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
+      yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
+      didNeedRecovery = true
+
+      const { audioSwappedSpl } = yield* swapStep({
+        exchangeAmount: exchangableBalance,
+        desiredAudioAmount: localStorageState.desiredAudioAmount,
+        rootAccount,
+        transactionHandler,
+        maxRetryCount,
+        retryDelayMs
+      })
+      yield* transferStep({
+        transferAmount: audioSwappedSpl,
+        rootAccount,
+        transactionHandler,
+        provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
+      })
+      yield* call(populateAndSaveTransactionDetails)
+    } else {
+      // Check for $AUDIO in the account and transfer if necessary
+      const tokenAccount = yield* call(getAudioAccount, {
+        rootAccount: rootAccount.publicKey
+      })
+      const audioAccountInfo = yield* call(getAudioAccountInfo, {
+        tokenAccount
+      })
+      const audioBalance = audioAccountInfo?.amount ?? new BN(0)
+      if (audioBalance.gt(new BN(0))) {
+        console.debug(
+          `Found existing $AUDIO balance of ${audioBalance}, transferring to user bank...`
+        )
+
+        yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
+        yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
+        didNeedRecovery = true
+
+        yield* transferStep({
+          transferAmount: audioBalance,
+          rootAccount,
+          transactionHandler,
+          provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
+        })
+        yield* call(populateAndSaveTransactionDetails)
+      } else {
+        // If we only failed to save the metadata, try that again
+        if (localStorageState?.transactionDetailsArgs?.transferTransactionId) {
+          const metadata = yield* call(
+            getUserBankTransactionMetadata,
+            localStorageState.transactionDetailsArgs.transferTransactionId
+          )
+          if (!metadata) {
+            yield* call(populateAndSaveTransactionDetails)
+          }
+        }
+      }
+    }
+    yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: false }))
+    if (didNeedRecovery) {
+      // If we don't reset state here, this shows the success screen :)
+      yield* put(setVisibility({ modal: 'BuyAudio', visible: true }))
+    }
+  } catch (e) {
+    const stage = yield* select(getBuyAudioFlowStage)
+    console.error('BuyAudioRecovery failed at stage', stage, 'with error:', e)
+    // For now, hide modal on error.
+    // TODO: add UI for failures later
+    yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: false }))
+  }
+}
+
+function* doStartBuyAudioFlow(action: ReturnType<typeof startBuyAudioFlow>) {
+  yield* put(setVisibility({ modal: 'BuyAudio', visible: true }))
+  yield* call(recoverPurchaseIfNecessary)
+}
+
 function* watchCalculateAudioPurchaseInfo() {
   yield takeLatest(calculateAudioPurchaseInfo, getAudioPurchaseInfo)
 }
 
 function* watchOnRampOpened() {
-  yield takeLatest(onRampOpened, startBuyAudioFlow)
+  yield takeLatest(onRampOpened, doBuyAudio)
 }
 
-function* watchPrecalculateSwapFees() {
-  yield takeLatest(precalculateSwapFees, function* () {
-    // Get SOL => AUDIO quote to calculate fees
-    const quote = yield* call(JupiterSingleton.getQuote, {
-      inputTokenSymbol: 'SOL',
-      outputTokenSymbol: 'AUDIO',
-      inputAmount: 0,
-      slippage: 0
-    })
-    yield* call(getSwapFees, { route: quote.route })
-  })
+function* watchStartBuyAudioFlow() {
+  yield takeLatest(startBuyAudioFlow, doStartBuyAudioFlow)
+}
+
+function* watchRecovery() {
+  yield* call(recoverPurchaseIfNecessary)
 }
 
 export default function sagas() {
   return [
     watchOnRampOpened,
     watchCalculateAudioPurchaseInfo,
-    watchPrecalculateSwapFees
+    watchStartBuyAudioFlow,
+    watchRecovery
   ]
 }

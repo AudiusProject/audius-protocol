@@ -117,6 +117,7 @@ export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
     : quotient.toString()
   return {
     amount: JSBI.toNumber(amount),
+    amountString: JSBI.toString(),
     uiAmount: JSBI.toNumber(amount) / 10 ** decimals,
     uiAmountString
   }

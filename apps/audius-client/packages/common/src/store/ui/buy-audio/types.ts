@@ -16,7 +16,8 @@ export type JupiterTokenListing = {
 
 export enum OnRampProvider {
   COINBASE = 'coinbase',
-  STRIPE = 'stripe'
+  STRIPE = 'stripe',
+  UNKNOWN = 'unknown'
 }
 
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
@@ -35,4 +36,11 @@ export enum BuyAudioStage {
   CONFIRMING_SWAP = 'CONFIRMING_SWAP',
   TRANSFERRING = 'TRANSFERRING',
   FINISH = 'FINISH'
+}
+
+export type AmountObject = {
+  amount: number
+  amountString: string
+  uiAmount: number
+  uiAmountString: string
 }
