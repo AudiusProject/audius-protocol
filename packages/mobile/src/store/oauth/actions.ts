@@ -46,6 +46,7 @@ type NativeOpenPopupAction = {
 }
 type ClosePopupAction = {
   type: typeof CLOSE_POPUP
+  abandoned: boolean
 }
 
 type SetTwitterInfoAction = {
@@ -127,8 +128,9 @@ export const nativeOpenPopup = (
   provider
 })
 
-export const closePopup = (): ClosePopupAction => ({
-  type: CLOSE_POPUP
+export const closePopup = (abandoned: boolean): ClosePopupAction => ({
+  type: CLOSE_POPUP,
+  abandoned
 })
 
 export const setTwitterInfo = (

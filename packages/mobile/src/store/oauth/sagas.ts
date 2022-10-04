@@ -132,7 +132,7 @@ function* doTwitterAuth({
 }
 
 function* watchTwitterAuth() {
-  const { IDENTITY_SERVICE } = yield getContext('env')
+  const { IDENTITY_SERVICE, AUDIUS_URL } = yield getContext('env')
   yield takeEvery(oauthActions.REQUEST_TWITTER_AUTH, function* () {
     function* onFailure(error: any) {
       console.error(error)
@@ -169,7 +169,9 @@ function* watchTwitterAuth() {
       screenName: '',
       credentialsType: 'same-origin' as CredentialsType,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        origin: AUDIUS_URL,
+        referrer: AUDIUS_URL
       },
       onSuccess,
       onFailure

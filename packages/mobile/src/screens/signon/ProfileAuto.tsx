@@ -31,7 +31,8 @@ import {
   getInstagramError,
   getInstagramInfo,
   getTwitterError,
-  getTwitterInfo
+  getTwitterInfo,
+  getAbandoned
 } from 'app/store/oauth/selectors'
 import { EventNames } from 'app/types/analytics'
 import { useColor } from 'app/utils/theme'
@@ -133,6 +134,7 @@ const styles = StyleSheet.create({
     fontFamily: 'AvenirNextLTPro-Regular'
   },
   loadingIcon: {
+    alignItems: 'center',
     marginTop: 48,
     height: 48
   }
@@ -241,6 +243,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
   const twitterError = useSelector(getTwitterError)
   const instagramInfo = useSelector(getInstagramInfo)
   const instagramError = useSelector(getInstagramError)
+  const abandoned = useSelector(getAbandoned)
   const handleField: EditableField = useSelector(getHandleField)
   const emailField: EditableField = useSelector(getEmailField)
 
@@ -298,7 +301,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
     [twitterInfo, instagramInfo, emailField]
   )
 
-  const signUp = useCallback(() => {
+  const setOAuthInfo = useCallback(() => {
     if (twitterInfo) {
       dispatch(
         signOnActions.setTwitterProfile(
@@ -306,7 +309,11 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
           twitterInfo.profile,
           twitterInfo.profile.profile_image_url_https
             ? {
-                uri: twitterInfo.profile.profile_image_url_https,
+                // Replace twitter's returned image (which may vary) with the hd one
+                uri: twitterInfo.profile.profile_image_url_https.replace(
+                  /_(normal|bigger|mini)/g,
+                  ''
+                ),
                 name: 'ProfileImage',
                 type: 'image/jpeg'
               }
@@ -335,9 +342,11 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         )
       )
     }
-
-    dispatch(signOnActions.signUp())
   }, [dispatch, twitterInfo, instagramInfo])
+
+  const signUp = useCallback(() => {
+    dispatch(signOnActions.signUp())
+  }, [dispatch])
 
   useEffect(() => {
     if (!hasNavigatedAway && twitterInfo) {
@@ -349,11 +358,13 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         twitterInfo.requiresUserReview
       ) {
         trackOAuthComplete('twitter')
+        setOAuthInfo()
         goTo('ProfileManual')
         setHasNavigatedAway(true)
         setIsLoading(false)
       } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('twitter')
+        setOAuthInfo()
         signUp()
         goTo('FirstFollows')
         setHasNavigatedAway(true)
@@ -366,6 +377,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
     handleField,
     didValidateHandle,
     validateHandle,
+    setOAuthInfo,
     signUp,
     goTo,
     trackOAuthComplete
@@ -387,11 +399,13 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         instagramInfo.requiresUserReview
       ) {
         trackOAuthComplete('instagram')
+        setOAuthInfo()
         goTo('ProfileManual')
         setHasNavigatedAway(true)
         setIsLoading(false)
       } else if (handleField.status === EditingStatus.SUCCESS) {
         trackOAuthComplete('instagram')
+        setOAuthInfo()
         signUp()
         goTo('FirstFollows')
         setHasNavigatedAway(true)
@@ -405,6 +419,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
     didValidateHandle,
     validateHandle,
     signUp,
+    setOAuthInfo,
     goTo,
     trackOAuthComplete
   ])
@@ -438,6 +453,12 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
       })
     )
   }
+
+  useEffect(() => {
+    if (abandoned) {
+      setIsLoading(false)
+    }
+  }, [abandoned])
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white' }}>

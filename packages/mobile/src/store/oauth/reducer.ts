@@ -38,6 +38,8 @@ export type OAuthState = {
   twitterError: any
   instagramInfo: InstagramInfo | null
   instagramError: any
+  // Whether the user canceled out of the oauth flow
+  abandoned: boolean
 }
 
 export enum Provider {
@@ -55,7 +57,8 @@ const initialState: OAuthState = {
   twitterInfo: null,
   twitterError: null,
   instagramInfo: null,
-  instagramError: null
+  instagramError: null,
+  abandoned: false
 }
 
 const reducer = (
@@ -68,7 +71,8 @@ const reducer = (
         ...state,
         isOpen: true,
         url: action.url,
-        provider: action.provider
+        provider: action.provider,
+        abandoned: false
       }
     case CLOSE_POPUP:
       return {
@@ -77,7 +81,8 @@ const reducer = (
         messageId: null,
         messageType: null,
         url: null,
-        provider: null
+        provider: null,
+        abandoned: action.abandoned
       }
     case SET_TWITTER_INFO:
       return {

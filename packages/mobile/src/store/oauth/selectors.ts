@@ -16,3 +16,4 @@ export const getInstagramInfo = (state: AppState) =>
   getBaseState(state).instagramInfo
 export const getInstagramError = (state: AppState) =>
   getBaseState(state).instagramError
+export const getAbandoned = (state: AppState) => getBaseState(state).abandoned
