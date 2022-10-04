@@ -31,27 +31,34 @@ const calculateNewSearchResults = (
       ? action.searchText
       : action.tag
   const prevStateQuery = state.searchText
+  const isTagSearch = action.type === 'SEARCH/FETCH_SEARCH_PAGE_TAGS_SUCCEEDED'
+  const keepPrevResult =
+    query === prevStateQuery && isTagSearch === state.isTagSearch
 
-  const newState = {
-    ...initialState,
-    status: Status.SUCCESS
-  }
+  const newState = keepPrevResult
+    ? { ...state, status: Status.SUCCESS }
+    : {
+        ...initialState,
+        status: Status.SUCCESS
+      }
+
   if (action.results) {
     newState.searchText = query
     newState.isTagSearch =
       action.type === 'SEARCH/FETCH_SEARCH_PAGE_TAGS_SUCCEEDED'
-    const keepPrevResult =
-      query === prevStateQuery && newState.isTagSearch === state.isTagSearch
-    newState.trackIds =
-      action.results.tracks || (keepPrevResult ? state.trackIds : undefined)
-    newState.albumIds =
-      action.results.albums || (keepPrevResult ? state.albumIds : undefined)
-    newState.playlistIds =
-      action.results.playlists ||
-      (keepPrevResult ? state.playlistIds : undefined)
-    newState.artistIds =
-      action.results.users || (keepPrevResult ? state.artistIds : undefined)
-    newState.tracks = keepPrevResult ? state.tracks : initialState.tracks
+    const { tracks, albums, playlists, users } = action.results
+    if (tracks) {
+      newState.trackIds = tracks
+    }
+    if (albums) {
+      newState.albumIds = albums
+    }
+    if (playlists) {
+      newState.playlistIds = playlists
+    }
+    if (users) {
+      newState.artistIds = users
+    }
   }
   return newState
 }

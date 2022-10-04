@@ -22,7 +22,8 @@ export const SearchResultsTab = (props: SearchResultsTabProps) => {
     <WithLoader
       loading={Boolean(
         searchStatus === Status.LOADING ||
-          (status === Status.LOADING && noResults)
+          (status === Status.LOADING && noResults) ||
+          noResults === undefined
       )}
     >
       {noResults ? <EmptyResults /> : <>{children}</>}
