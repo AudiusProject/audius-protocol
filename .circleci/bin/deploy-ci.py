@@ -411,8 +411,11 @@ def format_artifacts(
     if hosts:
         hosts.sort()
         summary = [f"{heading}:"]
-        for h in hosts:
-            summary.append(f"• {h}")
+        if "Upgraded to" in heading:
+            summary.append(", ".join(hosts))
+        else:
+            for h in hosts:
+                summary.append(f"• {h}")
 
         print("\n".join(summary))
         with open("/tmp/summary.md", "a") as f:
