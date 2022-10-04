@@ -121,4 +121,4 @@ export class ImageProcessingQueue {
   }
 }
 
-module.exports = ImageProcessingQueue
+module.exports = { ImageProcessingQueue }
