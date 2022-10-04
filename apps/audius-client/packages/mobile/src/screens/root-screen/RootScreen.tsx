@@ -154,9 +154,8 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
     () => dispatch(enterBackground())
   )
 
-  const isAccountLoading = ![Status.IDLE, Status.LOADING].includes(
-    accountStatus
-  )
+  const isAccountLoading =
+    accountStatus === Status.IDLE || accountStatus === Status.LOADING
 
   return (
     <>
