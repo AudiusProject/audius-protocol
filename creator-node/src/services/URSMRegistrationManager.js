@@ -129,7 +129,7 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-     if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
