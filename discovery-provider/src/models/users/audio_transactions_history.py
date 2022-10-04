@@ -1,0 +1,38 @@
+import enum
+
+from sqlalchemy import BigInteger, Column, DateTime, Enum, String, text
+from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
+
+
+class TransactionType(str, enum.Enum):
+    tip = "TIP"
+    reward = "REWARD"
+    transfer = "TRANSFER"
+    purchase_stripe = "PURCHASE_STRIPE"
+    purchase_coinbase = "PURCHASE_COINBASE"
+
+
+class TransactionMethod(str, enum.Enum):
+    send = "SEND"
+    receive = "RECEIVE"
+    user = "USER"
+    trending = "TRENDING"
+
+
+class AudioTransactionsHistory(Base, RepresentableMixin):
+    __tablename__ = "audio_transactions_history"
+
+    user_bank = Column(String, primary_key=True, nullable=False)
+    signature = Column(String, primary_key=True, nullable=False)
+    transaction_type = Column(Enum(TransactionType), nullable=False, index=True)
+    method = Column(Enum(TransactionMethod), nullable=False, index=True)
+    created_at = Column(
+        DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")
+    )
+    updated_at = Column(
+        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
+    )
+    change = Column(BigInteger, nullable=False)
+    balance = Column(BigInteger, nullable=False)
+    tx_metadata = Column(String, nullable=False)
