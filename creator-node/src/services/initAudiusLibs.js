@@ -34,7 +34,7 @@ module.exports = async ({
   const entityManagerAddress = config.get('entityManagerAddress')
   const dataProviderUrl = config.get('dataProviderUrl')
   const delegatePrivateKey = config.get('delegatePrivateKey')
-  const oldDelegatePrivateKey = config.get('oldDelegatePrivateKey')
+
   const creatorNodeIsDebug = config.get('creatorNodeIsDebug')
 
   const discoveryProviderWhitelist = discoveryProviderWhitelistConfig
@@ -74,7 +74,7 @@ module.exports = async ({
           // pass as array
           [dataProviderUrl],
           // TODO - formatting this private key here is not ideal
-          (oldDelegatePrivateKey || delegatePrivateKey).replace('0x', ''),
+          delegatePrivateKey.replace('0x', ''),
           entityManagerAddress
         )
       : null,
