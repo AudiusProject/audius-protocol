@@ -1,3 +1,4 @@
+import { initializeApp } from '../../src/app'
 const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
@@ -49,7 +50,7 @@ async function getApp(
   // If one needs to set mock settings, pass in a callback to set it before initializing app
   if (setMockFn) setMockFn()
 
-  const appInfo = require('../../src/app')(8000, mockServiceRegistry)
+  const appInfo = initializeApp(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry
   return appInfo
 }
