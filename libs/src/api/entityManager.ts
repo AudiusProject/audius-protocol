@@ -112,7 +112,10 @@ export class EntityManager extends Base {
   unsavePlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.UNSAVE)
   repostTrack = this.createSocialMethod(EntityType.TRACK, Action.REPOST)
   unrepostTrack = this.createSocialMethod(EntityType.TRACK, Action.UNREPOST)
-  selectArtistPick = this.createSocialMethod(EntityType.TRACK, Action.ARTIST_PICK)
+  selectArtistPick = this.createSocialMethod(
+    EntityType.TRACK,
+    Action.ARTIST_PICK
+  )
 
   /** Playlist */
 
