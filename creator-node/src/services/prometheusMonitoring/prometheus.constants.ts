@@ -126,8 +126,7 @@ export const METRIC_LABELS = Object.freeze({
       'failure_cid_db_query',
       'failure_premium_content_error',
       'failure_stream'
-    ],
-    buckets: exponentialBucketsRange(0.1, 60, 10)
+    ]
   },
   [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
     result: [
@@ -136,8 +135,7 @@ export const METRIC_LABELS = Object.freeze({
       'abort_cid_not_found_in_db',
       'abort_cid_not_found_in_network',
       'failure_stream'
-    ],
-    buckets: exponentialBucketsRange(0.1, 60, 10)
+    ]
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),

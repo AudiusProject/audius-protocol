@@ -729,7 +729,11 @@ router.get(
  * @dev This route does not handle responses by design, so we can pipe the gateway response.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'], getDirCID)
+router.get(
+  ['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'],
+  routeMetricMiddleware,
+  getDirCID
+)
 
 /**
  * Serves information on existence of given cids
