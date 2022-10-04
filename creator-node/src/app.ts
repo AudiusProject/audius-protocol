@@ -1,16 +1,17 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const prometheusMiddleware = require('express-prom-bundle')
-const _ = require('lodash')
+import type { Request, Response, NextFunction, IRoute } from 'express'
+import type Logger from 'bunyan'
 
-const DiskManager = require('./diskManager')
-const { sendResponse, errorResponseServerError } = require('./apiHelpers')
-const { logger, loggingMiddleware } = require('./logging')
-const {
-  readOnlyMiddleware
-} = require('./middlewares/readOnly/readOnlyMiddleware')
-const {
+import express from 'express'
+import bodyParser from 'body-parser'
+import cors from 'cors'
+import prometheusMiddleware from 'express-prom-bundle'
+import _ from 'lodash'
+
+import DiskManager from './diskManager'
+import { sendResponse, errorResponseServerError } from './apiHelpers'
+import { logger, loggingMiddleware } from './logging'
+import { readOnlyMiddleware } from './middlewares/readOnly/readOnlyMiddleware'
+import {
   userReqLimiter,
   trackReqLimiter,
   audiusUserReqLimiter,
@@ -19,16 +20,25 @@ const {
   URSMRequestForSignatureReqLimiter,
   batchCidsExistReqLimiter,
   getRateLimiterMiddleware
-} = require('./reqLimiter')
-const config = require('./config')
-const {
-  exponentialBucketsRange
-} = require('./services/prometheusMonitoring/prometheusUtils')
-const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
-const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
-const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
+} from './reqLimiter'
+import config from './config'
+import { exponentialBucketsRange } from './services/prometheusMonitoring/prometheusUtils'
+import healthCheckRoutes from './components/healthCheck/healthCheckController'
+import contentBlacklistRoutes from './components/contentBlacklist/contentBlacklistController'
+import replicaSetRoutes from './components/replicaSet/replicaSetController'
 
-function errorHandler(err, req, res, next) {
+// Content node app adds additional fields to the Express request object. This typing
+// is a type that adds additional fields to the request object.
+type CustomRequest = Request & { logger: Logger } & {
+  normalizedPath: string
+}
+
+function errorHandler(
+  err: any,
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)
   sendResponse(req, res, errorResponseServerError('Internal server error'))
@@ -47,8 +57,8 @@ function errorHandler(err, req, res, next) {
  * }
  * @param {Object[]} routers Array of Express routers
  */
-function _setupRouteDurationTracking(routers) {
-  let layers = routers.map((route) => route.stack)
+function _setupRouteDurationTracking(routers: IRoute[]) {
+  let layers = routers.map((route: IRoute) => route.stack)
   layers = _.flatten(layers)
 
   const routesWithoutParams = []
@@ -102,9 +112,9 @@ function _setupRouteDurationTracking(routers) {
  * Configures express app object with required properties and starts express server
  *
  * @param {number} port port number on which to expose server
- * @param {Object} serviceRegistry object housing all Content Node Services
+ * @param {ServiceRegistry} serviceRegistry object housing all Content Node Services
  */
-const initializeApp = (port, serviceRegistry) => {
+export const initializeApp = (port: number, serviceRegistry: any) => {
   const app = express()
 
   // middleware functions will be run in order they are added to the app below
@@ -153,12 +163,13 @@ const initializeApp = (port, serviceRegistry) => {
       // Disable default gauge counter to indicate if this middleware is running
       includeUp: false,
       // The buckets in seconds to measure requests
-      buckets: [0.2, 0.5, ...exponentialBucketsRange(1, 60, 4)],
+      buckets: [0.2, 0.5, ...(exponentialBucketsRange(1, 60, 4) as number[])],
       // Do not register the default /metrics route, since we have the /prometheus_metrics_worker
       autoregister: false,
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
-      normalizePath: function (req, opts) {
+      normalizePath: function (_req, opts) {
+        const req = _req as CustomRequest
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
           for (const { regex, path: normalizedPath } of routesWithParams) {
@@ -167,7 +178,7 @@ const initializeApp = (port, serviceRegistry) => {
               return normalizedPath
             }
           }
-        } catch (e) {
+        } catch (e: any) {
           req.logger.warn(
             { middleware: 'PrometheusMiddleware', function: 'normalizePath' },
             `Could not match on regex: ${e.message}`
@@ -178,8 +189,12 @@ const initializeApp = (port, serviceRegistry) => {
       // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
       // Technically, this function is redundant because we specify the routes to match on in the first
       // param of app.use([paths,]). This fn is used for specific metric tracking
-      bypass: function (req, opts) {
-        const path = prometheusMiddleware.normalizePath(req, opts)
+      bypass: function (_req) {
+        const req = _req as CustomRequest
+        const path = prometheusMiddleware.normalizePath(
+          req,
+          {} /* empty option */
+        )
         try {
           for (const { regex, path: normalizedPath } of routes) {
             const match = path.match(regex)
@@ -188,7 +203,7 @@ const initializeApp = (port, serviceRegistry) => {
               return false
             }
           }
-        } catch (e) {
+        } catch (e: any) {
           req.logger.warn(
             { middleware: 'PrometheusMiddleware', function: 'bypass' },
             `Could not match on regex: ${e.message}`
@@ -206,7 +221,7 @@ const initializeApp = (port, serviceRegistry) => {
     app.use('/', router)
   }
 
-  app.use(errorHandler)
+  app.use(errorHandler as any)
 
   const storagePath = DiskManager.getConfigStoragePath()
 
@@ -237,5 +252,3 @@ const initializeApp = (port, serviceRegistry) => {
 
   return { app: app, server: server }
 }
-
-module.exports = initializeApp

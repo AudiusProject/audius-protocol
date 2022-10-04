@@ -16,14 +16,14 @@ import { round } from 'lodash'
  * @param {number} max the highest value for a bucket
  * @param {number} count the number of buckets to generate for values between min and max
  * @param {number} [precision] the number of decimal points to round each bucket to
- * @returns 'count' buckets (number[] of length 'count') for values between 'min' and 'max'
+ * @returns {number[]} 'count' buckets (number[] of length 'count') for values between 'min' and 'max'
  */
 export const exponentialBucketsRange = (
   min: number,
   max: number,
   count: number,
   precision = 0
-) => {
+): number[] => {
   if (count < 1) {
     throw new Error('exponentialBucketsRange count needs a positive count')
   }
@@ -37,7 +37,7 @@ export const exponentialBucketsRange = (
   const growthFactor = (max / min) ** (1 / (count - 1))
 
   // Now that we know growthFactor, solve for each bucket
-  const buckets = new Set()
+  const buckets = new Set<number>()
   for (let i = 1; i <= count; i++) {
     const bucket = min * growthFactor ** (i - 1)
     buckets.add(round(bucket, precision))

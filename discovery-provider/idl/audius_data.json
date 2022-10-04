@@ -36,7 +36,7 @@
       "name": "updateIsVerified",
       "accounts": [
         {
-          "name": "audiusAdmin",
+          "name": "admin",
           "isMut": false,
           "isSigner": false
         },
@@ -57,9 +57,9 @@
           "type": "publicKey"
         },
         {
-          "name": "userHandle",
+          "name": "userIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         }
       ]
@@ -141,13 +141,8 @@
           }
         },
         {
-          "name": "handleSeed",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
+          "name": "userId",
+          "type": "u32"
         },
         {
           "name": "userBump",
@@ -448,9 +443,9 @@
           "type": "publicKey"
         },
         {
-          "name": "userHandle",
+          "name": "userIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         },
         {
@@ -523,8 +518,8 @@
           "isSigner": true
         },
         {
-          "name": "audiusAdmin",
-          "isMut": true,
+          "name": "admin",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -571,13 +566,8 @@
           }
         },
         {
-          "name": "handleSeed",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
+          "name": "userId",
+          "type": "u32"
         },
         {
           "name": "userBump",
@@ -586,10 +576,6 @@
         {
           "name": "metadata",
           "type": "string"
-        },
-        {
-          "name": "id",
-          "type": "u64"
         },
         {
           "name": "userAuthority",
@@ -653,7 +639,7 @@
       "name": "manageEntity",
       "accounts": [
         {
-          "name": "audiusAdmin",
+          "name": "admin",
           "isMut": false,
           "isSigner": false
         },
@@ -684,9 +670,9 @@
           "type": "publicKey"
         },
         {
-          "name": "userHandle",
+          "name": "userIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         },
         {
@@ -715,7 +701,7 @@
       "name": "writeEntitySocialAction",
       "accounts": [
         {
-          "name": "audiusAdmin",
+          "name": "admin",
           "isMut": false,
           "isSigner": false
         },
@@ -746,9 +732,9 @@
           "type": "publicKey"
         },
         {
-          "name": "userHandle",
+          "name": "userIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         },
         {
@@ -770,20 +756,20 @@
       ]
     },
     {
-      "name": "followUser",
+      "name": "writeUserSocialAction",
       "accounts": [
         {
-          "name": "audiusAdmin",
+          "name": "admin",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "followerUserStorage",
+          "name": "sourceUserStorage",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "followeeUserStorage",
+          "name": "targetUserStorage",
           "isMut": true,
           "isSigner": false
         },
@@ -815,15 +801,15 @@
           }
         },
         {
-          "name": "followerHandle",
+          "name": "sourceUserIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         },
         {
-          "name": "followeeHandle",
+          "name": "targetUserIdSeedBump",
           "type": {
-            "defined": "UserHandle"
+            "defined": "UserIdSeedBump"
           }
         }
       ]
@@ -837,7 +823,7 @@
           "isSigner": true
         },
         {
-          "name": "authorityDelegationStatusPda",
+          "name": "authorityDelegationStatus",
           "isMut": true,
           "isSigner": false
         },
@@ -868,7 +854,7 @@
           "isSigner": true
         },
         {
-          "name": "authorityDelegationStatusPda",
+          "name": "authorityDelegationStatus",
           "isMut": true,
           "isSigner": false
         },
@@ -940,20 +926,13 @@
           "type": "publicKey"
         },
         {
-          "name": "handleSeed",
+          "name": "userIdSeedBump",
           "type": {
-            "array": [
-              "u8",
-              32
-            ]
+            "defined": "UserIdSeedBump"
           }
         },
         {
-          "name": "userBump",
-          "type": "u8"
-        },
-        {
-          "name": "userAuthorityDelegate",
+          "name": "delegatePubkey",
           "type": "publicKey"
         }
       ]
@@ -1008,17 +987,10 @@
           "type": "publicKey"
         },
         {
-          "name": "handleSeed",
+          "name": "userIdSeedBump",
           "type": {
-            "array": [
-              "u8",
-              32
-            ]
+            "defined": "UserIdSeedBump"
           }
-        },
-        {
-          "name": "userBump",
-          "type": "u8"
         },
         {
           "name": "userAuthorityDelegate",
@@ -1113,7 +1085,7 @@
             "type": "publicKey"
           },
           {
-            "name": "userStorageAccount",
+            "name": "userAccount",
             "type": "publicKey"
           }
         ]
@@ -1134,18 +1106,13 @@
   ],
   "types": [
     {
-      "name": "UserHandle",
+      "name": "UserIdSeedBump",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "seed",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "userId",
+            "type": "u32"
           },
           {
             "name": "bump",
@@ -1185,6 +1152,12 @@
           },
           {
             "name": "UnfollowUser"
+          },
+          {
+            "name": "SubscribeUser"
+          },
+          {
+            "name": "UnsubscribeUser"
           }
         ]
       }
@@ -1279,6 +1252,6 @@
     }
   ],
   "metadata": {
-    "address": "8dwroDmUoVXoFkSxLLhM9mEGc6LTjN24LR1FytrU8wU1"
+    "address": "386KMLDb8nCt7dzvm9cFHwyaTVv3VQQXmF6tGS5SHAyo"
   }
 }

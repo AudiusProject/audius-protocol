@@ -12,7 +12,7 @@ import cluster from 'cluster'
 import ON_DEATH from 'death'
 import { Keypair } from '@solana/web3.js'
 
-import initializeApp from './app'
+import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
