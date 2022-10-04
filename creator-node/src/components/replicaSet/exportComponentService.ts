@@ -1,10 +1,11 @@
-const _ = require('lodash')
+import type Logger from 'bunyan'
+
+import _ from 'lodash'
+import { Transaction } from 'sequelize'
+import DBManager from '../../dbManager'
+import { instrumentTracing, tracing } from '../../tracer'
 
 const models = require('../../models')
-const { Transaction } = require('sequelize')
-const DBManager = require('../../dbManager')
-const { instrumentTracing, tracing } = require('../../tracer')
-
 /**
  * Exports all db data (not files) associated with walletPublicKey[] as JSON.
  *
@@ -12,18 +13,24 @@ const { instrumentTracing, tracing } = require('../../tracer')
  *  cnodeUsersDict - Map Object containing all db data keyed on cnodeUserUUID
  * }
  */
-const exportComponentService = async ({
+const _exportComponentService = async ({
   walletPublicKeys,
   requestedClockRangeMin,
   requestedClockRangeMax,
   forceExport = false,
   logger
+}: {
+  walletPublicKeys: string[]
+  requestedClockRangeMin: number
+  requestedClockRangeMax: number
+  forceExport: boolean
+  logger: Logger
 }) => {
   const transaction = await models.sequelize.transaction({
     isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
   })
 
-  const cnodeUsersDict = {}
+  const cnodeUsersDict: any = {}
   try {
     // Fetch cnodeUser for each walletPublicKey.
     const cnodeUsers = await models.CNodeUser.findAll({
@@ -32,7 +39,7 @@ const exportComponentService = async ({
       raw: true
     })
     const cnodeUserUUIDs = cnodeUsers.map(
-      (cnodeUser) => cnodeUser.cnodeUserUUID
+      (cnodeUser: { cnodeUserUUID: string }) => cnodeUser.cnodeUserUUID
     )
 
     // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
@@ -109,7 +116,7 @@ const exportComponentService = async ({
 
       // Validate clock values or throw an error
       const maxClockRecord = Math.max(
-        ...clockRecords.map((record) => record.clock)
+        ...clockRecords.map((record: any) => record.clock)
       )
       if (!_.isEmpty(clockRecords) && cnodeUserResp.clock !== maxClockRecord) {
         const errorMsg = `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserResp.clock} and exported max ClockRecord val ${maxClockRecord}. Fixing and trying again...`
@@ -129,26 +136,26 @@ const exportComponentService = async ({
         localClockMax: curCnodeUserClockVal
       }
 
-      cnodeUsersDict[cnodeUserResp.cnodeUserUUID] = cnodeUserResp
+      cnodeUsersDict[cnodeUserResp.cnodeUserUUID as string] = cnodeUserResp
     }
 
-    audiusUsers.forEach((audiusUser) => {
+    audiusUsers.forEach((audiusUser: any) => {
       cnodeUsersDict[audiusUser.cnodeUserUUID].audiusUsers.push(audiusUser)
     })
-    tracks.forEach((track) => {
+    tracks.forEach((track: any) => {
       cnodeUsersDict[track.cnodeUserUUID].tracks.push(track)
     })
-    files.forEach((file) => {
+    files.forEach((file: any) => {
       cnodeUsersDict[file.cnodeUserUUID].files.push(file)
     })
-    clockRecords.forEach((clockRecord) => {
+    clockRecords.forEach((clockRecord: any) => {
       cnodeUsersDict[clockRecord.cnodeUserUUID].clockRecords.push(clockRecord)
     })
 
     await transaction.commit()
 
     return cnodeUsersDict
-  } catch (e) {
+  } catch (e: any) {
     tracing.recordException(e)
     await transaction.rollback()
 
@@ -160,7 +167,7 @@ const exportComponentService = async ({
         logger.warn(
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() executed - numRowsUpdated:${numRowsUpdated}`
         )
-      } catch (e) {
+      } catch (e: any) {
         tracing.recordException(e)
         logger.error(
           `exportComponentService() - cnodeUserUUID:${cnodeUserUUID} - fixInconsistentUser() error - ${e.message}`
@@ -171,11 +178,15 @@ const exportComponentService = async ({
   }
 }
 
-module.exports = instrumentTracing({
-  fn: exportComponentService,
+export const exportComponentService = instrumentTracing({
+  fn: _exportComponentService,
   options: {
     attributes: {
       [tracing.CODE_FILEPATH]: __filename
     }
   }
 })
+
+module.exports = {
+  exportComponentService
+}
