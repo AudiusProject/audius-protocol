@@ -68,13 +68,13 @@ class URSMRegistrationManager {
    */
   async run() {
     this.logInfo('Beginning URSM registration process')
-    if (this.entityManagerReplicaSetEnabled) {
-      this.nodeConfig.set('isRegisteredOnURSM', true)
+    // if (this.entityManagerReplicaSetEnabled) {
+    //   this.nodeConfig.set('isRegisteredOnURSM', true)
 
-      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+    //   this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
 
-      return
-    }
+    //   return
+    // }
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
