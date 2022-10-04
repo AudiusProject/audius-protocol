@@ -19,23 +19,30 @@ import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 
 const PULL_DISTANCE = 75
+const DEBOUNCE_TIME_MS = 0
 
-const useStyles = (topOffset: number) =>
-  makeStyles(() => ({
-    root: {
-      width: '100%',
-      position: 'absolute',
-      height: 20,
-      top: topOffset,
-      zIndex: 10
-    }
-  }))
+const useStyles = makeStyles((_, topOffset: number) => ({
+  root: {
+    width: '100%',
+    position: 'absolute',
+    height: 20,
+    top: topOffset,
+    zIndex: 10
+  }
+}))
 
 const interpolateTranslateY = (scrollAnim: Animated.Value) =>
   scrollAnim.interpolate({
     inputRange: [-24, 0],
     outputRange: [10, 0],
     extrapolateLeft: 'extend',
+    extrapolateRight: 'clamp'
+  })
+
+const interpolateHitTopOpacity = (scrollAnim: Animated.Value) =>
+  scrollAnim.interpolate({
+    inputRange: [-60, -16, 0],
+    outputRange: [1, 1, 0],
     extrapolateRight: 'clamp'
   })
 
@@ -66,46 +73,69 @@ export const useOverflowHandlers = ({
   const scrollAnim = useRef(new Animated.Value(0)).current
 
   const [isMomentumScroll, setIsMomentumScroll] = useState(false)
-
+  const currentYOffset = useRef(0)
   const wasRefreshing = usePrevious(isRefreshing)
 
   const scrollTo = useCallback(
-    (y: number) => {
+    (y: number, animated = true) => {
       if (scrollResponder && 'scrollTo' in scrollResponder) {
-        scrollResponder?.scrollTo({ y, animated: true })
+        scrollResponder?.scrollTo({ y, animated })
       }
       if (scrollResponder && 'scrollToOffset' in scrollResponder) {
-        scrollResponder?.scrollToOffset({ offset: y, animated: true })
+        scrollResponder?.scrollToOffset({ offset: y })
       }
     },
     [scrollResponder]
   )
 
   useEffect(() => {
-    if (!isRefreshing && wasRefreshing) {
-      scrollTo(0)
+    if (!isRefreshing && wasRefreshing && isMomentumScroll) {
+      // If we don't wait, then this triggers too quickly causing scrollToTop
+      // when user is already engaging with content
+      const timeout = setTimeout(() => {
+        if (currentYOffset.current < 0) scrollTo(0)
+      }, DEBOUNCE_TIME_MS)
+      return () => clearTimeout(timeout)
     }
-  }, [isRefreshing, wasRefreshing, scrollTo])
+  }, [isRefreshing, wasRefreshing, scrollTo, isMomentumScroll])
 
-  const onScrollBeginDrag = useCallback(() => {
-    setIsMomentumScroll(false)
-  }, [setIsMomentumScroll])
+  const handleScroll = useCallback(
+    (e) => {
+      currentYOffset.current = e.nativeEvent.contentOffset.y
+      onScroll?.(e)
+    },
+    [onScroll]
+  )
 
-  const onScrollEndDrag = useCallback(() => {
-    setIsMomentumScroll(true)
-    if (isRefreshing) {
-      scrollTo(-50)
-    }
-  }, [setIsMomentumScroll, scrollTo, isRefreshing])
+  const onScrollBeginDrag = useCallback(
+    (e) => {
+      currentYOffset.current = e.nativeEvent.contentOffset.y
+      setIsMomentumScroll(false)
+    },
+    [setIsMomentumScroll]
+  )
 
-  const handleScroll = attachToScroll(scrollAnim, { listener: onScroll })
+  const onScrollEndDrag = useCallback(
+    (e) => {
+      currentYOffset.current = e.nativeEvent.contentOffset.y
+      setIsMomentumScroll(true)
+      if (isRefreshing && currentYOffset.current <= 0) {
+        scrollTo(-50)
+      }
+    },
+    [setIsMomentumScroll, scrollTo, isRefreshing]
+  )
+
+  const attachedHandleScroll = attachToScroll(scrollAnim, {
+    listener: handleScroll
+  })
 
   return {
     isRefreshing: onRefresh ? Boolean(isRefreshing) : undefined,
     isRefreshDisabled: isMomentumScroll,
     handleRefresh: onRefresh,
     scrollAnim,
-    handleScroll,
+    handleScroll: attachedHandleScroll,
     onScrollBeginDrag,
     onScrollEndDrag
   }
@@ -156,7 +186,7 @@ export const PullToRefresh = ({
   topOffset = 0,
   color
 }: PullToRefreshProps) => {
-  const styles = useStyles(topOffset)()
+  const styles = useStyles(topOffset)
   const { neutralLight4 } = useThemeColors()
 
   const [didHitTop, setDidHitTop] = useState(false)
@@ -194,13 +224,13 @@ export const PullToRefresh = ({
   )
 
   useEffect(() => {
-    if (!isRefreshing) {
+    if (!isRefreshing && isRefreshDisabled) {
       hitTop.current = false
       setDidHitTop(false)
       setShouldShowSpinner(false)
       animationRef.current?.reset()
     }
-  }, [isRefreshing, hitTop])
+  }, [isRefreshing, hitTop, isRefreshDisabled])
 
   const listenerRef = useRef<string>()
 
@@ -225,7 +255,7 @@ export const PullToRefresh = ({
         scrollAnim?.removeListener(listenerRef.current)
       }
     }
-  }, [scrollAnim, onRefresh, isRefreshDisabled])
+  }, [scrollAnim, onRefresh, isRefreshDisabled, didHitTop])
 
   return scrollAnim ? (
     <Animated.View
@@ -237,7 +267,9 @@ export const PullToRefresh = ({
               translateY: interpolateTranslateY(scrollAnim)
             }
           ],
-          opacity: didHitTop ? 1 : interpolateOpacity(scrollAnim)
+          opacity: didHitTop
+            ? interpolateHitTopOpacity(scrollAnim)
+            : interpolateOpacity(scrollAnim)
         }
       ]}
     >
