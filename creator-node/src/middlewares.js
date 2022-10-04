@@ -971,8 +971,6 @@ async function routeMetricMiddleware(req, res, next) {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { prometheusRegistry } = serviceRegistry
 
-  const fullPath = req.baseUrl + req.path
-
   try {
     const metric = prometheusRegistry.getMetricByRoute(req.normalizedPath)
 
@@ -981,7 +979,8 @@ async function routeMetricMiddleware(req, res, next) {
       req.endMetricTimer = endMetricTimerFn
     }
   } catch (e) {
-    req.logger.warn(`Could not start metric for path=${fullPath}`)
+    const fullPath = req.baseUrl + req.path
+    req.logger.warn(`Could not start metric for path=${fullPath}: ${e.message}`)
   }
 
   next()
