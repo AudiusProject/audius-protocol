@@ -26,6 +26,7 @@ import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
+import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -100,6 +101,8 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
   const isPlaying = useSelector(getPlaying)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
 
+  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+
   // When audio starts playing, open the playbar to the initial offset
   useEffect(() => {
     if (isPlaying && !isPlayBarShowing) {
@@ -163,6 +166,16 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
       }
     },
     [drawerPercentOpen]
+  )
+
+  const onPanResponderRelease = useCallback(
+    (e: GestureResponderEvent, _gestureState: PanResponderGestureState) => {
+      // Immediately after the pan responder is released, disable the notifications drawer.
+      // Allow the effect attached to the open state changing to re-define whether it can be
+      // interacted with.
+      drawerNavigation?.setOptions({ swipeEnabled: false })
+    },
+    [drawerNavigation]
   )
 
   const [isGestureEnabled, setIsGestureEnabled] = useState(true)
@@ -246,6 +259,7 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
       drawerStyle={{ overflow: 'visible' }}
       onPercentOpen={onDrawerPercentOpen}
       onPanResponderMove={onPanResponderMove}
+      onPanResponderRelease={onPanResponderRelease}
       isGestureSupported={isGestureEnabled}
       translationAnim={translationAnim}
       // Disable safe area view edges because they are handled manually

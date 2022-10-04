@@ -4,7 +4,7 @@ import type { TrackImage as TrackImageType } from 'app/models/Track'
 import type { UserMultihash } from 'app/models/User'
 
 import ImageLoader from './ImageLoader'
-import { gateways, publicGateways } from './utils'
+import { gateways } from './utils'
 
 const getTrackImageUrl = (track: TrackImageType, cNode: string) => {
   if (track.cover_art_sizes) {
@@ -49,7 +49,6 @@ const useTrackImage = (track: TrackImageType, user: UserMultihash) => {
         .split(',')
         .filter(Boolean)
         .concat(gateways)
-        .concat(publicGateways)
         .map((gateway) => `${gateway}/ipfs/${track.cover_art_sizes}`)
       const legacyIdx = legacyUrls.findIndex(
         (route: string) => (source?.uri ?? '') === route

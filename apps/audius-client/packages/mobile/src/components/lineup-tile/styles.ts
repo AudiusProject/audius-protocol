@@ -17,8 +17,9 @@ export const createStyles = (themeColors: ThemeColors) =>
     },
     image: {
       borderRadius: 4,
-      height: 74,
-      width: 74
+      height: 72,
+      width: 72,
+      backgroundColor: themeColors.neutralLight7
     },
     imageContainer: {
       marginTop: 10,

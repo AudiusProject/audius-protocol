@@ -9,19 +9,21 @@ export const usePressScaleAnimation = (
   const scale = useRef(new Animated.Value(1)).current
 
   const startPress = useCallback(() => {
-    Animated.timing(scale, {
+    Animated.spring(scale, {
       toValue: scaleTo,
-      duration: 70,
-      delay: 0,
+      stiffness: 500,
+      damping: 1,
+      overshootClamping: true,
       useNativeDriver
     }).start()
   }, [scale, scaleTo, useNativeDriver])
 
   const releasePress = useCallback(() => {
-    Animated.timing(scale, {
+    Animated.spring(scale, {
       toValue: 1,
-      duration: 70,
-      delay: 0,
+      stiffness: 200,
+      damping: 10,
+      overshootClamping: true,
       useNativeDriver
     }).start()
   }, [scale, useNativeDriver])
