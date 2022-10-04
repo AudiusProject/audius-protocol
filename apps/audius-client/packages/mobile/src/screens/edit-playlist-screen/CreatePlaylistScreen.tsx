@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { CreatePlaylistSource, cacheCollectionsActions } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
+import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
@@ -44,9 +45,14 @@ const CreatePlaylistForm = (props: FormikProps<PlaylistValues>) => {
       onReset={handleReset}
       errors={errors}
     >
-      <PlaylistImageInput />
-      <PlaylistNameInput />
-      <PlaylistDescriptionInput />
+      {/* Allow user to click outside of input to hide keyboard */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View>
+          <PlaylistImageInput />
+          <PlaylistNameInput />
+          <PlaylistDescriptionInput />
+        </View>
+      </TouchableWithoutFeedback>
     </FormScreen>
   )
 }
