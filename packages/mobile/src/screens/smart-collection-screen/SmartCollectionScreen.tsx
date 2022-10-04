@@ -28,6 +28,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     flex: 1,
     padding: spacing(3)
   },
+  image: {
+    borderRadius: 4
+  },
   imageIcon: {
     opacity: 0.3,
     maxWidth: '100%',
@@ -89,6 +92,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
       <LinearGradient
         colors={smartCollection.gradientColors}
         angle={smartCollection.gradientAngle}
+        style={styles.image}
       >
         {Icon ? (
           <View style={styles.imageIcon}>

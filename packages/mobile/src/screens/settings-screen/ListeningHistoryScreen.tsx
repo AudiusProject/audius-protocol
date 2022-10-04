@@ -83,8 +83,6 @@ export const ListeningHistoryScreen = () => {
     [dispatch, isPlaying, playingUid]
   )
 
-  console.log('rerender')
-
   return (
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
       <WithLoader loading={status === Status.LOADING}>

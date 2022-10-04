@@ -89,7 +89,6 @@ export type TrackListItemProps = {
   hideArt?: boolean
   index: number
   isActive?: boolean
-  isLoading?: boolean
   isPlaying?: boolean
   isReorderable?: boolean
   onRemove?: (index: number) => void
@@ -105,7 +104,6 @@ export const TrackListItem = ({
   index,
   isActive,
   isReorderable = false,
-  isLoading = false,
   isPlaying = false,
   onRemove,
   onSave,
@@ -194,7 +192,6 @@ export const TrackListItem = ({
             trackId={track_id}
             coverArtSizes={_cover_art_sizes}
             isActive={isActive}
-            isLoading={isLoading}
             isPlaying={isPlaying}
           />
         ) : isActive && !isDeleted ? (
