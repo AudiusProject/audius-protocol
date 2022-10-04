@@ -14,7 +14,9 @@ import {
   usersSocialActions as socialActions,
   waitForAccount,
   getContext,
-  MAX_HANDLE_LENGTH
+  settingsPageActions,
+  MAX_HANDLE_LENGTH,
+  PushNotificationSetting
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import {
@@ -51,6 +53,7 @@ import { watchSignOnError } from './errorSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
+const { togglePushNotificationSetting } = settingsPageActions
 const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
@@ -410,7 +413,14 @@ function* signUp() {
         yield put(signOnActions.signUpSucceededWithId(userId))
 
         const isNativeMobile = yield getContext('isNativeMobile')
-        if (!isNativeMobile) {
+        if (isNativeMobile) {
+          yield put(
+            togglePushNotificationSetting(
+              PushNotificationSetting.MobilePush,
+              true
+            )
+          )
+        } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
         }
@@ -508,7 +518,14 @@ function* signIn(action) {
       yield delay(1000)
       yield put(signOnActions.resetSignOn())
       const isNativeMobile = yield getContext('isNativeMobile')
-      if (!isNativeMobile) {
+      if (isNativeMobile) {
+        yield put(
+          togglePushNotificationSetting(
+            PushNotificationSetting.MobilePush,
+            true
+          )
+        )
+      } else {
         setHasRequestedBrowserPermission()
         yield put(accountActions.showPushNotificationConfirmation())
       }
