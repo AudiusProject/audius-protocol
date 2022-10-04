@@ -1417,7 +1417,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1431,7 +1430,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1445,7 +1443,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               only: /(^master$)/
@@ -1471,7 +1468,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1496,7 +1492,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1521,7 +1516,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1548,7 +1542,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1574,7 +1567,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               ignore: /(^master$)/
@@ -1603,7 +1595,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               ignore: /(^master$)/
@@ -1644,7 +1635,6 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
-            - job-lock
           requires:
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
@@ -1666,7 +1656,6 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
-            - job-lock
           requires:
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
@@ -1802,7 +1791,6 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-            - job-lock
           filters:
             branches:
               only: /(^master$)/
