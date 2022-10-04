@@ -5,9 +5,9 @@ const os = require('os')
 const AudiusToken = artifacts.require('AudiusToken')
 
 const AudiusIdentityService = 'identity-service'
-const AudiusCreatorNode = 'content-node'
+const AudiusCreatorNode = 'creator-node'
 const AudiusEthContracts = 'eth-contracts'
-const AudiusDiscoveryNode = 'discovery-node'
+const AudiusDiscoveryNode = 'discovery-provider'
 
 const Libs = 'libs'
 
