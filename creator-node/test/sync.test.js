@@ -782,7 +782,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
           }
         }
         const exportComponentServiceMock = proxyquire(
-          '../src/components/replicaSet/exportComponentService.js',
+          '../src/components/replicaSet/exportComponentService.ts',
           {
             '../../models': modelsMock
           }
