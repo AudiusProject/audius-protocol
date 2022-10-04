@@ -121,7 +121,7 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-c", "--creator-node-replicas", default=4, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
