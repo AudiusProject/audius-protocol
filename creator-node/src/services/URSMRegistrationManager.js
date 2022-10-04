@@ -28,8 +28,6 @@ class URSMRegistrationManager {
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
-    this.oldDelegateOwnerWallet = this.nodeConfig.get('oldDelegateOwnerWallet')
-    this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
     this.entityManagerReplicaSetEnabled = this.nodeConfig.get(
       'entityManagerReplicaSetEnabled'
     )
@@ -70,6 +68,13 @@ class URSMRegistrationManager {
    */
   async run() {
     this.logInfo('Beginning URSM registration process')
+    if (this.entityManagerReplicaSetEnabled) {
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
+      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+
+      return
+    }
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
@@ -124,15 +129,7 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    const activeDelegateOwnerWallet =
-      this.oldDelegateOwnerWallet || this.delegateOwnerWallet
-    this.logError(
-      `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
-    )
-    if (
-      !this.entityManagerReplicaSetEnabled &&
-      activeDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM
-    ) {
+     if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
@@ -140,11 +137,6 @@ class URSMRegistrationManager {
         `Node already registered on URSM with same delegateOwnerWallet`
       )
       return
-    }
-
-    if (this.oldDelegateOwnerWallet) {
-      // New node registration is disabled if using oldDelegateOwnerWallet and above URSM check failed
-      throw new Error('Something went wrong if we got here')
     }
 
     /**
