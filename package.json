@@ -15,5 +15,8 @@
   "license": "Apache-2.0",
   "pre-commit": [
     "check-secrets"
-  ]
+  ],
+  "devDependencies": {
+    "@types/death": "^1.1.2"
+  }
 }
