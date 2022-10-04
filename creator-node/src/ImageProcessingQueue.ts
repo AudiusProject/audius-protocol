@@ -95,7 +95,7 @@ export class ImageProcessingQueue {
    *     }
    *   ]
    */
-  async resizeImage({
+  public async resizeImage({
     file,
     fileName,
     sizes,
