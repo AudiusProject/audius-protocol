@@ -12,6 +12,10 @@ function isResponse(x: Response | Timeout): x is Response {
   return !(x as Timeout).timeout
 }
 
+const getRandomInt = () => {
+  return Math.floor(Math.random() * 50000)
+}
+
 // Tries our API gateway first, then the public one.
 export class RandomImage {
   static get = async (query?: string) => {
@@ -25,7 +29,11 @@ export class RandomImage {
     let res: Nullable<Response | Timeout> = null
     try {
       res = await Promise.race([
-        fetch(`${UNSPLASH_API_GATEWAY}?query=${query}`),
+        fetch(
+          `${UNSPLASH_API_GATEWAY}?${
+            query ? `query=${query}&` : ''
+          }sig=${getRandomInt()}`
+        ),
         timer(UNSPLASH_API_GATEWAY_TIMEOUT)
       ])
     } catch (e) {
@@ -44,7 +52,9 @@ export class RandomImage {
 
     try {
       res = await Promise.race([
-        fetch(`${UNSPLASH_PUBLIC}?${query}`),
+        fetch(
+          `${UNSPLASH_PUBLIC}?sig=${getRandomInt()}${query ? `/&${query}` : ''}`
+        ),
         timer(UNSPLASH_PUBLIC_TIMEOUT)
       ])
       if (res && isResponse(res)) {
