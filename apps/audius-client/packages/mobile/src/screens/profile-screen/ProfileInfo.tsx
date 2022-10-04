@@ -86,7 +86,8 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     'name',
     'handle',
     'does_current_user_follow',
-    'does_follow_current_user'
+    'does_follow_current_user',
+    'is_verified'
   ])
 
   const { name, handle, does_current_user_follow, does_follow_current_user } =
