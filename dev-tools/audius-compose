@@ -295,6 +295,19 @@ def ps(protocol_dir):
 
 
 @cli.command()
+@click.pass_obj
+def prune(protocol_dir):
+    click.secho(
+        "WARNING! This will remove all dangling images and build cache not used within the last 72h",
+        fg="yellow",
+    )
+
+    if click.confirm("Are you sure you want to continue?"):
+        subprocess.run(["docker", "image", "prune", "-f"])
+        subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
+
+
+@cli.command()
 @click.argument("service")
 @click.pass_obj
 def logs(protocol_dir, service):
