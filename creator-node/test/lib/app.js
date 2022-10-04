@@ -10,7 +10,7 @@ const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prom
 const BlacklistManager = require('../../src/blacklistManager')
 const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
-async function getApp(
+export async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
@@ -55,7 +55,7 @@ async function getApp(
   return appInfo
 }
 
-function getServiceRegistryMock(libsClient, blacklistManager) {
+export function getServiceRegistryMock(libsClient, blacklistManager) {
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
@@ -68,7 +68,7 @@ function getServiceRegistryMock(libsClient, blacklistManager) {
   }
 }
 
-function clearRequireCache() {
+export function clearRequireCache() {
   console.log('DELETING CACHE')
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
