@@ -1270,18 +1270,24 @@ jobs:
                 text: "Release branch has been cut! :git-fork:"
       - when:
           condition:
+            equal: [ execute-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Governance Proposal has been executed! :done:"
+      - when:
+          condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
                 text: "Deployment Released to Service Providers! :gift:"
                 detail: "New Governance Proposals are out. :vote:"
                 slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
-      - when:
-          condition:
-            equal: [ execute-proposal, << parameters.target >> ]
-          steps:
-            - slack-success:
-                text: "Governance Proposal has been executed! :done:"
+            # must be last step in job
+            - discord/status:
+                success_only: true
+                success_message: "New Proposal out now! Please vote at: https://dashboard.audius.co."
+                webhook: "${DISCORD_WEBHOOK}"
+                channel: "Non-Default Channel ID"
 
   generate-release-checklist:
     docker:
@@ -1661,6 +1667,7 @@ workflows:
           target: execute-proposal
           context:
             - slack-secrets
+            - discord
           requires:
             - execute-proposal-🕹️
 
