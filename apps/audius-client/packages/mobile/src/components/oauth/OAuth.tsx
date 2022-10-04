@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import type { NativeSyntheticEvent } from 'react-native'
 import { Modal, View, Button } from 'react-native'
 import Config from 'react-native-config'
@@ -9,13 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { closePopup, setCredentials } from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
-import {
-  getUrl,
-  getIsOpen,
-  getMessageId,
-  getAuthProvider,
-  getMessageType
-} from 'app/store/oauth/selectors'
+import { getUrl, getIsOpen, getAuthProvider } from 'app/store/oauth/selectors'
 import type { Credentials } from 'app/store/oauth/types'
 import { AUTH_RESPONSE_MESSAGE_TYPE } from 'app/store/oauth/types'
 
@@ -179,11 +171,7 @@ const OAuth = () => {
   const dispatch = useDispatch()
   const url = useSelector(getUrl)
   const isOpen = useSelector(getIsOpen)
-  const messageId = useSelector(getMessageId)
-  const messageType = useSelector(getMessageType)
   const provider = useSelector(getAuthProvider)
-
-  const close = useCallback(() => dispatch(closePopup()), [dispatch])
 
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
@@ -217,13 +205,10 @@ const OAuth = () => {
                 }
         }
 
-        const isNativeOAuth = !messageType && !messageId // i.e. if the Oauth flow occured in a native app (e.g. the Tiktok app) instead of a webview
         const payload = payloadByProvider[provider as Provider](data)
 
-        if (isNativeOAuth) {
-          dispatch(setCredentials(payload as Credentials))
-        }
-        close()
+        dispatch(setCredentials(payload as Credentials))
+        dispatch(closePopup(false))
       }
     }
   }
@@ -250,7 +235,7 @@ const OAuth = () => {
             marginBottom: 8
           }}
         >
-          <Button onPress={close} title='Close' />
+          <Button onPress={() => dispatch(closePopup(true))} title='Close' />
         </View>
         <WebView
           injectedJavaScript={injected}
