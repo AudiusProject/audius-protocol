@@ -8,7 +8,7 @@ export const sharedIndexSettings: IndicesIndexSettings = {
     char_filter: {
       whitespace_remove: {
         type: 'pattern_replace',
-        pattern: `\s+`,
+        pattern: ' ',
         replacement: '',
         flags: '',
       },

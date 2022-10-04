@@ -309,7 +309,7 @@ def finalize_response(
     return response
 
 
-def base_match(search_str: str, operator="or"):
+def base_match(search_str: str, operator="or", extra_fields=[]):
     return [
         {
             "multi_match": {
@@ -318,6 +318,7 @@ def base_match(search_str: str, operator="or"):
                     "suggest",
                     "suggest._2gram",
                     "suggest._3gram",
+                    *extra_fields,
                 ],
                 "operator": operator,
                 "type": "bool_prefix",
@@ -409,14 +410,15 @@ def track_dsl(
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
+    # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
-            *base_match(search_str),
+            *base_match(search_str, extra_fields=["handle"]),
             {"term": {"is_deactivated": {"value": False}}},
         ],
         "must_not": [],
         "should": [
-            *base_match(search_str, operator="and"),
+            *base_match(search_str, operator="and", extra_fields=["handle"]),
             {"term": {"is_verified": {"value": True}}},
         ],
     }
@@ -426,6 +428,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
 
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
+
+    # import json
+    # print(json.dumps(dsl, indent=2))
 
     return default_function_score(dsl, "follower_count")
 
