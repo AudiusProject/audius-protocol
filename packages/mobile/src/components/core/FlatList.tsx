@@ -83,6 +83,7 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
             onRefresh={handleRefresh}
             scrollAnim={scrollAnim}
             isRefreshDisabled={isRefreshDisabled}
+            yOffsetDisappearance={-16}
           />
         ) : null}
         <Animated.FlatList
