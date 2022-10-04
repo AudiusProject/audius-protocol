@@ -77,7 +77,7 @@ class URSMRegistrationManager {
 
       return
     }
-    
+
     this.logInfo('Beginning URSM registration process')
 
     /**
