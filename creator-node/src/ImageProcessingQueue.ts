@@ -12,9 +12,10 @@ const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
 )
 
-enum ProcessNames {
-  resizeImage = 'resizeImage'
-}
+const ProcessNames = {
+  resizeImage: 'resizeImage'
+} as const
+type ProcessNames = ValuesOf<typeof ProcessNames>
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
