@@ -13,6 +13,7 @@ type OverflowMenuButtonProps = {
   date?: any
   handle: string
   hiddenUntilHover?: boolean
+  includeEdit?: boolean
   index?: number
   isArtistPick?: boolean
   isDeleted?: boolean
@@ -33,6 +34,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const {
     className,
     date,
+    includeEdit = true,
     index,
     isFavorited,
     isOwnerDeactivated,
@@ -56,6 +58,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
     menu: {
       type: 'track' as MenuProps['menu']['type'],
       mount: 'page',
+      includeEdit,
       includeShare: true,
       ...props,
       extraMenuItems: onRemove ? [removeMenuItem] : []

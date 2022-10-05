@@ -41,6 +41,7 @@ type TestTracksTableProps = {
   columns?: TracksTableColumn[]
   data: any[]
   defaultSorter?: (a: any, b: any) => number
+  disabledTrackEdit?: boolean
   fetchBatchSize?: number
   fetchMoreTracks?: (offset: number, limit: number) => void
   fetchPage?: (page: number) => void
@@ -91,6 +92,7 @@ export const TestTracksTable = ({
   columns = defaultColumns,
   data,
   defaultSorter,
+  disabledTrackEdit = false,
   isPaginated = false,
   isReorderable = false,
   fetchBatchSize,
@@ -307,6 +309,7 @@ export const TestTracksTable = ({
           <OverflowMenuButton
             className={styles.tableActionButton}
             isDeleted={deleted}
+            includeEdit={!disabledTrackEdit}
             onRemove={onClickRemove}
             removeText={removeText}
             handle={track.handle}
@@ -326,7 +329,7 @@ export const TestTracksTable = ({
         </div>
       )
     },
-    [onClickRemove, removeText, userId]
+    [disabledTrackEdit, onClickRemove, removeText, userId]
   )
 
   const renderTrackActions = useCallback(
