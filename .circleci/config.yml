@@ -1315,7 +1315,6 @@ workflows:
     when:
       and:
          - not: << pipeline.parameters.full_ci >>
-         - not: << pipeline.parameters.discord >>
          - not: << pipeline.parameters.sdk_release_commit >>
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
