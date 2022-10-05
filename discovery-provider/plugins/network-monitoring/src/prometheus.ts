@@ -113,3 +113,23 @@ export const unsyncedUsersByPrimaryCountGauge = new client.Gauge({
     help: 'the number of users whose primary is out of sync with both secondaries grouped by primary',
     labelNames: ['run_id', 'endpoint']
 })
+
+export const fullySyncedUsersByReplicaCountGauge = new client.Gauge({
+    name: 'audius_nm_fully_synced_user_by_replica_count',
+    help: 'the number of users whose content nodes replicas are all in sync grouped by replica',
+    labelNames: ['run_id', 'endpoint']
+})
+
+export const partiallySyncedUsersByReplicaCountGauge = new client.Gauge({
+    name: 'audius_nm_partially_synced_user_by_replica_count',
+    help: 'the number of users whose primary is in sync with only one secondary grouped by replica',
+    labelNames: ['run_id', 'endpoint']
+})
+
+export const unsyncedUsersByReplicaCountGauge = new client.Gauge({
+    name: 'audius_nm_unsynced_user_by_replica_count',
+    help: 'the number of users whose primary is out of sync with both secondaries grouped by replica',
+    labelNames: ['run_id', 'endpoint']
+})
+
+
