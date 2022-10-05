@@ -46,6 +46,7 @@ user_metadata_format = {
     "playlist_library": None,
     "events": None,
     "is_deactivated": None,
+    "artist_pick_track_id": None,
 }
 
 playlist_metadata_format = {

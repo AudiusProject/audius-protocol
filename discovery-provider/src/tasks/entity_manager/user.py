@@ -28,7 +28,7 @@ def validate_user_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
-            raise Exception("Invalid User Transaction, user does not exist")
+            raise Exception("Invalid User Transaction, user does already exists")
         if user_id < USER_ID_OFFSET:
             raise Exception("Invalid User Transaction, user id offset incorrect")
     else:
