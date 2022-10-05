@@ -16,8 +16,14 @@ from src.tasks.users import (
     update_user_metadata,
     validate_user_record,
 )
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
+
+
+def get_verifier_address():
+    if 'verified_address' in shared_config["contracts"]:
+        return shared_config["contracts"]["verified_address"]
 
 
 def validate_user_tx(params: ManageEntityParameters):
@@ -31,7 +37,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception("Invalid User Transaction, user does not exist")
         if user_id < USER_ID_OFFSET:
             raise Exception("Invalid User Transaction, user id offset incorrect")
-    else:
+    elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
             raise Exception("Invalid User Transaction, user does not exist")
@@ -40,6 +46,16 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 "Invalid User Transaction, user wallet signer does not match"
             )
+    elif params.action == Action.VERIFY:
+        verifier_address = get_verifier_address()
+        if not verifier_address or verifier_address.lower() != params.signer.lower():
+            raise Exception(
+                "Invalid User Transaction, signer does not match verifier address"
+            )
+    else:
+        raise Exception(
+            f"Invalid User Transaction, action {params.action} is not valid"
+        )
 
 
 def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
@@ -130,6 +146,34 @@ def update_user(params: ManageEntityParameters):
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
+    params.add_user_record(user_id, user_record)
+
+    return user_record
+
+
+def verify_user(params: ManageEntityParameters):
+    validate_user_tx(params)
+
+    user_id = params.entity_id
+    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user.is_current = False  # invalidate
+    if (
+        user_id in params.new_records[EntityType.USER]
+        and params.new_records[EntityType.USER][user_id]
+    ):  # override with last updated user is in this block
+        existing_user = params.new_records[EntityType.USER][user_id][-1]
+
+    user_record = copy_user_record(
+        existing_user,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+
+    # If the user's handle is not set, validate that it is unique
+    user_record = validate_user_record(user_record)
+    user_record.is_verified = True
     params.add_user_record(user_id, user_record)
 
     return user_record

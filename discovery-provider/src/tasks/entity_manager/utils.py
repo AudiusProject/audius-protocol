@@ -30,6 +30,7 @@ class Action(str, Enum):
     UNSAVE = "Unsave"
     REPOST = "Repost"
     UNREPOST = "Unrepost"
+    VERIFY = "Verify"
 
     def __str__(self) -> str:
         return str.__str__(self)
