@@ -1,3 +1,4 @@
+import { getContext } from '@audius/common'
 import { Action } from 'redux'
 import { eventChannel } from 'redux-saga'
 import { select, put, take, delay } from 'redux-saga/effects'
@@ -17,24 +18,28 @@ export function* foregroundPollingDaemon(
   defaultDelayTimeMs: number,
   customDelayTimeConfig?: Record<string, number>
 ) {
+  const isNativeMobile = yield* getContext('isNativeMobile')
+
   let isBrowserInBackground = false
-  document.addEventListener(
-    'visibilitychange',
-    () => {
-      if (document.hidden) {
-        isBrowserInBackground = true
-      } else {
-        isBrowserInBackground = false
-      }
-    },
-    false
-  )
+  if (!isNativeMobile) {
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (document.hidden) {
+          isBrowserInBackground = true
+        } else {
+          isBrowserInBackground = false
+        }
+      },
+      false
+    )
+  }
 
   while (true) {
-    if (!isBrowserInBackground || isElectron()) {
+    if (!isBrowserInBackground || isElectron() || isNativeMobile) {
       yield put(action)
     }
-    if (customDelayTimeConfig) {
+    if (customDelayTimeConfig && !isNativeMobile) {
       const currentRoute: string = yield select(getLocationPathname)
       if (customDelayTimeConfig[currentRoute]) {
         yield delay(customDelayTimeConfig[currentRoute])

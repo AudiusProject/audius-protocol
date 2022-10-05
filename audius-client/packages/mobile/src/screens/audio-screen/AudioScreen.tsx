@@ -91,14 +91,14 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center'
   },
   tileHeader: {
-    fontFamiy: typography.fontByWeight.heavy,
+    fontFamily: typography.fontByWeight.heavy,
     fontSize: typography.fontSize.xxxxl,
     textTransform: 'uppercase',
     textAlign: 'center',
     marginBottom: 16
   },
   tileSubheader: {
-    fontFamiy: typography.fontByWeight.regular,
+    fontFamily: typography.fontByWeight.regular,
     fontSize: typography.fontSize.xs,
     lineHeight: spacing(5),
     textAlign: 'center'
