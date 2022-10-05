@@ -319,6 +319,7 @@ def test_index_valid_user(app, mocker):
             .first()
         )
         assert user_2.name == "Forrest"
+        assert user_2.handle == "forrest"
 
 
 def test_index_invalid_users(app, mocker):
