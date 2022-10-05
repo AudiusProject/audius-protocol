@@ -401,9 +401,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
                   textContentType='name'
                   value={nameField.value}
                   onChangeText={(newText) => {
-                    dispatch(
-                      signOnActions.setValueField('name', newText.trim())
-                    )
+                    dispatch(signOnActions.setValueField('name', newText))
                   }}
                   onFocus={() => {
                     setNameBorderColor('#7E1BCC')
