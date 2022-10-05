@@ -2,6 +2,20 @@
   # prod.yml
   ##########
 
+  ##########################
+  # monitor identity service
+  ##########################
+
+  - job_name: redis_exporter
+    metrics_path: '/prometheus/redis'
+    static_configs:
+      - targets: ['prod-identity:9121']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'redis'
+          component: 'identity'
+
   #############################################
   # monitor custom exporters produced by audius
   #############################################

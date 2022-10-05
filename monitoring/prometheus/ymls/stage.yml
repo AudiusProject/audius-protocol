@@ -2,6 +2,20 @@
   # stage.yml
   ###########
 
+  ##########################
+  # monitor identity service
+  ##########################
+
+  - job_name: redis_exporter
+    metrics_path: '/prometheus/redis'
+    static_configs:
+      - targets: ['stage-identity:9121']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'redis'
+          component: 'identity'
+
   #############################################
   # monitor custom exporters produced by audius
   #############################################
