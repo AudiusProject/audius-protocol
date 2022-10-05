@@ -864,6 +864,7 @@ export class Users extends Base {
       let txReceipt
       let blockNumber
       if (useEntityManager) {
+        console.log('asdf update metadata manageEntity')
         const response = await this.contracts.EntityManagerClient!.manageEntity(
           userId,
           EntityManagerClient.EntityType.USER,
@@ -871,9 +872,12 @@ export class Users extends Base {
           EntityManagerClient.Action.UPDATE,
           metadataMultihash
         )
+        console.log('asdf update metadata manageEntity done')
+
         txReceipt = response.txReceipt
         blockNumber = txReceipt.blockNumber
       } else {
+        console.log('asdf no entity manager')
         const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
         const res = await this.contracts.UserFactoryClient.updateMultihash(
           userId,

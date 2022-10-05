@@ -25,7 +25,7 @@ const loadLibsVars = () => {
 
     const convictConfig = {
       registry_address: dataConfigJson.registryAddress,
-      entity_manager_address: dataConfigJson.entity_manager_address,
+      entity_manager_address: dataConfigJson.entityManagerProxyAddress,
       owner_wallet: dataConfigJson.ownerWallet,
       eth_token_address: ethConfigJson.audiusTokenAddress,
       eth_owner_wallet: ethConfigJson.ownerWallet,
