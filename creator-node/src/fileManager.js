@@ -3,13 +3,9 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
-const { chunk } = require('lodash')
 
-const models = require('./models')
-const { sequelize } = require('./models')
 const config = require('./config')
 const Utils = require('./utils')
-const redisClient = require('./redis')
 const { libs: audiusLibs } = require('@audius/sdk')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
@@ -23,7 +19,6 @@ const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Def
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
-const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
 /**
  * Saves file to disk under /multihash name
@@ -753,175 +748,6 @@ async function removeFile(storagePath) {
   }
 }
 
-async function deleteFileOrDir(pathToFileOrDir) {
-  // Base case - delete single file (not a directory)
-  if (!(await fs.lstat(pathToFileOrDir)).isDirectory()) {
-    await fs.unlink(pathToFileOrDir)
-    return
-  }
-
-  // Recursively remove all contents of directory
-  for (const file of await fs.readdir(pathToFileOrDir)) {
-    const childPath = path.join(pathToFileOrDir, file)
-    if ((await fs.lstat(childPath)).isDirectory()) {
-      await deleteFileOrDir(childPath)
-    } else {
-      await fs.unlink(childPath)
-    }
-  }
-
-  // Remove actual directory
-  await fs.rmdir(pathToFileOrDir)
-}
-
-async function batchDeleteFileOrDir(storagePaths, batchSize, logger) {
-  let numFilesDeleted = 0
-  const batches = chunk(storagePaths, batchSize)
-  const promiseResults = []
-  for (const batchOfStoragePaths of batches) {
-    const promiseResultsForBatch = await Promise.allSettled(
-      batchOfStoragePaths.map((storagePath) => deleteFileOrDir(storagePath))
-    )
-    promiseResults.push(...promiseResultsForBatch)
-  }
-
-  // Count number of files successfully deleted
-  for (const promiseResult of promiseResults) {
-    if (promiseResult.status === 'fulfilled') {
-      numFilesDeleted++
-    } else {
-      logger.error(`Could not delete file: ${promiseResult?.reason?.stack}`)
-    }
-  }
-  return numFilesDeleted
-}
-
-/**
- * Adds path to redis set for every file of the given user.
- * DOES NOT DELETE. Call deleteAllCNodeUserDataFromDisk() to delete the data that was added to redis.
- * Uses pagination to avoid loading all files in memory for users with a lot of data.
- * @param {string} walletPublicKey the wallet of the user to delete all data for
- * @param {bunyan.Logger} logger the logger to print messages to
- * @return number of file paths added to redis
- */
-async function gatherCNodeUserDataToDelete(walletPublicKey, logger) {
-  const FILES_PER_QUERY = 50_000
-  const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
-  await redisClient.del(redisSetKey)
-
-  const cnodeUser = await models.CNodeUser.findOne({
-    where: { walletPublicKey }
-  })
-  if (!cnodeUser) throw new Error('No cnodeUser found')
-
-  const { cnodeUserUUID } = cnodeUser
-  logger.info(
-    `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
-  )
-
-  // Add files to delete to redis, paginated by storagePath, starting at the lowest real character (space)
-  let prevStoragePath = ' '
-  let numFilesAdded = 0
-  let files = []
-  do {
-    files = (
-      await models.File.findAll({
-        attributes: [
-          // Count the number of users with this file. >1 means we should skip deleting it
-          [
-            sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID"))`),
-            'numUsersWithFile'
-          ],
-          [
-            sequelize.fn('ARRAY_AGG', sequelize.col('cnodeUserUUID')),
-            'userUUIDsWithFile'
-          ],
-          'storagePath'
-        ],
-        order: [['storagePath', 'ASC']],
-        where: {
-          storagePath: {
-            [models.Sequelize.Op.gt]: prevStoragePath
-          }
-        },
-        // Group rows by file path so we can count how many users have the same file and not delete shared files
-        group: 'storagePath',
-        limit: FILES_PER_QUERY
-      })
-    ).map((result) => result.dataValues)
-
-    if (files?.length) {
-      // Save file paths that are unique to this user to a redis set
-      const filesUniqueToUser = files.filter(
-        (file) =>
-          file.numUsersWithFile === '1' &&
-          file.userUUIDsWithFile.includes(cnodeUserUUID)
-      )
-      const filePaths = filesUniqueToUser.map((file) =>
-        path.normalize(file.storagePath)
-      )
-      if (filePaths.length) {
-        numFilesAdded = await redisClient.sadd(redisSetKey, filePaths)
-      } else numFilesAdded = 0
-
-      // Move pagination cursor to the end
-      prevStoragePath = files[files.length - 1].storagePath
-    } else numFilesAdded = 0
-  } while (
-    // Nothing left to paginate if the last page was empty
-    files?.length &&
-    // Nothing left to paginate if the last page wasn't full length and didn't contain new files
-    (files.length === FILES_PER_QUERY || numFilesAdded > 0)
-  )
-
-  return redisClient.scard(redisSetKey)
-}
-
-/**
- * Deletes from disk each file path that was added by gatherCNodeUserDataToDelete().
- * Uses pagination to avoid loading all files in memory for users with a lot of data.
- * @param {string} walletPublicKey the wallet of the user to delete all data for
- * @param {number} numFilesToDelete the number of file paths in redis
- * @param {bunyan.Logger} logger the logger to print messages to
- * @return number of files deleted
- */
-async function deleteAllCNodeUserDataFromDisk(
-  walletPublicKey,
-  numFilesToDelete,
-  logger
-) {
-  const FILES_PER_REDIS_QUERY = 10_000
-  const FILES_PER_DELETION_BATCH = 100
-  const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
-  try {
-    // Read file paths from redis and delete them
-    let numFilesDeleted = 0
-    for (let i = 0; i < numFilesToDelete; i += FILES_PER_REDIS_QUERY) {
-      const filePathsToDelete = await redisClient.spop(
-        redisSetKey,
-        FILES_PER_REDIS_QUERY
-      )
-      if (!filePathsToDelete?.length) return numFilesDeleted
-
-      numFilesDeleted += await batchDeleteFileOrDir(
-        filePathsToDelete,
-        FILES_PER_DELETION_BATCH,
-        logger
-      )
-    }
-    return numFilesDeleted
-  } catch (e) {
-    throw e
-  } finally {
-    await redisClient.del(redisSetKey)
-  }
-}
-
-async function clearFilePathsToDelete(walletPublicKey) {
-  const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
-  await redisClient.del(redisSetKey)
-}
-
 module.exports = {
   saveFileFromBufferToDisk,
   saveFileForMultihashToFS,
@@ -936,9 +762,5 @@ module.exports = {
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
   copyMultihashToFs,
-  fetchFileFromNetworkAndWriteToDisk,
-  gatherCNodeUserDataToDelete,
-  deleteAllCNodeUserDataFromDisk,
-  clearFilePathsToDelete,
-  deleteFileOrDir
+  fetchFileFromNetworkAndWriteToDisk
 }

@@ -3,12 +3,8 @@ const _ = require('lodash')
 const { logger: genericLogger, createChildLogger } = require('../../logging')
 const config = require('../../config')
 const models = require('../../models')
-const {
-  saveFileForMultihashToFS,
-  deleteAllCNodeUserDataFromDisk,
-  gatherCNodeUserDataToDelete,
-  clearFilePathsToDelete
-} = require('../../fileManager')
+const { saveFileForMultihashToFS } = require('../../fileManager')
+const DiskManager = require('../../diskManager')
 const {
   getOwnEndpoint,
   getUserReplicaSetEndpointsFromDiscovery
@@ -124,9 +120,12 @@ const handleSyncFromPrimary = async ({
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
       try {
-        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
+          wallet,
+          logger
+        )
       } catch (error) {
-        await clearFilePathsToDelete(wallet)
+        await DiskManager.clearFilePathsToDelete(wallet)
         errorResponse = {
           error,
           result: 'failure_delete_disk_data'
@@ -151,7 +150,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await clearFilePathsToDelete(wallet)
+        await DiskManager.clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -163,11 +162,12 @@ const handleSyncFromPrimary = async ({
 
       // Wipe disk - delete files whose paths we stored in redis earlier
       try {
-        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
-          wallet,
-          numFilesToDelete,
-          logger
-        )
+        const numFilesDeleted =
+          await DiskManager.deleteAllCNodeUserDataFromDisk(
+            wallet,
+            numFilesToDelete,
+            logger
+          )
         logger.info(
           `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
         )

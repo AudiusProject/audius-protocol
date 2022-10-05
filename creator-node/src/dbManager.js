@@ -1,3 +1,6 @@
+const path = require('path')
+const { isEmpty } = require('lodash')
+
 const { logger } = require('./logging')
 const models = require('./models')
 const sequelize = models.sequelize
@@ -162,6 +165,38 @@ class DBManager {
     }
 
     return error
+  }
+
+  /**
+   * Gets a user's files (Files table storagePath column) with pagination.
+   * @param {string} cnodeUserUUID the UUID of the user to fetch file paths for
+   * @param {string} prevStoragePath pagination token (where storagePath > prevStoragePath)
+   * @param {number} batchSize the pagination size (number of file paths to return)
+   * @returns {string[]} user's storagePaths from db
+   */
+  static async getCNodeUserFilesFromDb(
+    cnodeUserUUID,
+    prevStoragePath,
+    batchSize
+  ) {
+    const files = (
+      await models.File.findAll({
+        attributes: ['storagePath'],
+        where: {
+          [sequelize.Op.and]: [
+            sequelize.literal(`"multihash" IN
+          (SELECT "multihash" FROM "Files" WHERE "cnodeUserUUID" = '${cnodeUserUUID}' AND "storagePath" > '${prevStoragePath}')`)
+          ]
+        },
+        group: 'storagePath',
+        having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`),
+        order: [['storagePath', 'ASC']],
+        limit: batchSize
+      })
+    ).map((result) => result.dataValues)
+
+    if (isEmpty(files)) return []
+    return files.map((file) => path.normalize(file.storagePath))
   }
 
   /**

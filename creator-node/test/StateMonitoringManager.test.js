@@ -14,7 +14,7 @@ const StateMonitoringManager = require('../src/services/stateMachineManager/stat
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 
-describe.only('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
+describe('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
   let server, sandbox
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
