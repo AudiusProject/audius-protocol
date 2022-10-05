@@ -69,6 +69,10 @@
   color: var(--neutral-light-6);
 }
 
+.tabDisabled path {
+  fill: var(--neutral-light-6);
+}
+
 .tabBarContainer {
   display: flex;
 }

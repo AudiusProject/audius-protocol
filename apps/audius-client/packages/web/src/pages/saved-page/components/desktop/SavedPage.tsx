@@ -289,7 +289,7 @@ const SavedPage = ({
           />
         </div>
       ),
-      <div key='albums'>
+      <div className={styles.albumsWrapper} key='albums'>
         {account && account.albums.length > 0 ? (
           <CardLineup cards={cards} cardsClassName={styles.cardsContainer} />
         ) : (

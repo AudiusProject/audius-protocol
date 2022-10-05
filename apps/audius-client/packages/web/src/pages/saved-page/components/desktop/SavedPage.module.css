@@ -95,3 +95,7 @@
 .tabElement {
   justify-content: flex-start;
 }
+
+.albumsWrapper {
+  flex: 1 1 0;
+}

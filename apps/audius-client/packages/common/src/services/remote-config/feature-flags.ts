@@ -20,6 +20,7 @@ export enum FeatureFlags {
   TRACK_ENTITY_MANAGER_ENABLED = 'track_entity_manager_enabled',
   USER_ENTITY_MANAGER_ENABLED = 'user_entity_manager_enabled',
   NEW_TABLES = 'new_tables',
+  NEW_ARTIST_DASHBOARD_TABLE = 'new_artist_dashboard_table',
   BUY_AUDIO_ENABLED = 'buy_audio_enabled',
   OFFLINE_MODE_ENABLED = 'offline_mode_enabled',
   AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow'
@@ -49,6 +50,7 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.TRACK_ENTITY_MANAGER_ENABLED]: false,
   [FeatureFlags.USER_ENTITY_MANAGER_ENABLED]: false,
   [FeatureFlags.NEW_TABLES]: false,
+  [FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE]: false,
   [FeatureFlags.BUY_AUDIO_ENABLED]: false,
   [FeatureFlags.OFFLINE_MODE_ENABLED]: false,
   [FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW]: false
