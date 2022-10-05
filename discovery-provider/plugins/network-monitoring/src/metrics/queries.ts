@@ -464,7 +464,7 @@ const _getUserStatusByPrimary = async (
     partiallySyncedCount: number;
     unsyncedCount: number;
   }[] = (
-    userStatusByPrimaryResp as {
+    userStatusByPrimaryResp[0] as {
       spid: string;
       endpoint: string;
       fully_synced_count: string;
