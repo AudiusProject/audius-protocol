@@ -429,9 +429,6 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    # import json
-    # print(json.dumps(dsl, indent=2))
-
     return default_function_score(dsl, "follower_count")
 
 

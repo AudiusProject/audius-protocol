@@ -320,61 +320,6 @@ def fetch_followed_saves_and_reposts(current_user, items):
     return (follow_saves, follow_reposts)
 
 
-def old_fetch_followed_saves_and_reposts(current_user_id, item_keys):
-    follow_reposts = {k: [] for k in item_keys}
-    follow_saves = {k: [] for k in item_keys}
-
-    if not current_user_id or not item_keys:
-        return (follow_saves, follow_reposts)
-
-    save_repost_query = {
-        "query": {
-            "bool": {
-                "must": [
-                    following_ids_terms_lookup(current_user_id, "user_id"),
-                    {"terms": {"item_key": item_keys}},
-                    {"term": {"is_delete": False}},
-                    {"range": {"created_at": {"gte": "now-30d"}}},
-                ]
-            }
-        },
-        "collapse": {
-            "field": "item_key",
-            "inner_hits": {
-                "name": "most_recent",
-                "size": 5,
-                "sort": [{"created_at": "desc"}],
-            },
-            # "max_concurrent_group_searches": 4,
-        },
-        "sort": {"created_at": "desc"},
-        "size": len(item_keys),
-        "_source": False,
-        "timeout": "5s",
-    }
-    mdsl = [
-        {"index": ES_REPOSTS},
-        save_repost_query,
-        {"index": ES_SAVES},
-        save_repost_query,
-    ]
-
-    founds = esclient.msearch(searches=mdsl)
-    collapsed_reposts = founds["responses"][0]["hits"]["hits"]
-    collapsed_saves = founds["responses"][1]["hits"]["hits"]
-
-    for group in collapsed_reposts:
-        reposts = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = reposts[0]["item_key"]
-        follow_reposts[item_key] = reposts
-    for group in collapsed_saves:
-        saves = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = saves[0]["item_key"]
-        follow_saves[item_key] = saves
-
-    return (follow_saves, follow_reposts)
-
-
 def item_key(item):
     if "item_key" in item:
         return item["item_key"]
