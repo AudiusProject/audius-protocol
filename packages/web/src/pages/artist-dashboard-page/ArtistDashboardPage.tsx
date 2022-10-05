@@ -250,6 +250,7 @@ const TracksTableContainer = ({
         {isNewTablesEnabled && isNewArtistDashboardTableEnabled ? (
           <TestTracksTable
             data={filteredListedData}
+            disabledTrackEdit
             columns={tableColumns}
             onClickRow={onClickRow}
             onClickTrackName={onClickRow}
@@ -280,6 +281,7 @@ const TracksTableContainer = ({
         {isNewTablesEnabled && isNewArtistDashboardTableEnabled ? (
           <TestTracksTable
             data={filteredUnlistedData}
+            disabledTrackEdit
             columns={tableColumns}
             onClickRow={onClickRow}
             onClickTrackName={onClickRow}
