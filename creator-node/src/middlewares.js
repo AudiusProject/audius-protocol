@@ -138,19 +138,28 @@ async function ensurePrimaryMiddleware(req, res, next) {
 
   /**
    * Fetch current user replicaSetSpIDs
-   * Will throw error if selfSpID is not user primary
    */
   let replicaSetSpIDs
   try {
     replicaSetSpIDs = await getReplicaSetSpIdsByUserId({
-      userReplicaSetManagerClient:
-        serviceRegistry.libs.contracts.UserReplicaSetManagerClient,
+      userReplicaSetManagerClient: serviceRegistry.libs,
       userId,
       blockNumber: req.body.blockNumber,
       ensurePrimary: true,
       selfSpId: selfSpID,
       parentLogger: req.logger
     })
+
+    // Error if returned primary spID does not match self spID
+    if (replicaSetSpIDs.primaryId !== selfSpID) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseServerError(
+          `${logPrefix} found different primary (${replicaSetSpIDs.primaryId}) for user (self=${selfSpID}). Aborting`
+        )
+      )
+    }
   } catch (e) {
     return sendResponse(
       req,
@@ -161,8 +170,8 @@ async function ensurePrimaryMiddleware(req, res, next) {
 
   req.session.replicaSetSpIDs = [
     replicaSetSpIDs.primaryId,
-    replicaSetSpIDs.secondary1Id,
-    replicaSetSpIDs.secondary2Id
+    replicaSetSpIDs.secondaryIds[0],
+    replicaSetSpIDs.secondaryIds[1]
   ]
   req.session.nodeIsPrimary = true
 

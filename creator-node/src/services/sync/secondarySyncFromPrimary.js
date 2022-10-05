@@ -56,7 +56,7 @@ const handleSyncFromPrimary = async ({
     let userReplicaSet
     try {
       userReplicaSet = await getReplicaSetEndpointsByWallet({
-        userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
+        libs,
         wallet,
         getUsers: libs.User.getUsers,
         parentLogger: logger

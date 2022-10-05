@@ -247,7 +247,7 @@ async function _handleIssueSyncRequest({
     })
     const userReplicaSet: ReplicaSetEndpoints =
       await getReplicaSetEndpointsByWallet({
-        userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
+        libs,
         wallet: userWallet,
         getUsers: libs.User.getUsers,
         parentLogger: logger

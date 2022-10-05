@@ -75,7 +75,7 @@ const shouldForceResync = async (
   try {
     // Get the delegate wallet from the primary of the observed user
     const replicaSetEndpoints = await getReplicaSetEndpointsByWallet({
-      userReplicaSetManagerClient: libs.contracts.UserReplicaSetManagerClient,
+      libs,
       wallet,
       parentLogger: logger,
       getUsers: libs.User.getUsers

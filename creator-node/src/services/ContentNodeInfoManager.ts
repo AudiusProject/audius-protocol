@@ -12,6 +12,7 @@ import initAudiusLibs from './initAudiusLibs'
 import { createChildLogger } from '../logging'
 import defaultRedisClient from '../redis'
 import { timeout } from '../utils'
+import config from '../config'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
@@ -126,22 +127,197 @@ export type ReplicaSetSpIds = {
   primaryId: number | undefined
   secondaryIds: number[]
 }
-export type UserReplicaSetManagerClient = {
-  getUserReplicaSetAtBlockNumber: (
-    userId: number,
-    blockNumber: number
-  ) => Promise<ReplicaSetSpIds>
-  getUserReplicaSet: (userId: number) => Promise<ReplicaSetSpIds>
-}
 export type GetReplicaSetSpIdsByUserIdParams = {
-  userReplicaSetManagerClient: UserReplicaSetManagerClient
+  libs: any
   userId: number
   blockNumber?: number
   ensurePrimary?: boolean
   selfSpId?: number
   parentLogger: Logger
 }
+
+async function getReplicaSetSpIdsByUserId({
+  libs,
+  userId,
+  blockNumber,
+  ensurePrimary,
+  selfSpId,
+  parentLogger
+}: GetReplicaSetSpIdsByUserIdParams): Promise<ReplicaSetSpIds> {
+  // TODO: This code block can be removed once URSM is fully removed
+  const useUrsm = !config.get('entityManagerReplicaSetEnabled')
+  if (useUrsm) {
+    return getReplicaSetSpIdsByUserIdUrsm({
+      libs,
+      userId,
+      blockNumber,
+      ensurePrimary,
+      selfSpId,
+      parentLogger
+    })
+  }
+
+  const start = Date.now()
+  const logger = createChildLogger(parentLogger, {
+    function: 'getReplicaSetSpIds',
+    userId,
+    selfSpId,
+    blockNumber,
+    ensurePrimary
+  }) as Logger
+
+  let replicaSet: ReplicaSetSpIds = {
+    primaryId: undefined,
+    secondaryIds: []
+  }
+
+  /**
+   * If `blockNumber` provided, poll contract until it has indexed that blocknumber (for up to 200 seconds)
+   */
+  if (blockNumber) {
+    // In total, will try for 200 seconds
+    const MAX_RETRIES = 201
+    const RETRY_TIMEOUT_MS = 1000 // 1 seconds
+
+    let errorMsg = null
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(
+        `retry #${retry}/${MAX_RETRIES} || time from start: ${
+          Date.now() - start
+        }. Polling until blockNumber ${blockNumber}.`
+      )
+
+      try {
+        // Sill throw error if blocknumber not found
+        const encodedUserId = libs.Utils.encodeHashId(userId)
+        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+          encodedUserId,
+          blockNumber
+        })
+
+        if (!spResponse) continue
+        if (spResponse.primarySpID) {
+          replicaSet = {
+            primaryId: spResponse.primarySpID,
+            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          }
+          errorMsg = null
+          break
+        } else {
+          // The blocknumber was indexed by discovery, but there's still no user replica set returned
+          errorMsg = 'User replica not found in discovery'
+          break
+        }
+      } catch (e: any) {
+        errorMsg = e.message
+      } // Ignore all errors until MAX_RETRIES exceeded
+
+      await timeout(RETRY_TIMEOUT_MS)
+    }
+
+    // Error if indexed blockNumber but didn't find any replicaSet for user
+    if (!replicaSet.primaryId) {
+      throw new Error(
+        `ERROR || Failed to retrieve user from EntityManager after ${MAX_RETRIES} retries. Aborting.`
+      )
+    }
+  } else if (ensurePrimary && selfSpId) {
+    /**
+     * If ensurePrimary required but no blockNumber provided, poll contract until returned primary = selfSpID
+     * Error if still mismatched after specified timeout
+     */
+
+    // Will poll every second for 60 sec
+    const MAX_RETRIES = 61
+    const RETRY_TIMEOUT_MS = 1000 // 1 sec
+
+    let errorMsg = null
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(
+        `retry #${retry}/${MAX_RETRIES} || time from start: ${
+          Date.now() - start
+        }. Polling until primaryEnsured.`
+      )
+
+      try {
+        const encodedUserId = libs.Utils.encodeHashId(userId)
+        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+          encodedUserId
+        })
+
+        if (spResponse?.primarySpID) {
+          replicaSet = {
+            primaryId: spResponse.primarySpID,
+            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          }
+          errorMsg = null
+          if (replicaSet.primaryId === selfSpId) break
+        } else {
+          errorMsg = 'User replica not found in discovery'
+        }
+      } catch (e: any) {
+        errorMsg = e.message
+      } // Ignore all errors until MAX_RETRIES exceeded
+
+      await timeout(RETRY_TIMEOUT_MS)
+    }
+
+    // Error if failed to retrieve replicaSet
+    if (!replicaSet.primaryId) {
+      throw new Error(
+        `ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`
+      )
+    }
+
+    // Error if returned primary spID does not match self spID
+    if (replicaSet.primaryId !== selfSpId) {
+      throw new Error(
+        `ERROR || After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`
+      )
+    }
+  } else {
+    /**
+     * If neither of above conditions are met, falls back to single call without polling
+     */
+
+    logger.info(
+      `ensurePrimary = false, fetching user replicaSet without retries`
+    )
+
+    let errorMsg = null
+    try {
+      const encodedUserId = libs.Utils.encodeHashId(userId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId
+      })
+
+      if (spResponse && spResponse.primarySpID) {
+        replicaSet = {
+          primaryId: spResponse.primarySpID,
+          secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+        }
+      }
+    } catch (e: any) {
+      errorMsg = e.message
+    }
+
+    if (!replicaSet.primaryId) {
+      throw new Error(
+        `ERROR || Failed to retrieve user from UserReplicaSetManager. Aborting. Error ${errorMsg}`
+      )
+    }
+  }
+
+  logger.info(
+    `completed in ${Date.now() - start}. replicaSet = [${JSON.stringify(
+      replicaSet
+    )}]`
+  )
+  return replicaSet
+}
 /**
+ * @deprecated Remove when URSM is no longer used in prod
+ *
  * Retrieves user replica set spIDs from chain (POA.UserReplicaSetManager)
  *
  * Polls contract (via web3 provider) conditionally as follows:
@@ -160,8 +336,8 @@ export type GetReplicaSetSpIdsByUserIdParams = {
  *
  * @returns {ReplicaSet} object with user's primary and secondary SP IDs
  */
-async function getReplicaSetSpIdsByUserId({
-  userReplicaSetManagerClient,
+async function getReplicaSetSpIdsByUserIdUrsm({
+  libs,
   userId,
   blockNumber,
   ensurePrimary,
@@ -170,7 +346,7 @@ async function getReplicaSetSpIdsByUserId({
 }: GetReplicaSetSpIdsByUserIdParams): Promise<ReplicaSetSpIds> {
   const start = Date.now()
   const logger = createChildLogger(parentLogger, {
-    function: 'getReplicaSetSpIds',
+    function: 'getReplicaSetSpIdsByUserIdUrsm',
     userId,
     selfSpId,
     blockNumber,
@@ -191,7 +367,6 @@ async function getReplicaSetSpIdsByUserId({
     const RETRY_TIMEOUT_MS = 1000 // 1 seconds
 
     let errorMsg = null
-    let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(
         `retry #${retry}/${MAX_RETRIES} || time from start: ${
@@ -202,12 +377,11 @@ async function getReplicaSetSpIdsByUserId({
       try {
         // will throw error if blocknumber not found
         replicaSet =
-          await userReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
+          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(
             userId,
             blockNumber
           )
         errorMsg = null
-        blockNumberIndexed = true
         break
       } catch (e: any) {
         errorMsg = e.message
@@ -217,16 +391,9 @@ async function getReplicaSetSpIdsByUserId({
     }
 
     // Error if indexed blockNumber but didn't find any replicaSet for user
-    if (blockNumberIndexed && !replicaSet.primaryId) {
+    if (!replicaSet.primaryId) {
       throw new Error(
         `ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`
-      )
-    }
-
-    // Error if failed to index target blockNumber
-    if (!blockNumberIndexed) {
-      throw new Error(
-        `ERROR || Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpId) {
@@ -248,7 +415,10 @@ async function getReplicaSetSpIdsByUserId({
       )
 
       try {
-        replicaSet = await userReplicaSetManagerClient.getUserReplicaSet(userId)
+        replicaSet =
+          await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+            userId
+          )
 
         errorMsg = null
 
@@ -284,7 +454,10 @@ async function getReplicaSetSpIdsByUserId({
 
     let errorMsg = null
     try {
-      replicaSet = await userReplicaSetManagerClient.getUserReplicaSet(userId)
+      replicaSet =
+        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+          userId
+        )
     } catch (e: any) {
       errorMsg = e.message
     }
@@ -310,7 +483,7 @@ export type ReplicaSetEndpoints = {
   secondary2?: string
 }
 export type GetReplicaSetEndpointsByWalletParams = {
-  userReplicaSetManagerClient: UserReplicaSetManagerClient
+  libs: any
   wallet: string
   parentLogger: Logger
   getUsers: (
@@ -321,14 +494,14 @@ export type GetReplicaSetEndpointsByWalletParams = {
   ) => Promise<{ user_id: number }[]>
 }
 async function getReplicaSetEndpointsByWallet({
-  userReplicaSetManagerClient,
+  libs,
   wallet,
   parentLogger,
   getUsers
 }: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
   const user: { user_id: number } = (await getUsers(1, 0, null, wallet))[0]
   const replicaSetEndpoints = await getReplicaSetEndpointsByUserId({
-    userReplicaSetManagerClient,
+    libs,
     userId: user.user_id,
     parentLogger
   })
@@ -336,17 +509,17 @@ async function getReplicaSetEndpointsByWallet({
 }
 
 export type GetReplicaSetEndpointsByUserIdParams = {
-  userReplicaSetManagerClient: UserReplicaSetManagerClient
+  libs: any
   userId: number
   parentLogger: Logger
 }
 async function getReplicaSetEndpointsByUserId({
-  userReplicaSetManagerClient,
+  libs,
   userId,
   parentLogger
 }: GetReplicaSetEndpointsByUserIdParams): Promise<ReplicaSetEndpoints> {
   const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
-    userReplicaSetManagerClient,
+    libs,
     userId,
     parentLogger
   })
