@@ -22,17 +22,25 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 10,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    opacity: 0.5
   }
 })
 
 export const SplashScreen = () => {
   const [animationFinished, setAnimationFinished] = useState(false)
   const accountStatus = useSelector(getAccountStatus)
+  const backgroundOpacityAnim = useRef(new Animated.Value(1))
 
   useEffect(() => {
     if (![Status.IDLE, Status.LOADING].includes(accountStatus)) {
       if (animationRef.current) {
+        Animated.timing(backgroundOpacityAnim.current, {
+          toValue: 0,
+          delay: 400,
+          duration: 300,
+          useNativeDriver: true
+        }).start()
         animationRef.current.play()
       }
     }
@@ -67,7 +75,8 @@ export const SplashScreen = () => {
     <Animated.View
       style={{
         ...styles.container,
-        transform: [{ scale: scaleAnim }]
+        transform: [{ scale: scaleAnim }],
+        opacity: backgroundOpacityAnim.current
       }}
     >
       <LottieView
