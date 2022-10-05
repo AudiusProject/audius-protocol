@@ -25,7 +25,7 @@
   },
   "entity_manager_address": {
     "env": "ENTITY_MANAGER_ADDRESS",
-    "default": "0x2F99338637F027CFB7494E46B49987457beCC6E3"
+    "default": "0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66"
   },
   "web3_provider_urls": {
     "env": "WEB3_PROVIDER_URLS",
