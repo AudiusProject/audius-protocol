@@ -15,6 +15,7 @@ def generate_env(
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    block_explorer_enabled,
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -33,6 +34,8 @@ def generate_env(
     env["DISCOVERY_NODE_VERSION"] = json.loads(
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
+
+    env["BLOCK_EXPLORER_ENABLED"] = "1" if block_explorer_enabled else "0"
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
     if elasticsearch_replicas:
@@ -118,21 +121,24 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-c", "--creator-node-replicas", default=4, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-b", "--block-explorer", is_flag=True)
 @click.pass_obj
 def build(
     protocol_dir,
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    block_explorer,
 ):
     generate_env(
         protocol_dir,
         creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
+        block_explorer,
     )
 
     subprocess.run(
@@ -150,18 +156,21 @@ def build(
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-b", "--block-explorer", is_flag=True)
 @click.pass_obj
 def up(
     protocol_dir,
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    block_explorer,
 ):
     generate_env(
         protocol_dir,
         creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
+        block_explorer,
     )
 
     subprocess.run(
@@ -252,7 +261,7 @@ def ps(protocol_dir):
     )
 
     for service in services:
-        if service["Service"] == "proxy":
+        if service["Service"] == "port-forwarder":
             continue
 
         name = service["Service"]
@@ -283,6 +292,19 @@ def ps(protocol_dir):
             status.ljust(10),
             ports,
         )
+
+
+@cli.command()
+@click.pass_obj
+def prune(protocol_dir):
+    click.secho(
+        "WARNING! This will remove all dangling images and build cache not used within the last 72h",
+        fg="yellow",
+    )
+
+    if click.confirm("Are you sure you want to continue?"):
+        subprocess.run(["docker", "image", "prune", "-f"])
+        subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
 
 
 @cli.command()

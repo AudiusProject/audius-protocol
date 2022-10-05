@@ -1,6 +1,6 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const _ = require('lodash')
@@ -264,6 +264,18 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
+  clusterModeEnabled: {
+    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
+    format: Boolean,
+    env: 'clusterModeEnabled',
+    default: true
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -373,6 +385,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -449,6 +467,18 @@ const config = convict({
     doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
     format: Boolean,
     env: 'considerNodeUnhealthy',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
+  },
+  premiumContentEnabled: {
+    doc: 'whether or not to enable premium content',
+    format: Boolean,
+    env: 'premiumContentEnabled',
     default: false
   },
 
@@ -745,10 +775,10 @@ const config = convict({
     default: ''
   },
   reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: ''
+    default: '1,2,3,4,27'
   }
   /**
    * unsupported options at the moment

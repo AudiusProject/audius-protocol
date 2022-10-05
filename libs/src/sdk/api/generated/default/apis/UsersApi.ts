@@ -67,6 +67,9 @@ import {
     UserSearch,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UsersByContentNode,
+    UsersByContentNodeFromJSON,
+    UsersByContentNodeToJSON,
     VerifyToken,
     VerifyTokenFromJSON,
     VerifyTokenToJSON,
@@ -315,6 +318,10 @@ export interface GetTracksByUserRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserFilterTracksEnum;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -350,6 +357,10 @@ export interface GetTracksByUserHandleRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserHandleSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
 export interface GetUserRequest {
@@ -375,6 +386,13 @@ export interface GetUserIDFromWalletRequest {
      * Wallet address
      */
     associatedWallet: string;
+}
+
+export interface GetUserReplicaSetRequest {
+    /**
+     * A User ID
+     */
+    id: string;
 }
 
 export interface GetUsersTrackHistoryRequest {
@@ -858,6 +876,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
         }
 
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -904,6 +926,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sortDirection !== undefined) {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -982,6 +1008,26 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
+    }
+
+    /**
+     * Gets the user\'s replica set
+     */
+    async getUserReplicaSet(requestParameters: GetUserReplicaSetRequest): Promise<NonNullable<UsersByContentNode["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserReplicaSet.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UsersByContentNode["data"]>>;
     }
 
     /**
@@ -1113,6 +1159,15 @@ export enum GetTracksByUserSortDirectionEnum {
     * @export
     * @enum {string}
     */
+export enum GetTracksByUserFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
+}
+/**
+    * @export
+    * @enum {string}
+    */
 export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
@@ -1139,6 +1194,15 @@ export enum GetTracksByUserHandleSortMethodEnum {
 export enum GetTracksByUserHandleSortDirectionEnum {
     Asc = 'asc',
     Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
 }
 /**
     * @export

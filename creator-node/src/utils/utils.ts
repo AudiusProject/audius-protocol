@@ -2,6 +2,8 @@ import { recoverPersonalSignature } from 'eth-sig-util'
 import { logger as genericLogger } from '../logging'
 import config from '../config'
 
+export type ValuesOf<T> = T[keyof T]
+
 export function verifySignature(data: any, sig: any) {
   return recoverPersonalSignature({ data, sig })
 }

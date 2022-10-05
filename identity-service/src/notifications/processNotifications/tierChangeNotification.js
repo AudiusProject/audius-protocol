@@ -1,9 +1,6 @@
 const moment = require('moment')
 const models = require('../../models')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../constants')
+const { notificationTypes, actionEntityTypes } = require('../constants')
 
 /**
  * Process tier change notifications, note these notifications do not "stack" meaning that
@@ -11,7 +8,7 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processTierChangeNotifications (notifications, tx) {
+async function processTierChangeNotifications(notifications, tx) {
   for (const notification of notifications) {
     const { tier } = notification.metadata
 
@@ -20,7 +17,9 @@ async function processTierChangeNotifications (notifications, tx) {
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const momentTimestamp = moment(timestamp)
-    const updatedTimestamp = momentTimestamp.add(1, 's').format('YYYY-MM-DD HH:mm:ss')
+    const updatedTimestamp = momentTimestamp
+      .add(1, 's')
+      .format('YYYY-MM-DD HH:mm:ss')
 
     const [notificationObj] = await models.Notification.findOrCreate({
       where: {

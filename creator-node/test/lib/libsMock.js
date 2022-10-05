@@ -1,4 +1,5 @@
 const sinon = require('sinon')
+const { encode, decode } = require('../../src/hashids')
 
 function getLibsMock() {
   const libsMock = {
@@ -45,6 +46,15 @@ function getLibsMock() {
               }
             ]
           }
+          case 'discovery-node': {
+            return [
+              {
+                delegateOwnerWallet:
+                  '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B',
+                type: 'discovery-node'
+              }
+            ]
+          }
           default: {
             return []
           }
@@ -67,10 +77,36 @@ function getLibsMock() {
     Playlist: {
       getPlaylists: sinon.mock().atLeast(1)
     },
+    Utils: {
+      encodeHashId: sinon.mock().atLeast(1)
+    },
     discoveryProvider: {
-      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
+      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000',
+      getUserReplicaSet: sinon.mock().atLeast(1)
+    },
+    web3Manager: {
+      verifySignature: () => '0x7c95A677106218A296EcEF1F577c3aE27f0340cd'
     }
   }
+
+  libsMock.Utils.encodeHashId.callsFake((id) => {
+    return encode(id)
+  })
+
+  libsMock.discoveryProvider.getUserReplicaSet.callsFake(({ encodedUserId }) => {
+    const user_id = decode(encodedUserId)
+    return {
+      user_id,
+      "wallet": '0xadd36bad12002f1097cdb7ee24085c28e960fc32',
+      "primary": 'http://mock-cn1.audius.co',
+      "secondary1": 'http://mock-cn2.audius.co',
+      "secondary2": 'http://mock-cn3.audius.co',
+      "primarySpID": 1,
+      "secondary1SpID": 2,
+      "secondary2SpID": 3
+    }
+  })
+
 
   libsMock.contracts.UserReplicaSetManagerClient.getUserReplicaSet.returns({
     primaryId: 1,

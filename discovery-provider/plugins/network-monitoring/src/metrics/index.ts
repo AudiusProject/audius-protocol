@@ -1,17 +1,21 @@
 import axios from "axios";
 import {
   allUserCountGauge,
+  fullySyncedUsersByPrimaryCountGauge,
   fullySyncedUsersCountGauge,
   gateway,
   generatingMetricsDurationGauge,
   nullPrimaryUsersCountGauge,
+  partiallySyncedUsersByPrimaryCountGauge,
   partiallySyncedUsersCountGauge,
   primaryUserCountGauge,
+  unsyncedUsersByPrimaryCountGauge,
   unsyncedUsersCountGauge,
   userCountGauge,
   usersWithAllFoundationNodeReplicaSetGauge,
+  usersWithNoFoundationNodeReplicaSetGauge,
 } from "../prometheus";
-import { getEnv } from "../utils";
+import { getEnv } from "../config";
 import {
   getPrimaryUserCount,
   getAllUserCount,
@@ -22,12 +26,15 @@ import {
   getUsersWithEntireReplicaSetInSpidSetCount,
   getUserCount,
   getRunStartTime,
+  getUsersWithEntireReplicaSetNotInSpidSetCount,
+  getUserStatusByPrimary,
 } from "./queries";
+import { instrumentTracing, tracing } from "..//tracer"
 
-export const generateMetrics = async (run_id: number) => {
+const _generateMetrics = async (run_id: number) => {
   const { foundationNodes } = getEnv();
 
-  console.log(`[${run_id}] generating metrics`);
+  tracing.info(`[${run_id}] generating metrics`);
 
   const endTimer = generatingMetricsDurationGauge.startTimer();
 
@@ -50,12 +57,32 @@ export const generateMetrics = async (run_id: number) => {
   const usersWithAllFoundationNodeReplicaSetCount =
     await getUsersWithEntireReplicaSetInSpidSetCount(run_id, foundationNodes);
 
+  const usersWithNoFoundationNodeReplicaSetCount =
+    await getUsersWithEntireReplicaSetNotInSpidSetCount(
+      run_id,
+      foundationNodes
+    );
+
+  const userStatusByPrimary = await getUserStatusByPrimary(run_id);
+
   allUserCount.forEach(({ endpoint, count }) => {
     allUserCountGauge.set({ endpoint, run_id }, count);
   });
   primaryUserCount.forEach(({ endpoint, count }) => {
     primaryUserCountGauge.set({ endpoint, run_id }, count);
   });
+  userStatusByPrimary.forEach(
+    ({
+      endpoint,
+      fullySyncedCount,
+      partiallySyncedCount,
+      unsyncedCount,
+    }) => {
+      fullySyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, fullySyncedCount);
+      partiallySyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, partiallySyncedCount);
+      unsyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, unsyncedCount);
+    }
+  );
 
   userCountGauge.set({ run_id }, userCount);
   fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount);
@@ -66,15 +93,17 @@ export const generateMetrics = async (run_id: number) => {
     { run_id },
     usersWithAllFoundationNodeReplicaSetCount
   );
+  usersWithNoFoundationNodeReplicaSetGauge.set(
+    { run_id },
+    usersWithNoFoundationNodeReplicaSetCount
+  );
 
   // Record duration for generating metrics and export to prometheus
-  const endTime = Date.now()
+  const endTime = Date.now();
   endTimer({ run_id: run_id });
 
   if (userCount > 0) {
     await publishSlackReport({
-      runStartTime: runStartTime.toString(),
-      runDuration: msToTime(endTime - runStartTime.getTime()),
       fullySyncedUsersCount:
         ((fullySyncedUsersCount / userCount) * 100).toFixed(2) + "%",
       partiallySyncedUsersCount:
@@ -87,29 +116,39 @@ export const generateMetrics = async (run_id: number) => {
         ((usersWithAllFoundationNodeReplicaSetCount / userCount) * 100).toFixed(
           2
         ) + "%",
+      usersWithNoFoundationNodeReplicaSetCount:
+        ((usersWithNoFoundationNodeReplicaSetCount / userCount) * 100).toFixed(
+          2
+        ) + "%",
+      runDuration: msToTime(endTime - runStartTime.getTime()),
     });
   }
 
   try {
     // Finish by publishing metrics to prometheus push gateway
-    console.log(`[${run_id}] pushing metrics to gateway`);
+    tracing.info(`[${run_id}] pushing metrics to gateway`);
     await gateway.pushAdd({ jobName: "network-monitoring" });
-  } catch (e) {
-    console.log(
+  } catch (e: any) {
+    tracing.recordException(e)
+    tracing.info(
       `[generateMetrics] error pushing metrics to pushgateway - ${
-        (e as Error).message
+        e.message
       }`
     );
   }
 
-  console.log(`[${run_id}] finish generating metrics`);
+  tracing.info(`[${run_id}] finish generating metrics`);
 };
+
+export const generateMetrics = instrumentTracing({
+  fn: _generateMetrics,
+})
 
 const publishSlackReport = async (metrics: Object) => {
   const { slackUrl } = getEnv();
 
   let message = `\`\`\`${JSON.stringify(metrics, null, 2)}\`\`\``;
-  console.log(message);
+  tracing.info(message);
 
   if (slackUrl === "") {
     return;
@@ -119,22 +158,20 @@ const publishSlackReport = async (metrics: Object) => {
     await axios.post(slackUrl, {
       text: message,
     });
-  } catch (e) {
-    console.log(
-      `Error posting to slack in slack reporter ${(e as Error).toString()}`
+  } catch (e: any) {
+    tracing.recordException(e)
+    tracing.error(
+      `Error posting to slack in slack reporter ${e.toString()}`
     );
   }
 };
 
 const msToTime = (duration: number) => {
-  const milliseconds = Math.floor((duration % 1000) / 100)
-  const seconds = Math.floor((duration / 1000) % 60)
-  const minutes = Math.floor((duration / (1000 * 60)) % 60)
-  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+  const minutes = Math.floor((duration / (1000 * 60)) % 60);
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
 
-  const hoursStr = (hours < 10) ? "0" + hours : hours;
-  const minutesStr = (minutes < 10) ? "0" + minutes : minutes;
-  const secondsStr = (seconds < 10) ? "0" + seconds : seconds;
+  const hoursStr = hours < 10 ? "0" + hours : hours;
+  const minutesStr = minutes < 10 ? "0" + minutes : minutes;
 
-  return `${hoursStr}:${minutesStr}:${secondsStr}:${milliseconds.toString()}`
-}
+  return `${hoursStr}hr ${minutesStr}min`;
+};

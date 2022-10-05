@@ -42,6 +42,7 @@ from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
 from src.utils import helpers
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
@@ -550,6 +551,12 @@ def configure_celery(celery, test_config=None):
         cid_metadata_client,
     )
 
+    registry_address = web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_manager = EthManager(eth_web3, eth_abi_values, registry_address)
+    eth_manager.init_contracts()
+
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
@@ -591,6 +598,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 anchor_program_indexer=anchor_program_indexer,
+                eth_manager=eth_manager,
             )
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)

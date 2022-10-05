@@ -733,19 +733,14 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
           '../../fileManager': {
             copyMultihashToFs: sinon
               .stub(FileManager, 'copyMultihashToFs')
-              .returns(
-                new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(mockCid)
-                  return resolve(dstPath)
-                })
-              ),
+              .returns(await DiskManager.computeFilePath(mockCid)),
             '@global': true
           }
         }
       )
 
       // Upload track content
-      const { fileUUID, fileDir } = saveFileToStorage(TestAudioFilePath)
+      const { fileUUID, fileDir } = await saveFileToStorage(TestAudioFilePath)
       const trackContentResp = await handleTrackContentRoute(
         {},
         getReqObj(fileUUID, fileDir, session)
@@ -778,16 +773,19 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
 
       // Make chain recognize wallet as owner of track
       const blockchainTrackId = 1
-      const getTrackStub = sinon.stub().callsFake((blockchainTrackIdArg) => {
+      const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
         let trackOwnerId = -1
-        if (blockchainTrackIdArg === blockchainTrackId) {
+        if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return {
-          trackOwnerId
-        }
+        return [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
       })
-      libsMock.contracts.TrackFactoryClient = { getTrack: getTrackStub }
+      libsMock.Track = { getTracks: getTrackStub }
 
       // Complete track upload
       await request(app)
@@ -1193,7 +1191,18 @@ describe('Test fixInconsistentUser()', async function () {
     assertTableEquality(initialTracks, [])
     assertTableEquality(
       initialFiles,
-      [{ cnodeUserUUID, trackBlockchainId: null, multihash: metadataCID, sourceFile: null, fileName: null, dirMultihash: null, storagePath: DiskManager.computeFilePath(metadataCID, false), type: "metadata", clock: 1, skipped: false }],
+      [{
+        cnodeUserUUID,
+        trackBlockchainId: null,
+        multihash: metadataCID,
+        sourceFile: null,
+        fileName: null,
+        dirMultihash: null,
+        storagePath: await DiskManager.computeFilePath(metadataCID, false),
+        type: "metadata",
+        clock: 1,
+        skipped: false
+      }],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
@@ -1230,7 +1239,18 @@ describe('Test fixInconsistentUser()', async function () {
     assertTableEquality(finalTracks, [])
     assertTableEquality(
       finalFiles,
-      [{ cnodeUserUUID, trackBlockchainId: null, multihash: metadataCID, sourceFile: null, fileName: null, dirMultihash: null, storagePath: DiskManager.computeFilePath(metadataCID, false), type: "metadata", clock: 1, skipped: false }],
+      [{
+        cnodeUserUUID,
+        trackBlockchainId: null,
+        multihash: metadataCID,
+        sourceFile: null,
+        fileName: null,
+        dirMultihash: null,
+        storagePath: await DiskManager.computeFilePath(metadataCID, false),
+        type: "metadata",
+        clock: 1,
+        skipped: false
+      }],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
@@ -1286,7 +1306,18 @@ describe('Test fixInconsistentUser()', async function () {
     assertTableEquality(initialTracks, [])
     assertTableEquality(
       initialFiles,
-      [{ cnodeUserUUID, trackBlockchainId: null, multihash: metadataCID, sourceFile: null, fileName: null, dirMultihash: null, storagePath: DiskManager.computeFilePath(metadataCID, false), type: "metadata", clock: 1, skipped: false }],
+      [{
+        cnodeUserUUID,
+        trackBlockchainId: null,
+        multihash: metadataCID,
+        sourceFile: null,
+        fileName: null,
+        dirMultihash: null,
+        storagePath: await DiskManager.computeFilePath(metadataCID, false),
+        type: "metadata",
+        clock: 1,
+        skipped: false
+      }],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
@@ -1323,7 +1354,18 @@ describe('Test fixInconsistentUser()', async function () {
     assertTableEquality(finalTracks, [])
     assertTableEquality(
       finalFiles,
-      [{ cnodeUserUUID, trackBlockchainId: null, multihash: metadataCID, sourceFile: null, fileName: null, dirMultihash: null, storagePath: DiskManager.computeFilePath(metadataCID, false), type: "metadata", clock: 1, skipped: false }],
+      [{
+        cnodeUserUUID,
+        trackBlockchainId: null,
+        multihash: metadataCID,
+        sourceFile: null,
+        fileName: null,
+        dirMultihash: null,
+        storagePath: await DiskManager.computeFilePath(metadataCID, false),
+        type: "metadata",
+        clock: 1,
+        skipped: false
+      }],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
@@ -1335,5 +1377,4 @@ describe('Test fixInconsistentUser()', async function () {
       ['createdAt', 'updatedAt']
     )
   })
-
 })

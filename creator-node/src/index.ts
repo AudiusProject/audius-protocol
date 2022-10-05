@@ -1,19 +1,32 @@
+/* eslint-disable import/first */
 'use strict'
 
-const { setupTracing } = require('./tracer')
-setupTracing('content-node')
+import { setupTracing } from './tracer'
+setupTracing()
 
-const ON_DEATH = require('death')
+import type { Worker } from 'cluster'
+import { AggregatorRegistry } from 'prom-client'
+import { clusterUtils } from './utils'
+import cluster from 'cluster'
+
+import ON_DEATH from 'death'
+import { Keypair } from '@solana/web3.js'
+
+import { initializeApp } from './app'
+import config from './config'
+import { serviceRegistry } from './serviceRegistry'
+import { runMigrations, clearRunningQueries } from './migrationManager'
+
+import { logger } from './logging'
+import { sequelize } from './models'
+
 const EthereumWallet = require('ethereumjs-wallet')
-const { Keypair } = require('@solana/web3.js')
-
-const initializeApp = require('./app')
-const config = require('./config')
-const { sequelize } = require('./models')
-const { runMigrations, clearRunningQueries } = require('./migrationManager')
-const { logger } = require('./logging')
-const { serviceRegistry } = require('./serviceRegistry')
 const redisClient = require('./redis')
+
+// This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
+// However, a bug currently requires instantiating this in workers as well:
+// https://github.com/siimon/prom-client/issues/501
+const aggregatorRegistry = new AggregatorRegistry()
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -21,7 +34,50 @@ const exitWithError = (...msg: any[]) => {
   process.exit(1)
 }
 
-const verifyDBConnection = async () => {
+const verifyConfigAndDb = async () => {
+  await config.asyncConfig()
+  const delegateOwnerWallet = config.get('delegateOwnerWallet')
+  const delegatePrivateKey = config.get('delegatePrivateKey')
+  const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
+
+  if (!delegateOwnerWallet || !delegatePrivateKey || !creatorNodeEndpoint) {
+    exitWithError(
+      'Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint'
+    )
+  }
+
+  // Fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
+  const privateKeyBuffer = Buffer.from(
+    config.get('delegatePrivateKey').replace('0x', ''),
+    'hex'
+  )
+  const walletAddress =
+    EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
+  if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
+    throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
+  }
+  try {
+    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
+    const solDelegatePrivateKey = solDelegateKeypair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solDelegatePrivateKey).toString('base64')
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
+    )
+  }
+
+  // Fail if Trusted Notifier isn't configured properly
+  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
+  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
+  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
+    exitWithError(
+      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
+    )
+  }
+
   try {
     logger.info('Verifying DB connection...')
     await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
@@ -29,22 +85,6 @@ const verifyDBConnection = async () => {
   } catch (connectionError) {
     exitWithError('Error connecting to DB:', connectionError)
   }
-}
-
-const runDBMigrations = async () => {
-  try {
-    logger.info('Executing database migrations...')
-    await runMigrations()
-    logger.info('Migrations completed successfully')
-  } catch (migrationError) {
-    exitWithError('Error in migrations:', migrationError)
-  }
-}
-
-const connectToDBAndRunMigrations = async () => {
-  await verifyDBConnection()
-  await clearRunningQueries()
-  await runDBMigrations()
 }
 
 /**
@@ -62,63 +102,109 @@ const getPort = () => {
   return config.get('port')
 }
 
-const startApp = async () => {
-  logger.info('Configuring service...')
+// The primary process performs one-time validation and spawns worker processes that each run the Express app
+const startAppForPrimary = async () => {
+  logger.info(`Primary process with pid=${process.pid} is running`)
 
-  await config.asyncConfig()
+  await setupDbAndRedis()
 
-  // fail if delegateOwnerWallet & delegatePrivateKey not present
-  const delegateOwnerWallet = config.get('delegateOwnerWallet')
-  const delegatePrivateKey = config.get('delegatePrivateKey')
-  const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
+  const numWorkers = clusterUtils.getNumWorkers()
+  logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
+  const firstWorker = cluster.fork()
+  // Wait for the first worker to perform one-time init logic before spawning other workers
+  firstWorker.on('message', (msg) => {
+    if (msg?.cmd === 'initComplete') {
+      for (let i = 0; i < numWorkers - 1; i++) {
+        cluster.fork()
+      }
+    }
+  })
 
-  if (!delegateOwnerWallet || !delegatePrivateKey || !creatorNodeEndpoint) {
-    exitWithError(
-      'Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint'
-    )
+  const sendAggregatedMetricsToWorker = async (worker: Worker) => {
+    const metricsData = await aggregatorRegistry.clusterMetrics()
+    const contentType = aggregatorRegistry.contentType
+    worker.send({
+      cmd: 'receiveAggregatePrometheusMetrics',
+      val: {
+        metricsData,
+        contentType
+      }
+    })
   }
 
-  // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
-  const privateKeyBuffer = Buffer.from(
-    config.get('delegatePrivateKey').replace('0x', ''),
-    'hex'
+  // Handle message received from worker to primary
+  cluster.on('message', (workerWhoSentMsg, msg) => {
+    if (msg?.cmd === 'requestAggregatedPrometheusMetrics') {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      sendAggregatedMetricsToWorker(workerWhoSentMsg)
+    }
+  })
+
+  // Respawn workers and update each worker's knowledge of who the special worker is.
+  // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
+  cluster.on('exit', (worker, code, signal) => {
+    logger.info(
+      `Worker process with pid=${worker.process.pid} died because ${
+        signal || code
+      }. Respawning...`
+    )
+    const newWorker = cluster.fork()
+    if (clusterUtils.specialWorkerId === worker.id) {
+      logger.info(
+        'The worker that died was the special worker. Setting a new special worker...'
+      )
+      clusterUtils.specialWorkerId = newWorker.id
+      for (const worker of Object.values(cluster.workers || {})) {
+        worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
+      }
+    }
+  })
+}
+
+// Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
+const startAppForWorker = async () => {
+  logger.info(
+    `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
   )
-  const walletAddress =
-    EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
-  if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
-    throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
+  await verifyConfigAndDb()
+  await startApp()
+
+  cluster.worker!.on('message', (msg) => {
+    if (msg?.cmd === 'setSpecialWorkerId') {
+      clusterUtils.specialWorkerId = msg?.val
+    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+      try {
+        const { prometheusRegistry } = serviceRegistry
+        prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
+      } catch (error: any) {
+        logger.error(
+          `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
+    }
+  })
+
+  if (clusterUtils.isThisWorkerInit() && process.send) {
+    process.send({ cmd: 'initComplete' })
   }
+}
 
-  const trustedNotifierEnabled = !!config.get('trustedNotifierID')
-  const nodeOperatorEmailAddress = config.get('nodeOperatorEmailAddress')
+const startAppWithoutCluster = async () => {
+  logger.info(`Starting app with cluster mode disabled`)
+  await setupDbAndRedis()
+  await startApp()
+}
 
-  if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
-    exitWithError(
-      'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
-    )
-  }
-
+const setupDbAndRedis = async () => {
+  await verifyConfigAndDb()
+  await clearRunningQueries()
   try {
-    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
-    const solDelegatePrivateKey = solDelegateKeypair.secretKey
-    config.set(
-      'solDelegatePrivateKeyBase64',
-      Buffer.from(solDelegatePrivateKey).toString('base64')
-    )
-  } catch (e: any) {
-    logger.error(
-      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
-    )
+    logger.info('Executing database migrations...')
+    await runMigrations()
+    logger.info('Migrations completed successfully')
+  } catch (migrationError) {
+    exitWithError('Error in migrations:', migrationError)
   }
-
-  await connectToDBAndRunMigrations()
-
-  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-  await serviceRegistry.initServices()
-  logger.info(`Initialized services (Node running in ${nodeMode})`)
-
-  const appInfo = initializeApp(getPort(), serviceRegistry)
-  logger.info('Initialized app and server')
 
   // Clear all redis locks
   try {
@@ -126,16 +212,11 @@ const startApp = async () => {
   } catch (e: any) {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }
+}
 
-  // Initialize services that do not require the server, but do not need to be awaited.
-  serviceRegistry.initServicesAsynchronously()
-
-  // Some Services cannot start until server is up. Start them now
-  // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer(appInfo.app)
-
-  // when app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal: any, error: any) => {
+const startApp = async () => {
+  // When app terminates, close down any open DB connections gracefully
+  ON_DEATH({ uncaughtException: true })((signal, error) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
@@ -145,5 +226,27 @@ const startApp = async () => {
       appInfo.server.close()
     }
   })
+
+  await serviceRegistry.initServices()
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  serviceRegistry.initServicesAsynchronously()
+  const appInfo = initializeApp(getPort(), serviceRegistry)
+  logger.info('Initialized app and server')
+  await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
-startApp()
+
+if (!clusterUtils.isClusterEnabled()) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppWithoutCluster()
+} else if (cluster.isMaster) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppForPrimary()
+} else if (cluster.isWorker) {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  startAppForWorker()
+} else {
+  throw new Error("Can't determine if process is primary or worker in cluster")
+}

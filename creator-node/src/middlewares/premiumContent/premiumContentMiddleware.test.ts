@@ -1,69 +1,65 @@
-import { premiumContentMiddleware } from './premiumContentMiddleware'
 import assert from 'assert'
 import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 import { Request, Response } from 'express'
-import { generateSignature } from '../../apiSigning'
+import Logger from 'bunyan'
+import { Redis } from 'ioredis'
+import { PremiumContentAccessError } from '../../premiumContent/types'
+import { StubPremiumContentAccessChecker } from '../../premiumContent/stubPremiumContentAccessChecker'
+import config from '../../config'
+import proxyquire from 'proxyquire' // eslint-disable-line node/no-unpublished-import
 
-type PartialHeaders = {
-  signedDataFromDiscoveryNode?: string
-  signatureFromDiscoveryNode?: string
-  signedDataFromUser?: string
-  signatureFromUser?: string
-}
+describe('Test premium content middleware', () => {
+  let premiumContentMiddlewareProxy: any
+  let app: any
+  let serviceRegistry: any
+  let libs: any
+  let logger: Logger
+  let redis: Redis
+  let headers: any
+  let mockReq: any
+  let mockRes: any
+  let premiumContentAccessChecker: StubPremiumContentAccessChecker
 
-const headers: PartialHeaders = {
-  signedDataFromDiscoveryNode: 'signed-data-from-discovery-node',
-  signatureFromDiscoveryNode: 'signature-from-discovery-node',
-  signedDataFromUser: 'signed-data-from-user',
-  signatureFromUser: 'signature-from-user'
-}
-
-const libs: any = {}
-libs.ethContracts = {
-  ServiceProviderFactoryClient: {
-    getServiceProviderList: () => []
-  }
-}
-
-const redis = new Map()
-
-const app = new Map()
-app.set('audiusLibs', libs)
-app.set('redisClient', redis)
-
-const mockReq = {
-  logger: loggerFactory(),
-  headers,
-  app
-}
-let mockRes = resFactory()
-
-const dummyDNPrivateKey =
-  '0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad'
-const dummyDNDelegateOwnerWallet = '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
-const dummyUserPrivateKey =
-  '849ec1cebdf0956808a1c5631fa4386d79ac8d7dc76d13e98a7e5cf283ea04df'
-const dummyUserWallet = '0x7c95A677106218A296EcEF1F577c3aE27f0340cd'
-
-describe('Test premium content middleware', function () {
-  beforeEach(function () {
+  beforeEach(() => {
+    libs = {
+      ethContracts: {
+        ServiceProviderFactoryClient: {
+          getServiceProviderList: () => []
+        }
+      }
+    }
+    logger = loggerFactory() as unknown as Logger
+    redis = new Map() as unknown as Redis
+    headers = {}
+    premiumContentAccessChecker = new StubPremiumContentAccessChecker()
+    serviceRegistry = {
+      premiumContentAccessChecker,
+      libs,
+      redis
+    }
+    app = new Map()
+    app.set('serviceRegistry', serviceRegistry)
+    mockReq = {
+      logger,
+      headers,
+      app,
+      params: { CID: 'some-cid' }
+    }
     mockRes = resFactory()
   })
 
-  it('fails when missing a request header', async () => {
-    const getPartialHeaders = (keyToRemove: keyof PartialHeaders) => {
-      const partialHeaders = { ...headers }
-      delete partialHeaders[keyToRemove]
-      return partialHeaders as any
-    }
+  describe('when premium content is enabled', () => {
+    beforeEach(() => {
+      config.set('premiumContentEnabled', true)
+      premiumContentMiddlewareProxy = proxyquire('./premiumContentMiddleware', {
+        './../../config': config
+      })
+    })
 
-    const assertBadRequest = async (keyToRemove: keyof PartialHeaders) => {
+    it('returns bad request when missing the CID param', async () => {
       let nextCalled = false
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          headers: getPartialHeaders(keyToRemove)
-        } as unknown as Request,
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        { ...mockReq, params: { CID: null } } as unknown as Request,
         mockRes as unknown as Response,
         () => {
           nextCalled = true
@@ -71,26 +67,37 @@ describe('Test premium content middleware', function () {
       )
       assert.deepStrictEqual(mockRes.statusCode, 400)
       assert.deepStrictEqual(nextCalled, false)
-    }
+    })
 
-    await Promise.all(
-      (Object.keys(headers) as (keyof PartialHeaders)[]).map(assertBadRequest)
-    )
-  })
-
-  it('fails when recovered DN wallet is not from registered DN', async () => {
-    const signatureFromDiscoveryNode = generateSignature(
-      headers.signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
-
-    const assertForbidden = async () => {
+    it('returns unauthorized when it fails because of missing headers', async () => {
+      premiumContentAccessChecker.accessCheckReturnsWith = {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.MISSING_HEADERS
+      }
       let nextCalled = false
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          headers: { ...headers, signatureFromDiscoveryNode }
-        } as unknown as Request,
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
+        mockRes as unknown as Response,
+        () => {
+          nextCalled = true
+        }
+      )
+      assert.deepStrictEqual(mockRes.statusCode, 401)
+      assert.deepStrictEqual(nextCalled, false)
+    })
+
+    it('returns forbidden when it fails because of invalid discovery node', async () => {
+      premiumContentAccessChecker.accessCheckReturnsWith = {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
+      }
+      let nextCalled = false
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
           nextCalled = true
@@ -98,55 +105,18 @@ describe('Test premium content middleware', function () {
       )
       assert.deepStrictEqual(mockRes.statusCode, 403)
       assert.deepStrictEqual(nextCalled, false)
-    }
-
-    await assertForbidden()
-  })
-
-  it('fails when premium content details do not match because signature is too old', async () => {
-    const now = Date.now()
-    const thirtyDaysAgo = 30 * 24 * 60 * 60 * 1000
-    const longAgo = now - thirtyDaysAgo
-
-    const premiumContentId = 1
-    const premiumContentType = 'track'
-    const signedDataFromDiscoveryNode = JSON.stringify({
-      premiumContentId,
-      premiumContentType,
-      userWallet: dummyUserWallet,
-      timestamp: longAgo
     })
-    const signatureFromDiscoveryNode = generateSignature(
-      signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
 
-    const signatureFromUser = generateSignature(
-      headers.signedDataFromUser,
-      dummyUserPrivateKey
-    )
-
-    const assertForbidden = async () => {
+    it('returns forbidden when it fails because of failed verification match', async () => {
+      premiumContentAccessChecker.accessCheckReturnsWith = {
+        doesUserHaveAccess: false,
+        trackId: 1,
+        isPremium: true,
+        error: PremiumContentAccessError.FAILED_MATCH
+      }
       let nextCalled = false
-      const newRedis = new Map()
-      newRedis.set(
-        'all_registered_dnodes',
-        JSON.stringify([{ delegateOwnerWallet: dummyDNDelegateOwnerWallet }])
-      )
-      const newApp = new Map()
-      newApp.set('redisClient', newRedis)
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          app: newApp,
-          headers: {
-            ...headers,
-            signedDataFromDiscoveryNode,
-            signatureFromDiscoveryNode,
-            signatureFromUser
-          },
-          params: { premiumContentId, premiumContentType }
-        } as unknown as Request,
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
           nextCalled = true
@@ -154,215 +124,60 @@ describe('Test premium content middleware', function () {
       )
       assert.deepStrictEqual(mockRes.statusCode, 403)
       assert.deepStrictEqual(nextCalled, false)
-    }
-
-    await assertForbidden()
-  })
-
-  it('fails when premium content details do not match because ids do not match', async () => {
-    const premiumContentId = 1
-    const premiumContentType = 'track'
-    const signedDataFromDiscoveryNode = JSON.stringify({
-      premiumContentId: 2,
-      premiumContentType,
-      userWallet: dummyUserWallet,
-      timestamp: Date.now()
     })
-    const signatureFromDiscoveryNode = generateSignature(
-      signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
 
-    const signatureFromUser = generateSignature(
-      headers.signedDataFromUser,
-      dummyUserPrivateKey
-    )
-
-    const assertForbidden = async () => {
+    it('passes and moves to the next middleware when all checks are fine and content is NOT premium', async () => {
+      premiumContentAccessChecker.accessCheckReturnsWith = {
+        doesUserHaveAccess: true,
+        trackId: null,
+        isPremium: false,
+        error: null
+      }
       let nextCalled = false
-      const newRedis = new Map()
-      newRedis.set(
-        'all_registered_dnodes',
-        JSON.stringify([{ delegateOwnerWallet: dummyDNDelegateOwnerWallet }])
-      )
-      const newApp = new Map()
-      newApp.set('redisClient', newRedis)
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          app: newApp,
-          headers: {
-            ...headers,
-            signedDataFromDiscoveryNode,
-            signatureFromDiscoveryNode,
-            signatureFromUser
-          },
-          params: { premiumContentId, premiumContentType }
-        } as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(mockRes.statusCode, 403)
-      assert.deepStrictEqual(nextCalled, false)
-    }
-
-    await assertForbidden()
-  })
-
-  it('fails when premium content details do not match because types do not match', async () => {
-    const premiumContentId = 1
-    const premiumContentType = 'track'
-    const signedDataFromDiscoveryNode = JSON.stringify({
-      premiumContentId,
-      premiumContentType: 'playlist',
-      userWallet: dummyUserWallet,
-      timestamp: Date.now()
-    })
-    const signatureFromDiscoveryNode = generateSignature(
-      signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
-
-    const signatureFromUser = generateSignature(
-      headers.signedDataFromUser,
-      dummyUserPrivateKey
-    )
-
-    const assertForbidden = async () => {
-      let nextCalled = false
-      const newRedis = new Map()
-      newRedis.set(
-        'all_registered_dnodes',
-        JSON.stringify([{ delegateOwnerWallet: dummyDNDelegateOwnerWallet }])
-      )
-      const newApp = new Map()
-      newApp.set('redisClient', newRedis)
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          app: newApp,
-          headers: {
-            ...headers,
-            signedDataFromDiscoveryNode,
-            signatureFromDiscoveryNode,
-            signatureFromUser
-          },
-          params: { premiumContentId, premiumContentType }
-        } as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(mockRes.statusCode, 403)
-      assert.deepStrictEqual(nextCalled, false)
-    }
-
-    await assertForbidden()
-  })
-
-  it('fails when premium content details do not match because user wallets do not match', async () => {
-    const premiumContentId = 1
-    const premiumContentType = 'track'
-    const signedDataFromDiscoveryNode = JSON.stringify({
-      premiumContentId,
-      premiumContentType,
-      userWallet: dummyUserWallet,
-      timestamp: Date.now()
-    })
-    const signatureFromDiscoveryNode = generateSignature(
-      signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
-
-    const signatureFromUser = generateSignature(
-      headers.signedDataFromUser,
-      dummyDNPrivateKey // to denote that someone other than the user signed it
-    )
-
-    const assertForbidden = async () => {
-      let nextCalled = false
-      const newRedis = new Map()
-      newRedis.set(
-        'all_registered_dnodes',
-        JSON.stringify([{ delegateOwnerWallet: dummyDNDelegateOwnerWallet }])
-      )
-      const newApp = new Map()
-      newApp.set('redisClient', newRedis)
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          app: newApp,
-          headers: {
-            ...headers,
-            signedDataFromDiscoveryNode,
-            signatureFromDiscoveryNode,
-            signatureFromUser
-          },
-          params: { premiumContentId, premiumContentType }
-        } as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(mockRes.statusCode, 403)
-      assert.deepStrictEqual(nextCalled, false)
-    }
-
-    await assertForbidden()
-  })
-
-  it('passes', async () => {
-    const premiumContentId = 1
-    const premiumContentType = 'track'
-    const signedDataFromDiscoveryNode = JSON.stringify({
-      premiumContentId,
-      premiumContentType,
-      userWallet: dummyUserWallet,
-      timestamp: Date.now()
-    })
-    const signatureFromDiscoveryNode = generateSignature(
-      signedDataFromDiscoveryNode,
-      dummyDNPrivateKey
-    )
-
-    const signatureFromUser = generateSignature(
-      headers.signedDataFromUser,
-      dummyUserPrivateKey
-    )
-
-    const assertSuccess = async () => {
-      let nextCalled = false
-      const newRedis = new Map()
-      newRedis.set(
-        'all_registered_dnodes',
-        JSON.stringify([{ delegateOwnerWallet: dummyDNDelegateOwnerWallet }])
-      )
-      const newApp = new Map()
-      newApp.set('redisClient', newRedis)
-      await premiumContentMiddleware(
-        {
-          ...mockReq,
-          app: newApp,
-          headers: {
-            ...headers,
-            signedDataFromDiscoveryNode,
-            signatureFromDiscoveryNode,
-            signatureFromUser
-          },
-          params: { premiumContentId, premiumContentType }
-        } as unknown as Request,
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
           nextCalled = true
         }
       )
       assert.deepStrictEqual(nextCalled, true)
-    }
+    })
 
-    await assertSuccess()
+    it('passes and moves to the next middleware when all checks are fine and content IS premium', async () => {
+      premiumContentAccessChecker.accessCheckReturnsWith = {
+        doesUserHaveAccess: true,
+        trackId: 1,
+        isPremium: true,
+        error: null
+      }
+      let nextCalled = false
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
+        mockRes as unknown as Response,
+        () => {
+          nextCalled = true
+        }
+      )
+      assert.deepStrictEqual(nextCalled, true)
+    })
+  })
+
+  describe('when premium content is disabled', () => {
+    it('moves on to the next middleware', async () => {
+      config.set('premiumContentEnabled', false)
+      premiumContentMiddlewareProxy = proxyquire('./premiumContentMiddleware', {
+        './../../config': config
+      })
+      let nextCalled = false
+      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+        mockReq as unknown as Request,
+        mockRes as unknown as Response,
+        () => {
+          nextCalled = true
+        }
+      )
+      assert.deepStrictEqual(nextCalled, true)
+    })
   })
 })

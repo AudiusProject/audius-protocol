@@ -1,5 +1,7 @@
 const { libs: AudiusLibs } = require('@audius/sdk')
-const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
+const {
+  setDefaultWasm
+} = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const config = require('./config')
 const registryAddress = config.get('registryAddress')
@@ -9,13 +11,17 @@ const web3ProviderUrl = config.get('web3Provider')
 const SOLANA_TOKEN_ADDRESS = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 
 class AudiusLibsWrapper {
-  constructor () {
+  constructor() {
     this.audiusLibsInstance = null
     setDefaultWasm('node')
   }
 
-  async init () {
-    const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
+  async init() {
+    const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
+      web3ProviderUrl,
+      null,
+      false
+    )
     if (!dataWeb3) throw new Error('Web3 incorrectly configured')
 
     const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
@@ -23,16 +29,19 @@ class AudiusLibsWrapper {
       : null
 
     const feePayerSecretKeys = config.get('solanaFeePayerWallets')
-      ? config.get('solanaFeePayerWallets')
-        .map(item => item.privateKey)
-        .map(key => Uint8Array.from(key))
+      ? config
+          .get('solanaFeePayerWallets')
+          .map((item) => item.privateKey)
+          .map((key) => Uint8Array.from(key))
       : null
 
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: config.get('solanaEndpoint'),
       mintAddress: config.get('solanaMintAddress'),
       solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
-      claimableTokenProgramAddress: config.get('solanaClaimableTokenProgramAddress'),
+      claimableTokenProgramAddress: config.get(
+        'solanaClaimableTokenProgramAddress'
+      ),
       rewardsManagerProgramId: config.get('solanaRewardsManagerProgramId'),
       rewardsManagerProgramPDA: config.get('solanaRewardsManagerProgramPDA'),
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
@@ -50,7 +59,7 @@ class AudiusLibsWrapper {
       ethTokenBridgeAddress: config.get('ethTokenBridgeAddress')
     })
 
-    let audiusInstance = new AudiusLibs({
+    const audiusInstance = new AudiusLibs({
       discoveryProviderConfig: {
         whitelist: discoveryProviderWhitelist
       },
@@ -80,18 +89,18 @@ class AudiusLibsWrapper {
     this.audiusLibsInstance = audiusInstance
   }
 
-  getAudiusLibs () {
+  getAudiusLibs() {
     return this.audiusLibsInstance
   }
 
   /**
    * Async getter for libs. Resolves when libs is initialized.
    */
-  async getAudiusLibsAsync () {
+  async getAudiusLibsAsync() {
     if (this.audiusLibsInstance) {
       return this.audiusLibsInstance
     }
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const i = setInterval(() => {
         if (this.audiusLibsInstance) {
           clearInterval(i)

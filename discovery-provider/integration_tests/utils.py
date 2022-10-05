@@ -223,6 +223,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 primary_id=user_meta.get("primary_id"),
                 secondary_ids=user_meta.get("secondary_ids"),
                 replica_set_update_signer=user_meta.get("replica_set_update_signer"),
+                creator_node_endpoint=user_meta.get(
+                    "creator_node_endpoint", "https://cn.io"
+                ),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",

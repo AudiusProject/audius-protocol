@@ -31,7 +31,11 @@ import {
 } from './fsUtils'
 import { runShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
+import { clusterUtils } from './clusterUtils'
+import { strToReplicaSet } from './strToReplicaSet'
 
+export type { ValuesOf } from './utils'
+export type { ReplicaSet } from './strToReplicaSet'
 export {
   isFqdn,
   timeout,
@@ -47,7 +51,9 @@ export {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  stringifyMap
+  strToReplicaSet,
+  stringifyMap,
+  clusterUtils
 }
 
 module.exports = {
@@ -65,7 +71,9 @@ module.exports = {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
+  strToReplicaSet,
   stringifyMap,
   verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
+  EMPTY_FILE_CID,
+  clusterUtils
 }
