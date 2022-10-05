@@ -223,6 +223,10 @@ def get_feed_es(args, limit=10):
     # to bucket ~3 saves / reposts per item
     item_keys = [i["item_key"] for i in sorted_feed]
 
+    print(
+        f"__ elasticsearch fetch_followed_saves_and_reposts for {len(item_keys)} item_keys "
+    )
+
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
         current_user_id, item_keys
     )
@@ -301,6 +305,7 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys):
                     following_ids_terms_lookup(current_user_id, "user_id"),
                     {"terms": {"item_key": item_keys}},
                     {"term": {"is_delete": False}},
+                    {"range": {"created_at": {"gte": "now-30d"}}},
                 ]
             }
         },
@@ -311,11 +316,12 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys):
                 "size": 5,
                 "sort": [{"created_at": "desc"}],
             },
-            "max_concurrent_group_searches": 4,
+            # "max_concurrent_group_searches": 4,
         },
         "sort": {"created_at": "desc"},
         "size": len(item_keys),
         "_source": False,
+        "timeout": "5s",
     }
     mdsl = [
         {"index": ES_REPOSTS},
