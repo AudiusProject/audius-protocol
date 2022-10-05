@@ -1651,6 +1651,7 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens.releases
+            - discord
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1667,7 +1668,6 @@ workflows:
           target: execute-proposal
           context:
             - slack-secrets
-            - discord
           requires:
             - execute-proposal-🕹️
 
@@ -1818,7 +1818,6 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
-
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
