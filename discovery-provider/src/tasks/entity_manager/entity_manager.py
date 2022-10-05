@@ -269,10 +269,14 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             # Add playlist track ids in entities to fetch
             # to prevent playlists from including premium tracks
             metadata_cid = helpers.get_tx_arg(event, "_metadata")
-            metadata = metadata[metadata_cid]
-            tracks = metadata.get("playlist_contents", {}).get("track_ids", [])
-            for track in tracks:
-                entities_to_fetch[EntityType.TRACK].add(track["track"])
+            if metadata_cid in metadata:
+                tracks = (
+                    metadata[metadata_cid]
+                    .get("playlist_contents", {})
+                    .get("track_ids", [])
+                )
+                for track in tracks:
+                    entities_to_fetch[EntityType.TRACK].add(track["track"])
 
     return entities_to_fetch
 
