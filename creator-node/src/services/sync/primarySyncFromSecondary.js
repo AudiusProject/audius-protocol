@@ -107,7 +107,7 @@ async function _primarySyncFromSecondary({
     }
 
     decisionTree.recordStage({
-      name: 'getUserReplicaSetEndpointsFromDiscovery() success',
+      name: 'getReplicaSetEndpointsByWallet() success',
       log: true
     })
 

@@ -5,7 +5,6 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
-import _ from 'lodash'
 import {
   getContentNodeInfoFromEndpoint,
   getReplicaSetEndpointsByWallet
