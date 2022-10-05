@@ -572,10 +572,7 @@ export class IdentityService {
   /**
    * Saves $AUDIO purchase metadata
    */
-  async saveUserBankTransactionMetadata({
-    transactionSignature,
-    metadata
-  }: {
+  async saveUserBankTransactionMetadata(data: {
     transactionSignature: string
     metadata: InAppAudioPurchaseMetadata
   }) {
@@ -584,10 +581,7 @@ export class IdentityService {
     return await this._makeRequest({
       url: '/transaction_metadata',
       method: 'post',
-      data: {
-        transactionSignature,
-        metadata
-      },
+      data,
       headers
     })
   }
