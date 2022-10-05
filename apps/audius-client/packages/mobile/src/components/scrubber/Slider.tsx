@@ -2,67 +2,66 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
-import { StyleSheet, View, Animated, PanResponder } from 'react-native'
+import { View, Animated, PanResponder } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import { usePrevious } from 'react-use'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import { attachToDx } from 'app/utils/animation'
-import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
 
 // How much the handle "grows" when pressing
 const HANDLE_GROW_SCALE = 1.1
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    root: {
-      height: 4,
-      marginLeft: 16,
-      marginRight: 16,
-      flexGrow: 1
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: {
+    height: spacing(1),
+    marginLeft: spacing(4),
+    marginRight: spacing(4),
+    flexGrow: 1
+  },
+  rail: {
+    backgroundColor: palette.neutralLight8,
+    borderRadius: 2,
+    borderColor: palette.neutralLight8,
+    height: 4,
+    overflow: 'hidden'
+  },
+  tracker: {
+    // The tracker must be the full width of the rail
+    // so that it can have rounded edges. It animates
+    // by sliding (translateX) instead of by growing.
+    flexGrow: 1,
+    backgroundColor: palette.neutral,
+    borderRadius: 2,
+    borderColor: palette.neutralLight8,
+    height: 4
+  },
+  handleContainer: {
+    top: -6,
+    position: 'absolute'
+  },
+  handle: {
+    marginLeft: spacing(-2),
+    height: spacing(4),
+    width: spacing(4),
+    borderRadius: spacing(2),
+    backgroundColor: palette.staticWhite,
+    // Note: React-native-shadow-2 seems to lose fidelity
+    // when styling such a small shadow.
+    // TODO: Revisit this, but as of writing, these values
+    // are fairly good on android/ios
+    shadowColor: 'rgb(133,129,153)',
+    shadowOffset: {
+      width: 0,
+      height: 1
     },
-    rail: {
-      backgroundColor: themeColors.neutralLight8,
-      borderRadius: 2,
-      borderColor: themeColors.neutralLight8,
-      height: 4,
-      overflow: 'hidden'
-    },
-    tracker: {
-      // The tracker must be the full width of the rail
-      // so that it can have rounded edges. It animates
-      // by sliding (translateX) instead of by growing.
-      flexGrow: 1,
-      backgroundColor: themeColors.neutral,
-      borderRadius: 2,
-      borderColor: themeColors.neutralLight8,
-      height: 4
-    },
-    handleContainer: {
-      top: -6,
-      position: 'absolute'
-    },
-    handle: {
-      marginLeft: -8,
-      height: 16,
-      width: 16,
-      borderRadius: 8,
-      backgroundColor: themeColors.staticWhite,
-      // Note: React-native-shadow-2 seems to lose fidelity
-      // when styling such a small shadow.
-      // TODO: Revisit this, but as of writing, these values
-      // are fairly good on android/ios
-      shadowColor: 'rgb(133,129,153)',
-      shadowOffset: {
-        width: 0,
-        height: 1
-      },
-      shadowOpacity: 0.5,
-      shadowRadius: 2,
-      elevation: 3
-    }
-  })
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 3
+  }
+}))
 
 type SliderProps = {
   /**
@@ -109,7 +108,7 @@ export const Slider = memo(
     onPressOut,
     onDrag
   }: SliderProps) => {
-    const styles = useThemedStyles(createStyles)
+    const styles = useStyles()
     const { primaryLight2, primaryDark2 } = useThemeColors()
 
     // Animation to translate the handle and tracker
@@ -280,22 +279,31 @@ export const Slider = memo(
     }, [isPlaying, play, pause, mediaKey, durationRef])
 
     const appState = useAppState()
+    const previousAppState = usePrevious(appState)
 
     /**
      * Ensures the slider handle's position is correctly updated when app
      * becomes active.
      */
     useEffect(() => {
-      if (appState === 'active') {
+      if (previousAppState === 'background' && appState === 'active') {
         const { currentTime } = global.progress
         const percentComplete = currentTime / durationRef.current
         translationAnim.setValue(percentComplete * railWidth)
+
         setHandlePosition(percentComplete * railWidth)
         if (isPlaying && durationRef.current !== undefined) {
           play((durationRef.current - currentTime) * 1000)
         }
       }
-    }, [isPlaying, appState, play, railWidth, translationAnim])
+    }, [
+      isPlaying,
+      appState,
+      previousAppState,
+      play,
+      railWidth,
+      translationAnim
+    ])
 
     return (
       <View style={styles.root}>

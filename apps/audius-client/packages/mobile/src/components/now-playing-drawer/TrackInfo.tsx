@@ -1,4 +1,4 @@
-import type { Track, User } from '@audius/common'
+import type { Nullable, Track, User } from '@audius/common'
 import { Pressable, View } from 'react-native'
 
 import { Text } from 'app/components/core'
@@ -25,8 +25,8 @@ const useStyles = makeStyles(({ typography, spacing }) => ({
 }))
 
 type TrackInfoProps = {
-  track: Track
-  user: User
+  track: Nullable<Track>
+  user: Nullable<User>
   onPressArtist: GestureResponderHandler
   onPressTitle: GestureResponderHandler
 }
