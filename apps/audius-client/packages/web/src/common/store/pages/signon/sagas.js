@@ -319,14 +319,14 @@ function* signUp() {
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
   const createUserMetadata = {
-    name: signOn.name.value,
+    name: signOn.name.value.trim(),
     handle: signOn.handle.value,
     profilePicture: (signOn.profileImage && signOn.profileImage.file) || null,
     coverPhoto: (signOn.coverPhoto && signOn.coverPhoto.file) || null,
     isVerified: signOn.verified,
     location
   }
-  const name = signOn.name.value
+  const name = signOn.name.value.trim()
   const email = signOn.email.value
   const password = signOn.password.value
   const handle = signOn.handle.value
