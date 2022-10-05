@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Track, User } from '@audius/common'
+import type { Nullable, Track, User } from '@audius/common'
 import {
   FavoriteSource,
   SquareSizes,
@@ -82,8 +82,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type PlayBarProps = {
-  track: Track
-  user: User
+  track: Nullable<Track>
+  user: Nullable<User>
   onPress: () => void
   translationAnim: Animated.Value
 }

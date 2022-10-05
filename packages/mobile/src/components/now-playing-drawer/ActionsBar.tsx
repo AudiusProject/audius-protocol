@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import type { Track } from '@audius/common'
+import type { Nullable, Track } from '@audius/common'
 import {
   removeNullable,
   FavoriteSource,
@@ -60,7 +60,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type ActionsBarProps = {
-  track: Track
+  track: Nullable<Track>
 }
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
@@ -153,7 +153,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const renderRepostButton = () => {
     return (
       <RepostButton
-        iconIndex={track.has_current_user_reposted ? 1 : 0}
+        iconIndex={track?.has_current_user_reposted ? 1 : 0}
         onPress={handleRepost}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
@@ -164,7 +164,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const renderFavoriteButton = () => {
     return (
       <FavoriteButton
-        iconIndex={track.has_current_user_saved ? 1 : 0}
+        iconIndex={track?.has_current_user_saved ? 1 : 0}
         onPress={handleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
