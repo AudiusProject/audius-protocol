@@ -75,7 +75,7 @@ type AudiusLibsConfig = {
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
-  wormholeCOnfig: ProxyWormholeConfig
+  wormholeConfig: ProxyWormholeConfig
   captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
@@ -231,7 +231,7 @@ export class AudiusLibs {
   /**
    * Configures proxy-only wormhole
    */
-  static configProxyWormhole() {
+  static configWormhole() {
     return {}
   }
 
@@ -318,7 +318,7 @@ export class AudiusLibs {
   web3Manager: Nullable<Web3Manager>
   solanaWeb3Manager: Nullable<SolanaWeb3Manager>
   contracts: Nullable<AudiusContracts>
-  wormholeClient: Nullable<Wormhole>
+  wormholeClient: Nullable<ProxyWormhole>
   creatorNode: Nullable<CreatorNode>
   captcha: Nullable<Captcha>
   schemas?: Schemas
@@ -582,7 +582,7 @@ export class AudiusLibs {
       this.ethContracts,
       this.solanaWeb3Manager,
       null as any,
-      null as any,
+      this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,
