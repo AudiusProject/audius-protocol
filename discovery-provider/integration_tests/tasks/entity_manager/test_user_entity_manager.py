@@ -565,11 +565,13 @@ def test_index_verify_users(app, mocker):
                         }
                     )
                 },
-            ]
+            ],
         }
 
         entity_manager_txs = [
-            AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+            AttributeDict(
+                {"transactionHash": update_task.web3.toBytes(text=tx_receipt)}
+            )
             for tx_receipt in tx_receipts
         ]
 
@@ -602,7 +604,12 @@ def test_index_verify_users(app, mocker):
                 metadata={},
             )
             # validate db records
-            all_users: List[User] = session.query(User).filter(User.is_current).order_by(asc(User.user_id)).all()
+            all_users: List[User] = (
+                session.query(User)
+                .filter(User.is_current)
+                .order_by(asc(User.user_id))
+                .all()
+            )
             assert len(all_users) == 2  # no new users indexed
             assert all_users[0].is_verified  # user 1 is verified
             assert not all_users[1].is_verified  # user 2 is not verified

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_verifier_address():
-    if 'verified_address' in shared_config["contracts"]:
+    if "verified_address" in shared_config["contracts"]:
         return shared_config["contracts"]["verified_address"]
 
 
