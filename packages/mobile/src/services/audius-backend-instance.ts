@@ -1,6 +1,7 @@
 import { audiusBackend } from '@audius/common'
 import * as nativeLibs from '@audius/sdk/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Image } from 'react-native'
 import Config from 'react-native-config'
 import scrypt from 'react-native-scrypt'
 
@@ -132,5 +133,5 @@ export const audiusBackendInstance = audiusBackend({
   getLibs: async () => nativeLibs,
   waitForLibsInit,
   withEagerOption,
-  disableImagePreload: true
+  imagePreloader: (url: string) => Image.prefetch(url)
 })
