@@ -5,7 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import USER_ID_OFFSET
+from src.tasks.entity_manager.utils import USER_ID_OFFSET, TRACK_ID_OFFSET
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -212,6 +212,7 @@ def test_index_valid_user(app, mocker):
             "cover_photo_sizes": "QmUk61QDUTzhNqjnCAWipSp3jnMmXBmtTUC2mtF5F6VvUy",
             "bio": "ðŸŒžðŸ‘„ðŸŒž",
             "location": "chik fil yay!!",
+            "artist_pick_track_id": TRACK_ID_OFFSET,
             "creator_node_endpoint": "https://creatornode.audius.co,https://content-node.audius.co,https://blockdaemon-audius-content-06.bdnodes.net",
             "associated_wallets": None,
             "associated_sol_wallets": None,
@@ -296,6 +297,7 @@ def test_index_valid_user(app, mocker):
             .first()
         )
         assert user_1.name == "raymont updated"
+        assert user_1.artist_pick_track_id == TRACK_ID_OFFSET
 
         user_2: User = (
             session.query(User)
