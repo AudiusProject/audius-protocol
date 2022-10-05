@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import type { ReplicaSetEndpoints } from '../../ContentNodeInfoManager'
+import type { ReplicaSetEndpoints } from '../../types'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -249,7 +249,6 @@ async function _handleIssueSyncRequest({
       await getReplicaSetEndpointsByWallet({
         libs,
         wallet: userWallet,
-        getUsers: libs.User.getUsers,
         parentLogger: logger
       })
 

@@ -93,7 +93,6 @@ async function _primarySyncFromSecondary({
       userReplicaSet = await getReplicaSetEndpointsByWallet({
         libs,
         wallet,
-        getUsers: libs.User.getUsers,
         parentLogger: logger
       })
     } catch (e) {

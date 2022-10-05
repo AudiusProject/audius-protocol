@@ -5,8 +5,14 @@
  */
 
 import type Logger from 'bunyan'
+import type {
+  ContentNodeFromChain,
+  EthContracts,
+  ReplicaSetSpIds,
+  ReplicaSetEndpoints
+} from './types'
 
-import _ from 'lodash'
+import { pick, isEmpty } from 'lodash'
 
 import initAudiusLibs from './initAudiusLibs'
 import { createChildLogger } from '../logging'
@@ -20,7 +26,7 @@ const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
  * Updates redis cache of registered content nodes. Note that this queries ALL
  * content nodes via ethContracts.getServiceProviderList.
  */
-async function updateContentNodeChainInfo(
+export async function updateContentNodeChainInfo(
   logger: Logger,
   redisClient = defaultRedisClient,
   ethContracts?: EthContracts
@@ -32,11 +38,11 @@ async function updateContentNodeChainInfo(
     const spIdToChainInfoFromChain = new Map(
       contentNodesFromLibs.map((cn) => [
         cn.spID,
-        _.pick(cn, ['endpoint', 'owner', 'delegateOwnerWallet'])
+        pick(cn, ['endpoint', 'owner', 'delegateOwnerWallet'])
       ])
     )
     if (spIdToChainInfoFromChain.size > 0) {
-      redisClient.set(
+      await redisClient.set(
         SP_ID_TO_CHAIN_INFO_MAP_KEY,
         JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
       )
@@ -48,7 +54,7 @@ async function updateContentNodeChainInfo(
   }
 }
 
-async function getAllRegisteredCNodes(
+export async function getAllRegisteredCNodes(
   logger: Logger,
   redisClient = defaultRedisClient
 ) {
@@ -56,7 +62,7 @@ async function getAllRegisteredCNodes(
   return Array.from(spIdToCNodeMap.values())
 }
 
-async function getMapOfSpIdToChainInfo(
+export async function getMapOfSpIdToChainInfo(
   logger: Logger,
   redisClient = defaultRedisClient
 ): Promise<Map<number, ContentNodeFromChain>> {
@@ -64,7 +70,7 @@ async function getMapOfSpIdToChainInfo(
     const serializedMapFromRedis = await redisClient.get(
       SP_ID_TO_CHAIN_INFO_MAP_KEY
     )
-    if (_.isEmpty(serializedMapFromRedis)) return new Map()
+    if (isEmpty(serializedMapFromRedis)) return new Map()
     return new Map<number, ContentNodeFromChain>(
       JSON.parse(serializedMapFromRedis as string)
     )
@@ -76,7 +82,7 @@ async function getMapOfSpIdToChainInfo(
   }
 }
 
-async function getMapOfCNodeEndpointToSpId(
+export async function getMapOfCNodeEndpointToSpId(
   logger: Logger,
   redisClient = defaultRedisClient
 ) {
@@ -89,7 +95,7 @@ async function getMapOfCNodeEndpointToSpId(
   return cNodeEndpointToSpIdMap
 }
 
-async function getSpIdFromEndpoint(
+export async function getSpIdFromEndpoint(
   endpoint: string,
   logger: Logger,
   redisClient = defaultRedisClient
@@ -99,7 +105,7 @@ async function getSpIdFromEndpoint(
   return cNodeEndpointToSpIdMap.get(endpoint)
 }
 
-async function getContentNodeInfoFromSpId(
+export async function getContentNodeInfoFromSpId(
   spId: number,
   logger: Logger,
   redisClient = defaultRedisClient
@@ -108,7 +114,7 @@ async function getContentNodeInfoFromSpId(
   return spIdToChainInfoMap.get(spId)
 }
 
-async function getContentNodeInfoFromEndpoint(
+export async function getContentNodeInfoFromEndpoint(
   endpoint: string,
   logger: Logger,
   redisClient = defaultRedisClient
@@ -123,20 +129,7 @@ async function getContentNodeInfoFromEndpoint(
   return cNodeInfo
 }
 
-export type ReplicaSetSpIds = {
-  primaryId: number | undefined
-  secondaryIds: number[]
-}
-export type GetReplicaSetSpIdsByUserIdParams = {
-  libs: any
-  userId: number
-  blockNumber?: number
-  ensurePrimary?: boolean
-  selfSpId?: number
-  parentLogger: Logger
-}
-
-async function getReplicaSetSpIdsByUserId({
+export async function getReplicaSetSpIdsByUserId({
   libs,
   userId,
   blockNumber,
@@ -147,7 +140,7 @@ async function getReplicaSetSpIdsByUserId({
   // TODO: This code block can be removed once URSM is fully removed
   const useUrsm = !config.get('entityManagerReplicaSetEnabled')
   if (useUrsm) {
-    return getReplicaSetSpIdsByUserIdUrsm({
+    return _getReplicaSetSpIdsByUserIdUrsm({
       libs,
       userId,
       blockNumber,
@@ -218,7 +211,7 @@ async function getReplicaSetSpIdsByUserId({
     // Error if indexed blockNumber but didn't find any replicaSet for user
     if (!replicaSet.primaryId) {
       throw new Error(
-        `ERROR || Failed to retrieve user from EntityManager after ${MAX_RETRIES} retries. Aborting.`
+        `ERROR || Failed to retrieve user from EntityManager after ${MAX_RETRIES} retries. Aborting. Error: ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpId) {
@@ -315,28 +308,76 @@ async function getReplicaSetSpIdsByUserId({
   )
   return replicaSet
 }
+
+export async function getReplicaSetEndpointsByWallet({
+  libs,
+  wallet,
+  parentLogger
+}: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
+  const user: { user_id: number } = (
+    await libs.User.getUsers(1, 0, null, wallet)
+  )[0]
+  const replicaSetEndpoints = await getReplicaSetEndpointsByUserId({
+    libs,
+    userId: user.user_id,
+    parentLogger
+  })
+  return replicaSetEndpoints
+}
+
+export async function getReplicaSetEndpointsByUserId({
+  libs,
+  userId,
+  parentLogger
+}: GetReplicaSetEndpointsByUserIdParams): Promise<ReplicaSetEndpoints> {
+  const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
+    libs,
+    userId,
+    parentLogger
+  })
+  const replicaSetEndpoints = await replicaSetSpIdsToEndpoints(
+    replicaSetSpIds,
+    parentLogger
+  )
+  return replicaSetEndpoints
+}
+
+export async function replicaSetSpIdsToEndpoints(
+  replicaSetSpIds: ReplicaSetSpIds,
+  logger: Logger
+): Promise<ReplicaSetEndpoints> {
+  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(logger)
+  return {
+    primary: replicaSetSpIds.primaryId
+      ? spIdToChainInfoMap.get(replicaSetSpIds.primaryId!)?.endpoint
+      : undefined,
+    secondary1: replicaSetSpIds.secondaryIds?.[0]
+      ? spIdToChainInfoMap.get(replicaSetSpIds.secondaryIds[0])?.endpoint
+      : undefined,
+    secondary2: replicaSetSpIds.secondaryIds?.[1]
+      ? spIdToChainInfoMap.get(replicaSetSpIds.secondaryIds[1])?.endpoint
+      : undefined
+  }
+}
+
+async function _initLibsAndGetEthContracts(
+  logger: Logger
+): Promise<EthContracts> {
+  const audiusLibs = await initAudiusLibs({
+    enableEthContracts: true,
+    enableContracts: false,
+    enableDiscovery: false,
+    enableIdentity: false,
+    logger
+  })
+  return audiusLibs.ethContracts
+}
+
 /**
- * @deprecated Remove when URSM is no longer used in prod
- *
- * Retrieves user replica set spIDs from chain (POA.UserReplicaSetManager)
- *
- * Polls contract (via web3 provider) conditionally as follows:
- *    - If `blockNumber` provided, polls contract until it has indexed that blockNumber (for up to 200 seconds)
- *    - Else if `ensurePrimary` required, polls contract until it has indexed selfSpID as primary (for up to 60 seconds)
- *      - Errors if retrieved primary spID does not match selfSpID
- *    - If neither of above conditions are met, falls back to single contract query without polling
- *
- * @param {GetReplicaSetSpIdsByUserIdParams} params
- * @param {UserReplicaSetManagerClient} params.userReplicaSetManagerClient URSM interface from libs
- * @param {number} params.userId userId used to query chain contract
- * @param {number} params.blockNumber blocknumber of eth TX preceding CN call
- * @param {boolean} params.ensurePrimary determines if function should error if this CN is not primary
- * @param {number} params.selfSpId SP ID of this Content Node
- * @param {bunyan.Logger} params.parentLogger logger to add properties to for this function call
- *
- * @returns {ReplicaSet} object with user's primary and secondary SP IDs
+ * @deprecated Remove when URSM is no longer used in prod.
+ * Same code as getReplicaSetSpIdsByUserId but calls URSM instead of EntityManager.
  */
-async function getReplicaSetSpIdsByUserIdUrsm({
+async function _getReplicaSetSpIdsByUserIdUrsm({
   libs,
   userId,
   blockNumber,
@@ -346,7 +387,7 @@ async function getReplicaSetSpIdsByUserIdUrsm({
 }: GetReplicaSetSpIdsByUserIdParams): Promise<ReplicaSetSpIds> {
   const start = Date.now()
   const logger = createChildLogger(parentLogger, {
-    function: 'getReplicaSetSpIdsByUserIdUrsm',
+    function: '_getReplicaSetSpIdsByUserIdUrsm',
     userId,
     selfSpId,
     blockNumber,
@@ -477,129 +518,21 @@ async function getReplicaSetSpIdsByUserIdUrsm({
   return replicaSet
 }
 
-export type ReplicaSetEndpoints = {
-  primary?: string
-  secondary1?: string
-  secondary2?: string
+export type GetReplicaSetSpIdsByUserIdParams = {
+  libs: any
+  userId: number
+  blockNumber?: number
+  ensurePrimary?: boolean
+  selfSpId?: number
+  parentLogger: Logger
 }
 export type GetReplicaSetEndpointsByWalletParams = {
   libs: any
   wallet: string
   parentLogger: Logger
-  getUsers: (
-    limit: number,
-    offset: number,
-    idsArray: null,
-    wallet: string
-  ) => Promise<{ user_id: number }[]>
 }
-async function getReplicaSetEndpointsByWallet({
-  libs,
-  wallet,
-  parentLogger,
-  getUsers
-}: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
-  const user: { user_id: number } = (await getUsers(1, 0, null, wallet))[0]
-  const replicaSetEndpoints = await getReplicaSetEndpointsByUserId({
-    libs,
-    userId: user.user_id,
-    parentLogger
-  })
-  return replicaSetEndpoints
-}
-
 export type GetReplicaSetEndpointsByUserIdParams = {
   libs: any
   userId: number
   parentLogger: Logger
-}
-async function getReplicaSetEndpointsByUserId({
-  libs,
-  userId,
-  parentLogger
-}: GetReplicaSetEndpointsByUserIdParams): Promise<ReplicaSetEndpoints> {
-  const replicaSetSpIds = await getReplicaSetSpIdsByUserId({
-    libs,
-    userId,
-    parentLogger
-  })
-  const replicaSetEndpoints = await replicaSetSpIdsToEndpoints(
-    replicaSetSpIds,
-    parentLogger
-  )
-  return replicaSetEndpoints
-}
-
-async function replicaSetSpIdsToEndpoints(
-  replicaSetSpIds: ReplicaSetSpIds,
-  logger: Logger
-): Promise<ReplicaSetEndpoints> {
-  const spIdToChainInfoMap = await getMapOfSpIdToChainInfo(logger)
-  return {
-    primary: replicaSetSpIds.primaryId
-      ? spIdToChainInfoMap.get(replicaSetSpIds.primaryId!)?.endpoint
-      : undefined,
-    secondary1: replicaSetSpIds.secondaryIds?.[0]
-      ? spIdToChainInfoMap.get(replicaSetSpIds.secondaryIds[0])?.endpoint
-      : undefined,
-    secondary2: replicaSetSpIds.secondaryIds?.[1]
-      ? spIdToChainInfoMap.get(replicaSetSpIds.secondaryIds[1])?.endpoint
-      : undefined
-  }
-}
-
-async function _initLibsAndGetEthContracts(
-  logger: Logger
-): Promise<EthContracts> {
-  const audiusLibs = await initAudiusLibs({
-    enableEthContracts: true,
-    enableContracts: false,
-    enableDiscovery: false,
-    enableIdentity: false,
-    logger
-  })
-  return audiusLibs.ethContracts
-}
-
-export type EthContracts = {
-  getServiceProviderList: (spType: string) => Promise<LibsServiceProvider[]>
-}
-export type LibsServiceProvider = {
-  owner: any // Libs typed this as any, but the contract has it as address
-  delegateOwnerWallet: any // Libs typed this as any, but the contract has it as address
-  endpoint: any // Libs typed this as any, but the contract has it as string
-  spID: number
-  type: string
-  blockNumber: number
-}
-export type ContentNodeFromChain = {
-  endpoint: string
-  owner: string
-  delegateOwnerWallet: string
-}
-export {
-  getAllRegisteredCNodes,
-  updateContentNodeChainInfo,
-  getMapOfSpIdToChainInfo,
-  getMapOfCNodeEndpointToSpId,
-  getSpIdFromEndpoint,
-  getContentNodeInfoFromSpId,
-  getContentNodeInfoFromEndpoint,
-  getReplicaSetEndpointsByWallet,
-  getReplicaSetEndpointsByUserId,
-  getReplicaSetSpIdsByUserId,
-  replicaSetSpIdsToEndpoints
-}
-module.exports = {
-  getAllRegisteredCNodes,
-  updateContentNodeChainInfo,
-  getMapOfSpIdToChainInfo,
-  getMapOfCNodeEndpointToSpId,
-  getSpIdFromEndpoint,
-  getContentNodeInfoFromSpId,
-  getContentNodeInfoFromEndpoint,
-  getReplicaSetEndpointsByWallet,
-  getReplicaSetEndpointsByUserId,
-  getReplicaSetSpIdsByUserId,
-  replicaSetSpIdsToEndpoints
 }

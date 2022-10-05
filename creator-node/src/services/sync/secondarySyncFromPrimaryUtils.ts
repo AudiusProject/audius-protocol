@@ -76,8 +76,7 @@ const shouldForceResync = async (
     const replicaSetEndpoints = await getReplicaSetEndpointsByWallet({
       libs,
       wallet,
-      parentLogger: logger,
-      getUsers: libs.User.getUsers
+      parentLogger: logger
     })
     const primaryInfo = await getContentNodeInfoFromEndpoint(
       replicaSetEndpoints.primary!,
