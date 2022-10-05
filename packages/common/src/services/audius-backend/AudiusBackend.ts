@@ -3206,7 +3206,7 @@ export const audiusBackend = ({
       address
     )
     if (!waudioBalance) {
-      console.error(`Failed to get waudio balance for address: ${address}`)
+      console.warn(`Failed to get waudio balance for address: ${address}`)
       return new BN('0')
     }
     return waudioBalance
