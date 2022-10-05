@@ -1,6 +1,7 @@
 import logging
 from typing import Dict
 
+from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.entity_manager.user_replica_set import parse_sp_ids
 from src.tasks.entity_manager.utils import (
@@ -40,6 +41,34 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 "Invalid User Transaction, user wallet signer does not match"
             )
+
+
+def validate_user_metadata(session, user_record: User, user_metadata: Dict):
+    # If the user's handle is not set, validate that it is unique
+    if not user_record.handle:
+        user_handle_exists = session.query(
+            session.query(User)
+            .filter(User.handle == user_metadata["handle"])
+            .exists()
+        ).scalar()
+        if user_handle_exists:
+            # Invalid user handle - should not continue to save...
+            return
+        user_record.handle = user_metadata["handle"]
+        user_record.handle_lc = user_metadata["handle"].lower()
+
+    # If an artist pick track id is specified, validate that it is a valid track id
+    if "artist_pick_track_id" in user_metadata and user_metadata["artist_pick_track_id"]:
+        track_id_exists = session.query(
+            session.query(Track)
+            .filter(Track.is_current == True, Track.track_id == user_metadata["artist_pick_track_id"], Track.owner_id == user_record.user_id)
+            .exists()
+        ).scalar()
+        if not track_id_exists:
+            # Invalid artist pick. Should not continue to save
+            return
+
+    return user_record
 
 
 def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
@@ -106,18 +135,15 @@ def update_user(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    # If the user's handle is not set, validate that it is unique
-    if not user_record.handle:
-        user_handle_exists = params.session.query(
-            params.session.query(User)
-            .filter(User.handle == user_metadata["handle"])
-            .exists()
-        ).scalar()
-        if user_handle_exists:
-            # Invalid user handle - should not continue to save...
-            return
-        user_record.handle = user_metadata["handle"]
-        user_record.handle_lc = user_metadata["handle"].lower()
+    user_record = validate_user_metadata(
+        params.session,
+        user_record,
+        user_metadata,
+    )
+
+    if not user_record:
+        # Validations failed. Do not continue to save.
+        return
 
     user_record = update_user_metadata(
         params.session,
