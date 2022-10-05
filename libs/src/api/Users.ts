@@ -1001,6 +1001,9 @@ export class Users extends Base {
           // Do nothing on error
         }
         if (replicaSet) {
+          console.log('asdf userId', userId)
+          console.log('asdf replicaSet', replicaSet)
+          console.log('asdf replicaSetSPIDs', replicaSetSPIDs)
           if (
             replicaSet.primarySpID === replicaSetSPIDs[0] &&
             replicaSet.secondary1SpID === replicaSetSPIDs[1] &&

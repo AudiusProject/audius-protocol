@@ -59,6 +59,7 @@ def entity_manager_update(
     metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
+        logger.info(f"asdf entity_manager_update {entity_manager_txs}")
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
