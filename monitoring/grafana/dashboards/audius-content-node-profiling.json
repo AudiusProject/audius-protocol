@@ -79,6 +79,7 @@
                 "mode": "off"
               }
             },
+            "decimals": 1,
             "mappings": [],
             "thresholds": {
               "mode": "absolute",
@@ -107,8 +108,12 @@
         "interval": "5m",
         "options": {
           "legend": {
-            "calcs": [],
-            "displayMode": "list",
+            "calcs": [
+              "firstNotNull",
+              "lastNotNull",
+              "diff"
+            ],
+            "displayMode": "table",
             "placement": "bottom",
             "showLegend": true
           },
@@ -122,8 +127,8 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "code",
-            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"total\", environment=~\"$env\"})",
+            "editorMode": "builder",
+            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"total\", environment=~\"$env\", host=~\"$host\"})",
             "legendFormat": "Total Storage",
             "range": true,
             "refId": "A"
@@ -132,9 +137,9 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "code",
+            "editorMode": "builder",
             "exemplar": false,
-            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"used\", environment=~\"$env\"})",
+            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"used\", environment=~\"$env\", host=~\"$host\"})",
             "hide": false,
             "instant": false,
             "legendFormat": "Used Storage",
@@ -142,7 +147,7 @@
             "refId": "B"
           }
         ],
-        "title": "Storage space total vs used across network",
+        "title": "Storage space total vs used",
         "type": "timeseries"
       },
       {
@@ -195,7 +200,7 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"used\", environment=~\"$env\", host=~\"$host\"}) / sum(audius_cn_storage_path_size_bytes{type=\"total\", environment=~\"$env\"})",
+            "expr": "sum(audius_cn_storage_path_size_bytes{type=\"used\", environment=~\"$env\", host=~\"$host\"}) / sum(audius_cn_storage_path_size_bytes{type=\"total\", environment=~\"$env\", host=~\"$host\"})",
             "format": "time_series",
             "instant": false,
             "legendFormat": "__auto",
@@ -275,11 +280,14 @@
         "options": {
           "legend": {
             "calcs": [
-              "last"
+              "last",
+              "range"
             ],
             "displayMode": "table",
             "placement": "right",
-            "showLegend": true
+            "showLegend": true,
+            "sortBy": "Last",
+            "sortDesc": true
           },
           "tooltip": {
             "mode": "single",
@@ -762,8 +770,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -855,8 +862,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -951,8 +957,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1045,8 +1050,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1141,8 +1145,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1235,8 +1238,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1345,8 +1347,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 }
               ]
             },
@@ -1364,7 +1365,9 @@
         "options": {
           "legend": {
             "calcs": [
-              "mean"
+              "mean",
+              "max",
+              "last"
             ],
             "displayMode": "table",
             "placement": "right",

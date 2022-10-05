@@ -109,10 +109,15 @@
         "id": 2,
         "options": {
           "legend": {
-            "calcs": [],
+            "calcs": [
+              "lastNotNull",
+              "mean"
+            ],
             "displayMode": "table",
             "placement": "right",
-            "showLegend": true
+            "showLegend": true,
+            "sortBy": "Mean",
+            "sortDesc": true
           },
           "tooltip": {
             "mode": "single",
@@ -203,10 +208,15 @@
         "id": 21,
         "options": {
           "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom",
-            "showLegend": true
+            "calcs": [
+              "lastNotNull",
+              "mean"
+            ],
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "sortBy": "Mean",
+            "sortDesc": true
           },
           "tooltip": {
             "mode": "single",
@@ -1898,7 +1908,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
