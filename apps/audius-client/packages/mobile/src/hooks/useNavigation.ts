@@ -64,7 +64,7 @@ export const useNavigation = <
         return StackActions.push(screen as string, params)
       }
 
-      nativeNavigation?.dispatch(customPushAction)
+      nativeNavigation.dispatch(customPushAction)
     },
     [nativeNavigation]
   )
