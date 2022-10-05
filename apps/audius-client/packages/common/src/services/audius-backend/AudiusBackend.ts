@@ -290,7 +290,7 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  disableImagePreload?: boolean
+  imagePreloader?: (url: string) => Promise<boolean>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -345,7 +345,7 @@ type AudiusBackendParams = {
 
 export const audiusBackend = ({
   claimDistributionContractAddress,
-  disableImagePreload,
+  imagePreloader,
   env,
   ethOwnerWallet,
   ethProviderUrls,
@@ -548,17 +548,28 @@ export const audiusBackend = ({
     const primary = creatorNodeGateways[0]
     const firstImageUrl = `${primary}${cid}`
 
-    if (disableImagePreload) {
-      return firstImageUrl
-    }
-
     if (primary) {
-      // Attempt to fetch/load the image using the first creator node gateway
-      const preloadedImageUrl = await preloadImage(firstImageUrl)
+      if (imagePreloader) {
+        try {
+          const preloaded = await imagePreloader(firstImageUrl)
+          if (preloaded) {
+            return firstImageUrl
+          }
+        } catch (e) {
+          // swallow error and continue
+        }
+      } else {
+        // Attempt to fetch/load the image using the first creator node gateway
+        const preloadedImageUrl = await preloadImage(firstImageUrl)
 
-      // If the image is loaded, add to cache and return
-      if (preloadedImageUrl && cache) CIDCache.add(cid, preloadedImageUrl)
-      if (preloadedImageUrl) return preloadedImageUrl
+        // If the image is loaded, add to cache and return
+        if (preloadedImageUrl && cache) {
+          CIDCache.add(cid, preloadedImageUrl)
+        }
+        if (preloadedImageUrl) {
+          return preloadedImageUrl
+        }
+      }
     }
 
     await waitForLibsInit()
