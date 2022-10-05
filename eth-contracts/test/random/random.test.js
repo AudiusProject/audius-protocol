@@ -10,8 +10,8 @@ const DelegateManager = artifacts.require('DelegateManager')
 const ClaimsManager = artifacts.require('ClaimsManager')
 const AudiusToken = artifacts.require('AudiusToken')
 
-const serviceTypeCN = web3.utils.utf8ToHex('content-node')
-const serviceTypeDP = web3.utils.utf8ToHex('discovery-node')
+const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
+const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
 
 contract('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
