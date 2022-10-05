@@ -217,18 +217,8 @@ def get_feed_es(args, limit=10):
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = user_by_id[uid]
 
-    # add context: followee_reposts, followee_saves
-    # currently this over-fetches because there is no per-item grouping
-    # really it should use an aggregation with top hits
-    # to bucket ~3 saves / reposts per item
-    item_keys = [i["item_key"] for i in sorted_feed]
-
-    print(
-        f"__ elasticsearch fetch_followed_saves_and_reposts for {len(item_keys)} item_keys "
-    )
-
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys
+        current_user, sorted_feed
     )
 
     for item in sorted_feed:
@@ -291,7 +281,46 @@ def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
     }
 
 
-def fetch_followed_saves_and_reposts(current_user_id, item_keys):
+def fetch_followed_saves_and_reposts(current_user, items):
+    item_keys = [item_key(i) for i in items]
+    follow_reposts = {k: [] for k in item_keys}
+    follow_saves = {k: [] for k in item_keys}
+
+    if not current_user or not item_keys:
+        return (follow_saves, follow_reposts)
+
+    mget_social_activity = []
+    my_friends = set(current_user.get("following_ids", []))
+
+    for item in items:
+        key = item_key(item)
+        saved_by = item.get("saved_by", [])
+        reposted_by = item.get("reposted_by", [])
+
+        save_friends = [f"{uid}:{key}" for uid in saved_by if uid in my_friends]
+        for id in save_friends[0:5]:
+            mget_social_activity.append({"_index": ES_SAVES, "_id": id})
+
+        repost_friends = [f"{uid}:{key}" for uid in reposted_by if uid in my_friends]
+        for id in repost_friends[0:5]:
+            mget_social_activity.append({"_index": ES_REPOSTS, "_id": id})
+
+    if mget_social_activity:
+        social_activity = esclient.mget(docs=mget_social_activity)
+        for doc in social_activity["docs"]:
+            if not doc["found"]:
+                print("elasticsearch not found", doc)
+                continue
+            s = doc["_source"]
+            if "repost_type" in s:
+                follow_reposts[s["item_key"]].append(s)
+            else:
+                follow_saves[s["item_key"]].append(s)
+
+    return (follow_saves, follow_reposts)
+
+
+def old_fetch_followed_saves_and_reposts(current_user_id, item_keys):
     follow_reposts = {k: [] for k in item_keys}
     follow_saves = {k: [] for k in item_keys}
 
@@ -347,7 +376,9 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys):
 
 
 def item_key(item):
-    if "track_id" in item:
+    if "item_key" in item:
+        return item["item_key"]
+    elif "track_id" in item:
         return "track:" + str(item["track_id"])
     elif "playlist_id" in item:
         if item["is_album"]:

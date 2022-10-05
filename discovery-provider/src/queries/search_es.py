@@ -252,15 +252,15 @@ def finalize_response(
         raise Exception("esclient is None")
 
     # hydrate users, saves, reposts
-    item_keys = []
+    items = []
     user_ids = set()
     if current_user_id:
         user_ids.add(current_user_id)
 
     # collect keys for fetching
-    for items in response.values():
-        for item in items:
-            item_keys.append(item_key(item))
+    for docs in response.values():
+        for item in docs:
+            items.append(item)
             user_ids.add(item.get("owner_id", item.get("playlist_owner_id")))
 
     # fetch users
@@ -279,7 +279,7 @@ def finalize_response(
     # fetch followed saves + reposts
     if not is_auto_complete:
         (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-            current_user_id, item_keys
+            current_user, items
         )
 
     # tracks: finalize
