@@ -47,9 +47,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
         user_handle_exists = session.query(
-            session.query(User)
-            .filter(User.handle == user_metadata["handle"])
-            .exists()
+            session.query(User).filter(User.handle == user_metadata["handle"]).exists()
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
@@ -58,10 +56,17 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         user_record.handle_lc = user_metadata["handle"].lower()
 
     # If an artist pick track id is specified, validate that it is a valid track id
-    if "artist_pick_track_id" in user_metadata and user_metadata["artist_pick_track_id"]:
+    if (
+        "artist_pick_track_id" in user_metadata
+        and user_metadata["artist_pick_track_id"]
+    ):
         track_id_exists = session.query(
             session.query(Track)
-            .filter(Track.is_current == True, Track.track_id == user_metadata["artist_pick_track_id"], Track.owner_id == user_record.user_id)
+            .filter(
+                Track.is_current == True,
+                Track.track_id == user_metadata["artist_pick_track_id"],
+                Track.owner_id == user_record.user_id,
+            )
             .exists()
         ).scalar()
         if not track_id_exists:
