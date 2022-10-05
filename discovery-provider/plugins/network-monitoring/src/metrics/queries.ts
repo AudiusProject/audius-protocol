@@ -457,6 +457,7 @@ const _getUserStatusByPrimary = async (
         ORDER BY fully_synced.spid;
         `,
     {
+      type: QueryTypes.SELECT,
       replacements: { run_id },
     }
   );
@@ -468,7 +469,7 @@ const _getUserStatusByPrimary = async (
     partiallySyncedCount: number;
     unsyncedCount: number;
   }[] = (
-    userStatusByPrimaryResp[0] as {
+    userStatusByPrimaryResp as {
       spid: string;
       endpoint: string;
       fully_synced_count: string;
@@ -675,6 +676,7 @@ ON cnodes.spid = fully_synced.spid
 ORDER BY fully_synced.spid;
             `,
         {
+          type: QueryTypes.SELECT,
           replacements: { run_id },
         }
       );
