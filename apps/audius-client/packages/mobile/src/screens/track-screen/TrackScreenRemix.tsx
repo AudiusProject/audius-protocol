@@ -152,7 +152,13 @@ const TrackScreenRemixComponent = ({
   return (
     <View style={[styles.root, style, stylesProp?.root]}>
       <Pressable onPress={handlePressTrack}>
-        {_co_sign ? <CoSign size={Size.MEDIUM}>{images}</CoSign> : images}
+        {_co_sign ? (
+          <CoSign size={Size.MEDIUM} style={{ flex: 0 }}>
+            {images}
+          </CoSign>
+        ) : (
+          images
+        )}
       </Pressable>
       <Pressable style={styles.artist} onPress={handlePressArtist}>
         <View style={styles.name}>
