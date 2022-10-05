@@ -334,23 +334,3 @@ export const parseCNodeResponse = (
     }
   }
 }
-
-module.exports = {
-  handleResponse,
-  handleResponseWithHeartbeat,
-  sendResponse,
-  sendResponseWithHeartbeatTerminator,
-  isValidResponse,
-  errorResponseSocketTimeout,
-  handleApiError,
-  parseCNodeResponse,
-  ErrorBadRequest,
-  ErrorServerError,
-  errorResponseServerError,
-  errorResponseBadRequest,
-  errorResponseNotFound,
-  errorResponse,
-  successResponse,
-  errorResponseForbidden,
-  errorResponseUnauthorized
-}
