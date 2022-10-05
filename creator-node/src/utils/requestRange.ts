@@ -1,3 +1,6 @@
+import type { Request } from 'express'
+import { tracing } from '../tracer'
+
 /**
  * Gets range request headers off of a request object
  * Drop in replacement for `req.range()` which does not
@@ -15,7 +18,7 @@
  *  or
  *  null if the request could not be parsed
  */
-const getRequestRange = (req) => {
+export const getRequestRange = (req: Request) => {
   const header = req.header('range')
   if (!header) return null
 
@@ -30,7 +33,8 @@ const getRequestRange = (req) => {
     const end = matches[3] ? parseInt(matches[3], 10) : undefined
 
     return { start, end }
-  } catch (e) {
+  } catch (e: any) {
+    tracing.recordException(e)
     return null
   }
 }
@@ -39,7 +43,11 @@ const getRequestRange = (req) => {
  * Formats a Content-Range header response
  * @returns {string} Content-Range header value
  */
-const formatContentRange = (start, end, size) => {
+export const formatContentRange = (
+  start: number,
+  end: number,
+  size: number
+) => {
   return `bytes ${start}-${end || size - 1}/${size}`
 }
 
