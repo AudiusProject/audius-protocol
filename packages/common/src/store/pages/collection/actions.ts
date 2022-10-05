@@ -1,4 +1,5 @@
 import { ID, SmartCollectionVariant, UID } from '../../../models'
+import { Nullable } from '../../../utils'
 
 export const FETCH_COLLECTION = 'FETCH_COLLECTION'
 export const FETCH_COLLECTION_SUCCEEDED = 'FETCH_COLLECTION_SUCCEEDED'
@@ -27,7 +28,10 @@ export const fetchCollectionFailed = (userUid: UID) => ({
   userUid
 })
 
-export const resetCollection = (collectionUid: UID, userUid: UID) => ({
+export const resetCollection = (
+  collectionUid: Nullable<UID>,
+  userUid: Nullable<UID>
+) => ({
   type: RESET_COLLECTION,
   collectionUid,
   userUid

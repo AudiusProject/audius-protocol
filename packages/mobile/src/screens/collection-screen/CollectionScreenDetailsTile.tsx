@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ID, UID } from '@audius/common'
+import type { ID, Maybe, UID } from '@audius/common'
 import {
   useProxySelector,
   collectionPageActions,
@@ -67,7 +67,7 @@ type CollectionScreenDetailsTileProps = {
 
 const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
 
-const recordPlay = (id, play = true) => {
+const recordPlay = (id: Maybe<number>, play = true) => {
   track(
     make({
       eventName: play ? Name.PLAYBACK_PLAY : Name.PLAYBACK_PAUSE,
@@ -95,9 +95,7 @@ export const CollectionScreenDetailsTile = ({
   const numTracks = entries.length
 
   const resetCollectionLineup = useCallback(() => {
-    if (collectionUid && userUid) {
-      dispatch(resetCollection(collectionUid, userUid))
-    }
+    dispatch(resetCollection(collectionUid, userUid))
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
