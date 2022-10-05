@@ -247,7 +247,12 @@ function* fetchProfileAsync(action) {
       user.user_id
     )
     yield put(
-      profileActions.setNotificationSubscription(user.user_id, isSubscribed)
+      profileActions.setNotificationSubscription(
+        user.user_id,
+        isSubscribed,
+        false,
+        user.handle
+      )
     )
 
     if (!isNativeMobile) {
