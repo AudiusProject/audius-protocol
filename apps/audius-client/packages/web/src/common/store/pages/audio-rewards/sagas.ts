@@ -608,7 +608,6 @@ function* userChallengePollingDaemon() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 
   const isNativeMobile = yield* getContext('isNativeMobile')
-  if (isNativeMobile) return
 
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
@@ -620,9 +619,12 @@ function* userChallengePollingDaemon() {
     )!
 
   yield take(fetchAccountSucceeded.type)
-  yield fork(function* () {
-    yield* call(visibilityPollingDaemon, fetchUserChallenges())
-  })
+  if (!isNativeMobile) {
+    yield fork(function* () {
+      yield* call(visibilityPollingDaemon, fetchUserChallenges())
+    })
+  }
+
   yield* call(
     foregroundPollingDaemon,
     fetchUserChallenges(),

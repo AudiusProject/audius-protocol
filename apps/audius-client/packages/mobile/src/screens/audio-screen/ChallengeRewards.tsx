@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type {
   ChallengeRewardID,
@@ -13,6 +13,7 @@ import {
   audioRewardsPageSelectors,
   modalsActions
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -86,10 +87,11 @@ export const ChallengeRewards = () => {
     }
   }, [userChallengesLoading, haveChallengesLoaded])
 
-  useEffect(() => {
-    // Refresh user challenges on load
-    dispatch(fetchUserChallenges())
-  }, [dispatch])
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchUserChallenges())
+    }, [dispatch])
+  )
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
