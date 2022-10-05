@@ -164,12 +164,7 @@ function LibsWrapper(walletIndex = 0) {
       metadata.profilePictureFile /* profile picture */,
       metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
-      null /* host */,
-      undefined /* handleUserBankOutcomes */, 
-      undefined /* userBankOutcomes */,
-      undefined /* feePayerOverride */,
-      undefined /* generateRecoveryLink */,
-      true /* useEntityManager */
+      null /* host */
     )
 
     // Update libs instance with associated userId
@@ -203,7 +198,7 @@ function LibsWrapper(walletIndex = 0) {
 
   this.updateCreator = async (userId, metadata) => {
     assertLibsDidInit()
-    return this.libsInstance.User.updateCreator(userId, metadata, true)
+    return this.libsInstance.User.updateCreator(userId, metadata)
   }
 
   /**
@@ -231,8 +226,7 @@ function LibsWrapper(walletIndex = 0) {
       trackFile,
       null /* image */,
       trackMetadata,
-      () => { } /* on progress */,
-      true /* useEntityManager */
+      () => { } /* on progress */
     )
     if (error) throw error
     return trackId
@@ -248,7 +242,7 @@ function LibsWrapper(walletIndex = 0) {
       blockHash,
       blockNumber,
       trackId
-    } = await this.libsInstance.Track.updateTrack(metadata, true)
+    } = await this.libsInstance.Track.updateTrack(metadata)
     return { blockHash, blockNumber, trackId }
   }
 
@@ -425,7 +419,6 @@ function LibsWrapper(walletIndex = 0) {
     return await this.libsInstance.User.updateAndUploadMetadata({
       newMetadata,
       userId,
-      useEntityManager: true,
     })
   }
 
