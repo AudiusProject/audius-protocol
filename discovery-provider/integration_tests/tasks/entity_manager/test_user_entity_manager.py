@@ -6,8 +6,8 @@ from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challeng
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
-    USER_ID_OFFSET,
     TRACK_ID_OFFSET,
+    USER_ID_OFFSET,
 )
 from src.utils.db_session import get_db
 from web3 import Web3
