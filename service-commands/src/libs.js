@@ -67,6 +67,7 @@ function LibsWrapper(walletIndex = 0) {
     const [
       // POA Registry
       REGISTRY_ADDRESS,
+      ENTITY_MANAGER_ADDRESS,
       // Gateway for POA calls.
       WEB3_PROVIDER_URLS,
       ETH_TOKEN_ADDRESS,
@@ -77,6 +78,7 @@ function LibsWrapper(walletIndex = 0) {
       IDENTITY_SERVICE
     ] = [
         config.get('registry_address'),
+        config.get('entity_manager_address'),
         config.get('web3_provider_urls'),
         config.get('eth_token_address'),
         config.get('eth_registry_address'),
@@ -95,12 +97,16 @@ function LibsWrapper(walletIndex = 0) {
     this.walletIndex = walletIndex
     this.userId = null // to be updated on init
 
+    console.log('asdf ENTITY_MANAGER_ADDRESS', ENTITY_MANAGER_ADDRESS)
+
     const web3Config = await AudiusLibs.configExternalWeb3(
       REGISTRY_ADDRESS,
       dataWeb3,
       null /* networkId */,
-      walletAddress /* wallet override */
+      walletAddress /* wallet override */,
+      ENTITY_MANAGER_ADDRESS
     )
+    console.log('asdf web3Config', web3Config)
 
     const ethWeb3Config = AudiusLibs.configEthWeb3(
       ETH_TOKEN_ADDRESS,
@@ -148,6 +154,7 @@ function LibsWrapper(walletIndex = 0) {
    * @param {*} args metadata describing a user.
    */
   this.signUp = async ({ metadata }) => {
+    console.log('asdf service commands signup')
     assertLibsDidInit()
     const signUpResp = await this.libsInstance.Account.signUp(
       metadata.email,
@@ -440,7 +447,7 @@ function LibsWrapper(walletIndex = 0) {
       null,
       this.getWalletAddress()
     )
-
+    console.log('asdf getLibsUserInfo', users)
     if (!users.length) {
       throw new Error('No users!')
     }

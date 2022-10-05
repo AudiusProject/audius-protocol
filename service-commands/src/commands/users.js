@@ -7,7 +7,7 @@ User.addUser = async (libsWrapper, metadata) => {
   if (error) {
     throw new Error(`Adding user error: ${error} in phase: ${phase}`)
   }
-
+  console.log('asdf addUser userId', userId)
   return userId
 }
 

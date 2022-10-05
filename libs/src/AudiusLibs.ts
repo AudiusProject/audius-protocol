@@ -554,6 +554,7 @@ export class AudiusLibs {
       contractsToInit.push(this.ethContracts.init())
     }
     if (this.web3Manager) {
+      console.log('asdf this.web3Config', this.web3Config)
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,

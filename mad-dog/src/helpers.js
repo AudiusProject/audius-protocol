@@ -119,7 +119,9 @@ async function _addUsers({ userCount, executeAll, executeOne, existingUserIds, a
                 console.log(`[_addUsers] Error fetching random image: ${e.message}`)
                 picPath = USER_PIC_PATH
               }
+              console.log('asdf uploadProfileImagesAndAddUser')
               newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, picPath)
+              console.log('asdf newUserId', newUserId)
 
             } else {
               newUserId = await addUser(libs, userMetadata)
@@ -145,7 +147,7 @@ async function _addUsers({ userCount, executeAll, executeOne, existingUserIds, a
         if (existingUserIds.length) logger.info(`Existing users, userIds=${existingUserIds}`)
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
-        console.error(e) // this prints out the stack trace
+        console.error(e.stack) // this prints out the stack trace
         throw e
       }
     })

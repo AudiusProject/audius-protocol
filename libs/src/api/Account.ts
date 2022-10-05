@@ -133,6 +133,7 @@ export class Account extends Base {
     generateRecoveryLink = true,
     useEntityManager = false
   ) {
+    console.log('asdf account signup')
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
@@ -149,10 +150,13 @@ export class Account extends Base {
 
       if (this.web3Manager.web3IsExternal()) {
         phase = phases.CREATE_USER_RECORD
+        console.log('asdf in CREATE_USER_RECORD')
         await this.identityService.createUserRecord(
           email,
           this.web3Manager.getWalletAddress()
         )
+        console.log('asdf identity created user record')
+
       } else {
         this.REQUIRES(Services.HEDGEHOG)
         // If an owner wallet already exists, don't try to recreate it

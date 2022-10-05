@@ -23,6 +23,10 @@
     "env": "REGISTRY_ADDRESS",
     "default": "0x793373aBF96583d5eb71a15d86fFE732CD04D452"
   },
+  "entity_manager_address": {
+    "env": "ENTITY_MANAGER_ADDRESS",
+    "default": "0x2F99338637F027CFB7494E46B49987457beCC6E3"
+  },
   "web3_provider_urls": {
     "env": "WEB3_PROVIDER_URLS",
     "default": "http://localhost:8545"

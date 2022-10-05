@@ -379,6 +379,7 @@ export class IdentityService {
   }
 
   async createUserRecord(email: string, walletAddress: string) {
+    console.log('asdf identity createUserRecord')
     return await this._makeRequest({
       url: '/user',
       method: 'post',
