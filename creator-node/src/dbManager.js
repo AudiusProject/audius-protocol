@@ -170,7 +170,7 @@ class DBManager {
    * Deletes all session tokens matching an Array of SessionTokens.
    *
    * @param {Array} sessionTokens from the SessionTokens table
-   * @param {Transaction} externalTransaction
+   * @param {Transaction=} externalTransaction
    */
   static async deleteSessionTokensFromDB(sessionTokens, externalTransaction) {
     const transaction =

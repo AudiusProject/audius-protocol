@@ -1,11 +1,11 @@
-const crypto = require('crypto')
-const base64url = require('base64-url')
-const { promisify } = require('util')
-const randomBytes = promisify(crypto.randomBytes)
+import { promisify } from 'util'
+import crypto from 'crypto'
+import base64url from 'base64-url'
+import DBManager from './dbManager'
 
+const randomBytes = promisify(crypto.randomBytes)
 const models = require('./models')
 const redisClient = require('./redis')
-const DBManager = require('./dbManager')
 
 const sessionTokenHeaderKey = 'X-Session-ID'
 const sessionTokenLength = 40
@@ -16,7 +16,7 @@ export const sessionTokenHeader = sessionTokenHeaderKey
 
 export async function createSession(cnodeUserUUID: string) {
   const tokenBuffer = await randomBytes(sessionTokenLength)
-  const token = base64url.encode(tokenBuffer)
+  const token = base64url.encode(tokenBuffer.toString())
 
   const session = await models.SessionToken.create({ cnodeUserUUID, token })
   await redisClient.set(`SESSION.${token}`, session.cnodeUserUUID)
