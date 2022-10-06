@@ -16,6 +16,28 @@ const { getIP } = require('../utils/antiAbuse')
 const { libs } = require('@audius/sdk')
 const config = require('../config.js')
 
+const getAbuseBehavior = (req) => {
+  let optimizelyClient
+  let detectAbuseOnRelay = false
+  let blockAbuseOnRelay = false
+  try {
+    optimizelyClient = req.app.get('optimizelyClient')
+    detectAbuseOnRelay = getFeatureFlag(
+      optimizelyClient,
+      FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
+    )
+    blockAbuseOnRelay = getFeatureFlag(
+      optimizelyClient,
+      FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
+    )
+  } catch (error) {
+    req.logger.error(
+      `failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`
+    )
+  }
+  return { detectAbuseOnRelay, blockAbuseOnRelay }
+}
+
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
@@ -40,40 +62,35 @@ module.exports = function (app) {
         ]
       })
 
-      let optimizelyClient
-      let detectAbuseOnRelay = false
-      let blockAbuseOnRelay = false
-      try {
-        optimizelyClient = req.app.get('optimizelyClient')
-        detectAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
-        )
-        blockAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
-        )
-      } catch (error) {
-        req.logger.error(
-          `failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`
-        )
-      }
-
       // Handle abusive users
+      // TODO: I think we can lose blockAbuseOnRelay
+      // TODO: potential problems:
+      //  - on first call, we're not going to call detectAbuse till after
+      //  - on first call, we may not call detectAbuseOnRelay at all:
+      // Maybe we should do this for *all* users if they've never been monitored before
+      const { detectAbuseOnRelay, blockAbuseOnRelay } = getAbuseBehavior()
+
+      // TODO: remove this one
+      req.logger(
+        `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} user: ${
+          (user.id, user.handle)
+        }`
+      )
 
       const userFlaggedAsAbusive =
         user && (user.isBlockedFromRelay || user.isBlockedFromNotifications)
-      if (blockAbuseOnRelay && user && userFlaggedAsAbusive) {
-        // allow previously abusive users to redeem themselves for next relays
-        if (detectAbuseOnRelay) {
-          const reqIP = req.get('X-Forwarded-For') || req.ip
-          detectAbuse(user, 'relay', reqIP) // fired & forgotten
-        }
 
-        // Only reject relay for users explicitly blocked from relay
-        if (user.isBlockedFromRelay) {
-          return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
-        }
+      // Always call detectAbuse if a user is already flagged as abusive,
+      // or if they're selected randomly via detectAbuseOnRelay
+      if (user && (userFlaggedAsAbusive || detectAbuseOnRelay)) {
+        const reqIP = getIP(req)
+        detectAbuse(user, 'relay', reqIP) // fired & forgotten
+      }
+
+      // Only reject relay for users explicitly blocked from relay
+      if (user.isBlockedFromRelay) {
+        req.logger(`abuse: user ${user.handle} blocked from relay`)
+        return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
       }
 
       let txProps
@@ -149,11 +166,6 @@ module.exports = function (app) {
               `Something caused the transaction to fail for payload ${reqBodySHA}, ${e.message}`
             )
           }
-        }
-
-        if (user && detectAbuseOnRelay) {
-          const reqIP = getIP(req)
-          detectAbuse(user, 'relay', reqIP) // fired & forgotten
         }
 
         return successResponse({ receipt: receipt })

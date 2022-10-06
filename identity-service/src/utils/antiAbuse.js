@@ -60,6 +60,9 @@ const getAbuseData = async (handle, reqIP) => {
 
 const detectAbuse = async (user, reqIP) => {
   if (config.get('skipAbuseCheck') || !user.handle) {
+    logger.info(
+      `abuse: skipping abuse check for user ${user.handle} ${user.blockchainUserId} bc of no handle`
+    )
     return
   }
 
