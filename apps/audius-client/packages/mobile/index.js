@@ -1,6 +1,5 @@
 import 'react-native-gesture-handler'
 import { AppRegistry, LogBox } from 'react-native'
-import { enableFreeze } from 'react-native-screens'
 
 import { name as appName } from './app.json'
 
@@ -11,8 +10,6 @@ require('node-libs-react-native/globals')
 // Needed for @solana/web3.js to run correctly
 require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
-
-enableFreeze(true)
 
 const App = require('./src/App').default
 

@@ -78,7 +78,6 @@ export const HomeScreen = () => {
     <Drawer.Navigator
       // legacy implementation uses reanimated-v1
       useLegacyImplementation={true}
-      detachInactiveScreens={false}
       screenOptions={{
         drawerType: 'slide',
         headerShown: false,
