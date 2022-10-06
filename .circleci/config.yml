@@ -1207,7 +1207,7 @@ jobs:
       target:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
-        enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
+        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1229,19 +1229,19 @@ jobs:
             equal: [ cut-release, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Release branch has been cut! :git-fork:"
+                text: ":git-fork: Release branch has been cut"
       - when:
           condition:
-            equal: [ execute-proposal, << parameters.target >> ]
+            equal: [ evaluate-proposal, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Governance Proposal has been executed! :done:"
+                text: ":done: Governance Proposal has been evaluated"
       - when:
           condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Deployment Released to Service Providers! :gift:"
+                text: ":gift: Deployment Released to Service Providers"
                 detail: "New Governance Proposals are out. :vote:"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             # must be last step in job
@@ -1614,9 +1614,9 @@ workflows:
             - discord
           requires:
             - 🚧-🎁-to-SPs-🕹️
-      # Execute Governance Proposal (for release branches)
+      # Evaluate Governance Proposal (for release branches)
       - noop:
-          name: execute-proposal-🕹️
+          name: evaluate-proposal-🕹️
           type: approval
           filters:
             branches:
@@ -1624,12 +1624,12 @@ workflows:
           requires:
             - 🚧-🎁-to-SPs
       - release-scripts:
-          name: execute-proposal
-          target: execute-proposal
+          name: evaluate-proposal
+          target: evaluate-proposal
           context:
             - slack-secrets
           requires:
-            - execute-proposal-🕹️
+            - evaluate-proposal-🕹️
 
       - test-libs:
           name: test-libs
