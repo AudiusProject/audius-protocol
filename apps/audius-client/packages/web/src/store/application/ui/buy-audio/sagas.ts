@@ -37,7 +37,7 @@ import {
 import BN from 'bn.js'
 import dayjs from 'dayjs'
 import JSBI from 'jsbi'
-import { takeLatest } from 'redux-saga/effects'
+import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -74,7 +74,8 @@ const {
   transferCompleted,
   clearFeesCache,
   calculateAudioPurchaseInfoFailed,
-  buyAudioFlowFailed
+  buyAudioFlowFailed,
+  startRecoveryIfNecessary
 } = buyAudioActions
 
 const { setVisibility } = modalsActions
@@ -1064,7 +1065,7 @@ function* recoverPurchaseIfNecessary() {
 
 function* doStartBuyAudioFlow(action: ReturnType<typeof startBuyAudioFlow>) {
   yield* put(setVisibility({ modal: 'BuyAudio', visible: true }))
-  yield* call(recoverPurchaseIfNecessary)
+  yield* put(startRecoveryIfNecessary())
 }
 
 function* watchCalculateAudioPurchaseInfo() {
@@ -1080,7 +1081,15 @@ function* watchStartBuyAudioFlow() {
 }
 
 function* watchRecovery() {
-  yield* call(recoverPurchaseIfNecessary)
+  // Use takeLeading since:
+  // 1) We don't want to run more than one recovery flow at a time (so not takeEvery)
+  // 2) We don't need to interrupt if already running (so not takeLatest)
+  // 3) We do want to be able to trigger more than one time per session in case of same-session failures (so not take)
+  yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
+}
+
+function* recoverOnPageLoad() {
+  yield* put(startRecoveryIfNecessary())
 }
 
 export default function sagas() {
@@ -1088,6 +1097,7 @@ export default function sagas() {
     watchOnRampOpened,
     watchCalculateAudioPurchaseInfo,
     watchStartBuyAudioFlow,
-    watchRecovery
+    watchRecovery,
+    recoverOnPageLoad
   ]
 }
