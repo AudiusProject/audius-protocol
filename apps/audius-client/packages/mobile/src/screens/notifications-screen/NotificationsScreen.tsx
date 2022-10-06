@@ -25,7 +25,7 @@ const useStyles = makeStyles(({ palette }) => ({
  * Memoized to prevent rerender during bottom-bar navigation.
  * It's rerendering because navigation context changes.
  */
-export const NotificationsScreen = memo(() => {
+export const NotificationsScreen = memo(function NotificationsScreen() {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isDrawerOpen = useDrawerStatus() === 'open'

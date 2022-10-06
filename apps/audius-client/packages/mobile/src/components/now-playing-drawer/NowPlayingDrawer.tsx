@@ -1,4 +1,11 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import {
   Genre,
@@ -7,7 +14,6 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type {
   Animated,
   GestureResponderEvent,
@@ -24,7 +30,6 @@ import Drawer, {
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
-import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
@@ -83,10 +88,15 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type NowPlayingDrawerProps = {
   translationAnim: Animated.Value
-  navigation: NativeStackNavigationProp<AppTabScreenParamList>
 }
 
-const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
+/**
+ * Memoized to prevent rerender during bottom-bar navigation.
+ * It's rerendering because bottomTab render function rerenders a lot.
+ */
+export const NowPlayingDrawer = memo(function NowPlayngDrawer(
+  props: NowPlayingDrawerProps
+) {
   const { translationAnim } = props
   const { navigation } = useContext(AppTabNavigationContext)
   const dispatch = useDispatch()
@@ -314,6 +324,4 @@ const NowPlayingDrawer = (props: NowPlayingDrawerProps) => {
       </View>
     </Drawer>
   )
-}
-
-export default NowPlayingDrawer
+})
