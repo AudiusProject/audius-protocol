@@ -72,9 +72,7 @@ module.exports = function (app) {
 
       // TODO: remove this one
       req.logger.info(
-        `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} user: ${
-          (user?.id, user?.handle)
-        }`
+        `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} userid: ${user?.id} handle: ${user?.handle}`
       )
 
       const userFlaggedAsAbusive =
