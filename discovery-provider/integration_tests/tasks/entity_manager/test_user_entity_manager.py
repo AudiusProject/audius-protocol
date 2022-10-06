@@ -277,7 +277,7 @@ def test_index_valid_user(app, mocker):
                 "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 17),
             }
-        ]
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -567,7 +567,7 @@ def test_index_invalid_users(app, mocker):
             },
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
-        }
+        },
     }
 
     entity_manager_txs = [
@@ -595,7 +595,7 @@ def test_index_invalid_users(app, mocker):
                 "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 17),
             }
-        ]
+        ],
     }
     populate_mock_db(db, entities)
 
