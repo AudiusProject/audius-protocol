@@ -69,6 +69,7 @@ from src.queries.get_support_for_user import (
     get_support_received_by_user,
     get_support_sent_by_user,
 )
+from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
@@ -201,6 +202,30 @@ USER_TRACKS_ROUTE = "/<string:id>/tracks"
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
 )
+
+TRACK_LISTEN_COUNT_ROUTE = "/<string:id>/monthly"
+@ns.route(TRACK_LISTEN_COUNT_ROUTE)
+class UserListenCountsMonthly(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Listen Counts by Month and Track""",
+        description="""Gets the total track listens for a track in a given time frame""",
+        params={
+            "id": "A User ID",
+            "start_time": "Start time",
+            "end_time": "End time",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    def get(self, id):
+        data = get_user_listen_counts_monthly({
+            "user_id": 2,
+            "start_time": '01-01-2020',
+            "end_time": '01-01-2021',
+            "limit": 400,
+        })
+
+        return data
 
 
 @ns.route(USER_TRACKS_ROUTE)
