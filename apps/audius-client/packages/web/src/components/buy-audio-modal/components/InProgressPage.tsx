@@ -3,7 +3,8 @@ import { ReactNode } from 'react'
 import {
   buyAudioSelectors,
   BuyAudioStage,
-  formatNumberString
+  formatNumberString,
+  OnRampProvider
 } from '@audius/common'
 import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
 import { useSelector } from 'react-redux'
@@ -14,12 +15,17 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconAUDIO, IconSOL, IconUSD } from './Icons'
 import styles from './InProgressPage.module.css'
 
-const { getAudioPurchaseInfo, getBuyAudioFlowStage, getBuyAudioFlowError } =
-  buyAudioSelectors
+const {
+  getAudioPurchaseInfo,
+  getBuyAudioFlowStage,
+  getBuyAudioFlowError,
+  getBuyAudioProvider
+} = buyAudioSelectors
 
 const messages = {
   pleaseHold: 'Please hold on. This may take a few moments.',
   completeWithCoinbase: 'Complete this step with Coinbase',
+  completeWithStripe: 'Complete this step with Stripe',
   step1: 'Step 1/3',
   step2: 'Step 2/3',
   step3: 'Step 3/3',
@@ -31,9 +37,11 @@ const messages = {
   usd: 'USD',
   sol: 'SOL',
   audio: '$AUDIO',
+  stripeClosedErrorMessage: 'Stripe was Closed Unexpectedly',
   coinbaseClosedErrorMessage: 'Coinbase Pay Was Closed Unexpectedly',
   swapErrorMessage:
     'Refresh and we’ll try again.\nDon’t worry your funds are safe!',
+  stripeErrorMessage: 'Something went wrong',
   coinbaseErrorMessage:
     'Something’s gone wrong with Coinbase.\nPlease check your email for more information.'
 }
@@ -74,8 +82,22 @@ const stepMessages = {
   }
 }
 
+const providerBasedMessages = {
+  [OnRampProvider.COINBASE]: {
+    stepOneCallToAction: messages.completeWithCoinbase,
+    purchaseError: messages.coinbaseClosedErrorMessage,
+    confirmPurchaseError: messages.coinbaseErrorMessage
+  },
+  [OnRampProvider.STRIPE]: {
+    stepOneCallToAction: messages.completeWithStripe,
+    purchaseError: messages.stripeClosedErrorMessage,
+    confirmPurchaseError: messages.stripeErrorMessage
+  }
+}
+
 export const InProgressPage = () => {
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
+  const buyAudioProvider = useSelector(getBuyAudioProvider)
   const buyAudioFlowStage = useSelector(getBuyAudioFlowStage)
   const isError = useSelector(getBuyAudioFlowError)
   const step = stageToStep(buyAudioFlowStage)
@@ -116,6 +138,9 @@ export const InProgressPage = () => {
       firstToken = audioToken
     }
   }
+  if (!buyAudioProvider || buyAudioProvider === OnRampProvider.UNKNOWN) {
+    return null
+  }
   return (
     <div className={styles.inProgressPage}>
       <div className={styles.header}>{messages.pleaseHold}</div>
@@ -130,14 +155,14 @@ export const InProgressPage = () => {
       {isError ? (
         <div className={styles.error}>
           {buyAudioFlowStage === BuyAudioStage.PURCHASING
-            ? messages.coinbaseClosedErrorMessage
+            ? providerBasedMessages[buyAudioProvider].purchaseError
             : buyAudioFlowStage === BuyAudioStage.CONFIRMING_PURCHASE
-            ? messages.coinbaseErrorMessage
+            ? providerBasedMessages[buyAudioProvider].confirmPurchaseError
             : messages.swapErrorMessage}
         </div>
       ) : step === 1 ? (
         <div className={styles.callToAction}>
-          {messages.completeWithCoinbase}
+          {providerBasedMessages[buyAudioProvider].stepOneCallToAction}
         </div>
       ) : null}
       <CollapsibleContent
