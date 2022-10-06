@@ -201,6 +201,50 @@ export const pollForSolBalanceChange = async ({
   throw new Error('SOL balance polling exceeded maximum retries')
 }
 
+/**
+ * Polls the given Solana wallet until the most recent transaction changes
+ * and then returns the most recent transaction signature.
+ *
+ * NOTE: Will not return the next immediate transaction, just the new tip at the time the polling finds a new one.
+ * In other words, if multiple transactions are added between polls, this method returns only the most recent one.
+ */
+export const pollForNewTransaction = async ({
+  initialTransaction,
+  rootAccount,
+  retryDelayMs = DEFAULT_RETRY_DELAY,
+  maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+}: {
+  initialTransaction?: string
+  rootAccount: PublicKey
+  retryDelayMs?: number
+  maxRetryCount?: number
+}) => {
+  const connection = await getSolanaConnection()
+  const transactions = await connection.getSignaturesForAddress(rootAccount, {
+    limit: 1
+  })
+  let transaction = transactions?.[0]?.signature
+  if (initialTransaction === undefined) {
+    initialTransaction = transaction
+  }
+  let retries = 0
+  while (transaction === initialTransaction && retries++ < maxRetryCount) {
+    console.debug(
+      `Polling wallet ${rootAccount.toString()} for new transaction.... [${retries}/${maxRetryCount}]`
+    )
+    await delay(retryDelayMs)
+    const transactions = await connection.getSignaturesForAddress(rootAccount, {
+      limit: 1
+    })
+    transaction = transactions?.[0]?.signature
+    if (transaction && transaction !== initialTransaction) {
+      console.debug(`Found new transaction ${transaction}`)
+      return transaction
+    }
+  }
+  throw new Error('Transaction polling exceeded maximum retries')
+}
+
 export const createTransferToUserBankTransaction = async ({
   userBank,
   fromAccount,
