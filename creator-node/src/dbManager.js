@@ -168,7 +168,8 @@ class DBManager {
   }
 
   /**
-   * Gets a user's files (Files table storagePath column) with pagination.
+   * Gets a user's files that only they have (Files table storagePath column), with pagination.
+   * Ignores any file that has 1 or more entries from another user.
    * @param {string} cnodeUserUUID the UUID of the user to fetch file paths for
    * @param {string} prevStoragePath pagination token (where storagePath > prevStoragePath)
    * @param {number} batchSize the pagination size (number of file paths to return)
