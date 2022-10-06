@@ -1,2 +1,2 @@
-export { default } from './NowPlayingDrawer'
+export { NowPlayingDrawer } from './NowPlayingDrawer'
 export * from './constants'
