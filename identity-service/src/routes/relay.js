@@ -68,7 +68,7 @@ module.exports = function (app) {
       //  - on first call, we're not going to call detectAbuse till after
       //  - on first call, we may not call detectAbuseOnRelay at all:
       // Maybe we should do this for *all* users if they've never been monitored before
-      const { detectAbuseOnRelay, blockAbuseOnRelay } = getAbuseBehavior()
+      const { detectAbuseOnRelay, blockAbuseOnRelay } = getAbuseBehavior(req)
 
       // TODO: remove this one
       req.logger(
