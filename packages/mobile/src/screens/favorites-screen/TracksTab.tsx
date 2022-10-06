@@ -15,8 +15,8 @@ import {
   savedPageSelectors,
   tracksSocialActions
 } from '@audius/common'
-import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { Button, Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
@@ -69,11 +69,10 @@ export const TracksTab = () => {
   const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
     FeatureFlags.OFFLINE_MODE_ENABLED
   )
-  const handleFetchSaves = useCallback(() => {
-    dispatch(fetchSaves())
-  }, [dispatch])
 
-  useFocusEffect(handleFetchSaves)
+  useEffectOnce(() => {
+    dispatch(fetchSaves())
+  })
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)

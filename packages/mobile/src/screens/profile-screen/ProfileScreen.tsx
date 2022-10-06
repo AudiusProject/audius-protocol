@@ -11,7 +11,6 @@ import {
   encodeUrlName
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
-import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -35,7 +34,7 @@ import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction } = profilePageActions
-const { getProfileStatus, getProfileEditStatus } = profilePageSelectors
+const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getUserId } = accountSelectors
 
@@ -78,19 +77,15 @@ export const ProfileScreen = () => {
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const isNotReachable = useSelector(getIsReachable) === false
-  const editStatus = useSelector((state) =>
-    getProfileEditStatus(state, handleLower)
-  )
   const isOwner = profile?.user_id === accountId
 
   const fetchProfile = useCallback(() => {
-    // When profile edited is being still confirmed, prevent fetch call so we
-    // don't override the optimistic profile metadata.
-    if (isOwner && editStatus === Status.LOADING) return
     dispatch(fetchProfileAction(handleLower, null, true, true, false))
-  }, [dispatch, handleLower, isOwner, editStatus])
+  }, [dispatch, handleLower])
 
-  useFocusEffect(fetchProfile)
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
 
   const handleRefresh = useCallback(() => {
     if (profile) {
