@@ -154,15 +154,8 @@ def update_user(params: ManageEntityParameters):
 def verify_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
-    user_id = params.entity_id
+    user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    existing_user.is_current = False  # invalidate
-    if (
-        user_id in params.new_records[EntityType.USER]
-        and params.new_records[EntityType.USER][user_id]
-    ):  # override with last updated user is in this block
-        existing_user = params.new_records[EntityType.USER][user_id][-1]
-
     user_record = copy_user_record(
         existing_user,
         params.block_number,
@@ -171,7 +164,6 @@ def verify_user(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    # If the user's handle is not set, validate that it is unique
     user_record = validate_user_record(user_record)
     user_record.is_verified = True
     params.add_user_record(user_id, user_record)
