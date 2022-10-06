@@ -1,4 +1,5 @@
 import { getErrorMessage } from '@audius/common'
+import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk/dist/core'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NativeSyntheticEvent } from 'react-native'
 import { Platform, View } from 'react-native'
@@ -66,6 +67,10 @@ export const WebAppAccountSync = (props: WebAppAccountSyncProps) => {
         const { entropy } = JSON.parse(event.nativeEvent.data)
         if (entropy) {
           await AsyncStorage.setItem(ENTROPY_KEY, entropy)
+          await AsyncStorage.setItem(
+            CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY,
+            'true'
+          )
         }
         // Once the check for entropy is complete
         // the backend setup can begin
