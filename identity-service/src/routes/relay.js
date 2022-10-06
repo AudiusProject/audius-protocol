@@ -71,7 +71,7 @@ module.exports = function (app) {
       const { detectAbuseOnRelay, blockAbuseOnRelay } = getAbuseBehavior(req)
 
       // TODO: remove this one
-      req.logger(
+      req.logger.info(
         `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} user: ${
           (user?.id, user?.handle)
         }`
@@ -89,7 +89,7 @@ module.exports = function (app) {
 
       // Only reject relay for users explicitly blocked from relay
       if (user.isBlockedFromRelay) {
-        req.logger(`abuse: user ${user.handle} blocked from relay`)
+        req.logger.info(`abuse: user ${user.handle} blocked from relay`)
         return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
       }
 
