@@ -42,8 +42,6 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const accountStatus = useSelector(getAccountStatus)
   const [isInitting, setIsInittng] = useState(true)
   const { updateRequired } = useUpdateRequired()
-  const navState = useNavigationState((x) => x)
-  console.log(navState)
 
   useEffect(() => {
     // Setup the backend when ready
