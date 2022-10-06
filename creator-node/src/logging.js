@@ -110,7 +110,8 @@ function createChildLogger(logger, options = {}) {
 
 /**
  * Pulls the start time of the req object to calculate the duration of the fn
- * @param {number} startTime the start time
+ * @param {Object} param
+ * @param {number} param.startTime the start time
  * @returns the duration of the fn call in ms
  */
 function getDuration({ startTime }) {
