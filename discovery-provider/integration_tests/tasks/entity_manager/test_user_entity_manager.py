@@ -97,7 +97,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Update",
-                        "_metadata": "QmCreateUser2",
+                        "_metadata": "QmUpdateUser2",
                         "_signer": "user2wallet",
                     }
                 )
@@ -119,66 +119,7 @@ def test_index_valid_user(app, mocker):
         autospec=True,
     )
     test_metadata = {
-        "QmCreateUser1": {
-            "is_verified": False,
-            "is_deactivated": False,
-            "name": "raymont",
-            "handle": "rayjacobson",
-            "profile_picture": None,
-            "profile_picture_sizes": "QmYRHAJ4YuLjT4fLLRMg5STnQA4yDpiBmzk5R3iCDTmkmk",
-            "cover_photo": None,
-            "cover_photo_sizes": "QmUk61QDUTzhNqjnCAWipSp3jnMmXBmtTUC2mtF5F6VvUy",
-            "bio": "ðŸŒžðŸ‘„ðŸŒž",
-            "location": "chik fil yay!!",
-            "creator_node_endpoint": "https://creatornode.audius.co,https://content-node.audius.co,https://blockdaemon-audius-content-06.bdnodes.net",
-            "associated_wallets": None,
-            "associated_sol_wallets": None,
-            "playlist_library": {
-                "contents": [
-                    {"playlist_id": "Audio NFTs", "type": "explore_playlist"},
-                    {"playlist_id": 4327, "type": "playlist"},
-                    {"playlist_id": 52792, "type": "playlist"},
-                    {"playlist_id": 63949, "type": "playlist"},
-                    {
-                        "contents": [
-                            {"playlist_id": 6833, "type": "playlist"},
-                            {"playlist_id": 4735, "type": "playlist"},
-                            {"playlist_id": 114799, "type": "playlist"},
-                            {"playlist_id": 115049, "type": "playlist"},
-                            {"playlist_id": 89495, "type": "playlist"},
-                        ],
-                        "id": "d515f4db-1db2-41df-9e0c-0180302a24f9",
-                        "name": "WIP",
-                        "type": "folder",
-                    },
-                    {
-                        "contents": [
-                            {"playlist_id": 9616, "type": "playlist"},
-                            {"playlist_id": 112826, "type": "playlist"},
-                        ],
-                        "id": "a0da6552-ddc4-4d13-a19e-ecc63ca23e90",
-                        "name": "Community",
-                        "type": "folder",
-                    },
-                    {
-                        "contents": [
-                            {"playlist_id": 128608, "type": "playlist"},
-                            {"playlist_id": 90778, "type": "playlist"},
-                            {"playlist_id": 94395, "type": "playlist"},
-                            {"playlist_id": 97193, "type": "playlist"},
-                        ],
-                        "id": "1163fbab-e710-4d33-8769-6fcb02719d7b",
-                        "name": "Actually Albums",
-                        "type": "folder",
-                    },
-                    {"playlist_id": 131423, "type": "playlist"},
-                    {"playlist_id": 40151, "type": "playlist"},
-                ]
-            },
-            "events": {"is_mobile_user": True},
-            "user_id": USER_ID_OFFSET,
-        },
-        "QmCreateUser2": {
+        "QmUpdateUser2": {
             "is_verified": False,
             "is_deactivated": False,
             "name": "Forrest",
