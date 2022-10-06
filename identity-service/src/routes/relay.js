@@ -71,9 +71,11 @@ module.exports = function (app) {
       const { detectAbuseOnRelay, blockAbuseOnRelay } = getAbuseBehavior(req)
 
       // TODO: remove this one
-      req.logger.info(
-        `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} userid: ${user?.id} handle: ${user?.handle}`
-      )
+      if (req.ip.split('.')[0] !== '34') {
+        req.logger.info(
+          `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} userid: ${user?.id} handle: ${user?.handle}`
+        )
+      }
 
       const userFlaggedAsAbusive =
         user?.isBlockedFromRelay || user?.isBlockedFromNotifications
