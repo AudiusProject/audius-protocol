@@ -30,6 +30,7 @@ export const premiumContentMiddleware = async (
   next: NextFunction
 ) => {
   const cid = req.params?.CID
+  console.log('IN PREMIUMCONTENTMIDDLEWARE FOR CID: ' + cid)
   if (!cid) {
     return sendResponse(
       req,
