@@ -78,7 +78,7 @@ module.exports = function (app) {
       )
 
       const userFlaggedAsAbusive =
-        user && (user.isBlockedFromRelay || user.isBlockedFromNotifications)
+        user?.isBlockedFromRelay || user?.isBlockedFromNotifications
 
       // Always call detectAbuse if a user is already flagged as abusive,
       // or if they're selected randomly via detectAbuseOnRelay
@@ -88,7 +88,7 @@ module.exports = function (app) {
       }
 
       // Only reject relay for users explicitly blocked from relay
-      if (user.isBlockedFromRelay) {
+      if (user?.isBlockedFromRelay) {
         req.logger.info(`abuse: user ${user.handle} blocked from relay`)
         return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
       }
