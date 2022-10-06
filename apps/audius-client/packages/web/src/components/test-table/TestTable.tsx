@@ -197,60 +197,85 @@ export const TestTable = ({
 
   useEffect(handleSortChange, [handleSortChange, sortBy])
 
-  const renderHeader = useCallback(() => {
-    return headerGroups.map((headerGroup) => (
-      <tr
-        className={styles.tableHeadRow}
-        {...headerGroup.getHeaderGroupProps()}
-        key={headerGroup.id}
+  const renderTableHeader = useCallback((column) => {
+    return (
+      <th
+        className={cn(styles.tableHeader, {
+          [styles.titleHeader]: Boolean(column.accessor),
+          [styles.hasSorter]: column.disableSortBy !== true,
+          [styles.leftAlign]: column.align === 'left',
+          [styles.rightAlign]: column.align === 'right'
+        })}
+        {...column.getHeaderProps()}
+        key={column.id}
       >
-        {headerGroup.headers.map((column) => (
-          <th
-            className={cn(styles.tableHeader, {
-              [styles.titleHeader]: Boolean(column.accessor),
-              [styles.hasSorter]: column.disableSortBy !== true,
-              [styles.leftAlign]: column.align === 'left',
-              [styles.rightAlign]: column.align === 'right'
-            })}
-            {...column.getHeaderProps()}
-            key={column.id}
-          >
-            {/* Sorting Container */}
-            <div {...column.getSortByToggleProps()} title=''>
-              <div className={styles.textCell}>
-                <Tooltip text={column.sortTitle} mount='page'>
-                  {column.render('Header')}
-                </Tooltip>
-              </div>
-              {!column.disableSortBy ? (
-                <div className={styles.sortCaretContainer}>
-                  {!column.isSorted || !column.isSortedDesc ? (
-                    <IconCaretUp className={styles.sortCaret} />
-                  ) : null}
-                  {!column.isSorted || column.isSortedDesc ? (
-                    <IconCaretDown className={styles.sortCaret} />
-                  ) : null}
-                </div>
+        {/* Sorting Container */}
+        <div {...column.getSortByToggleProps()} title=''>
+          <div className={styles.textCell}>
+            <Tooltip text={column.sortTitle} mount='page'>
+              {column.render('Header')}
+            </Tooltip>
+          </div>
+          {!column.disableSortBy ? (
+            <div className={styles.sortCaretContainer}>
+              {!column.isSorted || !column.isSortedDesc ? (
+                <IconCaretUp className={styles.sortCaret} />
+              ) : null}
+              {!column.isSorted || column.isSortedDesc ? (
+                <IconCaretDown className={styles.sortCaret} />
               ) : null}
             </div>
-            {/* Resizing Container */}
-            {!column.disableResizing ? (
-              <div
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                }}
-                {...column.getResizerProps()}
-                className={cn(styles.resizer, {
-                  [styles.isResizing]: column.isResizing
-                })}
-              />
-            ) : null}
-          </th>
-        ))}
-      </tr>
-    ))
-  }, [headerGroups])
+          ) : null}
+        </div>
+        {/* Resizing Container */}
+        {!column.disableResizing ? (
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            {...column.getResizerProps()}
+            className={cn(styles.resizer, {
+              [styles.isResizing]: column.isResizing
+            })}
+          />
+        ) : null}
+      </th>
+    )
+  }, [])
+
+  const renderHeaders = useCallback(() => {
+    return headerGroups.map((headerGroup) => {
+      const headers = headerGroup.headers.filter(
+        (header) => header.id !== 'trackActions' && header.id !== 'overflowMenu'
+      )
+      // Should only be one or the other
+      const endHeaders = headerGroup.headers.filter(
+        (header) => header.id === 'trackActions' || header.id === 'overflowMenu'
+      )
+
+      return (
+        <tr
+          className={styles.tableHeadRow}
+          {...headerGroup.getHeaderGroupProps()}
+          key={headerGroup.id}
+        >
+          <div className={styles.cellSection}>
+            {headers.map(renderTableHeader)}
+          </div>
+          {endHeaders.length ? (
+            <div
+              className={cn(styles.cellSectionEnd, {
+                [styles.menu]: endHeaders[0].id === 'overflowMenu'
+              })}
+            >
+              {endHeaders.map(renderTableHeader)}
+            </div>
+          ) : null}
+        </tr>
+      )
+    })
+  }, [headerGroups, renderTableHeader])
 
   const renderCell = useCallback(
     (cell: Cell) => (
@@ -283,6 +308,16 @@ export const TestTable = ({
 
   const renderTableRow = useCallback(
     (row, key, props, className = '') => {
+      const cells = row.cells.filter(
+        (cell: Cell) =>
+          cell.column.id !== 'trackActions' && cell.column.id !== 'overflowMenu'
+      )
+      // Should only be one or the other
+      const endCells = row.cells.filter(
+        (cell: Cell) =>
+          cell.column.id === 'trackActions' || cell.column.id === 'overflowMenu'
+      )
+
       return (
         <tr
           className={cn(
@@ -297,7 +332,16 @@ export const TestTable = ({
           key={key}
           onClick={(e: MouseEvent) => onClickRow?.(e, row, row.index)}
         >
-          {row.cells.map(renderCell)}
+          <div className={styles.cellSection}>{cells.map(renderCell)}</div>
+          {endCells.length ? (
+            <div
+              className={cn(styles.cellSectionEnd, {
+                [styles.menu]: endCells[0].column.id === 'overflowMenu'
+              })}
+            >
+              {endCells.map(renderCell)}
+            </div>
+          ) : null}
         </tr>
       )
     },
@@ -509,7 +553,7 @@ export const TestTable = ({
           className={cn(styles.table, tableClassName)}
           {...getTableProps()}
         >
-          <thead className={styles.tableHead}>{renderHeader()}</thead>
+          <thead className={styles.tableHead}>{renderHeaders()}</thead>
           {loading ? (
             <LoadingSpinner className={styles.loader} />
           ) : (
@@ -526,7 +570,7 @@ export const TestTable = ({
     getTableBodyProps,
     getTableProps,
     loading,
-    renderHeader,
+    renderHeaders,
     renderPaginationControls,
     renderRows,
     renderShowMoreControl,
@@ -557,7 +601,7 @@ export const TestTable = ({
                   className={cn(styles.table, tableClassName)}
                   {...getTableProps()}
                 >
-                  <thead className={styles.tableHead}>{renderHeader()}</thead>
+                  <thead className={styles.tableHead}>{renderHeaders()}</thead>
                   {loading ? (
                     <LoadingSpinner className={styles.loader} />
                   ) : (
@@ -604,7 +648,7 @@ export const TestTable = ({
     isRowLoaded,
     loadMoreRows,
     loading,
-    renderHeader,
+    renderHeaders,
     renderRow,
     rows.length,
     scrollRef,
