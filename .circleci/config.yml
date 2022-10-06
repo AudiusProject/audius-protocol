@@ -43,31 +43,9 @@ commands:
             {
               "blocks": [
                 {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "<< parameters.text >>",
-                    "emoji": true
-                  }
-                },
-                {
                   "type": "section",
                   "text": {
-                    "text": "*Job*: ${CIRCLE_JOB}",
-                    "type": "mrkdwn"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "text": "<< parameters.detail >> ",
-                    "type": "mrkdwn"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "text": "*Job*: `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> ",
+                    "text": "*<< parameters.text >>:* ${CIRCLE_JOB}\n*Details:* `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> \n<< parameters.detail >> ",
                     "type": "mrkdwn"
                   },
                   "accessory": {
