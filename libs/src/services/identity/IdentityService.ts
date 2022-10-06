@@ -556,7 +556,26 @@ export class IdentityService {
     })
   }
 
-  async saveUserBankTransactionMetadata(data: InAppAudioPurchaseMetadata) {
+  /**
+   * Gets $AUDIO purchase metadata
+   */
+  async getUserBankTransactionMetadata(transactionId: string) {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: `/transaction_metadata?id=${transactionId}`,
+      method: 'get',
+      headers
+    })
+  }
+
+  /**
+   * Saves $AUDIO purchase metadata
+   */
+  async saveUserBankTransactionMetadata(data: {
+    transactionSignature: string
+    metadata: InAppAudioPurchaseMetadata
+  }) {
     const headers = await this._signData()
 
     return await this._makeRequest({

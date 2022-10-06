@@ -57,4 +57,6 @@ export * from './TrackSegment';
 export * from './TrendingIdsResponse';
 export * from './TrendingTimesIds';
 export * from './UserFull';
+export * from './UserReplicaSet';
+export * from './UsersByContentNode';
 export * from './VersionMetadata';

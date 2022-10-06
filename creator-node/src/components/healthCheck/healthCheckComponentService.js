@@ -209,8 +209,8 @@ const healthCheck = async (
       )
     },
     trustedNotifier: {
-      ...trustedNotifierManager.getTrustedNotifierData(),
-      id: trustedNotifierManager.trustedNotifierID
+      ...trustedNotifierManager?.getTrustedNotifierData(),
+      id: trustedNotifierManager?.trustedNotifierID
     }
   }
 

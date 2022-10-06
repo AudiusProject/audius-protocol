@@ -1,7 +1,7 @@
 const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
-const fs = require('fs')
+const fs = require('fs-extra')
 
 const models = require('../src/models')
 
@@ -74,11 +74,11 @@ describe('Test AudiusUsers', function () {
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
-    assert.ok(fs.existsSync(metadataPath))
+    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
 
@@ -102,11 +102,11 @@ describe('Test AudiusUsers', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
-    assert.ok(fs.existsSync(metadataPath))
+    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
 

@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import type { Queue } from 'bullmq'
 import type {
   AnyJobParams,
   QueueNameToQueueMap,
@@ -8,7 +9,6 @@ import type {
 import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
-import { Queue } from 'bull'
 import { instrumentTracing, tracing } from '../../tracer'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
@@ -53,7 +53,13 @@ function makeOnCompleteCallback(
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
 ) {
-  return async function (jobId: string, resultString: string) {
+  return async function (
+    {
+      jobId,
+      returnvalue
+    }: { jobId: string; returnvalue: string | AnyDecoratedJobReturnValue },
+    id: string
+  ) {
     // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, {
       queue: nameOfQueueWithCompletedJob,
@@ -75,10 +81,12 @@ function makeOnCompleteCallback(
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
     try {
-      logger.debug(
-        `Job successfully completed. Parsing result: ${resultString}`
-      )
-      jobResult = JSON.parse(resultString) || {}
+      logger.info(`Job successfully completed. Parsing result`)
+      if (typeof returnvalue === 'string' || returnvalue instanceof String) {
+        jobResult = JSON.parse(returnvalue as string) || {}
+      } else {
+        jobResult = returnvalue || {}
+      }
     } catch (e: any) {
       logger.error(`Failed to parse job result string: ${e.message}`)
       return
@@ -157,6 +165,7 @@ const enqueueJobs = async (
     const bulkAddResult = await queueToAddTo.addBulk(
       jobs.map((job) => {
         return {
+          name: 'defaultName',
           data: {
             enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
             ...job

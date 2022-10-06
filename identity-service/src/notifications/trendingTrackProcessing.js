@@ -4,15 +4,9 @@ const { sampleSize, isEqual } = require('lodash')
 
 const models = require('../models')
 const { logger } = require('../logging')
-const {
-  deviceType,
-  notificationTypes
-} = require('./constants')
+const { deviceType, notificationTypes } = require('./constants')
 const { publish } = require('./notificationQueue')
-const {
-  decodeHashId,
-  shouldNotifyUser
-} = require('./utils')
+const { decodeHashId, shouldNotifyUser } = require('./utils')
 const { fetchNotificationMetadata } = require('./fetchNotificationMetadata')
 const {
   notificationResponseMap,
@@ -53,44 +47,50 @@ setInterval(async () => {
 const getDiscoveryNodes = async () => {
   const libs = await audiusLibsWrapper.getAudiusLibsAsync()
   const discoveryNodes = await libs.discoveryProvider.serviceSelector.findAll()
-  logger.debug(`Updating discovery nodes for trendingTrackProcessing to ${discoveryNodes}`)
+  logger.debug(
+    `Updating discovery nodes for trendingTrackProcessing to ${discoveryNodes}`
+  )
   return sampleSize(discoveryNodes, NUM_DISCOVERY_NODES_FOR_CONSENSUS)
 }
 
-async function getTrendingTracks (trendingExperiment, discoveryNodes) {
-  const results = await Promise.all(discoveryNodes.map(async discoveryNode => {
-    try {
-      // The owner info is then used to target listenCount milestone notifications
-      let params = new URLSearchParams()
-      params.append('time', TRENDING_TIME.WEEK)
-      params.append('limit', MAX_TOP_TRACK_RANK)
+async function getTrendingTracks(trendingExperiment, discoveryNodes) {
+  const results = await Promise.all(
+    discoveryNodes.map(async (discoveryNode) => {
+      try {
+        // The owner info is then used to target listenCount milestone notifications
+        const params = new URLSearchParams()
+        params.append('time', TRENDING_TIME.WEEK)
+        params.append('limit', MAX_TOP_TRACK_RANK)
 
-      const baseUrl = `${discoveryNode}/v1/full/tracks/trending`
-      const url = trendingExperiment
-        ? `${baseUrl}/${trendingExperiment}`
-        : `${baseUrl}`
+        const baseUrl = `${discoveryNode}/v1/full/tracks/trending`
+        const url = trendingExperiment
+          ? `${baseUrl}/${trendingExperiment}`
+          : `${baseUrl}`
 
-      const trendingTracksResponse = await axios({
-        method: 'get',
-        url,
-        params,
-        timeout: 10000
-      })
-      const trendingTracks = trendingTracksResponse.data.data.map((track, idx) => ({
-        trackId: decodeHashId(track.id),
-        rank: idx + 1,
-        userId: decodeHashId(track.user.id)
-      }))
-      const blocknumber = trendingTracksResponse.data.latest_indexed_block
-      return { trendingTracks, blocknumber }
-    } catch (err) {
-      logger.error(`Unable to fetch trending tracks: ${err}`)
-      return null
-    }
-  }))
+        const trendingTracksResponse = await axios({
+          method: 'get',
+          url,
+          params,
+          timeout: 10000
+        })
+        const trendingTracks = trendingTracksResponse.data.data.map(
+          (track, idx) => ({
+            trackId: decodeHashId(track.id),
+            rank: idx + 1,
+            userId: decodeHashId(track.user.id)
+          })
+        )
+        const blocknumber = trendingTracksResponse.data.latest_indexed_block
+        return { trendingTracks, blocknumber }
+      } catch (err) {
+        logger.error(`Unable to fetch trending tracks: ${err}`)
+        return null
+      }
+    })
+  )
 
   // Make sure we had no errors
-  if (results.some(res => res === null)) {
+  if (results.some((res) => res === null)) {
     logger.error(`Unable to fetch trending tracks from all nodes`)
     return null
   }
@@ -98,18 +98,18 @@ async function getTrendingTracks (trendingExperiment, discoveryNodes) {
   // Make sure trending is consistent between nodes
   const { trendingTracks, blocknumber } = results[0]
   for (const result of results.slice(1)) {
-    const {
-      trendingTracks: otherTrendingTracks
-    } = result
+    const { trendingTracks: otherTrendingTracks } = result
     if (!isEqual(trendingTracks, otherTrendingTracks)) {
-      const ids = trendingTracks.map(t => t.trackId)
-      const otherIds = otherTrendingTracks.map(t => t.trackId)
+      const ids = trendingTracks.map((t) => t.trackId)
+      const otherIds = otherTrendingTracks.map((t) => t.trackId)
       logger.error(`Trending results diverged ${ids} versus ${otherIds}`)
       return null
     }
   }
 
-  logger.debug(`Trending results converged with ${trendingTracks.map(t => t.trackId)}`)
+  logger.debug(
+    `Trending results converged with ${trendingTracks.map((t) => t.trackId)}`
+  )
   return { trendingTracks, blocknumber }
 }
 
@@ -125,23 +125,33 @@ async function getTrendingTracks (trendingExperiment, discoveryNodes) {
  * @param {Array<{ trackId: number, rank: number, userId: number }>} trendingTracks Array of the trending tracks
  * @param {*} tx DB transaction
  */
-async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, tx) {
+async function processTrendingTracks(
+  audiusLibs,
+  blocknumber,
+  trendingTracks,
+  tx
+) {
   const now = moment()
   for (let idx = 0; idx < trendingTracks.length; idx += 1) {
     const { rank, trackId, userId } = trendingTracks[idx]
-    const { notifyMobile, notifyBrowserPush } = await shouldNotifyUser(userId, 'milestonesAndAchievements')
+    const { notifyMobile, notifyBrowserPush } = await shouldNotifyUser(
+      userId,
+      'milestonesAndAchievements'
+    )
 
     // Check if the notification was previously created
-    let existingTrendingTracks = await models.Notification.findAll({
+    const existingTrendingTracks = await models.Notification.findAll({
       where: {
         userId: userId,
         type: notificationTypes.TrendingTrack,
         entityId: trackId
       },
-      include: [{
-        model: models.NotificationAction,
-        as: 'actions'
-      }],
+      include: [
+        {
+          model: models.NotificationAction,
+          as: 'actions'
+        }
+      ],
       order: [['timestamp', 'DESC']],
       limit: 1,
       transaction: tx
@@ -160,22 +170,29 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
       }
     }
 
-    const actionEntityType = getTimeGenreActionType(TRENDING_TIME.WEEK, TRENDING_GENRE.ALL)
-    const trendingTrackNotification = await models.Notification.create({
-      userId: userId,
-      type: notificationTypes.TrendingTrack,
-      entityId: trackId,
-      blocknumber,
-      timestamp: now
-    }, { transaction: tx })
+    const actionEntityType = getTimeGenreActionType(
+      TRENDING_TIME.WEEK,
+      TRENDING_GENRE.ALL
+    )
+    const trendingTrackNotification = await models.Notification.create(
+      {
+        userId: userId,
+        type: notificationTypes.TrendingTrack,
+        entityId: trackId,
+        blocknumber,
+        timestamp: now
+      },
+      { transaction: tx }
+    )
     const notificationId = trendingTrackNotification.id
-    await models.NotificationAction.create({
-      notificationId,
-      actionEntityType,
-      actionEntityId: rank,
-      blocknumber
-    },
-    { transaction: tx }
+    await models.NotificationAction.create(
+      {
+        notificationId,
+        actionEntityType,
+        actionEntityId: rank,
+        blocknumber
+      },
+      { transaction: tx }
     )
 
     if (notifyMobile || notifyBrowserPush) {
@@ -185,45 +202,72 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
         entityId: trackId,
         blocknumber,
         timestamp: now,
-        actions: [{
-          actionEntityType,
-          actionEntityId: rank,
-          blocknumber
-        }]
+        actions: [
+          {
+            actionEntityType,
+            actionEntityId: rank,
+            blocknumber
+          }
+        ]
       }
 
-      const metadata = await fetchNotificationMetadata(audiusLibs, [], [notifStub])
-      const mapNotification = notificationResponseMap[notificationTypes.TrendingTrack]
+      const metadata = await fetchNotificationMetadata(
+        audiusLibs,
+        [],
+        [notifStub]
+      )
+      const mapNotification =
+        notificationResponseMap[notificationTypes.TrendingTrack]
       try {
-        let msgGenNotif = {
+        const msgGenNotif = {
           ...notifStub,
-          ...(mapNotification(notifStub, metadata))
+          ...mapNotification(notifStub, metadata)
         }
-        logger.debug('processTrendingTrack - About to generate message for trending track milestone push notification', msgGenNotif, metadata)
-        const msg = pushNotificationMessagesMap[notificationTypes.TrendingTrack](msgGenNotif)
+        logger.debug(
+          'processTrendingTrack - About to generate message for trending track milestone push notification',
+          msgGenNotif,
+          metadata
+        )
+        const msg =
+          pushNotificationMessagesMap[notificationTypes.TrendingTrack](
+            msgGenNotif
+          )
         logger.debug(`processTrendingTrack - message: ${msg}`)
-        const title = notificationResponseTitleMap[notificationTypes.TrendingTrack]()
-        let types = []
+        const title =
+          notificationResponseTitleMap[notificationTypes.TrendingTrack]()
+        const types = []
         if (notifyMobile) types.push(deviceType.Mobile)
         if (notifyBrowserPush) types.push(deviceType.Browser)
         await publish(msg, userId, tx, true, title, types)
       } catch (e) {
         // Log on error instead of failing
-        logger.error(`Error adding trending track push notification to buffer: ${e}. ${JSON.stringify({ rank, trackId, userId })}`)
+        logger.error(
+          `Error adding trending track push notification to buffer: ${e}. ${JSON.stringify(
+            { rank, trackId, userId }
+          )}`
+        )
       }
     }
   }
 }
 
-async function indexTrendingTracks (audiusLibs, optimizelyClient, tx) {
+async function indexTrendingTracks(audiusLibs, optimizelyClient, tx) {
   try {
-    const trendingExperiment = getRemoteVar(optimizelyClient, REMOTE_VARS.TRENDING_EXPERIMENT)
+    const trendingExperiment = getRemoteVar(
+      optimizelyClient,
+      REMOTE_VARS.TRENDING_EXPERIMENT
+    )
     if (!SELECTED_DISCOVERY_NODES) return
 
-    const { trendingTracks, blocknumber } = await getTrendingTracks(trendingExperiment, SELECTED_DISCOVERY_NODES)
+    const { trendingTracks, blocknumber } = await getTrendingTracks(
+      trendingExperiment,
+      SELECTED_DISCOVERY_NODES
+    )
     await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
   } catch (err) {
-    logger.error(`Unable to process trending track notifications: ${err.message}`)
+    logger.error(
+      `Unable to process trending track notifications: ${err.message}`
+    )
   }
 }
 

@@ -47,6 +47,7 @@ class GetTrackArgs(TypedDict):
     filter_deleted: bool
     exclude_premium: bool
     routes: List[RouteArgs]
+    filter_tracks: str
 
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]
@@ -60,6 +61,7 @@ def _get_tracks(session, args):
         TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
     )
 
+    # Filter out tracks the user is not authorized to view
     if "routes" in args and args.get("routes") is not None:
         routes = args.get("routes")
         # Join the routes table
@@ -130,6 +132,16 @@ def _get_tracks(session, args):
                 User.name.ilike(f"%{query.lower()}%"),
             )
         )
+
+    # Allow filtering of tracks by unlisted vs public.
+    # If a user is not authorized to view unlisted tracks but has specified filter_tracks=unlisted,
+    # this will filter out all results.
+    if "filter_tracks" in args and args.get("filter_tracks") != "all":
+        filter_tracks = args.get("filter_tracks")
+        if filter_tracks == "unlisted":
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == True)
+        else:
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
 
     if "sort_method" in args and args.get("sort_method") is not None:
         sort_method = args.get("sort_method")

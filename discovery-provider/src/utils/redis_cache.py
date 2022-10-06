@@ -175,8 +175,12 @@ def get_playlist_id_cache_key(id):
     return f"playlist:id:{id}"
 
 
-def get_sp_id_key(id):
-    return f"sp:id:{id}"
+def get_cn_sp_id_key(id):
+    return f"sp:cn:id:{id}"
+
+
+def get_dn_sp_id_key(id):
+    return f"sp:dn:id:{id}"
 
 
 def remove_cached_user_ids(redis, user_ids):

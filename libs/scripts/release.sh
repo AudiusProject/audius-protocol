@@ -21,7 +21,7 @@ function git-changelog () {
     release_commit=${1}
 
     # Print the log as "- <commmiter short date> [<commit short hash>] <commit message> <author name>"
-    git log --pretty=format:"- %cd [%h] %s [%an]" --date=short $release_commit..HEAD
+    git log --pretty=format:"- %cd [%h] %s [%an]" --date=short $release_commit..HEAD .
 }
 
 # formats a commit message using the bumped ${VERSION} and ${CHANGE_LOG}

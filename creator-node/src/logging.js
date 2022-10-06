@@ -1,4 +1,5 @@
 const bunyan = require('bunyan')
+const cluster = require('cluster')
 const shortid = require('shortid')
 
 const config = require('./config')
@@ -27,6 +28,7 @@ function RawStdOutWithLevelName() {
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
+  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker.id}`,
   streams: [
     {
       level: logLevel,
@@ -108,7 +110,8 @@ function createChildLogger(logger, options = {}) {
 
 /**
  * Pulls the start time of the req object to calculate the duration of the fn
- * @param {number} startTime the start time
+ * @param {Object} param
+ * @param {number} param.startTime the start time
  * @returns the duration of the fn call in ms
  */
 function getDuration({ startTime }) {

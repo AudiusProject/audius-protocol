@@ -181,6 +181,7 @@ services:
       ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
 
       POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
       POA_PROVIDER_URL: "http://poa-ganache:8545"
 
       SOLANA_ENDPOINT: "http://solana-test-validator:8899"
@@ -327,6 +328,7 @@ services:
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 
@@ -413,9 +415,9 @@ services:
 
   # port forwarder
 
-  proxy:
+  port-forwarder:
     image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/proxy.sh
+    command: sh /tmp/dev-tools/startup/port-forwarder.sh
     ports:
       - "4000-4010:4000-4010"
       - "5000-5010:5000-5010"
@@ -425,20 +427,18 @@ services:
     deploy:
       mode: global
 
-  # SOCKS5 proxy for use with client
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
 
-  socks5-proxy:
-    image: serjs/go-socks5-proxy:v0.0.3
+  sshuttle-server:
+    image: linuxserver/openssh-server:latest # don't pin
+    command: bash -c "apk add python3 && sleep inf"
+    environment:
+      PASSWORD_ACCESS: "true"
+      USER_NAME: "sshuttle"
+      USER_PASSWORD: "sshuttle"
     ports:
-      - "1080:1080"
-
-  socks5-proxy-pac:
-    image: python:3.10.5
-    command: sh -c "head -n-1 /etc/hosts > /etc/hosts && python /tmp/dev-tools/startup/socks5-proxy-pac.py"
-    ports:
-      - "8080:80"
-    volumes:
-      - ./dev-tools:/tmp/dev-tools
+      - "2222:2222"
 
 volumes:
   poa-contracts-abis:

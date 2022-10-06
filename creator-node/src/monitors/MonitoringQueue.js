@@ -1,8 +1,14 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
+
 const redis = require('../redis')
 const config = require('../config')
-const { MONITORS, getMonitorRedisKey } = require('./monitors')
+const {
+  MONITORS,
+  PROMETHEUS_MONITORS,
+  getMonitorRedisKey
+} = require('./monitors')
 const { logger } = require('../logging')
+const { clusterUtils } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -22,12 +28,13 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor() {
-    this.queue = new Bull('monitoring-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+  constructor(prometheusRegistry) {
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('monitoring-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: MONITORING_QUEUE_HISTORY,
         removeOnFail: MONITORING_QUEUE_HISTORY
@@ -57,7 +64,6 @@ class MonitoringQueue {
           })
 
           this.logStatus('Completed')
-
           done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
@@ -73,12 +79,17 @@ class MonitoringQueue {
    * them on init
    */
   async seedInitialValues() {
-    await this.refresh(MONITORS.STORAGE_PATH_SIZE)
-    await this.refresh(MONITORS.STORAGE_PATH_USED)
+    await this.refresh(MONITORS.STORAGE_PATH_SIZE, 'STORAGE_PATH_SIZE')
+    await this.refresh(MONITORS.STORAGE_PATH_USED, 'STORAGE_PATH_USED')
   }
 
-  async refresh(monitor) {
-    const key = getMonitorRedisKey(monitor)
+  /**
+   * Refresh monitor in redis and prometheus (if integer)
+   * @param {Object} monitorProps Object containing the monitor props like { func, ttl, type, name }
+   * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
+   */
+  async refresh(monitorProps, monitorKey) {
+    const key = getMonitorRedisKey(monitorProps)
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
@@ -88,13 +99,13 @@ class MonitoringQueue {
     const value = await monitor.func()
 
     // Set the value
-    redis.set(key, value)
+    await redis.set(key, value)
 
-    if (monitor.ttl) {
+    if (monitorProps.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      await redis.set(ttlKey, 1, 'EX', monitorProps.ttl)
     }
   }
 
@@ -114,20 +125,22 @@ class MonitoringQueue {
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
-    try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.monitor)
+    if (clusterUtils.isThisWorkerSpecial()) {
+      try {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAMES.monitor, {})
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
-        try {
-          await this.queue.add(PROCESS_NAMES.monitor)
-        } catch (e) {
-          this.logStatus('Failed to enqueue!')
-        }
-      }, QUEUE_INTERVAL_MS)
-    } catch (e) {
-      this.logStatus('Startup failed!')
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAMES.monitor, {})
+          } catch (e) {
+            this.logStatus('Failed to enqueue!')
+          }
+        }, QUEUE_INTERVAL_MS)
+      } catch (e) {
+        this.logStatus('Startup failed!')
+      }
     }
   }
 }

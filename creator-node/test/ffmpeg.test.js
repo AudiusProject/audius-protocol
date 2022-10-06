@@ -1,18 +1,18 @@
 const { segmentFile } = require('../src/ffmpeg')
 
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const assert = require('assert')
 
 describe('test segmentFile()', () => {
   // Create the segments directory to store segments in.
   // Middleware would normally handle this, however, in this test
   // context, segmentFile() is unit tested directly without the middleware.
-  before(() => {
+  before(async () => {
     const segmentsDirPath = path.join(__dirname, 'segments')
-    if (!fs.existsSync(segmentsDirPath)) {
+    if (!(await fs.pathExists(segmentsDirPath))) {
       try {
-        fs.mkdirSync(segmentsDirPath)
+        await fs.mkdir(segmentsDirPath)
       } catch (e) {
         assert.fail(`Could not create dir at ${segmentsDirPath}: ${e}`)
       }
@@ -68,28 +68,27 @@ describe('test segmentFile()', () => {
     // read segments assets from /test-segments
     // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
     const testSegmentsPath = path.join(fileDir, 'test-segments')
-    fs.readdir(testSegmentsPath, (err, files) => {
-      if (err) assert.fail(`Could not read directory at ${testSegmentsPath}`)
+    const files = await fs.readdir(testSegmentsPath)
 
-      // check that testTrack.mp3 that 32 track segments are written
-      assert.deepStrictEqual(files.length, 32)
+    // check that testTrack.mp3 that 32 track segments are written
+    assert.deepStrictEqual(files.length, 32)
 
-      const allSegmentsSet = new Set(files)
-      files.map((file, i) => {
-        // check that the segment follows naming convention
-        const indexSuffix = ('00000' + i).slice(-5)
-        assert.deepStrictEqual(file, `segment${indexSuffix}.ts`)
+    const allSegmentsSet = new Set(files)
+    await Promise.all(files.map(async (file, i) => {
+      // check that the segment follows naming convention
+      const indexSuffix = ('00000' + i).slice(-5)
+      assert.deepStrictEqual(file, `segment${indexSuffix}.ts`)
 
-        // check that the segment is proper by comparing its buffer to test assets
-        const testGeneratedSegmentBuf = fs.readFileSync(path.join(fileDir, 'segments', file))
-        const expectedSegmentBuf = fs.readFileSync(path.join(testSegmentsPath, file))
-        assert.deepStrictEqual(expectedSegmentBuf.compare(testGeneratedSegmentBuf), 0)
+      // check that the segment is proper by comparing its buffer to test assets
+      const testGeneratedSegmentBuf = await fs.readFile(path.join(fileDir, 'segments', file))
+      const expectedSegmentBuf = await fs.readFile(path.join(testSegmentsPath, file))
+      assert.deepStrictEqual(expectedSegmentBuf.compare(testGeneratedSegmentBuf), 0)
 
-        allSegmentsSet.delete(file)
-      })
+      allSegmentsSet.delete(file)
+    }))
 
-      // check that all the expected segments were found
-      assert.deepStrictEqual(allSegmentsSet.size, 0)
-    })
+    // check that all the expected segments were found
+    assert.deepStrictEqual(allSegmentsSet.size, 0)
+
   })
 })

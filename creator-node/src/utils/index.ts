@@ -29,7 +29,9 @@ import {
   currentNodeShouldHandleTranscode,
   getAllRegisteredCNodes
 } from './contentNodeUtils'
+import { clusterUtils } from './clusterUtils'
 
+export type { ValuesOf } from './utils'
 export type { ReplicaSet } from './strToReplicaSet'
 export {
   timeout,
@@ -47,7 +49,8 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   strToReplicaSet,
-  stringifyMap
+  stringifyMap,
+  clusterUtils
 }
 
 module.exports = {
@@ -68,5 +71,6 @@ module.exports = {
   strToReplicaSet,
   stringifyMap,
   verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
+  EMPTY_FILE_CID,
+  clusterUtils
 }

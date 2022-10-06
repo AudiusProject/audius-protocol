@@ -23,7 +23,9 @@ const isIPWhitelisted = (ip, req) => {
   }
 
   // Don't return early so we can see logs for both paths
-  req.logger.info(`isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`)
+  req.logger.info(
+    `isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`
+  )
   return isWhitelisted || isFromContentNode
 }
 
@@ -39,7 +41,7 @@ const getIP = (req) => {
   //    If creator node, use Rightmost - 2 (since creator node will pass this along)
   //    Else, use Rightmost - 1 since it's the actual user
 
-  let ip = req.ip
+  const ip = req.ip
   const forwardedFor = req.get('X-Forwarded-For')
 
   // This shouldn't ever happen since Identity will always be behind a proxy
@@ -52,7 +54,9 @@ const getIP = (req) => {
   // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
   // We can just use req.ip which corresponds to the best guess forward-for that was added if any
   if (headers.length === 1) {
-    req.logger.debug(`_getIP: found 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
+    req.logger.debug(
+      `_getIP: found 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`
+    )
     return { ip }
   }
 
@@ -63,13 +67,19 @@ const getIP = (req) => {
   if (isIPWhitelisted(senderIP, req)) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
-      req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+      req.logger.debug(
+        `_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`
+      )
       return { ip: senderIP, senderIP }
     }
-    req.logger.debug(`_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
+    req.logger.debug(
+      `_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`
+    )
     return { ip: forwardedIP, senderIP }
   }
-  req.logger.debug(`_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+  req.logger.debug(
+    `_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`
+  )
   return { ip: senderIP, senderIP }
 }
 
@@ -80,25 +90,27 @@ try {
   console.error('Failed to parse endpointRateLimits!')
 }
 
-const getReqKeyGenerator = (options = {}) => (req) => {
-  const { query = [], body = [], withIp = true } = options
-  let key = withIp ? getIP(req).ip : ''
-  if (req.query && query.length > 0) {
-    query.forEach(queryKey => {
-      if (queryKey in req.query) {
-        key = key.concat(req.query[queryKey])
-      }
-    })
+const getReqKeyGenerator =
+  (options = {}) =>
+  (req) => {
+    const { query = [], body = [], withIp = true } = options
+    let key = withIp ? getIP(req).ip : ''
+    if (req.query && query.length > 0) {
+      query.forEach((queryKey) => {
+        if (queryKey in req.query) {
+          key = key.concat(req.query[queryKey])
+        }
+      })
+    }
+    if (req.body && body.length > 0) {
+      body.forEach((paramKey) => {
+        if (paramKey in req.body) {
+          key = key.concat(req.body[paramKey])
+        }
+      })
+    }
+    return key
   }
-  if (req.body && body.length > 0) {
-    body.forEach(paramKey => {
-      if (paramKey in req.body) {
-        key = key.concat(req.body[paramKey])
-      }
-    })
-  }
-  return key
-}
 
 const onLimitReached = (req, res, options) => {
   req.logger.warn(req.rateLimit, `Rate Limit Hit`)
@@ -143,16 +155,18 @@ const getRateLimiterMiddleware = () => {
   for (const route in endpointRateLimits) {
     for (const method in endpointRateLimits[route]) {
       if (validRouteMethods.includes(method)) {
-        const routeMiddleware = endpointRateLimits[route][method].map(limit => {
-          const { expiry, max, options = {} } = limit
-          const keyGenerator = getReqKeyGenerator(options)
-          return getRateLimiter({
-            prefix: `${route}:${method}:${expiry}:${max}:`,
-            expiry,
-            max,
-            keyGenerator
-          })
-        })
+        const routeMiddleware = endpointRateLimits[route][method].map(
+          (limit) => {
+            const { expiry, max, options = {} } = limit
+            const keyGenerator = getReqKeyGenerator(options)
+            return getRateLimiter({
+              prefix: `${route}:${method}:${expiry}:${max}:`,
+              expiry,
+              max,
+              keyGenerator
+            })
+          }
+        )
         router[method](route, routeMiddleware)
       }
     }

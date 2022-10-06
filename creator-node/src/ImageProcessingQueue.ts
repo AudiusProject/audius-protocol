@@ -1,15 +1,22 @@
-const Bull = require('bull')
-const os = require('os')
-const config = require('./config')
-const { logger: genericLogger } = require('./logging')
+import type { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
+import type { ValuesOf } from './utils'
+
+import { Queue, QueueEvents, Worker } from 'bullmq'
+import path from 'path'
+import os from 'os'
+
+import config from './config'
+import { logger as genericLogger } from './logging'
+import { clusterUtils } from './utils'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
 )
 
-const PROCESS_NAMES = Object.freeze({
+const ProcessNames = {
   resizeImage: 'resizeImage'
-})
+} as const
+type ProcessNames = ValuesOf<typeof ProcessNames>
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
@@ -20,36 +27,39 @@ const MAX_CONCURRENCY =
 
 const IMAGE_PROCESSING_QUEUE_HISTORY = 500
 
-class ImageProcessingQueue {
-  constructor(prometheusRegistry = null) {
-    this.queue = new Bull('image-processing-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+export class ImageProcessingQueue {
+  queue: Queue<any, any, string>
+  queueEvents: QueueEvents
+
+  constructor(prometheusRegistry: PrometheusRegistry | null = null) {
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('image-processing-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: IMAGE_PROCESSING_QUEUE_HISTORY,
         removeOnFail: IMAGE_PROCESSING_QUEUE_HISTORY
       }
     })
 
+    // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
+    const processorFile = path.join(__dirname, 'resizeImage.js')
+    const worker = new Worker('image-processing-queue', processorFile, {
+      connection,
+      concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+    })
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
-      prometheusRegistry.startQueueMetrics(this.queue)
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
-
-    /**
-     * Queue will process tasks concurrently if provided a concurrency number and a
-     *    path to file containing job processor function
-     * https://github.com/OptimalBits/bull/tree/013c51942e559517c57a117c27a550a0fb583aa8#separate-processes
-     */
-    this.queue.process(
-      PROCESS_NAMES.resizeImage /** job processor name */,
-      MAX_CONCURRENCY /** job processor concurrency */,
-      `${__dirname}/resizeImage.js` /** path to job processor function */
-    )
 
     this.logStatus = this.logStatus.bind(this)
     this.resizeImage = this.resizeImage.bind(this)
+
+    this.queueEvents = new QueueEvents('image-processing-queue', {
+      connection
+    })
   }
 
   /**
@@ -57,7 +67,7 @@ class ImageProcessingQueue {
    * @param {object} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus(logContext, message) {
+  async logStatus(logContext: Object, message: string) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
     logger.info(`Image Processing Queue: ${message}`)
@@ -88,17 +98,30 @@ class ImageProcessingQueue {
    *     }
    *   ]
    */
-  async resizeImage({ file, fileName, sizes, square, logContext }) {
-    const job = await this.queue.add(PROCESS_NAMES.resizeImage, {
+  public async resizeImage({
+    file,
+    fileName,
+    sizes,
+    square,
+    logContext
+  }: {
+    file: any
+    fileName: string
+    sizes: Record<string, number>
+    square: boolean
+    logContext: Object
+  }) {
+    const job = await this.queue.add(ProcessNames.resizeImage, {
       file,
       fileName,
       sizes,
       square,
       logContext
     })
-    const result = await job.finished()
+
+    const result = await job.waitUntilFinished(this.queueEvents)
     return result
   }
 }
 
-module.exports = ImageProcessingQueue
+module.exports = { ImageProcessingQueue }

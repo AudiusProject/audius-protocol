@@ -20,3 +20,6 @@ src/notifications/browserPush/audius.pushPackage/*.pem
 src/notifications/browserPush/audius.pushPackage/*.p8
 src/notifications/browserPush/audius.pushPackage/*.p12
 src/notifications/browserPush/devPushPackage.zip
+
+build/**
+build_test/**

@@ -178,7 +178,7 @@ def test_index_valid_playlists(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            ipfs_metadata=test_metadata,
+            metadata=test_metadata,
         )
 
         # validate db records
@@ -439,7 +439,7 @@ def test_index_invalid_playlists(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            ipfs_metadata=test_metadata,
+            metadata=test_metadata,
         )
 
         # validate db records
