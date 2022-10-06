@@ -7,7 +7,8 @@ import {
   profilePageSelectors,
   profilePageActions,
   reachabilitySelectors,
-  shareModalUIActions
+  shareModalUIActions,
+  encodeUrlName
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
@@ -157,7 +158,11 @@ export const ProfileScreen = () => {
   )
 
   return (
-    <Screen topbarLeft={topbarLeft} topbarRight={topbarRight}>
+    <Screen
+      topbarLeft={topbarLeft}
+      topbarRight={topbarRight}
+      url={handle && `/${encodeUrlName(handle)}`}
+    >
       {!profile ? (
         <ProfileScreenSkeleton />
       ) : (

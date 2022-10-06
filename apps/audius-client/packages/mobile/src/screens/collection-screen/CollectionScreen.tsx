@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import type { Collection, Nullable, User } from '@audius/common'
 import {
+  encodeUrlName,
   removeNullable,
   FavoriteSource,
   RepostSource,
@@ -129,6 +130,12 @@ const CollectionScreenComponent = ({
     updated_at
   } = collection
 
+  const url = useMemo(() => {
+    return `/${encodeUrlName(user.handle)}/${
+      is_album ? 'album' : 'playlist'
+    }/${encodeUrlName(playlist_name)}-${playlist_id}`
+  }, [user.handle, is_album, playlist_name, playlist_id])
+
   const imageUrl = useCollectionCoverArt({
     id: playlist_id,
     sizes: _cover_art_sizes,
@@ -209,7 +216,7 @@ const CollectionScreenComponent = ({
   }, [dispatch, playlist_id, navigation])
 
   return (
-    <Screen>
+    <Screen url={url}>
       <VirtualizedScrollView
         listKey={`playlist-${collection.playlist_id}`}
         style={styles.root}

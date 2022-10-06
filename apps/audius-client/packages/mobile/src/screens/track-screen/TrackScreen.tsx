@@ -113,7 +113,7 @@ export const TrackScreen = () => {
   )
 
   return (
-    <Screen>
+    <Screen url={track?.permalink}>
       <Lineup
         actions={tracksActions}
         count={6}

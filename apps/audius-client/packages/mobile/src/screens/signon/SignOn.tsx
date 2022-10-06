@@ -38,7 +38,7 @@ import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import useAppState from 'app/hooks/useAppState'
-import { track, make } from 'app/services/analytics'
+import { screen, track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
 import { EventNames } from 'app/types/analytics'
@@ -365,6 +365,13 @@ const SignOn = ({ navigation }: SignOnProps) => {
       useNativeDriver: true
     }).start()
   }, [opacityCTA])
+
+  // Record screen view
+  useEffect(() => {
+    screen({
+      route: `/${isSignin ? 'signin' : 'signup'}`
+    })
+  }, [isSignin])
 
   useEffect(() => {
     setShowInvalidEmailError(attemptedEmail && !emailIsValid)

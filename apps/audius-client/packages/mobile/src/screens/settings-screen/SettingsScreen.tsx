@@ -57,7 +57,12 @@ export const SettingsScreen = () => {
   }, [navigation])
 
   return (
-    <Screen title={messages.title} topbarRight={null} variant='secondary'>
+    <Screen
+      title={messages.title}
+      topbarRight={null}
+      variant='secondary'
+      url='/settings'
+    >
       <ScrollView>
         <Image source={audiusLogoHorizontal} style={styles.logo} />
         <AccountSettingsRow />
