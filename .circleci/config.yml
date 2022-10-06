@@ -1626,7 +1626,6 @@ workflows:
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
-          params: --dry-run
           context:
             - slack-secrets
             - gh-tokens
