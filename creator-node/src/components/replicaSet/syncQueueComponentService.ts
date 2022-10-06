@@ -37,8 +37,3 @@ export const processManualImmediateSync = async (params: {
   // eslint-disable-next-line node/no-sync
   await serviceRegistry.syncImmediateQueue.processManualImmediateSync(params)
 }
-
-module.exports = {
-  enqueueSync,
-  processManualImmediateSync
-}
