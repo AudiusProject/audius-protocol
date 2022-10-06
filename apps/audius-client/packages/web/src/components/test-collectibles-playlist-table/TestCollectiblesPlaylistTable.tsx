@@ -18,6 +18,7 @@ export type CollectiblesPlaylistTableColumn =
   | 'collectibleName'
   | 'length'
   | 'playButton'
+  | 'spacer'
 
 type TestCollectiblesPlaylistTableProps = {
   columns?: CollectiblesPlaylistTableColumn[]
@@ -36,7 +37,8 @@ const defaultColumns: CollectiblesPlaylistTableColumn[] = [
   'playButton',
   'collectibleName',
   'chain',
-  'length'
+  'length',
+  'spacer'
 ]
 
 export const TestCollectiblesPlaylistTable = ({
@@ -144,6 +146,13 @@ export const TestCollectiblesPlaylistTable = ({
         maxWidth: 160,
         disableSortBy: true,
         align: 'left'
+      },
+      spacer: {
+        id: 'spacer',
+        maxWidth: 24,
+        minWidth: 24,
+        disableSortBy: true,
+        disableResizing: true
       }
     }),
     [
