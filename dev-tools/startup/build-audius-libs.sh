@@ -18,4 +18,4 @@ done
 
 cp scripts/AudiusClaimDistributor.json scripts/Wormhole.json src/eth-contracts/ABIs/
 
-npx rollup -c -w
+WATCH_BROWSER=false npx rollup -c -w

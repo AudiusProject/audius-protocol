@@ -25,11 +25,11 @@ class URSMRegistrationManager {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
 
-    this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
+    this.delegateOwnerWallet = nodeConfig
+      .get('delegateOwnerWallet')
+      .toLowerCase()
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
-    this.oldDelegateOwnerWallet = this.nodeConfig.get('oldDelegateOwnerWallet')
-    this.oldDelegatePrivateKey = this.nodeConfig.get('oldDelegatePrivateKey')
     this.entityManagerReplicaSetEnabled = this.nodeConfig.get(
       'entityManagerReplicaSetEnabled'
     )
@@ -69,6 +69,15 @@ class URSMRegistrationManager {
    *  5. Submit registration transaction to URSM with signatures
    */
   async run() {
+    if (this.entityManagerReplicaSetEnabled) {
+      // Update config
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
+      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+
+      return
+    }
+
     this.logInfo('Beginning URSM registration process')
 
     /**
@@ -112,6 +121,12 @@ class URSMRegistrationManager {
       throw new Error('Failed to find valid L1 record for node')
     }
 
+    if (this.delegateOwnerWallet !== delegateOwnerWalletFromSPFactory) {
+      throw new Error(
+        `Local delegateOwnerWallet config (${this.delegateOwnerWallet}) doesn't match delegateOwnerWalletFromSPFactory (${delegateOwnerWalletFromSPFactory}) for spID ${spID}`
+      )
+    }
+
     /**
      * 2. Fetch node record from L2 UserReplicaSetManager for spID
      */
@@ -124,15 +139,7 @@ class URSMRegistrationManager {
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
-    const activeDelegateOwnerWallet =
-      this.oldDelegateOwnerWallet || this.delegateOwnerWallet
-    this.logError(
-      `activeDelegateOwnerWallet: ${activeDelegateOwnerWallet.toLowerCase()} // delegateOwnerWalletFromURSM: ${delegateOwnerWalletFromURSM}`
-    )
-    if (
-      !this.entityManagerReplicaSetEnabled &&
-      activeDelegateOwnerWallet.toLowerCase() === delegateOwnerWalletFromURSM
-    ) {
+    if (this.delegateOwnerWallet === delegateOwnerWalletFromURSM) {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
@@ -140,11 +147,6 @@ class URSMRegistrationManager {
         `Node already registered on URSM with same delegateOwnerWallet`
       )
       return
-    }
-
-    if (this.oldDelegateOwnerWallet) {
-      // New node registration is disabled if using oldDelegateOwnerWallet and above URSM check failed
-      throw new Error('Something went wrong if we got here')
     }
 
     /**

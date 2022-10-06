@@ -1,385 +1,121 @@
 {
   "dashboard": {
-  "annotations": {
-  "list": [
-  {
-  "builtIn": 1,
-  "datasource": {
-  "type": "datasource",
-  "uid": "grafana"
-  },
-  "enable": true,
-  "hide": true,
-  "iconColor": "rgba(0, 211, 255, 1)",
-  "name": "Annotations & Alerts",
-  "target": {
-  "limit": 100,
-  "matchAny": false,
-  "tags": [],
-  "type": "dashboard"
-  },
-  "type": "dashboard"
-  }
-  ]
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
-  "id": null,
-  "links": [],
-  "liveNow": false,
-  "panels": [
-  {
-  "fieldConfig": {
-  "defaults": {
-  "color": {
-  "mode": "palette-classic"
-  },
-  "custom": {
-  "axisCenteredZero": false,
-  "axisColorMode": "text",
-  "axisLabel": "Number of Errors",
-  "axisPlacement": "auto",
-  "barAlignment": 0,
-  "drawStyle": "line",
-  "fillOpacity": 0,
-  "gradientMode": "none",
-  "hideFrom": {
-  "legend": false,
-  "tooltip": false,
-  "viz": false
-  },
-  "lineInterpolation": "linear",
-  "lineWidth": 1,
-  "pointSize": 5,
-  "scaleDistribution": {
-  "type": "linear"
-  },
-  "showPoints": "auto",
-  "spanNulls": false,
-  "stacking": {
-  "group": "A",
-  "mode": "none"
-  },
-  "thresholdsStyle": {
-  "mode": "off"
-  }
-  },
-  "mappings": [],
-  "thresholds": {
-  "mode": "absolute",
-  "steps": [
-  {
-  "color": "green",
-  "value": null
-  },
-  {
-  "color": "red",
-  "value": 80
-  }
-  ]
-  },
-  "unit": "none"
-  },
-  "overrides": []
-  },
-  "gridPos": {
-  "h": 8,
-  "w": 12,
-  "x": 0,
-  "y": 0
-  },
-  "id": 6,
-  "options": {
-  "legend": {
-  "calcs": [],
-  "displayMode": "list",
-  "placement": "bottom",
-  "showLegend": true
-  },
-  "tooltip": {
-  "mode": "single",
-  "sort": "none"
-  }
-  },
-  "targets": [
-  {
-  "datasource": {
-  "type": "prometheus"
-  },
-  "editorMode": "builder",
-  "expr": "audius_dn_entity_manager_update_errors_count",
-  "legendFormat": "{{entity_type}}",
-  "range": true,
-  "refId": "A"
-  }
-  ],
-  "title": "Number of Errors by Entity Type",
-  "type": "timeseries"
-  },
-  {
-  "fieldConfig": {
-  "defaults": {
-  "color": {
-  "mode": "palette-classic"
-  },
-  "custom": {
-  "axisCenteredZero": false,
-  "axisColorMode": "text",
-  "axisLabel": "Number of Updates",
-  "axisPlacement": "auto",
-  "barAlignment": 0,
-  "drawStyle": "line",
-  "fillOpacity": 0,
-  "gradientMode": "none",
-  "hideFrom": {
-  "legend": false,
-  "tooltip": false,
-  "viz": false
-  },
-  "lineInterpolation": "linear",
-  "lineWidth": 1,
-  "pointSize": 5,
-  "scaleDistribution": {
-  "type": "linear"
-  },
-  "showPoints": "auto",
-  "spanNulls": false,
-  "stacking": {
-  "group": "A",
-  "mode": "none"
-  },
-  "thresholdsStyle": {
-  "mode": "off"
-  }
-  },
-  "mappings": [],
-  "thresholds": {
-  "mode": "absolute",
-  "steps": [
-  {
-  "color": "green",
-  "value": null
-  },
-  {
-  "color": "red",
-  "value": 80
-  }
-  ]
-  },
-  "unit": "none"
-  },
-  "overrides": []
-  },
-  "gridPos": {
-  "h": 8,
-  "w": 12,
-  "x": 12,
-  "y": 0
-  },
-  "id": 2,
-  "options": {
-  "legend": {
-  "calcs": [],
-  "displayMode": "list",
-  "placement": "bottom",
-  "showLegend": true
-  },
-  "tooltip": {
-  "mode": "single",
-  "sort": "none"
-  }
-  },
-  "targets": [
-  {
-  "datasource": {
-  "type": "prometheus"
-  },
-  "editorMode": "builder",
-  "expr": "audius_dn_entity_manager_update_changed_latest_sum",
-  "legendFormat": "{{entity_type}}",
-  "range": true,
-  "refId": "A"
-  }
-  ],
-  "title": "Number of Updates by Entity Type",
-  "type": "timeseries"
-  },
-  {
-  "fieldConfig": {
-  "defaults": {
-  "color": {
-  "mode": "palette-classic"
-  },
-  "custom": {
-  "axisCenteredZero": false,
-  "axisColorMode": "text",
-  "axisLabel": "Duration",
-  "axisPlacement": "auto",
-  "barAlignment": 0,
-  "drawStyle": "line",
-  "fillOpacity": 0,
-  "gradientMode": "none",
-  "hideFrom": {
-  "legend": false,
-  "tooltip": false,
-  "viz": false
-  },
-  "lineInterpolation": "linear",
-  "lineWidth": 1,
-  "pointSize": 5,
-  "scaleDistribution": {
-  "type": "linear"
-  },
-  "showPoints": "auto",
-  "spanNulls": false,
-  "stacking": {
-  "group": "A",
-  "mode": "none"
-  },
-  "thresholdsStyle": {
-  "mode": "off"
-  }
-  },
-  "mappings": [],
-  "thresholds": {
-  "mode": "absolute",
-  "steps": [
-  {
-  "color": "green",
-  "value": null
-  },
-  {
-  "color": "red",
-  "value": 80
-  }
-  ]
-  },
-  "unit": "s"
-  },
-  "overrides": []
-  },
-  "gridPos": {
-  "h": 8,
-  "w": 12,
-  "x": 0,
-  "y": 8
-  },
-  "id": 4,
-  "options": {
-  "legend": {
-  "calcs": [],
-  "displayMode": "list",
-  "placement": "bottom",
-  "showLegend": true
-  },
-  "tooltip": {
-  "mode": "single",
-  "sort": "none"
-  }
-  },
-  "targets": [
-  {
-  "datasource": {
-  "type": "prometheus"
-  },
-  "editorMode": "code",
-  "expr": "audius_dn_entity_manager_update_duration_seconds_sum / audius_dn_entity_manager_update_duration_seconds_count",
-  "legendFormat": "Latency",
-  "range": true,
-  "refId": "A"
-  }
-  ],
-  "title": "Update Duration",
-  "type": "timeseries"
-  }
-  ],
-  "refresh": "30m",
-  "schemaVersion": 37,
-  "style": "dark",
-  "tags": [],
-  "templating": {
-  "list": [
-  {
-  "allValue": ".*",
-  "datasource": {
-  "type": "prometheus",
-  "uid": "r2_nnDL7z"
-  },
-  "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
-  "description": "",
-  "hide": 0,
-  "includeAll": true,
-  "label": "Environment",
-  "multi": false,
-  "name": "env",
-  "options": [],
-  "query": {
-  "query": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
-  "refId": "StandardVariableQuery"
-  },
-  "refresh": 1,
-  "regex": "",
-  "skipUrlSync": false,
-  "sort": 2,
-  "type": "query"
-  },
-  {
-  "allValue": ".*",
-  "datasource": {
-  "type": "prometheus",
-  "uid": "r2_nnDL7z"
-  },
-  "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
-  "description": "",
-  "hide": 0,
-  "includeAll": true,
-  "label": "Host",
-  "multi": true,
-  "name": "host",
-  "options": [],
-  "query": {
-  "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
-  "refId": "StandardVariableQuery"
-  },
-  "refresh": 1,
-  "regex": "",
-  "skipUrlSync": false,
-  "sort": 1,
-  "type": "query"
-  }
-  ]
-  },
-  "time": {
-  "from": "now-2h",
-  "to": "now"
-  },
-  "timepicker": {
-  "nowDelay": "1m",
-  "refresh_intervals": [
-  "30s",
-  "1m",
-  "5m",
-  "15m",
-  "30m"
-  ],
-  "time_options": [
-  "5m",
-  "15m",
-  "1h",
-  "6h",
-  "12h",
-  "24h",
-  "2d",
-  "7d",
-  "30d"
-  ]
-  },
-  "timezone": "",
-  "title": "Audius - Entity Manager",
-  "uid": "fxwLxFWVz",
-  "version": null,
-  "weekStart": ""
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "hideControls": false,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [],
+    "refresh": "30m",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Environment",
+          "multi": false,
+          "name": "env",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 2,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
+          },
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Host",
+          "multi": true,
+          "name": "host",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-2h",
+      "to": "now"
+    },
+    "timepicker": {
+      "nowDelay": "1m",
+      "refresh_intervals": [
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Audius - Entity Manager",
+    "uid": "xaRUqtZVk",
+    "version": null,
+    "weekStart": ""
   },
   "overwrite": true
-  }
+}
