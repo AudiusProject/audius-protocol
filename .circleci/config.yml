@@ -26,7 +26,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job started. :crossed_fingers:"
+        default: "Job started"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -78,7 +78,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job Failed. :red_circle:"
+        default: "Job Failed :red_circle:"
       detail:
         description: Markdown formatted Slack detail
         type: string
