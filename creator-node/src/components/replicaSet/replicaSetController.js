@@ -267,13 +267,23 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
     logger: req.logger,
     userId
   })
-  await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-    parseInt(userId),
-    parseInt(newPrimarySpId),
-    [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-    parseInt(currentSpIds[0]),
-    [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
-  )
+  if (config.get('entityManagerReplicaSetEnabled')) {
+    await audiusLibs.User.updateEntityManagerReplicaSet({
+      userId: parseInt(userId),
+      primary: parseInt(newPrimarySpId),
+      secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      oldPrimary: parseInt(currentSpIds[0]),
+      oldSecondaries: [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+    })
+  } else {
+    await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+      parseInt(userId),
+      parseInt(newPrimarySpId),
+      [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      parseInt(currentSpIds[0]),
+      [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+    )
+  }
 
   return successResponse()
 }
