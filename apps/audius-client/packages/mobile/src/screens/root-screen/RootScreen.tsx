@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
-import { useNavigationState } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { useDispatch, useSelector } from 'react-redux'
