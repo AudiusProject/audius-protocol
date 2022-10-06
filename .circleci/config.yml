@@ -52,50 +52,33 @@ commands:
                 },
                 {
                   "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "<< parameters.detail >> "
-                    }
-                  ]
+                  "text": {
+                    "text": "*Job*: ${CIRCLE_JOB}",
+                    "type": "mrkdwn"
+                  }
                 },
                 {
                   "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: $CIRCLE_USERNAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Mentions*: << parameters.slack_mentions_user >> "
-                    }
-                  ]
+                  "text": {
+                    "text": "<< parameters.detail >> ",
+                    "type": "mrkdwn"
+                  }
                 },
                 {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Job"
-                      },
-                      "url": "${CIRCLE_BUILD_URL}"
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "text": "*Job*: `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> ",
+                    "type": "mrkdwn"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Job",
+                      "emoji": true
+                    },
+                    "url": "${CIRCLE_BUILD_URL}"
+                  }
                 }
               ]
             }
