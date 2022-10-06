@@ -289,11 +289,18 @@ export const createTransferToUserBankTransaction = async ({
   return tx
 }
 
-export const saveUserBankTransactionMetadata = async (
-  data: InAppAudioPurchaseMetadata
-) => {
+export const saveUserBankTransactionMetadata = async ({
+  transactionSignature,
+  metadata
+}: {
+  transactionSignature: string
+  metadata: InAppAudioPurchaseMetadata
+}) => {
   await waitForLibsInit()
-  return await libs().identityService!.saveUserBankTransactionMetadata(data)
+  return await libs().identityService!.saveUserBankTransactionMetadata({
+    transactionSignature,
+    metadata
+  })
 }
 
 export const getUserBankTransactionMetadata = async (transactionId: string) => {

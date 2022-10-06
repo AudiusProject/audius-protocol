@@ -495,7 +495,10 @@ function* populateAndSaveTransactionDetails() {
       transactionDetails
     })
   )
-  yield* call(saveUserBankTransactionMetadata, transactionMetadata)
+  yield* call(saveUserBankTransactionMetadata, {
+    transactionSignature: transferTransactionId,
+    metadata: transactionMetadata
+  })
 
   // Clear local storage
   yield* call(
