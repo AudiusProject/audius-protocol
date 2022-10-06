@@ -138,7 +138,7 @@ export const useAppScreenOptions = (
           animation: isFromNotifs ? 'none' : 'default',
           gestureEnabled: !isFromNotifs,
           fullScreenGestureEnabled: true,
-          detachPreviousScreen: false,
+          freezeOnBlur: true,
           cardOverlayEnabled: true,
           cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
           headerShadowVisible: false,
