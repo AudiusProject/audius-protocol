@@ -39,7 +39,7 @@ PROD_CREATOR_NODES = (
     "prod-creator-3",
     "prod-creator-4",  # prod-canary
     "prod-creator-5",
-    "user-metadata",
+    "prod-user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
 
