@@ -8,7 +8,8 @@ import {
   tokenDashboardPageSelectors,
   formatWei,
   buyAudioActions,
-  OnRampProvider
+  OnRampProvider,
+  FeatureFlags
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -23,6 +24,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { CollapsibleContent } from 'components/collapsible-content'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { isMobile } from 'utils/clientUtil'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
@@ -41,7 +43,9 @@ const messages = {
   connectWallets: 'Connect Other Wallets',
   totalAudio: 'Total $AUDIO',
   buyAudio: 'Buy $AUDIO',
-  checkoutWithCoinbase: 'Checkout with a credit card or Coinbase Pay',
+  checkoutWithStripeOrCoinbase: 'Checkout with a credit card or Coinbase Pay',
+  checkoutWithStripe: 'Checkout with a credit card',
+  checkoutWithCoinbase: 'Checkout with Coinbase Pay',
   showAdvanced: 'Show Advanced',
   hideAdvanced: 'Hide Advanced',
   advancedOptions: 'Advanced Options'
@@ -139,6 +143,13 @@ export const WalletManagementTile = () => {
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const [, setOpen] = useModalState('AudioBreakdown')
 
+  const { isEnabled: isCoinbaseEnabled } = useFlag(
+    FeatureFlags.BUY_AUDIO_COINBASE_ENABLED
+  )
+  const { isEnabled: isStripeEnabled } = useFlag(
+    FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
+  )
+
   const onClickOpen = useCallback(() => {
     setOpen(true)
   }, [setOpen])
@@ -188,21 +199,29 @@ export const WalletManagementTile = () => {
           <div className={styles.headerText}>
             <div className={styles.title}>{messages.buyAudio}</div>
             <div className={styles.subtitle}>
-              {messages.checkoutWithCoinbase}
+              {isCoinbaseEnabled && isStripeEnabled
+                ? messages.checkoutWithStripeOrCoinbase
+                : isCoinbaseEnabled
+                ? messages.checkoutWithCoinbase
+                : messages.checkoutWithStripe}
             </div>
           </div>
         </div>
         <div className={styles.onRampButtons}>
-          <OnRampButton
-            provider={OnRampProvider.STRIPE}
-            className={styles.payWithStripeButton}
-            onClick={onBuyWithStripeClicked}
-          />
-          <OnRampButton
-            provider={OnRampProvider.COINBASE}
-            className={styles.payWithCoinbaseButton}
-            onClick={onBuyWithCoinbaseClicked}
-          />
+          {isStripeEnabled ? (
+            <OnRampButton
+              provider={OnRampProvider.STRIPE}
+              className={styles.payWithStripeButton}
+              onClick={onBuyWithStripeClicked}
+            />
+          ) : null}
+          {isCoinbaseEnabled ? (
+            <OnRampButton
+              provider={OnRampProvider.COINBASE}
+              className={styles.payWithCoinbaseButton}
+              onClick={onBuyWithCoinbaseClicked}
+            />
+          ) : null}
         </div>
         <CollapsibleContent
           id='advanced-wallet-actions'
