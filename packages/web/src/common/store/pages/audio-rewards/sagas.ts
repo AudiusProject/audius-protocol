@@ -620,7 +620,7 @@ function* userChallengePollingDaemon() {
 
   yield take(fetchAccountSucceeded.type)
   if (!isNativeMobile) {
-    yield fork(function* () {
+    yield* fork(function* () {
       yield* call(visibilityPollingDaemon, fetchUserChallenges())
     })
   }
