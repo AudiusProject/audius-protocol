@@ -253,7 +253,7 @@ const CollectionPage = ({
   >(
     () =>
       isNftPlaylist
-        ? ['playButton', 'collectibleName', 'chain', 'length']
+        ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
         : [
             'playButton',
             'trackName',

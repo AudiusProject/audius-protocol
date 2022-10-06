@@ -12,6 +12,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
+  min-width: 0px !important;
   background-color: var(--white);
   padding-bottom: 5px;
 
@@ -32,6 +33,22 @@
 
 .tableHeadRow {
   position: relative;
+  min-width: 0px !important;
+}
+
+.cellSection {
+  flex: 1 1 0;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+.cellSectionEnd {
+  position: relative;
+  flex: 0 0 144px;
+}
+.cellSectionEnd.menu {
+  flex: 0 0 64px;
 }
 
 .tableHeader {
@@ -160,7 +177,7 @@
 
 .tableBody {
   display: block;
-  overflow: auto;
+  overflow: hidden;
   background-color: var(--neutral-light-9);
 }
 
@@ -168,6 +185,7 @@
   display: flex;
   position: relative;
   background: var(--white);
+  min-width: 0px !important;
   color: var(--neutral);
   font-size: 14px;
   font-weight: 600;
