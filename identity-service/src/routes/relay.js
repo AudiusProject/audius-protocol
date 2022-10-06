@@ -73,7 +73,7 @@ module.exports = function (app) {
       // TODO: remove this one
       req.logger(
         `abuse: detect: ${detectAbuseOnRelay} block: ${blockAbuseOnRelay} user: ${
-          (user.id, user.handle)
+          (user?.id, user?.handle)
         }`
       )
 
