@@ -60,12 +60,6 @@ const slice = createSlice({
   name: 'ui/buy-audio',
   initialState,
   reducers: {
-    setProvider: (
-      state,
-      action: PayloadAction<{ provider: OnRampProvider }>
-    ) => {
-      state.provider = action.payload.provider
-    },
     calculateAudioPurchaseInfo: (
       state,
       _action: PayloadAction<CalculateAudioPurchaseInfoPayload>
@@ -141,12 +135,14 @@ const slice = createSlice({
     },
     buyAudioFlowFailed: (state) => {
       state.error = true
+    },
+    startRecoveryIfNecessary: () => {
+      // Triggers saga
     }
   }
 })
 
 export const {
-  setProvider,
   calculateAudioPurchaseInfo,
   calculateAudioPurchaseInfoSucceeded,
   calculateAudioPurchaseInfoFailed,
@@ -160,7 +156,8 @@ export const {
   swapStarted,
   swapCompleted,
   transferStarted,
-  transferCompleted
+  transferCompleted,
+  startRecoveryIfNecessary
 } = slice.actions
 
 export default slice.reducer
