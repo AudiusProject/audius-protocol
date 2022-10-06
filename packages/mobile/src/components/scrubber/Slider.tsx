@@ -288,7 +288,8 @@ export const Slider = memo(
     useEffect(() => {
       if (previousAppState === 'background' && appState === 'active') {
         const { currentTime } = global.progress
-        const percentComplete = currentTime / durationRef.current
+        const percentComplete =
+          durationRef.current === 0 ? 0 : currentTime / durationRef.current
         translationAnim.setValue(percentComplete * railWidth)
 
         setHandlePosition(percentComplete * railWidth)

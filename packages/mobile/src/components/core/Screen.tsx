@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react'
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
@@ -7,6 +7,7 @@ import { pickBy, negate, isUndefined } from 'lodash'
 import type { Animated, StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
+import { screen } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 const removeUndefined = (object: Record<string, unknown>) =>
@@ -33,6 +34,8 @@ export type ScreenProps = {
   title?: Nullable<ReactNode>
   headerTitle?: ReactNode
   style?: StyleProp<ViewStyle>
+  // url used for screen view analytics
+  url?: string
   variant?: 'primary' | 'secondary' | 'white'
 }
 
@@ -45,11 +48,21 @@ export const Screen = (props: ScreenProps) => {
     headerTitle,
     topbarRightStyle,
     topbarLeftStyle,
+    url,
     variant = 'primary',
     style
   } = props
   const styles = useStyles({ variant })
   const navigation = useNavigation()
+
+  // Record screen view
+  useEffect(() => {
+    if (url) {
+      screen({
+        route: url
+      })
+    }
+  }, [url])
 
   useLayoutEffect(() => {
     navigation.setOptions(
