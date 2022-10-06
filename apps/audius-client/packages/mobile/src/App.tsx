@@ -58,7 +58,7 @@ const App = () => {
   useAsync(async () => {
     // Require entropy to exist before setting up backend
     const entropy = await AsyncStorage.getItem(ENTROPY_KEY)
-    setIsReadyToSetupBackend(!entropy)
+    setIsReadyToSetupBackend(!!entropy)
   }, [])
 
   useEffectOnce(() => {
