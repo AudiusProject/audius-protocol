@@ -66,6 +66,7 @@ export default class PremiumContentQueue {
         type: QueryTypes.SELECT
       }
     )
+    const nonPremiumCIDSet = new Set()
     const cidMap: { [key: string]: number } = {}
     result.forEach(
       (record: {
@@ -74,7 +75,18 @@ export default class PremiumContentQueue {
         multihash: string
       }) => {
         if (record.metadataJSON.is_premium) {
-          cidMap[record.multihash] = record.blockchainId
+          if (!nonPremiumCIDSet.has(record.multihash)) {
+            // Only add to CID to map if we have not yet seen
+            // a non-premium track with the same CID.
+            cidMap[record.multihash] = record.blockchainId
+          }
+        } else if (cidMap[record.multihash]) {
+          // If the same CID exists in the map, remove it from the map
+          // because there exists a non-premium track with the same CID.
+          // Also add it to the non-premium CID set to make sure
+          // this CID never gets re-entered in the map.
+          delete cidMap[record.multihash]
+          nonPremiumCIDSet.add(record.multihash)
         }
       }
     )
