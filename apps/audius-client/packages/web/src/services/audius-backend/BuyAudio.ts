@@ -237,10 +237,10 @@ export const pollForNewTransaction = async ({
       limit: 1
     })
     transaction = transactions?.[0]?.signature
-    if (transaction && transaction !== initialTransaction) {
-      console.debug(`Found new transaction ${transaction}`)
-      return transaction
-    }
+  }
+  if (transaction && transaction !== initialTransaction) {
+    console.debug(`Found new transaction ${transaction}`)
+    return transaction
   }
   throw new Error('Transaction polling exceeded maximum retries')
 }
