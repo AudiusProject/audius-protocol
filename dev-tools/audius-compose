@@ -53,7 +53,7 @@ def generate_env(
 
     for name, private_key in config.get("eth-accounts", {}).items():
         account = eth_account.Account.from_key(private_key)
-        env[f"{name}_PRIVATE_KEY"] = account.key.hex()
+        env[f"{name}_PRIVATE_KEY"] = account.key.hex()[2:]
         env[f"{name}_ADDRESS"] = account.address
 
         if name.startswith("ETH_RELAYER_WALLET"):
