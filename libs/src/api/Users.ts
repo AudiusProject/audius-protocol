@@ -724,13 +724,25 @@ export class Users extends Base {
   async updateIsVerified(
     userId: number,
     isVerified: boolean,
-    privateKey: string
+    privateKey: string,
+    useEntityManager?: boolean
   ) {
-    return await this.contracts.UserFactoryClient.updateIsVerified(
-      userId,
-      isVerified,
-      privateKey
-    )
+    if (useEntityManager) {
+      return await this.contracts.EntityManagerClient!.manageEntity(
+        userId,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.VERIFY,
+        '',
+        privateKey
+      )
+    } else {
+      return await this.contracts.UserFactoryClient.updateIsVerified(
+        userId,
+        isVerified,
+        privateKey
+      )  
+    }
   }
 
   /**
