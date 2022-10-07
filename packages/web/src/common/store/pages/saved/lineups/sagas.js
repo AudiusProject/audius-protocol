@@ -114,7 +114,7 @@ function* watchSave() {
       dateSaved: moment().format()
     }
     yield put(saveActions.addLocalSave(trackId, localSaveUid))
-    yield put(savedTracksActions.add(newEntry, trackId))
+    yield put(savedTracksActions.add(newEntry, trackId, undefined, true))
     yield put(
       queueActions.add({
         entries: [
