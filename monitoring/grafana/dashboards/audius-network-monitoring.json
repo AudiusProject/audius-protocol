@@ -65,7 +65,7 @@
         },
         "gridPos": {
           "h": 6,
-          "w": 6,
+          "w": 8,
           "x": 0,
           "y": 1
         },
@@ -99,7 +99,7 @@
             "refId": "A"
           }
         ],
-        "title": "Users Entirely on Foundation Nodes",
+        "title": "Users Entirely on Foundation Nodes %",
         "type": "stat"
       },
       {
@@ -121,8 +121,8 @@
         },
         "gridPos": {
           "h": 6,
-          "w": 6,
-          "x": 6,
+          "w": 8,
+          "x": 8,
           "y": 1
         },
         "id": 45,
@@ -156,6 +156,65 @@
           }
         ],
         "title": "Users Entirely on Foundation nodes",
+        "type": "stat"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "semi-dark-purple",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 1
+        },
+        "id": 66,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "9.1.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "audius_nm_users_with_no_foundation_node_replica_set{environment=~\"$env\"} / audius_nm_user_count{environment=~\"$env\"}",
+            "instant": true,
+            "legendFormat": "Users Entirely on Foundation Nodes",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Users Entirely NOT on Foundation Nodes %",
         "type": "stat"
       },
       {
@@ -199,7 +258,7 @@
             "decimals": 1,
             "mappings": [],
             "max": 95,
-            "min": 50,
+            "min": 0,
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -215,9 +274,9 @@
         },
         "gridPos": {
           "h": 6,
-          "w": 6,
-          "x": 12,
-          "y": 1
+          "w": 8,
+          "x": 0,
+          "y": 7
         },
         "id": 59,
         "options": {
@@ -306,9 +365,9 @@
         },
         "gridPos": {
           "h": 6,
-          "w": 6,
-          "x": 18,
-          "y": 1
+          "w": 8,
+          "x": 8,
+          "y": 7
         },
         "id": 47,
         "options": {
@@ -339,12 +398,104 @@
         "type": "timeseries"
       },
       {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "right",
+              "axisSoftMax": 10,
+              "axisSoftMin": 0,
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 1,
+            "mappings": [],
+            "max": 95,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 7
+        },
+        "id": 67,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.1.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "(sum without(run_id, instance) (audius_nm_users_with_no_foundation_node_replica_set{environment=~\"$env\"}) * 100) / sum without(run_id, instance) (audius_nm_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "legendFormat": "Users entirely on foundation nodes",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Users entirely NOT on foundation nodes %",
+        "type": "timeseries"
+      },
+      {
         "collapsed": false,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 7
+          "y": 13
         },
         "id": 27,
         "panels": [],
@@ -375,7 +526,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 8
+          "y": 14
         },
         "id": 2,
         "options": {
@@ -446,7 +597,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 8
+          "y": 14
         },
         "id": 4,
         "options": {
@@ -550,21 +701,23 @@
           "h": 10,
           "w": 12,
           "x": 0,
-          "y": 16
+          "y": 22
         },
         "id": 54,
         "options": {
           "legend": {
             "calcs": [
-              "lastNotNull",
-              "mean",
-              "delta"
+              "first",
+              "last",
+              "diff",
+              "diffperc",
+              "mean"
             ],
             "displayMode": "table",
             "placement": "bottom",
             "showLegend": true,
-            "sortBy": "Last *",
-            "sortDesc": true
+            "sortBy": "Difference",
+            "sortDesc": false
           },
           "tooltip": {
             "mode": "single",
@@ -646,15 +799,17 @@
           "h": 10,
           "w": 12,
           "x": 12,
-          "y": 16
+          "y": 22
         },
         "id": 53,
         "options": {
           "legend": {
             "calcs": [
-              "lastNotNull",
-              "mean",
-              "delta"
+              "first",
+              "last",
+              "diff",
+              "diffperc",
+              "mean"
             ],
             "displayMode": "table",
             "placement": "bottom",
@@ -690,7 +845,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 26
+          "y": 32
         },
         "id": 37,
         "panels": [],
@@ -772,15 +927,18 @@
           "h": 10,
           "w": 12,
           "x": 0,
-          "y": 27
+          "y": 33
         },
         "id": 56,
         "options": {
           "legend": {
             "calcs": [
+              "first",
               "last",
-              "mean",
-              "max"
+              "diff",
+              "diffperc",
+              "max",
+              "mean"
             ],
             "displayMode": "table",
             "placement": "bottom",
@@ -874,7 +1032,7 @@
           "h": 10,
           "w": 6,
           "x": 12,
-          "y": 27
+          "y": 33
         },
         "id": 43,
         "options": {
@@ -979,7 +1137,7 @@
           "h": 10,
           "w": 6,
           "x": 18,
-          "y": 27
+          "y": 33
         },
         "id": 62,
         "options": {
@@ -1064,9 +1222,11 @@
             "custom": {
               "axisCenteredZero": false,
               "axisColorMode": "text",
-              "axisLabel": "Users",
+              "axisLabel": "Percent%",
               "axisPlacement": "auto",
-              "barAlignment": 1,
+              "axisSoftMax": 100,
+              "axisSoftMin": 0,
+              "barAlignment": 0,
               "drawStyle": "line",
               "fillOpacity": 0,
               "gradientMode": "none",
@@ -1076,16 +1236,12 @@
                 "viz": false
               },
               "lineInterpolation": "linear",
-              "lineStyle": {
-                "fill": "solid"
-              },
               "lineWidth": 1,
               "pointSize": 5,
               "scaleDistribution": {
-                "log": 2,
-                "type": "log"
+                "type": "linear"
               },
-              "showPoints": "always",
+              "showPoints": "auto",
               "spanNulls": false,
               "stacking": {
                 "group": "A",
@@ -1095,36 +1251,106 @@
                 "mode": "off"
               }
             },
-            "mappings": [],
+            "mappings": [
+              {
+                "options": {
+                  "alert_on": {
+                    "index": 0,
+                    "text": "Fully Synced %"
+                  },
+                  "mentions": {
+                    "index": 2,
+                    "text": "@johannes"
+                  },
+                  "team": {
+                    "index": 1,
+                    "text": "content"
+                  }
+                },
+                "type": "value"
+              }
+            ],
             "thresholds": {
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
-                },
-                {
-                  "color": "red",
-                  "value": 80
+                  "color": "green",
+                  "value": null
                 }
               ]
             },
             "unit": "short"
           },
-          "overrides": []
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "Fully Synced %"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "Partially Synced %"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "orange",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "Unsynced %"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
         },
         "gridPos": {
-          "h": 8,
+          "h": 10,
           "w": 12,
           "x": 0,
-          "y": 37
+          "y": 43
         },
-        "id": 38,
+        "id": 68,
         "options": {
           "legend": {
-            "calcs": [],
-            "displayMode": "list",
+            "calcs": [
+              "first",
+              "last",
+              "diff",
+              "diffperc",
+              "max",
+              "mean"
+            ],
+            "displayMode": "table",
             "placement": "bottom",
-            "showLegend": true
+            "showLegend": true,
+            "sortBy": "Last",
+            "sortDesc": true
           },
           "tooltip": {
             "mode": "multi",
@@ -1136,53 +1362,39 @@
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "code",
-            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"})",
-            "format": "time_series",
+            "editorMode": "builder",
+            "expr": "sum by(endpoint) (audius_nm_fully_synced_user_by_primary_count{environment=~\"$env\"})",
             "interval": "2h",
-            "legendFormat": "fully synced users",
+            "legendFormat": "fully synced - {{endpoint}}",
             "range": true,
-            "refId": "A"
+            "refId": "Fully Synced %"
           },
           {
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "code",
-            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"})",
+            "editorMode": "builder",
+            "expr": "sum by(endpoint) (audius_nm_partially_synced_user_by_primary_count{environment=~\"$env\"})",
             "hide": false,
             "interval": "2h",
-            "legendFormat": "partially synced users",
+            "legendFormat": "partially synced - {{endpoint}}",
             "range": true,
-            "refId": "B"
+            "refId": "Partially Synced %"
           },
           {
             "datasource": {
               "type": "prometheus"
             },
-            "editorMode": "code",
-            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"})",
+            "editorMode": "builder",
+            "expr": "sum by(endpoint) (audius_nm_unsynced_user_by_primary_count{environment=~\"$env\"})",
             "hide": false,
             "interval": "2h",
-            "legendFormat": "unsynced users",
+            "legendFormat": "unsynced - {{endpoint}}",
             "range": true,
-            "refId": "C"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"})",
-            "hide": false,
-            "interval": "2h",
-            "legendFormat": "users with null primary",
-            "range": true,
-            "refId": "D"
+            "refId": "Unsynced %"
           }
         ],
-        "title": "User Status Counts (over time) logarithmic)",
-        "transformations": [],
+        "title": "User Status Count by Primary",
         "type": "timeseries"
       },
       {
@@ -1227,7 +1439,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1243,7 +1456,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 37
+          "y": 43
         },
         "id": 57,
         "options": {
@@ -1314,12 +1527,144 @@
         "type": "timeseries"
       },
       {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Users",
+              "axisPlacement": "auto",
+              "barAlignment": 1,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineStyle": {
+                "fill": "solid"
+              },
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "log": 2,
+                "type": "log"
+              },
+              "showPoints": "always",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 53
+        },
+        "id": 38,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(audius_nm_fully_synced_user_count{environment=~\"$env\"})",
+            "format": "time_series",
+            "interval": "2h",
+            "legendFormat": "fully synced users",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(audius_nm_partially_synced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "partially synced users",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(audius_nm_unsynced_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "unsynced users",
+            "range": true,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(audius_nm_no_primary_user_count{environment=~\"$env\"})",
+            "hide": false,
+            "interval": "2h",
+            "legendFormat": "users with null primary",
+            "range": true,
+            "refId": "D"
+          }
+        ],
+        "title": "User Status Counts (over time) logarithmic)",
+        "transformations": [],
+        "type": "timeseries"
+      },
+      {
         "collapsed": true,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 45
+          "y": 61
         },
         "id": 61,
         "panels": [
@@ -1717,7 +2062,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 46
+          "y": 62
         },
         "id": 33,
         "panels": [],
@@ -1754,7 +2099,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "orange",
@@ -1773,7 +2119,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 47
+          "y": 63
         },
         "id": 8,
         "options": {
@@ -1877,7 +2223,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "yellow",
@@ -1897,7 +2244,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 47
+          "y": 63
         },
         "id": 20,
         "options": {
@@ -1935,7 +2282,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 55
+          "y": 71
         },
         "id": 35,
         "panels": [],
@@ -1972,7 +2319,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1988,7 +2336,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 56
+          "y": 72
         },
         "id": 18,
         "options": {
@@ -2110,7 +2458,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple"
+                  "color": "purple",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2126,7 +2475,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 56
+          "y": 72
         },
         "id": 65,
         "options": {
@@ -2243,7 +2592,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -2259,7 +2609,7 @@
           "h": 9,
           "w": 24,
           "x": 0,
-          "y": 64
+          "y": 80
         },
         "id": 24,
         "options": {
@@ -2297,7 +2647,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 73
+          "y": 89
         },
         "id": 29,
         "panels": [

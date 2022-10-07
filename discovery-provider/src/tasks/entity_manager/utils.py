@@ -30,6 +30,7 @@ class Action(str, Enum):
     UNSAVE = "Unsave"
     REPOST = "Repost"
     UNREPOST = "Unrepost"
+    VERIFY = "Verify"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -182,5 +183,6 @@ def copy_user_record(
         blocknumber=block_number,
         blockhash=event_blockhash,
         txhash=txhash,
+        artist_pick_track_id=old_user.artist_pick_track_id,
         is_current=False,
     )

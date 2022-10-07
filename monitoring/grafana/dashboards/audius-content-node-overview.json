@@ -273,7 +273,7 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "sum(count_over_time(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) / sum(count_over_time(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[1h]))",
+            "expr": "sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) / sum(increase(audius_cn_issue_sync_request_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[1h]))",
             "format": "time_series",
             "hide": false,
             "instant": false,
@@ -337,7 +337,7 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "sum(count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) / (sum(count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) + sum(count_over_time(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"failure.*\"}[1h])))",
+            "expr": "sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) / (sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success.*\"}[1h])) + sum(increase(audius_cn_secondary_sync_from_primary_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"failure.*\"}[1h])))",
             "format": "time_series",
             "hide": false,
             "instant": false,
@@ -885,8 +885,8 @@
             "showLegend": true
           },
           "tooltip": {
-            "mode": "single",
-            "sort": "none"
+            "mode": "multi",
+            "sort": "desc"
           }
         },
         "pluginVersion": "9.1.0",
