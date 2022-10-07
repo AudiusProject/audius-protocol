@@ -1,6 +1,6 @@
 import { initializeApp } from '../../src/app'
 import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
-const nodeConfig = require('../../src/config.js')
+const nodeConfig = require('../../src/config')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')

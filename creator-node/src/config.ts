@@ -1,9 +1,9 @@
-const axios = require('axios')
-const convict = require('convict')
-const fs = require('fs-extra')
-const path = require('path')
-const os = require('os')
-const _ = require('lodash')
+import axios from 'axios'
+import convict from 'convict'
+import fs from 'fs-extra'
+import path from 'path'
+import os from 'os'
+import _ from 'lodash'
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -11,10 +11,10 @@ const _ = require('lodash')
 // https://github.com/mozilla/node-convict/issues/380
 convict.addFormat({
   name: 'BooleanCustom',
-  validate: function (val) {
+  validate: function (val: any) {
     return typeof val === 'boolean' || typeof val === 'string'
   },
-  coerce: function (val) {
+  coerce: function (val: any) {
     return val === true || val === 'true'
   }
 })
@@ -298,13 +298,13 @@ const config = convict({
     doc: 'wallet address',
     format: String,
     env: 'delegateOwnerWallet',
-    default: null
+    default: ''
   },
   delegatePrivateKey: {
     doc: 'private key string',
     format: String,
     env: 'delegatePrivateKey',
-    default: null
+    default: ''
   },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
@@ -407,7 +407,7 @@ const config = convict({
     doc: 'http endpoint registered on chain for cnode',
     format: String,
     env: 'creatorNodeEndpoint',
-    default: null
+    default: ''
   },
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -809,7 +809,7 @@ const config = convict({
  * So if registryAddress or ownerWallet env variables are defined, they take precendence.
  */
 
-const pathTo = (fileName) => path.join(process.cwd(), fileName)
+const pathTo = (fileName: string) => path.join(process.cwd(), fileName)
 
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
@@ -840,15 +840,15 @@ config.set(
     : config
         .get('reconfigSPIdBlacklistString')
         .split(',')
-        .filter((e) => e)
-        .map((e) => parseInt(e))
+        .filter((e: any) => e)
+        .map((e: any) => parseInt(e))
 )
 
 // Perform validation and error any properties are not present on schema
 config.validate()
 
 // Retrieves and populates IP info configs
-const asyncConfig = async () => {
+export const asyncConfig = async () => {
   try {
     const ipinfo = await axios.get('https://ipinfo.io')
     const country = ipinfo.data.country
@@ -857,13 +857,15 @@ const asyncConfig = async () => {
     if (!config.get('serviceCountry')) config.set('serviceCountry', country)
     if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
     if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
-  } catch (e) {
+  } catch (e: any) {
     console.error(
       `config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`
     )
   }
 }
 
-config.asyncConfig = asyncConfig
+export type NodeConfig = typeof config
+
+export default config
 
 module.exports = config

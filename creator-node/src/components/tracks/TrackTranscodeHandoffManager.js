@@ -3,7 +3,7 @@ const fs = require('fs-extra')
 const FormData = require('form-data')
 const _ = require('lodash')
 
-const config = require('../../config.js')
+const config = require('../../config')
 const Utils = require('../../utils')
 const asyncRetry = require('../../utils/asyncRetry')
 const { logger: genericLogger } = require('../../logging')

@@ -32,10 +32,13 @@ export class ImageProcessingQueue {
   queueEvents: QueueEvents
 
   constructor(prometheusRegistry: PrometheusRegistry | null = null) {
+    /**
+     * TODO - set default value for host and port in nodeConfig, @see TcpSocketConnectOpts
+     */
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
-    }
+    } as any
     this.queue = new Queue('image-processing-queue', {
       connection,
       defaultJobOptions: {

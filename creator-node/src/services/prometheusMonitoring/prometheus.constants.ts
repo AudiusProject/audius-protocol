@@ -9,7 +9,7 @@ import {
   UpdateReplicaSetJobResult
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
-import * as config from '../../config'
+import config from '../../config'
 import { PROMETHEUS_MONITORS } from '../../monitors/monitors'
 
 /**

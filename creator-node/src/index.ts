@@ -13,7 +13,7 @@ import ON_DEATH from 'death'
 import { Keypair } from '@solana/web3.js'
 
 import { initializeApp } from './app'
-import config from './config'
+import config, { asyncConfig } from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
 
@@ -35,7 +35,7 @@ const exitWithError = (...msg: any[]) => {
 }
 
 const verifyConfigAndDb = async () => {
-  await config.asyncConfig()
+  await asyncConfig()
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
   const delegatePrivateKey = config.get('delegatePrivateKey')
   const creatorNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -98,8 +98,10 @@ const getPort = () => {
   if (contentCacheLayerEnabled) {
     return 3000
   }
-
-  return config.get('port')
+  /**
+   * TODO - set default value for host and port in nodeConfig, @see TcpSocketConnectOpts
+   */
+  return config.get('port')!
 }
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app

@@ -1,6 +1,6 @@
 const express = require('express')
 const rateLimit = require('express-rate-limit')
-const config = require('./config.js')
+const config = require('./config')
 const { logger } = require('./logging')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')

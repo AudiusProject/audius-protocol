@@ -4,7 +4,7 @@
 
 const Redis = require('ioredis')
 
-const config = require('./config.js')
+const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 const asyncRetry = require('./utils/asyncRetry')
 
