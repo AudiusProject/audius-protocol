@@ -6,7 +6,7 @@ import { ReachabilityState } from './types'
 type ReachabilityActions = ActionType<typeof actions>
 
 const initialState = {
-  networkReachable: true
+  networkReachable: false
 }
 
 const reducer = createReducer<ReachabilityState, ReachabilityActions>(
