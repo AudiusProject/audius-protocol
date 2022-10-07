@@ -26,7 +26,7 @@ export class PremiumContentAccessChecker {
   }: CheckAccessArgs): Promise<CheckAccessResponse> {
     // Only apply premium content middleware logic if file is a premium track file
     const { trackId, isPremium } = await isCIDForPremiumTrack(cid)
-    if (!trackId || !isPremium) {
+    if (!isPremium) {
       return {
         doesUserHaveAccess: true,
         trackId,

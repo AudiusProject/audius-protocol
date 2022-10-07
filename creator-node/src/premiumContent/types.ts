@@ -38,3 +38,13 @@ export type CheckAccessResponse =
       isPremium: true
       error: PremiumContentAccessError
     }
+
+export type PremiumContentCIDResponse =
+  | {
+      trackId: null
+      isPremium: false
+    }
+  | {
+      trackId: number
+      isPremium: true
+    }

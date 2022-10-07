@@ -1,47 +1,47 @@
 import { signatureHasExpired } from '../apiSigning'
-import { PremiumContentSignatureData, PremiumContentType } from './types'
+import {
+  PremiumContentCIDResponse,
+  PremiumContentSignatureData,
+  PremiumContentType
+} from './types'
 import { getRegisteredDiscoveryNodes } from '../utils/getRegisteredDiscoveryNodes'
 import { Redis } from 'ioredis'
+import redis from '../redis'
 import type Logger from 'bunyan'
 
-const models = require('../models')
-const { QueryTypes } = require('sequelize')
-
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+const PREMIUM_CONTENT_CID_CACHE_KEY = 'premium-content-cids'
 
-/**
- * Return whether the CID is for a premium track by
- * checking if it's for a 'track' or 'copy320' file
- * and getting the track metadataJSON for the
- * track blockchain id to see if it is premium.
- */
-export async function isCIDForPremiumTrack(cid: string): Promise<
-  | {
-      trackId: null
-      isPremium: false
-    }
-  | {
-      trackId: number
-      isPremium: boolean
-    }
-> {
-  const result = await models.sequelize.query(
-    `select t.* from "Tracks" t, "Files" f
-      where f."multihash" = :cid
-      and f."type" in ('track', 'copy320')
-      and f."trackBlockchainId" = t."blockchainId"`,
-    {
-      replacements: { cid },
-      type: QueryTypes.SELECT
-    }
-  )
-  if (!result.length) {
+export async function isCIDForPremiumTrack(
+  cid: string
+): Promise<PremiumContentCIDResponse> {
+  const premiumContentCIDCache = await redis.get(PREMIUM_CONTENT_CID_CACHE_KEY)
+  if (!premiumContentCIDCache) {
     return { trackId: null, isPremium: false }
   }
+  const premiumContentCIDCacheMap = JSON.parse(premiumContentCIDCache)
+  const trackId = premiumContentCIDCacheMap[cid]
+  if (!trackId) {
+    return { trackId: null, isPremium: false }
+  }
+  return { trackId: parseInt(trackId), isPremium: true }
+}
 
-  return {
-    trackId: parseInt(result[0].blockchainId),
-    isPremium: result[0].metadataJSON.is_premium
+export async function updatePremiumContentCIDCache({
+  cacheMap,
+  logger
+}: {
+  cacheMap: { [key: string]: number }
+  logger: Logger
+}) {
+  try {
+    await redis.set(PREMIUM_CONTENT_CID_CACHE_KEY, JSON.stringify(cacheMap))
+  } catch (e) {
+    logger.error(
+      `Could not update premium content cid cache. cacheMap: ${JSON.stringify(
+        cacheMap
+      )}. Error: ${(e as Error).message}`
+    )
   }
 }
 

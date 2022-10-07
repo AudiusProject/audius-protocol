@@ -26,6 +26,7 @@ const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
+const PremiumContentQueue = require('./premiumContent/PremiumContentQueue')
 const {
   PremiumContentAccessChecker
 } = require('./premiumContent/premiumContentAccessChecker')
@@ -56,6 +57,7 @@ class ServiceRegistry {
     this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
+    this.premiumContentQueue = new PremiumContentQueue() // Recurring job to refresh premium content CIDs and their corresponding track ids
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
@@ -137,6 +139,7 @@ class ServiceRegistry {
     try {
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
+      await this.premiumContentQueue.start()
       await this.blacklistManager.init()
     } catch (e) {
       this.logError(e.message)
