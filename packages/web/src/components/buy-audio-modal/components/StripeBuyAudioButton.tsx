@@ -15,8 +15,7 @@ import {
 } from 'services/audius-backend/BuyAudio'
 
 const { getAudioPurchaseInfo } = buyAudioSelectors
-const { calculateAudioPurchaseInfo, onRampOpened, onRampSucceeded } =
-  buyAudioActions
+const { onRampOpened, onRampSucceeded } = buyAudioActions
 
 const STRIPE_PUBLISHABLE_KEY =
   process.env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
