@@ -12,6 +12,11 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
@@ -156,81 +161,104 @@ def process_transfer_instruction(
     user_id_accounts = refresh_user_balances(
         session, redis, [sender_account, receiver_account]
     )
+    if not user_id_accounts:
+        logger.error("index_user_bank.py | ERROR: Neither accounts are user banks")
+        return
+
+    sender_user_id: Optional[int] = None
+    receiver_user_id: Optional[int] = None
+    for user_id_account in user_id_accounts:
+        if user_id_account[1] == sender_account:
+            sender_user_id = user_id_account[0]
+        elif user_id_account[1] == receiver_account:
+            receiver_user_id = user_id_account[0]
+    if sender_user_id is None:
+        logger.error(
+            f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
+        )
+        return
+
+    # Find the right pre/post balances using the account indexes
+    # for the sender/receiver accounts since they aren't necessarily given in order
+    pre_sender_balance_dict = next(
+        (
+            balance
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == sender_index
+        ),
+        None,
+    )
+    pre_receiver_balance_dict = next(
+        (
+            balance
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == receiver_index
+        ),
+        None,
+    )
+    post_sender_balance_dict = next(
+        (
+            balance
+            for balance in meta["postTokenBalances"]
+            if balance["accountIndex"] == sender_index
+        ),
+        None,
+    )
+    post_receiver_balance_dict = next(
+        (
+            balance
+            for balance in meta["postTokenBalances"]
+            if balance["accountIndex"] == receiver_index
+        ),
+        None,
+    )
+
+    if (
+        pre_sender_balance_dict is None
+        or pre_receiver_balance_dict is None
+        or post_sender_balance_dict is None
+        or post_receiver_balance_dict is None
+    ):
+        logger.error("index_user_bank.py | ERROR: Sender or Receiver balance missing!")
+        return
+    pre_sender_balance = int(pre_sender_balance_dict["uiTokenAmount"]["amount"])
+    post_sender_balance = int(post_sender_balance_dict["uiTokenAmount"]["amount"])
+    pre_receiver_balance = int(pre_receiver_balance_dict["uiTokenAmount"]["amount"])
+    post_receiver_balance = int(post_receiver_balance_dict["uiTokenAmount"]["amount"])
+    sent_amount = pre_sender_balance - post_sender_balance
+    received_amount = post_receiver_balance - pre_receiver_balance
+    if sent_amount != received_amount:
+        logger.error(
+            f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
+        )
+        return
+
+    # If there was only 1 user bank, index as a send external transfer
+    if len(user_id_accounts) == 1:
+        audio_transfer_sent = AudioTransactionsHistory(
+            user_bank=sender_account,
+            signature=tx_sig,
+            transaction_type=TransactionType.transfer,
+            method=TransactionMethod.send,
+            created_at=timestamp,
+            change=sent_amount,
+            balance=post_sender_balance,
+            tx_metadata=receiver_account,
+        )
+        logger.debug(
+            f"index_user_bank.py | Creating audio_transfer_sent {audio_transfer_sent}"
+        )
+        session.add(audio_transfer_sent)
 
     # If there are two userbanks to update, it was a transfer from user to user
     # Index as a user_tip
-    if user_id_accounts and len(user_id_accounts) == 2:
-        sender_user_id: Optional[int] = None
-        receiver_user_id: Optional[int] = None
-        for user_id_account in user_id_accounts:
-            if user_id_account[1] == sender_account:
-                sender_user_id = user_id_account[0]
-            elif user_id_account[1] == receiver_account:
-                receiver_user_id = user_id_account[0]
-        if sender_user_id is None or receiver_user_id is None:
+    elif len(user_id_accounts) == 2:
+        if receiver_user_id is None:
             logger.error(
                 f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
             )
             return
 
-        # Find the right pre/post balances using the account indexes
-        # for the sender/receiver accounts since they aren't necessarily given in order
-        pre_sender_balance_dict = next(
-            (
-                balance
-                for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == sender_index
-            ),
-            None,
-        )
-        pre_receiver_balance_dict = next(
-            (
-                balance
-                for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == receiver_index
-            ),
-            None,
-        )
-        post_sender_balance_dict = next(
-            (
-                balance
-                for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == sender_index
-            ),
-            None,
-        )
-        post_receiver_balance_dict = next(
-            (
-                balance
-                for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == receiver_index
-            ),
-            None,
-        )
-        if (
-            pre_sender_balance_dict is None
-            or pre_receiver_balance_dict is None
-            or post_sender_balance_dict is None
-            or post_receiver_balance_dict is None
-        ):
-            logger.error(
-                "index_user_bank.py | ERROR: Sender or Receiver balance missing!"
-            )
-            return
-
-        pre_sender_balance = int(pre_sender_balance_dict["uiTokenAmount"]["amount"])
-        post_sender_balance = int(post_sender_balance_dict["uiTokenAmount"]["amount"])
-        pre_receiver_balance = int(pre_receiver_balance_dict["uiTokenAmount"]["amount"])
-        post_receiver_balance = int(
-            post_receiver_balance_dict["uiTokenAmount"]["amount"]
-        )
-        sent_amount = pre_sender_balance - post_sender_balance
-        received_amount = post_receiver_balance - pre_receiver_balance
-        if sent_amount != received_amount:
-            logger.error(
-                f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
-            )
-            return
         user_tip = UserTip(
             signature=tx_sig,
             amount=sent_amount,
@@ -242,6 +270,35 @@ def process_transfer_instruction(
         logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
         session.add(user_tip)
         challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
+
+        audio_tx_sent = AudioTransactionsHistory(
+            user_bank=sender_account,
+            signature=tx_sig,
+            transaction_type=TransactionType.tip,
+            method=TransactionMethod.send,
+            created_at=timestamp,
+            change=sent_amount,
+            balance=post_sender_balance,
+            tx_metadata=receiver_user_id,
+        )
+        logger.debug(
+            f"index_user_bank.py | Creating audio_tx_history send tx for tip {audio_tx_sent}"
+        )
+        session.add(audio_tx_sent)
+        audio_tx_received = AudioTransactionsHistory(
+            user_bank=receiver_account,
+            signature=tx_sig,
+            transaction_type=TransactionType.tip,
+            method=TransactionMethod.receive,
+            created_at=timestamp,
+            change=received_amount,
+            balance=post_receiver_balance,
+            tx_metadata=sender_user_id,
+        )
+        session.add(audio_tx_received)
+        logger.debug(
+            f"index_user_bank.py | Creating audio_tx_history received tx for tip {audio_tx_received}"
+        )
 
 
 class CreateTokenAccount(TypedDict):
