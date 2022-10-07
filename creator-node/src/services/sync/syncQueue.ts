@@ -101,6 +101,10 @@ export default class SyncQueue {
         )
       }
     )
+    const prometheusRegistry = serviceRegistry?.prometheusRegistry
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
+    }
   }
 
   private async processTask(job: Job) {
