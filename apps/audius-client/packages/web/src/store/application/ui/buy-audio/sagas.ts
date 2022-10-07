@@ -554,7 +554,7 @@ function* purchaseStep({
   // If the user didn't complete the on ramp flow, return early
   if (result.canceled) {
     yield* put(make(Name.BUY_AUDIO_ON_RAMP_CANCELED, { provider }))
-    return
+    return {}
   }
   yield* put(make(Name.BUY_AUDIO_ON_RAMP_SUCCESS, { provider }))
 
@@ -854,6 +854,11 @@ function* doBuyAudio({
       retryDelayMs,
       maxRetryCount
     }) as unknown as ReturnType<typeof purchaseStep>)!
+
+    // If the user canceled the purchase, stop the flow
+    if (newBalance === undefined) {
+      return
+    }
 
     // Get dummy quote to calculate fees and get exchange amount
     const quote = yield* call(JupiterSingleton.getQuote, {
