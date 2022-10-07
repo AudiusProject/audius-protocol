@@ -224,9 +224,6 @@ export const pollForNewTransaction = async ({
     limit: 1
   })
   let transaction = transactions?.[0]?.signature
-  if (initialTransaction === undefined) {
-    initialTransaction = transaction
-  }
   let retries = 0
   while (transaction === initialTransaction && retries++ < maxRetryCount) {
     console.debug(
