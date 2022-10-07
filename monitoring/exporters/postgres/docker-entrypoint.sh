@@ -14,4 +14,5 @@ if [ "$*" = "--identity-service" ]; then
     export DATA_SOURCE_NAME=${dbUrl}?sslmode=disable
 fi
 
-/bin/postgres_exporter
+# don't expose IP addresses and overwrite the server label
+/bin/postgres_exporter --constantLabels server=server
