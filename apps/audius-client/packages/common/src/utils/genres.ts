@@ -28,6 +28,7 @@ export enum Genre {
   AUDIOBOOKS = 'Audiobooks',
   LATIN = 'Latin',
   LOFI = 'Lo-Fi',
+  HYPERPOP = 'Hyperpop',
 
   // Electronic Subgenres
   TECHNO = 'Techno',
@@ -113,6 +114,7 @@ export const GENRES = [
   Genre.AUDIOBOOKS,
   Genre.LATIN,
   Genre.LOFI,
+  Genre.HYPERPOP,
   ...Object.keys(ELECTRONIC_SUBGENRES).map(
     (subgenre) => `${ELECTRONIC_PREFIX}${subgenre}`
   )
