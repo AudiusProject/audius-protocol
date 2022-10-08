@@ -54,7 +54,7 @@ class GetTrackArgs(TypedDict):
     sort_direction: Optional[SortDirection]
 
 
-def _get_tracks(session, args):
+def _get_tracks(db, session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
     base_query = base_query.filter(
@@ -177,6 +177,13 @@ def _get_tracks(session, args):
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
                 sort_fn(AggregateTrack.save_count)
             )
+    else:
+        # Return the user's pinned track first if there is no specified sort_method
+        if "user_id" in args and args.get("user_id") is not None:
+            user_id = args.get("user_id")
+            pinned_track_id = (session.query(User.artist_pick_track_id).filter(User.is_current == True, User.user_id == user_id).first())
+            if pinned_track_id:
+                base_query.order_by(db.case(((TrackWithAggregates.track_id == pinned_track_id, 1),), else_=0).desc())
 
     # Deprecated, use sort_method and sort_direction
     if "sort" in args and args.get("sort") is not None:
@@ -267,7 +274,7 @@ def get_tracks(args: GetTrackArgs):
             args["limit"] = limit
             args["offset"] = offset
 
-            tracks = _get_tracks(session, args)
+            tracks = _get_tracks(db, session, args)
 
             track_ids = list(map(lambda track: track["track_id"], tracks))
 
