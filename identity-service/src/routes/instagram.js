@@ -153,6 +153,41 @@ module.exports = function (app) {
    * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
    * the blockchainUserId with the instagram profile
    */
+   app.get('/asdf', handleResponse(async (req, res) => {
+    console.log('asdf route')
+    try {
+      const audiusLibsInstance = req.app.get('audiusLibs')
+
+      const [encodedABI, contractAddress] = await audiusLibsInstance.User.updateIsVerified(1, true, config.get('userVerifierPrivateKey'), true)
+
+      const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(
+        contractAddress
+      )
+      console.log('asdf contractRegKey', contractRegKey)
+      const senderAddress = config.get('userVerifierPublicKey')
+      const txProps = {
+        contractRegistryKey: contractRegKey,
+        contractAddress: contractAddress,
+        encodedABI: encodedABI,
+        senderAddress: senderAddress,
+        gasLimit: null
+      }
+      console.log('asdf sending txProps', txProps)
+
+      await txRelay.sendTransaction(
+        req,
+        false,
+        txProps,
+        'instagramVerified'
+      )
+      console.log('asdf tx sent')
+    } catch (e) {
+      console.log('asdf error', e)
+    }
+    console.log('asdf verify ', txProps)
+  }))
+
+
   app.post(
     '/instagram/associate',
     handleResponse(async (req, res, next) => {

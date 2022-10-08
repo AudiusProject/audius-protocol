@@ -256,6 +256,7 @@ services:
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
       registryAddress: "${POA_REGISTRY_ADDRESS}"
+      entityManagerAddress: "${ENTITY_MANAGER_ADDRESS}"
       ownerWallet: "${POA_OWNER_WALLET}"
 
       ethProviderUrl: "http://eth-ganache:8545"
@@ -412,6 +413,10 @@ services:
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
+      # resources:
+      #     limits:
+      #       cpus: "0.50"
+      #       memory: 1G
 
   # port forwarder
 

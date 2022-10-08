@@ -728,7 +728,7 @@ export class Users extends Base {
     useEntityManager?: boolean
   ) {
     if (useEntityManager) {
-      return await this.contracts.EntityManagerClient!.manageEntity(
+      return await this.contracts.EntityManagerClient!.getManageEntityParams(
         userId,
         EntityManagerClient.EntityType.USER,
         userId,
