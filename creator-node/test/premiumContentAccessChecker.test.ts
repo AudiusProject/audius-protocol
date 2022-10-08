@@ -5,8 +5,7 @@ import assert from 'assert'
 import { PremiumContentAccessError } from '../src/premiumContent/types'
 import { getApp } from './lib/app'
 import { PremiumContentAccessChecker } from '../src/premiumContent/premiumContentAccessChecker'
-
-const models = require('../src/models')
+import { PREMIUM_CONTENT_CID_CACHE_KEY } from '../src/premiumContent/helpers'
 
 describe('Test premium content access', function () {
   let premiumContentAccessChecker: PremiumContentAccessChecker
@@ -35,9 +34,6 @@ describe('Test premium content access', function () {
   const signedDataFromUser = 'signed-data-from-user'
   const signatureFromUser = 'signature-from-user'
 
-  const cnodeUserUUID = '2103c344-3843-11ed-a261-0242ac120002'
-  const fileUUID = 'f536b83e-3842-11ed-a261-0242ac120002'
-
   before(async () => {
     libsMock = getLibsMock()
     const app = await getApp(libsMock)
@@ -65,21 +61,11 @@ describe('Test premium content access', function () {
 
   describe('premium content', () => {
     beforeEach(async () => {
-      const transaction = await models.sequelize.transaction()
-      await createCNodeUser(transaction)
-      await createClockRecord(transaction)
-      await createFile(transaction)
-      await createTrack(transaction)
-      await transaction.commit()
+      redisMock.set(PREMIUM_CONTENT_CID_CACHE_KEY, JSON.stringify({ [cid]: trackBlockchainId }))
     })
 
     afterEach(async () => {
-      const transaction = await models.sequelize.transaction()
-      await deleteTrack(transaction)
-      await deleteFile(transaction)
-      await deleteClockRecord(transaction)
-      await deleteCNodeUser(transaction)
-      await transaction.commit()
+      redisMock.delete(PREMIUM_CONTENT_CID_CACHE_KEY)
     })
 
     it('fails when there are missing headers', async () => {
@@ -97,7 +83,7 @@ describe('Test premium content access', function () {
         })
       assert.deepStrictEqual(accessWithoutHeaders, {
         doesUserHaveAccess: false,
-        trackId: 1,
+        trackId: trackBlockchainId,
         isPremium: true,
         error: PremiumContentAccessError.MISSING_HEADERS
       })
@@ -119,7 +105,7 @@ describe('Test premium content access', function () {
         })
       assert.deepStrictEqual(accessWithMissingHeaders, {
         doesUserHaveAccess: false,
-        trackId: 1,
+        trackId: trackBlockchainId,
         isPremium: true,
         error: PremiumContentAccessError.MISSING_HEADERS
       })
@@ -146,7 +132,7 @@ describe('Test premium content access', function () {
         })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: false,
-        trackId: 1,
+        trackId: trackBlockchainId,
         isPremium: true,
         error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
       })
@@ -173,195 +159,27 @@ describe('Test premium content access', function () {
         })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: true,
-        trackId: 1,
+        trackId: trackBlockchainId,
         isPremium: true,
         error: null
       })
     })
   })
 
-  describe('non-premium content', () => {
-    it('passes when the CID is missing', async () => {
-      const access =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: 'premium-content-headers',
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
-      assert.deepStrictEqual(access, {
-        doesUserHaveAccess: true,
-        trackId: null,
-        isPremium: false,
-        error: null
+  it('passes when the content is not premium', async () => {
+    const access =
+      await premiumContentAccessChecker.checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: 'premium-content-headers',
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
       })
-    })
-
-    it('passes when there is no track for the cid', async () => {
-      const createRecords = async () => {
-        const transaction = await models.sequelize.transaction()
-        await createCNodeUser(transaction)
-        await createClockRecord(transaction)
-        await createFile(transaction)
-        await transaction.commit()
-      }
-
-      const deleteRecords = async () => {
-        const transaction = await models.sequelize.transaction()
-        await deleteFile(transaction)
-        await deleteClockRecord(transaction)
-        await deleteCNodeUser(transaction)
-        await transaction.commit()
-      }
-
-      try {
-        await createRecords()
-        const access =
-          await premiumContentAccessChecker.checkPremiumContentAccess({
-            cid,
-            premiumContentHeaders: 'premium-content-headers',
-            libs: libsMock,
-            logger: loggerMock,
-            redis: redisMock
-          })
-        assert.deepStrictEqual(access, {
-          doesUserHaveAccess: true,
-          trackId: null,
-          isPremium: false,
-          error: null
-        })
-        await deleteRecords()
-      } catch (e) {
-        assert.fail(`Failed to check access: ${(e as Error).message}`)
-      }
-    })
-
-    it('passes when the track is not premium', async () => {
-      const createRecords = async () => {
-        const transaction = await models.sequelize.transaction()
-        await createCNodeUser(transaction)
-        await createClockRecord(transaction)
-        await createFile(transaction)
-        await createTrack(transaction, false)
-        await transaction.commit()
-      }
-
-      const deleteRecords = async () => {
-        const transaction = await models.sequelize.transaction()
-        await deleteTrack(transaction)
-        await deleteFile(transaction)
-        await deleteClockRecord(transaction)
-        await deleteCNodeUser(transaction)
-        await transaction.commit()
-      }
-
-      try {
-        await createRecords()
-        const access =
-          await premiumContentAccessChecker.checkPremiumContentAccess({
-            cid,
-            premiumContentHeaders: 'premium-content-headers',
-            libs: libsMock,
-            logger: loggerMock,
-            redis: redisMock
-          })
-        assert.deepStrictEqual(access, {
-          doesUserHaveAccess: true,
-          trackId: 1,
-          isPremium: false,
-          error: null
-        })
-        await deleteRecords()
-      } catch (e) {
-        assert.fail(`Failed to check access: ${(e as Error).message}`)
-      }
+    assert.deepStrictEqual(access, {
+      doesUserHaveAccess: true,
+      trackId: null,
+      isPremium: false,
+      error: null
     })
   })
-
-  async function createTrack(transaction: any, isPremium = true) {
-    await models.Track.create(
-      {
-        cnodeUserUUID,
-        clock: 1,
-        blockchainId: trackBlockchainId,
-        metadataFileUUID: fileUUID,
-        metadataJSON: { is_premium: isPremium }
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteTrack(transaction: any) {
-    await models.Track.destroy(
-      {
-        where: { blockchainId: trackBlockchainId }
-      },
-      { transaction }
-    )
-  }
-
-  async function createFile(transaction: any) {
-    await models.File.create(
-      {
-        fileUUID,
-        cnodeUserUUID,
-        multihash: cid,
-        storagePath: 'storagePath',
-        trackBlockchainId,
-        type: 'track',
-        clock: 1
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteFile(transaction: any) {
-    await models.File.destroy(
-      {
-        where: { multihash: cid }
-      },
-      { transaction }
-    )
-  }
-
-  async function createClockRecord(transaction: any) {
-    await models.ClockRecord.create(
-      {
-        cnodeUserUUID,
-        clock: 1,
-        sourceTable: 'File'
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteClockRecord(transaction: any) {
-    await models.ClockRecord.destroy(
-      {
-        where: { cnodeUserUUID }
-      },
-      { transaction }
-    )
-  }
-
-  async function createCNodeUser(transaction: any) {
-    await models.CNodeUser.create(
-      {
-        cnodeUserUUID,
-        walletPublicKey: 'wallet-public-key',
-        clock: 1
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteCNodeUser(transaction: any) {
-    await models.CNodeUser.destroy(
-      {
-        where: { cnodeUserUUID }
-      },
-      { transaction }
-    )
-  }
 })

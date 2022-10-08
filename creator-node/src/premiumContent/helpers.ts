@@ -10,11 +10,15 @@ import redis from '../redis'
 import type Logger from 'bunyan'
 
 const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
-const PREMIUM_CONTENT_CID_CACHE_KEY = 'premium-content-cids'
+export const PREMIUM_CONTENT_CID_CACHE_KEY = 'premium-content-cids'
 
-export async function isCIDForPremiumTrack(
+export async function isCIDForPremiumTrack({
+  cid,
+  redis
+}: {
   cid: string
-): Promise<PremiumContentCIDResponse> {
+  redis: Redis
+}): Promise<PremiumContentCIDResponse> {
   const premiumContentCIDCache = await redis.get(PREMIUM_CONTENT_CID_CACHE_KEY)
   if (!premiumContentCIDCache) {
     return { trackId: null, isPremium: false }

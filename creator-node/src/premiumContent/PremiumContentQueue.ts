@@ -15,7 +15,7 @@ const PROCESS_NAME = 'premium-content'
  * A persistent cron-style queue that periodically refreshes
  * the premium content CIDs and their corresponding track ids.
  */
-export default class PremiumContentQueue {
+export class PremiumContentQueue {
   queue: Queue
 
   constructor() {

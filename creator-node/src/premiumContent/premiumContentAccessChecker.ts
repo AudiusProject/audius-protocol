@@ -25,11 +25,11 @@ export class PremiumContentAccessChecker {
     redis
   }: CheckAccessArgs): Promise<CheckAccessResponse> {
     // Only apply premium content middleware logic if file is a premium track file
-    const { trackId, isPremium } = await isCIDForPremiumTrack(cid)
-    if (!isPremium) {
+    const { trackId, isPremium } = await isCIDForPremiumTrack({ cid, redis })
+    if (!trackId || !isPremium) {
       return {
         doesUserHaveAccess: true,
-        trackId,
+        trackId: null,
         isPremium: false,
         error: null
       }

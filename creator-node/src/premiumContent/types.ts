@@ -29,7 +29,7 @@ export type CheckAccessResponse =
   | {
       doesUserHaveAccess: true
       trackId: number
-      isPremium: boolean
+      isPremium: true
       error: null
     }
   | {

@@ -26,7 +26,7 @@ const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
-const PremiumContentQueue = require('./premiumContent/PremiumContentQueue')
+const { PremiumContentQueue } = require('./premiumContent/PremiumContentQueue')
 const {
   PremiumContentAccessChecker
 } = require('./premiumContent/premiumContentAccessChecker')
