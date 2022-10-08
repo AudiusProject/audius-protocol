@@ -413,10 +413,6 @@ services:
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
-      # resources:
-      #     limits:
-      #       cpus: "0.50"
-      #       memory: 1G
 
   # port forwarder
 
