@@ -3,7 +3,7 @@ from datetime import datetime
 from integration_tests.utils import populate_mock_db
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
-from src.queries.query_helpers import SortMethod
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.utils.db_session import get_db
 
 
@@ -253,13 +253,20 @@ def test_get_tracks_with_pinned_track_and_sort_method(app):
 
     with db.scoped_session() as session:
         tracks = _get_tracks(
-            session, {"user_id": 5, "offset": 0, "limit": 10, "sort_method": SortMethod.release_date}
+            session,
+            {
+                "user_id": 5,
+                "offset": 0,
+                "limit": 10,
+                "sort_method": SortMethod.release_date,
+                "sort_direction": SortDirection.desc,
+            },
         )
 
         assert len(tracks) == 3
-        assert tracks[0]["track_id"] == 14
+        assert tracks[0]["track_id"] == 13
         assert tracks[1]["track_id"] == 12
-        assert tracks[2]["track_id"] == 13
+        assert tracks[2]["track_id"] == 14
 
 
 def test_get_track_by_route(app):
