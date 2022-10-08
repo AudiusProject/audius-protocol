@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy import and_, asc, desc, func, or_, case
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -54,7 +54,7 @@ class GetTrackArgs(TypedDict):
     sort_direction: Optional[SortDirection]
 
 
-def _get_tracks(db, session, args):
+def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
     base_query = base_query.filter(
@@ -181,9 +181,9 @@ def _get_tracks(db, session, args):
         # Return the user's pinned track first if there is no specified sort_method
         if "user_id" in args and args.get("user_id") is not None:
             user_id = args.get("user_id")
-            pinned_track_id = (session.query(User.artist_pick_track_id).filter(User.is_current == True, User.user_id == user_id).first())
+            pinned_track_id = session.query(User.artist_pick_track_id).filter(User.is_current == True, User.user_id == user_id).scalar()
             if pinned_track_id:
-                base_query.order_by(db.case(((TrackWithAggregates.track_id == pinned_track_id, 1),), else_=0).desc())
+                base_query = base_query.order_by(case(((TrackWithAggregates.track_id == pinned_track_id, 0),), else_=1))
 
     # Deprecated, use sort_method and sort_direction
     if "sort" in args and args.get("sort") is not None:
@@ -214,7 +214,7 @@ def _get_tracks(db, session, args):
             base_query = parse_sort_param(
                 base_query, TrackWithAggregates, whitelist_params
             )
-
+ 
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])
     tracks = helpers.query_result_to_list(query_results.all())
     return tracks
@@ -274,7 +274,7 @@ def get_tracks(args: GetTrackArgs):
             args["limit"] = limit
             args["offset"] = offset
 
-            tracks = _get_tracks(db, session, args)
+            tracks = _get_tracks(session, args)
 
             track_ids = list(map(lambda track: track["track_id"], tracks))
 

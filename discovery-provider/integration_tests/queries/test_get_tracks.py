@@ -236,8 +236,8 @@ def test_get_tracks_with_pinned_track(app):
 
         assert len(tracks) == 3
         assert tracks[0]["track_id"] == 12
-        assert tracks[1]["track_id"] == 14
-        assert tracks[2]["track_id"] == 13
+        assert tracks[1]["track_id"] == 13
+        assert tracks[2]["track_id"] == 14
 
 
 def test_get_tracks_with_pinned_track_and_sort_method(app):
@@ -257,9 +257,9 @@ def test_get_tracks_with_pinned_track_and_sort_method(app):
         )
 
         assert len(tracks) == 3
-        assert tracks[0]["track_id"] == 13
+        assert tracks[0]["track_id"] == 14
         assert tracks[1]["track_id"] == 12
-        assert tracks[2]["track_id"] == 14
+        assert tracks[2]["track_id"] == 13
 
 
 def test_get_track_by_route(app):
