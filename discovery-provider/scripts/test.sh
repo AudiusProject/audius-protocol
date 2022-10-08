@@ -17,7 +17,7 @@ set -e
 # rm -r venv
 # python3 -m venv venv
 # source venv/bin/activate
-pip3 install -r requirements.txt
+python3.9 -m pip install -r requirements.txt
 sleep 5
 set +e
 
@@ -75,8 +75,8 @@ mkdir -p $PROMETHEUS_MULTIPROC_DIR
 
 if [ -z ${SKIP_TESTS+x} ]; then
   # Unit tests
-  pytest src
+  python3.9 -m pytest src
 
   # Integration tests
-  pytest integration_tests
+  python3.9 -m pytest integration_tests
 fi
