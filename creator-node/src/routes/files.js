@@ -547,7 +547,7 @@ const getDirCID = async (req, res) => {
     )
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
+    req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
