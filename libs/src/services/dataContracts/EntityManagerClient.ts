@@ -40,7 +40,7 @@ export class EntityManagerClient extends ContractClient {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
-    let signatureData = signatureSchemas.generators.getManageEntityData(
+    const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       contractAddress,
       userId,
@@ -73,6 +73,7 @@ export class EntityManagerClient extends ContractClient {
     )
     return [method.encodeABI(), contractAddress]
   }
+
   /**
    * Calls the manage entity method on chain
    * @param {number} userId The numeric user id
@@ -81,7 +82,7 @@ export class EntityManagerClient extends ContractClient {
    * @param {Action} action Action being performed on the entity
    * @param {string} metadataMultihash CID multihash or metadata associated with action
    * @param {string}privateKey The private key used to sign the transaction
-  */
+   */
   async manageEntity(
     userId: number,
     entityType: EntityType,
@@ -93,7 +94,7 @@ export class EntityManagerClient extends ContractClient {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
-    let signatureData = signatureSchemas.generators.getManageEntityData(
+    const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       contractAddress,
       userId,

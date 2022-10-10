@@ -741,7 +741,7 @@ export class Users extends Base {
         userId,
         isVerified,
         privateKey
-      )  
+      )
     }
   }
 
