@@ -3,12 +3,18 @@ import { shouldForceResync } from '../src/services/sync/secondarySyncFromPrimary
 import assert from 'assert'
 import proxyquire from 'proxyquire'
 
+const config = require('../src/config')
+
 describe('test secondarySyncFromPrimaryUtils', function () {
   const mockedLibs = {
     contracts: { UserReplicaSetManagerClient: null },
     User: { getUsers: null }
   }
   const mockLogContext = { context: 'test' }
+
+  beforeEach(function () {
+    config.set('entityManagerReplicaSetEnabled', true)
+  })
 
   it('if force resync configs are not passed it, will not force resync', async function () {
     assert.deepStrictEqual(
