@@ -317,13 +317,13 @@ const validateTrackOwner = async ({
   blockNumber
 }) => {
   const asyncFn = async () => {
-    const discoveryTrackResponse = await libs.Track.getTracks(1, 0, [trackId])
+    const discoveryTrackResponse = await libs.Track.getTracksVerbose(1, 0, [trackId])
     if (
       !Array.isArray(discoveryTrackResponse) ||
       discoveryTrackResponse.length === 0 ||
       !discoveryTrackResponse[0].hasOwnProperty('blocknumber')
     ) {
-      throw new Error('Missing or malformatted track fetched from discprov.')
+      throw new Error(`Missing or malformatted track fetched from discprov ${libs.discoveryProvider.discoveryProviderEndpoint}`)
     }
     const track = discoveryTrackResponse[0]
     if (track.blocknumber >= blockNumber) {
@@ -466,7 +466,7 @@ router.post(
         })
         if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID of track ${blockchainTrackId} does not match ${req.session.userId}`
+            `Failed to confirm that user ${req.session.userId} is owner of ${blockchainTrackId} at blocknumber ${blockNumber}`
           )
         }
 
