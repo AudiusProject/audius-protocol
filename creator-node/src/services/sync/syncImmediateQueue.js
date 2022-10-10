@@ -84,6 +84,10 @@ class SyncImmediateQueue {
         )
       }
     )
+    const prometheusRegistry = serviceRegistry?.prometheusRegistry
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
+    }
   }
 
   async processTask(job) {

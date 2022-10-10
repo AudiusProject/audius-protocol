@@ -26,7 +26,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job started. :crossed_fingers:"
+        default: ":rocket: Job started"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -43,59 +43,20 @@ commands:
             {
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
-                    "type": "plain_text",
-                    "text": "<< parameters.text >>",
-                    "emoji": true
+                    "text": "*<< parameters.text >>:* ${CIRCLE_JOB}\n*Details:* `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> \n<< parameters.detail >> ",
+                    "type": "mrkdwn"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Job",
+                      "emoji": true
+                    },
+                    "url": "${CIRCLE_BUILD_URL}"
                   }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "<< parameters.detail >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: $CIRCLE_USERNAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Mentions*: << parameters.slack_mentions_user >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Job"
-                      },
-                      "url": "${CIRCLE_BUILD_URL}"
-                    }
-                  ]
                 }
               ]
             }
@@ -117,7 +78,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job Failed. :red_circle:"
+        default: ":red_circle: Job Failed"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -151,7 +112,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Deployment Successful! :tada:"
+        default: ":tada: Deployment Successful"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -1246,7 +1207,7 @@ jobs:
       target:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
-        enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
+        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1268,19 +1229,19 @@ jobs:
             equal: [ cut-release, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Release branch has been cut! :git-fork:"
+                text: ":git-fork: Release branch has been cut"
       - when:
           condition:
-            equal: [ execute-proposal, << parameters.target >> ]
+            equal: [ evaluate-proposal, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Governance Proposal has been executed! :done:"
+                text: ":done: Governance Proposal has been evaluated"
       - when:
           condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Deployment Released to Service Providers! :gift:"
+                text: ":gift: Deployment Released to Service Providers"
                 detail: "New Governance Proposals are out. :vote:"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             # must be last step in job
@@ -1626,7 +1587,6 @@ workflows:
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
-          params: --dry-run
           context:
             - slack-secrets
             - gh-tokens
@@ -1654,9 +1614,9 @@ workflows:
             - discord
           requires:
             - 🚧-🎁-to-SPs-🕹️
-      # Execute Governance Proposal (for release branches)
+      # Evaluate Governance Proposal (for release branches)
       - noop:
-          name: execute-proposal-🕹️
+          name: evaluate-proposal-🕹️
           type: approval
           filters:
             branches:
@@ -1664,12 +1624,12 @@ workflows:
           requires:
             - 🚧-🎁-to-SPs
       - release-scripts:
-          name: execute-proposal
-          target: execute-proposal
+          name: evaluate-proposal
+          target: evaluate-proposal
           context:
             - slack-secrets
           requires:
-            - execute-proposal-🕹️
+            - evaluate-proposal-🕹️
 
       - test-libs:
           name: test-libs

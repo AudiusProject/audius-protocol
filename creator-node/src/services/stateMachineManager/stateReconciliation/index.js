@@ -30,7 +30,7 @@ const recoverOrphanedDataLogger = createChildLogger(baseLogger, {
  * - updating user's replica sets when one or more nodes in their replica set becomes unhealthy
  */
 class StateReconciliationManager {
-  async init(discoveryNodeEndpoint, prometheusRegistry) {
+  async init(prometheusRegistry) {
     const { queue: manualSyncQueue } = makeQueue({
       name: QUEUE_NAMES.MANUAL_SYNC,
       processor: this.makeProcessJob(
@@ -112,12 +112,6 @@ class StateReconciliationManager {
       await updateReplicaSetQueue.obliterate({ force: true })
       await recoverOrphanedDataQueue.obliterate({ force: true })
     }
-
-    // Queue the first recoverOrphanedData job, which will re-enqueue itself
-    await this.startRecoverOrphanedDataQueue(
-      recoverOrphanedDataQueue,
-      discoveryNodeEndpoint
-    )
 
     return {
       manualSyncQueue,
