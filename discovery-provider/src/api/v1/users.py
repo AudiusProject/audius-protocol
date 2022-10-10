@@ -32,6 +32,7 @@ from src.api.v1.helpers import (
     success_response,
     track_history_parser,
     user_favorited_tracks_parser,
+    user_track_listen_count_route_parser,
     user_tracks_route_parser,
     verify_token_parser,
 )
@@ -73,6 +74,7 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
 from src.queries.get_tracks import GetTrackArgs, get_tracks
+from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
@@ -201,6 +203,85 @@ USER_TRACKS_ROUTE = "/<string:id>/tracks"
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
 )
+
+USER_TRACK_LISTEN_COUNT_ROUTE = "/<string:user_id>/listen_counts_monthly"
+
+
+@ns.route(USER_TRACK_LISTEN_COUNT_ROUTE)
+class UserTrackListenCountsMonthly(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Listen Counts Grouped by Month and Track""",
+        description="""Gets the listen data for a user by month and track within a given time frame.""",
+        params={
+            "user_id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    def get(self, user_id):
+        """
+        Queries for a user's monthly play data and organizes data by month and track.
+        Response data is meant to imitate identity service's endpoint for getTrackListens().
+
+        Returns:
+            JSON dict of the following structure:
+            {
+                "2021-10-01T00:00:00.000Z": {
+                    "totalListens"     : 7,
+                    "trackIds": [484436],
+                    "listenCounts": [
+                        {
+                            "trackId": 484436,
+                            "date": "2021-10-01T00:00:00.000Z",
+                            "listens": 7,
+                        }
+                    ],
+                }
+            },
+        """
+        args = user_track_listen_count_route_parser.parse_args()
+        start_time = args.get("start_time")
+        end_time = args.get("end_time")
+        aggregate_monthly_plays_for_user = get_user_listen_counts_monthly(
+            {
+                "user_id": user_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            }
+        )
+
+        formatted_response_data = self._format_aggregate_monthly_plays_for_user(
+            aggregate_monthly_plays_for_user
+        )
+
+        return success_response(formatted_response_data)
+
+    @staticmethod
+    def _format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user):
+        formatted_response_data = {}
+        for aggregate_monthly_play in aggregate_monthly_plays_for_user:
+            month = aggregate_monthly_play.timestamp
+            if month not in formatted_response_data:
+                formatted_response_data[month] = {}
+                formatted_response_by_month = formatted_response_data[month]
+                formatted_response_by_month["totalListens"] = 0
+                formatted_response_by_month["trackIds"] = []
+                formatted_response_by_month["listenCounts"] = []
+
+            formatted_response_by_month = formatted_response_data[month]
+            formatted_response_by_month["listenCounts"].append(
+                {
+                    "trackId": aggregate_monthly_play.play_item_id,
+                    "date": month,
+                    "listens": aggregate_monthly_play.count,
+                }
+            )
+            formatted_response_by_month["trackIds"].append(
+                aggregate_monthly_play.play_item_id
+            )
+            formatted_response_by_month["totalListens"] += aggregate_monthly_play.count
+
+        return formatted_response_data
 
 
 @ns.route(USER_TRACKS_ROUTE)

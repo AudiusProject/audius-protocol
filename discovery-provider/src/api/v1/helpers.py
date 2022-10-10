@@ -530,6 +530,20 @@ user_favorited_tracks_parser.add_argument(
     choices=SortDirection._member_names_,
 )
 
+user_track_listen_count_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+user_track_listen_count_route_parser.add_argument(
+    "start_time",
+    required=True,
+    description="Start time from which to start results for user listen count data (inclusive).",
+)
+user_track_listen_count_route_parser.add_argument(
+    "end_time",
+    required=True,
+    description="End time until which to cut off results of listen count data (not inclusive).",
+)
+
 user_tracks_route_parser = pagination_with_current_user_parser.copy()
 user_tracks_route_parser.add_argument(
     "sort",
