@@ -80,8 +80,9 @@ const styles = StyleSheet.create({
     borderColor: defaultBorderColor,
     backgroundColor: '#FCFCFC',
     borderRadius: 4,
-    padding: 10,
     color: '#858199',
+    textAlignVertical: 'center',
+    justifyContent: 'center',
     fontFamily: 'AvenirNextLTPro-DemiBold',
     fontSize: 16
   },
