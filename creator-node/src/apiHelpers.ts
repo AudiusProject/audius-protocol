@@ -18,7 +18,7 @@ import { generateTimestampAndSignature } from './apiSigning'
 // is a type that adds additional fields to the request object.
 export type CustomRequest = Request & {
   logger: Logger
-  normalizedPath: string
+  normalizedPath?: string
   endMetricTimer?: Function
 }
 
