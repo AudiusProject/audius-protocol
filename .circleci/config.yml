@@ -1253,7 +1253,6 @@ jobs:
                 -X POST \
                 "${DISCORD_WEBHOOK}"
 
-
   generate-release-checklist:
     docker:
       - image: circleci/node:14.17.5
