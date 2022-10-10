@@ -316,27 +316,49 @@ const validateTrackOwner = async ({
   userId,
   blockNumber
 }) => {
+  const logPrefix = `[validateTrackOwner][trackId: ${trackId}][userId: ${userId}][blockNumber: ${blockNumber}]`
   const asyncFn = async () => {
-    const discoveryTrackResponse = await libs.Track.getTracksVerbose(1, 0, [trackId])
-    if (
-      !Array.isArray(discoveryTrackResponse) ||
-      discoveryTrackResponse.length === 0 ||
-      !discoveryTrackResponse[0].hasOwnProperty('blocknumber')
-    ) {
-      throw new Error(`Missing or malformatted track fetched from discprov ${libs.discoveryProvider.discoveryProviderEndpoint}`)
-    }
-    const track = discoveryTrackResponse[0]
-    if (track.blocknumber >= blockNumber) {
-      return parseInt(userId) === track.owner_id
-    }
-    throw new Error(
-      `Block not yet indexed: Waiting for ${track.blocknumber}, but at ${blockNumber}`
+    const discoveryTrackResponseVerbose = await libs.Track.getTracksVerbose(
+      1,
+      0,
+      [trackId]
     )
+    const discoveryProviderEndpoint =
+      libs.discoveryProvider.discoveryProviderEndpoint
+    const {
+      latest_indexed_block: latestIndexedBlock,
+      latest_chain_block: latestChainBlock,
+      data: discoveryTrackResponse
+    } = discoveryTrackResponseVerbose
+    const blockDiff = latestChainBlock - latestIndexedBlock
+
+    // Throw if target blockNumber not indexed
+    if (latestIndexedBlock < blockNumber) {
+      throw new Error(
+        `${logPrefix}: targetBlocknumber not indexed. ${discoveryProviderEndpoint} currently at ${latestIndexedBlock} with blockDiff ${blockDiff}`
+      )
+    }
+
+    // Throw if malformatted response
+    if (!Array.isArray(discoveryTrackResponse)) {
+      throw new Error(
+        `${logPrefix}: Malformatted track response from discovery ${discoveryProviderEndpoint}`
+      )
+    }
+
+    // Return if track not found at target block
+    if (discoveryTrackResponse.length === 0) {
+      return false
+    }
+
+    // Return boolean indicating if track owner matches expected
+    return parseInt(userId) === discoveryTrackResponse[0].owner_id
   }
 
   return await asyncRetry({
     asyncFn,
-    logger
+    logger,
+    retries: 10
   })
 }
 
