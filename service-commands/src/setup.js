@@ -101,6 +101,7 @@ const execShellCommands = async (commands, service, { verbose }) => {
   try {
     const commandOutputs = []
     for (const command of commands) {
+      console.log(command);
       const output = await execShellCommand(command, service, { verbose })
       commandOutputs.push(output)
     }
@@ -650,8 +651,8 @@ const allUp = async ({
   ]
 
   const ipfsAndContractsCommands = [
-    [Service.IPFS, SetupCommand.UP],
-    [Service.IPFS_2, SetupCommand.UP],
+    // [Service.IPFS, SetupCommand.UP],
+    // [Service.IPFS_2, SetupCommand.UP],
     [Service.CONTRACTS_PREDEPLOYED, SetupCommand.UP],
     [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP],
     [Service.LIBS, SetupCommand.UP]
@@ -768,8 +769,8 @@ const allUp = async ({
   await runInSequence(setup, options)
 
   // Run parallel ops
-  await runInParallel(ipfsAndContractsCommands, options)
-  await runInParallel(contractHealthChecksCommands, options)
+  await runInSequence(ipfsAndContractsCommands, options)
+  await runInSequence(contractHealthChecksCommands, options)
   if (buildDataEthContracts) {
     await runInSequence(prereqs, options)
   }

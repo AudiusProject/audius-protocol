@@ -22,7 +22,7 @@
     "port": 8545,
     "health_check_endpoint": "",
     "up": [
-      "audius-compose up poa-contracts"
+      "audius-compose up poa-ganache"
     ],
     "down": [
       "docker compose rm -s -f poa-ganache"
