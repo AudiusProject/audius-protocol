@@ -66,37 +66,25 @@ export class PremiumContentQueue {
    */
   async getPremiumContentCIDMap() {
     const result = await models.sequelize.query(
-      `select t."blockchainId", t."metadataJSON", f."multihash" from "Tracks" t join "Files" f
-        on t."blockchainId" = f."trackBlockchainId"
-        where f."type" in ('track', 'copy320')`,
+      `with tf as (
+          select t."blockchainId", (t."metadataJSON" ->> 'is_premium')::boolean as "isPremium", f."multihash"
+            from "Tracks" t join "Files" f
+            on t."blockchainId" = f."trackBlockchainId"
+            where f."type" in ('track', 'copy320')
+        )
+      select * from tf
+        where "isPremium" = true
+        and "multihash" not in (
+          select "multihash" from tf where "isPremium" = false
+        );`,
       {
         type: QueryTypes.SELECT
       }
     )
-    const nonPremiumCIDSet = new Set()
     const premiumCIDMap: { [key: string]: number } = {}
-    result.forEach(
-      (record: {
-        blockchainId: number
-        metadataJSON: any
-        multihash: string
-      }) => {
-        if (record.metadataJSON.is_premium) {
-          if (!nonPremiumCIDSet.has(record.multihash)) {
-            // Only add to CID to map if we have not yet seen
-            // a non-premium track with the same CID.
-            premiumCIDMap[record.multihash] = record.blockchainId
-          }
-        } else if (premiumCIDMap[record.multihash]) {
-          // If the same CID exists in the map, remove it from the map
-          // because there exists a non-premium track with the same CID.
-          // Also add it to the non-premium CID set to make sure
-          // this CID never gets re-entered in the map.
-          delete premiumCIDMap[record.multihash]
-          nonPremiumCIDSet.add(record.multihash)
-        }
-      }
-    )
+    result.forEach((record: { blockchainId: number; multihash: string }) => {
+      premiumCIDMap[record.multihash] = record.blockchainId
+    })
     return premiumCIDMap
   }
 
