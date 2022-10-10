@@ -1271,7 +1271,7 @@ jobs:
           steps:
             - slack-success:
                 text: ":gift: Deployment Released to Service Providers"
-                detail: "New Governance Proposals are out. :vote:"
+                detail: "New Governance Proposals are out @ https://dashboard.audius.org/#/governance :vote:"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
                 channel: C03STD3UXMG
             - run: |
