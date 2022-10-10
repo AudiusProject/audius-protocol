@@ -1,15 +1,44 @@
-const config = require('./config')
+import type { Request, Response, NextFunction } from 'express'
+import type { AxiosResponse } from 'axios'
+import type Logger from 'bunyan'
 
-const {
+import { tracing } from './tracer'
+
+import config from './config'
+
+import {
   requestNotExcludedFromLogging,
   getDuration,
   createChildLogger,
-  logger: genericLogger
-} = require('./logging')
-const { generateTimestampAndSignature } = require('./apiSigning')
+  logger as genericLogger
+} from './logging'
+import { generateTimestampAndSignature } from './apiSigning'
 
-module.exports.handleResponse = (func) => {
-  return async function (req, res, next) {
+// Content node app adds additional fields to the Express request object. This typing
+// is a type that adds additional fields to the request object.
+export type CustomRequest = Request & {
+  logger: Logger
+  normalizedPath: string
+  endMetricTimer?: Function
+}
+
+type ApiResponse = {
+  statusCode: number
+  object: {
+    error?: any
+    timestamp?: Date
+    signature?: string
+    data?: any
+    signer?: string
+  }
+}
+
+export const handleResponse = <
+  TAsyncFunction extends (...args: any[]) => Promise<any>
+>(
+  func: TAsyncFunction
+) => {
+  return async function (req: Request, res: Response, next: NextFunction) {
     try {
       const resp = await func(req, res, next)
 
@@ -17,9 +46,10 @@ module.exports.handleResponse = (func) => {
         throw new Error('Invalid response returned by function')
       }
 
-      sendResponse(req, res, resp)
+      sendResponse(req as any, res, resp)
       next()
-    } catch (error) {
+    } catch (error: any) {
+      tracing.recordException(error)
       genericLogger.error('HandleResponse', error)
       next(error)
     }
@@ -31,8 +61,12 @@ module.exports.handleResponse = (func) => {
  * `res.write` as a piece of the JSON result
  * @param {() => void} func returns the response JSON
  */
-module.exports.handleResponseWithHeartbeat = (func) => {
-  return async function (req, res, next) {
+export const handleResponseWithHeartbeat = <
+  TAsyncFunction extends (...args: any[]) => Promise<any>
+>(
+  func: TAsyncFunction
+) => {
+  return async function (req: Request, res: Response, next: NextFunction) {
     try {
       // First declare our content type since we will be sending heartbeats back
       // in JSON
@@ -59,18 +93,24 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
       sendResponseWithHeartbeatTerminator(req, res, resp)
       next()
-    } catch (error) {
+    } catch (error: any) {
+      tracing.recordException(error)
       sendResponseWithHeartbeatTerminator(req, res, errorResponse(500, error))
     }
   }
 }
 
-const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
-  const duration = getDuration(req)
-  let logger = createChildLogger(req.logger, {
+export const sendResponse = (
+  req: Request,
+  res: Response,
+  resp: ApiResponse
+) => {
+  const reqWithLogger = req as CustomRequest
+  const duration = getDuration(req as any)
+  let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
-  })
+  }) as Logger
 
   if (resp.statusCode === 200) {
     if (requestNotExcludedFromLogging(req.originalUrl)) {
@@ -79,7 +119,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   } else {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
-    })
+    }) as Logger
     if (req && req.body) {
       logger.info(
         'Error processing request:',
@@ -99,7 +139,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
 
   res.status(resp.statusCode).send(resp.object)
-})
+}
 
 /**
  * Wrapper helper method to send response with metrics involved
@@ -109,15 +149,15 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
  * @param {Object} prometheusResult prometheus results to track
  */
 module.exports.sendResponseWithMetric = (
-  req,
-  res,
-  routeResponse,
-  prometheusResult
+  req: CustomRequest,
+  res: Response,
+  routeResponse: ApiResponse,
+  prometheusResult: { result: string; mode?: string }
 ) => {
   if (req.endMetricTimer) {
     try {
       req.endMetricTimer(prometheusResult)
-    } catch (e) {
+    } catch (e: any) {
       req.logger.warn(`Could not end timer: ${e.message}`)
     }
   }
@@ -125,62 +165,67 @@ module.exports.sendResponseWithMetric = (
   sendResponse(req, res, routeResponse)
 }
 
-const sendResponseWithHeartbeatTerminator =
-  (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
-    const duration = getDuration(req)
-    let logger = createChildLogger(req.logger, {
-      duration,
-      statusCode: resp.statusCode
-    })
+export const sendResponseWithHeartbeatTerminator = (
+  req: Request,
+  res: Response,
+  resp: ApiResponse
+) => {
+  const duration = getDuration(req as any)
+  const reqWithLogger = req as CustomRequest
+  let logger = createChildLogger(reqWithLogger.logger, {
+    duration,
+    statusCode: resp.statusCode
+  }) as Logger
 
-    if (resp.statusCode === 200) {
-      if (requestNotExcludedFromLogging(req.originalUrl)) {
-        logger.info('Success')
-      }
+  if (resp.statusCode === 200) {
+    if (requestNotExcludedFromLogging(req.originalUrl)) {
+      logger.info('Success')
+    }
+  } else {
+    logger = createChildLogger(logger, {
+      errorMessage: resp.object.error
+    }) as Logger
+    if (req && req.body) {
+      logger.info(
+        'Error processing request:',
+        resp.object.error,
+        '|| Request Body:',
+        req.body
+      )
     } else {
-      logger = createChildLogger(logger, {
-        errorMessage: resp.object.error
-      })
-      if (req && req.body) {
-        logger.info(
-          'Error processing request:',
-          resp.object.error,
-          '|| Request Body:',
-          req.body
-        )
-      } else {
-        logger.info('Error processing request:', resp.object.error)
-      }
-
-      // Converts the error object into an object that JSON.stringify can parse
-      if (resp.object.error) {
-        resp.object.error = Object.getOwnPropertyNames(
-          resp.object.error
-        ).reduce((acc, cur) => {
-          acc[cur] = resp.object.error[cur]
-          return acc
-        }, {})
-      }
+      logger.info('Error processing request:', resp.object.error)
     }
 
-    // Construct the remainder of the JSON response
-    let response = '",'
-    // Replace the first '{' since we already have that
-    response += JSON.stringify(resp.object).replace('{', '')
+    // Converts the error object into an object that JSON.stringify can parse
+    if (resp.object.error) {
+      resp.object.error = Object.getOwnPropertyNames(resp.object.error).reduce(
+        (acc: Record<any, any>, cur: any) => {
+          acc[cur] = resp.object.error![cur]
+          return acc
+        },
+        {}
+      )
+    }
+  }
 
-    // Terminate the response
-    res.end(response)
-  })
+  // Construct the remainder of the JSON response
+  let response = '",'
+  // Replace the first '{' since we already have that
+  response += JSON.stringify(resp.object).replace('{', '')
 
-const isValidResponse = (module.exports.isValidResponse = (resp) => {
+  // Terminate the response
+  res.end(response)
+}
+
+export const isValidResponse = (resp: ApiResponse) => {
   if (!resp || !resp.statusCode || !resp.object) {
     return false
   }
 
   return true
-})
+}
 
-module.exports.successResponse = (obj = {}) => {
+export const successResponse = (obj = {}) => {
   const toSignData = {
     data: {
       ...obj
@@ -203,38 +248,38 @@ module.exports.successResponse = (obj = {}) => {
   }
 }
 
-const errorResponse = (module.exports.errorResponse = (statusCode, message) => {
+export const errorResponse = (statusCode: number, message: string) => {
   return {
     statusCode: statusCode,
     object: { error: message }
   }
-})
+}
 
-module.exports.errorResponseUnauthorized = (message) => {
+export const errorResponseUnauthorized = (message: string) => {
   return errorResponse(401, message)
 }
 
-module.exports.errorResponseForbidden = (message) => {
+export const errorResponseForbidden = (message: string) => {
   return errorResponse(403, message)
 }
 
-module.exports.errorResponseBadRequest = (message) => {
+export const errorResponseBadRequest = (message: string) => {
   return errorResponse(400, message)
 }
 
-module.exports.errorResponseRangeNotSatisfiable = (message) => {
+module.exports.errorResponseRangeNotSatisfiable = (message: string) => {
   return errorResponse(416, message)
 }
 
-module.exports.errorResponseServerError = (message) => {
+export const errorResponseServerError = (message: string) => {
   return errorResponse(500, message)
 }
 
-module.exports.errorResponseNotFound = (message) => {
+export const errorResponseNotFound = (message: string) => {
   return errorResponse(404, message)
 }
 
-module.exports.errorResponseSocketTimeout = (socketTimeout) => {
+export const errorResponseSocketTimeout = (socketTimeout: number) => {
   return errorResponse(
     500,
     `${socketTimeout} socket timeout exceeded for request`
@@ -245,30 +290,34 @@ module.exports.errorResponseSocketTimeout = (socketTimeout) => {
  * Define custom api error subclasses to be thrown in components and handled in route controllers
  */
 
-class ErrorBadRequest extends Error {}
-Object.defineProperty(ErrorBadRequest.prototype, 'name', {
-  value: 'ErrorBadRequest'
-})
-class ErrorServerError extends Error {}
-Object.defineProperty(ErrorServerError.prototype, 'name', {
-  value: 'ErrorServerError'
-})
+export class ErrorBadRequest extends Error {
+  declare name: string
+  constructor(message: string) {
+    super(message)
+    this.name = 'ErrorBadRequest'
+  }
+}
 
-module.exports.ErrorBadRequest = ErrorBadRequest
-module.exports.ErrorServerError = ErrorServerError
+export class ErrorServerError extends Error {
+  declare name: string
+  constructor(message: string) {
+    super(message)
+    this.name = 'ErrorServiceError'
+  }
+}
 
 /**
  * Given an error instance, returns the corresponding error response to request
  * @param {Error} error instance of error class or subclass
  */
-module.exports.handleApiError = (error) => {
+export const handleApiError = (error: any) => {
   switch (error) {
     case ErrorBadRequest:
-      return this.errorResponseBadRequest(error.message)
+      return errorResponseBadRequest(error.message)
     case ErrorServerError:
-      return this.errorResponseServerError(error.message)
+      return errorResponseServerError(error.message)
     default:
-      return this.errorResponseServerError(error.message)
+      return errorResponseServerError(error.message)
   }
 }
 
@@ -281,7 +330,10 @@ module.exports.handleApiError = (error) => {
  * @param {Object} respObj original response object from axios request to content node
  * @param {string[]} requiredFields
  */
-module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
+export const parseCNodeResponse = (
+  respObj: AxiosResponse,
+  requiredFields = []
+) => {
   if (!respObj.data || !respObj.data.data) {
     throw new Error('Unexpected respObj format')
   }

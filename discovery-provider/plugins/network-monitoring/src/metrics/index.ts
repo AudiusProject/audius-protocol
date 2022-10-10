@@ -2,14 +2,17 @@ import axios from "axios";
 import {
   allUserCountGauge,
   fullySyncedUsersByPrimaryCountGauge,
+  fullySyncedUsersByReplicaCountGauge,
   fullySyncedUsersCountGauge,
   gateway,
   generatingMetricsDurationGauge,
   nullPrimaryUsersCountGauge,
   partiallySyncedUsersByPrimaryCountGauge,
+  partiallySyncedUsersByReplicaCountGauge,
   partiallySyncedUsersCountGauge,
   primaryUserCountGauge,
   unsyncedUsersByPrimaryCountGauge,
+  unsyncedUsersByReplicaCountGauge,
   unsyncedUsersCountGauge,
   userCountGauge,
   usersWithAllFoundationNodeReplicaSetGauge,
@@ -28,6 +31,7 @@ import {
   getRunStartTime,
   getUsersWithEntireReplicaSetNotInSpidSetCount,
   getUserStatusByPrimary,
+  getUserStatusByReplica,
 } from "./queries";
 import { instrumentTracing, tracing } from "..//tracer"
 
@@ -64,6 +68,7 @@ const _generateMetrics = async (run_id: number) => {
     );
 
   const userStatusByPrimary = await getUserStatusByPrimary(run_id);
+  const userStatusByReplica = await getUserStatusByReplica(run_id);
 
   allUserCount.forEach(({ endpoint, count }) => {
     allUserCountGauge.set({ endpoint, run_id }, count);
@@ -81,6 +86,18 @@ const _generateMetrics = async (run_id: number) => {
       fullySyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, fullySyncedCount);
       partiallySyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, partiallySyncedCount);
       unsyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, unsyncedCount);
+    }
+  );
+  userStatusByReplica.forEach(
+    ({
+      endpoint,
+      fullySyncedCount,
+      partiallySyncedCount,
+      unsyncedCount,
+    }) => {
+      fullySyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, fullySyncedCount);
+      partiallySyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, partiallySyncedCount);
+      unsyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, unsyncedCount);
     }
   );
 

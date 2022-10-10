@@ -1,4 +1,5 @@
 import { initializeApp } from '../../src/app'
+import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
@@ -8,7 +9,6 @@ const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
-const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
 export async function getApp(
   libsClient,

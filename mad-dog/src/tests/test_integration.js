@@ -76,31 +76,6 @@ module.exports = coreIntegration = async ({
 }) => {
   // Begin: Test Setup
 
-  // If running with UserReplicaSetManager deployed, wait until all Content Nodes are registered on it
-  const URSMClient = await executeOne(0, libs => libs.libsInstance.contracts.UserReplicaSetManagerClient)
-  if (URSMClient) {
-    let retryCount = 0
-    const retryLimit = 10
-    const retryIntervalMs = 10000 // 10sec
-    while (true) {
-      console.log(`Ensuring correct URSM state with interval ${retryIntervalMs} || attempt #${retryCount} ...`)
-
-      const URSMContentNodes = await executeOne(0, libs => getURSMContentNodes(libs))
-
-      if (URSMContentNodes.length === numCreatorNodes) {
-        break
-      }
-
-      if (retryCount >= retryLimit) {
-        return { error: `URSM state not correctly initialized after ${retryIntervalMs * retryLimit}ms` }
-      }
-
-      retryCount++
-
-      await delay(retryIntervalMs)
-    }
-  }
-
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)
   await fs.ensureDir(TEMP_IMG_STORAGE_PATH)

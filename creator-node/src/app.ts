@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction, IRoute } from 'express'
-import type Logger from 'bunyan'
+import type { CustomRequest } from './apiHelpers'
 
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -26,10 +26,6 @@ import { exponentialBucketsRange } from './services/prometheusMonitoring/prometh
 import healthCheckRoutes from './components/healthCheck/healthCheckController'
 import contentBlacklistRoutes from './components/contentBlacklist/contentBlacklistController'
 import replicaSetRoutes from './components/replicaSet/replicaSetController'
-
-// Content node app adds additional fields to the Express request object. This typing
-// is a type that adds additional fields to the request object.
-type CustomRequest = Request & { logger: Logger; normalizedPath: string }
 
 function errorHandler(
   err: any,

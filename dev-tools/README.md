@@ -9,7 +9,6 @@ exit
 
 # build and pull
 audius-compose build # About 10 minutes
-docker compose pull
 audius-compose up # About 20 seconds
 ```
 

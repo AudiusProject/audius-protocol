@@ -1,44 +1,79 @@
+import os
+import subprocess
+
 from integration_tests.utils import populate_mock_db
-from src.queries.search_track_tags import search_track_tags
+from src.queries.search_es import search_tags_es
 from src.utils.db_session import get_db
 
 
-def test_search_track_tags(app):
+def test_search_track_tags(app_module):
     """Tests that search by tags works fopr tracks"""
-    with app.app_context():
+    with app_module.app_context():
         db = get_db()
 
     test_entities = {
+        "users": [
+            {"user_id": 1},
+            {"user_id": 2},
+            {"user_id": 3},
+        ],
         "tracks": [
             {"track_id": 1, "tags": "", "owner_id": 1},
             {"track_id": 2, "owner_id": 1, "tags": "pop,rock,electric"},
             {"track_id": 3, "owner_id": 2},
-            {"track_id": 4, "owner_id": 2, "tags": "funk,pop"},
+            {"track_id": 4, "owner_id": 2, "tags": "funk,pop", "is_premium": True},
             {"track_id": 5, "owner_id": 2, "tags": "funk,pop"},
             {"track_id": 6, "owner_id": 2, "tags": "funk,Funk,kpop"},
         ],
-        "plays": [
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 4},
-            {"item_id": 5},
-            {"item_id": 5},
-            {"item_id": 5},
+        "saves": [
+            {"save_item_id": 2, "repost_type": "track", "user_id": 1},
+            {"save_item_id": 4, "repost_type": "track", "user_id": 1},
+        ],
+        "reposts": [
+            {"repost_item_id": 1, "repost_type": "track", "user_id": 1},
+            {"repost_item_id": 1, "repost_type": "track", "user_id": 2},
+            {"repost_item_id": 2, "repost_type": "track", "user_id": 1},
+            {"repost_item_id": 2, "repost_type": "track", "user_id": 2},
+            {"repost_item_id": 4, "repost_type": "track", "user_id": 1},
+            {"repost_item_id": 5, "repost_type": "track", "user_id": 1},
+            {"repost_item_id": 5, "repost_type": "track", "user_id": 2},
+            {"repost_item_id": 5, "repost_type": "track", "user_id": 3},
         ],
     }
 
     populate_mock_db(db, test_entities)
 
-    with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
-        args = {"search_str": "pop", "current_user_id": None, "limit": 10, "offset": 0}
-        tracks = search_track_tags(session, args)
+    subprocess.run(
+        ["npm", "run", "catchup:ci"],
+        env=os.environ,
+        capture_output=True,
+        text=True,
+        cwd="es-indexer",
+        timeout=5,
+    )
 
-        assert len(tracks) == 3
-        assert tracks[0]["track_id"] == 5  # First w/ 3 plays
-        assert tracks[1]["track_id"] == 2  # Sec w/ 2 plays
-        assert tracks[2]["track_id"] == 4  # Third w/ 1 plays
+    result = search_tags_es("pop", kind="tracks")
+    tracks = result["tracks"]
 
-        # Track id 6 does not appear b/c kpop and pop are not exact matches
+    assert len(tracks) == 3
+    assert tracks[0]["track_id"] == 5  # First w/ 3 reposts
+    assert tracks[1]["track_id"] == 2  # Sec w/ 2 reposts
+    assert tracks[2]["track_id"] == 4  # Third w/ 1 reposts
+    # Track id 6 does not appear b/c kpop and pop are not exact matches
+
+    # exclude_premium
+    result = search_tags_es("pop", kind="tracks", exclude_premium=True)
+    tracks = result["tracks"]
+    assert len(tracks) == 2
+
+    # curent user
+    result = search_tags_es("pop", kind="tracks", current_user_id=1)
+    tracks = result["saved_tracks"]
+    assert len(tracks) == 2
+
+    # curent user + exclude_premium
+    result = search_tags_es(
+        "pop", kind="tracks", current_user_id=1, exclude_premium=True
+    )
+    tracks = result["saved_tracks"]
+    assert len(tracks) == 1

@@ -306,19 +306,6 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
-  // wallet information
-  oldDelegateOwnerWallet: {
-    doc: 'wallet address',
-    format: String,
-    env: 'oldDelegateOwnerWallet',
-    default: ''
-  },
-  oldDelegatePrivateKey: {
-    doc: 'private key string',
-    format: String,
-    env: 'oldDelegatePrivateKey',
-    default: ''
-  },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
     format: String,
@@ -533,6 +520,18 @@ const config = convict({
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
     default: 1
   },
+  recoverOrphanedDataNumUsersPerBatch: {
+    doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
+    format: 'nat',
+    env: 'recoverOrphanedDataNumUsersPerBatch',
+    default: 2
+  },
+  recoverOrphanedDataDelayMsBetweenBatches: {
+    doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
+    format: 'nat',
+    env: 'recoverOrphanedDataDelayMsBetweenBatches',
+    default: 60_000 // 1m
+  },
   debounceTime: {
     doc: 'sync debounce time in ms',
     format: 'nat',
@@ -591,19 +590,19 @@ const config = convict({
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
     env: 'maxManualRequestSyncJobConcurrency',
-    default: 15
+    default: 30
   },
   maxRecurringRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 50
+    default: 20
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 25
+    default: 10
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',

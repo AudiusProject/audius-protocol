@@ -30,7 +30,7 @@ STAGE_CREATOR_NODES = (
     "stage-creator-8",
     "stage-creator-9",
     "stage-creator-10",
-    "stage-creator-11",
+    #     "stage-creator-11",
     "stage-user-metadata",
 )
 PROD_CREATOR_NODES = (
@@ -39,7 +39,7 @@ PROD_CREATOR_NODES = (
     "prod-creator-3",
     "prod-creator-4",  # prod-canary
     "prod-creator-5",
-    "user-metadata",
+    "prod-user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
 
@@ -411,8 +411,11 @@ def format_artifacts(
     if hosts:
         hosts.sort()
         summary = [f"{heading}:"]
-        for h in hosts:
-            summary.append(f"* {h}")
+        if "Upgraded to" in heading:
+            summary.append(", ".join(hosts))
+        else:
+            for h in hosts:
+                summary.append(f"• {h}")
 
         print("\n".join(summary))
         with open("/tmp/summary.md", "a") as f:
@@ -434,6 +437,8 @@ def format_artifacts(
             f.write("Reservation List:\n")
             for h in hosts:
                 host = release_summary[PRE_DEPLOY][h]
+                tag = host["tag"][:7]
+                branch = host["branch"]
                 if "author" in host:
                     owner = host["author"]
                     fg = "reset"
@@ -446,7 +451,7 @@ def format_artifacts(
                     else:
                         fg = "yellow"
 
-                output = f"{h.ljust(25)}{owner}"
+                output = f"{h.ljust(25)}{owner.ljust(20)}{tag.ljust(10)}{branch}"
                 click.echo(click.style(output, fg=fg))
                 f.write(f"{output}\n")
             f.write("\n\n")

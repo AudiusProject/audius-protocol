@@ -5,6 +5,7 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
+  discord: antonioned/discord@0.1.0
   slack: circleci/slack@4.9.3
 
 commands:
@@ -1024,6 +1025,10 @@ jobs:
         description: Show current reservation status
         type: boolean
         default: false
+      reservation_notification:
+        description: Send Slack notification with reservation text
+        type: boolean
+        default: false
     steps:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
@@ -1213,6 +1218,15 @@ jobs:
           steps:
             - slack-success:
                 detail: ${SLACK_DETAIL}
+      - when:
+          condition:
+            and:
+              - << parameters.reservations >>
+              - << parameters.reservation_notification >>
+          steps:
+            - slack-success:
+                text: Current Staging Reservations
+                detail: ${SLACK_DETAIL}
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1257,18 +1271,23 @@ jobs:
                 text: "Release branch has been cut! :git-fork:"
       - when:
           condition:
+            equal: [ execute-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: "Governance Proposal has been executed! :done:"
+      - when:
+          condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
                 text: "Deployment Released to Service Providers! :gift:"
                 detail: "New Governance Proposals are out. :vote:"
-                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
-      - when:
-          condition:
-            equal: [ execute-proposal, << parameters.target >> ]
-          steps:
-            - slack-success:
-                text: "Governance Proposal has been executed! :done:"
+                slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
+            # must be last step in job
+            - discord/status:
+                success_only: true
+                success_message: "New Proposal out now! Please vote at: https://dashboard.audius.co."
+                webhook: "${DISCORD_WEBHOOK}"
 
   generate-release-checklist:
     docker:
@@ -1607,7 +1626,6 @@ workflows:
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
-          params: --dry-run
           context:
             - slack-secrets
             - gh-tokens
@@ -1632,6 +1650,7 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens.releases
+            - discord
           requires:
             - 🚧-🎁-to-SPs-🕹️
       # Execute Governance Proposal (for release branches)
@@ -1787,10 +1806,17 @@ workflows:
       - deploy:
           name: reservations
           reservations: true
+          reservation_notification: true
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+    triggers:
+      - schedule:
+          cron: '0 15 * * 1,2,3,4,5'
+          filters:
+            branches:
+              only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard

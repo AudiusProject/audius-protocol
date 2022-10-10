@@ -6,7 +6,7 @@
     "settings": {
       "recipient": "C03STD3UXMG",
       "text": "{{ template \"mymessage\" . }}",
-      "title": "{{ template \"slack-title\" . }}",
+      "title": "      ",
       "token": "[REDACTED]"
     },
     "disableResolveMessage": true
@@ -18,7 +18,7 @@
     "settings": {
       "recipient": "CFMRNGFT7",
       "text": "{{ template \"mymessage\" . }}",
-      "title": "{{ template \"slack-title\" . }}",
+      "title": "    ",
       "token": "[REDACTED]"
     },
     "disableResolveMessage": true
@@ -30,7 +30,7 @@
     "settings": {
       "recipient": "CQ4CZAD6Y",
       "text": "{{ template \"mymessage\" . }}",
-      "title": "{{ template \"slack-title\" . }}",
+      "title": "    ",
       "token": "[REDACTED]"
     },
     "disableResolveMessage": true

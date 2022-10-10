@@ -1003,5 +1003,6 @@ module.exports = {
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
   getUserReplicaSetEndpointsFromDiscovery,
-  routeMetricMiddleware
+  routeMetricMiddleware,
+  getReplicaSetSpIDs
 }
