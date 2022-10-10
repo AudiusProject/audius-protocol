@@ -24,4 +24,4 @@ sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o "StrictHostKey
 
 The password is `sshuttle`
 
-Then on your local machine you can go to http:////audius-protocol-discovery-provider-1:5000/health_check
+Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
