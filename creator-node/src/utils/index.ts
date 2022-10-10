@@ -31,7 +31,8 @@ import {
 } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
-export type { ValuesOf, RequestWithLogger } from './utils'
+export type { CustomRequest } from '../apiHelpers'
+export type { ValuesOf } from './utils'
 export type { ReplicaSet } from './strToReplicaSet'
 export {
   timeout,

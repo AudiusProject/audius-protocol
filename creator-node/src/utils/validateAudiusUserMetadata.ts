@@ -1,5 +1,5 @@
 import type { Request } from 'express'
-import { RequestWithLogger } from './utils'
+import type { CustomRequest } from '../apiHelpers'
 
 const Web3 = require('web3')
 const web3 = new Web3()
@@ -39,13 +39,13 @@ export const validateAssociatedWallets = (metadataJSON: MetadataJson) => {
   return true
 }
 
-export const validateMetadata = (req: Request, metadataJSON: MetadataJson) => {
+export const validateMetadata = (_req: Request, metadataJSON: MetadataJson) => {
   // Check associated wallets
   if (typeof metadataJSON !== 'object' || metadataJSON === null) {
     return false
   } else if (!validateAssociatedWallets(metadataJSON)) {
-    const reqWithLogger = req as RequestWithLogger
-    reqWithLogger.logger.info('Associated Wallets do not match signatures')
+    const req = _req as CustomRequest
+    req.logger.info('Associated Wallets do not match signatures')
     return false
   }
 
