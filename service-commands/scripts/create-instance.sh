@@ -112,7 +112,7 @@ case "$provider" in
 	gcp)
 		if [[ "$spot_instance" == true ]]; then
 		# https://cloud.google.com/community/tutorials/create-a-self-deleting-virtual-machine
-		# delete spot instances (used in CI for mad dog/sdk tests) after 6 hours by default
+		# delete spot instances (used in CI for mad dog/sdk tests) after 12 hours by default
 			spot_flag="--provisioning-model=SPOT --metadata-from-file=startup-script=$PROTOCOL_DIR/service-commands/scripts/auto-delete-gcloud-instance.sh --scopes=compute-rw"
 		fi
 		gcloud compute instances create \
