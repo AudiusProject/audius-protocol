@@ -120,27 +120,20 @@
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "dn1_web-server_1",
+    "host": "localhost",
     "port": 5000,
     "health_check_endpoint": "health_check",
     "up": [
-      "UP=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+      "docker start audius-protocol-discovery-provider-#"
     ],
     "up-web-server": [
-      "UP_WEB_SERVER=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+      "docker start audius-protocol-discovery-provider-#"
     ],
     "down": [
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.elasticsearch.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
-      "sudo rm -rf solana-programs/cli/target",
-      "sudo rm -rf solana-programs/reward-manager/target",
-      "sudo rm -rf discovery-provider/.venv",
-      "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm -f discovery-provider/*.log"
+      "docker rm -f audius-protocol-discovery-provider-#"
     ],
     "register": [
-      "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
+      "audius-compose exec discovery-provider-# ./scripts/register.py"
     ],
     "restart": [
       "docker restart audius-protocol-discovery-provider-#"
@@ -152,10 +145,10 @@
     "port": 4000,
     "health_check_endpoint": "health_check",
     "up": [
-      "${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
+      "docker start audius-protocol-creator-node-#"
     ],
     "down": [
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "docker rm -f audius-protocol-creator-node-#"
     ],
     "restart": [
       "docker restart audius-protocol-creator-node-#"
