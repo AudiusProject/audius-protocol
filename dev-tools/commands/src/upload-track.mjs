@@ -86,7 +86,9 @@ program.command("upload-track")
           license: license,
           isrc: null,
           iswc: null,
-          track_segments: []
+          track_segments: [],
+          is_premium: false,
+          premium_conditions: null,
         },
         () => null,
       );

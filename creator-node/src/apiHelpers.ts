@@ -260,7 +260,7 @@ export const errorResponseSocketTimeout = (socketTimeout: number) => {
  * Define custom api error subclasses to be thrown in components and handled in route controllers
  */
 
-class ErrorBadRequest extends Error {
+export class ErrorBadRequest extends Error {
   declare name: string
   constructor(message: string) {
     super(message)
@@ -268,7 +268,7 @@ class ErrorBadRequest extends Error {
   }
 }
 
-class ErrorServerError extends Error {
+export class ErrorServerError extends Error {
   declare name: string
   constructor(message: string) {
     super(message)

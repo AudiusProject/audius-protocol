@@ -1,10 +1,23 @@
+import type { Request } from 'express'
+import { RequestWithLogger } from './utils'
+
 const Web3 = require('web3')
 const web3 = new Web3()
+
+type MetadataJson = {
+  user_id?: string
+  associated_wallets?: Record<
+    string,
+    {
+      signature: string
+    }
+  >
+}
 
 /**
  * Validates that the user id was signed by the associated wallets
  */
-export const validateAssociatedWallets = (metadataJSON) => {
+export const validateAssociatedWallets = (metadataJSON: MetadataJson) => {
   if ('user_id' in metadataJSON && 'associated_wallets' in metadataJSON) {
     const userId = metadataJSON.user_id
     const walletMappings = metadataJSON.associated_wallets
@@ -26,12 +39,13 @@ export const validateAssociatedWallets = (metadataJSON) => {
   return true
 }
 
-export const validateMetadata = (req, metadataJSON) => {
+export const validateMetadata = (req: Request, metadataJSON: MetadataJson) => {
   // Check associated wallets
   if (typeof metadataJSON !== 'object' || metadataJSON === null) {
     return false
   } else if (!validateAssociatedWallets(metadataJSON)) {
-    req.logger.info('Associated Wallets do not match signatures')
+    const reqWithLogger = req as RequestWithLogger
+    reqWithLogger.logger.info('Associated Wallets do not match signatures')
     return false
   }
 

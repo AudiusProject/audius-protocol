@@ -26,8 +26,7 @@ import { exponentialBucketsRange } from './services/prometheusMonitoring/prometh
 import healthCheckRoutes from './components/healthCheck/healthCheckController'
 import contentBlacklistRoutes from './components/contentBlacklist/contentBlacklistController'
 import replicaSetRoutes from './components/replicaSet/replicaSetController'
-
-type RequestWithLogger = Request & { logger: Logger }
+import { RequestWithLogger } from './utils'
 
 function errorHandler(
   err: any,

@@ -13,8 +13,6 @@ import { StateMonitoringUser } from '../stateMonitoring/types'
 
 import {
   ORPHANED_DATA_NUM_USERS_PER_QUERY,
-  ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
-  ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS,
   MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
 } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
@@ -32,7 +30,13 @@ const WALLETS_WITH_NODE_IN_REPLICA_SET_KEY =
   'orphanedDataWalletsWithNodeInReplicaSet'
 const WALLETS_ORPHANED_KEY = 'oprhanedDataWallets'
 
-const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
+const thisContentNodeEndpoint: string = config.get('creatorNodeEndpoint')
+const numUsersPerBatch: number = config.get(
+  'recoverOrphanedDataNumUsersPerBatch'
+)
+const delayMsBetweenBatches: number = config.get(
+  'recoverOrphanedDataDelayMsBetweenBatches'
+)
 
 /**
  * Processes a job to find users who have data on this node but who do not have this node in their replica set.
@@ -231,14 +235,10 @@ const _batchIssueReqsToRecoverOrphanedData = async (
 ): Promise<number> => {
   const start = Date.now()
   let requestsIssued = 0
-  for (
-    let i = 0;
-    i < numWalletsWithOrphanedData;
-    i += ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
-  ) {
+  for (let i = 0; i < numWalletsWithOrphanedData; i += numUsersPerBatch) {
     const walletsWithOrphanedData = await redisClient.srandmember(
       WALLETS_ORPHANED_KEY,
-      ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+      numUsersPerBatch
     )
     if (!walletsWithOrphanedData?.length) return requestsIssued
 
@@ -281,7 +281,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
     }
 
     // Delay processing the next batch to avoid spamming requests
-    await Utils.timeout(ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS, false)
+    await Utils.timeout(delayMsBetweenBatches, false)
   }
   return requestsIssued
 }

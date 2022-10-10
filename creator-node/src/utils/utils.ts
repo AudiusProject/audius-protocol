@@ -1,7 +1,10 @@
+import type Logger from 'bunyan'
+import type { Request } from 'express'
 import { recoverPersonalSignature } from 'eth-sig-util'
 import { logger as genericLogger } from '../logging'
 
 export type ValuesOf<T> = T[keyof T]
+export type RequestWithLogger = Request & { logger: Logger }
 
 export function verifySignature(data: any, sig: any) {
   return recoverPersonalSignature({ data, sig })
