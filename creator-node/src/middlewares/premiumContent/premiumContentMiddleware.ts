@@ -1,3 +1,6 @@
+import type Logger from 'bunyan'
+import type { CustomRequest } from '../../apiHelpers'
+
 import {
   sendResponseWithMetric,
   errorResponseServerError,
@@ -5,9 +8,8 @@ import {
   errorResponseUnauthorized,
   errorResponseBadRequest
 } from '../../apiHelpers'
-import { NextFunction, Request, Response } from 'express'
+import { NextFunction, Response } from 'express'
 import { PremiumContentAccessError } from '../../premiumContent/types'
-import type Logger from 'bunyan'
 import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
 import config from '../../config'
 
@@ -25,7 +27,7 @@ import config from '../../config'
  * If all these verifications are successful, then this middleware will proceed with the request as normal.
  */
 export const premiumContentMiddleware = async (
-  req: Request,
+  req: CustomRequest,
   res: Response,
   next: NextFunction
 ) => {
