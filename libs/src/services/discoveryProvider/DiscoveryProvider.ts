@@ -1281,7 +1281,7 @@ export class DiscoveryProvider {
   }): Promise<Object | null | undefined> {
     const req = Requests.getUserReplicaSet(encodedUserId)
 
-    return await this._makeRequestInternal<Object | null>(
+    return await this._makeRequest<Object | null>(
       req,
       true,
       0,
