@@ -808,7 +808,7 @@ async function getReplicaSetSpIDs({
       !replicaSet.primaryId
     ) {
       throw new Error(
-        `${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`
+        `${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. - ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpID) {

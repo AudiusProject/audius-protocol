@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {

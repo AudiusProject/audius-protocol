@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// Ignoring eslint stuff for this file because it'll be deprecated soon
 const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')

@@ -324,7 +324,7 @@ const primarySyncFromSecondary = instrumentTracing({
  * - `saveFileForMultihashToFS` will short-circuit if file already exists on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
+async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>

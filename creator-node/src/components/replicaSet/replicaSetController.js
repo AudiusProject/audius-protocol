@@ -71,7 +71,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  *
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
-const _syncRouteController = async (req, res) => {
+const _syncRouteController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   if (
     _.isEmpty(serviceRegistry?.syncQueue) ||
@@ -191,7 +191,7 @@ const syncRouteController = instrumentTracing({
  * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
  * @notice This will only work if called on a primary for a user
  */
-const mergePrimaryAndSecondaryController = async (req, res) => {
+const mergePrimaryAndSecondaryController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
 
@@ -236,7 +236,7 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
 /**
  * Changes a user's replica set. Gated by`devMode` env var to only work locally.
  */
-const manuallyUpdateReplicaSetController = async (req, res) => {
+const manuallyUpdateReplicaSetController = async (req, _res) => {
   const audiusLibs = req.app.get('audiusLibs')
   const serviceRegistry = req.app.get('serviceRegistry')
   const { nodeConfig: config } = serviceRegistry

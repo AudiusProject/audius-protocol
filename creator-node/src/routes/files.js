@@ -618,7 +618,7 @@ async function _generateContentToHash(resizeResp, dirCID) {
 
 router.get(
   '/async_processing_status',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const AsyncProcessingQueue =
       req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -640,7 +640,7 @@ router.post(
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   uploadTempDiskStorage.single('file'),
-  handleResponseWithHeartbeat(async (req, res) => {
+  handleResponseWithHeartbeat(async (req, _res) => {
     if (
       !req.body.square ||
       !(req.body.square === 'true' || req.body.square === 'false')
@@ -785,7 +785,7 @@ router.get(['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'], getDirCID)
  */
 router.post(
   '/batch_cids_exist',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { cids } = req.body
 
     if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
@@ -843,7 +843,7 @@ router.post(
  */
 router.post(
   '/batch_image_cids_exist',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { cids } = req.body
 
     if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {

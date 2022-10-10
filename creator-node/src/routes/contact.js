@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get(
   '/contact',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const trustedNotifierManager = req.app.get('trustedNotifierManager')
     const email =
       trustedNotifierManager.getTrustedNotifierData().email ||

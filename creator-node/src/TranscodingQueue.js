@@ -42,6 +42,8 @@ class TranscodingQueue {
     })
     this.logStatus('Initialized TranscodingQueue')
 
+    // disabling because `new Worker()` has side effects
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const worker = new Worker(
       'transcoding-queue',
       async (job) => {

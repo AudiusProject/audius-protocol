@@ -22,8 +22,7 @@ const handleSyncFromPrimary = async ({
   forceResyncConfig,
   forceWipe,
   logContext,
-  secondarySyncFromPrimaryLogger,
-  blockNumber = null
+  secondarySyncFromPrimaryLogger
 }) => {
   const { nodeConfig, redis, libs } = serviceRegistry
   const FileSaveMaxConcurrency = nodeConfig.get(

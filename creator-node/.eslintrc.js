@@ -63,7 +63,18 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'off', // We should turn this one on soon
+
+    // Note: you must disable the base rule as it can report incorrect errors
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { 
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'caughtErrorsIgnorePattern': '^_'
+      }
+    ],
+
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-extraneous-class': 'warn',
@@ -73,7 +84,6 @@ module.exports = {
 
     'no-use-before-define': 'off',
     camelcase: 'off',
-    'no-unused-vars': 'off',
     'func-call-spacing': 'off',
     semi: ['error', 'never'],
     'no-undef': 'error',
