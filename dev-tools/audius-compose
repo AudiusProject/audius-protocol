@@ -55,14 +55,14 @@ def generate_env(
         account = eth_account.Account.from_key(private_key)
 
         # slice off 0x for hex private keys
-        env[f"{name}_PRIVATE_KEY"] = account.key.hex().replace('0x', '')
+        env[f"{name}_PRIVATE_KEY"] = account.key.hex().replace("0x", "")
         env[f"{name}_ADDRESS"] = account.address
 
         if name.startswith("ETH_RELAYER_WALLET"):
             eth_relayer_wallets.append(
                 {
                     "publicKey": account.address,
-                    "privateKey": account.key.hex().replace('0x', ''),
+                    "privateKey": account.key.hex().replace("0x", ""),
                 }
             )
 
@@ -70,7 +70,7 @@ def generate_env(
             poa_relayer_wallets.append(
                 {
                     "publicKey": account.address,
-                    "privateKey": account.key.hex().replace('0x', ''),
+                    "privateKey": account.key.hex().replace("0x", ""),
                 }
             )
 
@@ -159,6 +159,7 @@ def build(
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
+@click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
     protocol_dir,
@@ -166,6 +167,7 @@ def up(
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer,
+    services,
 ):
     generate_env(
         protocol_dir,
@@ -184,6 +186,7 @@ def up(
             "up",
             "--build",
             "-d",
+            *services,
         ],
     )
 
@@ -226,7 +229,9 @@ def exec(protocol_dir, service, command, args):
             service,
             "sh",
             "-c",
-            'while IFS= read -rd "" var; do export "$var"; done </proc/1/environ; exec "$@"',
+            # Ugly command since this needs run on all containers (i.e. posix compliant)
+            r'''eval $(od -An -to1 -v /proc/1/environ | tr -d '\n' | sed 's/ 000/\n/g; s/ /\\/g; s/[^\n]\+/export "`printf "&"`"/g'); exec "$@"''',
+            # r'''eval $(xargs -0 -n1 sh -c 'echo $0 | sed "'"s/'/'\\\\\''/g; s/.*/export '&'/"'"' </proc/1/environ); exec "$@"''',
             "-",
             command,
             *args,
