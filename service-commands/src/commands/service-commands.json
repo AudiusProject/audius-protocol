@@ -77,7 +77,7 @@
     "path": "solana-programs",
     "up": [],
     "add-sender": [
-      "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
+      "audius-compose exec solana-test-validator -- audius-reward-manager-cli create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
     ]
   },
   "ipfs": {
@@ -140,11 +140,10 @@
       "sudo rm -f discovery-provider/*.log"
     ],
     "register": [
-      "cd libs/; npm run init-local register-discovery-node #",
       "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
     ],
     "restart": [
-      "RESTART=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+      "docker restart audius-protocol-discovery-provider-#"
     ]
   },
   "creator-node": {
@@ -161,7 +160,9 @@
     "restart": [
       "docker restart audius-protocol-creator-node-#"
     ],
-    "register": [],
+    "register": [
+      "audius-compose exec creator-node-# node scripts/register.js"
+    ],
     "deregister": [
       "cd libs/; npm run init-local deregister-cnode #"
     ],
