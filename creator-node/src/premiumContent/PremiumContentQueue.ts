@@ -2,6 +2,7 @@ import { Queue, Worker } from 'bullmq'
 import config from '../config'
 import { logger } from '../logging'
 import { updatePremiumContentCIDCache } from './helpers'
+import { clusterUtils } from '../utils'
 
 const models = require('../models')
 const { QueryTypes } = require('sequelize')
@@ -30,9 +31,14 @@ export class PremiumContentQueue {
         removeOnFail: PREMIUM_CONTENT_QUEUE_HISTORY
       }
     })
-    this.queue.drain(true)
-    ;(() =>
-      new Worker(
+
+    // Clean up anything that might be still stuck in the queue on restart and run once instantly
+    if (clusterUtils.isThisWorkerInit()) {
+      this.queue.drain(true)
+    }
+
+    if (clusterUtils.isThisWorkerSpecial()) {
+      const worker = new Worker(
         QUEUE_NAME,
         async (_) => {
           await this.logStatus('Starting')
@@ -49,7 +55,8 @@ export class PremiumContentQueue {
           }
         },
         { connection }
-      ))()
+      )
+    }
   }
 
   /**
@@ -67,7 +74,7 @@ export class PremiumContentQueue {
       }
     )
     const nonPremiumCIDSet = new Set()
-    const cidMap: { [key: string]: number } = {}
+    const premiumCIDMap: { [key: string]: number } = {}
     result.forEach(
       (record: {
         blockchainId: number
@@ -78,19 +85,19 @@ export class PremiumContentQueue {
           if (!nonPremiumCIDSet.has(record.multihash)) {
             // Only add to CID to map if we have not yet seen
             // a non-premium track with the same CID.
-            cidMap[record.multihash] = record.blockchainId
+            premiumCIDMap[record.multihash] = record.blockchainId
           }
-        } else if (cidMap[record.multihash]) {
+        } else if (premiumCIDMap[record.multihash]) {
           // If the same CID exists in the map, remove it from the map
           // because there exists a non-premium track with the same CID.
           // Also add it to the non-premium CID set to make sure
           // this CID never gets re-entered in the map.
-          delete cidMap[record.multihash]
+          delete premiumCIDMap[record.multihash]
           nonPremiumCIDSet.add(record.multihash)
         }
       }
     )
-    return cidMap
+    return premiumCIDMap
   }
 
   /**
@@ -108,20 +115,22 @@ export class PremiumContentQueue {
    * Starts the premium content queue
    */
   async start() {
-    try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAME, {})
+    if (clusterUtils.isThisWorkerSpecial()) {
+      try {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAME, {})
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
-        try {
-          await this.queue.add(PROCESS_NAME, {})
-        } catch (e) {
-          this.logStatus('Failed to enqueue!')
-        }
-      }, QUEUE_INTERVAL_MS)
-    } catch (e) {
-      this.logStatus('Startup failed!')
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAME, {})
+          } catch (e) {
+            this.logStatus('Failed to enqueue!')
+          }
+        }, QUEUE_INTERVAL_MS)
+      } catch (e) {
+        this.logStatus('Startup failed!')
+      }
     }
   }
 }

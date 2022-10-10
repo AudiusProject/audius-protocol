@@ -235,7 +235,8 @@ class ServiceRegistry {
         new BullAdapter(transcodingQueue, { readOnlyMode: true }),
         new BullAdapter(monitoringQueue, { readOnlyMode: true }),
         new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
-        new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
+        new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true }),
+        new BullAdapter(this.premiumContentQueue, { readOnlyMode: true })
       ],
       serverAdapter
     })

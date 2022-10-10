@@ -19,12 +19,7 @@ export async function isCIDForPremiumTrack({
   cid: string
   redis: Redis
 }): Promise<PremiumContentCIDResponse> {
-  const premiumContentCIDCache = await redis.get(PREMIUM_CONTENT_CID_CACHE_KEY)
-  if (!premiumContentCIDCache) {
-    return { trackId: null, isPremium: false }
-  }
-  const premiumContentCIDCacheMap = JSON.parse(premiumContentCIDCache)
-  const trackId = premiumContentCIDCacheMap[cid]
+  const trackId = await redis.hget(PREMIUM_CONTENT_CID_CACHE_KEY, cid)
   if (!trackId) {
     return { trackId: null, isPremium: false }
   }
@@ -39,7 +34,8 @@ export async function updatePremiumContentCIDCache({
   logger: Logger
 }) {
   try {
-    await redis.set(PREMIUM_CONTENT_CID_CACHE_KEY, JSON.stringify(cacheMap))
+    await redis.del(PREMIUM_CONTENT_CID_CACHE_KEY)
+    await redis.hset(PREMIUM_CONTENT_CID_CACHE_KEY, cacheMap)
   } catch (e) {
     logger.error(
       `Could not update premium content cid cache. cacheMap: ${JSON.stringify(
