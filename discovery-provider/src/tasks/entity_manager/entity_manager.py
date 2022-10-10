@@ -27,7 +27,7 @@ from src.tasks.entity_manager.social_features import (
     delete_social_record,
 )
 from src.tasks.entity_manager.track import create_track, delete_track, update_track
-from src.tasks.entity_manager.user import create_user, update_user, verify_user
+from src.tasks.entity_manager.user import create_user, update_user
 from src.tasks.entity_manager.user_replica_set import update_user_replica_set
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
@@ -168,12 +168,6 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         update_user(params)
-                    elif (
-                        params.action == Action.VERIFY
-                        and params.entity_type == EntityType.USER
-                        and ENABLE_DEVELOPMENT_FEATURES
-                    ):
-                        verify_user(params)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.USER_REPLICA_SET
