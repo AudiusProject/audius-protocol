@@ -256,6 +256,7 @@ services:
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
       registryAddress: "${POA_REGISTRY_ADDRESS}"
+      entityManagerAddress: "${ENTITY_MANAGER_ADDRESS}"
       ownerWallet: "${POA_OWNER_WALLET}"
 
       ethProviderUrl: "http://eth-ganache:8545"
