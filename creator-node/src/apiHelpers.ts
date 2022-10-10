@@ -148,7 +148,7 @@ export const sendResponse = (
  * @param {Object} routeResponse error or success response object
  * @param {Object} prometheusResult prometheus results to track
  */
-module.exports.sendResponseWithMetric = (
+export const sendResponseWithMetric = (
   req: CustomRequest,
   res: Response,
   routeResponse: ApiResponse,
