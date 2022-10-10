@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import { tippingSelectors, tippingActions } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Platform } from 'react-native'
+import KeepAwake from 'react-native-keep-awake'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
@@ -17,6 +18,7 @@ import { SendTipStatusText } from './SendTipStatusText'
 import { TipHeader } from './TipHeader'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
+
 const { beginTip, confirmSendTip } = tippingActions
 const { getSendTipData } = tippingSelectors
 
@@ -82,6 +84,11 @@ export const ConfirmSendTipScreen = ({
     nativeNavigation.setOptions({
       gestureEnabled: !inProgress
     })
+    if (inProgress) {
+      KeepAwake.activate()
+    } else {
+      KeepAwake.deactivate()
+    }
   }, [nativeNavigation, inProgress])
 
   return (
