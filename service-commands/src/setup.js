@@ -1,10 +1,9 @@
-const { exec, spawn } = require('child_process')
+const { exec } = require('child_process')
 const fs = require('fs')
 const colors = require('colors')
 const config = require('../config/config.js')
 const serviceCommands = require('./commands/service-commands.json')
 const axios = require('axios').default
-const _ = require('lodash')
 
 // Constants
 
@@ -217,25 +216,6 @@ const runSetupCommand = async (
     return
   }
 
-  if (service === Service.LIBS && setupCommand === SetupCommand.UP) {
-    const libsLog = await fs.promises.open(
-      `${PROTOCOL_DIR}/service-commands/libs.log`,
-      'w'
-    )
-    const subprocess = await spawn(
-      `${PROTOCOL_DIR}/service-commands/scripts/run-libs.sh`,
-      [],
-      {
-        detached: true,
-        stdio: ['ignore', libsLog, libsLog],
-        cwd: `${PROTOCOL_DIR}/libs`
-      }
-    )
-    subprocess.unref()
-    console.log(`Spawned libs watcher. PID: ${subprocess.pid}`.info)
-    libsLog.close()
-  }
-
   const command = commands[setupCommand]
   if (!command) {
     throw new Error(
@@ -271,9 +251,7 @@ const runSetupCommand = async (
   }
 }
 
-const getContentNodeContainerName = serviceNumber => {
-  return `cn${serviceNumber}_creator-node_1`
-}
+const getContentNodeContainerName = serviceNumber => `audius-protocol-creator-node-${serviceNumber}`
 
 const getServiceURL = (service, serviceNumber) => {
   const commands = serviceCommands[service]

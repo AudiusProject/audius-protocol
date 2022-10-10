@@ -472,7 +472,7 @@ const _registerDiscProv = async (ethAccounts, serviceNumber) => {
   await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
 }
 
-const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`
+const makeCreatorNodeEndpoint = (serviceNumber) => `http://audius-protocol-creator-node-${serviceNumber}:4000`
 
 // Templated cnode to allow for dynamic number of services
 const _registerCnode = async (ethAccounts, serviceNumber) => {
