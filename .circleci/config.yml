@@ -5,7 +5,6 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
-  discord: antonioned/discord@0.1.0
   slack: circleci/slack@4.9.3
 
 commands:
@@ -1242,13 +1241,17 @@ jobs:
           steps:
             - slack-success:
                 text: ":gift: Deployment Released to Service Providers"
-                detail: "New Governance Proposals are out. :vote:"
+                detail: ":vote: New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
-            # must be last step in job
-            - discord/status:
-                success_only: true
-                success_message: "New Proposal out now! Please vote at: https://dashboard.audius.co."
-                webhook: "${DISCORD_WEBHOOK}"
+            - run: |
+                curl -d '{
+                  "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
+                  "embeds": null,
+                  "attachments": []
+                }' \
+                -H "Content-Type: application/json" \
+                -X POST \
+                "${DISCORD_WEBHOOK}"
 
   generate-release-checklist:
     docker:
