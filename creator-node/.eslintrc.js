@@ -63,7 +63,7 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'off', // We should turn this one on soon
+    '@typescript-eslint/no-unused-vars': 'error', // We should turn this one on soon
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-extraneous-class': 'warn',
@@ -82,7 +82,6 @@ module.exports = {
     'padded-blocks': 'off',
     'no-prototype-builtins': 'off', // added by Dheeraj, to remove
     'no-async-promise-executor': 'off', // added by Dheeraj, to remove
-    'no-useless-catch': 'off', // added by Dheeraj, to remove
     'prefer-regex-literals': 'off', // added by Dheeraj, to remove
     'no-unmodified-loop-condition': 'off', // added by Dheeraj, to remove
     'array-callback-return': 'off', // added by Dheeraj, to remove
