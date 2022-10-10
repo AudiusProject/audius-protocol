@@ -366,9 +366,8 @@ services:
       replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
 
   discovery-provider-test:
-    build:
-      context: discovery-provider
-      dockerfile: Dockerfile.test
+    build: discovery-provider
+    command: sh -c "scripts/test_setup.sh"
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache"
 
@@ -376,6 +375,7 @@ services:
       # TODO: Consider moving these into the container itself for testing purposes?
 
       audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
+      audius_redis_url: "redis://localhost:6379/00"
 
       audius_web3_host: "poa-ganache"
       audius_web3_port: "8545"

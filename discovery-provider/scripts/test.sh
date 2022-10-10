@@ -46,14 +46,14 @@ cd_discprov_repo
 
 # Stop dependencies, if present
 docker network rm audius_dev
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
   --env-file compose/.test.env \
   stop
 
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
@@ -62,7 +62,7 @@ docker-compose \
 
 # Bring up local dependencies - postgres, redis
 docker network create audius_dev
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
