@@ -1,9 +1,10 @@
-const { exec } = require('child_process')
+const { exec, spawn } = require('child_process')
 const fs = require('fs')
 const colors = require('colors')
 const config = require('../config/config.js')
 const serviceCommands = require('./commands/service-commands.json')
 const axios = require('axios').default
+const _ = require('lodash')
 
 // Constants
 
@@ -101,7 +102,6 @@ const execShellCommands = async (commands, service, { verbose }) => {
   try {
     const commandOutputs = []
     for (const command of commands) {
-      console.log(command);
       const output = await execShellCommand(command, service, { verbose })
       commandOutputs.push(output)
     }
@@ -217,6 +217,25 @@ const runSetupCommand = async (
     return
   }
 
+  if (service === Service.LIBS && setupCommand === SetupCommand.UP) {
+    const libsLog = await fs.promises.open(
+      `${PROTOCOL_DIR}/service-commands/libs.log`,
+      'w'
+    )
+    const subprocess = await spawn(
+      `${PROTOCOL_DIR}/service-commands/scripts/run-libs.sh`,
+      [],
+      {
+        detached: true,
+        stdio: ['ignore', libsLog, libsLog],
+        cwd: `${PROTOCOL_DIR}/libs`
+      }
+    )
+    subprocess.unref()
+    console.log(`Spawned libs watcher. PID: ${subprocess.pid}`.info)
+    libsLog.close()
+  }
+
   const command = commands[setupCommand]
   if (!command) {
     throw new Error(
@@ -252,7 +271,9 @@ const runSetupCommand = async (
   }
 }
 
-const getContentNodeContainerName = serviceNumber => `audius-protocol-creator-node-${serviceNumber}`
+const getContentNodeContainerName = serviceNumber => {
+  return `cn${serviceNumber}_creator-node_1`
+}
 
 const getServiceURL = (service, serviceNumber) => {
   const commands = serviceCommands[service]
@@ -269,7 +290,7 @@ const getServiceURL = (service, serviceNumber) => {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://${getContentNodeContainerName(serviceNumber)}:${4000 + parseInt(serviceNumber) - 1
+    return `http://localhost:${4000 + parseInt(serviceNumber) - 1
       }/${healthCheckEndpoint}`
   }
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
@@ -651,8 +672,8 @@ const allUp = async ({
   ]
 
   const ipfsAndContractsCommands = [
-    // [Service.IPFS, SetupCommand.UP],
-    // [Service.IPFS_2, SetupCommand.UP],
+    [Service.IPFS, SetupCommand.UP],
+    [Service.IPFS_2, SetupCommand.UP],
     [Service.CONTRACTS_PREDEPLOYED, SetupCommand.UP],
     [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP],
     [Service.LIBS, SetupCommand.UP]
@@ -769,8 +790,8 @@ const allUp = async ({
   await runInSequence(setup, options)
 
   // Run parallel ops
-  await runInSequence(ipfsAndContractsCommands, options)
-  await runInSequence(contractHealthChecksCommands, options)
+  await runInParallel(ipfsAndContractsCommands, options)
+  await runInParallel(contractHealthChecksCommands, options)
   if (buildDataEthContracts) {
     await runInSequence(prereqs, options)
   }

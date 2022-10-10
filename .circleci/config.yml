@@ -405,7 +405,7 @@ jobs:
             cd ../service-commands;
             npm i;
             cd ../mad-dog;
-            A up;
+            audius-compose up;
             npm run start << parameters.mad-dog-type >> verbose;
 
   test-sdk:
