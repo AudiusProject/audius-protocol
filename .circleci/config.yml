@@ -236,9 +236,6 @@ parameters:
   cut_release:
     type: string
     default: ""
-  dtest:
-    type: string
-    default: ""
   reservations:
     type: string
     default: ""
@@ -1246,34 +1243,6 @@ jobs:
                 text: ":gift: Deployment Released to Service Providers"
                 detail: "New Governance Proposals are out @ https://dashboard.audius.org/#/governance :vote:"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
-
-  dtest:
-    docker:
-      - image: cimg/go:1.17
-    parameters:
-      target:
-        description: Name of the script, without .sh, like bump-hotfix or cut-release
-        type: enum
-        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            # github.com
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb"
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
-      - run: |
-          echo "hello"
-      - when:
-          condition:
-            equal: [ release-to-service-providers, << parameters.target >> ]
-          steps:
-            - slack-success:
-                text: ":gift: Deployment Released to Service Providers"
-                detail: "New Governance Proposals are out @ https://dashboard.audius.org/#/governance :vote:"
-                slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
-                channel: C03STD3UXMG
             - run: |
                 curl -d '{
                   "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
@@ -1283,6 +1252,7 @@ jobs:
                 -H "Content-Type: application/json" \
                 -X POST \
                 "${DISCORD_WEBHOOK}"
+
 
   generate-release-checklist:
     docker:
@@ -1314,7 +1284,6 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.cut_release >>
-         - not: << pipeline.parameters.dtest >>
     jobs:
       - noop:
           name: creator
@@ -1793,22 +1762,6 @@ workflows:
       - generate-release-checklist:
           requires:
             - release-scripts
-
-  # in order to trigger this job
-  # 1. go to the CircleCI dashboard
-  # 2. click "Trigger Pipeline"
-  # 3. Add string parameter "dtest" with any non-null value
-  dtest:
-    when: << pipeline.parameters.dtest >>
-    jobs:
-      - dtest:
-          name: dtest
-          target: release-to-service-providers
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-            - discord
-            - governance
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
