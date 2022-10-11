@@ -40,7 +40,7 @@ def upgrade():
             sa.Column("change", sa.BigInteger(), nullable=False),
             sa.Column("balance", sa.BigInteger(), nullable=False),
             sa.Column("tx_metadata", sa.String(), nullable=False),
-            sa.PrimaryKeyConstraint("signature", "user_bank"),
+            sa.PrimaryKeyConstraint("user_bank", "signature"),
         )
         op.create_index(
             op.f("ix_audio_transactions_history_transaction_type"),
