@@ -33,7 +33,7 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
      [
        Service.CREATOR_NODE,
        SetupCommand.HEALTH_CHECK_RETRY,
-       { verbose: true, serviceNumber: cur, waitSec: 300 }
+       { verbose: true, serviceNumber: cur }
      ]
    ]
  },
