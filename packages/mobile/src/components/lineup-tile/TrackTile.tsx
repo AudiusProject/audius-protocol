@@ -19,6 +19,7 @@ import {
   shareModalUIActions,
   RepostType
 } from '@audius/common'
+import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
@@ -66,6 +67,7 @@ const TrackTileComponent = ({
 }: TrackTileProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
+  const currentScreen = useNavigationState((state) => state.history?.[0])
   const playingUid = useSelector(getUid)
   const isPlayingUid = playingUid === lineupTileProps.uid
 
@@ -81,7 +83,6 @@ const TrackTileComponent = ({
     track_id
   } = track
 
-  const currentScreen = navigation.getState().history?.[0]
   // @ts-expect-error -- history returning unknown[]
   const isOnArtistsTracksTab = currentScreen?.key.includes('Tracks')
 
