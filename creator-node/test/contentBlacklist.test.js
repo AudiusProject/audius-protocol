@@ -720,7 +720,6 @@ describe('test ContentBlacklist', function () {
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
     const ids = [trackId]
-    // return
 
     // Blacklist trackId
     const type = BlacklistManager._getTypes().track
@@ -1179,14 +1178,6 @@ const setupLibsMock = (libsMock) => {
       }
     })
   })
-  // libsMock.Track.getTracksVerbose.callsFake((limit, offset, ids) => {
-  //   return ids.map((id) => {
-  //     return {
-  //       track_id: id
-  //     }
-  //   })
-  // })
   libsMock.Track.getTracks.atLeast(0)
-  // libsMock.Track.getTracksVerbose.atLeast(0)
   return libsMock
 }
