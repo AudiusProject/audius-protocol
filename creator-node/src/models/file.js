@@ -83,6 +83,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         {
           fields: ['skipped']
+        },
+        {
+          fields: ['type']
         }
       ]
     }

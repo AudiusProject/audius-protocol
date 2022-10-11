@@ -36,6 +36,13 @@ module.exports = (sequelize, DataTypes) => {
         {
           unique: true,
           fields: ['blockchainId', 'clock']
+        },
+        {
+          fields: ['blockchainId']
+        },
+        {
+          name: 'Tracks_metadataJSON_is_premium_idx',
+          fields: ['("metadataJSON" ->> \'is_premium\')::boolean)']
         }
       ]
     }
