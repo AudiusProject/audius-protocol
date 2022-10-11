@@ -785,7 +785,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
           }
         ]
       })
-      libsMock.Track = { getTracks: getTrackStub }
+      libsMock.Track = { getTracksVerbose: getTrackStub }
 
       // Complete track upload
       await request(app)

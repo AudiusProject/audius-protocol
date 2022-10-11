@@ -694,7 +694,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         }
       ]
     })
-    libsMock.Track = { getTracks: getTrackStub }
+    libsMock.Track = { getTracksVerbose: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -750,7 +750,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         owner_id: -1
       }
     ])
-    libsMock.Track = { getTracks: getTrackStub }
+    libsMock.Track = { getTracksVerbose: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -867,7 +867,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         }
       ]
     })
-    libsMock.Track = { getTracks: getTrackStub }
+    libsMock.Track = { getTracksVerbose: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -1129,7 +1129,7 @@ describe('test Polling Tracks with real files', function () {
         }
       ]
     })
-    libsMock.Track = { getTracks: getTrackStub }
+    libsMock.Track = { getTracksVerbose: getTrackStub }
 
     // Complete track creation
     await request(app2)
@@ -1220,7 +1220,7 @@ describe('test Polling Tracks with real files', function () {
         }
       ]
     })
-    libsMock.Track = { getTracks: getTrackStub }
+    libsMock.Track = { getTracksVerbose: getTrackStub }
 
     // Complete track1 creation
     await request(app2)

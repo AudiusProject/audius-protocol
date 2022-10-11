@@ -330,35 +330,48 @@ const validateTrackOwner = async ({
       latest_chain_block: latestChainBlock,
       data: discoveryTrackResponse
     } = discoveryTrackResponseVerbose
-    const blockDiff = latestChainBlock - latestIndexedBlock
+
+    // Return if malformatted response
+    if (!latestIndexedBlock || !latestChainBlock || !Array.isArray(discoveryTrackResponse)) {
+      logger.warn(`${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
+        discoveryTrackResponseVerbose
+      )}`)
+      return false
+    }
 
     // Throw if target blockNumber not indexed
+    const blockDiff = latestChainBlock - latestIndexedBlock
     if (latestIndexedBlock < blockNumber) {
       throw new Error(
         `${logPrefix}: targetBlocknumber not indexed. ${discoveryProviderEndpoint} currently at ${latestIndexedBlock} with blockDiff ${blockDiff}`
       )
     }
 
-    // Throw if malformatted response
-    if (!Array.isArray(discoveryTrackResponse)) {
-      throw new Error(
-        `${logPrefix}: Malformatted track response from discovery ${discoveryProviderEndpoint}`
-      )
-    }
-
     // Return if track not found at target block
     if (discoveryTrackResponse.length === 0) {
+      logger.warn(
+        `${logPrefix} No track found from ${discoveryProviderEndpoint}`
+      )
       return false
     }
 
     // Return boolean indicating if track owner matches expected
-    return parseInt(userId) === discoveryTrackResponse[0].owner_id
+    const recoveredOwnerId = discoveryTrackResponse[0].owner_id
+    const ownerMatches = parseInt(userId) === recoveredOwnerId
+    if (!ownerMatches) {
+      logger.warn(
+        `${logPrefix} Recovered owner ID does not match (${recoveredOwnerId}), from ${discoveryProviderEndpoint}`
+      )
+    }
+    return ownerMatches
   }
 
   return await asyncRetry({
     asyncFn,
     logger,
-    retries: 10
+    log: false,
+    minTimeout: 0
+    // retries: 10
   })
 }
 

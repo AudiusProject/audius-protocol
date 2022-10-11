@@ -207,7 +207,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
           }
         ]
       })
-      libsMock.Track = { getTracks: getTrackStub }
+      libsMock.Track = { getTracksVerbose: getTrackStub }
 
       // associate track + track metadata with blockchain ID
       await request(app)
