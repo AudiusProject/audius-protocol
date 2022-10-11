@@ -47,7 +47,6 @@ STAGE_DISCOVERY_NODES = (
     "stage-discovery-1",
     "stage-discovery-2",
     "stage-discovery-3",
-    "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
 PROD_DISCOVERY_NODES = (
@@ -64,7 +63,6 @@ IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
 CANARIES = (
-    "stage-creator-4",  # canary
     "stage-discovery-4",  # canary
     "prod-creator-4",  # prod-canary
     "prod-discovery-4",  # prod-canary
