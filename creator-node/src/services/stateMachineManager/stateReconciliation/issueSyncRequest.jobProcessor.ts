@@ -368,27 +368,31 @@ async function _handleIssueSyncRequest({
   }
   const syncUuid: string | undefined = syncReqResp?.data?.data?.syncUuid
 
-  // primaryClockValue is used in additionalSyncIsRequired() call below
-  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
-    userWallet
-  ]
-
   // Wait until has sync has completed (within time threshold)
-  const { outcome, syncReqToEnqueue: additionalSync } = await (syncUuid
-    ? _additionalSyncIsRequired(
-        primaryClockValue,
+  let outcome
+  let additionalSync
+  if (syncUuid?.length) {
+    ;({ outcome, syncReqToEnqueue: additionalSync } =
+      await _additionalSyncIsRequired(
         syncType,
         syncRequestParameters,
         syncUuid,
         logger
-      )
-    : _deprecatedAdditionalSyncIsRequired(
+      ))
+  } else {
+    // This is only reached if the node processing the sync isn't up to date (i.e., doesn't return syncUuid)
+    const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
+      userWallet
+    ]
+    ;({ outcome, syncReqToEnqueue: additionalSync } =
+      await _deprecatedAdditionalSyncIsRequired(
         primaryClockValue,
         syncType,
         syncMode,
         syncRequestParameters,
         logger
       ))
+  }
 
   tracing.info(outcome)
 
@@ -578,7 +582,6 @@ const _deprecatedAdditionalSyncIsRequired = async (
  * Record SyncRequest outcomes to SecondarySyncHealthTracker
  */
 const _additionalSyncIsRequired = async (
-  primaryClockValue = -1,
   syncType: string,
   syncRequestParameters: SyncRequestAxiosParams,
   syncUuid: string,
@@ -586,7 +589,7 @@ const _additionalSyncIsRequired = async (
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   const userWallet = syncRequestParameters.data.wallet[0]
   const targetNode = syncRequestParameters.baseURL
-  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${targetNode} primaryClock ${primaryClockValue} syncUuid: ${syncUuid}`
+  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${targetNode} syncUuid: ${syncUuid}`
 
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs = startTimeMs + getMaxSyncMonitoringMs(syncType)
@@ -622,6 +625,20 @@ const _additionalSyncIsRequired = async (
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters
     }
+  }
+
+  if (syncStatus.startsWith('success')) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      targetNode,
+      userWallet,
+      syncType
+    )
+  } else {
+    await SecondarySyncHealthTracker.recordFailure(
+      targetNode,
+      userWallet,
+      syncType
+    )
   }
 
   return response
