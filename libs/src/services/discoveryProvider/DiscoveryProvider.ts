@@ -262,6 +262,51 @@ export class DiscoveryProvider {
   }
 
   /**
+   * get tracks with all relevant track data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param targetUserId the owner of the tracks being queried
+   * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param minBlockNumber The min block number
+   * @param filterDeleted If set to true, filters the deleted tracks
+   * @returns Array of track metadata Objects
+   * additional metadata fields on track objects:
+   *  {Integer} repost_count - repost count for given track
+   *  {Integer} save_count - save count for given track
+   *  {Array} followee_reposts - followees of current user that have reposted given track
+   *  {Boolean} has_current_user_reposted - has current user reposted given track
+   *  {Boolean} has_current_user_saved - has current user saved given track
+   * @example
+   * await getTracks()
+   * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
+   */
+  async getTracksVerbose(
+    limit = 100,
+    offset = 0,
+    idsArray: Nullable<string[]>,
+    targetUserId: Nullable<string>,
+    sort: Nullable<boolean>,
+    minBlockNumber: Nullable<number>,
+    filterDeleted: Nullable<boolean>,
+    withUsers?: boolean
+  ) {
+    const req = Requests.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
+
+    return await this._makeRequestInternal(req)
+  }
+
+  /**
    * Gets a particular track by its creator's handle and the track's URL slug
    * @param handle the handle of the owner of the track
    * @param slug the URL slug of the track, generally the title urlized
@@ -1045,6 +1090,53 @@ export class DiscoveryProvider {
     throwError = false,
     blockNumber?: number
   ): Promise<Response | undefined | null> {
+    return (
+      await this._makeRequestInternal<Response>(
+        requestObj,
+        retry,
+        attemptedRetries,
+        throwError,
+        blockNumber
+      )
+    )?.data
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param retry whether to retry on failure
+   * @param attemptedRetries number of attempted retries (stops retrying at max)
+   * @param throwError whether to throw error on error performing request or null
+   * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
+   */
+  async _makeRequestInternal<Response>(
+    requestObj: Record<string, unknown>,
+    retry = true,
+    attemptedRetries = 0,
+    throwError = false,
+    blockNumber?: number
+  ): Promise<
+    | {
+        latest_indexed_block: number
+        latest_chain_block: number
+        latest_indexed_slot_plays: number
+        latest_chain_slot_plays: number
+        data: Response
+      }
+    | undefined
+    | null
+  > {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
       if (throwError) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -1097,7 +1189,7 @@ export class DiscoveryProvider {
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
             // using selectionRequestRetries + 1 to force reselection
-            return await this._makeRequest(
+            return await this._makeRequestInternal(
               requestObj,
               retry,
               this.selectionRequestRetries + 1,
@@ -1110,7 +1202,7 @@ export class DiscoveryProvider {
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1140,7 +1232,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1157,7 +1249,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1171,7 +1263,7 @@ export class DiscoveryProvider {
     this.request404Count = 0
 
     // Everything looks good, return the data!
-    return parsedResponse.data
+    return parsedResponse
   }
 
   /**
