@@ -316,28 +316,76 @@ const validateTrackOwner = async ({
   userId,
   blockNumber
 }) => {
+  const logPrefix = `[validateTrackOwner][trackId: ${trackId}][userId: ${userId}][blockNumber: ${blockNumber}]`
+
   const asyncFn = async () => {
-    const discoveryTrackResponse = await libs.Track.getTracks(1, 0, [trackId])
-    if (
-      !Array.isArray(discoveryTrackResponse) ||
-      discoveryTrackResponse.length === 0 ||
-      !discoveryTrackResponse[0].hasOwnProperty('blocknumber')
-    ) {
-      throw new Error('Missing or malformatted track fetched from discprov.')
-    }
-    const track = discoveryTrackResponse[0]
-    if (track.blocknumber >= blockNumber) {
-      return parseInt(userId) === track.owner_id
-    }
-    throw new Error(
-      `Block not yet indexed: Waiting for ${track.blocknumber}, but at ${blockNumber}`
+    const discoveryTrackResponseVerbose = await libs.Track.getTracksVerbose(
+      1,
+      0,
+      [trackId]
     )
+    const discoveryProviderEndpoint =
+      libs.discoveryProvider.discoveryProviderEndpoint
+    const {
+      latest_indexed_block: latestIndexedBlock,
+      latest_chain_block: latestChainBlock,
+      data: discoveryTrackResponse
+    } = discoveryTrackResponseVerbose
+
+    // Return if malformatted response
+    if (
+      !latestIndexedBlock ||
+      !latestChainBlock ||
+      !Array.isArray(discoveryTrackResponse)
+    ) {
+      logger.warn(
+        `${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
+          discoveryTrackResponseVerbose
+        )}`
+      )
+      return false
+    }
+
+    // Throw if target blockNumber not indexed
+    const blockDiff = latestChainBlock - latestIndexedBlock
+    if (latestIndexedBlock < blockNumber) {
+      throw new Error(
+        `${logPrefix}: targetBlocknumber not indexed. ${discoveryProviderEndpoint} currently at ${latestIndexedBlock} with blockDiff ${blockDiff}`
+      )
+    }
+
+    // Return if track not found at target block
+    if (discoveryTrackResponse.length === 0) {
+      logger.warn(
+        `${logPrefix} No track found from ${discoveryProviderEndpoint}`
+      )
+      return false
+    }
+
+    // Return boolean indicating if track owner matches expected
+    const recoveredOwnerId = discoveryTrackResponse[0].owner_id
+    const ownerMatches = parseInt(userId) === recoveredOwnerId
+    if (!ownerMatches) {
+      logger.warn(
+        `${logPrefix} Recovered owner ID does not match (${recoveredOwnerId}), from ${discoveryProviderEndpoint}`
+      )
+    }
+    return ownerMatches
   }
 
-  return await asyncRetry({
-    asyncFn,
-    logger
-  })
+  const startMs = Date.now()
+  try {
+    return await asyncRetry({
+      asyncFn,
+      logger,
+      log: false,
+      retries: 10
+    })
+  } catch (e) {
+    throw e
+  } finally {
+    logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
+  }
 }
 
 /**
@@ -466,7 +514,7 @@ router.post(
         })
         if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID of track ${blockchainTrackId} does not match ${req.session.userId}`
+            `Failed to confirm that user ${req.session.userId} is owner of ${blockchainTrackId} at blocknumber ${blockNumber}`
           )
         }
 

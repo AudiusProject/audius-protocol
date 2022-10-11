@@ -53,14 +53,16 @@ def generate_env(
 
     for name, private_key in config.get("eth-accounts", {}).items():
         account = eth_account.Account.from_key(private_key)
-        env[f"{name}_PRIVATE_KEY"] = account.key.hex()
+
+        # slice off 0x for hex private keys
+        env[f"{name}_PRIVATE_KEY"] = account.key.hex().replace("0x", "")
         env[f"{name}_ADDRESS"] = account.address
 
         if name.startswith("ETH_RELAYER_WALLET"):
             eth_relayer_wallets.append(
                 {
                     "publicKey": account.address,
-                    "privateKey": account.key.hex()[2:],
+                    "privateKey": account.key.hex().replace("0x", ""),
                 }
             )
 
@@ -68,7 +70,7 @@ def generate_env(
             poa_relayer_wallets.append(
                 {
                     "publicKey": account.address,
-                    "privateKey": account.key.hex()[2:],
+                    "privateKey": account.key.hex().replace("0x", ""),
                 }
             )
 

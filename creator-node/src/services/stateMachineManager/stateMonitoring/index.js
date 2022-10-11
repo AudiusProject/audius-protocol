@@ -36,7 +36,7 @@ const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
  * - finding users who need a replica set update (when an unhealthy primary or secondary should be replaced)
  */
 class StateMonitoringManager {
-  async init(discoveryNodeEndpoint, prometheusRegistry) {
+  async init(prometheusRegistry) {
     // Create queue to fetch cNodeEndpoint->spId mapping
     const { queue: cNodeEndpointToSpIdMapQueue } = makeQueue({
       name: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
@@ -122,10 +122,6 @@ class StateMonitoringManager {
       await findSyncRequestsQueue.obliterate({ force: true })
       await findReplicaSetUpdatesQueue.obliterate({ force: true })
     }
-
-    // Start recurring queues that need an initial job to get started
-    await this.startEndpointToSpIdMapQueue(cNodeEndpointToSpIdMapQueue)
-    await this.startMonitorStateQueue(monitorStateQueue, discoveryNodeEndpoint)
 
     return {
       monitorStateQueue,
