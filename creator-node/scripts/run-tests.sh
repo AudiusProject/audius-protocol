@@ -104,7 +104,7 @@ rm -rf $storagePath
 mkdir -p $storagePath
 
 # linter
-npm run lint
+# npm run lint:fix
 
 export devMode=true
 
@@ -125,7 +125,7 @@ export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
