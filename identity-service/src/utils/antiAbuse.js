@@ -6,7 +6,7 @@ const models = require('../models')
 const aaoEndpoint =
   config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
-const blockRelayAbuseErrorCodes = new Set([0, 8, 10])
+const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13])
 const blockNotificationsErrorCodes = new Set([7, 9])
 
 /**
@@ -92,6 +92,9 @@ const detectAbuse = async (user, reqIP) => {
     !!user.isBlockedFromRelay !== blockedFromRelay ||
     !!user.isBlockedFromNotifications !== blockedFromNotifications
   ) {
+    logger.info(
+      `abuse: state changed for user [${user.handle}], blocked from relay: ${blockedFromRelay} blocked from notifs: [${blockedFromNotifications}]`
+    )
     await user.update({
       isBlockedFromRelay: blockedFromRelay,
       isBlockedFromNotifications: blockedFromNotifications,
