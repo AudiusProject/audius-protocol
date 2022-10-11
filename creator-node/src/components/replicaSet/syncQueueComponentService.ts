@@ -8,7 +8,15 @@ export const enqueueSync = async (params: {
   wallet: string
   creatorNodeEndpoint: string
   blockNumber: number
-  forceResyncConfig: boolean
+  forceResyncConfig: {
+    forceResync: boolean
+    signatureData: {
+      timestamp: string
+      signature: string
+      data: any
+    }
+    wallet: string
+  }
   forceWipe: boolean
   logContext: Object
   parentSpanContext: SpanContext
@@ -27,7 +35,15 @@ export const processManualImmediateSync = async (params: {
   wallet: string
   creatorNodeEndpoint: string
   blockNumber: number
-  forceResyncConfig: boolean
+  forceResyncConfig: {
+    forceResync: boolean
+    signatureData: {
+      timestamp: string
+      signature: string
+      data: any
+    }
+    wallet: string
+  }
   forceWipe: boolean
   logContext: Object
   parentSpanContext: SpanContext
