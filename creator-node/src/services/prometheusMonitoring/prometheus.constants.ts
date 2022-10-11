@@ -104,7 +104,6 @@ export const METRIC_LABELS = Object.freeze({
       'failure_sync_secondary_from_primary',
       'failure_db_transaction',
       'failure_export_wallet',
-      'failure_skip_threshold_not_reached',
       'failure_import_not_consistent',
       'failure_import_not_contiguous',
       'failure_inconsistent_clock'
@@ -122,7 +121,8 @@ export const METRIC_LABELS = Object.freeze({
       'success_mode_disabled',
       'success_secondary_caught_up',
       'success_secondary_partially_caught_up',
-      'success_orphan_wiped',
+      'success_orphan_wiped', // Deprecated
+      'failure_polling_timed_out',
       'abort_sync_correctness',
       'abort_current_node_is_not_user_primary',
       'abort_input_node_is_not_user_secondary',
@@ -136,12 +136,26 @@ export const METRIC_LABELS = Object.freeze({
       'failure_export_wallet',
       'failure_save_files_to_disk',
       'failure_save_entries_to_db',
-      'failure_orphan_not_wiped',
+      'failure_orphan_not_wiped', // Deprecated
       'failure_missing_wallet',
       'failure_secondary_failure_count_threshold_met',
       'failure_primary_sync_from_secondary',
       'failure_issue_sync_request',
-      'failure_secondary_failed_to_progress'
+      'failure_secondary_failed_to_progress',
+      'success_clocks_already_match',
+      'success_force_wipe',
+      'abort_current_node_is_not_user_secondary',
+      'abort_sync_in_progress',
+      'abort_force_wipe_disabled',
+      'failure_force_resync_check',
+      'failure_fetching_user_gateway',
+      'failure_delete_db_data',
+      'failure_delete_disk_data',
+      'failure_sync_secondary_from_primary',
+      'failure_db_transaction',
+      'failure_import_not_consistent',
+      'failure_import_not_contiguous',
+      'failure_inconsistent_clock'
     ]
   },
 

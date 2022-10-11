@@ -95,7 +95,9 @@ class SyncQueue {
       forceWipe,
       blockNumber,
       logContext,
-      serviceRegistry
+      serviceRegistry,
+      syncType,
+      syncUuid
     } = job.data
 
     let result = {}
@@ -108,7 +110,9 @@ class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
-        logContext
+        logContext,
+        syncType,
+        syncUuid: syncUuid || null
       })
       logInfoWithDuration(
         { logger, startTime },
@@ -133,7 +137,9 @@ class SyncQueue {
     forceResyncConfig,
     forceWipe,
     logContext,
-    parentSpanContext
+    parentSpanContext,
+    syncType,
+    syncUuid = null // Could be null for backwards compatibility
   }) {
     const job = await this.queue.add('process-sync', {
       wallet,
@@ -142,7 +148,9 @@ class SyncQueue {
       forceResyncConfig,
       forceWipe,
       logContext,
-      parentSpanContext
+      parentSpanContext,
+      syncType,
+      syncUuid: syncUuid || null
     })
     return job
   }

@@ -13,7 +13,7 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 const { shouldForceResync } = require('./secondarySyncFromPrimaryUtils')
 const { instrumentTracing, tracing } = require('../../tracer')
-const { fetchExportFromNode } = require('./syncUtil')
+const { fetchExportFromNode, setSyncStatus } = require('./syncUtil')
 
 const handleSyncFromPrimary = async ({
   serviceRegistry,
@@ -694,8 +694,10 @@ async function _secondarySyncFromPrimary({
   creatorNodeEndpoint,
   forceResyncConfig,
   logContext,
+  syncType,
   forceWipe = false,
-  blockNumber = null
+  blockNumber = null,
+  syncUuid = null // Could be null for backwards compatibility
 }) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
@@ -733,6 +735,16 @@ async function _secondarySyncFromPrimary({
   metricEndTimerFn({ result, mode })
   tracing.setSpanAttribute('result', result)
   tracing.setSpanAttribute('mode', mode)
+
+  try {
+    if (syncUuid) {
+      await setSyncStatus(syncUuid, result, syncType)
+    }
+  } catch (e) {
+    secondarySyncFromPrimaryLogger.error(
+      `Failed to update sync status for polling: ${e}`
+    )
+  }
 
   if (error) {
     secondarySyncFromPrimaryLogger.error(
