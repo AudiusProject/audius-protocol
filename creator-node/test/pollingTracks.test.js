@@ -687,12 +687,16 @@ describe('test Polling Tracks with mocked IPFS', function () {
       if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
+      return {
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
       ]
+    }
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -744,12 +748,16 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain NOT recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().resolves([
-      {
-        blocknumber: 0,
-        owner_id: -1
-      }
-    ])
+    const getTrackStub = sinon.stub().resolves(({
+      latest_indexed_block: 10,
+      latest_chain_block: 10,
+      data: [
+        {
+          blocknumber: 0,
+          owner_id: -1
+        }
+      ] 
+    }))
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
     await request(app)
@@ -860,12 +868,16 @@ describe('test Polling Tracks with mocked IPFS', function () {
       if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
-      ]
+      return ({
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]}
+      )
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -1213,12 +1225,16 @@ describe('test Polling Tracks with real files', function () {
       ) {
         trackOwnerId = userId
       }
-      return [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
-      ]
+      return ({
+        latest_chain_block: 20,
+        latest_indexed_block: 20,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]}
+      )
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 

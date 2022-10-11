@@ -332,10 +332,16 @@ const validateTrackOwner = async ({
     } = discoveryTrackResponseVerbose
 
     // Return if malformatted response
-    if (!latestIndexedBlock || !latestChainBlock || !Array.isArray(discoveryTrackResponse)) {
-      logger.warn(`${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
-        discoveryTrackResponseVerbose
-      )}`)
+    if (
+      !latestIndexedBlock ||
+      !latestChainBlock ||
+      !Array.isArray(discoveryTrackResponse)
+    ) {
+      logger.warn(
+        `${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
+          discoveryTrackResponseVerbose
+        )}`
+      )
       return false
     }
 

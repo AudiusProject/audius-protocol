@@ -36,7 +36,7 @@ const trustedNotifierConfig = {
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe.only('test ContentBlacklist', function () {
+describe('test ContentBlacklist', function () {
   let app, server, libsMock, mockServiceRegistry, userId, stubPremiumContentAccessChecker
 
   beforeEach(async () => {
@@ -715,12 +715,12 @@ describe.only('test ContentBlacklist', function () {
     // TODO: add remove and test that the segments are unblacklisted
   })
 
-  it.only('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID without the trackId query string', async () => {
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID without the trackId query string', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
     const ids = [trackId]
-    return
+    // return
 
     // Blacklist trackId
     const type = BlacklistManager._getTypes().track
@@ -741,7 +741,7 @@ describe.only('test ContentBlacklist', function () {
     )
   })
 
-  it.skip('should err when blacklisting track, and streaming /ipfs/:CID?trackId=<blacklistedTrackId>, then pass after removing from BL and streaming again', async () => {
+  it('should err when blacklisting track, and streaming /ipfs/:CID?trackId=<blacklistedTrackId>, then pass after removing from BL and streaming again', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -784,7 +784,7 @@ describe.only('test ContentBlacklist', function () {
     )
   })
 
-  it.skip('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -813,7 +813,7 @@ describe.only('test ContentBlacklist', function () {
   })
 
   // TODO: fix :(
-  it.skip('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
+  it('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
     // Create user and upload track
     const track1 = await createUserAndUploadTrack()
     const track2 = await createUserAndUploadTrack({
@@ -996,7 +996,7 @@ describe.only('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it.skip('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
+  it('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -1059,7 +1059,6 @@ describe.only('test ContentBlacklist', function () {
       .set('User-Id', inputUserId)
       .set('Enforce-Write-Quorum', false)
       .send(metadata)
-      .expect(200)
 
     const associateRequest = {
       blockchainUserId: inputUserId,
@@ -1073,7 +1072,6 @@ describe.only('test ContentBlacklist', function () {
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
       .send(associateRequest)
-      .expect(200)
 
     // Upload a track
     const trackUploadResponse = await uploadTrack(
@@ -1104,22 +1102,36 @@ describe.only('test ContentBlacklist', function () {
       .set('User-Id', inputUserId)
       .set('Enforce-Write-Quorum', false)
       .send({ metadata: trackMetadata, source_file: sourceFile })
-      .expect(200)
 
     // Make chain recognize wallet as owner of track
-    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+    const getTracksStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
       if (trackIds[0] === trackId) {
         trackOwnerId = inputUserId
       }
-      return { data: [
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
+    })
+    const getTracksVerboseStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === trackId) {
+        trackOwnerId = inputUserId
+      }
+      return {
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
         {
           blocknumber: 99999,
           owner_id: trackOwnerId
         }
       ]}
     })
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    libsMock.Track = { getTracks: getTracksStub, getTracksVerbose: getTracksVerboseStub }
 
     // associate track metadata with track
     await request(app)
@@ -1132,7 +1144,6 @@ describe.only('test ContentBlacklist', function () {
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
       })
-      .expect(200)
 
     // Return user and some track data
     return { cnodeUser, track: { trackSegments, blockchainId: trackId } }
