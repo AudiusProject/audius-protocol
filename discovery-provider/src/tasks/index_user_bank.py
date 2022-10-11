@@ -234,6 +234,7 @@ def process_transfer_instruction(
         return
 
     # If there was only 1 user bank, index as a send external transfer
+    # Cannot index receive external transfers this way as those use the spl-token program
     if len(user_id_accounts) == 1:
         audio_transfer_sent = AudioTransactionsHistory(
             user_bank=sender_account,
