@@ -210,6 +210,8 @@ const _getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
             run_id = :run_id
         AND 
             primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != -2
         AND
             primary_clock_value = secondary1_clock_value
         AND
@@ -243,6 +245,8 @@ const _getPartiallySyncedUsersCount = async (run_id: number): Promise<number> =>
             run_id = :run_id
         AND 
             primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != -2
         AND ( 
             primary_clock_value = secondary1_clock_value
             OR
@@ -274,6 +278,8 @@ const _getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
             run_id = :run_id
         AND 
             primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != -2
         AND 
             primary_clock_value != secondary1_clock_value
         AND
