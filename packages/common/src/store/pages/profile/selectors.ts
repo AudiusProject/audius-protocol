@@ -12,7 +12,7 @@ import { initialState as initialTracksState } from './lineups/tracks/reducer'
 import { CollectionSortMode } from './types'
 
 const getProfile = (state: CommonState, handle?: string) => {
-  const profileHandle = handle ?? state.pages.profile.currentUser
+  const profileHandle = handle?.toLowerCase() ?? state.pages.profile.currentUser
   if (!profileHandle) return null
   return state.pages.profile.entries[profileHandle]
 }
