@@ -317,6 +317,7 @@ const validateTrackOwner = async ({
   blockNumber
 }) => {
   const logPrefix = `[validateTrackOwner][trackId: ${trackId}][userId: ${userId}][blockNumber: ${blockNumber}]`
+
   const asyncFn = async () => {
     const discoveryTrackResponseVerbose = await libs.Track.getTracksVerbose(
       1,
@@ -372,12 +373,15 @@ const validateTrackOwner = async ({
     return ownerMatches
   }
 
-  return await asyncRetry({
+  const startMs = Date.now()
+  const response = await asyncRetry({
     asyncFn,
     logger,
     log: false,
     retries: 10
   })
+  logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
+  return response
 }
 
 /**
