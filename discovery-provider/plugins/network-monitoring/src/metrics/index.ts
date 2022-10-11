@@ -142,6 +142,10 @@ const _generateMetrics = async (run_id: number) => {
         ((usersWithNoFoundationNodeReplicaSetCount / userCount) * 100).toFixed(
           2
         ) + "%",
+        usersWithUnhealthyReplica:
+        ((usersWithUnhealthyReplica / userCount) * 100).toFixed(
+          2
+        ) + "%",
       runDuration: msToTime(endTime - runStartTime.getTime()),
     });
   }
