@@ -22,7 +22,8 @@ import {
   SavedPageCollection,
   tracksSocialActions as socialActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -31,6 +32,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
@@ -93,11 +95,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   handleFetchSavedTracks = debounce(() => {
-    this.props.fetchSavedTracks(
-      this.state.filterText,
-      this.state.sortMethod,
-      this.state.sortDirection
-    )
+    const isNewTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES)
+    if (isNewTablesEnabled) {
+      this.props.fetchSavedTracks(
+        this.state.filterText,
+        this.state.sortMethod,
+        this.state.sortDirection
+      )
+    }
   }, 300)
 
   handleFetchMoreSavedTracks = (offset: number, limit: number) => {
@@ -181,7 +186,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     return currentQueueItem.track ? currentQueueItem.track.track_id : null
   }
 
-  getFilteredData = (
+  getFormattedData = (
     trackMetadatas: SavedPageTrack[]
   ): [SavedPageTrack[], number] => {
     const { tracks } = this.props
@@ -190,6 +195,28 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas)
+    const filteredIndex =
+      playingIndex > -1
+        ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
+        : playingIndex
+    return [filteredMetadata, filteredIndex]
+  }
+
+  getFilteredData = (
+    trackMetadatas: SavedPageTrack[]
+  ): [SavedPageTrack[], number] => {
+    const { tracks } = this.props
+    const filterText = this.state.filterText
+    const playingUid = this.getPlayingUid()
+    const playingIndex = tracks.entries.findIndex(
+      ({ uid }: any) => uid === playingUid
+    )
+
+    const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
+      (item) =>
+        item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+        item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+    )
     const filteredIndex =
       playingIndex > -1
         ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
@@ -387,6 +414,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   render() {
     const isQueued = this.isQueued()
     const playingUid = this.getPlayingUid()
+    const isNewTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES)
 
     const childProps = {
       title: messages.title,
@@ -427,7 +455,9 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       onFilterChange: this.onFilterChange,
       onSortChange: this.onSortChange,
       formatMetadata: this.formatMetadata,
-      getFilteredData: this.getFilteredData,
+      getFilteredData: isNewTablesEnabled
+        ? this.getFormattedData
+        : this.getFilteredData,
       onPlay: this.onPlay,
       onSortTracks: this.onSortTracks,
       onChangeTab: this.onChangeTab,
