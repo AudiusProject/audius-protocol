@@ -17,7 +17,7 @@ set -e
 # rm -r venv
 # python3 -m venv venv
 # source venv/bin/activate
-pip3 install -r requirements.txt
+python3.9 -m pip install -r requirements.txt
 sleep 5
 set +e
 
@@ -46,14 +46,14 @@ cd_discprov_repo
 
 # Stop dependencies, if present
 docker network rm audius_dev
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
   --env-file compose/.test.env \
   stop
 
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
@@ -62,7 +62,7 @@ docker-compose \
 
 # Bring up local dependencies - postgres, redis
 docker network create audius_dev
-docker-compose \
+docker compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.elasticsearch.yml \
@@ -75,8 +75,8 @@ mkdir -p $PROMETHEUS_MULTIPROC_DIR
 
 if [ -z ${SKIP_TESTS+x} ]; then
   # Unit tests
-  pytest src
+  python3.9 -m pytest src
 
   # Integration tests
-  pytest integration_tests
+  python3.9 -m pytest integration_tests
 fi

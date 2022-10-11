@@ -415,6 +415,7 @@ const getDirCID = async (req, res) => {
   const dirCID = req.params.dirCID
   const filename = req.params.filename
   const path = `${dirCID}/${filename}`
+  const logPrefix = '[getDirCID]'
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
