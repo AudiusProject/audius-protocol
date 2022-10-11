@@ -693,9 +693,6 @@ export const audiusBackend = ({
           selectionRequestRetries: getRemoteVar(
             IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES
           ),
-          unhealthySlotDiffPlays: getRemoteVar(
-            IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
-          ),
           unhealthyBlockDiff: getRemoteVar(
             IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF
           )
@@ -790,7 +787,6 @@ export const audiusBackend = ({
 
   function getSolanaAudiusDataConfig() {
     if (!anchorProgramId || !anchorAdminAccount) {
-      console.warn('Missing solana audius data config')
       return {
         error: true
       }
@@ -813,7 +809,6 @@ export const audiusBackend = ({
       !ethTokenBridgeAddress ||
       !solTokenBridgeAddress
     ) {
-      console.warn('Missing wormhole configs')
       return {
         error: true
       }

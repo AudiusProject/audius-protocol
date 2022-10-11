@@ -20,8 +20,8 @@ export const formatSecondsAsText = (seconds: number): string => {
   return `${d.minutes()}m ${d.seconds()}s`
 }
 
-export const formatDate = (date: MomentInput): string => {
-  return moment(date).format('MM/DD/YY')
+export const formatDate = (date: MomentInput, format?: string): string => {
+  return moment(date, format).format('MM/DD/YY')
 }
 
 export const formatDateWithTimezoneOffset = (date: MomentInput): string => {

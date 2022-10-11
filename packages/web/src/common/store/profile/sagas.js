@@ -93,7 +93,6 @@ function* fetchProfileCustomizedCollectibles(user) {
           }
         ])
       )
-      console.log('something went wrong, could not get user collectibles order')
     }
   }
 }

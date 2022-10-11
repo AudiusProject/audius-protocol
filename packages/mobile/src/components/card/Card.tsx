@@ -70,6 +70,7 @@ type CardImageProps = {
 const CardImage = ({ id, type, imageSize }: CardImageProps) => {
   const useImage =
     type === 'user' ? useUserProfilePicture : useCollectionCoverArt
+
   const image = useImage({
     id,
     sizes: imageSize,

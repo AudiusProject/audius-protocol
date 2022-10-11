@@ -78,7 +78,6 @@ class PushNotifications {
   }
 
   async onRegister(token: Token) {
-    console.log('REGISTER DEVICE TOKEN', token)
     this.token = token
     await AsyncStorage.setItem('@device_token', JSON.stringify(token))
     isRegistering = false
