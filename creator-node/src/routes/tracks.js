@@ -374,14 +374,18 @@ const validateTrackOwner = async ({
   }
 
   const startMs = Date.now()
-  const response = await asyncRetry({
-    asyncFn,
-    logger,
-    log: false,
-    retries: 10
-  })
-  logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
-  return response
+  try {
+    return await asyncRetry({
+      asyncFn,
+      logger,
+      log: false,
+      retries: 10
+    })
+  } catch (e) {
+    throw e
+  } finally {
+    logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
+  }
 }
 
 /**
