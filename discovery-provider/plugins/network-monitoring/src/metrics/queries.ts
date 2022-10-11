@@ -320,6 +320,34 @@ export const getUsersWithNullPrimaryClock = instrumentTracing({
     fn: _getUsersWithNullPrimaryClock,
 })
 
+// The number of users who have a recorded clock value of -2
+const _getUsersWithUnhealthyReplica = async (run_id: number): Promise<number> => {
+    const usersResp: unknown[] = await sequelizeConn.query(`
+    SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = :run_id
+    AND (
+        primary_clock_value = -2
+        OR
+        secondary1_clock_value = -2
+        OR 
+        secondary2_clock_value = -2
+    );
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id },
+    })
+
+    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+
+    return usersCount
+}
+
+export const getUsersWithUnhealthyReplica = instrumentTracing({
+    fn: _getUsersWithUnhealthyReplica,
+})
+
 const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
 
     const spidSetStr = `{${spidSet.join(",")}}`

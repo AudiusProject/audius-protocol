@@ -11,6 +11,7 @@ import {
   partiallySyncedUsersByReplicaCountGauge,
   partiallySyncedUsersCountGauge,
   primaryUserCountGauge,
+  unhealthyReplicaUsersCountGauge,
   unsyncedUsersByPrimaryCountGauge,
   unsyncedUsersByReplicaCountGauge,
   unsyncedUsersCountGauge,
@@ -32,6 +33,7 @@ import {
   getUsersWithEntireReplicaSetNotInSpidSetCount,
   getUserStatusByPrimary,
   getUserStatusByReplica,
+  getUsersWithUnhealthyReplica,
 } from "./queries";
 import { instrumentTracing, tracing } from "..//tracer"
 
@@ -57,6 +59,8 @@ const _generateMetrics = async (run_id: number) => {
   const unsyncedUsersCount = await getUnsyncedUsersCount(run_id);
 
   const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id);
+
+  const usersWithUnhealthyReplica = await getUsersWithUnhealthyReplica(run_id);
 
   const usersWithAllFoundationNodeReplicaSetCount =
     await getUsersWithEntireReplicaSetInSpidSetCount(run_id, foundationNodes);
@@ -106,6 +110,7 @@ const _generateMetrics = async (run_id: number) => {
   partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount);
   unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount);
   nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock);
+  unhealthyReplicaUsersCountGauge.set({ run_id }, usersWithUnhealthyReplica);
   usersWithAllFoundationNodeReplicaSetGauge.set(
     { run_id },
     usersWithAllFoundationNodeReplicaSetCount
