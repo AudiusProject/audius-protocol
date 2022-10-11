@@ -188,7 +188,7 @@
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "dn1_web-server_1",
+    "host": "localhost",
     "port": 5000,
     "health_check_endpoint": "health_check",
     "up": [
