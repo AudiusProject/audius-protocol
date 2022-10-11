@@ -1,4 +1,4 @@
-import { SolanaClient, CommonStoreContext } from '@audius/common'
+import { SolanaClient, CommonStoreContext, OpenSeaClient } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
@@ -47,5 +47,8 @@ export const storeContext: CommonStoreContext = {
   trackDownload,
   instagramAppId: process.env.REACT_APP_INSTAGRAM_APP_ID,
   instagramRedirectUrl: process.env.REACT_APP_INSTAGRAM_REDIRECT_URL,
-  share
+  share,
+  openSeaClient: new OpenSeaClient(
+    process.env.REACT_APP_OPENSEA_API_URL as string
+  )
 }

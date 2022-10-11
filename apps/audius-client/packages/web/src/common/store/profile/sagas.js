@@ -17,8 +17,7 @@ import {
   dataURLtoFile,
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_SUPPORTING_TILES,
-  MAX_PROFILE_TOP_SUPPORTERS,
-  OpenSeaClient
+  MAX_PROFILE_TOP_SUPPORTERS
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -98,7 +97,8 @@ function* fetchProfileCustomizedCollectibles(user) {
 }
 
 export function* fetchOpenSeaAssetsForWallets(wallets) {
-  return yield call(OpenSeaClient.getAllCollectibles, wallets)
+  const openSeaClient = yield getContext('openSeaClient')
+  return yield call([openSeaClient, openSeaClient.getAllCollectibles], wallets)
 }
 
 export function* fetchOpenSeaAssets(user) {
