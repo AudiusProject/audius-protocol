@@ -32,7 +32,7 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
      ...acc,
      [
        Service.CREATOR_NODE,
-       SetupCommand.HEALTH_CHECK_WITH_RETRY,
+       SetupCommand.HEALTH_CHECK_RETRY,
        { verbose: true, serviceNumber: cur, waitSec: 300 }
      ]
    ]
@@ -40,8 +40,8 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
  []
 )
 const services = [
- [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK_WITH_RETRY],
- [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_WITH_RETRY],
+ [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK_RETRY],
+ [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY],
  ...contentNodeHealthChecks
 ]
  
