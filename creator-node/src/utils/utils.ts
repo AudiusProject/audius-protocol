@@ -12,7 +12,7 @@ export function verifySignature(data: any, sig: any) {
 
 export async function timeout(ms: number, log = true) {
   if (log) {
-    genericLogger.debug(`starting timeout of ${ms}`)
+    genericLogger.info(`starting timeout of ${ms}`)
   }
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

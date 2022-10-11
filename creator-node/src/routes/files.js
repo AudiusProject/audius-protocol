@@ -154,7 +154,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
-    req.logger.debug(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
     req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
@@ -512,7 +512,6 @@ const getDirCID = async (req, res) => {
   const dirCID = req.params.dirCID
   const filename = req.params.filename
   const path = `${dirCID}/${filename}`
-  const logPrefix = '[getDirCID]'
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
@@ -542,12 +541,10 @@ const getDirCID = async (req, res) => {
 
   // Attempt to stream file to client
   try {
-    req.logger.info(
-      `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
-    )
+    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
+    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
@@ -561,7 +558,7 @@ const getDirCID = async (req, res) => {
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
     req.logger.error(
-      `${logPrefix} - Error calling findCIDInNetwork for path ${storagePath}`,
+      `Error calling findCIDInNetwork for path ${storagePath}`,
       e
     )
     return sendResponse(req, res, errorResponseServerError(e.message))
