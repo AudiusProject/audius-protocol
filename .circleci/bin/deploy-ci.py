@@ -47,7 +47,6 @@ STAGE_DISCOVERY_NODES = (
     "stage-discovery-1",
     "stage-discovery-2",
     "stage-discovery-3",
-    "stage-discovery-4",  # canary
     "stage-discovery-5",
 )
 PROD_DISCOVERY_NODES = (
@@ -64,7 +63,6 @@ IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
 CANARIES = (
-    "stage-creator-4",  # canary
     "stage-discovery-4",  # canary
     "prod-creator-4",  # prod-canary
     "prod-discovery-4",  # prod-canary
@@ -193,7 +191,7 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
     """
 
     # test ssh access
-    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=5)
+    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=15)
     if not output:
         snapshot.update(
             {
