@@ -161,6 +161,7 @@ const relayWormhole = async (
 
 module.exports = function (app) {
   app.post('/wormhole_relay', async (req, res, next) => {
+    req.setTimeout(60 * 1000 * 35) // Set timeout to 35 min because wormhole flow takes a while
     const audiusLibs = req.app.get('audiusLibs')
     const slackWormholeErrorReporter = req.app.get('slackWormholeErrorReporter')
     const body = req.body
