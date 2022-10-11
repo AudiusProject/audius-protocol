@@ -46,26 +46,28 @@ describe('Test premium content access', function () {
 
   beforeEach(() => {
     premiumContentAccessChecker = new PremiumContentAccessChecker()
-    redisMock = new Map()
-    redisMock.set(
-      'all_registered_dnodes',
-      JSON.stringify([
-        {
-          delegateOwnerWallet: dummyDNDelegateOwnerWallet,
-          type: 'discovery-node'
-        }
-      ])
-    )
+    redisMock.get = (key: string) => {
+      if (key === 'all_registered_dnodes') {
+        return JSON.stringify([
+          {
+            delegateOwnerWallet: dummyDNDelegateOwnerWallet,
+            type: 'discovery-node'
+          }
+        ])
+      }
+    }
     loggerMock = loggerFactory()
   })
 
   describe('premium content', () => {
     beforeEach(async () => {
-      redisMock.set(PREMIUM_CONTENT_CID_CACHE_KEY, JSON.stringify({ [cid]: trackBlockchainId }))
+      redisMock.hget = () => {
+        return { trackId: trackBlockchainId, isPremium: true }
+      }
     })
 
     afterEach(async () => {
-      redisMock.delete(PREMIUM_CONTENT_CID_CACHE_KEY)
+      delete redisMock.hget
     })
 
     it('fails when there are missing headers', async () => {
