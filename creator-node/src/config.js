@@ -419,7 +419,7 @@ const config = convict({
     doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
     format: 'nat',
     env: 'discoveryNodeUnhealthyBlockDiff',
-    default: 500
+    default: 15
   },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
