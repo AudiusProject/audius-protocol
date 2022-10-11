@@ -687,6 +687,14 @@ const handleSyncFromPrimary = async ({
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
+ * @param {Object} param
+ * @param {Object} param.serviceRegistry
+ * @param {string} param.wallet
+ * @param {string} param.creatorNodeEndpoint
+ * @param {Object} param.forceResyncConfig
+ * @param {Object} param.logContext
+ * @param {boolean} [param.forceWipe]
+ * @param {number} [param.blockNumber]
  */
 async function _secondarySyncFromPrimary({
   serviceRegistry,
