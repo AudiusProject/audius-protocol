@@ -28,7 +28,7 @@ export type WormholeConfig = {
   ethTokenBridgeAddress: string
 }
 
-/** Singleton state-manager for Audius Eth Contracts */
+/** Singleton state-manager for audius wormhole interaction */
 export class Wormhole {
   hedgehog: Nullable<Hedgehog>
   ethWeb3Manager: EthWeb3Manager
