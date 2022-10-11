@@ -17,18 +17,20 @@ import {
   isNotFromNullAddress
 } from './ethCollectibleHelpers'
 
-const OPENSEA_API_URL = process.env.REACT_APP_OPENSEA_API_URL
 const OPENSEA_NUM_ASSETS_LIMIT = 1000
 
-class OpenSeaClient {
-  readonly url = OPENSEA_API_URL
+export class OpenSeaClient {
+  readonly url: string
+  constructor(url: string) {
+    this.url = url
+  }
 
   async getTransferredCollectiblesForWallet(
     wallet: string,
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
-      `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`
+      `${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`
     ).then((r) => r.json())
   }
 
@@ -38,7 +40,7 @@ class OpenSeaClient {
   ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
       wallets.map((wallet) =>
-        client.getTransferredCollectiblesForWallet(wallet, limit)
+        this.getTransferredCollectiblesForWallet(wallet, limit)
       )
     ).then((results) =>
       results
@@ -65,7 +67,7 @@ class OpenSeaClient {
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
-      `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`
+      `${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`
     ).then((r) => r.json())
   }
 
@@ -75,7 +77,7 @@ class OpenSeaClient {
   ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
       wallets.map((wallet) =>
-        client.getCreatedCollectiblesForWallet(wallet, limit)
+        this.getCreatedCollectiblesForWallet(wallet, limit)
       )
     ).then((results) =>
       results
@@ -101,7 +103,7 @@ class OpenSeaClient {
     wallet: string,
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<{ assets: OpenSeaAsset[] }> {
-    return fetch(`${client.url}/assets?owner=${wallet}&limit=${limit}`).then(
+    return fetch(`${this.url}/assets?owner=${wallet}&limit=${limit}`).then(
       (r) => r.json()
     )
   }
@@ -111,7 +113,7 @@ class OpenSeaClient {
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaAssetExtended[]> {
     return Promise.allSettled(
-      wallets.map((wallet) => client.getCollectiblesForWallet(wallet, limit))
+      wallets.map((wallet) => this.getCollectiblesForWallet(wallet, limit))
     ).then((results) =>
       results
         .map((result, i) => ({ result, wallet: wallets[i] }))
@@ -130,9 +132,9 @@ class OpenSeaClient {
 
   async getAllCollectibles(wallets: string[]): Promise<CollectibleState> {
     return Promise.all([
-      client.getCollectiblesForMultipleWallets(wallets),
-      client.getCreatedCollectiblesForMultipleWallets(wallets),
-      client.getTransferredCollectiblesForMultipleWallets(wallets)
+      this.getCollectiblesForMultipleWallets(wallets),
+      this.getCreatedCollectiblesForMultipleWallets(wallets),
+      this.getTransferredCollectiblesForMultipleWallets(wallets)
     ]).then(async ([assets, creationEvents, transferEvents]) => {
       const filteredAssets = assets.filter(
         (asset) => asset && isAssetValid(asset)
@@ -253,7 +255,3 @@ class OpenSeaClient {
 ;(function () {
   if (!Promise.allSettled) Promise.allSettled = allPromisesSettled
 })()
-
-const client = new OpenSeaClient()
-
-export default client

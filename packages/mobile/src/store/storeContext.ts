@@ -1,5 +1,5 @@
 import type { CommonStoreContext } from '@audius/common'
-import { SolanaClient } from '@audius/common'
+import { OpenSeaClient, SolanaClient } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 import Config from 'react-native-config'
@@ -47,5 +47,6 @@ export const storeContext: CommonStoreContext = {
   trackDownload,
   instagramAppId: Config.INSTAGRAM_APP_ID,
   instagramRedirectUrl: Config.INSTAGRAM_REDIRECT_URL,
-  share: (url: string, message?: string) => share({ url, message })
+  share: (url: string, message?: string) => share({ url, message }),
+  openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL)
 }

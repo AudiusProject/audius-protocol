@@ -114,7 +114,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
               </View>
             ) : null}
             <View style={styles.chain}>
-              {chain !== 'eth' ? (
+              {chain === 'eth' ? (
                 <LogoEth height={18} />
               ) : (
                 <LogoSol height={16} />

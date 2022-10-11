@@ -7,6 +7,7 @@ import { Env } from '../services/env'
 import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
 import { LocalStorage } from '../services/local-storage'
+import { OpenSeaClient } from '../services/opensea-client'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
 import { SolanaClient } from '../services/solana-client'
 import { TrackDownload } from '../services/track-download'
@@ -54,4 +55,5 @@ export type CommonStoreContext = {
   instagramAppId?: string
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
+  openSeaClient: OpenSeaClient
 }
