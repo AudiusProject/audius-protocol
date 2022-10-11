@@ -378,6 +378,9 @@ def update_user_metadata(
     if "location" in metadata and metadata["location"]:
         user_record.location = metadata["location"]
 
+    if "artist_pick_track_id" in metadata and metadata["artist_pick_track_id"]:
+        user_record.artist_pick_track_id = metadata["artist_pick_track_id"]
+
     # Fields with no on-chain counterpart
     if "profile_picture_sizes" in metadata and metadata["profile_picture_sizes"]:
         user_record.profile_picture = metadata["profile_picture_sizes"]

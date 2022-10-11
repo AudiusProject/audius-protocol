@@ -332,6 +332,12 @@ const config = convict({
     default: null,
     env: 'registryAddress'
   },
+  entityManagerAddress: {
+    doc: 'EntityManager address deployed on web3Provider',
+    format: String,
+    default: '',
+    env: 'entityManagerAddress'
+  },
   audiusNotificationUrl: {
     doc: 'Url of audius notifications',
     format: String,

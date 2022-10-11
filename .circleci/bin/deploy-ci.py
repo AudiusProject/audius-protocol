@@ -39,7 +39,7 @@ PROD_CREATOR_NODES = (
     "prod-creator-3",
     "prod-creator-4",  # prod-canary
     "prod-creator-5",
-    "user-metadata",
+    "prod-user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
 
@@ -193,7 +193,7 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
     """
 
     # test ssh access
-    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=5)
+    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=15)
     if not output:
         snapshot.update(
             {

@@ -982,5 +982,6 @@ module.exports = {
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
   getOwnEndpoint,
-  getUserReplicaSetEndpointsFromDiscovery
+  getUserReplicaSetEndpointsFromDiscovery,
+  getReplicaSetSpIDs
 }

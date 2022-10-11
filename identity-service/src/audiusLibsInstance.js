@@ -5,6 +5,7 @@ const {
 
 const config = require('./config')
 const registryAddress = config.get('registryAddress')
+const entityManagerAddress = config.get('entityManagerAddress')
 const web3ProviderUrl = config.get('web3Provider')
 
 // Fixed address of the SPL token program
@@ -77,7 +78,8 @@ class AudiusLibsWrapper {
           // this is a stopgap since libs external web3 init requires an ownerWallet
           // this is never actually used in the service's libs calls
           ownerWallet: config.get('relayerPublicKey')
-        }
+        },
+        entityManagerAddress
       },
       isServer: true,
       captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },

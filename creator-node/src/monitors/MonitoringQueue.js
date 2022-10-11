@@ -99,7 +99,6 @@ class MonitoringQueue {
     if (isFresh) return
 
     const value = await monitorProps.func()
-    this.logStatus(`Computed value for ${monitorProps.name} ${value}`)
 
     // store integer monitors in prometheus
     try {
