@@ -1,12 +1,10 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
-import { update } from 'lodash'
 
 import { asLineup } from 'store/lineup/reducer'
 import feedReducer from 'store/pages/profile/lineups/feed/reducer'
 import tracksReducer from 'store/pages/profile/lineups/tracks/reducer'
 import { FollowType, CollectionSortMode } from 'store/pages/profile/types'
-import { FOLLOW_USER, FOLLOW_USER_FAILED } from 'store/social/users/actions'
 
 import { Status } from '../../../models'
 
@@ -203,28 +201,6 @@ const actionsMap = {
   [DISMISS_PROFILE_METER](state, action) {
     return updateProfile(state, action, { profileMeterDismissed: true })
   },
-  [FOLLOW_USER](state, action) {
-    const { currentUser, entries } = state
-    const { handle, userId } = action
-    const profileHandle = handle?.toLowerCase() ?? currentUser
-    const newEntry = entries[profileHandle]
-    const profileFollowees = newEntry[FollowType.FOLLOWEES]
-
-    return {
-      ...state,
-      entries: {
-        ...entries,
-        [profileHandle]: {
-          ...newEntry,
-          [FollowType.FOLLOWEES]: {
-            ...profileFollowees,
-            userIds: profileFollowees.userIds.concat([userId])
-          }
-        }
-      }
-    }
-  },
-  [FOLLOW_USER_FAILED](state, action) {},
   [SET_NOTIFICATION_SUBSCRIPTION](state, action) {
     const { isSubscribed } = action
 
