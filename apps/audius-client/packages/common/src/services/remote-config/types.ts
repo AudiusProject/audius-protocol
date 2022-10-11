@@ -281,7 +281,19 @@ export enum StringKeys {
   MIN_APP_VERSION = 'MIN_APP_VERSION',
 
   /** Preset amounts for the Buy Audio modal */
-  BUY_AUDIO_PRESET_AMOUNTS = 'BUY_AUDIO_PRESET_AMOUNTS'
+  BUY_AUDIO_PRESET_AMOUNTS = 'BUY_AUDIO_PRESET_AMOUNTS',
+
+  /** Allowed Countries for Coinbase Pay */
+  COINBASE_PAY_ALLOWED_COUNTRIES = 'COINBASE_PAY_ALLOWED_COUNTRIES',
+
+  /** Denied Regions for Coinbase Pay */
+  COINBASE_PAY_DENIED_REGIONS = 'COINBASE_PAY_DENIED_REGIONS',
+
+  /** Allowed Countries for Link by Stripe */
+  STRIPE_ALLOWED_COUNTRIES = 'STRIPE_ALLOWED_COUNTRIES',
+
+  /** Denied Regions for Link by Stripe */
+  STRIPE_DENIED_REGIONS = 'STRIPE_DENIED_REGIONS'
 }
 
 export type AllRemoteConfigKeys =

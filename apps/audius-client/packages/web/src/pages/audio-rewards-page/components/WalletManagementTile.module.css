@@ -143,12 +143,24 @@
   display: flex;
   gap: 8px;
 }
-.onRampButtons > * {
+.onRampButtons > div {
   flex: 1;
+}
+.onRampButton {
+  width: 100%;
 }
 
 .manageWalletsButton:hover,
-.payWithCoinbaseButton:hover,
-.payWithStripeButton:hover {
+div:only-child > .onRampButton:not(:disabled):hover {
   transform: perspective(1px) scale3d(1.02, 1.02, 1.02) !important;
+}
+div:not(:only-child) > .onRampButton:not(:disabled):hover {
+  transform: perspective(1px) scale3d(1.03, 1.03, 1.03) !important;
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
 }
