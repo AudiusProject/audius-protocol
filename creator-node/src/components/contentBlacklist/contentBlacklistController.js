@@ -76,7 +76,7 @@ const contentBlacklistAddController = async (req) => {
     )
     const libs = req.app.get('audiusLibs')
     try {
-      values = await filterNonexistantIds(libs, type, values)
+      values = await filterNonexistentIds(libs, type, values)
     } catch (e) {
       return errorResponseBadRequest(e)
     }
@@ -131,7 +131,7 @@ const contentBlacklistRemoveController = async (req) => {
     )
     const libs = req.app.get('audiusLibs')
     try {
-      values = await filterNonexistantIds(libs, type, values)
+      values = await filterNonexistentIds(libs, type, values)
     } catch (e) {
       return errorResponseBadRequest(e)
     }
@@ -251,7 +251,7 @@ function verifyRequest(data, signature, trustedNotifierManager) {
  * @param {string} type
  * @param {number[]} ids
  */
-const filterNonexistantIds = async (libs, type, ids) => {
+const filterNonexistentIds = async (libs, type, ids) => {
   let resp
   try {
     switch (type) {
