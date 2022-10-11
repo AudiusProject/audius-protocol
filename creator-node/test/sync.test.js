@@ -200,18 +200,14 @@ describe('Test secondarySyncFromPrimary()', async function () {
         if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return ({
-          latest_chain_block: 10,
-          latest_indexed_block: 10,
-          data: [
-            {
-              blocknumber: 99999,
-              owner_id: trackOwnerId
-            }
-          ]
-        })
+        return [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
       })
-      libsMock.Track = { getTracksVerbose: getTrackStub }
+      libsMock.Track = { getTracks: getTrackStub }
 
       // associate track + track metadata with blockchain ID
       await request(app)

@@ -778,18 +778,14 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return {
-          latest_indexed_block: 10,
-          latest_chain_block: 10,
-          data: [
-            {
-              blocknumber: 99999,
-              owner_id: trackOwnerId
-            }
-          ]
-        }
+        return [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
       })
-      libsMock.Track = { getTracksVerbose: getTrackStub }
+      libsMock.Track = { getTracks: getTrackStub }
 
       // Complete track upload
       await request(app)

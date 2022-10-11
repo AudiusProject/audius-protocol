@@ -687,18 +687,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
       if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return {
-        latest_indexed_block: 10,
-        latest_chain_block: 10,
-        data: [
-          {
-            blocknumber: 99999,
-            owner_id: trackOwnerId
-          }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
       ]
-    }
     })
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -748,17 +744,13 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain NOT recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().resolves(({
-      latest_indexed_block: 10,
-      latest_chain_block: 10,
-      data: [
-        {
-          blocknumber: 0,
-          owner_id: -1
-        }
-      ] 
-    }))
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    const getTrackStub = sinon.stub().resolves([
+      {
+        blocknumber: 0,
+        owner_id: -1
+      }
+    ])
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -868,18 +860,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
       if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return ({
-        latest_indexed_block: 10,
-        latest_chain_block: 10,
-        data: [
-          {
-            blocknumber: 99999,
-            owner_id: trackOwnerId
-          }
-        ]}
-      )
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     await request(app)
       .post('/tracks')
@@ -1141,7 +1129,7 @@ describe('test Polling Tracks with real files', function () {
         }
       ]
     })
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // Complete track creation
     await request(app2)
@@ -1225,18 +1213,14 @@ describe('test Polling Tracks with real files', function () {
       ) {
         trackOwnerId = userId
       }
-      return ({
-        latest_chain_block: 20,
-        latest_indexed_block: 20,
-        data: [
-          {
-            blocknumber: 99999,
-            owner_id: trackOwnerId
-          }
-        ]}
-      )
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
     })
-    libsMock.Track = { getTracksVerbose: getTrackStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // Complete track1 creation
     await request(app2)

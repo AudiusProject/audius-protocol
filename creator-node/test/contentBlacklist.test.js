@@ -720,7 +720,6 @@ describe('test ContentBlacklist', function () {
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
     const ids = [trackId]
-    // return
 
     // Blacklist trackId
     const type = BlacklistManager._getTypes().track
@@ -1068,7 +1067,7 @@ describe('test ContentBlacklist', function () {
 
     // Associate user with metadata
     await request(app)
-      .post('/audius_users')
+      .post('/audius_users/')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
       .send(associateRequest)
@@ -1104,7 +1103,7 @@ describe('test ContentBlacklist', function () {
       .send({ metadata: trackMetadata, source_file: sourceFile })
 
     // Make chain recognize wallet as owner of track
-    const getTracksStub = sinon.stub().callsFake((_, __, trackIds) => {
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
       let trackOwnerId = -1
       if (trackIds[0] === trackId) {
         trackOwnerId = inputUserId
@@ -1116,22 +1115,7 @@ describe('test ContentBlacklist', function () {
         }
       ]
     })
-    const getTracksVerboseStub = sinon.stub().callsFake((_, __, trackIds) => {
-      let trackOwnerId = -1
-      if (trackIds[0] === trackId) {
-        trackOwnerId = inputUserId
-      }
-      return {
-        latest_indexed_block: 10,
-        latest_chain_block: 10,
-        data: [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
-      ]}
-    })
-    libsMock.Track = { getTracks: getTracksStub, getTracksVerbose: getTracksVerboseStub }
+    libsMock.Track = { getTracks: getTrackStub }
 
     // associate track metadata with track
     await request(app)
@@ -1171,7 +1155,7 @@ const setupLibsMock = (libsMock) => {
     return resp
   })
 
-  libsMock.Track = { getTracks: sinon.mock(), getTracksVerbose: sinon.mock() }
+  libsMock.Track = { getTracks: sinon.mock() }
   libsMock.Track.getTracks.callsFake((limit, offset, ids) => {
     return ids.map((id) => {
       return {
@@ -1179,14 +1163,6 @@ const setupLibsMock = (libsMock) => {
       }
     })
   })
-  // libsMock.Track.getTracksVerbose.callsFake((limit, offset, ids) => {
-  //   return ids.map((id) => {
-  //     return {
-  //       track_id: id
-  //     }
-  //   })
-  // })
   libsMock.Track.getTracks.atLeast(0)
-  // libsMock.Track.getTracksVerbose.atLeast(0)
   return libsMock
 }
