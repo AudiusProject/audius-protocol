@@ -29,8 +29,6 @@ import {
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
-import { awaitReachability } from '../reachability/sagas'
-
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid } = playerSelectors
 const { getUsers } = cacheUsersSelectors
@@ -119,8 +117,6 @@ function* fetchLineupMetadatasAsync(
   action
 ) {
   const initLineup = yield select(lineupSelector)
-  yield call(awaitReachability)
-
   const initSource = sourceSelector
     ? yield select((state) =>
         sourceSelector(state, action.handle?.toLowerCase())
@@ -141,17 +137,14 @@ function* fetchLineupMetadatasAsync(
 
       // Let page animations on mobile have time to breathe
       // TODO: Get rid of this once we figure out how to make loading better
-      const isNativeMobile = yield* getContext('isNativeMobile')
+      const isNativeMobile = yield getContext('isNativeMobile')
       if (!isNativeMobile && isMobileWeb()) {
         yield delay(100)
       }
 
       const lineupMetadatasResponse = yield call(lineupMetadatasCall, action)
 
-      if (lineupMetadatasResponse === null) {
-        yield put(lineupActions.fetchLineupMetadatasFailed())
-        return
-      }
+      if (lineupMetadatasResponse === null) return
       const lineup = yield select((state) =>
         lineupSelector(state, action.handle?.toLowerCase())
       )

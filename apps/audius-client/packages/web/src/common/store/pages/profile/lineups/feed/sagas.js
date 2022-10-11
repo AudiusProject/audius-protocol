@@ -12,7 +12,7 @@ import {
   waitForAccount,
   makeUid
 } from '@audius/common'
-import { select, call, takeEvery, put } from 'typed-redux-saga'
+import { select, call, takeEvery, put } from 'redux-saga/effects'
 
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
 import { LineupSagas } from 'common/store/lineup/sagas'
@@ -24,11 +24,11 @@ const { getCollections } = cacheCollectionsSelectors
 const { getUserId, getUserHandle } = accountSelectors
 
 function* getReposts({ offset, limit, handle }) {
-  const profileId = yield* select((state) => getProfileUserId(state, handle))
+  const profileId = yield select((state) => getProfileUserId(state, handle))
 
   yield waitForAccount()
-  const currentUserId = yield* select(getUserId)
-  let reposts = yield* call(retrieveUserReposts, {
+  const currentUserId = yield select(getUserId)
+  let reposts = yield call(retrieveUserReposts, {
     handle,
     currentUserId,
     offset,
@@ -40,7 +40,7 @@ function* getReposts({ offset, limit, handle }) {
   // Only do this on page 1 of the reposts tab
   if (profileId === currentUserId && offset === 0) {
     // Get everything that is confirming
-    const confirming = yield* select(getConfirmCalls)
+    const confirming = yield select(getConfirmCalls)
     if (Object.keys(confirming).length > 0) {
       const repostTrackIds = new Set(
         reposts.map((r) => r.track_id).filter(Boolean)
@@ -49,8 +49,8 @@ function* getReposts({ offset, limit, handle }) {
         reposts.map((r) => r.playlist_id).filter(Boolean)
       )
 
-      const tracks = yield* select(getTracks)
-      const collections = yield* select(getCollections)
+      const tracks = yield select(getTracks)
+      const collections = yield select(getCollections)
 
       // For each confirming entry, check if it's a track or collection,
       // then check if we have reposted/favorited it, and check to make
@@ -103,7 +103,7 @@ class FeedSagas extends LineupSagas {
 
 function* addTrackRepost(action) {
   const { trackId, source } = action
-  const accountHandle = yield* select(getUserHandle)
+  const accountHandle = yield select(getUserHandle)
 
   const formattedTrack = {
     kind: Kind.TRACKS,
@@ -111,34 +111,34 @@ function* addTrackRepost(action) {
     uid: makeUid(Kind.TRACKS, trackId, source)
   }
 
-  yield* put(feedActions.add(formattedTrack, trackId, accountHandle, true))
+  yield put(feedActions.add(formattedTrack, trackId, accountHandle, true))
 }
 
 function* watchRepostTrack() {
-  yield* takeEvery(tracksSocialActions.REPOST_TRACK, addTrackRepost)
+  yield takeEvery(tracksSocialActions.REPOST_TRACK, addTrackRepost)
 }
 
 function* removeTrackRepost(action) {
   const { trackId } = action
-  const accountHandle = yield* select(getUserHandle)
-  const lineup = yield* select((state) =>
+  const accountHandle = yield select(getUserHandle)
+  const lineup = yield select((state) =>
     getProfileFeedLineup(state, accountHandle)
   )
   const trackLineupEntry = lineup.entries.find((entry) => entry.id === trackId)
   if (trackLineupEntry) {
-    yield* put(
+    yield put(
       feedActions.remove(Kind.TRACKS, trackLineupEntry.uid, accountHandle)
     )
   }
 }
 
 function* watchUndoRepostTrack() {
-  yield* takeEvery(tracksSocialActions.UNDO_REPOST_TRACK, removeTrackRepost)
+  yield takeEvery(tracksSocialActions.UNDO_REPOST_TRACK, removeTrackRepost)
 }
 
 function* addCollectionRepost(action) {
   const { collectionId, source } = action
-  const accountHandle = yield* select(getUserHandle)
+  const accountHandle = yield select(getUserHandle)
 
   const formattedCollection = {
     kind: Kind.COLLECTIONS,
@@ -152,7 +152,7 @@ function* addCollectionRepost(action) {
 }
 
 function* watchRepostCollection() {
-  yield* takeEvery(
+  yield takeEvery(
     collectionsSocialActions.REPOST_COLLECTION,
     addCollectionRepost
   )
@@ -160,15 +160,15 @@ function* watchRepostCollection() {
 
 function* removeCollectionRepost(action) {
   const { collectionId } = action
-  const accountHandle = yield* select(getUserHandle)
-  const lineup = yield* select((state) =>
+  const accountHandle = yield select(getUserHandle)
+  const lineup = yield select((state) =>
     getProfileFeedLineup(state, accountHandle)
   )
   const collectionLineupEntry = lineup.entries.find(
     (entry) => entry.id === collectionId
   )
   if (collectionLineupEntry) {
-    yield* put(
+    yield put(
       feedActions.remove(
         Kind.COLLECTIONS,
         collectionLineupEntry.uid,
@@ -179,7 +179,7 @@ function* removeCollectionRepost(action) {
 }
 
 function* watchUndoRepostCollection() {
-  yield* takeEvery(
+  yield takeEvery(
     collectionsSocialActions.UNDO_REPOST_COLLECTION,
     removeCollectionRepost
   )
