@@ -379,6 +379,8 @@ const validateTrackOwner = async ({
       asyncFn,
       logger,
       log: false,
+      minTimeout: 1000,
+      factor: 2,
       retries: 10
     })
   } catch (e) {
