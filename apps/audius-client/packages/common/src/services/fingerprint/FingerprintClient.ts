@@ -44,10 +44,8 @@ export class FingerprintClient<TFingerprintClient> {
   }
 
   async init() {
-    console.log('Initializing Fingerprint client')
     try {
       const fp = await this.initFingerprint(this.apiKey, this.endpoint)
-      console.log(`Fingerprint loaded`)
       this.fingerprint = fp
     } catch (e) {
       console.error(`Error initializing fingerprint client: ${e}`)
@@ -74,7 +72,6 @@ export class FingerprintClient<TFingerprintClient> {
       const { count } = await response.json()
 
       if (count >= 1) {
-        console.log('Previously fingerprinted this user<>platform')
         return
       }
 
@@ -83,7 +80,6 @@ export class FingerprintClient<TFingerprintClient> {
         linkedId: userId.toString(),
         tag: { origin: clientOrigin }
       })
-      console.log('Fingerprint identify')
     } catch (e) {
       console.error(`Error identifying fingerprint client: ${e}`)
     }

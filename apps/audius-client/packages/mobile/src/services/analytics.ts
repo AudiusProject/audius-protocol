@@ -12,11 +12,9 @@ const ampInstance = Amplitude.getInstance()
 
 export const init = async () => {
   try {
-    console.info('Analytics setup')
     if (AmplitudeWriteKey) {
       await ampInstance.init(AmplitudeWriteKey)
       analyticsSetupStatus = 'ready'
-      console.info('Analytics ready')
     } else {
       analyticsSetupStatus = 'error'
       console.info('Analytics unable to setup: missing amplitude write key')
@@ -61,7 +59,6 @@ export const identify = async (
 ) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  console.info('Analytics identify', handle, traits)
   ampInstance.setUserId(handle)
   ampInstance.setUserProperties(traits)
 }
@@ -76,7 +73,6 @@ export const track = async ({ eventName, properties }: Track) => {
     ...properties,
     mobileClientVersion: version
   }
-  console.info('Analytics track', eventName, propertiesWithContext)
   ampInstance.logEvent(eventName, propertiesWithContext)
 }
 
@@ -85,6 +81,5 @@ export const track = async ({ eventName, properties }: Track) => {
 export const screen = async ({ route, properties = {} }: Screen) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  console.info('Analytics screen', route, properties)
   ampInstance.logEvent(EventNames.PAGE_VIEW, { route, ...properties })
 }

@@ -174,7 +174,9 @@ export const TrackScreenDetailsTile = ({
     {
       isHidden: is_unlisted,
       label: 'Released',
-      value: formatDate(release_date || created_at)
+      value: release_date
+        ? formatDate(release_date, 'ddd MMM DD YYYY HH:mm:ss')
+        : formatDate(created_at, 'YYYY-MM-DD HH:mm:ss')
     },
     {
       icon:
