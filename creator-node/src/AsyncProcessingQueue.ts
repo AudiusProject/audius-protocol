@@ -23,21 +23,22 @@ const config = require('./config')
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
 
-const ProcessNames = {
+const QUEUE_NAME = 'async-processing'
+
+const ASYNC_PROCESSING_QUEUE_HISTORY = 500
+
+export const ProcessNames = {
   trackContentUpload: 'trackContentUpload',
   transcodeAndSegment: 'transcodeAndSegment',
   processTranscodeAndSegments: 'processTranscodeAndSegments',
   transcodeHandOff: 'transcodeHandOff'
 } as const
-const ProcessStates = {
+
+export const ProcessStates = {
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE',
   FAILED: 'FAILED'
 } as const
-
-const QUEUE_NAME = 'async-processing'
-
-const ASYNC_PROCESSING_QUEUE_HISTORY = 500
 
 type AddTaskParams = {
   logContext: { requestID: string }
