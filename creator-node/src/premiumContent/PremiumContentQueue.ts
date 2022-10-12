@@ -66,17 +66,26 @@ export class PremiumContentQueue {
    */
   async getPremiumContentCIDMap() {
     const result = await models.sequelize.query(
-      `with tf as (
-          select t."blockchainId", (t."metadataJSON" ->> 'is_premium')::boolean as "isPremium", f."multihash"
-            from "Tracks" t join "Files" f
-            on t."blockchainId" = f."trackBlockchainId"
-            where f."type" in ('track', 'copy320')
-        )
-      select * from tf
-        where "isPremium" is true
-        and "multihash" not in (
-          select "multihash" from tf where "isPremium" is not true
-        );`,
+      `with premium as (
+        select "blockchainId"
+          from "Tracks"
+          where ("metadataJSON" ->> 'is_premium')::text = 'true'
+      ), non_premium as (
+        select "blockchainId"
+          from "Tracks"
+          where ("metadataJSON" ->> 'is_premium')::text != 'true'
+      ), cid_non_premium as (
+        select f."multihash"
+          from "Files" f join non_premium
+          on f."trackBlockchainId" = non_premium."blockchainId"
+          group by "multihash"
+      )
+      select premium.*, f."multihash"
+        from premium join "Files" f
+        on premium."blockchainId" = f."trackBlockchainId"
+        left outer join cid_non_premium
+        on f."multihash" = cid_non_premium."multihash"
+        where cid_non_premium."multihash" is null`,
       {
         type: QueryTypes.SELECT
       }
