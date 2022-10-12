@@ -132,7 +132,7 @@ module.exports = function (app) {
               txCounter++
 
               // tx failed
-              if (!resp.status) {
+              if (!resp || !resp.status) {
                 const senderAddress = await redis.hget(
                   'txHashToSenderAddress',
                   txHash
