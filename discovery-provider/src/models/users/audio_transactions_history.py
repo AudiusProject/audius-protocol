@@ -7,7 +7,8 @@ from src.models.model_utils import RepresentableMixin
 
 class TransactionType(str, enum.Enum):
     tip = "TIP"
-    reward = "REWARD"
+    user_reward = "USER_REWARD"
+    trending_reward = "TRENDING_REWARD"
     transfer = "TRANSFER"
     purchase_stripe = "PURCHASE_STRIPE"
     purchase_coinbase = "PURCHASE_COINBASE"
@@ -16,8 +17,6 @@ class TransactionType(str, enum.Enum):
 class TransactionMethod(str, enum.Enum):
     send = "SEND"
     receive = "RECEIVE"
-    user = "USER"
-    trending = "TRENDING"
 
 
 class AudioTransactionsHistory(Base, RepresentableMixin):
