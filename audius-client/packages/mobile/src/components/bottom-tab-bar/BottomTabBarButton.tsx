@@ -160,6 +160,7 @@ export const BottomTabBarButton = ({
   return (
     <AnimatedButton
       iconJSON={icons[route.name]}
+      hitSlop={{ top: 0, right: 0, bottom: 0, left: 0 }}
       isActive={isFocused}
       onLongPress={handleLongPress}
       onPress={handlePress}
