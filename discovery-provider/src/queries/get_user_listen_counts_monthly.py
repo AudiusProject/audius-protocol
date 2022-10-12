@@ -31,7 +31,8 @@ def get_user_listen_counts_monthly(args: GetUserListenCountsMonthlyArgs):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        return _get_user_listen_counts_monthly(session, args)
+        user_listen_counts_monthly = _get_user_listen_counts_monthly(session, args)
+        return format_aggregate_monthly_plays_for_user(user_listen_counts_monthly)
 
 
 def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user):
@@ -76,4 +77,4 @@ def _get_user_listen_counts_monthly(
         .filter(AggregateMonthlyPlay.timestamp >= start_time)
         .filter(AggregateMonthlyPlay.timestamp < end_time)
     )
-    return format_aggregate_monthly_plays_for_user(query.all())
+    return query.all()

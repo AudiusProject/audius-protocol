@@ -5,6 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.queries.get_user_listen_counts_monthly import (
     GetUserListenCountsMonthlyArgs,
     _get_user_listen_counts_monthly,
+    get_user_listen_counts_monthly,
 )
 from src.utils.db_session import get_db
 
@@ -48,34 +49,35 @@ test_entities = {
 }
 
 
-def test_get_user_listen_counts_monthly(app):
+def test_get_user_listen_counts_monthly_query(app):
     """Tests happy path of getting user listen counts"""
     with app.app_context():
         db = get_db()
 
-    populate_mock_db(db, test_entities)
+        populate_mock_db(db, test_entities)
 
-    with db.scoped_session() as session:
-        user_listen_counts_monthly = _get_user_listen_counts_monthly(
-            session,
-            GetUserListenCountsMonthlyArgs(
-                user_id=1,
-                start_time="2022-01-01",
-                end_time="2023-01-01",
-            ),
-        )
-        print("hereeee")
-        print(user_listen_counts_monthly)
-
-        # assert len(user_listen_counts_monthly) == 2
-        # # User 1 only owns track ids 1 and 4
-        # for listen_count in user_listen_counts_monthly:
-        #     listen_count_timestamp = datetime.combine(
-        #         listen_count.timestamp, datetime.min.time()
-        #     )
-        #     assert listen_count.play_item_id in [1, 4]
-        #     assert listen_count_timestamp >= datetime.strptime("2022-01-01", "%Y-%m-%d")
-        #     assert listen_count_timestamp < datetime.strptime("2023-01-01", "%Y-%m-%d")
+        with db.scoped_session() as session:
+            user_listen_counts_monthly = _get_user_listen_counts_monthly(
+                session,
+                GetUserListenCountsMonthlyArgs(
+                    user_id=1,
+                    start_time="2022-01-01",
+                    end_time="2023-01-01",
+                ),
+            )
+            assert len(user_listen_counts_monthly) == 2
+            # User 1 only owns track ids 1 and 4
+            for listen_count in user_listen_counts_monthly:
+                listen_count_timestamp = datetime.combine(
+                    listen_count.timestamp, datetime.min.time()
+                )
+                assert listen_count.play_item_id in [1, 4]
+                assert listen_count_timestamp >= datetime.strptime(
+                    "2022-01-01", "%Y-%m-%d"
+                )
+                assert listen_count_timestamp < datetime.strptime(
+                    "2023-01-01", "%Y-%m-%d"
+                )
 
 
 def test_get_user_listen_counts_missing_arg(app):
@@ -94,3 +96,98 @@ def test_get_user_listen_counts_missing_arg(app):
                     end_time="2023-01-01",
                 ),
             )
+
+
+def test_get_user_listen_counts_monthly_formatting(app):
+    expected_formatted_data = {
+        "2022-01-01T00:00:00 Z": {
+            "totalListens": 7,
+            "trackIds": [1],
+            "listenCounts": [
+                {
+                    "trackId": 1,
+                    "date": "2022-01-01T00:00:00 Z",
+                    "listens": 7,
+                }
+            ],
+        },
+        "2022-02-01T00:00:00 Z": {
+            "totalListens": 10,
+            "trackIds": [4],
+            "listenCounts": [
+                {
+                    "trackId": 4,
+                    "date": "2022-02-01T00:00:00 Z",
+                    "listens": 10,
+                }
+            ],
+        },
+    }
+    with app.app_context():
+        db = get_db()
+
+        populate_mock_db(db, test_entities)
+
+        with db.scoped_session():
+            user_listen_counts_monthly = get_user_listen_counts_monthly(
+                GetUserListenCountsMonthlyArgs(
+                    user_id=1,
+                    start_time="2022-01-01",
+                    end_time="2023-01-01",
+                ),
+            )
+            assert user_listen_counts_monthly == expected_formatted_data
+
+
+def test_get_user_listen_counts_monthly_formatting_sums_total(app):
+    test_entities["aggregate_monthly_plays"].append(
+        {
+            "play_item_id": 4,
+            "timestamp": "2022-01-01",
+            "count": 1,
+        }
+    )
+    expected_formatted_data = {
+        "2022-01-01T00:00:00 Z": {
+            "totalListens": 8,
+            # order matters for list elements
+            "trackIds": [4, 1],
+            "listenCounts": [
+                {
+                    "trackId": 4,
+                    "date": "2022-01-01T00:00:00 Z",
+                    "listens": 1,
+                },
+                {
+                    "trackId": 1,
+                    "date": "2022-01-01T00:00:00 Z",
+                    "listens": 7,
+                },
+            ],
+        },
+        "2022-02-01T00:00:00 Z": {
+            "totalListens": 10,
+            "trackIds": [4],
+            "listenCounts": [
+                {
+                    "trackId": 4,
+                    "date": "2022-02-01T00:00:00 Z",
+                    "listens": 10,
+                }
+            ],
+        },
+    }
+    with app.app_context():
+        db = get_db()
+
+        populate_mock_db(db, test_entities)
+
+        with db.scoped_session():
+            user_listen_counts_monthly = get_user_listen_counts_monthly(
+                GetUserListenCountsMonthlyArgs(
+                    user_id=1,
+                    start_time="2022-01-01",
+                    end_time="2023-01-01",
+                ),
+            )
+            assert user_listen_counts_monthly == expected_formatted_data
