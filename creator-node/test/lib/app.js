@@ -6,7 +6,9 @@ const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
-const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
+const {
+  TrustedNotifierManager
+} = require('../../src/services/TrustedNotifierManager')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
 
