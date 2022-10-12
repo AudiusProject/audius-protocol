@@ -345,19 +345,3 @@ export async function clearFilePathsToDelete(walletPublicKey: string) {
   const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
   await redisClient.del(redisSetKey)
 }
-
-module.exports = {
-  getConfigStoragePath,
-  getTmpTrackUploadArtifactsPath,
-  computeFilePath,
-  computeLegacyFilePath,
-  isValidCID,
-  computeFilePathInDir,
-  ensureDirPathExists,
-  extractCIDsFromFSPath,
-  deleteFileOrDir,
-  batchDeleteFileOrDir,
-  gatherCNodeUserDataToDelete,
-  deleteAllCNodeUserDataFromDisk,
-  clearFilePathsToDelete
-}
