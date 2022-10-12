@@ -200,7 +200,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return ({
+        return {
           latest_chain_block: 10,
           latest_indexed_block: 10,
           data: [
@@ -209,7 +209,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
               owner_id: trackOwnerId
             }
           ]
-        })
+        }
       })
       libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -1110,16 +1110,14 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
-        }
-      )
+        })
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
@@ -1147,20 +1145,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
       setupMocks(sampleExport)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1202,16 +1200,14 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
-        }
-      )
+        })
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
@@ -1263,9 +1259,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
       config.set('syncForceWipeEnabled', true)
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           './secondarySyncFromPrimaryUtils': {
             shouldForceResync: async () => {
               return true
@@ -1276,8 +1271,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1291,7 +1285,9 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
 
       setupMocks(sampleExport)
 
@@ -1316,9 +1312,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
       config.set('syncForceWipeEnabled', false)
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           './secondarySyncFromPrimaryUtils': {
             shouldForceResync: async () => {
               return true
@@ -1329,8 +1324,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1390,9 +1384,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
         )
         .reply(404)
 
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../middlewares': {
             ...middlewares,
             getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
@@ -1420,8 +1413,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
               )
             }
           }
-        }
-      )
+        })
 
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()

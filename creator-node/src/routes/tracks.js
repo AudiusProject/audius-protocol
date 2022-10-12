@@ -378,11 +378,13 @@ const validateTrackOwner = async ({
     return await asyncRetry({
       asyncFn,
       logger,
-      log: false,
-      minTimeout: 1000,
-      maxTimeout: Infinity,
-      factor: 2,
-      retries: 10
+      log: true,
+      options: {
+        minTimeout: 1000,
+        maxTimeout: Infinity,
+        factor: 2,
+        retries: 10
+      }
     })
   } catch (e) {
     throw e
