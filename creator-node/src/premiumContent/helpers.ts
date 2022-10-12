@@ -26,7 +26,7 @@ export async function isCIDForPremiumTrack({
   return { trackId: parseInt(trackId), isPremium: true }
 }
 
-export async function updatePremiumContentCIDCache({
+export async function setPremiumContentCIDCache({
   cacheMap,
   logger
 }: {
@@ -35,6 +35,24 @@ export async function updatePremiumContentCIDCache({
 }) {
   try {
     await redis.del(PREMIUM_CONTENT_CID_CACHE_KEY)
+    await redis.hset(PREMIUM_CONTENT_CID_CACHE_KEY, cacheMap)
+  } catch (e) {
+    logger.error(
+      `Could not set premium content cid cache. cacheMap: ${JSON.stringify(
+        cacheMap
+      )}. Error: ${(e as Error).message}`
+    )
+  }
+}
+
+export async function updatePremiumContentCIDCache({
+  cacheMap,
+  logger
+}: {
+  cacheMap: { [key: string]: number }
+  logger: Logger
+}) {
+  try {
     await redis.hset(PREMIUM_CONTENT_CID_CACHE_KEY, cacheMap)
   } catch (e) {
     logger.error(

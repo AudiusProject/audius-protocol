@@ -37,6 +37,8 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
+const { updatePremiumContentCIDCache } = require('../premiumContent/helpers')
+const { QueryTypes } = require('sequelize')
 
 const router = express.Router()
 
@@ -301,6 +303,37 @@ router.post(
 
     // Await 2/3 write quorum (replicating data to at least 1 secondary)
     await issueAndWaitForSecondarySyncRequests(req)
+
+    // If premium track, add CIDs which do not exist in other non-premium to cache
+    const {
+      is_premium: isPremium,
+      track_id: trackId,
+      track_segments: trackSegments
+    } = metadataJSON
+    if (isPremium) {
+      const trackSegmentCIDs = trackSegments.map((segment) => segment.multihash)
+      // todo: make sure this query is fast
+      const result = await models.sequelize.query(
+        `select t."blockchainId", f."multihash"
+          from "Tracks" t join "Files" f
+          on t."blockchainId" = f."trackBlockchainId"
+          where f."multihash" in :cids
+          and (t."metadataJSON" ->> 'is_premium')::boolean is not true`,
+        {
+          replacements: { cids: trackSegmentCIDs },
+          type: QueryTypes.SELECT
+        }
+      )
+      const nonPremiumCIDSet = new Set(result.map(({ multihash }) => multihash))
+      const cacheMap = {}
+      trackSegmentCIDs.forEach((cid) => {
+        if (!nonPremiumCIDSet.has(cid)) {
+          // todo: ensure i can rely on existence of track id here
+          cacheMap[cid] = trackId
+        }
+      })
+      await updatePremiumContentCIDCache({ cacheMap, logger: req.logger })
+    }
 
     return successResponse({
       metadataMultihash: multihash,

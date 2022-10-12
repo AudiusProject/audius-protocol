@@ -1,7 +1,7 @@
 import { Queue, Worker } from 'bullmq'
 import config from '../config'
 import { logger } from '../logging'
-import { updatePremiumContentCIDCache } from './helpers'
+import { setPremiumContentCIDCache } from './helpers'
 import { clusterUtils } from '../utils'
 
 const models = require('../models')
@@ -44,7 +44,7 @@ export class PremiumContentQueue {
           await this.logStatus('Starting')
           try {
             const premiumContentCIDMap = await this.getPremiumContentCIDMap()
-            await updatePremiumContentCIDCache({
+            await setPremiumContentCIDCache({
               cacheMap: premiumContentCIDMap,
               logger
             })
@@ -73,9 +73,9 @@ export class PremiumContentQueue {
             where f."type" in ('track', 'copy320')
         )
       select * from tf
-        where "isPremium" = true
+        where "isPremium" is true
         and "multihash" not in (
-          select "multihash" from tf where "isPremium" = false
+          select "multihash" from tf where "isPremium" is not true
         );`,
       {
         type: QueryTypes.SELECT
