@@ -230,22 +230,21 @@ user_track_listen_counts_response = make_response(
 )
 
 
-@ns.route("/<string:user_id>/listen_counts_monthly")
+@ns.route("/<string:id>/listen_counts_monthly")
 class UserTrackListenCountsMonthly(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User Monthly Track Listens""",
         description="""Gets the listen data for a user by month and track within a given time frame.""",
         params={
-            "user_id": "A User ID",
+            "id": "A User ID",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_track_listen_count_route_parser)
     @ns.marshal_with(user_track_listen_counts_response)
-    # @auth_middleware()
-    # @cache(ttl_sec=5)
-    def get(self, user_id):
+    @cache(ttl_sec=5)
+    def get(self, id):
         """
         Queries for a user's monthly play data and organizes data by month and track.
         Response data is meant to imitate identity service's endpoint for getTrackListens().
@@ -266,13 +265,14 @@ class UserTrackListenCountsMonthly(Resource):
                 }
             },
         """
+        decoded_id = decode_with_abort(id, ns)
         args = user_track_listen_count_route_parser.parse_args()
         start_time = args.get("start_time")
         end_time = args.get("end_time")
 
         formatted_response_data = get_user_listen_counts_monthly(
             {
-                "user_id": user_id,
+                "user_id": decoded_id,
                 "start_time": start_time,
                 "end_time": end_time,
             }
