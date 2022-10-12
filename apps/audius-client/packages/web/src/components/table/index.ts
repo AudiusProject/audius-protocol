@@ -1,4 +1,4 @@
-export { TestTable, alphaSorter, dateSorter, numericSorter } from './TestTable'
+export { Table, alphaSorter, dateSorter, numericSorter } from './Table'
 export { OverflowMenuButton } from './components/OverflowMenuButton'
 export { TableFavoriteButton } from './components/TableFavoriteButton'
 export { TablePlayButton } from './components/TablePlayButton'

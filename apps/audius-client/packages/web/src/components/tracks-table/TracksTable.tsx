@@ -7,7 +7,7 @@ import { ColumnInstance } from 'react-table'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import {
-  TestTable,
+  Table,
   OverflowMenuButton,
   TableFavoriteButton,
   TablePlayButton,
@@ -15,12 +15,12 @@ import {
   alphaSorter,
   dateSorter,
   numericSorter
-} from 'components/test-table'
+} from 'components/table'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { isDescendantElementOf } from 'utils/domUtils'
 
-import styles from './TestTracksTable.module.css'
+import styles from './TracksTable.module.css'
 
 export type TracksTableColumn =
   | 'addedDate'
@@ -37,7 +37,7 @@ export type TracksTableColumn =
   | 'spacer'
   | 'trackName'
 
-type TestTracksTableProps = {
+type TracksTableProps = {
   columns?: TracksTableColumn[]
   data: any[]
   defaultSorter?: (a: any, b: any) => number
@@ -88,7 +88,7 @@ const defaultColumns: TracksTableColumn[] = [
   'overflowActions'
 ]
 
-export const TestTracksTable = ({
+export const TracksTable = ({
   columns = defaultColumns,
   data,
   defaultSorter,
@@ -120,7 +120,7 @@ export const TestTracksTable = ({
   totalRowCount,
   userId,
   wrapperClassName
-}: TestTracksTableProps) => {
+}: TracksTableProps) => {
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
     (cellInfo) => {
@@ -528,7 +528,7 @@ export const TestTracksTable = ({
   )
 
   return (
-    <TestTable
+    <Table
       activeIndex={playingIndex}
       columns={tableColumns}
       data={data}

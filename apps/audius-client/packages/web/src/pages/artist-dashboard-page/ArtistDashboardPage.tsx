@@ -14,8 +14,7 @@ import {
   Track,
   User,
   formatCount,
-  themeSelectors,
-  FeatureFlags
+  themeSelectors
 } from '@audius/common'
 import { IconFilter, IconNote, IconHidden } from '@audius/stems'
 import cn from 'classnames'
@@ -30,13 +29,9 @@ import Header from 'components/header/desktop/Header'
 import { Input } from 'components/input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { TestTracksTable } from 'components/test-tracks-table'
-import { TracksTableColumn } from 'components/test-tracks-table/TestTracksTable'
-import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
-import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { TracksTable } from 'components/tracks-table'
+import { TracksTableColumn } from 'components/tracks-table/TracksTable'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { AppState } from 'store/types'
 import lazyWithPreload from 'utils/lazyWithPreload'
 import { profilePage, TRENDING_PAGE } from 'utils/route'
@@ -71,19 +66,6 @@ const StatTile = (props: { title: string; value: any }) => {
   )
 }
 
-const getNumericColumn = (field: any, overrideTitle?: string) => {
-  const title = field.charAt(0).toUpperCase() + field.slice(1).toLowerCase()
-  return {
-    title: overrideTitle || title,
-    dataIndex: field,
-    key: field,
-    className: cn(styles.numericColumn, `col${title}`),
-    width: 63,
-    sorter: (a: any, b: any) => a[field] - b[field],
-    render: (val: any) => formatCount(val)
-  }
-}
-
 type DataSourceTrack = Track & {
   key: string
   name: string
@@ -108,74 +90,6 @@ export const messages = {
   thisYear: 'This Year'
 }
 
-const makeColumns = (account: User, isUnlisted: boolean) => {
-  let columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      width: 350,
-      className: cn(styles.col, 'colName'),
-      sorter: (a: any, b: any) => alphaSortFn(a.name, b.name),
-      render: (val: string, record: DataSourceTrack) => (
-        <div className={styles.trackName}>
-          {val}
-          {record.is_delete ? ' [Deleted By Artist]' : ''}
-        </div>
-      )
-    },
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      width: 50,
-      className: cn(styles.col, 'colDate'),
-      render: (val: any) => moment(val).format('M/D/YY'),
-      sorter: (a: any, b: any) => moment(a.date).diff(moment(b.date))
-    },
-    getNumericColumn('plays')
-  ]
-
-  if (!isUnlisted) {
-    columns = [
-      ...columns,
-      getNumericColumn('saves', 'favorites'),
-      getNumericColumn('reposts')
-    ]
-  }
-
-  const overflowColumn = {
-    title: '',
-    key: 'optionsButton',
-    className: styles.overflowContainer,
-    render: (val: any, record: any, index: number) => {
-      return (
-        <div className={styles.overflowAdjustment}>
-          <TableOptionsButton
-            isDeleted={record.is_delete}
-            includeEdit={false}
-            handle={account.handle}
-            trackId={val.track_id}
-            isFavorited={val.has_current_user_saved}
-            isOwner
-            isArtistPick={account._artist_pick === val.track_id}
-            isUnlisted={record.is_unlisted}
-            index={index}
-            trackTitle={val.name}
-            trackPermalink={val.permalink}
-            hiddenUntilHover={false}
-            includeEmbed={!isUnlisted && !record.is_delete}
-            includeAddToPlaylist={!isUnlisted}
-            includeArtistPick={!isUnlisted}
-          />
-        </div>
-      )
-    }
-  }
-
-  return [...columns, overflowColumn]
-}
-
 const tableColumns: TracksTableColumn[] = [
   'spacer',
   'trackName',
@@ -196,10 +110,6 @@ const TracksTableContainer = ({
   account
 }: TracksTableProps) => {
   const [filterText, setFilterText] = useState('')
-  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
-  const { isEnabled: isNewArtistDashboardTableEnabled } = useFlag(
-    FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE
-  )
   const dispatch = useDispatch()
   const tracksStatus = useSelector(getDashboardTracksStatus)
   const tabRecalculator = useTabRecalculator()
@@ -247,63 +157,41 @@ const TracksTableContainer = ({
         key='listed'
         className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
       >
-        {isNewTablesEnabled && isNewArtistDashboardTableEnabled ? (
-          <TestTracksTable
-            data={filteredListedData}
-            disabledTrackEdit
-            columns={tableColumns}
-            onClickRow={onClickRow}
-            onClickTrackName={onClickRow}
-            loading={tracksStatus === Status.LOADING}
-            fetchPage={handleFetchPage}
-            pageSize={tablePageSize}
-            userId={account.user_id}
-            showMoreLimit={5}
-            onShowMoreToggle={tabRecalculator.recalculate}
-            totalRowCount={account.track_count}
-            isPaginated
-          />
-        ) : (
-          <TracksTable
-            dataSource={filteredListedData}
-            limit={5}
-            columns={makeColumns(account, false)}
-            onClickRow={onClickRow}
-            didToggleShowTracks={() => tabRecalculator.recalculate()}
-            animateTransitions={false}
-          />
-        )}
+        <TracksTable
+          data={filteredListedData}
+          disabledTrackEdit
+          columns={tableColumns}
+          onClickRow={onClickRow}
+          onClickTrackName={onClickRow}
+          loading={tracksStatus === Status.LOADING}
+          fetchPage={handleFetchPage}
+          pageSize={tablePageSize}
+          userId={account.user_id}
+          showMoreLimit={5}
+          onShowMoreToggle={tabRecalculator.recalculate}
+          totalRowCount={account.track_count}
+          isPaginated
+        />
       </div>,
       <div
         key='unlisted'
         className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
       >
-        {isNewTablesEnabled && isNewArtistDashboardTableEnabled ? (
-          <TestTracksTable
-            data={filteredUnlistedData}
-            disabledTrackEdit
-            columns={tableColumns}
-            onClickRow={onClickRow}
-            onClickTrackName={onClickRow}
-            loading={tracksStatus === Status.LOADING}
-            fetchPage={handleFetchPage}
-            pageSize={tablePageSize}
-            showMoreLimit={5}
-            userId={account.user_id}
-            onShowMoreToggle={tabRecalculator.recalculate}
-            totalRowCount={account.track_count}
-            isPaginated
-          />
-        ) : (
-          <TracksTable
-            dataSource={filteredUnlistedData}
-            limit={5}
-            columns={makeColumns(account, true)}
-            onClickRow={onClickRow}
-            didToggleShowTracks={() => tabRecalculator.recalculate()}
-            animateTransitions={false}
-          />
-        )}
+        <TracksTable
+          data={filteredUnlistedData}
+          disabledTrackEdit
+          columns={tableColumns}
+          onClickRow={onClickRow}
+          onClickTrackName={onClickRow}
+          loading={tracksStatus === Status.LOADING}
+          fetchPage={handleFetchPage}
+          pageSize={tablePageSize}
+          showMoreLimit={5}
+          userId={account.user_id}
+          onShowMoreToggle={tabRecalculator.recalculate}
+          totalRowCount={account.track_count}
+          isPaginated
+        />
       </div>
     ],
     [
@@ -311,8 +199,6 @@ const TracksTableContainer = ({
       filteredListedData,
       filteredUnlistedData,
       handleFetchPage,
-      isNewArtistDashboardTableEnabled,
-      isNewTablesEnabled,
       onClickRow,
       tabRecalculator,
       tracksStatus
@@ -364,13 +250,7 @@ export class ArtistDashboardPage extends Component<
   }
 
   componentDidMount() {
-    const newTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES) ?? false
-    const newArtistDashboardTableEnabled =
-      getFeatureEnabled(FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE) ?? false
-    this.props.fetchDashboard(
-      0,
-      newTablesEnabled && newArtistDashboardTableEnabled ? tablePageSize : 500
-    )
+    this.props.fetchDashboard(0, tablePageSize)
     TotalPlaysChart.preload()
   }
 

@@ -4,9 +4,9 @@ import { Chain, formatSeconds } from '@audius/common'
 import cn from 'classnames'
 import { ColumnInstance } from 'react-table'
 
-import { TestTable, TablePlayButton } from 'components/test-table'
+import { Table, TablePlayButton } from 'components/table'
 
-import styles from './TestCollectiblesPlaylistTable.module.css'
+import styles from './CollectiblesPlaylistTable.module.css'
 
 const chainLabelMap: Record<Chain, string> = {
   [Chain.Eth]: 'Ethereum',
@@ -20,7 +20,7 @@ export type CollectiblesPlaylistTableColumn =
   | 'playButton'
   | 'spacer'
 
-type TestCollectiblesPlaylistTableProps = {
+type CollectiblesPlaylistTableProps = {
   columns?: CollectiblesPlaylistTableColumn[]
   data: any[]
   isVirtualized?: boolean
@@ -41,7 +41,7 @@ const defaultColumns: CollectiblesPlaylistTableColumn[] = [
   'spacer'
 ]
 
-export const TestCollectiblesPlaylistTable = ({
+export const CollectiblesPlaylistTable = ({
   columns = defaultColumns,
   data,
   isVirtualized = false,
@@ -52,7 +52,7 @@ export const TestCollectiblesPlaylistTable = ({
   playingIndex = -1,
   tableClassName,
   wrapperClassName
-}: TestCollectiblesPlaylistTableProps) => {
+}: CollectiblesPlaylistTableProps) => {
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
     (cellInfo) => {
@@ -179,7 +179,7 @@ export const TestCollectiblesPlaylistTable = ({
   const getRowClassName = useCallback(() => styles.tableRow, [])
 
   return (
-    <TestTable
+    <Table
       wrapperClassName={wrapperClassName}
       tableClassName={tableClassName}
       getRowClassName={getRowClassName}

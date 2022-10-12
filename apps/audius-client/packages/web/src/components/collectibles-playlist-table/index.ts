@@ -1,0 +1,1 @@
+export { CollectiblesPlaylistTable } from './CollectiblesPlaylistTable'
