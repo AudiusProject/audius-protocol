@@ -96,6 +96,43 @@ const getComputedPosition = (
 }
 
 /**
+ * Figures out whether the specified position would still overflow the window
+ * after being computed and adds extra offsets
+ */
+const getAdjustedPosition = (
+  top: number,
+  left: number,
+  wrapperRect: DOMRect
+): { adjustedTop: number; adjustedLeft: number } => {
+  if (!wrapperRect) return { adjustedTop: 0, adjustedLeft: 0 }
+
+  const containerWidth = window.innerWidth - CONTAINER_INSET_PADDING
+  const containerHeight = window.innerHeight - CONTAINER_INSET_PADDING
+
+  const overflowRight = left + wrapperRect.width > containerWidth
+  const overflowLeft = left < 0
+  const overflowBottom = top + wrapperRect.height > containerHeight
+  const overflowTop = top < 0
+
+  const adjusted = { adjustedTop: 0, adjustedLeft: 0 }
+  if (overflowRight) {
+    adjusted.adjustedLeft =
+      adjusted.adjustedLeft - (left + wrapperRect.width - containerWidth)
+  }
+  if (overflowLeft) {
+    adjusted.adjustedLeft = adjusted.adjustedLeft + wrapperRect.width
+  }
+  if (overflowTop) {
+    adjusted.adjustedTop =
+      adjusted.adjustedTop - (top + wrapperRect.height - containerHeight)
+  }
+  if (overflowBottom) {
+    adjusted.adjustedTop = adjusted.adjustedTop + wrapperRect.height
+  }
+  return adjusted
+}
+
+/**
  * A popup is an in-place container that shows on top of the UI. A popup does
  * not impact the rest of the UI (e.g. graying it out). It differs
  * from modals, which do take over the whole UI and are usually
@@ -189,10 +226,15 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
       const [top, left] =
         positionMap[computed] ?? positionMap[Position.BOTTOM_CENTER]
+      const { adjustedTop, adjustedLeft } = getAdjustedPosition(
+        top,
+        left,
+        wrapperRect
+      )
 
       if (wrapperRef.current) {
-        wrapperRef.current.style.top = `${top}px`
-        wrapperRef.current.style.left = `${left}px`
+        wrapperRef.current.style.top = `${top + adjustedTop}px`
+        wrapperRef.current.style.left = `${left + adjustedLeft}px`
       }
 
       originalTopPosition.current = top
