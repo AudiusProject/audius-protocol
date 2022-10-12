@@ -13,7 +13,6 @@ const _ = require('lodash')
 const { logger: genericLogger } = require('../../logging')
 const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
-
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
 ): ForceResyncSigningData => {
