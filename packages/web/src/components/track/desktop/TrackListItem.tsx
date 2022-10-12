@@ -8,7 +8,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import Skeleton from 'components/skeleton/Skeleton'
-import TablePlayButton from 'components/tracks-table/TablePlayButton'
+import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { profilePage } from 'utils/route'
 

@@ -28,7 +28,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 
-import styles from './TestTable.module.css'
+import styles from './Table.module.css'
 
 // - Infinite scroll constants -
 // Fetch the next group of rows when the user scroll within X rows of the bottom
@@ -65,7 +65,7 @@ const isEmptyRow = (row: any) => {
   return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
 }
 
-type TestTableProps = {
+type TableProps = {
   activeIndex?: number
   columns: any[]
   data: any[]
@@ -91,7 +91,7 @@ type TestTableProps = {
   wrapperClassName?: string
 }
 
-export const TestTable = ({
+export const Table = ({
   activeIndex = -1,
   columns,
   data,
@@ -115,7 +115,7 @@ export const TestTable = ({
   tableClassName,
   totalRowCount = 9999,
   wrapperClassName
-}: TestTableProps) => {
+}: TableProps) => {
   const defaultColumn = useMemo(
     () => ({
       // Default resizing column props

@@ -1,23 +1,16 @@
 import {
-  accountSelectors,
-  FeatureFlags,
   TransactionDetails,
   TransactionMetadataType,
   TransactionMethod,
   TransactionType
 } from '@audius/common'
-import { useSelector } from 'react-redux'
 
 import { AudioTransactionsTable } from 'components/audio-transactions-table'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
-import TracksTable from 'components/tracks-table/TracksTable'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './AudioTransactionsPage.module.css'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   pageTitle: 'AudioTransactions',
@@ -299,13 +292,10 @@ const data: TransactionDetails[] = [
 ]
 
 export const AudioTransactionsPage = (props: AudioTransactionsPageProps) => {
-  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
   const tableLoading = !data.every((transaction: any) =>
     Boolean(transaction.signature)
   )
   const isEmpty = data.length === 0
-
-  const userId = useSelector(getUserId)
 
   return (
     <Page
@@ -319,21 +309,12 @@ export const AudioTransactionsPage = (props: AudioTransactionsPageProps) => {
             primaryText={messages.emptyTableText}
             secondaryText={messages.emptyTableSecondaryText}
           />
-        ) : isNewTablesEnabled ? (
+        ) : (
           <AudioTransactionsTable
             key='audioTransactions'
             data={data}
             loading={tableLoading}
           />
-        ) : (
-          <div className={styles.tableWrapper}>
-            <TracksTable
-              userId={userId}
-              loading={tableLoading}
-              loadingRowsCount={data.length}
-              dataSource={data}
-            />
-          </div>
         )}
       </div>
     </Page>

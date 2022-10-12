@@ -10,7 +10,7 @@ import moment from 'moment'
 import { ColumnInstance } from 'react-table'
 
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
-import { TestTable } from 'components/test-table'
+import { Table } from 'components/table'
 
 import styles from './AudioTransactionsTable.module.css'
 
@@ -199,7 +199,7 @@ export const AudioTransactionsTable = ({
   const getRowClassName = useCallback(() => '', [])
 
   return (
-    <TestTable
+    <Table
       wrapperClassName={wrapperClassName}
       tableClassName={tableClassName}
       getRowClassName={getRowClassName}

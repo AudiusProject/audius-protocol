@@ -34,7 +34,7 @@ import { matchPath } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollections'
-import TablePlayButton from 'components/tracks-table/TablePlayButton'
+import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { getHash, AUDIO_NFT_PLAYLIST_PAGE, profilePage } from 'utils/route'

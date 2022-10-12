@@ -11,8 +11,7 @@ import {
   savedPageSelectors,
   SavedPageTrack,
   SavedPageCollection,
-  QueueItem,
-  FeatureFlags
+  QueueItem
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
@@ -24,12 +23,10 @@ import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Page from 'components/page/Page'
-import { TestTracksTable } from 'components/test-tracks-table'
-import { TracksTableColumn } from 'components/test-tracks-table/TestTracksTable'
+import { TracksTable } from 'components/tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
-import TracksTable from 'components/tracks-table/TracksTable'
+import { TracksTableColumn } from 'components/tracks-table/TracksTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
-import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import { MainContentContext } from 'pages/MainContentContext'
 import { albumPage } from 'utils/route'
@@ -124,7 +121,6 @@ const SavedPage = ({
   onReorderTracks
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
-  const { isEnabled: isNewTablesEnabled } = useFlag(FeatureFlags.NEW_TABLES)
   const initFetch = useSelector(getInitialFetchStatus)
   const [dataSource, playingIndex] =
     status === Status.SUCCESS || entries.length
@@ -245,8 +241,8 @@ const SavedPage = ({
           buttonLabel='Go to Trending'
           onClick={() => goToRoute('/trending')}
         />
-      ) : isNewTablesEnabled ? (
-        <TestTracksTable
+      ) : (
+        <TracksTable
           columns={tableColumns}
           data={dataSource}
           fetchMoreTracks={fetchMoreTracks}
@@ -268,26 +264,6 @@ const SavedPage = ({
           )}
           userId={account ? account.user_id : 0}
         />
-      ) : (
-        <div className={styles.tableWrapper}>
-          <TracksTable
-            key='favorites'
-            userId={account ? account.user_id : 0}
-            loading={tracksLoading}
-            loadingRowsCount={account ? account.track_save_count : 0}
-            playing={queuedAndPlaying}
-            playingIndex={playingIndex}
-            dataSource={dataSource}
-            onClickRow={onClickRow}
-            onClickFavorite={onClickSave}
-            onClickTrackName={onClickTrackName}
-            onClickArtistName={onClickArtistName}
-            onClickRepost={onClickRepost}
-            onClickRemove={onClickRemove}
-            onSortTracks={onSortTracks}
-            onReorderTracks={onReorderTracks}
-          />
-        </div>
       ),
       <div className={styles.albumsWrapper} key='albums'>
         {account && account.albums.length > 0 ? (
