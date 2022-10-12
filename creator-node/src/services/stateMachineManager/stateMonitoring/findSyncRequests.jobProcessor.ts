@@ -253,10 +253,22 @@ async function _findSyncsForUser(
 
     // Determine if secondary requires a sync by comparing its user data against primary (this node)
     let syncMode
-    const { clock: primaryClock, filesHash: primaryFilesHash } =
-      replicaToAllUserInfoMaps[primary][wallet]
+    const primaryUserInfo = replicaToAllUserInfoMaps[primary][wallet]
+    const secondaryUserInfo = replicaToAllUserInfoMaps[secondary][wallet]
+
+    if (primaryUserInfo === undefined || secondaryUserInfo === undefined) {
+      tracing.error(
+        `undefined user info - primary ${primaryUserInfo}, secondary ${secondaryUserInfo}`
+      )
+      outcomesBySecondary[secondary].result = 'no_sync_unexpected_error'
+      continue
+    }
+
+    const { clock: primaryClock, filesHash: primaryFilesHash } = primaryUserInfo
+
     const { clock: secondaryClock, filesHash: secondaryFilesHash } =
-      replicaToAllUserInfoMaps[secondary][wallet]
+      secondaryUserInfo
+
     try {
       syncMode = await computeSyncModeForUserAndReplica({
         wallet,

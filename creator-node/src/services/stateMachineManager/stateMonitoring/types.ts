@@ -17,7 +17,7 @@ export type UserInfo = {
 }
 export type ReplicaToAllUserInfoMaps = {
   [endpoint: string]: {
-    [wallet: string]: UserInfo
+    [wallet: string]: UserInfo | undefined
   }
 }
 export type UserSecondarySyncMetrics = {
