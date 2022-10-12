@@ -468,3 +468,15 @@ JOIN (
 ) AS cnodes
 ON cnodes.spid = fully_synced.spid
 -- ORDER BY fully_synced.spid;
+
+SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = 168
+    AND (
+        primary_clock_value = -1
+        OR
+        secondary1_clock_value = -1
+        OR 
+        secondary2_clock_value = -1
+    );

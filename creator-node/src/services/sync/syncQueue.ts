@@ -11,7 +11,7 @@ import {
   logErrorWithDuration,
   getStartTime
 } from '../../logging'
-import secondarySyncFromPrimary from './secondarySyncFromPrimary'
+import { secondarySyncFromPrimary } from './secondarySyncFromPrimary'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
 const SYNC_QUEUE_HISTORY = 500

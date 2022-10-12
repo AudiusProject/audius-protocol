@@ -48,6 +48,12 @@ export const nullPrimaryUsersCountGauge = new client.Gauge({
     labelNames: ['run_id']
 })
 
+export const unhealthyReplicaUsersCountGauge = new client.Gauge({
+    name: 'audius_nm_unhealthy_replica_users_count',
+    help: 'the number of users who have an unhealthy replica',
+    labelNames: ['run_id']
+})
+
 export const missedUsersCountGauge = new client.Gauge({
     name: 'audius_nm_missed_users_count',
     help: 'the number of users that got skipped while indexing content nodes',
