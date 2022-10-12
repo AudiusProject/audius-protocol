@@ -43,8 +43,8 @@ def upgrade():
                 sa.DateTime(),
                 nullable=False,
             ),
-            sa.Column("change", sa.BigInteger(), nullable=False),
-            sa.Column("balance", sa.BigInteger(), nullable=False),
+            sa.Column("change", sa.Numeric(), nullable=False),
+            sa.Column("balance", sa.Numeric(), nullable=False),
             sa.Column("tx_metadata", sa.String(), nullable=False),
             sa.PrimaryKeyConstraint("user_bank", "signature"),
         )
