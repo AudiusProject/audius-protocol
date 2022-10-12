@@ -2,6 +2,7 @@ import type Logger from 'bunyan'
 import type { Request } from 'express'
 import { recoverPersonalSignature } from 'eth-sig-util'
 import { logger as genericLogger } from '../logging'
+import config from '../config'
 
 export type ValuesOf<T> = T[keyof T]
 export type RequestWithLogger = Request & { logger: Logger }
@@ -27,4 +28,13 @@ export function getRandomInt(max: number) {
 
 export function stringifyMap(map: Record<any, any>) {
   return JSON.stringify(Array.from(map.entries()))
+}
+
+// Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
+export function isFqdn(url: string) {
+  if (config.get('creatorNodeIsDebug')) return true
+  const fqdn = new RegExp(
+    /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
+  )
+  return fqdn.test(url)
 }
