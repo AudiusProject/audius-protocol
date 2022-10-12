@@ -6,7 +6,8 @@ const models = require('../models')
 const aaoEndpoint =
   config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
-const blockRelayAbuseErrorCodes = new Set([0, 8, 10])
+const allowRules = new Set([14])
+const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13])
 const blockNotificationsErrorCodes = new Set([7, 9])
 
 /**
@@ -44,18 +45,36 @@ const getAbuseData = async (handle, reqIP) => {
       'X-Forwarded-For': reqIP
     }
   })
-
   const { data: rules } = res
-  const appliedRules = rules
+
+  const appliedSuccessRules = rules
+    .filter((r) => r.trigger && r.action === 'pass')
+    .map((r) => r.rule)
+  const allowed = appliedSuccessRules.some((r) => allowRules.has(r))
+
+  if (allowed) {
+    return {
+      blockedFromRelay: false,
+      blockedFromNotifications: false
+    }
+  }
+
+  const appliedFailRules = rules
     .filter((r) => r.trigger && r.action === 'fail')
     .map((r) => r.rule)
-  const blockedFromRelay = appliedRules.some((r) =>
+
+  const blockedFromRelay = appliedFailRules.some((r) =>
     blockRelayAbuseErrorCodes.has(r)
   )
-  const blockedFromNotifications = appliedRules.some((r) =>
+  const blockedFromNotifications = appliedFailRules.some((r) =>
     blockNotificationsErrorCodes.has(r)
   )
-  return { blockedFromRelay, blockedFromNotifications, appliedRules }
+
+  return {
+    blockedFromRelay,
+    blockedFromNotifications,
+    appliedRules: appliedFailRules
+  }
 }
 
 const detectAbuse = async (user, reqIP) => {
@@ -92,6 +111,9 @@ const detectAbuse = async (user, reqIP) => {
     !!user.isBlockedFromRelay !== blockedFromRelay ||
     !!user.isBlockedFromNotifications !== blockedFromNotifications
   ) {
+    logger.info(
+      `abuse: state changed for user [${user.handle}], blocked from relay: ${blockedFromRelay} blocked from notifs: [${blockedFromNotifications}]`
+    )
     await user.update({
       isBlockedFromRelay: blockedFromRelay,
       isBlockedFromNotifications: blockedFromNotifications,
