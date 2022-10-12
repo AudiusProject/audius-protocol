@@ -5,9 +5,6 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
-import { asyncRetry } from '../../utils/asyncRetry'
-
-const _ = require('lodash')
 import {
   getContentNodeInfoFromEndpoint,
   getReplicaSetEndpointsByWallet
