@@ -71,7 +71,14 @@ module.exports = {
       gas: 8000000,
       gasPrice: 1000000000,
       skipDryRun: true
-    }
+    },
+    nethermind: {
+      provider: () => new HDWalletProvider("private key", "staging chain RPC"), // fill in values 
+      network_id: "*",
+      gas: 0,
+      gasPrice: 0,
+      gasLimit: 0,
+    },
   },
   mocha: {
     enableTimeouts: false

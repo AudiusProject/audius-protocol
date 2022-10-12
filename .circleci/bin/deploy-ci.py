@@ -23,14 +23,13 @@ logger = logging.getLogger("cli")
 ENVIRONMENTS = ("staging", "prod")
 SERVICES = ("all", "discovery", "creator", "identity")
 STAGE_CREATOR_NODES = (
-    "stage-creator-4",  # canary
     "stage-creator-5",
     "stage-creator-6",
     "stage-creator-7",
     "stage-creator-8",
     "stage-creator-9",
     "stage-creator-10",
-    #     "stage-creator-11",
+    "stage-creator-11",
     "stage-user-metadata",
 )
 PROD_CREATOR_NODES = (
@@ -64,7 +63,6 @@ IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
 CANARIES = (
-    "stage-creator-4",  # canary
     "stage-discovery-4",  # canary
     "prod-creator-4",  # prod-canary
     "prod-discovery-4",  # prod-canary
