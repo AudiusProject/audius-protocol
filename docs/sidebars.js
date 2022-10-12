@@ -49,6 +49,22 @@ module.exports = {
         },
         {
           type: "category",
+          label: "Subgraph",
+          items: [
+            {
+              type: "doc",
+              id: "developers/subgraph/subgraphdata"
+            },
+            { type: "doc",
+              id: "developers/sugbraph/entities"
+            },
+            { type: "doc",
+              id: "developers/subgraph/queries",
+            },
+          ]
+        },
+        {
+          type: "category",
           label: "JavaScript SDK",
           items: [
             {
