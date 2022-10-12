@@ -40,6 +40,12 @@ export interface User {
     album_count: number;
     /**
      * 
+     * @type {number}
+     * @memberof User
+     */
+    artist_pick_track_id?: number;
+    /**
+     * 
      * @type {string}
      * @memberof User
      */

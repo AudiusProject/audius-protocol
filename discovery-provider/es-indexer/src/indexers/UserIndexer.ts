@@ -7,6 +7,8 @@ import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { UserDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 import {
+  lowerKeyword,
+  noWhitespaceLowerKeyword,
   sharedIndexSettings,
   standardSuggest,
   standardText,
@@ -19,35 +21,29 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.users,
-    settings: merge(sharedIndexSettings, {
-      index: {
-        number_of_shards: 1,
-        number_of_replicas: 0,
-        refresh_interval: '5s',
-      },
-    }),
+    settings: merge(sharedIndexSettings, {}),
     mappings: {
       dynamic: false,
       properties: {
         blocknumber: { type: 'integer' },
         created_at: { type: 'date' },
-        wallet: { type: 'keyword' },
+        wallet: lowerKeyword,
         suggest: standardSuggest,
         handle: {
-          type: 'keyword',
+          ...noWhitespaceLowerKeyword,
           fields: {
             searchable: standardText,
           },
         },
         name: {
-          type: 'keyword',
+          ...lowerKeyword,
           fields: {
             searchable: standardText,
           },
         },
         is_verified: { type: 'boolean' },
         is_deactivated: { type: 'boolean' },
-        location: { type: 'keyword' },
+        location: lowerKeyword,
 
         // following
         following_ids: { type: 'keyword' },
@@ -59,9 +55,9 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         track_count: { type: 'integer' },
         tracks: {
           properties: {
-            mood: { type: 'keyword' },
-            genre: { type: 'keyword' },
-            tags: { type: 'keyword', normalizer: 'lower_asciifolding' },
+            mood: lowerKeyword,
+            genre: lowerKeyword,
+            tags: lowerKeyword,
           },
         },
       },

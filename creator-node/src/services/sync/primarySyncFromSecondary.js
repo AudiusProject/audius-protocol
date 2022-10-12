@@ -6,7 +6,7 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
+const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
@@ -90,12 +90,10 @@ async function _primarySyncFromSecondary({
     // TODO should be able to pass this through from StateMachine / caller
     let userReplicaSet
     try {
-      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      userReplicaSet = await getReplicaSetEndpointsByWallet({
         libs,
-        logger,
         wallet,
-        blockNumber: null,
-        ensurePrimary: false
+        parentLogger: logger
       })
     } catch (e) {
       error = `Error fetching user replica set: ${e.message}`
@@ -108,7 +106,7 @@ async function _primarySyncFromSecondary({
     }
 
     decisionTree.recordStage({
-      name: 'getUserReplicaSetEndpointsFromDiscovery() success',
+      name: 'getReplicaSetEndpointsByWallet() success',
       log: true
     })
 

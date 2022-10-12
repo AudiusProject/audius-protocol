@@ -12,6 +12,7 @@ module.exports = {
     'plugin:node/recommended',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/recommended',
+    'plugin:promise/recommended',
     // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'prettier'
   ],
@@ -19,7 +20,7 @@ module.exports = {
     node: true,
     mocha: true
   },
-  plugins: ['prettier'],
+  plugins: ['prettier', 'promise'],
   settings: {
     node: {
       allowModules: [],

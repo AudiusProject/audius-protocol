@@ -152,6 +152,8 @@ export class PrometheusRegistry {
             labels,
             waiting || 0
           )
+
+          return null
         })
         .catch((_) => {})
     }, QUEUE_INTERVAL)

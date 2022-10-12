@@ -9,8 +9,6 @@ const {
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
-const utils = require('./utils')
-const { strToReplicaSet } = require('./utils/index')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
@@ -19,6 +17,11 @@ const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 const { instrumentTracing, tracing } = require('./tracer')
+const {
+  getReplicaSetSpIdsByUserId,
+  replicaSetSpIdsToEndpoints
+} = require('./services/ContentNodeInfoManager')
+const { isFqdn } = require('./utils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -96,10 +99,9 @@ async function authMiddleware(req, res, next) {
 async function ensurePrimaryMiddleware(req, res, next) {
   const start = Date.now()
   let logPrefix = '[ensurePrimaryMiddleware]'
-  const logger = req.logger
 
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { nodeConfig, libs } = serviceRegistry
+  const { nodeConfig } = serviceRegistry
 
   if (!req.session || !req.session.wallet) {
     return sendResponse(
@@ -135,61 +137,50 @@ async function ensurePrimaryMiddleware(req, res, next) {
 
   /**
    * Fetch current user replicaSetSpIDs
-   * Will throw error if selfSpID is not user primary
    */
   let replicaSetSpIDs
   try {
-    replicaSetSpIDs = await getReplicaSetSpIDs({
-      serviceRegistry,
-      logger: req.logger,
+    replicaSetSpIDs = await getReplicaSetSpIdsByUserId({
+      libs: serviceRegistry.libs,
+      userId,
       blockNumber: req.body.blockNumber,
       ensurePrimary: true,
-      selfSpID,
-      userId
+      selfSpId: selfSpID,
+      parentLogger: req.logger
     })
+
+    // Error if returned primary spID does not match self spID
+    if (replicaSetSpIDs.primaryId !== selfSpID) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseUnauthorized(
+          `${logPrefix} found different primary (${replicaSetSpIDs.primaryId}) for user (self=${selfSpID}). Aborting`
+        )
+      )
+    }
   } catch (e) {
     return sendResponse(
       req,
       res,
-      errorResponseServerError(`${logPrefix} ${e.message}`)
+      errorResponseUnauthorized(`${logPrefix} ${e.message}`)
     )
   }
 
-  const primarySpID = replicaSetSpIDs[0]
-
-  // TODO there should be no need to do this validation (standardize / cleanup errors between here and in getReplicaSetSpIDs())
-  if (selfSpID !== primarySpID) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseUnauthorized(
-        `${logPrefix} Failed. This node's spID (${selfSpID}) does not match user's primary spID on chain (${primarySpID}).`
-      )
-    )
-  }
-
-  req.session.replicaSetSpIDs = replicaSetSpIDs
+  req.session.replicaSetSpIDs = [
+    replicaSetSpIDs.primaryId,
+    replicaSetSpIDs.secondaryIds[0],
+    replicaSetSpIDs.secondaryIds[1]
+  ]
   req.session.nodeIsPrimary = true
 
   /**
-   * Convert replicaSetSpIDs to replicaSetEndpoints for later consumption (do not error on failure)
    * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
    * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
    */
-  const allRegisteredCNodes = await utils.getAllRegisteredCNodes(libs, logger)
-  const replicaSetEndpoints = replicaSetSpIDs.map((replicaSpID) => {
-    if (replicaSpID === selfSpID) {
-      return nodeConfig.get('creatorNodeEndpoint')
-    }
-    // Get endpoint from registeredCNode matching current replicaSpID
-    const replicaSetInfo = allRegisteredCNodes.filter(
-      (CNodeInfo) => CNodeInfo.spID === replicaSpID
-    )[0]
-    if (replicaSetInfo && replicaSetInfo.endpoint) {
-      return replicaSetInfo.endpoint
-    }
-  })
-  req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
+  req.session.creatorNodeEndpoints = await replicaSetSpIdsToEndpoints(
+    replicaSetSpIDs
+  )
 
   req.logger.info(
     `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${
@@ -352,7 +343,7 @@ async function _issueAndWaitForSecondarySyncRequests(
 
     let [primary, ...secondaries] = req.session.creatorNodeEndpoints
     secondaries = secondaries.filter(
-      (secondary) => !!secondary && _isFQDN(secondary)
+      (secondary) => !!secondary && isFqdn(secondary)
     )
 
     if (primary !== config.get('creatorNodeEndpoint')) {
@@ -966,22 +957,10 @@ async function ensureValidSPMiddleware(req, res, next) {
   next()
 }
 
-// Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
-function _isFQDN(url) {
-  if (config.get('creatorNodeIsDebug')) return true
-  const FQDN = new RegExp(
-    /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
-  )
-  return FQDN.test(url)
-}
-
 module.exports = {
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
-  issueAndWaitForSecondarySyncRequests,
-  getOwnEndpoint,
-  getUserReplicaSetEndpointsFromDiscovery,
-  getReplicaSetSpIDs
+  issueAndWaitForSecondarySyncRequests
 }

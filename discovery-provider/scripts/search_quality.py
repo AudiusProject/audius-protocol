@@ -325,7 +325,36 @@ test_search(
         "limit": 4,
         "kind": "users",
         "is_auto_complete": True,
-    }
+    },
+    # {
+    #     "users": "stereosteve",
+    # },
+)
+
+test_search(
+    {
+        "query": "stereo steve",
+        "limit": 4,
+        "kind": "users",
+        "is_auto_complete": True,
+    },
+    # {
+    #     "users": "stereosteve",
+    # },
+)
+
+# Dillon Francis
+
+test_search(
+    {
+        "query": "Dillon Francis",
+        "limit": 4,
+        "kind": "users",
+        "is_auto_complete": True,
+    },
+    {
+        "users": "DillonFrancis dillonfrancis",
+    },
 )
 
 print("\n\n")
