@@ -115,6 +115,7 @@ def get_tracks_route():
         args["min_block_number"] = request.args.get("min_block_number", type=int)
     current_user_id = get_current_user_id(required=False)
     args["current_user_id"] = current_user_id
+    args["skip_unlisted_filter"] = True
     tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 
