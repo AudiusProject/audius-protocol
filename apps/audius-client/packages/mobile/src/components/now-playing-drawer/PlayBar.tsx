@@ -14,6 +14,7 @@ import { FavoriteButton } from 'app/components/favorite-button'
 import Text from 'app/components/text'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
@@ -24,7 +25,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
     width: '100%',
     height: PLAY_BAR_HEIGHT,
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: zIndex.PLAY_BAR
   },
   container: {
     height: '100%',
