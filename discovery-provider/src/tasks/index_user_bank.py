@@ -238,10 +238,11 @@ def process_transfer_instruction(
     if len(user_id_accounts) == 1:
         audio_transfer_sent = AudioTransactionsHistory(
             user_bank=sender_account,
+            slot=slot,
             signature=tx_sig,
             transaction_type=TransactionType.transfer,
             method=TransactionMethod.send,
-            created_at=timestamp,
+            transaction_created_at=timestamp,
             change=sent_amount,
             balance=post_sender_balance,
             tx_metadata=receiver_account,
@@ -274,10 +275,11 @@ def process_transfer_instruction(
 
         audio_tx_sent = AudioTransactionsHistory(
             user_bank=sender_account,
+            slot=slot,
             signature=tx_sig,
             transaction_type=TransactionType.tip,
             method=TransactionMethod.send,
-            created_at=timestamp,
+            transaction_created_at=timestamp,
             change=sent_amount,
             balance=post_sender_balance,
             tx_metadata=receiver_user_id,
@@ -288,10 +290,11 @@ def process_transfer_instruction(
         session.add(audio_tx_sent)
         audio_tx_received = AudioTransactionsHistory(
             user_bank=receiver_account,
+            slot=slot,
             signature=tx_sig,
             transaction_type=TransactionType.tip,
             method=TransactionMethod.receive,
-            created_at=timestamp,
+            transaction_created_at=timestamp,
             change=received_amount,
             balance=post_receiver_balance,
             tx_metadata=sender_user_id,
