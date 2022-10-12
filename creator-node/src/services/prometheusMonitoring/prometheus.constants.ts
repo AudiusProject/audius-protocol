@@ -49,6 +49,16 @@ const metricNames: Record<string, string> = {
   WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM: 'write_quorum_duration_seconds',
   SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM:
     'secondary_sync_from_primary_duration_seconds',
+  STREAM_CONTENT_HISTOGRAM: 'stream_content_duration_seconds',
+  STREAM_CONTENT_DIR_HISTOGRAM: 'stream_content_dir_duration_seconds',
+  // Blacklist content metrics
+  BLACKLIST_CONTENT_INIT_HISTOGRAM: 'blacklist_content_init_duration_seconds',
+  BLACKLIST_CONTENT_ADD_HISTOGRAM: 'blacklist_content_add_duration_seconds',
+  BLACKLIST_CONTENT_REMOVE_HISTOGRAM:
+    'blacklist_content_remove_duration_seconds',
+  BLACKLIST_CONTENT_STREAM_HISTOGRAM:
+    'blacklist_content_stream_duration_seconds',
+
   JOBS_ACTIVE_TOTAL_GAUGE: 'jobs_active_total',
   JOBS_WAITING_TOTAL_GAUGE: 'jobs_waiting_total',
   JOBS_COMPLETED_TOTAL_GAUGE: 'jobs_completed_total',
@@ -110,6 +120,51 @@ export const METRIC_LABELS = Object.freeze({
     ],
     // 5 buckets in the range of 1 second to max seconds before timing out write quorum
     buckets: exponentialBucketsRange(0.1, 60, 10)
+  },
+  [METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]: {
+    mode: ['new_storage_path', 'legacy_storage_path', 'default'],
+    result: [
+      'success_found_in_fs',
+      'success_found_in_network',
+      'abort_no_cid',
+      'abort_premium_content_missing_headers',
+      'abort_premium_content_invalid_discovery_node_validation',
+      'abort_premium_content_failed_match_verification',
+      'abort_delisted',
+      'abort_bad_cid',
+      'abort_cid_is_directory',
+      'abort_cid_is_not_file',
+      'abort_cid_not_found_in_db',
+      'abort_cid_is_directory_from_db_query',
+      'abort_cid_not_found_in_network',
+      'failure_cid_db_query',
+      'failure_premium_content_error',
+      'failure_stream'
+    ]
+  },
+  [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
+    result: [
+      'success_found_in_fs',
+      'abort_improper_parameters',
+      'abort_cid_not_found_in_db',
+      'abort_cid_not_found_in_network',
+      'failure_stream'
+    ]
+  },
+  [METRIC_NAMES.BLACKLIST_CONTENT_INIT_HISTOGRAM]: {
+    // TODO: how to track individual flows without ending the histogram? different histograms?
+    result: ['']
+  },
+  [METRIC_NAMES.BLACKLIST_CONTENT_ADD_HISTOGRAM]: {
+    mode: ['cid', 'track', 'user'],
+    result: ['success', 'abort', 'failure']
+  },
+  [METRIC_NAMES.BLACKLIST_CONTENT_REMOVE_HISTOGRAM]: {
+    mode: ['cid', 'track', 'user'],
+    result: ['success', 'abort', 'failure']
+  },
+  [METRIC_NAMES.BLACKLIST_CONTENT_STREAM_HISTOGRAM]: {
+    result: ['stream_blacklisted_content_attempt']
   },
   [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
     sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
