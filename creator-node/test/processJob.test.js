@@ -64,6 +64,7 @@ describe('test processJob() util function', function () {
   it('handles error when processing job', async function () {
     // Mock the logger that processJob() uses
     const loggerStub = {
+      debug: sandbox.stub(),
       info: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()
