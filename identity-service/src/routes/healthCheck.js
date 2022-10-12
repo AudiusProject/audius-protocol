@@ -131,8 +131,9 @@ module.exports = function (app) {
               const resp = await web3.eth.getTransactionReceipt(txHash)
               txCounter++
 
-              // tx failed
-              if (!resp || !resp.status) {
+              // note: pending txs will have null resp
+              if (resp && !resp.status) {
+                // tx failed
                 const senderAddress = await redis.hget(
                   'txHashToSenderAddress',
                   txHash
