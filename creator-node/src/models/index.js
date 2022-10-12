@@ -5,8 +5,7 @@ const path = require('path')
 const Sequelize = require('sequelize')
 
 const config = require('../config')
-
-const { clusterUtils } = require('../utils')
+const { clusterUtils } = require('../utils/clusterUtils')
 
 const basename = path.basename(__filename)
 const db = {}
