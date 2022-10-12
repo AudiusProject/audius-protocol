@@ -55,12 +55,6 @@ def upgrade():
             unique=False,
         )
         op.create_index(
-            op.f("ix_audio_transactions_history_transaction_created_at"),
-            "audio_transactions_history",
-            ["transaction_created_at"],
-            unique=False,
-        )
-        op.create_index(
             op.f("ix_audio_transactions_history_slot"),
             "audio_transactions_history",
             ["slot"],
@@ -71,10 +65,6 @@ def upgrade():
 def downgrade():
     op.drop_index(
         op.f("ix_audio_transactions_history_transaction_type"),
-        table_name="audio_transactions_history",
-    )
-    op.drop_index(
-        op.f("ix_audio_transactions_history_transaction_created_at"),
         table_name="audio_transactions_history",
     )
     op.drop_index(

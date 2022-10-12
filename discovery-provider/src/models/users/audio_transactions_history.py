@@ -33,7 +33,7 @@ class AudioTransactionsHistory(Base, RepresentableMixin):
     updated_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
-    transaction_created_at = Column(DateTime, nullable=False, index=True)
+    transaction_created_at = Column(DateTime, nullable=False)
     change = Column(Numeric, nullable=False)
     balance = Column(Numeric, nullable=False)
     tx_metadata = Column(String, nullable=False)
