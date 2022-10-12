@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, String, text
+from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, String, text
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
@@ -23,6 +23,7 @@ class AudioTransactionsHistory(Base, RepresentableMixin):
     __tablename__ = "audio_transactions_history"
 
     user_bank = Column(String, primary_key=True, nullable=False)
+    slot = Column(Integer, nullable=False, index=True)
     signature = Column(String, primary_key=True, nullable=False)
     transaction_type = Column(Enum(TransactionType), nullable=False, index=True)
     method = Column(Enum(TransactionMethod), nullable=False, index=True)
@@ -32,6 +33,7 @@ class AudioTransactionsHistory(Base, RepresentableMixin):
     updated_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
+    transaction_created_at = Column(DateTime, nullable=False, index=True)
     change = Column(BigInteger, nullable=False)
     balance = Column(BigInteger, nullable=False)
     tx_metadata = Column(String, nullable=False)

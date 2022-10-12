@@ -22,6 +22,7 @@ def upgrade():
         op.create_table(
             "audio_transactions_history",
             sa.Column("user_bank", sa.String(), nullable=False),
+            sa.Column("slot", sa.Integer(), nullable=False),
             sa.Column("signature", sa.String(), nullable=False),
             sa.Column("transaction_type", sa.String(), nullable=False),
             sa.Column("method", sa.String(), nullable=False),
@@ -37,6 +38,11 @@ def upgrade():
                 nullable=False,
                 server_default=sa.func.current_timestamp(),
             ),
+            sa.Column(
+                "transaction_created_at",
+                sa.DateTime(),
+                nullable=False,
+            ),
             sa.Column("change", sa.BigInteger(), nullable=False),
             sa.Column("balance", sa.BigInteger(), nullable=False),
             sa.Column("tx_metadata", sa.String(), nullable=False),
@@ -49,9 +55,15 @@ def upgrade():
             unique=False,
         )
         op.create_index(
-            op.f("ix_audio_transactions_history_created_at"),
+            op.f("ix_audio_transactions_history_transaction_created_at"),
             "audio_transactions_history",
-            ["created_at"],
+            ["transaction_created_at"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_audio_transactions_history_slot"),
+            "audio_transactions_history",
+            ["slot"],
             unique=False,
         )
 
@@ -62,7 +74,11 @@ def downgrade():
         table_name="audio_transactions_history",
     )
     op.drop_index(
-        op.f("ix_audio_transactions_history_created_at"),
+        op.f("ix_audio_transactions_history_transaction_created_at"),
+        table_name="audio_transactions_history",
+    )
+    op.drop_index(
+        op.f("ix_audio_transactions_history_slot"),
         table_name="audio_transactions_history",
     )
     op.drop_table("audio_transactions_history")
