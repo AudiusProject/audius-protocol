@@ -63,6 +63,26 @@ export async function updatePremiumContentCIDCache({
   }
 }
 
+export async function removePremiumContentCIDsFromCache({
+  cids,
+  logger
+}: {
+  cids: string[]
+  logger: Logger
+}) {
+  try {
+    await Promise.all(
+      cids.map((cid) => redis.hdel(PREMIUM_CONTENT_CID_CACHE_KEY, cid))
+    )
+  } catch (e) {
+    logger.error(
+      `Could not remove all premium content cids from cache: [${cids}]. Error: ${
+        (e as Error).message
+      }`
+    )
+  }
+}
+
 export async function isRegisteredDiscoveryNode({
   wallet,
   libs,

@@ -37,7 +37,10 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
-const { updatePremiumContentCIDCache } = require('../premiumContent/helpers')
+const {
+  updatePremiumContentCIDCache,
+  removePremiumContentCIDsFromCache
+} = require('../premiumContent/helpers')
 const { QueryTypes } = require('sequelize')
 
 const router = express.Router()
@@ -304,14 +307,15 @@ router.post(
     // Await 2/3 write quorum (replicating data to at least 1 secondary)
     await issueAndWaitForSecondarySyncRequests(req)
 
-    // If premium track, add CIDs which do not exist in other non-premium to cache
+    // If track is premium, add CIDs which do not exist in other non-premium tracks to cache.
+    // Otherwise, remove premium CIDs which also exist in this track.
     const {
       is_premium: isPremium,
       track_id: trackId,
       track_segments: trackSegments
     } = metadataJSON
+    const trackSegmentCIDs = trackSegments.map((segment) => segment.multihash)
     if (isPremium) {
-      const trackSegmentCIDs = trackSegments.map((segment) => segment.multihash)
       // todo: make sure this query is fast
       const result = await models.sequelize.query(
         `select t."blockchainId", f."multihash"
@@ -333,6 +337,11 @@ router.post(
         }
       })
       await updatePremiumContentCIDCache({ cacheMap, logger: req.logger })
+    } else {
+      removePremiumContentCIDsFromCache({
+        cids: trackSegmentCIDs,
+        logger: req.logger
+      })
     }
 
     return successResponse({
