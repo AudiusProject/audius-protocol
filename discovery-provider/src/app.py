@@ -173,7 +173,7 @@ def create_celery(test_config=None):
     global solana_client_manager
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
-    web3 = Web3(HTTPProvider(web3endpoint))
+    web3 = Web3(HTTPProvider(""))
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
