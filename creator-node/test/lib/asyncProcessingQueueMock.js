@@ -1,4 +1,4 @@
-const AsyncProcessingQueue = require('../../src/AsyncProcessingQueue')
+const { AsyncProcessingQueue } = require('../../src/AsyncProcessingQueue')
 
 class AsyncProcessingQueueMock {
   constructor(libsMock, prometheusRegistry) {

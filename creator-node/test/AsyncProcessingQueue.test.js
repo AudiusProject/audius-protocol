@@ -4,7 +4,7 @@ const sinon = require('sinon')
 const uuid = require('uuid')
 
 const { getServiceRegistryMock } = require('./lib/app')
-const AsyncProcessingQueue = require('../src/AsyncProcessingQueue')
+const { AsyncProcessingQueue } = require('../src/AsyncProcessingQueue')
 
 describe('test AsyncProcessingQueue', function () {
   let apq, libsMock, doneMock
