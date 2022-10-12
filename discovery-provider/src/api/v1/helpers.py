@@ -370,6 +370,8 @@ def decode_with_abort(identifier: str, namespace) -> int:
 
 
 def make_response(name, namespace, modelType):
+    print("this is model!")
+    print(modelType)
     return namespace.model(
         name,
         {
@@ -662,30 +664,3 @@ def get_default_max(value, default, max=None):
     if max is None:
         return value
     return min(value, max)
-
-
-def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user):
-    formatted_response_data = {}
-    for aggregate_monthly_play in aggregate_monthly_plays_for_user:
-        month = aggregate_monthly_play.timestamp
-        if month not in formatted_response_data:
-            formatted_response_data[month] = {}
-            formatted_response_by_month = formatted_response_data[month]
-            formatted_response_by_month["totalListens"] = 0
-            formatted_response_by_month["trackIds"] = []
-            formatted_response_by_month["listenCounts"] = []
-
-        formatted_response_by_month = formatted_response_data[month]
-        formatted_response_by_month["listenCounts"].append(
-            {
-                "trackId": aggregate_monthly_play.play_item_id,
-                "date": month,
-                "listens": aggregate_monthly_play.count,
-            }
-        )
-        formatted_response_by_month["trackIds"].append(
-            aggregate_monthly_play.play_item_id
-        )
-        formatted_response_by_month["totalListens"] += aggregate_monthly_play.count
-
-    return formatted_response_data

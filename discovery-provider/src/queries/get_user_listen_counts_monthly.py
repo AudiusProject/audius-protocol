@@ -32,7 +32,13 @@ def get_user_listen_counts_monthly(args: GetUserListenCountsMonthlyArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user_listen_counts_monthly = _get_user_listen_counts_monthly(session, args)
-        return format_aggregate_monthly_plays_for_user(user_listen_counts_monthly)
+        formatted_user_listen_counts_monthly = format_aggregate_monthly_plays_for_user(
+            user_listen_counts_monthly
+        )
+        print("query results!!!")
+        print(user_listen_counts_monthly)
+        # return formatted_user_listen_counts_monthly
+        return formatted_user_listen_counts_monthly
 
 
 def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user):

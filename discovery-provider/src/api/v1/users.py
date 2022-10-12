@@ -17,7 +17,6 @@ from src.api.v1.helpers import (
     extend_supporting,
     extend_track,
     extend_user,
-    format_aggregate_monthly_plays_for_user,
     format_limit,
     format_offset,
     format_query,
@@ -225,8 +224,26 @@ monthly_aggregate_play = ns.model(
 
 wild_month = fields.Wildcard(fields.Nested(monthly_aggregate_play, required=True))
 
+wild_month_model = ns.model("wild_month_model", {"*": wild_month})
 user_track_listen_counts_response = make_response(
-    "user_track_listen_counts_response", ns, wild_month
+    "user_track_listen_counts_response",
+    ns,
+    fields.Nested(
+        wild_month_model,
+        example={
+            "2021-10-01T00:00:00.000Z": {
+                "totalListens": 7,
+                "trackIds": [484436],
+                "listenCounts": [
+                    {
+                        "trackId": 484436,
+                        "date": "2021-10-01T00:00:00.000Z",
+                        "listens": 7,
+                    }
+                ],
+            }
+        },
+    ),
 )
 
 
@@ -245,32 +262,12 @@ class UserTrackListenCountsMonthly(Resource):
     @ns.marshal_with(user_track_listen_counts_response)
     @cache(ttl_sec=5)
     def get(self, id):
-        """
-        Queries for a user's monthly play data and organizes data by month and track.
-        Response data is meant to imitate identity service's endpoint for getTrackListens().
-
-        Returns:
-            JSON dict of the following structure:
-            {
-                "2021-10-01T00:00:00.000Z": {
-                    "totalListens"     : 7,
-                    "trackIds": [484436],
-                    "listenCounts": [
-                        {
-                            "trackId": 484436,
-                            "date": "2021-10-01T00:00:00.000Z",
-                            "listens": 7,
-                        }
-                    ],
-                }
-            },
-        """
         decoded_id = decode_with_abort(id, ns)
         args = user_track_listen_count_route_parser.parse_args()
         start_time = args.get("start_time")
         end_time = args.get("end_time")
 
-        formatted_response_data = get_user_listen_counts_monthly(
+        user_listen_counts = get_user_listen_counts_monthly(
             {
                 "user_id": decoded_id,
                 "start_time": start_time,
@@ -278,11 +275,7 @@ class UserTrackListenCountsMonthly(Resource):
             }
         )
 
-        # formatted_response_data = format_aggregate_monthly_plays_for_user(
-        #     aggregate_monthly_plays_for_user
-        # )
-
-        return success_response(formatted_response_data)
+        return success_response(user_listen_counts)
 
 
 @ns.route(USER_TRACKS_ROUTE)
