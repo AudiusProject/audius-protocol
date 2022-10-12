@@ -511,7 +511,7 @@ PODS:
     - React-Core
   - RNCClipboard (1.9.0):
     - React-Core
-  - RNCMaskedView (0.2.6):
+  - RNCMaskedView (0.2.8):
     - React-Core
   - RNCPushNotificationIOS (1.10.1):
     - React-Core
@@ -916,7 +916,7 @@ SPEC CHECKSUMS:
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 4b6538222ce3f01f61011f512226ba3aaa0dc336
   RNCClipboard: f49f3de56b40d0f4104680dabadc7a1f063f4fd4
-  RNCMaskedView: d367b2a8df3992114e31b32b091a0c00dc800827
+  RNCMaskedView: 1f6cd0cb5e38ec01960e12fd8f95ecad809f8fbb
   RNCPushNotificationIOS: 089da3b657e1e3d464f38195fd2e3069608ef5af
   RNFBAnalytics: 74cd9c60531ed33e5347b2dccafa172ae1a851a4
   RNFBApp: 5bae3002117e55f3c9aa0fb38175dd16c8046c90
