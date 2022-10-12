@@ -15,8 +15,8 @@
     "test:unit": "./scripts/run-tests.sh unit_test",
     "test:coverage": "nyc --reporter=lcov --reporter=text npm run test",
     "test:coverage:ci": "nyc --reporter=lcov --reporter=text npm run test:ci && nyc report --reporter=text-lcov | coveralls",
-    "lint:fix": "eslint --fix --ext=js,ts src",
-    "lint": "eslint --ext=js,ts src",
+    "lint:fix": "eslint --format table --fix --ext=js,ts src",
+    "lint": "eslint --format table --ext=js,ts src",
     "build": "./node_modules/.bin/tsc --project tsconfig.build.json",
     "postinstall": "patch-package"
   },
@@ -24,7 +24,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/sdk": "1.0.8",
+    "@audius/sdk": "1.0.13",
     "@bull-board/api": "^4.3.1",
     "@bull-board/express": "4.0.1",
     "@opentelemetry/api": "^1.2.0",
@@ -94,6 +94,7 @@
     "web3": "1.2.8"
   },
   "devDependencies": {
+    "@types/base64-url": "^2.2.0",
     "@types/bunyan": "^1.8.8",
     "@types/chai": "^4.3.3",
     "@types/cors": "^2.8.12",

@@ -38,7 +38,7 @@ export type FetchExportParams = {
   clockRangeMin: number
   selfEndpoint?: string
   logger: Logger
-  forceExport: boolean
+  forceExport?: boolean
 }
 export type FetchExportOutput = {
   fetchedCNodeUser?: any

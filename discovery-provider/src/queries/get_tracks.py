@@ -79,6 +79,8 @@ def _get_tracks(session, args):
                 )
             )
         base_query = base_query.filter(or_(*filter_cond))
+    elif "skip_unlisted_filter" in args and args.get("skip_unlisted_filter"):
+        pass
     else:
         # Only return unlisted tracks if either
         # - above case, routes are present (direct links to hidden tracks)

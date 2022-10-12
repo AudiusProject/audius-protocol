@@ -316,6 +316,20 @@ const checkIfCIDsExistOnCN = instrumentTracing({
     fn: _checkIfCIDsExistOnCN,
 })
 
+/**
+ * 
+ * @param endpoint the content node http endpoint
+ * @param walletPublicKeys the list of wallet public keys
+ * @param deregisteredCN the list of deregistered content nodes
+ * @param signatureSpID the signaturespid of the network monitoring job
+ * @param signatureSPDelegatePrivateKey the priv key of the network monitoring job
+ * @returns And object with the number of canceled users and a mapping between a user's wallet and their clock value
+ * 
+ * Clock value significant
+ * >0 = the user has data on that content node
+ * -1 = the user has no data on that content node
+ * -2 = the content node was unresponsive, deregistered, or there was an error
+ */
 const _getUserClockValues = async (
     endpoint: string,
     walletPublicKeys: string[],
@@ -353,12 +367,11 @@ const _getUserClockValues = async (
 
         if (batchClockStatusResp.canceled) {
             tracing.info(`[getUsersClockValues canceled] - ${endpoint}`)
-            // Return map of wallets to -1 clock (default value)
             return {
                 canceledUsers: walletPublicKeys.length,
                 results: walletPublicKeys.map(walletPublicKey => ({
                     walletPublicKey,
-                    clock: -1
+                    clock: -2 
                 }))
             }
         }
@@ -373,12 +386,11 @@ const _getUserClockValues = async (
         tracing.recordException(e)
         tracing.error(`[getUserClockValues Error] - ${endpoint} - ${e.message}`)
 
-        // Return map of wallets to -1 clock (default value)
         return {
             canceledUsers: walletPublicKeys.length,
             results: walletPublicKeys.map(walletPublicKey => ({
                 walletPublicKey,
-                clock: -1
+                clock: -2
             })),
         }
     }

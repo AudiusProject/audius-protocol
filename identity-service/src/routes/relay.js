@@ -66,8 +66,8 @@ module.exports = function (app) {
       if (blockAbuseOnRelay && user && userFlaggedAsAbusive) {
         // allow previously abusive users to redeem themselves for next relays
         if (detectAbuseOnRelay) {
-          const reqIP = req.get('X-Forwarded-For') || req.ip
-          detectAbuse(user, 'relay', reqIP) // fired & forgotten
+          const reqIP = getIP(req)
+          detectAbuse(user, reqIP) // fired & forgotten
         }
 
         // Only reject relay for users explicitly blocked from relay
@@ -153,7 +153,7 @@ module.exports = function (app) {
 
         if (user && detectAbuseOnRelay) {
           const reqIP = getIP(req)
-          detectAbuse(user, 'relay', reqIP) // fired & forgotten
+          detectAbuse(user, reqIP) // fired & forgotten
         }
 
         return successResponse({ receipt: receipt })
