@@ -26,7 +26,6 @@ type SecondarySyncFromPrimaryParams = {
   logContext: Object
   forceWipe?: boolean
   blockNumber?: number | null
-  secondarySyncFromPrimaryLogger?: Logger
 }
 
 const handleSyncFromPrimary = async ({
