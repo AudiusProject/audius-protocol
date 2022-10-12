@@ -6,7 +6,7 @@ const { libs: AudiusLibs } = require('@audius/sdk')
 const { CreatorNode, Utils } = AudiusLibs
 const config = require('../config/config')
 
-const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
+const DISCOVERY_NODE_ENDPOINT = 'http://localhost:5000'
 const MAX_INDEXING_TIMEOUT = 10000
 
 /**
@@ -373,7 +373,7 @@ function LibsWrapper(walletIndex = 0) {
   /**
    * Gets the primary off the user metadata and then sets the primary
    * on the CreatorNode instance in libs
-   * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+   * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
    */
   this.getPrimaryAndSetLibs = contentNodeEndpointField => {
     assertLibsDidInit()
