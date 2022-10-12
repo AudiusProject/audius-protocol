@@ -301,7 +301,7 @@ jobs:
               --storage-location=us
       - slack-fail:
           branch_pattern: master
-          slack_mentions_user: "@Dheeraj"
+          slack_mentions_user: "@dheeraj"
 
   publish-sdk:
     docker:
