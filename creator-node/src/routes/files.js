@@ -460,7 +460,6 @@ const getCID = async (req, res) => {
   const blockStartMs = Date.now()
   try {
     startMs = Date.now()
-    const libs = req.app.get('audiusLibs')
     const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
     if (!found) {
       throw new Error('Not found in network')
@@ -545,7 +544,6 @@ const getDirCID = async (req, res) => {
   try {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
-    const libs = req.app.get('audiusLibs')
     const found = await findCIDInNetwork(storagePath, CID, req.logger)
     if (!found) throw new Error(`CID=${CID} not found in network`)
 
