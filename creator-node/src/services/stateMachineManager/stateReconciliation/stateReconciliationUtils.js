@@ -103,8 +103,10 @@ const getNewOrExistingSyncReq = async ({
 
 const getSyncStatusByUuid = async (targetUrl, syncUuid) => {
   const resp = await axios({
-    url: `${targetUrl}/sync_status/uuid/${syncUuid}`,
-    method: 'get'
+    baseURL: targetUrl,
+    url: `/sync_status/uuid/${syncUuid}`,
+    method: 'get',
+    timeout: 30_000
   })
   return resp?.data?.data?.syncStatus
 }

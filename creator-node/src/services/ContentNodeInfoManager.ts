@@ -33,7 +33,7 @@ async function updateContentNodeChainInfo(
       ])
     )
     if (spIdToChainInfoFromChain.size > 0) {
-      redisClient.set(
+      await redisClient.set(
         SP_ID_TO_CHAIN_INFO_MAP_KEY,
         JSON.stringify(Array.from(spIdToChainInfoFromChain.entries()))
       )

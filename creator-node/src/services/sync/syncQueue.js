@@ -96,7 +96,6 @@ class SyncQueue {
       blockNumber,
       logContext,
       serviceRegistry,
-      syncType,
       syncUuid
     } = job.data
 
@@ -111,7 +110,6 @@ class SyncQueue {
         forceResyncConfig,
         forceWipe,
         logContext,
-        syncType,
         syncUuid: syncUuid || null
       })
       logInfoWithDuration(
@@ -138,7 +136,6 @@ class SyncQueue {
     forceWipe,
     logContext,
     parentSpanContext,
-    syncType,
     syncUuid = null // Could be null for backwards compatibility
   }) {
     const job = await this.queue.add('process-sync', {
@@ -149,7 +146,6 @@ class SyncQueue {
       forceWipe,
       logContext,
       parentSpanContext,
-      syncType,
       syncUuid: syncUuid || null
     })
     return job

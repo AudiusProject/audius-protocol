@@ -122,7 +122,7 @@ const _syncRouteController = async (req, res) => {
    */
   const data = generateDataForSignatureRecovery(req.body)
   const syncUuid = uuid()
-  await setSyncStatus(syncUuid, 'waiting', syncType)
+  await setSyncStatus(syncUuid, 'waiting')
 
   if (immediate) {
     try {
@@ -142,7 +142,6 @@ const _syncRouteController = async (req, res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
-        syncType,
         syncUuid,
 
         // `parentSpanContext` provides a serializable version of the span
@@ -181,7 +180,6 @@ const _syncRouteController = async (req, res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
-        syncType,
         syncUuid,
         parentSpanContext: tracing.currentSpanContext()
       })

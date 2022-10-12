@@ -10,11 +10,14 @@ import {
 } from '../../services/stateMachineManager/stateMachineConstants'
 
 const config = require('../../config')
-const redisClient: Redis = require('../../redis')
+const redisClient: Redis & {
+  deleteAllKeysMatchingPattern: (keyPattern: string) => Promise<number>
+} = require('../../redis')
 const asyncRetry = require('../../utils/asyncRetry')
 
 const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3
+const ONE_HOUR_IN_MILLIS = 60 /* min */ * 60 /* sec */ * 1000 /* millis */
 
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
@@ -29,7 +32,7 @@ type ExportQueryParams = {
   force_export: boolean
   source_endpoint?: string
 }
-type FetchExportParams = {
+export type FetchExportParams = {
   nodeEndpointToFetchFrom: string
   wallet: string
   clockRangeMin: number
@@ -37,7 +40,7 @@ type FetchExportParams = {
   logger: Logger
   forceExport: boolean
 }
-type FetchExportOutput = {
+export type FetchExportOutput = {
   fetchedCNodeUser?: any
   error?: {
     message: string
@@ -52,7 +55,7 @@ type FetchExportOutput = {
       | 'abort_mismatched_export_wallet'
   }
 }
-type SyncStatus =
+export type SyncStatus =
   | 'waiting'
   | 'success'
   | 'success_clocks_already_match'
@@ -77,7 +80,7 @@ type SyncStatus =
   | 'failure_import_not_contiguous'
   | 'failure_inconsistent_clock'
 
-async function fetchExportFromNode({
+export async function fetchExportFromNode({
   nodeEndpointToFetchFrom,
   wallet,
   clockRangeMin,
@@ -177,33 +180,30 @@ async function fetchExportFromNode({
   }
 }
 
-async function getSyncStatus(syncUuid: string) {
+export async function getSyncStatus(syncUuid: string) {
   return redisClient.get(`syncStatus${syncUuid}`) as Promise<SyncStatus | null>
 }
 
-async function setSyncStatus(
-  syncUuid: string,
-  syncStatus: SyncStatus,
-  syncType: string
-) {
+/**
+ * Sets the status of a sync (by UUID) as a redis key that expires after 1 hour.
+ * 1 hour is an upper bound for the node that issued the sync in case that node
+ * increased their maxSyncMonitoringDurationInMs or maxManualSyncMonitoringDurationInMs.
+ */
+export async function setSyncStatus(syncUuid: string, syncStatus: SyncStatus) {
   await redisClient.set(
     `syncStatus${syncUuid}`,
     syncStatus,
-    'PX',
-    getMaxSyncMonitoringMs(syncType) + SYNC_MONITORING_RETRY_DELAY_MS + 1
+    'PX', // Sets expiration in millis (like how EX is expiration in seconds)
+    ONE_HOUR_IN_MILLIS
   )
 }
 
-function getMaxSyncMonitoringMs(syncType: string) {
+export async function clearSyncStatuses() {
+  return redisClient.deleteAllKeysMatchingPattern('syncStatus*')
+}
+
+export function getMaxSyncMonitoringMs(syncType: string) {
   return syncType === SyncType.Manual
     ? maxManualSyncMonitoringDurationInMs
     : maxSyncMonitoringDurationInMs
 }
-
-export {
-  fetchExportFromNode,
-  getSyncStatus,
-  setSyncStatus,
-  getMaxSyncMonitoringMs
-}
-export type { FetchExportParams, FetchExportOutput, SyncStatus }

@@ -435,6 +435,7 @@ const _getUserPrimaryClockValues = async (wallets: string[]) => {
 
 /**
  * @deprecated - For backwards compat only. Use _additionalSyncIsRequired to poll by UUID instead of clock value.
+ * TODO: Remove after all SPs are updated to v0.3.69. Close https://linear.app/audius/issue/CON-464/remove-deprecatedadditionalsyncisrequired-after-v0369
  *
  * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
  * Return boolean indicating if an additional sync is required and reason why (or 'none' if no additional sync is required)
@@ -449,7 +450,7 @@ const _deprecatedAdditionalSyncIsRequired = async (
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryUrl = syncRequestParameters.baseURL
-  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
+  const logMsgString = `deprecatedAdditionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
   const maxMonitoringTimeMs = startTimeMs + getMaxSyncMonitoringMs(syncType)

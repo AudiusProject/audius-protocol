@@ -97,7 +97,6 @@ class SyncImmediateQueue {
       forceResyncConfig,
       logContext,
       serviceRegistry,
-      syncType,
       syncUuid
     } = job.data
 
@@ -109,7 +108,6 @@ class SyncImmediateQueue {
         creatorNodeEndpoint,
         forceResyncConfig,
         logContext,
-        syncType,
         syncUuid: syncUuid || null
       })
       logInfoWithDuration(
@@ -136,7 +134,6 @@ class SyncImmediateQueue {
     forceResyncConfig,
     logContext,
     parentSpanContext,
-    syncType,
     syncUuid = null // Could be null for backwards compatibility
   }) {
     const job = await this.queue.add('process-sync-immediate', {
@@ -145,7 +142,6 @@ class SyncImmediateQueue {
       forceResyncConfig,
       logContext,
       parentSpanContext,
-      syncType,
       syncUuid: syncUuid || null
     })
     const result = await job.waitUntilFinished(this.queueEvents)

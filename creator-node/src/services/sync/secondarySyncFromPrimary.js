@@ -694,7 +694,6 @@ async function _secondarySyncFromPrimary({
   creatorNodeEndpoint,
   forceResyncConfig,
   logContext,
-  syncType,
   forceWipe = false,
   blockNumber = null,
   syncUuid = null // Could be null for backwards compatibility
@@ -737,9 +736,7 @@ async function _secondarySyncFromPrimary({
   tracing.setSpanAttribute('mode', mode)
 
   try {
-    if (syncUuid) {
-      await setSyncStatus(syncUuid, result, syncType)
-    }
+    if (syncUuid) await setSyncStatus(syncUuid, result)
   } catch (e) {
     secondarySyncFromPrimaryLogger.error(
       `Failed to update sync status for polling: ${e}`
