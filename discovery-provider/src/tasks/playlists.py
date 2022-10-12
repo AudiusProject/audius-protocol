@@ -7,7 +7,6 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
-from src.models.tracks.track import Track
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -125,10 +124,6 @@ def playlist_state_update(
                 playlist_event_types_lookup["playlist_track_added"]
                 in value_obj["events"]
             ):
-                # parse_playlist_event would have raised an exception if
-                # the playlist included premium tracks, so we're safe to dispatch
-                # this challenge event here.
-
                 challenge_bus.dispatch(
                     ChallengeEvent.first_playlist,
                     value_obj["playlist"].blocknumber,
@@ -286,20 +281,6 @@ def parse_playlist_event(
         playlist_record.is_private = event_args._isPrivate
         playlist_record.is_album = event_args._isAlbum
 
-        # Raise an exception if playlist includes premium tracks
-        premium_tracks = (
-            session.query(Track)
-            .filter(
-                Track.track_id.in_(event_args._trackIds),
-                Track.is_premium == True,
-                Track.is_current == True,
-                Track.is_delete == False,
-            )
-            .all()
-        )
-        if premium_tracks:
-            raise Exception("Cannot add premium tracks to playlist")
-
         playlist_content_array = []
         for track_id in event_args._trackIds:
             playlist_content_array.append(
@@ -316,22 +297,6 @@ def parse_playlist_event(
         playlist_record.is_delete = True
 
     if event_type == playlist_event_types_lookup["playlist_track_added"]:
-        track_id = event_args._addedTrackId
-
-        # Raise exception if track is premium
-        premium_track = (
-            session.query(Track)
-            .filter(
-                Track.track_id == track_id,
-                Track.is_premium == True,
-                Track.is_current == True,
-                Track.is_delete == False,
-            )
-            .one_or_none()
-        )
-        if premium_track:
-            raise Exception("Cannot add premium track to playlist")
-
         if getattr(playlist_record, "playlist_contents") is not None:
             logger.info(
                 f"index.py | playlists.py | Adding track {event_args._addedTrackId} to playlist \
