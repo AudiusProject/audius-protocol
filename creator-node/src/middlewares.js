@@ -99,10 +99,9 @@ async function authMiddleware(req, res, next) {
 async function ensurePrimaryMiddleware(req, res, next) {
   const start = Date.now()
   let logPrefix = '[ensurePrimaryMiddleware]'
-  const logger = req.logger
 
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { nodeConfig, libs } = serviceRegistry
+  const { nodeConfig } = serviceRegistry
 
   if (!req.session || !req.session.wallet) {
     return sendResponse(
@@ -155,7 +154,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
       return sendResponse(
         req,
         res,
-        errorResponseServerError(
+        errorResponseUnauthorized(
           `${logPrefix} found different primary (${replicaSetSpIDs.primaryId}) for user (self=${selfSpID}). Aborting`
         )
       )
@@ -164,7 +163,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
     return sendResponse(
       req,
       res,
-      errorResponseServerError(`${logPrefix} ${e.message}`)
+      errorResponseUnauthorized(`${logPrefix} ${e.message}`)
     )
   }
 
