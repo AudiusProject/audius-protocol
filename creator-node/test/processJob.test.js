@@ -21,6 +21,7 @@ describe('test processJob() util function', function () {
   it('requires logger to have a queue property to filter by', async function () {
     // Mock the logger that processJob() uses
     const loggerStub = {
+      debug: sandbox.stub(),
       info: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()
