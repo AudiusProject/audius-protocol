@@ -22,7 +22,7 @@ const {
   validateStateForImageDirCIDAndReturnFileUUID,
   currentNodeShouldHandleTranscode
 } = require('../utils')
-const asyncRetry = require('../utils/asyncRetry')
+const { asyncRetry } = require('../utils/asyncRetry')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,

@@ -6,13 +6,13 @@ import type {
 } from '../stateMachineManager/stateReconciliation/types'
 
 import { getContentNodeInfoFromSpId } from '../ContentNodeInfoManager'
+import { asyncRetry } from '../../utils/asyncRetry'
 
 const _ = require('lodash')
 
 const { logger: genericLogger } = require('../../logging')
 const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
-const asyncRetry = require('../../utils/asyncRetry')
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
