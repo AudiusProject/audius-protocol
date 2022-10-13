@@ -307,6 +307,7 @@ router.post(
     // Await 2/3 write quorum (replicating data to at least 1 secondary)
     await issueAndWaitForSecondarySyncRequests(req)
 
+    // Update the premium content cache.
     // If track is premium, add CIDs which do not exist in other non-premium tracks to cache.
     // Otherwise, remove premium CIDs which also exist in this track.
     const {
@@ -318,11 +319,9 @@ router.post(
     if (isPremium) {
       // todo: make sure this query is fast
       const result = await models.sequelize.query(
-        `select t."blockchainId", f."multihash"
-          from "Tracks" t join "Files" f
-          on t."blockchainId" = f."trackBlockchainId"
-          where f."multihash" in :cids
-          and (t."metadataJSON" ->> 'is_premium')::boolean is not true`,
+        `select "multihash" from "Files"
+          where "multihash" in :cids
+          and "isPremium" is false`,
         {
           replacements: { cids: trackSegmentCIDs },
           type: QueryTypes.SELECT
