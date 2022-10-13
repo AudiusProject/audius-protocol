@@ -16,9 +16,11 @@ import { pick, isEmpty } from 'lodash'
 
 import initAudiusLibs from './initAudiusLibs'
 import { createChildLogger } from '../logging'
-import defaultRedisClient from '../redis'
+import { redis } from '../redis'
 import { timeout } from '../utils'
 import config from '../config'
+
+const defaultRedisClient = redis.client
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
