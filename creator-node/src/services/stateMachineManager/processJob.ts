@@ -36,7 +36,7 @@ async function processJob(
   const { id: jobId, data: jobData } = job
 
   const jobLogger = createChildLogger(parentLogger, { jobId })
-  jobLogger.info(`New job: ${JSON.stringify(job)}`)
+  jobLogger.debug(`New job: ${JSON.stringify(job)}`)
 
   let result
   const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
