@@ -12,7 +12,7 @@ describe('test secondarySyncHealthTracker', function () {
     app = appInfo.app
     server = appInfo.server
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
   })
 
   afterEach(async function () {

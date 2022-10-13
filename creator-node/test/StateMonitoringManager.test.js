@@ -18,7 +18,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
   let server, sandbox
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
-    await appInfo.app.get('redisClient').flushdb()
+    await appInfo.app.get('redis').client.flushdb()
     server = appInfo.server
     sandbox = sinon.createSandbox()
 

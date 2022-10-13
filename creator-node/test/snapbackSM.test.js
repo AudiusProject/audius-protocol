@@ -82,7 +82,7 @@ describe.skip('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconf
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
     nock.disableNetConnect()
@@ -452,7 +452,7 @@ describe.skip('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -535,7 +535,7 @@ describe.skip('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', functio
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -900,7 +900,7 @@ describe.skip('test SnapbackSM -- selectRandomReplicaSetNodes', function () {
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -1040,7 +1040,7 @@ describe.skip('test SnapbackSM -- retrieveClockStatusesForUsersAcrossReplicaSet'
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -1117,7 +1117,7 @@ describe.skip('test SnapbackSM -- issueSyncRequestsToSecondaries', function () {
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -1392,7 +1392,7 @@ describe.skip('test SnapbackSM -- processStateMachineOperation', function () {
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -1465,7 +1465,7 @@ describe.skip('test SnapbackSM -- additionalSyncIsRequired', function () {
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })
@@ -1581,7 +1581,7 @@ describe.skip('test SnapbackSM -- computeUserSecondarySyncSuccessRatesMap', func
     server = appInfo.server
     const app = appInfo.app
 
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
 
     nodeConfig.set('spID', 1)
   })

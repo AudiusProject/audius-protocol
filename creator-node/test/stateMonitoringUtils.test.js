@@ -351,7 +351,7 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
     const appInfo = await getApp(getLibsMock())
     server = appInfo.server
     const app = appInfo.app
-    await app.get('redisClient').flushdb()
+    await app.get('redis').client.flushdb()
   })
 
   afterEach(async function () {

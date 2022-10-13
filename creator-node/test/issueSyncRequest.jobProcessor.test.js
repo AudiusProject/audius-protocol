@@ -52,7 +52,7 @@ describe('test issueSyncRequest job processor', function () {
     }
 
     const appInfo = await getApp(getLibsMock())
-    await appInfo.app.get('redisClient').flushdb()
+    await appInfo.app.get('redis').client.flushdb()
     server = appInfo.server
     sandbox = sinon.createSandbox()
     config.set('spID', 1)

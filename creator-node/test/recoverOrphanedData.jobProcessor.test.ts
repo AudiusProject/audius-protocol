@@ -49,7 +49,7 @@ describe('test recoverOrphanedData job processor', function () {
 
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
-    await appInfo.app.get('redisClient').flushdb()
+    await appInfo.app.get('redis').client.flushdb()
     server = appInfo.server
     sandbox = sinon.createSandbox()
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
