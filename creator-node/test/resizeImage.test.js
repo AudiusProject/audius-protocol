@@ -1,6 +1,6 @@
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
-const resizeImageJob = require('../src/resizeImage')
+const resizeImageJob = require('../src/workers/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
 
