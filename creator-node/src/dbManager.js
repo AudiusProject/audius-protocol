@@ -180,24 +180,50 @@ class DBManager {
     prevStoragePath,
     batchSize
   ) {
-    const files = (
+    // Get a batch of file that this user needs
+    const userFiles = (
       await models.File.findAll({
         attributes: ['storagePath'],
         where: {
-          [sequelize.Op.and]: [
-            sequelize.literal(`"multihash" IN
-          (SELECT "multihash" FROM "Files" WHERE "cnodeUserUUID" = '${cnodeUserUUID}' AND "storagePath" > '${prevStoragePath}')`)
-          ]
+          cnodeUserUUID,
+          storagePath: {
+            [sequelize.Op.gte]: prevStoragePath
+          }
         },
-        group: 'storagePath',
-        having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`),
+        distinct: true,
         order: [['storagePath', 'ASC']],
         limit: batchSize
       })
-    ).map((result) => result.dataValues)
+    )
+      .map((result) => result.dataValues)
+      ?.map((file) => path.normalize(file.storagePath))
+    if (isEmpty(userFiles)) return []
 
-    if (isEmpty(files)) return []
-    return files.map((file) => path.normalize(file.storagePath))
+    // Get all files that: 1. could match a file in the above batch; and 2. are only needed by 1 user
+    const allUniqueFiles = (
+      await models.File.findAll({
+        attributes: ['storagePath'],
+        where: {
+          storagePath: {
+            [sequelize.Op.between]: [
+              userFiles[0],
+              userFiles[userFiles.length - 1]
+            ]
+          }
+        },
+        group: 'storagePath',
+        having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`)
+      })
+    )
+      .map((result) => result.dataValues)
+      ?.map((file) => path.normalize(file.storagePath))
+    if (isEmpty(allUniqueFiles)) return []
+
+    // Return files that only this user needs (files that aren't associated with anyone else)
+    const userUniqueFiles = allUniqueFiles.filter((file) =>
+      userFiles.includes(file)
+    )
+    return userUniqueFiles
   }
 
   /**
