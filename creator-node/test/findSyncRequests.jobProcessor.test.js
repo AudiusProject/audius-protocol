@@ -1308,7 +1308,7 @@ describe('test findSyncRequests job processor', function () {
       )
   })
 
-  it.only('should skip a user if they are not in the replica map', async function () {
+  it('should skip a user if they are not in the replica map', async function () {
     /**
      * Define all input variables
      */
