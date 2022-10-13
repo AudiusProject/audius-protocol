@@ -1323,7 +1323,7 @@ workflows:
           name: built-creator-mr
           filters:
             branches:
-              only: /(^master|release-.*$)/
+              only: /(^release-.*$)/
           requires:
             - build-creator
             - test-creator
@@ -1331,7 +1331,7 @@ workflows:
           name: built-discovery-mr
           filters:
             branches:
-              only: /(^master|release-.*$)/
+              only: /(^release-.*$)/
           requires:
             - build-discovery
             - test-discovery
@@ -1339,7 +1339,7 @@ workflows:
           name: built-identity-mr
           filters:
             branches:
-              only: /(^master|release-.*$)/
+              only: /(^release-.*$)/
           requires:
             - build-identity
             - test-identity
