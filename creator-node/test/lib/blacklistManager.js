@@ -1,4 +1,5 @@
 const BlacklistManager = require('../../src/blacklistManager')
+const { deleteAllKeysMatchingPattern } = require('../../src/redis')
 
 /**
  * Removes all BlacklistManager keys in redis
@@ -10,7 +11,7 @@ async function restartBlacklistManager(redis) {
   await redis.del(BlacklistManager.getRedisSegmentCIDKey())
   await redis.del(BlacklistManager.getInvalidTrackIdsKey())
 
-  await redis.deleteAllKeysMatchingPattern(BlacklistManager.getRedisTrackIdToCIDsKey('*'))
+  await deleteAllKeysMatchingPattern(BlacklistManager.getRedisTrackIdToCIDsKey('*'))
 
   BlacklistManager.initialized = false
 }
