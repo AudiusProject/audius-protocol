@@ -10,6 +10,8 @@ const { clusterUtils } = require('../utils/clusterUtils')
 const basename = path.basename(__filename)
 const db = {}
 
+const QUERY_TIMEOUT = 100 * 60 * 10 // 10 minutes
+
 const sequelize = new Sequelize(config.get('dbUrl'), {
   logging: config.get('printSequelizeLogs'),
   operatorsAliases: false,
@@ -18,6 +20,11 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
     min: 5,
     acquire: 60000,
     idle: 10000
+  },
+  dialectOptions: {
+    options: {
+      requestTimeout: QUERY_TIMEOUT
+    }
   }
 })
 
