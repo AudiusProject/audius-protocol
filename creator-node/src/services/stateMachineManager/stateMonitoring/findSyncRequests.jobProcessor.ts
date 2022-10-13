@@ -256,9 +256,16 @@ async function _findSyncsForUser(
     const primaryUserInfo = replicaToAllUserInfoMaps[primary][wallet]
     const secondaryUserInfo = replicaToAllUserInfoMaps[secondary][wallet]
 
-    if (primaryUserInfo === undefined || secondaryUserInfo === undefined) {
+    if (
+      primaryUserInfo === undefined ||
+      primaryUserInfo === null ||
+      secondaryUserInfo === undefined ||
+      secondaryUserInfo === null
+    ) {
       tracing.error(
-        `undefined user info - primary ${primaryUserInfo}, secondary ${secondaryUserInfo}`
+        `undefined user info - primary ${JSON.stringify(
+          primaryUserInfo
+        )}, secondary ${JSON.stringify(secondaryUserInfo)}`
       )
       outcomesBySecondary[secondary].result = 'no_sync_unexpected_error'
       continue
