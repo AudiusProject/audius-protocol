@@ -434,7 +434,7 @@ const getDirCID = async (req, res) => {
 
   // Attempt to stream file to client
   try {
-    req.logger.info(
+    req.logger.debug(
       logPrefix,
       `Retrieving ${storagePath} directly from filesystem`
     )
