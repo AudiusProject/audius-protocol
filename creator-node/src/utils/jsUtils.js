@@ -1,8 +1,8 @@
 const fs = require('fs-extra')
 const bunyan = require('bunyan')
-const config = require('../config')
 const CID = require('cids')
 const path = require('path')
+const config = require('../config')
 
 // taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
 // since there is no official support for string-based "level" values
@@ -36,6 +36,11 @@ const genericLogger = bunyan.createLogger({
   ]
 })
 
+/**
+ * Given a directory path, this function will create the dirPath if it doesn't exist
+ * If it does exist, it will not overwrite, effectively a no-op
+ * @param {*} dirPath fs directory path to create if it does not exist
+ */
 async function ensureDirPathExists(dirPath) {
   try {
     // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
@@ -48,10 +53,24 @@ async function ensureDirPathExists(dirPath) {
   }
 }
 
+/**
+ * Return the storagePath from the config
+ */
 function getConfigStoragePath() {
   return config.get('storagePath')
 }
 
+/**
+ * Construct the path to a file or directory given a CID
+ *
+ * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
+ * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
+ * Use `computeFilePathInDir` if you want to get the path for a file inside a directory.
+ *
+ * @dev Returns a path with the three characters before the last character
+ *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
+ * @param {String} cid file system destination, either filename or directory
+ */
 async function computeFilePath(cid, shouldEnsureDirPathExists = true) {
   try {
     CID.isCID(new CID(cid))
@@ -72,6 +91,16 @@ async function computeFilePath(cid, shouldEnsureDirPathExists = true) {
   return path.join(parentDirPath, cid)
 }
 
+/**
+ * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
+ *
+ * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
+ * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
+ * Use `computeFilePath` if you just want to get to the path of a file or directory.
+ *
+ * @param {String} dirName directory name
+ * @param {String} fileName file name
+ */
 async function computeFilePathInDir(dirName, fileName) {
   if (!dirName || !fileName) {
     genericLogger.error(
