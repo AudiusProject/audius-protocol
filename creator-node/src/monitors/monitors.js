@@ -41,7 +41,7 @@ const {
   getLatestFindReplicaSetUpdatesJobStart,
   getLatestFindReplicaSetUpdatesJobSuccess
 } = require('./stateMachine')
-const redis = require('../redis')
+const { redis } = require('../redis')
 
 // Prefix used to key each monitored value in redis
 const MONITORING_REDIS_PREFIX = 'monitoring'
@@ -338,7 +338,7 @@ const parseValue = (monitor, value) => {
  * @param {Array<Object>} monitors the monitor, containing name, func, ttl, and type
  */
 const getMonitors = async (monitors) => {
-  const pipeline = redis.pipeline()
+  const pipeline = redis.client.pipeline()
   monitors.forEach((monitor) => {
     const key = getMonitorRedisKey(monitor)
     pipeline.get(key)
