@@ -1,0 +1,27 @@
+// Base config for IDE and app-builder configs to use. Does not set files, include, or exclude options
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "pretty": true,
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": [
+      "es2020"
+    ],
+    "allowJs": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitThis": false,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  }
+}

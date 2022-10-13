@@ -111,7 +111,16 @@ case "$provider" in
 		;;
 	gcp)
 		if [[ "$spot_instance" == true ]]; then
-			spot_flag=--provisioning-model=SPOT
+			# https://cloud.google.com/community/tutorials/create-a-self-deleting-virtual-machine
+			# delete spot instances (used in CI for mad dog/sdk tests) after 12 hours by default
+			# --provision-model=SPOT choose a pre-emptible VM so GCP can delete at any time
+			# --metadata-from-file=startup-script= allows us to pass in a script to run on VM start
+			# --instance-termination-action=DELETE will delete the VM when GCP preempts it vs just stopping
+			# --scopes=compute-rw are permissions for this node to make requests to gcloud compute API
+			spot_flag="--provisioning-model=SPOT \
+				--metadata-from-file=startup-script=$PROTOCOL_DIR/service-commands/scripts/auto-delete-gcloud-instance.sh \
+				--instance-termination-action=DELETE \
+				--scopes=compute-rw"
 		fi
 		gcloud compute instances create \
 			$name $(gcp_image_to_flags $image) \

@@ -138,6 +138,8 @@ cid_metadata_client = CIDMetadataClient(
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_premium": False,
+            "premium_conditions": None,
         },
         multihash2: {
             "owner_id": 1,
@@ -185,6 +187,8 @@ cid_metadata_client = CIDMetadataClient(
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_premium": False,
+            "premium_conditions": None,
         },
     }
 )
@@ -261,7 +265,7 @@ def test_index_tracks(mock_index_task, app):
         track_record = parse_track_event(
             None,  # self - not used
             session,
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
@@ -516,7 +520,7 @@ def test_index_tracks(mock_index_task, app):
         parse_track_event(
             None,  # self - not used
             session,
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
@@ -625,7 +629,7 @@ def test_track_indexing_skip_tx(app, mocker):
         autospec=True,
     )
 
-    test_ipfs_metadata = {}
+    test_metadata = {}
 
     with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
         try:
@@ -644,7 +648,7 @@ def test_track_indexing_skip_tx(app, mocker):
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
-                test_ipfs_metadata,
+                test_metadata,
             )
             assert len(updated_track_ids_set) == 1
             assert list(updated_track_ids_set)[0] == blessed_track_record.track_id

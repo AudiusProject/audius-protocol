@@ -77,7 +77,11 @@ export class ServiceProvider extends Base {
         url: `${node.endpoint}/health_check/verbose`
       })),
       sortByVersion: true,
-      timeout
+      timeout,
+      headers: {
+        'User-Agent':
+          'Axios - @audius/sdk - ServiceProvider.ts#getSelectableCreatorNodes'
+      }
     })
 
     const services: { [id: string]: any } = {}

@@ -10,6 +10,7 @@ import SocialFeatureFactoryABI from '../../data-contracts/ABIs/SocialFeatureFact
 import PlaylistFactoryABI from '../../data-contracts/ABIs/PlaylistFactory.json'
 import UserLibraryFactoryABI from '../../data-contracts/ABIs/UserLibraryFactory.json'
 import UserReplicaSetManagerABI from '../../data-contracts/ABIs/UserReplicaSetManager.json'
+import EntityManagerABI from '../../data-contracts/ABIs/EntityManager.json'
 
 const abiMap: Record<string, AbiItem[]> = {}
 
@@ -21,7 +22,8 @@ const abiMap: Record<string, AbiItem[]> = {}
   SocialFeatureFactoryABI,
   PlaylistFactoryABI,
   UserLibraryFactoryABI,
-  UserReplicaSetManagerABI
+  UserReplicaSetManagerABI,
+  EntityManagerABI
 ].forEach(({ contractName, abi }) => {
   abiDecoder.addABI(abi as AbiItem[])
   abiMap[contractName] = abi as AbiItem[]
@@ -39,7 +41,7 @@ export class AudiusABIDecoder {
     // namespace of functions)
     const abi = abiMap[contractName]
     if (!abi) {
-      throw new Error('Unrecognized contract name')
+      throw new Error(`Unrecognized contract name ${contractName}`)
     }
 
     let foundFunction: AbiItem | undefined

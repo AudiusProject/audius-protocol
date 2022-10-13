@@ -6,7 +6,7 @@ from redis import Redis
 from sqlalchemy import desc, func
 from src import exceptions
 from src.models.social.play import Play
-from src.queries.query_helpers import get_sum_aggregate_plays, get_track_play_counts
+from src.queries.sol_play_helpers import get_sum_aggregate_plays, get_track_play_counts
 from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
 from src.utils import helpers
 from src.utils.cache_solana_program import (

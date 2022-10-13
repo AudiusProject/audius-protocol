@@ -37,6 +37,7 @@ const notificationTypes = Object.freeze({
   Reaction: 'Reaction',
   SupporterRankUp: 'SupporterRankUp',
   SupportingRankUp: 'SupportingRankUp',
+  SupporterDethroned: 'SupporterDethroned',
   AddTrackToPlaylist: 'AddTrackToPlaylist'
 })
 

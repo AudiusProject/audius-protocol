@@ -1,3 +1,6 @@
+const path = require('path')
+const { isEmpty } = require('lodash')
+
 const { logger } = require('./logging')
 const models = require('./models')
 const sequelize = models.sequelize
@@ -59,14 +62,12 @@ class DBManager {
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
    * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
-   * @param {?Transaction} externalTransaction sequelize transaction object
    */
-  static async deleteAllCNodeUserDataFromDB(
-    { lookupCNodeUserUUID, lookupWallet },
-    externalTransaction = null
-  ) {
-    const transaction =
-      externalTransaction || (await models.sequelize.transaction())
+  static async deleteAllCNodeUserDataFromDB({
+    lookupCNodeUserUUID,
+    lookupWallet
+  }) {
+    const transaction = await models.sequelize.transaction()
     const log = (msg) =>
       logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
@@ -154,7 +155,7 @@ class DBManager {
       if (error) {
         await transaction.rollback()
         log(`rolling back transaction due to error ${error}`)
-      } else if (!externalTransaction) {
+      } else {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
         log(`commited internal transaction`)
@@ -162,13 +163,48 @@ class DBManager {
 
       log(`completed in ${Date.now() - start}ms`)
     }
+
+    return error
+  }
+
+  /**
+   * Gets a user's files that only they have (Files table storagePath column), with pagination.
+   * Ignores any file that has 1 or more entries from another user.
+   * @param {string} cnodeUserUUID the UUID of the user to fetch file paths for
+   * @param {string} prevStoragePath pagination token (where storagePath > prevStoragePath)
+   * @param {number} batchSize the pagination size (number of file paths to return)
+   * @returns {string[]} user's storagePaths from db
+   */
+  static async getCNodeUserFilesFromDb(
+    cnodeUserUUID,
+    prevStoragePath,
+    batchSize
+  ) {
+    const files = (
+      await models.File.findAll({
+        attributes: ['storagePath'],
+        where: {
+          [sequelize.Op.and]: [
+            sequelize.literal(`"multihash" IN
+          (SELECT "multihash" FROM "Files" WHERE "cnodeUserUUID" = '${cnodeUserUUID}' AND "storagePath" > '${prevStoragePath}')`)
+          ]
+        },
+        group: 'storagePath',
+        having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`),
+        order: [['storagePath', 'ASC']],
+        limit: batchSize
+      })
+    ).map((result) => result.dataValues)
+
+    if (isEmpty(files)) return []
+    return files.map((file) => path.normalize(file.storagePath))
   }
 
   /**
    * Deletes all session tokens matching an Array of SessionTokens.
    *
    * @param {Array} sessionTokens from the SessionTokens table
-   * @param {Transaction} externalTransaction
+   * @param {Transaction=} externalTransaction
    */
   static async deleteSessionTokensFromDB(sessionTokens, externalTransaction) {
     const transaction =

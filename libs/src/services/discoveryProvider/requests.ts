@@ -241,6 +241,19 @@ export const getPlaylists = (
   }
 }
 
+export const getFullPlaylist = (
+  encodedPlaylistId: string,
+  encodedUserId: string
+) => {
+  return {
+    endpoint: 'v1/full/playlists',
+    urlParams: '/' + encodedPlaylistId,
+    queryParams: {
+      user_id: encodedUserId
+    }
+  }
+}
+
 export const getSocialFeed = (
   filter: string,
   limit = 100,
@@ -563,6 +576,21 @@ export const getMostLovedTracks = (
   }
 }
 
+export const getFeelingLuckyTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/feeling_lucky`,
+    queryParams: {
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
 export const getTopFolloweeSaves = (
   type: string,
   limit: string,
@@ -687,5 +715,12 @@ export const verifyToken = (token: string) => {
     queryParams: {
       token: token
     }
+  }
+}
+
+export const getUserReplicaSet = (encodedUserId: string) => {
+  return {
+    endpoint: `/v1/full/users/${encodedUserId}/replica_set`,
+    timeout: 5000
   }
 }

@@ -1,3 +1,5 @@
+import { initializeApp } from '../../src/app'
+import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
@@ -7,9 +9,8 @@ const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
-const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
-async function getApp(
+export async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
@@ -49,12 +50,12 @@ async function getApp(
   // If one needs to set mock settings, pass in a callback to set it before initializing app
   if (setMockFn) setMockFn()
 
-  const appInfo = require('../../src/app')(8000, mockServiceRegistry)
+  const appInfo = initializeApp(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry
   return appInfo
 }
 
-function getServiceRegistryMock(libsClient, blacklistManager) {
+export function getServiceRegistryMock(libsClient, blacklistManager) {
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
@@ -67,7 +68,7 @@ function getServiceRegistryMock(libsClient, blacklistManager) {
   }
 }
 
-function clearRequireCache() {
+export function clearRequireCache() {
   console.log('DELETING CACHE')
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool

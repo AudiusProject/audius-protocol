@@ -1,10 +1,16 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 
-const { logger } = require('../../logging')
-const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
+const { clusterUtils } = require('../../utils')
+const { instrumentTracing, tracing } = require('../../tracer')
+const {
+  logger,
+  logInfoWithDuration,
+  logErrorWithDuration,
+  getStartTime
+} = require('../../logging')
+const { secondarySyncFromPrimary } = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
-const LOCK_DURATION = 1000 * 60 * 30 // 30 minutes
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -21,19 +27,15 @@ class SyncQueue {
     this.redis = redis
     this.serviceRegistry = serviceRegistry
 
-    this.queue = new Bull('sync-processing-queue', {
-      redis: {
-        host: this.nodeConfig.get('redisHost'),
-        port: this.nodeConfig.get('redisPort')
-      },
+    const connection = {
+      host: nodeConfig.get('redisHost'),
+      port: nodeConfig.get('redisPort')
+    }
+    this.queue = new Queue('sync-processing-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
-      },
-      settings: {
-        lockDuration: LOCK_DURATION,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
       }
     })
 
@@ -45,36 +47,103 @@ class SyncQueue {
      *
      * @dev TODO - consider recording failures in redis
      */
-    const jobProcessorConcurrency = this.nodeConfig.get(
-      'syncQueueMaxConcurrency'
-    )
-    this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
+    const worker = new Worker(
+      'sync-processing-queue',
+      async (job) => {
+        const { parentSpanContext } = job.data
+        const untracedProcessTask = this.processTask
+        const processTask = instrumentTracing({
+          name: 'syncQueue.process',
+          fn: untracedProcessTask,
+          options: {
+            links: parentSpanContext
+              ? [
+                  {
+                    context: parentSpanContext
+                  }
+                ]
+              : [],
+            attributes: {
+              [tracing.CODE_FILEPATH]: __filename
+            }
+          }
+        })
 
-      let result = {}
-      try {
-        result = await secondarySyncFromPrimary(
-          this.serviceRegistry,
-          walletPublicKeys,
-          creatorNodeEndpoint,
-          null, // blockNumber
-          forceResync
+        // `processTask()` on longer has access to `this` after going through the tracing wrapper
+        // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
+        job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
+        return await processTask(job)
+      },
+      {
+        connection,
+        concurrency: clusterUtils.getConcurrencyPerWorker(
+          this.nodeConfig.get('syncQueueMaxConcurrency')
         )
-      } catch (e) {
-        logger.error(
-          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
-          e.message
-        )
-        result = { error: e.message }
       }
-
-      return result
-    })
+    )
+    const prometheusRegistry = serviceRegistry?.prometheusRegistry
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
+    }
   }
 
-  async enqueueSync({ walletPublicKeys, creatorNodeEndpoint, forceResync }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, forceResync }
-    const job = await this.queue.add(jobProps)
+  async processTask(job) {
+    const {
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      forceWipe,
+      blockNumber,
+      logContext,
+      serviceRegistry
+    } = job.data
+
+    let result = {}
+    const startTime = getStartTime()
+    try {
+      result = await secondarySyncFromPrimary({
+        serviceRegistry,
+        wallet,
+        creatorNodeEndpoint,
+        blockNumber,
+        forceResyncConfig,
+        forceWipe,
+        logContext
+      })
+      logInfoWithDuration(
+        { logger, startTime },
+        `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+      )
+    } catch (e) {
+      tracing.recordException(e)
+      logErrorWithDuration(
+        { logger, startTime },
+        `syncQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
+      )
+      result = { error: e.message }
+    }
+
+    return result
+  }
+
+  async enqueueSync({
+    wallet,
+    creatorNodeEndpoint,
+    blockNumber,
+    forceResyncConfig,
+    forceWipe,
+    logContext,
+    parentSpanContext
+  }) {
+    const job = await this.queue.add('process-sync', {
+      wallet,
+      creatorNodeEndpoint,
+      blockNumber,
+      forceResyncConfig,
+      forceWipe,
+      logContext,
+      parentSpanContext
+    })
     return job
   }
 }

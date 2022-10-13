@@ -1,5 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
-const { Transaction } = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx')
 
 const models = require('../models')
 const config = require('../config')
@@ -20,16 +20,19 @@ const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
-async function delay (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+async function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 const generateWalletLockKey = (publicKey) => `POA_RELAYER_WALLET:${publicKey}`
 
-async function getGasPrice (logger, web3) {
+async function getGasPrice(logger, web3) {
   let gasPrice = parseInt(await web3.eth.getGasPrice())
   if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
-    logger.info('txRelay - gas price was not defined or was greater than HIGH_GAS_PRICE', gasPrice)
+    logger.info(
+      'txRelay - gas price was not defined or was greater than HIGH_GAS_PRICE',
+      gasPrice
+    )
     gasPrice = GANACHE_GAS_PRICE
   } else if (gasPrice === 0) {
     logger.info('txRelay - gas price was zero', gasPrice)
@@ -45,13 +48,25 @@ async function getGasPrice (logger, web3) {
 }
 
 /** Attempt to send transaction to primary web3 provider, if that fails try secondary */
-const sendTransaction = async (req, resetNonce = false, txProps, reqBodySHA) => {
+const sendTransaction = async (
+  req,
+  resetNonce = false,
+  txProps,
+  reqBodySHA
+) => {
   let resp = null
   try {
     resp = await sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA)
   } catch (e) {
-    req.logger.error(`txRelay - sendTransaction Error - ${e}. Retrying with secondary web3.`)
-    resp = await sendTransactionInternal(req, secondaryWeb3, txProps, reqBodySHA)
+    req.logger.error(
+      `txRelay - sendTransaction Error - ${e}. Retrying with secondary web3.`
+    )
+    resp = await sendTransactionInternal(
+      req,
+      secondaryWeb3,
+      txProps,
+      reqBodySHA
+    )
   }
   return resp
 }
@@ -83,7 +98,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     return existingTx.receipt
   }
 
-  const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
+  const contractName =
+    contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
   // will be set later. necessary for code outside scope of try block
@@ -98,8 +114,18 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   }
 
   try {
-    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`)
-    const { receipt, txParams } = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, req.logger, gasLimit, encodedABI)
+    req.logger.info(
+      `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
+    )
+    const { receipt, txParams } = await createAndSendTransaction(
+      wallet,
+      contractAddress,
+      '0x00',
+      web3,
+      req.logger,
+      gasLimit,
+      encodedABI
+    )
     txReceipt = receipt
 
     redisLogParams = {
@@ -109,14 +135,37 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       senderAddress,
       nonce: txParams.nonce
     }
-    await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
-    req.logger.info(`L2 - txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(txParams.gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${txParams.nonce}`)
+    await redis.zadd(
+      'relayTxAttempts',
+      Math.floor(Date.now() / 1000),
+      JSON.stringify(redisLogParams)
+    )
+    req.logger.info(
+      `L2 - txRelay - sending a transaction for wallet ${
+        wallet.publicKey
+      } to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(
+        txParams.gasPrice,
+        16
+      )}, gasLimit ${gasLimit}, nonce ${txParams.nonce}`
+    )
 
-    await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
-    await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
+    await redis.zadd(
+      'relayTxSuccesses',
+      Math.floor(Date.now() / 1000),
+      JSON.stringify(redisLogParams)
+    )
+    await redis.hset(
+      'txHashToSenderAddress',
+      receipt.transactionHash,
+      senderAddress
+    )
   } catch (e) {
     req.logger.error('L2 - txRelay - Error in relay', e)
-    await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
+    await redis.zadd(
+      'relayTxFailures',
+      Math.floor(Date.now() / 1000),
+      JSON.stringify(redisLogParams)
+    )
     throw e
   } finally {
     await Lock.clearLock(generateWalletLockKey(wallet.publicKey))
@@ -164,21 +213,40 @@ const selectWallet = async () => {
  * Fund L2 wallets as necessary to facilitate multiple relayers
  */
 const fundRelayerIfEmpty = async () => {
-  const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  const minimumBalance = primaryWeb3.utils.toWei(
+    config.get('minimumBalance').toString(),
+    'ether'
+  )
 
-  for (let wallet of relayerWallets) {
+  for (const wallet of relayerWallets) {
     let balance = await primaryWeb3.eth.getBalance(wallet.publicKey)
-    logger.info('L2 - Attempting to fund wallet', wallet.publicKey, parseInt(balance))
+    logger.info(
+      'L2 - Attempting to fund wallet',
+      wallet.publicKey,
+      parseInt(balance)
+    )
 
     if (parseInt(balance) < minimumBalance) {
-      logger.info(`L2 - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
+      logger.info(
+        `L2 - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`
+      )
       if (ENVIRONMENT === 'development') {
         const account = (await primaryWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
-        logger.info(`L2 - transferring funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
-        await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
+        logger.info(
+          `L2 - transferring funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`
+        )
+        await primaryWeb3.eth.sendTransaction({
+          from: account,
+          to: wallet.publicKey,
+          value: minimumBalance
+        })
       } else {
         logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
-        logger.info(`L2 - transferring funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
+        logger.info(
+          `L2 - transferring funds [${minimumBalance}] from ${config.get(
+            'relayerPublicKey'
+          )} to wallet ${wallet.publicKey}`
+        )
         const { receipt } = await createAndSendTransaction(
           {
             publicKey: config.get('relayerPublicKey'),
@@ -193,13 +261,26 @@ const fundRelayerIfEmpty = async () => {
       }
 
       balance = await getRelayerFunds(wallet.publicKey)
-      logger.info('L2 - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
+      logger.info(
+        'L2 - Balance of relay account:',
+        wallet.publicKey,
+        primaryWeb3.utils.fromWei(balance.toString(), 'ether'),
+        'eth'
+      )
     }
   }
 }
 
 // Send transaction using provided web3 object
-const createAndSendTransaction = async (sender, receiverAddress, value, web3, logger, gasLimit = null, data = null) => {
+const createAndSendTransaction = async (
+  sender,
+  receiverAddress,
+  value,
+  web3,
+  logger,
+  gasLimit = null,
+  data = null
+) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
@@ -222,10 +303,17 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
     txParams = { ...txParams, data }
   }
 
-  const tx = new Transaction(txParams)
+  const tx = new EthereumTx(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
-  console.log(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
+  console.log(
+    `txRelay - sending a transaction for sender ${
+      sender.publicKey
+    } to ${receiverAddress}, gasPrice ${parseInt(
+      gasPrice,
+      16
+    )}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`
+  )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
   return { receipt, txParams }
 }

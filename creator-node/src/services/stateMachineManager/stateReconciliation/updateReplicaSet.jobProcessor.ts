@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
+import { METRIC_NAMES } from '../../../services/prometheusMonitoring/prometheus.constants'
 import {
   getCachedHealthyNodes,
   cacheHealthyNodes
@@ -11,6 +12,14 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
+import { makeHistogramToRecord } from '../stateMachineUtils'
+import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
+import { stringifyMap } from '../../../utils'
+import {
+  getMapOfCNodeEndpointToSpId,
+  getMapOfSpIdToChainInfo
+} from '../../ContentNodeInfoManager'
+import { instrumentTracing, tracing } from '../../../tracer'
 
 const _ = require('lodash')
 
@@ -23,13 +32,14 @@ const {
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
   : null
+
+const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
@@ -45,7 +55,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
-module.exports = async function ({
+const updateReplicaSetJobProcessor = async function ({
   logger,
   wallet,
   userId,
@@ -58,37 +68,6 @@ module.exports = async function ({
 }: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
   DecoratedJobReturnValue<UpdateReplicaSetJobReturnValue>
 > {
-  /**
-   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-   * There will be an explicit clock value check on the newly selected replica set nodes instead.
-   */
-  let audiusLibs = null
-  let healthyNodes = []
-  healthyNodes = await getCachedHealthyNodes()
-  if (healthyNodes.length === 0) {
-    audiusLibs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: true,
-      enableDiscovery: false,
-      enableIdentity: true,
-      logger
-    })
-    const { services: healthyServicesMap } =
-      await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false,
-        whitelist: reconfigNodeWhitelist,
-        log: true
-      })
-    healthyNodes = Object.keys(healthyServicesMap || {})
-    if (healthyNodes.length === 0)
-      throw new Error(
-        'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-      )
-    await cacheHealthyNodes(healthyNodes)
-  }
-
   let errorMsg = ''
   let issuedReconfig = false
   let syncJobsToEnqueue: IssueSyncRequestJobParams[] = []
@@ -99,6 +78,109 @@ module.exports = async function ({
     issueReconfig: false,
     reconfigType: null
   }
+  let result: UpdateReplicaSetJobResult
+
+  const startTimeMs = Date.now()
+
+  /**
+   * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+   * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+   * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+   * There will be an explicit clock value check on the newly selected replica set nodes instead.
+   */
+  let audiusLibs = null
+  let healthyNodes = []
+  healthyNodes = await getCachedHealthyNodes()
+  if (healthyNodes.length === 0) {
+    try {
+      tracing.info('init AudiusLibs')
+      audiusLibs = await initAudiusLibs({
+        enableEthContracts: true,
+        enableContracts: true,
+        enableDiscovery: true,
+        enableIdentity: true,
+        logger
+      })
+    } catch (e: any) {
+      tracing.recordException(e)
+      result = UpdateReplicaSetJobResult.FailureInitAudiusLibs
+      errorMsg = `Error initting libs and auto-selecting creator nodes: ${e.message}: ${e.stack}`
+      logger.error(`ERROR ${errorMsg} - ${(e as Error).message}`)
+
+      return {
+        errorMsg,
+        issuedReconfig,
+        newReplicaSet,
+        healthyNodes,
+        metricsToRecord: [
+          makeHistogramToRecord(
+            METRIC_NAMES[
+              `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+            ],
+            (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+            {
+              issuedReconfig: issuedReconfig?.toString() || 'false',
+              reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
+              result
+            }
+          )
+        ]
+      }
+    }
+
+    try {
+      const spInfoMap = await getMapOfSpIdToChainInfo(logger)
+
+      const reconfigNodeBlacklist = new Set()
+      RECONFIG_SP_IDS_BLACKLIST.forEach((spId) => {
+        const info = spInfoMap.get(spId)
+        if (info?.endpoint) {
+          reconfigNodeBlacklist.add(info.endpoint)
+        }
+      })
+
+      const { services: healthyServicesMap } =
+        await audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false,
+          whitelist: reconfigNodeWhitelist,
+          blacklist: reconfigNodeBlacklist,
+          log: true
+        })
+
+      healthyNodes = Object.keys(healthyServicesMap || {})
+      if (healthyNodes.length === 0) {
+        throw new Error(
+          'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+        )
+      }
+      await cacheHealthyNodes(healthyNodes)
+    } catch (e: any) {
+      tracing.recordException(e)
+      result = UpdateReplicaSetJobResult.FailureFindHealthyNodes
+      errorMsg = `Error finding healthy nodes to select - ${e.message}: ${e.stack}`
+
+      return {
+        errorMsg,
+        issuedReconfig,
+        newReplicaSet,
+        healthyNodes,
+        metricsToRecord: [
+          makeHistogramToRecord(
+            METRIC_NAMES[
+              `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+            ],
+            (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+            {
+              issuedReconfig: issuedReconfig?.toString() || 'false',
+              reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null'),
+              result
+            }
+          )
+        ]
+      }
+    }
+  }
+
   try {
     newReplicaSet = await _determineNewReplicaSet({
       logger,
@@ -111,20 +193,36 @@ module.exports = async function ({
       replicaToUserInfoMap,
       enabledReconfigModes
     })
-    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
-      await _issueUpdateReplicaSetOp(
-        userId,
-        wallet,
-        primary,
-        secondary1,
-        secondary2,
-        newReplicaSet,
-        audiusLibs,
-        logger
-      ))
+
+    try {
+      ;({ errorMsg, issuedReconfig, syncJobsToEnqueue, result } =
+        await _issueUpdateReplicaSetOp(
+          userId,
+          wallet,
+          primary,
+          secondary1,
+          secondary2,
+          newReplicaSet,
+          audiusLibs,
+          logger
+        ))
+    } catch (e: any) {
+      tracing.recordException(e)
+      result = UpdateReplicaSetJobResult.FailureIssueUpdateReplicaSet
+      logger.error(
+        `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+          e.stack
+        }`
+      )
+      errorMsg = e.toString()
+    }
   } catch (e: any) {
+    tracing.recordException(e)
+    result = UpdateReplicaSetJobResult.FailureDetermineNewReplicaSet
     logger.error(
-      `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
+      `ERROR determining new replica set: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}: ${
+        e.stack
+      }`
     )
     errorMsg = e.toString()
   }
@@ -134,6 +232,19 @@ module.exports = async function ({
     issuedReconfig,
     newReplicaSet,
     healthyNodes,
+    metricsToRecord: [
+      makeHistogramToRecord(
+        METRIC_NAMES[
+          `STATE_MACHINE_${QUEUE_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+        ],
+        (Date.now() - startTimeMs) / 1000, // Metric is in seconds
+        {
+          result: result || UpdateReplicaSetJobResult.Success,
+          issuedReconfig: issuedReconfig?.toString() || 'false',
+          reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
+        }
+      )
+    ],
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
           [QUEUE_NAMES.RECURRING_SYNC]: syncJobsToEnqueue
@@ -201,17 +312,23 @@ const _determineNewReplicaSet = async ({
 }: DetermineNewReplicaSetParams) => {
   const currentReplicaSet = [primary, secondary1, secondary2]
   const healthyReplicaSet = new Set(
-    currentReplicaSet.filter((node) => !unhealthyReplicasSet.has(node))
+    currentReplicaSet
+      // Ensure exists
+      .filter((node) => Boolean)
+      // Node is not marked unhealthy
+      .filter((node) => !unhealthyReplicasSet.has(node))
   )
+  const numberOfEmptyReplicas = currentReplicaSet.filter((node) => !node).length
   const newReplicaNodes = await _selectRandomReplicaSetNodes(
     healthyReplicaSet,
     unhealthyReplicasSet,
+    numberOfEmptyReplicas,
     healthyNodes,
     wallet,
     logger
   )
 
-  if (unhealthyReplicasSet.size === 1) {
+  if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 1) {
     return _determineNewReplicaSetWhenOneNodeIsUnhealthy(
       primary,
       secondary1,
@@ -221,7 +338,7 @@ const _determineNewReplicaSet = async ({
       newReplicaNodes[0],
       enabledReconfigModes
     )
-  } else if (unhealthyReplicasSet.size === 2) {
+  } else if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 2) {
     return _determineNewReplicaSetWhenTwoNodesAreUnhealthy(
       primary,
       secondary1,
@@ -263,7 +380,7 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
 ) => {
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
-  if (unhealthyReplicasSet.has(primary)) {
+  if (unhealthyReplicasSet.has(primary) || !primary) {
     const secondary1Clock = replicaToUserInfoMap[secondary1]?.clock || -1
     const secondary2Clock = replicaToUserInfoMap[secondary2]?.clock || -1
     const [newPrimary, currentHealthySecondary] =
@@ -283,9 +400,10 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   }
 
   // If one secondary is unhealthy, select a new secondary
-  const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1)
-    ? secondary1
-    : secondary2
+  const currentHealthySecondary =
+    unhealthyReplicasSet.has(secondary1) || !secondary1
+      ? secondary2
+      : secondary1
   return {
     newPrimary: primary,
     newSecondary1: currentHealthySecondary,
@@ -316,7 +434,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
   enabledReconfigModes: string[]
 ) => {
   // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
-  if (unhealthyReplicasSet.has(primary)) {
+  if (unhealthyReplicasSet.has(primary) || !primary) {
     return {
       newPrimary: !unhealthyReplicasSet.has(secondary1)
         ? secondary1
@@ -350,6 +468,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
  * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
  * @param {Set<string>} unhealthyReplicasSet a set of the unhealthy replica set endpoints
+ * @param {number} numberOfEmptyReplicas the number of the user's replicas that are an empty string (deregistered SP ID)
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
  * @param {Object} logger a logger that can be filtered on jobName and jobId
@@ -358,6 +477,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
 const _selectRandomReplicaSetNodes = async (
   healthyReplicaSet: Set<string>,
   unhealthyReplicasSet: Set<string>,
+  numberOfEmptyReplicas: number,
   healthyNodes: string[],
   wallet: string,
   logger: Logger
@@ -365,24 +485,26 @@ const _selectRandomReplicaSetNodes = async (
   const numberOfUnhealthyReplicas = unhealthyReplicasSet.size
   const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
-  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} healthyNodes=${[
+  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberOfEmptyReplicas=${numberOfEmptyReplicas} healthyNodes=${[
     ...healthyNodes
   ]} ||`
 
   const newReplicaNodesSet = new Set<string>()
+
+  const viablePotentialReplicas = healthyNodes.filter(
+    (node) => !healthyReplicaSet.has(node)
+  )
+
   let selectNewReplicaSetAttemptCounter = 0
   while (
-    newReplicaNodesSet.size < numberOfUnhealthyReplicas &&
+    newReplicaNodesSet.size <
+      numberOfUnhealthyReplicas + numberOfEmptyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
-    const randomHealthyNode = _.sample(healthyNodes)
+    const randomHealthyNode = _.sample(viablePotentialReplicas)
 
     // If node is already present in new replica set or is part of the existing replica set, keep finding a unique healthy node
-    if (
-      newReplicaNodesSet.has(randomHealthyNode) ||
-      healthyReplicaSet.has(randomHealthyNode)
-    )
-      continue
+    if (newReplicaNodesSet.has(randomHealthyNode)) continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
     if (unhealthyReplicasSet.has(randomHealthyNode)) {
@@ -406,11 +528,16 @@ const _selectRandomReplicaSetNodes = async (
       }
     } catch (e: any) {
       // Something went wrong in checking clock value. Reselect another secondary.
-      logger.error(`${logStr} ${e.message}`)
+      logger.error(
+        `${logStr} randomHealthyNode=${randomHealthyNode} ${e.message}`
+      )
     }
   }
 
-  if (newReplicaNodesSet.size < numberOfUnhealthyReplicas) {
+  if (
+    newReplicaNodesSet.size <
+    numberOfUnhealthyReplicas + numberOfEmptyReplicas
+  ) {
     throw new Error(
       `${logStr} Not enough healthy nodes found to issue new replica set after ${MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS} attempts`
     )
@@ -420,6 +547,7 @@ const _selectRandomReplicaSetNodes = async (
 }
 
 type IssueUpdateReplicaSetResult = {
+  result: UpdateReplicaSetJobResult
   errorMsg: string
   issuedReconfig: boolean
   syncJobsToEnqueue: IssueSyncRequestJobParams[]
@@ -447,6 +575,7 @@ const _issueUpdateReplicaSetOp = async (
   logger: Logger
 ): Promise<IssueUpdateReplicaSetResult> => {
   const response: IssueUpdateReplicaSetResult = {
+    result: UpdateReplicaSetJobResult.Success,
     errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
@@ -473,28 +602,56 @@ const _issueUpdateReplicaSetOp = async (
       )}`
     )
 
-    if (!issueReconfig) return response
+    if (newReplicaSetEndpoints.length !== 3) {
+      const errorMsg = `Tried to reconfig to an incomplete replica set: ${JSON.stringify(
+        newReplicaSetEndpoints
+      )}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
+    }
+
+    if (!issueReconfig) {
+      response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
+      return response
+    }
+    /**
+     * TODO: Remove this after rollout. This is an extra gating condition that only applies to primary reconfigs:
+     * ONLY issue reconfigs of primaries when the cause of the reconfig is that the primary endpoint was deregistered or changed.
+     */
+    const primaryExistsOnChain = await getMapOfCNodeEndpointToSpId(
+      logger
+    ).hasOwnProperty(primary)
+    const isPrimaryReconfig =
+      reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
+    const shouldSkipPrimaryReconfig = isPrimaryReconfig && primaryExistsOnChain
+    if (shouldSkipPrimaryReconfig) {
+      response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
+      return response
+    }
+
+    const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
     // Create new array of replica set spIds and write to URSM
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
-      if (!CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]) {
-        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
-          CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
+      const spIdFromChain = cNodeEndpointToSpIdMap.get(endpt)
+      if (spIdFromChain === undefined) {
+        response.result = UpdateReplicaSetJobResult.FailureNoValidSP
+        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${stringifyMap(
+          cNodeEndpointToSpIdMap
         )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
         return response
       }
-      newReplicaSetSPIds.push(
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]
-      )
+      newReplicaSetSPIds.push(spIdFromChain)
     }
 
     // Submit chain tx to update replica set
     const startTimeMs = Date.now()
     try {
       if (!audiusLibs) {
+        tracing.info('init AudiusLibs')
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,
@@ -503,27 +660,112 @@ const _issueUpdateReplicaSetOp = async (
           logger
         })
       }
-      await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
-        userId,
-        newReplicaSetSPIds[0], // primary
-        newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
+    } catch (e: any) {
+      throw new Error(
+        `[_issueUpdateReplicaSetOp] Could not initialize libs ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
       )
-      const timeElapsedMs = Date.now() - startTimeMs
-      logger.info(
-        `[_issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
-      )
+    }
+
+    try {
+      const oldPrimarySpId = cNodeEndpointToSpIdMap.get(primary)
+      const oldSecondary1SpId = cNodeEndpointToSpIdMap.get(secondary1)
+      const oldSecondary2SpId = cNodeEndpointToSpIdMap.get(secondary2)
+
+      const { canReconfig, chainPrimarySpId, chainSecondarySpIds, error } =
+        await _canReconfig({
+          libs: audiusLibs,
+          oldPrimarySpId,
+          oldSecondary1SpId,
+          oldSecondary2SpId,
+          userId,
+          logger
+        })
+
+      if (error) {
+        response.result = error
+      }
+
+      if (!canReconfig) {
+        response.result = UpdateReplicaSetJobResult.SkipUpdateReplicaSet
+        logger.info(
+          `[_issueUpdateReplicaSetOp] skipping _updateReplicaSet as reconfig already occurred for userId=${userId} wallet=${wallet}`
+        )
+        return response
+      }
+
+      // First try updateReplicaSet via URSM
+      // Fallback to EntityManager when relay errors
+      try {
+        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+          userId,
+          newReplicaSetSPIds[0], // new primary
+          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+          oldPrimarySpId || chainPrimarySpId,
+          [
+            oldSecondary1SpId || chainSecondarySpIds?.[0],
+            oldSecondary2SpId || chainSecondarySpIds?.[1]
+          ]
+        )
+      } catch (err) {
+        if (!config.get('entityManagerReplicaSetEnabled')) {
+          throw err
+        }
+
+        logger.info(
+          `[_issueUpdateReplicaSetOp] updating replica set now ${
+            Date.now() - startTimeMs
+          }ms for userId=${userId} wallet=${wallet}`
+        )
+
+        const { blockNumber } =
+          await audiusLibs.User.updateEntityManagerReplicaSet({
+            userId,
+            primary: newReplicaSetSPIds[0], // new primary
+            secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+            // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
+            oldPrimary: oldPrimarySpId || chainPrimarySpId,
+            oldSecondaries: [
+              oldSecondary1SpId || chainSecondarySpIds?.[0],
+              oldSecondary2SpId || chainSecondarySpIds?.[1]
+            ]
+          })
+        logger.info(
+          `[_issueUpdateReplicaSetOp] did call audiusLibs.User.updateEntityManagerReplicaSet waiting for ${blockNumber}`
+        )
+        // Wait for blockhash/blockNumber to be indexed
+        try {
+          await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+            userId,
+            newReplicaSetSPIds,
+            blockNumber
+          )
+        } catch (err) {
+          throw new Error(
+            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
+          )
+        }
+      }
 
       response.issuedReconfig = true
+      logger.info(
+        `[_issueUpdateReplicaSetOp] _updateReplicaSet took ${
+          Date.now() - startTimeMs
+        }ms for userId=${userId} wallet=${wallet}`
+      )
     } catch (e: any) {
-      const timeElapsedMs = Date.now() - startTimeMs
       throw new Error(
-        `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms - Error ${e.message}`
+        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
+          Date.now() - startTimeMs
+        }ms - Error ${e.message}`
       )
     }
 
     // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
     const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
-      getNewOrExistingSyncReq({
+      await getNewOrExistingSyncReq({
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,
@@ -561,9 +803,10 @@ const _issueUpdateReplicaSetOp = async (
       `[_issueUpdateReplicaSetOp] Reconfig SUCCESS: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e: any) {
+    response.result = UpdateReplicaSetJobResult.FailureToUpdateReplicaSet
+
     response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig ERROR: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
-    logger.error(response.errorMsg)
-    return response
+    logger.error(`${response.errorMsg}: ${e.stack}`)
   }
 
   return response
@@ -578,4 +821,122 @@ const _issueUpdateReplicaSetOp = async (
 const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
   return enabledReconfigModes.includes(mode)
+}
+
+type CanReconfigParams = {
+  libs: any
+  oldPrimarySpId: number | undefined
+  oldSecondary1SpId: number | undefined
+  oldSecondary2SpId: number | undefined
+  userId: number
+  logger: Logger
+}
+
+type CanReconfigReturnValue = {
+  canReconfig: boolean
+  error?: UpdateReplicaSetJobResult
+  chainPrimarySpId?: number
+  chainSecondarySpIds?: number[]
+}
+
+const _canReconfig = async ({
+  libs,
+  oldPrimarySpId,
+  oldSecondary1SpId,
+  oldSecondary2SpId,
+  userId,
+  logger
+}: CanReconfigParams): Promise<CanReconfigReturnValue> => {
+  let error
+  try {
+    let chainPrimarySpId, chainSecondarySpIds
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      const encodedUserId = libs.Utils.encodeHashId(userId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId
+      })
+      chainPrimarySpId = spResponse?.primarySpID
+      chainSecondarySpIds = [
+        spResponse?.secondary1SpID,
+        spResponse?.secondary2SpID
+      ]
+    } else {
+      const response =
+        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+          userId
+        )
+      chainPrimarySpId = response.primaryId
+      chainSecondarySpIds = response.secondaryIds
+    }
+
+    if (
+      !chainPrimarySpId ||
+      !chainSecondarySpIds ||
+      chainSecondarySpIds.length < 2
+    ) {
+      error = UpdateReplicaSetJobResult.FailureGetCurrentReplicaSet
+      throw new Error(
+        `Could not get current replica set: chainPrimarySpId=${chainPrimarySpId} chainSecondarySpIds=${JSON.stringify(
+          chainSecondarySpIds || []
+        )}`
+      )
+    }
+
+    // Reconfig is necessary if endpoint doesn't exist in mapping because this means the node was deregistered
+    const isAnyNodeInReplicaSetDeregistered =
+      !oldPrimarySpId || !oldSecondary1SpId || !oldSecondary2SpId
+    if (isAnyNodeInReplicaSetDeregistered) {
+      return {
+        error,
+        canReconfig: true,
+        chainPrimarySpId,
+        chainSecondarySpIds
+      }
+    }
+
+    // Reconfig should only happen when the replica set that triggered the reconfig matches the chain
+    const isReplicaSetCurrent =
+      chainPrimarySpId === oldPrimarySpId &&
+      chainSecondarySpIds[0] === oldSecondary1SpId &&
+      chainSecondarySpIds[1] === oldSecondary2SpId
+    return {
+      error,
+      canReconfig: isReplicaSetCurrent
+    }
+  } catch (e: any) {
+    logger.error(
+      `[_issueUpdateReplicaSetOp] error in _canReconfig. : ${e.message}`
+    )
+  }
+
+  // If any error occurs in determining if a reconfig event can happen, default to issuing
+  // a reconfig event anyway just to prevent users from keeping an unhealthy replica set
+  return {
+    error,
+    canReconfig: true
+  }
+}
+
+module.exports = async (
+  params: DecoratedJobParams<UpdateReplicaSetJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'updateReplicaSet.jobProcessor',
+    fn: updateReplicaSetJobProcessor,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

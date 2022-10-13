@@ -16,6 +16,7 @@ playlist_artwork = ns.model(
 playlist_added_timestamp = ns.model(
     "playlist_added_timestamp",
     {
+        "metadata_timestamp": fields.Integer(required=True),
         "timestamp": fields.Integer(required=True),
         "track_id": fields.String(required=True),
     },

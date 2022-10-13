@@ -34,7 +34,8 @@ def test_track_remix_notification(app):
         notifications: List[Notification] = session.query(Notification).all()
         assert len(notifications) == 1
         notification = notifications[0]
-        assert notification.specifier == "remix:100:parent_track:20:blocknumber:1"
+        assert notification.specifier == "2"
+        assert notification.group_id == "remix:track:100:parent_track:20:blocknumber:1"
         assert notification.notification_group_id == None
         assert notification.type == "remix"
         assert notification.slot == None

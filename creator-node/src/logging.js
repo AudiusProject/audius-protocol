@@ -1,4 +1,5 @@
 const bunyan = require('bunyan')
+const cluster = require('cluster')
 const shortid = require('shortid')
 
 const config = require('./config')
@@ -27,6 +28,7 @@ function RawStdOutWithLevelName() {
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
+  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker.id}`,
   streams: [
     {
       level: logLevel,
@@ -108,7 +110,8 @@ function createChildLogger(logger, options = {}) {
 
 /**
  * Pulls the start time of the req object to calculate the duration of the fn
- * @param {number} startTime the start time
+ * @param {Object} param
+ * @param {number} param.startTime the start time
  * @returns the duration of the fn call in ms
  */
 function getDuration({ startTime }) {
@@ -127,13 +130,33 @@ function getDuration({ startTime }) {
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration({ logger, startTime }, msg) {
+function logInfoWithDuration(
+  { logger, startTime },
+  msg,
+  durationKey = 'duration'
+) {
   const durationMs = getDuration({ startTime })
 
   if (durationMs) {
-    logger.info({ duration: durationMs }, msg)
+    logger.info({ [durationKey]: durationMs }, msg)
   } else {
     logger.info(msg)
+  }
+}
+
+/**
+ * Prints the log message with the duration
+ * @param {Object} logger
+ * @param {number} startTime the start time
+ * @param {string} msg the message to print
+ */
+function logErrorWithDuration({ logger, startTime }, msg) {
+  const durationMs = getDuration({ startTime })
+
+  if (durationMs) {
+    logger.error({ duration: durationMs }, msg)
+  } else {
+    logger.error(msg)
   }
 }
 
@@ -145,5 +168,6 @@ module.exports = {
   getStartTime,
   getDuration,
   createChildLogger,
-  logInfoWithDuration
+  logInfoWithDuration,
+  logErrorWithDuration
 }

@@ -1,14 +1,19 @@
-import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import solanaWeb3, {
+  Connection,
+  Keypair,
+  PublicKey,
+  LAMPORTS_PER_SOL
+} from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
-import anchor, { Address, Idl, Program } from '@project-serum/anchor'
+import anchor, { Address, Idl, Program, Wallet } from '@project-serum/anchor'
 import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import {
   createAssociatedTokenAccount,
-  getAssociatedTokenAccountInfo,
+  getTokenAccountInfo,
   findAssociatedTokenAddress
 } from './tokenAccount'
 import { wAudioFromWeiAudio } from './wAudio'
@@ -166,7 +171,7 @@ export class SolanaWeb3Manager {
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
+    this.connection = new Connection(this.solanaClusterEndpoint, {
       confirmTransactionInitialTimeout:
         confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
     })
@@ -230,14 +235,13 @@ export class SolanaWeb3Manager {
       this.audiusDataAdminStorageKeypairPublicKey &&
       this.audiusDataIdl
     ) {
-      const connection = new solanaWeb3.Connection(
+      const connection = new Connection(
         this.solanaClusterEndpoint,
         anchor.AnchorProvider.defaultOptions()
       )
       const anchorProvider = new anchor.AnchorProvider(
         connection,
-        // @ts-expect-error weirdness with 3rd party types
-        solanaWeb3.Keypair.generate(),
+        Keypair.generate() as unknown as Wallet,
         anchor.AnchorProvider.defaultOptions()
       )
       this.anchorProgram = new anchor.Program(
@@ -299,9 +303,9 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from the current we3 provider's eth address
+   * Gets a solana bank account from the current web3 provider's eth address
    */
-  async getUserBank() {
+  async deriveUserBank() {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -317,12 +321,12 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the info for a user bank/wAudio token account given a solana address.
-   * If the solanaAddress is not a valid token account, returns `null`
+   * Gets the info for a user bank/wAudio token account given a spl-token address.
+   * If the address is not a valid token account, returns `null`
    */
-  async getAssociatedTokenAccountInfo(solanaAddress: string) {
+  async getTokenAccountInfo(solanaAddress: string) {
     try {
-      const res = await getAssociatedTokenAccountInfo({
+      const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
         mintKey: this.mintKey,
         solanaTokenProgramKey: this.solanaTokenKey,
@@ -339,7 +343,7 @@ export class SolanaWeb3Manager {
    */
   async getWAudioBalance(solanaAddress: string) {
     try {
-      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+      let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
 
       // If the token account doesn't exist, check if solanaAddress is a root account
       // if so, derive the associated token account & check that balance
@@ -347,7 +351,7 @@ export class SolanaWeb3Manager {
         const associatedTokenAccount = await this.findAssociatedTokenAddress(
           solanaAddress
         )
-        tokenAccount = await this.getAssociatedTokenAccountInfo(
+        tokenAccount = await this.getTokenAccountInfo(
           associatedTokenAccount.toString()
         )
         if (!tokenAccount) {
@@ -386,7 +390,7 @@ export class SolanaWeb3Manager {
     }
 
     // Check if the solana address is a token account
-    let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+    let tokenAccountInfo = await this.getTokenAccountInfo(
       recipientSolanaAddress
     )
     if (!tokenAccountInfo) {
@@ -395,7 +399,7 @@ export class SolanaWeb3Manager {
       const associatedTokenAccount = await this.findAssociatedTokenAddress(
         recipientSolanaAddress
       )
-      tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+      tokenAccountInfo = await this.getTokenAccountInfo(
         associatedTokenAccount.toString()
       )
 
@@ -542,6 +546,13 @@ export class SolanaWeb3Manager {
   }) {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
+  }
+
+  async getSolBalance(address: string) {
+    const publicKey = new PublicKey(address)
+    const balance = await this.getBalance({ publicKey })
+    const balanceBN = Utils.toBN(balance * LAMPORTS_PER_SOL)
+    return balanceBN
   }
 
   async getSlot() {

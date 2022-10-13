@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import type { Queue } from 'bullmq'
 import type {
   AnyJobParams,
   QueueNameToQueueMap,
@@ -8,7 +9,7 @@ import type {
 import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
-import { Queue } from 'bull'
+import { instrumentTracing, tracing } from '../../tracer'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
@@ -38,7 +39,7 @@ const {
  *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
  * @param {string} nameOfQueueWithCompletedJob the name of the queue that this onComplete callback is for
- * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue)
+ * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue) and max jobs that are allowed to be waiting in the queue
  * @param {Object} prometheusRegistry the registry of prometheus metrics
  * @returns a function that:
  * - takes a jobId (string) and result (string) of a job that successfully completed
@@ -47,14 +48,23 @@ const {
  * - bulk-enqueues all jobs under result[QUEUE_NAMES.STATE_RECONCILIATION] into the state reconciliation queue
  * - records metrics from result.metricsToRecord
  */
-module.exports = function (
+function makeOnCompleteCallback(
   nameOfQueueWithCompletedJob: TQUEUE_NAMES,
   queueNameToQueueMap: QueueNameToQueueMap,
   prometheusRegistry: any
 ) {
-  return async function (jobId: string, resultString: string) {
-    // Create a logger so that we can filter logs by the tag `jobId` = <id of the job that successfully completed>
-    const logger = createChildLogger(baseLogger, { jobId })
+  return async function (
+    {
+      jobId,
+      returnvalue
+    }: { jobId: string; returnvalue: string | AnyDecoratedJobReturnValue },
+    id: string
+  ) {
+    // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
+    const logger = createChildLogger(baseLogger, {
+      queue: nameOfQueueWithCompletedJob,
+      jobId
+    })
 
     // update-replica-set jobs need enabledReconfigModes as an array.
     // `this` comes from the function being bound via .bind() to ./index.js
@@ -71,8 +81,12 @@ module.exports = function (
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
     try {
-      logger.info(`Job successfully completed. Parsing result: ${resultString}`)
-      jobResult = JSON.parse(resultString) || {}
+      logger.info(`Job successfully completed. Parsing result`)
+      if (typeof returnvalue === 'string' || returnvalue instanceof String) {
+        jobResult = JSON.parse(returnvalue as string) || {}
+      } else {
+        jobResult = returnvalue || {}
+      }
     } catch (e: any) {
       logger.error(`Failed to parse job result string: ${e.message}`)
       return
@@ -85,7 +99,7 @@ module.exports = function (
       jobsToEnqueue || {}
     ) as [TQUEUE_NAMES, ParamsForJobsToEnqueue[]][]) {
       // Make sure we're working with a valid queue
-      const queue: Queue = queueNameToQueueMap[queueName]
+      const { queue, maxWaitingJobs } = queueNameToQueueMap[queueName]
       if (!queue) {
         logger.error(
           `Job returned data trying to enqueue jobs to a queue whose name isn't recognized: ${queueName}`
@@ -114,6 +128,7 @@ module.exports = function (
         queue,
         queueName,
         nameOfQueueWithCompletedJob,
+        maxWaitingJobs,
         jobId,
         logger
       )
@@ -128,6 +143,7 @@ const enqueueJobs = async (
   queueToAddTo: Queue,
   queueNameToAddTo: TQUEUE_NAMES,
   triggeredByQueueName: TQUEUE_NAMES,
+  maxWaitingJobs: number,
   triggeredByJobId: string,
   logger: Logger
 ) => {
@@ -135,11 +151,21 @@ const enqueueJobs = async (
     `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
   )
 
+  // Don't add to the queue if the queue is already backed up (i.e., it has too many waiting jobs)
+  const numWaitingJobs = await queueToAddTo.getWaitingCount()
+  if (numWaitingJobs > maxWaitingJobs) {
+    logger.warn(
+      `Queue ${queueNameToAddTo} already has ${numWaitingJobs} waiting jobs. Not adding any more jobs until ${maxWaitingJobs} or fewer jobs are waiting in this queue`
+    )
+    return
+  }
+
   // Add 'enqueuedBy' field for tracking
   try {
     const bulkAddResult = await queueToAddTo.addBulk(
       jobs.map((job) => {
         return {
+          name: 'defaultName',
           data: {
             enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
             ...job
@@ -182,6 +208,8 @@ const recordMetrics = (
         metric.observe(metricLabels, metricValue)
       } else if (metricType === METRIC_RECORD_TYPE.GAUGE_INC) {
         metric.inc(metricLabels, metricValue)
+      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_SET) {
+        metric.set(metricLabels, metricValue)
       } else {
         logger.error(`Unexpected metric type: ${metricType}`)
       }
@@ -190,3 +218,13 @@ const recordMetrics = (
     }
   }
 }
+
+module.exports = instrumentTracing({
+  name: 'onComplete bull queue callback',
+  fn: makeOnCompleteCallback,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})

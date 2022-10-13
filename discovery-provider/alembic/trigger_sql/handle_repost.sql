@@ -73,11 +73,12 @@ begin
       (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
     insert into notification
-      (user_ids, type, specifier, blocknumber, timestamp, data)
+      (user_ids, type, specifier, group_id, blocknumber, timestamp, data)
       values
       (
         ARRAY [owner_user_id],
         'milestone',
+        owner_user_id,
         'milestone:' || milestone_name  || ':id:' || new.repost_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
@@ -90,13 +91,14 @@ begin
     -- create a notification for the reposted content's owner
     if new.is_delete is false then
     insert into notification
-      (blocknumber, user_ids, timestamp, type, specifier, data)
+      (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
       values
       (
         new.blocknumber,
         ARRAY [owner_user_id],
         new.created_at,
         'repost',
+        new.user_id,
         'repost:' || new.repost_item_id || ':type:'|| new.repost_type,
         json_build_object('repost_item_id', new.repost_item_id, 'user_id', new.user_id, 'type', new.repost_type)
       )
@@ -111,13 +113,14 @@ begin
         where is_current and track_id = (track_remix_of->'tracks'->0->>'parent_track_id')::int;
       if is_remix_cosign then
         insert into notification
-          (blocknumber, user_ids, timestamp, type, specifier, data)
+          (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
           values
           (
             new.blocknumber,
             ARRAY [owner_user_id],
             new.created_at,
             'cosign',
+            new.user_id,
             'cosign:parent_track' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':original_track:'|| new.repost_item_id,
             json_build_object('parent_track_id', (track_remix_of->'tracks'->0->>'parent_track_id')::int, 'track_id', new.repost_item_id, 'track_owner_id', owner_user_id)
           )

@@ -139,17 +139,17 @@ export class Web3Manager {
    * Signs provided string data (should be timestamped).
    * @param data
    */
-  async sign(data: string) {
+  async sign(data: string | Buffer) {
     if (this.useExternalWeb3) {
       const account = this.getWalletAddress()
       if (this.isServer) {
         return await this.web3?.eth.sign(
-          this.web3.utils.fromUtf8(data),
+          this.web3.utils.fromUtf8(data as string),
           account
         )
       } else {
         return await this.web3?.eth.personal.sign(
-          this.web3.utils.fromUtf8(data),
+          this.web3.utils.fromUtf8(data as string),
           account,
           ''
         )

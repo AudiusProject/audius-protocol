@@ -1,12 +1,21 @@
 const _ = require('lodash')
+const { QueueEvents } = require('bullmq')
 
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
+const redis = require('../../redis')
+
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
-const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
+const {
+  RECONFIG_MODES,
+  QUEUE_NAMES,
+  FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
+} = require('./stateMachineConstants')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const CNodeToSpIdMapManager = require('./CNodeToSpIdMapManager')
+const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
+const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
+const { clusterUtils } = require('../../utils')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -16,10 +25,10 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    // Initialize class immediately since bull jobs are run on cadence even on deploy
-    await CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(
-      audiusLibs.ethContracts
-    )
+    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+
+    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -29,38 +38,91 @@ class StateMachineManager {
       findSyncRequestsQueue,
       findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue
-    } = await stateMonitoringManager.init(
-      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      prometheusRegistry
-    )
-    const { manualSyncQueue, recurringSyncQueue, updateReplicaSetQueue } =
-      await stateReconciliationManager.init(prometheusRegistry)
+    } = await stateMonitoringManager.init(prometheusRegistry)
+    const {
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await stateReconciliationManager.init(prometheusRegistry)
 
-    // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
-    const queueNameToQueueMap = {
-      [QUEUE_NAMES.MONITOR_STATE]: monitorStateQueue,
-      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: findSyncRequestsQueue,
-      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: findReplicaSetUpdatesQueue,
-      [QUEUE_NAMES.MANUAL_SYNC]: manualSyncQueue,
-      [QUEUE_NAMES.RECURRING_SYNC]: recurringSyncQueue,
-      [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetQueue
+    if (clusterUtils.isThisWorkerInit()) {
+      await SyncRequestDeDuplicator.clear()
     }
-    for (const [queueName, queue] of Object.entries(queueNameToQueueMap)) {
-      queue.on(
-        'global:completed',
-        makeOnCompleteCallback(
-          queueName,
-          queueNameToQueueMap,
-          prometheusRegistry
-        ).bind(this)
+    if (clusterUtils.isThisWorkerSpecial()) {
+      // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
+      const queueNameToQueueMap = {
+        [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
+          queue: cNodeEndpointToSpIdMapQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.MONITOR_STATE]: {
+          queue: monitorStateQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
+          queue: findSyncRequestsQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
+          queue: findReplicaSetUpdatesQueue,
+          maxWaitingJobs: 10
+        },
+        [QUEUE_NAMES.MANUAL_SYNC]: {
+          queue: manualSyncQueue,
+          maxWaitingJobs: 1000
+        },
+        [QUEUE_NAMES.RECURRING_SYNC]: {
+          queue: recurringSyncQueue,
+          maxWaitingJobs: 100000
+        },
+        [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
+          queue: updateReplicaSetQueue,
+          maxWaitingJobs: 10000
+        },
+        [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
+          queue: recoverOrphanedDataQueue,
+          maxWaitingJobs: 10
+        }
+      }
+      for (const queueName of Object.keys(queueNameToQueueMap)) {
+        const queueEvents = new QueueEvents(queueName, {
+          connection: {
+            host: config.get('redisHost'),
+            port: config.get('redisPort')
+          }
+        })
+        queueEvents.on(
+          'completed',
+          makeOnCompleteCallback(
+            queueName,
+            queueNameToQueueMap,
+            prometheusRegistry
+          ).bind(this)
+        )
+
+        // Update the mapping in this StateMachineManager whenever a job successfully fetches it
+        if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
+          queueEvents.on(
+            'completed',
+            this.updateMapOnMapFetchJobComplete.bind(this)
+          )
+        }
+      }
+
+      // Start recurring queues that need an initial job to get started
+      await stateMonitoringManager.startEndpointToSpIdMapQueue(
+        cNodeEndpointToSpIdMapQueue
+      )
+      await stateMonitoringManager.startMonitorStateQueue(
+        monitorStateQueue,
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint
+      )
+      await stateReconciliationManager.startRecoverOrphanedDataQueue(
+        recoverOrphanedDataQueue,
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint
       )
     }
-
-    // Update the mapping in this StateMachineManager whenever a job successfully fetches it
-    cNodeEndpointToSpIdMapQueue.on(
-      'global:completed',
-      this.updateMapOnMapFetchJobComplete.bind(this)
-    )
 
     return {
       monitorStateQueue,
@@ -69,7 +131,8 @@ class StateMachineManager {
       cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
       recurringSyncQueue,
-      updateReplicaSetQueue
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
     }
   }
 
@@ -78,16 +141,20 @@ class StateMachineManager {
    * - enabled (to the highest enabled mode configured) if the job fetched the mapping successfully
    * - disabled if the job encountered an error fetching the mapping
    * @param {number} jobId the ID of the job that completed
-   * @param {string} resultString the stringified JSON of the job's returnValue
+   * @param {string} returnvalue the stringified JSON of the job's returnValue
    */
-  async updateMapOnMapFetchJobComplete(jobId, resultString) {
+  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, id) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {
-      jobResult = JSON.parse(resultString) || {}
+      if (typeof returnvalue === 'string' || returnvalue instanceof String) {
+        jobResult = JSON.parse(returnvalue) || {}
+      } else {
+        jobResult = returnvalue || {}
+      }
     } catch (e) {
       baseLogger.warn(
-        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${resultString}`
+        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${returnvalue}`
       )
       return
     }
@@ -141,6 +208,22 @@ class StateMachineManager {
     // Update class variables for external access
     this.highestEnabledReconfigMode = highestEnabledReconfigMode
     this.enabledReconfigModesSet = enabledReconfigModesSet
+  }
+
+  /**
+   * Ensure clean redis state for primarySyncFromSecondary():filterOutAlreadyPresentDBEntries() at server restart
+   *
+   * Throws on internal error
+   */
+  async ensureCleanFilterOutAlreadyPresentDBEntriesRedisState() {
+    const keyPattern =
+      FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
+      '*'
+    const numDeleted = await redis.deleteAllKeysMatchingPattern(keyPattern)
+    baseLogger.info(
+      { numDeleted },
+      `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`
+    )
   }
 }
 

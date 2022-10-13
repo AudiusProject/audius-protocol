@@ -1,5 +1,7 @@
 import type Logger from 'bunyan'
+import type { Queue } from 'bullmq'
 import type {
+  FetchCNodeEndpointToSpIdMapJobParams,
   FindReplicaSetUpdateJobParams,
   FindReplicaSetUpdatesJobReturnValue,
   FindSyncRequestsJobParams,
@@ -16,9 +18,13 @@ import type {
 } from './stateReconciliation/types'
 import type { TQUEUE_NAMES } from './stateMachineConstants'
 
-import { Queue } from 'bull'
-
-export type QueueNameToQueueMap = Record<TQUEUE_NAMES, Queue>
+export type QueueNameToQueueMap = Record<
+  TQUEUE_NAMES,
+  {
+    queue: Queue
+    maxWaitingJobs: number
+  }
+>
 
 export type WalletsToSecondariesMapping = {
   [wallet: string]: string[]
@@ -39,12 +45,14 @@ export type AnyJobParams =
   | FindReplicaSetUpdateJobParams
   | IssueSyncRequestJobParams
   | UpdateReplicaSetJobParams
+  | FetchCNodeEndpointToSpIdMapJobParams
 export type AnyDecoratedJobParams =
   | DecoratedJobParams<MonitorStateJobParams>
   | DecoratedJobParams<FindSyncRequestsJobParams>
   | DecoratedJobParams<FindReplicaSetUpdateJobParams>
   | DecoratedJobParams<IssueSyncRequestJobParams>
   | DecoratedJobParams<UpdateReplicaSetJobParams>
+  | DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>
 
 /**
  * Job return values (outputs)
@@ -55,6 +63,7 @@ export type ParamsForJobsToEnqueue =
   | FindReplicaSetUpdateJobParams
   | IssueSyncRequestJobParams
   | UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
+  | FetchCNodeEndpointToSpIdMapJobParams
 export type JobsToEnqueue = Partial<
   Record<TQUEUE_NAMES, ParamsForJobsToEnqueue[]>
 >

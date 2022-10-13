@@ -9,6 +9,7 @@ export FAST_PROVISIONED=$(
     curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/tags | grep "fast" >/dev/null
     echo $?
 )
+export PROTOCOL_DIR="$HOME/audius-protocol"
 
 # Helper functions
 function setup_linux_toolchains() {

@@ -24,6 +24,12 @@ export interface PlaylistAddedTimestamp {
      * @type {number}
      * @memberof PlaylistAddedTimestamp
      */
+    metadata_timestamp: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlaylistAddedTimestamp
+     */
     timestamp: number;
     /**
      * 

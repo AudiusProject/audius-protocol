@@ -53,9 +53,10 @@ def test_playlist_track_added_notification(app):
         )
         assert len(notifications) == 2
         assert (
-            notifications[0].specifier
+            notifications[0].group_id
             == "track_added_to_playlist:playlist_id:0:track_id:20:blocknumber:0"
         )
+        assert notifications[0].specifier == "1"
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "track_added_to_playlist"
         assert notifications[0].slot == None
@@ -64,9 +65,10 @@ def test_playlist_track_added_notification(app):
         assert notifications[0].user_ids == [1]
 
         assert (
-            notifications[1].specifier
+            notifications[1].group_id
             == "track_added_to_playlist:playlist_id:0:track_id:30:blocknumber:0"
         )
+        assert notifications[1].specifier == "15"
         assert notifications[1].notification_group_id == None
         assert notifications[1].type == "track_added_to_playlist"
         assert notifications[1].slot == None

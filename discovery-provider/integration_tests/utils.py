@@ -171,6 +171,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=track_meta.get("created_at", datetime.now()),
                 release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False),
+                is_premium=track_meta.get("is_premium", False),
+                premium_conditions=track_meta.get("premium_conditions", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -210,6 +212,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=user_meta.get("is_current", True),
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
+                artist_pick_track_id=user_meta.get("artist_pick_track_id"),
                 wallet=user_meta.get("wallet", str(i)),
                 bio=user_meta.get("bio", str(i)),
                 profile_picture=user_meta.get("profile_picture"),
@@ -221,6 +224,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 primary_id=user_meta.get("primary_id"),
                 secondary_ids=user_meta.get("secondary_ids"),
                 replica_set_update_signer=user_meta.get("replica_set_update_signer"),
+                creator_node_endpoint=user_meta.get(
+                    "creator_node_endpoint", "https://cn.io"
+                ),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",

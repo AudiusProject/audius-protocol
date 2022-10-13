@@ -1,13 +1,8 @@
+import copy
 import logging
 from typing import Any, Dict, Optional
 
-from src.api.v1.helpers import (
-    extend_favorite,
-    extend_playlist,
-    extend_repost,
-    extend_track,
-    extend_user,
-)
+from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -33,6 +28,7 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
+    exclude_premium = args.get("exclude_premium", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -51,10 +47,11 @@ def search_es_full(args: dict):
             [
                 {"index": ES_TRACKS},
                 track_dsl(
-                    search_str,
-                    current_user_id,
+                    search_str=search_str,
+                    current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
+                    exclude_premium=exclude_premium,
                 ),
             ]
         )
@@ -65,10 +62,11 @@ def search_es_full(args: dict):
                 [
                     {"index": ES_TRACKS},
                     track_dsl(
-                        search_str,
-                        current_user_id,
+                        search_str=search_str,
+                        current_user_id=current_user_id,
                         must_saved=True,
                         only_downloadable=only_downloadable,
+                        exclude_premium=exclude_premium,
                     ),
                 ]
             )
@@ -164,7 +162,9 @@ def search_es_full(args: dict):
     return response
 
 
-def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
+def search_tags_es(
+    q: str, kind="all", current_user_id=None, limit=10, offset=0, exclude_premium=False
+):
     if not esclient:
         raise Exception("esclient is None")
 
@@ -172,7 +172,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
     do_users = kind == "all" or kind == "users"
     mdsl: Any = []
 
-    def tag_match(fieldname):
+    def tag_match(fieldname, sort_by):
         match = {
             "query": {
                 "bool": {
@@ -180,21 +180,27 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
                     "must_not": [],
                     "should": [],
                 }
-            }
+            },
+            "sort": [{sort_by: "desc"}],
         }
         return match
 
     if do_tracks:
-        mdsl.extend([{"index": ES_TRACKS}, tag_match("tag_list")])
+        dsl = tag_match("tag_list", "repost_count")
+        if exclude_premium:
+            dsl["query"]["bool"]["must"].append(
+                {"term": {"is_premium": {"value": False}}}
+            )
+        mdsl.extend([{"index": ES_TRACKS}, dsl])
         if current_user_id:
-            dsl = tag_match("tag_list")
+            dsl = copy.deepcopy(dsl)
             dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
             mdsl.extend([{"index": ES_TRACKS}, dsl])
 
     if do_users:
-        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags")])
+        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags", "follower_count")])
         if current_user_id:
-            dsl = tag_match("tracks.tags")
+            dsl = tag_match("tracks.tags", "follower_count")
             dsl["query"]["bool"]["must"].append(be_followed(current_user_id))
             mdsl.extend([{"index": ES_USERS}, dsl])
 
@@ -218,7 +224,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
         if current_user_id:
             response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
-    finalize_response(response, limit, current_user_id, legacy_mode=True)
+    finalize_response(response, limit, current_user_id)
     return response
 
 
@@ -240,30 +246,24 @@ def finalize_response(
     response: Dict,
     limit: int,
     current_user_id: Optional[int],
-    legacy_mode=False,
     is_auto_complete=False,
 ):
     """Hydrates users and contextualizes results for current user (if applicable).
     Also removes extra indexed fields so as to match the fieldset from postgres.
-
-    legacy_mode=True will skip v1 api transforms.
-    This is similar to the code in get_feed_es (which does it's own thing,
-      but could one day use finalize_response with legacy_mode=True).
-    e.g. doesn't encode IDs and populates `followee_saves` instead of `followee_reposts`
     """
     if not esclient:
         raise Exception("esclient is None")
 
     # hydrate users, saves, reposts
-    item_keys = []
+    items = []
     user_ids = set()
     if current_user_id:
         user_ids.add(current_user_id)
 
     # collect keys for fetching
-    for items in response.values():
-        for item in items:
-            item_keys.append(item_key(item))
+    for docs in response.values():
+        for item in docs:
+            items.append(item)
             user_ids.add(item.get("owner_id", item.get("playlist_owner_id")))
 
     # fetch users
@@ -280,10 +280,9 @@ def finalize_response(
             users_by_id[id] = populate_user_metadata_es(user, current_user)
 
     # fetch followed saves + reposts
-    # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
     if not is_auto_complete:
         (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-            current_user_id, item_keys, 20
+            current_user, items
         )
 
     # tracks: finalize
@@ -291,14 +290,14 @@ def finalize_response(
         tracks = response[k]
         hydrate_user(tracks, users_by_id)
         if not is_auto_complete:
-            hydrate_saves_reposts(tracks, follow_saves, follow_reposts, legacy_mode)
-        response[k] = [map_track(track, current_user, legacy_mode) for track in tracks]
+            hydrate_saves_reposts(tracks, follow_saves, follow_reposts)
+        response[k] = [map_track(track, current_user) for track in tracks]
 
     # users: finalize
     for k in ["users", "followed_users"]:
         users = drop_copycats(response[k])
         users = users[:limit]
-        response[k] = [map_user(user, current_user, legacy_mode) for user in users]
+        response[k] = [map_user(user, current_user) for user in users]
 
     # playlists: finalize
     for k in ["playlists", "saved_playlists", "albums", "saved_albums"]:
@@ -306,16 +305,14 @@ def finalize_response(
             continue
         playlists = response[k]
         if not is_auto_complete:
-            hydrate_saves_reposts(playlists, follow_saves, follow_reposts, legacy_mode)
+            hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
         hydrate_user(playlists, users_by_id)
-        response[k] = [
-            map_playlist(playlist, current_user, legacy_mode) for playlist in playlists
-        ]
+        response[k] = [map_playlist(playlist, current_user) for playlist in playlists]
 
     return response
 
 
-def base_match(search_str: str, operator="or"):
+def base_match(search_str: str, operator="or", extra_fields=[]):
     return [
         {
             "multi_match": {
@@ -324,6 +321,7 @@ def base_match(search_str: str, operator="or"):
                     "suggest",
                     "suggest._2gram",
                     "suggest._3gram",
+                    *extra_fields,
                 ],
                 "operator": operator,
                 "type": "bool_prefix",
@@ -375,7 +373,13 @@ def default_function_score(dsl, ranking_field):
     }
 
 
-def track_dsl(search_str, current_user_id, must_saved=False, only_downloadable=False):
+def track_dsl(
+    search_str,
+    current_user_id,
+    must_saved=False,
+    only_downloadable=False,
+    exclude_premium=False,
+):
     dsl = {
         "must": [
             *base_match(search_str),
@@ -387,25 +391,37 @@ def track_dsl(search_str, current_user_id, must_saved=False, only_downloadable=F
         ],
         "should": [
             *base_match(search_str, operator="and"),
+            {
+                "match": {
+                    "title.searchable": {
+                        "query": search_str,
+                        "minimum_should_match": "100%",
+                    },
+                }
+            },
         ],
     }
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
 
+    if exclude_premium:
+        dsl["must"].append({"term": {"is_premium": {"value": False}}})
+
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
+    # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
-            *base_match(search_str),
+            *base_match(search_str, extra_fields=["handle"]),
             {"term": {"is_deactivated": {"value": False}}},
         ],
         "must_not": [],
         "should": [
-            *base_match(search_str, operator="and"),
+            *base_match(search_str, operator="and", extra_fields=["handle"]),
             {"term": {"is_verified": {"value": True}}},
         ],
     }
@@ -480,33 +496,26 @@ def hydrate_user(items, users_by_id):
             item["user"] = user
 
 
-def hydrate_saves_reposts(items, follow_saves, follow_reposts, legacy_mode):
+def hydrate_saves_reposts(items, follow_saves, follow_reposts):
     for item in items:
         ik = item_key(item)
-        if legacy_mode:
-            item["followee_reposts"] = follow_reposts[ik]
-            item["followee_saves"] = follow_saves[ik]
-        else:
-            item["followee_reposts"] = [extend_repost(r) for r in follow_reposts[ik]]
-            item["followee_favorites"] = [extend_favorite(x) for x in follow_saves[ik]]
+        item["followee_reposts"] = follow_reposts[ik]
+        item["followee_saves"] = follow_saves[ik]
 
 
-def map_user(user, current_user, legacy_mode):
+def map_user(user, current_user):
     user = populate_user_metadata_es(user, current_user)
-    if not legacy_mode:
-        user = extend_user(user)
+    user = extend_user(user)
     return user
 
 
-def map_track(track, current_user, legacy_mode):
+def map_track(track, current_user):
     track = populate_track_or_playlist_metadata_es(track, current_user)
-    if not legacy_mode:
-        track = extend_track(track)
+    track = extend_track(track)
     return track
 
 
-def map_playlist(playlist, current_user, legacy_mode):
+def map_playlist(playlist, current_user):
     playlist = populate_track_or_playlist_metadata_es(playlist, current_user)
-    if not legacy_mode:
-        playlist = extend_playlist(playlist)
+    playlist = extend_playlist(playlist)
     return playlist

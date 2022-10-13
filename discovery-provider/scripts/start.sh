@@ -10,7 +10,7 @@ if $audius_enable_rsyslog; then
     mkdir -p /var/spool/rsyslog
     mkdir -p /etc/rsyslog.d
 
-    # $logglyDisable should be empty/null
+    # $audius_loggly_disable should be empty/null
     # $logglyToken should be a nonzero length string
     if [[ -z "$audius_loggly_disable" && -n "$audius_loggly_token" ]]; then
         # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
@@ -121,16 +121,22 @@ fi
 
 # start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
-    audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
+    if [[ "$audius_no_server" != "true" ]] && [[ "$audius_no_server" != "1" ]]; then
+        audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
+    fi
+
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
 else
-    audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    if [[ "$audius_no_server" != "true" ]] && [[ "$audius_no_server" != "1" ]]; then
+        audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    fi
+
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
-        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
 fi
 

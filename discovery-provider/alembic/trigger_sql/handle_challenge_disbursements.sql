@@ -8,14 +8,15 @@ begin
   if reward_manager_tx is not null then
 	  -- create a notification for the challenge disbursement
 	  insert into notification
-		(slot, user_ids, timestamp, type, specifier, data)
+		(slot, user_ids, timestamp, type, group_id, specifier, data)
 	  values
 		(
 			new.slot,
 			ARRAY [new.user_id],
 			reward_manager_tx.created_at,
-			'challenge_reward', 
-			'challenge_reward:' || new.user_id || ':' || new.specifier,
+			'challenge_reward',
+			'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
+			new.user_id,
 			json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount)
 		)
 	  on conflict do nothing;

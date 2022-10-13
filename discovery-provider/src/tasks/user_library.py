@@ -8,6 +8,9 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.models.social.save import Save, SaveType
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -21,7 +24,7 @@ def user_library_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _metadata,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User Library model state changes found in transaction and empty Set (to align with fn signature of other _state_update functions."""
     empty_set: Set[int] = set()
@@ -150,10 +153,33 @@ def add_track_save(
         )
     )
 
+    premium_content_access_args = []
+    for event in new_add_track_events:
+        premium_content_access_args.append(
+            {
+                "user_id": event["args"]._userId,
+                "premium_content_id": event["args"]._trackId,
+                "premium_content_type": "track",
+            }
+        )
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        session, premium_content_access_args
+    )
+
     for event in new_add_track_events:
         event_args = event["args"]
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
+
+        does_user_have_track_access = (
+            save_user_id in premium_content_access["track"]
+            and save_track_id in premium_content_access["track"][save_user_id]
+            and premium_content_access["track"][save_user_id][save_track_id][
+                "does_user_have_access"
+            ]
+        )
+        if not does_user_have_track_access:
+            continue
 
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]
@@ -250,10 +276,34 @@ def delete_track_save(
             tx_receipt
         )
     )
+
+    premium_content_access_args = []
+    for event in new_delete_track_events:
+        premium_content_access_args.append(
+            {
+                "user_id": event["args"]._userId,
+                "premium_content_id": event["args"]._trackId,
+                "premium_content_type": "track",
+            }
+        )
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        session, premium_content_access_args
+    )
+
     for event in new_delete_track_events:
         event_args = event["args"]
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
+
+        does_user_have_track_access = (
+            save_user_id in premium_content_access["track"]
+            and save_track_id in premium_content_access["track"][save_user_id]
+            and premium_content_access["track"][save_user_id][save_track_id][
+                "does_user_have_access"
+            ]
+        )
+        if not does_user_have_track_access:
+            continue
 
         if (save_user_id in track_state_changes) and (
             save_track_id in track_state_changes[save_user_id]

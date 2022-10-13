@@ -3,7 +3,7 @@ from functools import wraps
 from time import time
 from typing import Callable, Dict
 
-from prometheus_client import Gauge, Histogram
+from prometheus_client import Gauge, Histogram, Summary
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +31,10 @@ def save_duration_metric(metric_group):
 
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": True}
+                        {"func_name": func.__name__, "success": "true"}
                     )
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
@@ -46,10 +46,10 @@ def save_duration_metric(metric_group):
             except Exception as e:
                 try:
                     histogram_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                     gauge_metric.save_time(
-                        {"func_name": func.__name__, "success": False}
+                        {"func_name": func.__name__, "success": "false"}
                     )
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
@@ -99,8 +99,7 @@ class PrometheusMetricNames:
     CELERY_TASK_DURATION_SECONDS = "celery_task_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     FLASK_ROUTE_DURATION_SECONDS = "flask_route_duration_seconds"
-    HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST = "health_check_block_difference_latest"
-    HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST = "health_check_indexed_block_num_latest"
+    HEALTH_CHECK = "health_check"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
@@ -111,6 +110,9 @@ class PrometheusMetricNames:
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
+    ENTITY_MANAGER_UPDATE_DURATION_SECONDS = "entity_manager_update_duration_seconds"
+    ENTITY_MANAGER_UPDATE_ERRORS = "entity_manager_update_errors"
 
 
 """
@@ -125,6 +127,8 @@ Metric Types:
     * When looking at the raw /prometheus_metrics endpoint for
       `audius_dn_update_aggregate_table_latency_seconds_bucket`, you can see how a
       single metric explodes into multiple statistical helpers.
+* Prometheus Summaries: Prometheus Summaries will export a single metric across all pids
+  which is useful for point-in-time collection.
 
 Labels:
 
@@ -146,6 +150,7 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
         "How long the currently running celery task has been running",
         ("task_name",),
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS}",
@@ -171,13 +176,11 @@ PrometheusRegistry = {
             "route",
         ),
     ),
-    PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST}",
-        "Difference between the latest block and the latest indexed block",
-    ),
-    PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST}",
-        "Latest indexed block number",
+    PrometheusMetricNames.HEALTH_CHECK: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK}",
+        "Metrics extracted from our health-checks, using similar keys.",
+        ("key",),
+        multiprocess_mode="liveall",
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
@@ -221,6 +224,21 @@ PrometheusRegistry = {
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST}",
+        "Number of entities changed by entity type",
+        ("entity_type",),
+    ),
+    # Don't use this metric as an example
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS}",
+        "Number of errors by entity type",
+        ("entity_type",),
+    ),
+    PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS}",
+        "Duration for entity manager updates",
+    ),
 }
 
 
@@ -249,11 +267,12 @@ class PrometheusMetric:
         this_metric = self.metric
         if labels:
             this_metric = this_metric.labels(**labels)
-
         if isinstance(this_metric, Histogram):
-            this_metric.observe(value)
+            this_metric.observe(value, labels)
         elif isinstance(this_metric, Gauge):
             this_metric.set(value)
+        elif isinstance(this_metric, Summary):
+            this_metric.observe(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):

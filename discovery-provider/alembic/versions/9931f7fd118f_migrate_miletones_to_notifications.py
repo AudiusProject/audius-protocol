@@ -27,11 +27,12 @@ def upgrade():
         
         begin;
             insert into notification
-                (user_ids, specifier, type, blocknumber, timestamp, data)
+                (user_ids, specifier, group_id, type, blocknumber, timestamp, data)
                     select
                             array[tracks.owner_id],
+                            tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_track_repost_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -41,11 +42,12 @@ def upgrade():
     
 
             insert into notification
-                (user_ids, specifier, type, blocknumber, timestamp, data)
+                (user_ids, specifier, group_id, type, blocknumber, timestamp, data)
                     select
                             array[playlists.playlist_owner_id],
+                            playlists.playlist_owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_playlist_repost_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "playlist_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -54,11 +56,12 @@ def upgrade():
                     where playlists.is_current AND milestones.blocknumber !=0 and milestones.name='PLAYLIST_REPOST_COUNT';
 
             insert into notification
-                (user_ids, specifier, type, blocknumber, timestamp, data)
+                (user_ids, specifier, group_id, type, blocknumber, timestamp, data)
                     select
                             array[tracks.owner_id],
+                            tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_track_save_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -67,11 +70,12 @@ def upgrade():
                     where tracks.is_current AND milestones.blocknumber !=0 and milestones.name='TRACK_SAVE_COUNT';
     
             insert into notification
-                (user_ids, specifier, type, blocknumber, timestamp, data)
+                (user_ids, specifier, group_id, type, blocknumber, timestamp, data)
                     select
                             array[playlists.playlist_owner_id],
+                            playlists.playlist_owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_playlist_save_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "playlist_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -80,11 +84,12 @@ def upgrade():
                     where playlists.is_current AND milestones.blocknumber !=0 and milestones.name='PLAYLIST_SAVE_COUNT';
 
             insert into notification
-                (user_ids, specifier, type, blocknumber, timestamp, data)
+                (user_ids, specifier, group_id, type, blocknumber, timestamp, data)
                     select
                             array[milestones.id],
+                            milestones.id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_follower_count',
+                            'milestone',
                             milestones.blocknumber,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "user_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -92,11 +97,12 @@ def upgrade():
                     where milestones.name='FOLLOWER_COUNT' AND milestones.blocknumber !=0;
 
             insert into notification
-                (user_ids, specifier, type, slot, timestamp, data)
+                (user_ids, specifier, group_id, type, slot, timestamp, data)
                     select
                             array[tracks.owner_id],
+                            tracks.owner_id,
                             'milestone:' || milestones.name  || ':id:' || milestones.id || ':threshold:' || milestones.threshold,
-                            'milestone_listen_count',
+                            'milestone',
                             milestones.slot,
                             milestones.timestamp,
                             ('{"type":"'|| milestones.name || '", "track_id":' || milestones.id || ', "threshold":' || milestones.threshold || '}')::json
@@ -118,12 +124,7 @@ def downgrade():
             """
         delete from notification 
         where type in (
-            'milestone_listen_count',
-            'milestone_track_save_count',
-            'milestone_track_repost_count',
-            'milestone_playlist_save_count',
-            'milestone_playlist_repost_count',
-            'milestone_follower_count'
+            'milestone'
         );
         """
         )

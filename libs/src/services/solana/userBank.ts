@@ -4,7 +4,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } from '@solana/web3.js'
-import borsh from 'borsh'
+import { serialize } from 'borsh'
 import bs58 from 'bs58'
 import { SolanaUtils } from './SolanaUtils'
 import type { TransactionHandler } from './transactionHandler'
@@ -79,7 +79,7 @@ export const createUserBankFrom = async ({
   const instructionData = new CreateTokenAccountInstructionData({
     ethAddress: ethAddressArr
   })
-  const serializedInstructionData = borsh.serialize(
+  const serializedInstructionData = serialize(
     createTokenAccountInstructionSchema,
     instructionData
   )

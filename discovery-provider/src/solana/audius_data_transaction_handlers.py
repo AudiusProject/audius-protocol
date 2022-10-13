@@ -502,7 +502,7 @@ def update_user_model_metadata(
     #         update_task.challenge_event_bus,
     #     )
 
-    # reconstructed endpoints from sp IDs in tx not /ipfs response
+    # reconstructed endpoints from sp IDs in tx not response
     if "creator_node_endpoint" in metadata_dict:
         user_record.creator_node_endpoint = metadata_dict["creator_node_endpoint"]
 
@@ -511,7 +511,7 @@ def update_track_model_metadata(
     session: Session, track_record: Track, track_metadata: Dict
 ):
     track_record.title = track_metadata["title"]
-    track_record.length = track_metadata["length"] or 0
+    track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art_sizes = track_metadata["cover_art_sizes"]
     if track_metadata["cover_art"]:
         track_record.cover_art_sizes = track_record.cover_art

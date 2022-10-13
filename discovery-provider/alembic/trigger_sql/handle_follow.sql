@@ -36,12 +36,13 @@ begin
         (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
       on conflict do nothing;
       insert into notification
-        (user_ids, type, specifier, blocknumber, timestamp, data)
+        (user_ids, type, group_id, specifier, blocknumber, timestamp, data)
         values
         (
           ARRAY [new.followee_user_id],
           'milestone_follower_count',
           'milestone:FOLLOWER_COUNT:id:' || new.followee_user_id || ':threshold:' || milestone,
+          new.followee_user_id,
           new.blocknumber,
           new.created_at,
           json_build_object('type', 'FOLLOWER_COUNT', 'user_id', new.followee_user_id, 'threshold', milestone)
@@ -53,13 +54,14 @@ begin
     -- create a notification for the followee
     if new.is_delete is false then
       insert into notification
-      (blocknumber, user_ids, timestamp, type, specifier, data)
+      (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
       values
       (
         new.blocknumber,
         ARRAY [new.followee_user_id],
         new.created_at,
         'follow',
+        new.follower_user_id,
         'follow:' || new.followee_user_id,
         json_build_object('followee_user_id', new.followee_user_id, 'follower_user_id', new.follower_user_id)
       )

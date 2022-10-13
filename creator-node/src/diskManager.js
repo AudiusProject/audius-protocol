@@ -1,14 +1,22 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
+const CID = require('cids')
+const { chunk } = require('lodash')
+
+const DbManager = require('./dbManager')
+const models = require('./models')
+const redisClient = require('./redis')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const CID = require('cids')
 
 // regex to check if a directory or just a regular file
 // if directory - will have both outer and inner properties in match.groups
 // else - will have just outer property, no inner
 const CID_DIRECTORY_REGEX =
   /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
+
+// Prefix for redis keys that store which files to delete for a user
+const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
 // variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
 // it every time a track is uploaded
@@ -27,14 +35,14 @@ class DiskManager {
    * is we should be able to delete the contents of this folder without scanning through other folders with the
    * naming scheme.
    */
-  static getTmpTrackUploadArtifactsPath() {
+  static async getTmpTrackUploadArtifactsPath() {
     const dirPath = path.join(
       config.get('storagePath'),
       'files',
       'tmp_track_artifacts'
     )
     if (!TMP_TRACK_ARTIFACTS_CREATED) {
-      this.ensureDirPathExists(dirPath)
+      await this.ensureDirPathExists(dirPath)
       TMP_TRACK_ARTIFACTS_CREATED = true
     }
     return dirPath
@@ -51,7 +59,7 @@ class DiskManager {
    *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
    * @param {String} cid file system destination, either filename or directory
    */
-  static computeFilePath(cid, ensureDirPathExists = true) {
+  static async computeFilePath(cid, ensureDirPathExists = true) {
     try {
       CID.isCID(new CID(cid))
     } catch (e) {
@@ -76,7 +84,7 @@ class DiskManager {
 
     // create the subdirectories in parentDirHash if they don't exist
     if (ensureDirPathExists) {
-      this.ensureDirPathExists(parentDirPath)
+      await this.ensureDirPathExists(parentDirPath)
     }
 
     return path.join(parentDirPath, cid)
@@ -115,7 +123,7 @@ class DiskManager {
    * @param {String} dirName directory name
    * @param {String} fileName file name
    */
-  static computeFilePathInDir(dirName, fileName) {
+  static async computeFilePathInDir(dirName, fileName) {
     if (!dirName || !fileName) {
       genericLogger.error(
         `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
@@ -135,7 +143,7 @@ class DiskManager {
       )
     }
 
-    const parentDirPath = this.computeFilePath(dirName)
+    const parentDirPath = await this.computeFilePath(dirName)
     const absolutePath = path.join(parentDirPath, fileName)
     genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
     return absolutePath
@@ -146,10 +154,10 @@ class DiskManager {
    * If it does exist, it will not overwrite, effectively a no-op
    * @param {*} dirPath fs directory path to create if it does not exist
    */
-  static ensureDirPathExists(dirPath) {
+  static async ensureDirPathExists(dirPath) {
     try {
       // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
-      fs.mkdirSync(dirPath, { recursive: true })
+      await fs.mkdir(dirPath, { recursive: true })
     } catch (e) {
       genericLogger.error(
         `Error making directory, dirName=${dirPath}, error=${e.toString()}`
@@ -186,6 +194,145 @@ class DiskManager {
     }
 
     return ret
+  }
+
+  static async deleteFileOrDir(pathToFileOrDir) {
+    // Base case - delete single file (not a directory)
+    if (!(await fs.lstat(pathToFileOrDir)).isDirectory()) {
+      await fs.unlink(pathToFileOrDir)
+      return
+    }
+
+    // Recursively remove all contents of directory
+    for (const file of await fs.readdir(pathToFileOrDir)) {
+      const childPath = path.join(pathToFileOrDir, file)
+      if ((await fs.lstat(childPath)).isDirectory()) {
+        await DiskManager.deleteFileOrDir(childPath)
+      } else {
+        await fs.unlink(childPath)
+      }
+    }
+
+    // Remove actual directory
+    await fs.rmdir(pathToFileOrDir)
+  }
+
+  /**
+   * Recursively deletes an array of file paths and their subdirectories in paginated chunks.
+   * @param {string[]} storagePaths the file paths to delete
+   * @param {number} batchSize the number of concurrent deletes to perform
+   * @param {bunyan.Logger} logger
+   * @returns {number} number of files successfully deleted
+   */
+  static async batchDeleteFileOrDir(storagePaths, batchSize, logger) {
+    let numFilesDeleted = 0
+    const batches = chunk(storagePaths, batchSize)
+    const promiseResults = []
+    for (const batchOfStoragePaths of batches) {
+      const promiseResultsForBatch = await Promise.allSettled(
+        batchOfStoragePaths.map((storagePath) =>
+          DiskManager.deleteFileOrDir(storagePath)
+        )
+      )
+      promiseResults.push(...promiseResultsForBatch)
+    }
+
+    // Count number of files successfully deleted and log errors
+    for (const promiseResult of promiseResults) {
+      if (promiseResult.status === 'fulfilled') {
+        numFilesDeleted++
+      } else {
+        logger.error(`Could not delete file: ${promiseResult?.reason?.stack}`)
+      }
+    }
+    return numFilesDeleted
+  }
+
+  /**
+   * Adds path to redis set for every file of the given user.
+   * DOES NOT DELETE. Call deleteAllCNodeUserDataFromDisk() to delete the data that was added to redis.
+   * Uses pagination to avoid loading all files in memory for users with a lot of data.
+   * @param {string} walletPublicKey the wallet of the user to delete all data for
+   * @param {bunyan.Logger} logger
+   * @return number of file paths added to redis
+   */
+  static async gatherCNodeUserDataToDelete(walletPublicKey, logger) {
+    const FILES_PER_QUERY = 10_000
+    const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
+    await redisClient.del(redisSetKey)
+
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey }
+    })
+    if (!cnodeUser) throw new Error('No cnodeUser found')
+    const { cnodeUserUUID } = cnodeUser
+    logger.info(
+      `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
+    )
+
+    // Add files to delete to redis, paginated by storagePath, starting at the lowest real character (space)
+    let prevStoragePath = ' '
+    let numFilesAdded = 0
+    let filePaths = []
+    do {
+      filePaths = await DbManager.getCNodeUserFilesFromDb(
+        cnodeUserUUID,
+        prevStoragePath,
+        FILES_PER_QUERY
+      )
+      if (filePaths.length) {
+        numFilesAdded = await redisClient.sadd(redisSetKey, filePaths)
+        prevStoragePath = filePaths[filePaths.length - 1]
+      } else numFilesAdded = 0
+    } while (filePaths.length === FILES_PER_QUERY || numFilesAdded > 0)
+    // Nothing left to paginate if the last page wasn't full length and didn't contain new files
+
+    return redisClient.scard(redisSetKey)
+  }
+
+  /**
+   * Deletes from disk each file path that was added by gatherCNodeUserDataToDelete().
+   * Uses pagination to avoid loading all files in memory for users with a lot of data.
+   * @param {string} walletPublicKey the wallet of the user to delete all data for
+   * @param {number} numFilesToDelete the number of file paths in redis
+   * @param {bunyan.Logger} logger
+   * @return number of files deleted
+   */
+  static async deleteAllCNodeUserDataFromDisk(
+    walletPublicKey,
+    numFilesToDelete,
+    logger
+  ) {
+    const FILES_PER_REDIS_QUERY = 10_000
+    const FILES_PER_DELETION_BATCH = 100
+    const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
+    try {
+      // Read file paths from redis and delete them
+      let numFilesDeleted = 0
+      for (let i = 0; i < numFilesToDelete; i += FILES_PER_REDIS_QUERY) {
+        const filePathsToDelete = await redisClient.spop(
+          redisSetKey,
+          FILES_PER_REDIS_QUERY
+        )
+        if (!filePathsToDelete?.length) return numFilesDeleted
+
+        numFilesDeleted += await DiskManager.batchDeleteFileOrDir(
+          filePathsToDelete,
+          FILES_PER_DELETION_BATCH,
+          logger
+        )
+      }
+      return numFilesDeleted
+    } catch (e) {
+      throw e
+    } finally {
+      await redisClient.del(redisSetKey)
+    }
+  }
+
+  static async clearFilePathsToDelete(walletPublicKey) {
+    const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
+    await redisClient.del(redisSetKey)
   }
 }
 

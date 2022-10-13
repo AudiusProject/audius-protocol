@@ -144,6 +144,7 @@ def cache(**kwargs):
                 if cached_resp:
                     if transform is not None:
                         return transform(cached_resp)
+
                     return cached_resp, 200
 
             response = func(*args, **kwargs)
@@ -152,6 +153,7 @@ def cache(**kwargs):
                 resp, status_code = response
                 if status_code < 400:
                     set_json_cached_key(redis, key, resp, ttl_sec)
+
                 return resp, status_code
             set_json_cached_key(redis, key, response, ttl_sec)
             return transform(response)
@@ -173,8 +175,12 @@ def get_playlist_id_cache_key(id):
     return f"playlist:id:{id}"
 
 
-def get_sp_id_key(id):
-    return f"sp:id:{id}"
+def get_cn_sp_id_key(id):
+    return f"sp:cn:id:{id}"
+
+
+def get_dn_sp_id_key(id):
+    return f"sp:dn:id:{id}"
 
 
 def remove_cached_user_ids(redis, user_ids):

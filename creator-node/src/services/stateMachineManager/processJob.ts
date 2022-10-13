@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import { instrumentTracing, tracing } from '../../tracer'
 import type {
   AnyDecoratedJobParams,
   AnyDecoratedJobReturnValue,
@@ -9,7 +10,6 @@ const _ = require('lodash')
 
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -20,7 +20,7 @@ const { QUEUE_NAMES } = require('./stateMachineConstants')
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
-module.exports = async function (
+async function processJob(
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
@@ -38,7 +38,7 @@ module.exports = async function (
   const { id: jobId, data: jobData } = job
 
   const jobLogger = createChildLogger(parentLogger, { jobId })
-  jobLogger.info(`New job: ${JSON.stringify(job)}`)
+  jobLogger.debug(`New job: ${JSON.stringify(job)}`)
 
   let result
   const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
@@ -50,9 +50,10 @@ module.exports = async function (
   try {
     await redis.set(`latestJobStart_${queueName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
-    metricEndTimerFn({ uncaughtError: false, ...getLabels(queueName, result) })
+    metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {
+    tracing.recordException(error)
     jobLogger.error(`Error processing job: ${error}`)
     jobLogger.error(error.stack)
     result = { error: error.message || `${error}` }
@@ -62,18 +63,11 @@ module.exports = async function (
   return result
 }
 
-/**
- * Creates prometheus label names and values that are specific to the given job type and its results.
- * @param {string} jobName the name of the job to generate metrics for
- * @param {Object} jobResult the result of the job to generate metrics for
- */
-const getLabels = (jobName: string, jobResult: any) => {
-  if (jobName === QUEUE_NAMES.UPDATE_REPLICA_SET) {
-    const { issuedReconfig, newReplicaSet } = jobResult
-    return {
-      issuedReconfig: issuedReconfig || 'false',
-      reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
+module.exports = instrumentTracing({
+  fn: processJob,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
-  return {}
-}
+})

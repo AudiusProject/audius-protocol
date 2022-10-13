@@ -7,7 +7,7 @@ In the event we want to build the Logspout container by hand
 # .env contains: audius_loggly_token=xxx
 . .env
 
-LOGSPOUT_VERSION=$(head -n1 Dockerfile | cut -f 2 -d ':')
+LOGSPOUT_VERSION=$(head -n1 Dockerfile | cut -f 2 -d '=')
 [ ${audius_loggly_token} ] \
     && audius_loggly_token_64=$(echo ${audius_loggly_token} | base64) \
     && docker build \

@@ -1,9 +1,9 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
-const process = require('process')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -264,6 +264,18 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
+  clusterModeEnabled: {
+    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
+    format: Boolean,
+    env: 'clusterModeEnabled',
+    default: true
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -373,6 +385,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -401,7 +419,7 @@ const config = convict({
     doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
     format: 'nat',
     env: 'discoveryNodeUnhealthyBlockDiff',
-    default: 500
+    default: 15
   },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
@@ -419,7 +437,7 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'RECONFIG_DISABLED'
+    default: 'PRIMARY_AND_OR_SECONDARIES'
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -445,17 +463,41 @@ const config = convict({
     env: 'cidWhitelist',
     default: ''
   },
+  considerNodeUnhealthy: {
+    doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
+    format: Boolean,
+    env: 'considerNodeUnhealthy',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
+  },
+  premiumContentEnabled: {
+    doc: 'whether or not to enable premium content',
+    format: Boolean,
+    env: 'premiumContentEnabled',
+    default: false
+  },
 
   /** sync / snapback configs */
 
+  syncForceWipeEnabled: {
+    doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeEnabled',
+    default: true
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
     env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
-    default: 3_600_000 // 1hr
+    default: 600_000 // 10m
   },
   stateMonitoringQueueRateLimitInterval: {
-    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitInterval',
     default: 60_000 // 1m
@@ -465,6 +507,30 @@ const config = convict({
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
     default: 3
+  },
+  recoverOrphanedDataQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  recoverOrphanedDataQueueRateLimitJobsPerInterval: {
+    doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
+    default: 1
+  },
+  recoverOrphanedDataNumUsersPerBatch: {
+    doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
+    format: 'nat',
+    env: 'recoverOrphanedDataNumUsersPerBatch',
+    default: 2
+  },
+  recoverOrphanedDataDelayMsBetweenBatches: {
+    doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
+    format: 'nat',
+    env: 'recoverOrphanedDataDelayMsBetweenBatches',
+    default: 60_000 // 1m
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -518,37 +584,31 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 2000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
     env: 'maxManualRequestSyncJobConcurrency',
-    default: 15
+    default: 30
   },
   maxRecurringRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 5
+    default: 20
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 3
+    default: 10
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
     format: 'nat',
     env: 'peerHealthCheckRequestTimeout',
     default: 2000
-  },
-  minimumStoragePathSize: {
-    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
-    format: 'nat',
-    env: 'minimumStoragePathSize',
-    default: 100000000000
   },
   minimumMemoryAvailable: {
     doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
@@ -617,12 +677,6 @@ const config = convict({
     format: 'nat',
     env: 'maxManualSyncMonitoringDurationInMs',
     default: 45000 // 45 sec (prod default)
-  },
-  syncRequestMaxUserFailureCountBeforeSkip: {
-    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
-    format: 'nat',
-    env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 10
   },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
@@ -713,6 +767,30 @@ const config = convict({
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
     default: false
+  },
+  findCIDInNetworkEnabled: {
+    doc: 'enable findCIDInNetwork lookups',
+    format: Boolean,
+    env: 'findCIDInNetworkEnabled',
+    default: true
+  },
+  otelTracingEnabled: {
+    doc: 'enable OpenTelemetry tracing',
+    format: Boolean,
+    env: 'otelTracingEnabled',
+    default: true
+  },
+  otelCollectorUrl: {
+    doc: 'the url for the OpenTelemetry collector',
+    format: String,
+    env: 'otelCollectorUrl',
+    default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
+    format: String,
+    env: 'reconfigSPIdBlacklistString',
+    default: '1,2,3,4,27'
   }
   /**
    * unsupported options at the moment
@@ -765,6 +843,18 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+        .map((e) => parseInt(e))
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

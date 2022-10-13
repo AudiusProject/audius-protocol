@@ -30,9 +30,8 @@ def test_play_milsetone_notification(app):
             session.query(Notification).order_by(desc(Notification.slot)).all()
         )
         assert len(notifications) == 3
-        assert (
-            notifications[0].specifier == "milestone:LISTEN_COUNT:id:100:threshold:50"
-        )
+        assert notifications[0].specifier == "2"
+        assert notifications[0].group_id == "milestone:LISTEN_COUNT:id:100:threshold:50"
         assert notifications[0].notification_group_id == None
         assert notifications[0].type == "milestone"
         assert notifications[0].slot == 50
@@ -44,9 +43,7 @@ def test_play_milsetone_notification(app):
         }
         assert notifications[0].user_ids == [2]
 
-        assert (
-            notifications[1].specifier == "milestone:LISTEN_COUNT:id:100:threshold:25"
-        )
-        assert (
-            notifications[2].specifier == "milestone:LISTEN_COUNT:id:100:threshold:10"
-        )
+        assert notifications[1].specifier == "2"
+        assert notifications[1].group_id == "milestone:LISTEN_COUNT:id:100:threshold:25"
+        assert notifications[2].specifier == "2"
+        assert notifications[2].group_id == "milestone:LISTEN_COUNT:id:100:threshold:10"

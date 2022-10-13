@@ -25,7 +25,7 @@
   #####################################################
 
   - job_name: 'stage-network-monitoring'
-    scheme: 'https'
+    scheme: 'http'
     metrics_path: '/metrics'
     static_configs:
       - targets: ['monitoring.staging.audius.co']

@@ -10,12 +10,22 @@ import eth_account
 import solana.keypair
 
 
-def generate_env(protocol_dir, creator_node_replicas):
+def generate_env(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+    block_explorer_enabled,
+):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
         config = json.load((protocol_dir / "dev-tools/config.json").open())
 
     env = {}
+
+    env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
+
+    env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
         (protocol_dir / "creator-node/.version.json").read_text(),
@@ -25,22 +35,54 @@ def generate_env(protocol_dir, creator_node_replicas):
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
 
+    env["BLOCK_EXPLORER_ENABLED"] = "1" if block_explorer_enabled else "0"
+
+    env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
+    if elasticsearch_replicas:
+        env["ELASTICSEARCH_CONDITION"] = "service_healthy"
+    else:  # exists to prevent discovery provider from waiting for non-existent elasticsearch instances
+        env["ELASTICSEARCH_CONDITION"] = "service_started"
+
     for name, secret_key in config.get("solana-accounts", {}).items():
         keypair = solana.keypair.Keypair.from_secret_key(bytes(secret_key))
         env[f"{name}_SECRET_KEY"] = json.dumps(list(keypair.secret_key))
         env[f"{name}_PUBLIC_KEY"] = keypair.public_key.to_base58().decode()
 
+    eth_relayer_wallets = []
+    poa_relayer_wallets = []
+
     for name, private_key in config.get("eth-accounts", {}).items():
         account = eth_account.Account.from_key(private_key)
-        env[f"{name}_PRIVATE_KEY"] = account.key.hex()
+
+        # slice off 0x for hex private keys
+        env[f"{name}_PRIVATE_KEY"] = account.key.hex().replace("0x", "")
         env[f"{name}_ADDRESS"] = account.address
+
+        if name.startswith("ETH_RELAYER_WALLET"):
+            eth_relayer_wallets.append(
+                {
+                    "publicKey": account.address,
+                    "privateKey": account.key.hex().replace("0x", ""),
+                }
+            )
+
+        if name.startswith("POA_RELAYER_WALLET"):
+            poa_relayer_wallets.append(
+                {
+                    "publicKey": account.address,
+                    "privateKey": account.key.hex().replace("0x", ""),
+                }
+            )
+
+    env["ETH_RELAYER_WALLETS"] = json.dumps(eth_relayer_wallets)
+    env["POA_RELAYER_WALLETS"] = json.dumps(poa_relayer_wallets)
 
     bootstrap_sp_ids = []
     bootstrap_sp_owner_wallets = []
     for replica in range(creator_node_replicas):
-        if f"CN{replica}_SP_OWNER_ADDRESS" in env:
+        if f"CN{replica + 1}_SP_OWNER_ADDRESS" in env:
             bootstrap_sp_ids.append(str(replica + 1))
-            bootstrap_sp_owner_wallets.append(env[f"CN{replica}_SP_OWNER_ADDRESS"])
+            bootstrap_sp_owner_wallets.append(env[f"CN{replica + 1}_SP_OWNER_ADDRESS"])
     env["BOOTSTRAP_SP_IDS"] = ",".join(bootstrap_sp_ids)
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
@@ -81,10 +123,25 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-c", "--creator-node-replicas", default=4, type=int)
+@click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-b", "--block-explorer", is_flag=True)
 @click.pass_obj
-def build(protocol_dir, creator_node_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+def build(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+    block_explorer,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+        block_explorer,
+    )
 
     subprocess.run(
         [
@@ -100,9 +157,23 @@ def build(protocol_dir, creator_node_replicas):
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-b", "--block-explorer", is_flag=True)
 @click.pass_obj
-def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
-    generate_env(protocol_dir, creator_node_replicas)
+def up(
+    protocol_dir,
+    creator_node_replicas,
+    discovery_provider_replicas,
+    elasticsearch_replicas,
+    block_explorer,
+):
+    generate_env(
+        protocol_dir,
+        creator_node_replicas,
+        discovery_provider_replicas,
+        elasticsearch_replicas,
+        block_explorer,
+    )
 
     subprocess.run(
         [
@@ -112,10 +183,6 @@ def up(protocol_dir, creator_node_replicas, discovery_provider_replicas):
             protocol_dir,
             "up",
             "--build",
-            "--scale",
-            f"creator-node={creator_node_replicas}",
-            "--scale",
-            f"discovery-provider={discovery_provider_replicas}",
             "-d",
         ],
     )
@@ -157,6 +224,10 @@ def exec(protocol_dir, service, command, args):
             "--index",
             str(index),
             service,
+            "sh",
+            "-c",
+            'while IFS= read -rd "" var; do export "$var"; done </proc/1/environ; exec "$@"',
+            "-",
             command,
             *args,
         ],
@@ -186,13 +257,13 @@ def ps(protocol_dir):
 
     print(
         "CONTAINER ID".ljust(13),
-        "NAME".ljust(25),
+        "NAME".ljust(35),
         "STATUS".ljust(10),
         "PORTS",
     )
 
     for service in services:
-        if service["Service"] == "proxy":
+        if service["Service"] == "port-forwarder":
             continue
 
         name = service["Service"]
@@ -211,16 +282,31 @@ def ps(protocol_dir):
         if service["Service"] == "discovery-provider":
             name = f"{service['Service']}-{replica}"
             ports[5000 + replica - 1] = 5000
+        if service["Service"] == "discovery-provider-elasticsearch":
+            name = f"{service['Service']}-{replica}"
 
         ports = sorted(ports.items())
         ports = ", ".join(f"{target}->{published}" for target, published in ports)
 
         print(
             service["ID"][:12].ljust(13),
-            name.ljust(25),
+            name.ljust(35),
             status.ljust(10),
             ports,
         )
+
+
+@cli.command()
+@click.pass_obj
+def prune(protocol_dir):
+    click.secho(
+        "WARNING! This will remove all dangling images and build cache not used within the last 72h",
+        fg="yellow",
+    )
+
+    if click.confirm("Are you sure you want to continue?"):
+        subprocess.run(["docker", "image", "prune", "-f"])
+        subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
 
 
 @cli.command()

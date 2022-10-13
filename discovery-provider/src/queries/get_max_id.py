@@ -19,6 +19,7 @@ def get_max_id(type):
                 session.query(func.max(Track.track_id))
                 .filter(Track.is_unlisted == False)
                 .filter(Track.is_current == True)
+                .filter(Track.is_premium == False)
                 .scalar()
             )
             return latest

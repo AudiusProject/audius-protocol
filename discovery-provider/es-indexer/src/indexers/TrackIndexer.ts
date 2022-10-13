@@ -6,6 +6,8 @@ import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { TrackDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 import {
+  lowerKeyword,
+  noWhitespaceLowerKeyword,
   sharedIndexSettings,
   standardSuggest,
   standardText,
@@ -19,29 +21,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
-    settings: merge(sharedIndexSettings, {
-      analysis: {
-        tokenizer: {
-          comma_tokenizer: {
-            // @ts-ignore - es client typings lagging
-            type: 'simple_pattern_split',
-            pattern: ',',
-          },
-        },
-        analyzer: {
-          // @ts-ignore - es client typings lagging
-          comma_analyzer: {
-            tokenizer: 'comma_tokenizer',
-            filter: ['lowercase', 'asciifolding'],
-          },
-        },
-      },
-      index: {
-        number_of_shards: 1,
-        number_of_replicas: 0,
-        refresh_interval: '5s',
-      },
-    }),
+    settings: merge(sharedIndexSettings, {}),
     mappings: {
       dynamic: false,
       properties: {
@@ -53,20 +33,18 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         route_id: { type: 'keyword' },
         routes: { type: 'keyword' },
         title: {
-          type: 'keyword',
+          ...lowerKeyword,
           fields: {
             searchable: standardText,
           },
         },
         length: { type: 'integer' },
-        tag_list: {
-          type: 'keyword',
-          normalizer: 'lower_asciifolding',
-        },
+        tag_list: lowerKeyword,
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
+        is_premium: { type: 'boolean' },
         downloadable: { type: 'boolean' },
 
         // saves
@@ -81,18 +59,18 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         user: {
           properties: {
             handle: {
-              type: 'keyword',
+              ...noWhitespaceLowerKeyword,
               fields: {
                 searchable: standardText,
               },
             },
             name: {
-              type: 'keyword',
+              ...lowerKeyword,
               fields: {
                 searchable: standardText,
               },
             },
-            location: { type: 'keyword' },
+            location: lowerKeyword,
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },
             created_at: { type: 'date' },
@@ -165,6 +143,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     WHERE tracks.is_current = true 
+      AND tracks.is_available = true
       AND users.is_current = true
     `
   }

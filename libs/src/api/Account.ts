@@ -130,7 +130,8 @@ export class Account extends Base {
     handleUserBankOutcomes = (_outcome?: string, _errorCodes?: {}) => {},
     userBankOutcomes: Partial<UserBankOutcomes> = {},
     feePayerOverride: Nullable<string> = null,
-    generateRecoveryLink = true
+    generateRecoveryLink = true,
+    useEntityManager = false
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -197,25 +198,36 @@ export class Account extends Base {
           }
         })()
       }
-
       // Add user to chain
-      phase = phases.ADD_USER
-      const response = await this.User.addUser(metadata)
-      userId = response.userId
-      blockHash = response.blockHash
-      blockNumber = response.blockNumber
+      if (!useEntityManager) {
+        phase = phases.ADD_USER
+        const response = await this.User.addUser(metadata)
+        userId = response.userId
+        blockHash = response.blockHash
+        blockNumber = response.blockNumber
 
-      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
-      phase = phases.ADD_REPLICA_SET
-      metadata = (await this.User.assignReplicaSet({ userId }))!
-
-      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
-      phase = phases.UPLOAD_PROFILE_IMAGES
-      await this.User.uploadProfileImages(
-        profilePictureFile!,
-        coverPhotoFile!,
-        metadata
-      )
+        // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
+        phase = phases.ADD_REPLICA_SET
+        metadata = (await this.User.assignReplicaSet({ userId }))!
+        // Upload profile pic and cover photo to primary Content Node and sync across secondaries
+        phase = phases.UPLOAD_PROFILE_IMAGES
+        await this.User.uploadProfileImages(
+          profilePictureFile!,
+          coverPhotoFile!,
+          metadata,
+          useEntityManager
+        )
+      } else {
+        const newMetadata = await this.User.createEntityManagerUser({
+          metadata
+        })
+        await this.User.uploadProfileImages(
+          profilePictureFile!,
+          coverPhotoFile!,
+          newMetadata,
+          useEntityManager
+        )
+      }
     } catch (e: any) {
       return {
         error: e.message,
@@ -241,7 +253,7 @@ export class Account extends Base {
 
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const data = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager.sign(data)
+      const signature = await this.web3Manager.sign(Buffer.from(data, 'utf-8'))
 
       const recoveryData = {
         login: recoveryInfo.login,
@@ -251,9 +263,10 @@ export class Account extends Base {
         handle
       }
 
-      await this.identityService.sendRecoveryInfo(recoveryData)
+      return await this.identityService.sendRecoveryInfo(recoveryData)
     } catch (e) {
       console.error(e)
+      return { status: false }
     }
   }
 
@@ -709,7 +722,9 @@ export class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.ethWeb3Manager.sign(message)
+    const signature = await this.ethWeb3Manager.sign(
+      Buffer.from(message, 'utf-8')
+    )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(
       wallet,

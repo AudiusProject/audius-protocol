@@ -16,9 +16,11 @@ const findContentNodes = async () => {
   const nodes = await ethContracts.getServiceProviderList('content-node')
   const toChecksumAddress = ethWeb3Manager.getWeb3().utils.toChecksumAddress
   KNOWN_CONTENT_NODE_WALLETS = new Set(
-    nodes.map(node => toChecksumAddress(node.delegateOwnerWallet))
+    nodes.map((node) => toChecksumAddress(node.delegateOwnerWallet))
   )
-  logger.info(`findContentNodes - Known wallets: ${[...KNOWN_CONTENT_NODE_WALLETS]}`)
+  logger.info(
+    `findContentNodes - Known wallets: ${[...KNOWN_CONTENT_NODE_WALLETS]}`
+  )
 }
 
 findContentNodes()
@@ -34,7 +36,12 @@ setInterval(findContentNodes, FIND_CONTENT_NODES_INTERVAL_MS)
  * @param {Set<string>} knownContentNodeWallets
  * @param {Set<string>} knownContentNodeIPAddresses
  */
-const _isIPFromContentNode = (ip, req, knownContentNodeWallets, knownContentNodeIPAddresses) => {
+const _isIPFromContentNode = (
+  ip,
+  req,
+  knownContentNodeWallets,
+  knownContentNodeIPAddresses
+) => {
   if (knownContentNodeIPAddresses.has(ip)) {
     return true
   }
@@ -50,12 +57,21 @@ const _isIPFromContentNode = (ip, req, knownContentNodeWallets, knownContentNode
     return false
   }
 
-  req.logger.info(`isIPFromContentNode - Recovering signature: ${signature}, timestamp: ${timestamp}`)
-  req.logger.info(`isIPFromContentNode - Known wallets: ${[...knownContentNodeWallets]}, ips: ${[...knownContentNodeIPAddresses]}`)
-  const wallet = recoverWallet({
-    data: 'listen',
-    timestamp
-  }, signature)
+  req.logger.info(
+    `isIPFromContentNode - Recovering signature: ${signature}, timestamp: ${timestamp}`
+  )
+  req.logger.info(
+    `isIPFromContentNode - Known wallets: ${[
+      ...knownContentNodeWallets
+    ]}, ips: ${[...knownContentNodeIPAddresses]}`
+  )
+  const wallet = recoverWallet(
+    {
+      data: 'listen',
+      timestamp
+    },
+    signature
+  )
 
   req.logger.info(`isIPFromContentNode - Recovered wallet: ${wallet}`)
   if (knownContentNodeWallets.has(wallet)) {
@@ -68,7 +84,12 @@ const _isIPFromContentNode = (ip, req, knownContentNodeWallets, knownContentNode
 }
 
 const isIPFromContentNode = (ip, req) => {
-  return _isIPFromContentNode(ip, req, KNOWN_CONTENT_NODE_WALLETS, KNOWN_CONTENT_NODE_IP_ADDRESSES)
+  return _isIPFromContentNode(
+    ip,
+    req,
+    KNOWN_CONTENT_NODE_WALLETS,
+    KNOWN_CONTENT_NODE_IP_ADDRESSES
+  )
 }
 
 module.exports = {

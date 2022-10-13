@@ -187,9 +187,9 @@ def model_to_dictionary(model, exclude_keys=None):
 
     for key in relationships:
         if key not in exclude_keys and not key.startswith("_"):
-            attr = getattr(model, key)
             if key in unloaded:
                 continue
+            attr = getattr(model, key)
             if isinstance(attr, list):
                 model_dict[key] = query_result_to_list(attr)
             else:
@@ -357,24 +357,6 @@ def get_discovery_provider_version():
     return data
 
 
-def get_valid_multiaddr_from_id_json(id_json):
-    logger = logging.getLogger(__name__)
-    # js-ipfs api returns lower case keys
-    if "addresses" in id_json and isinstance(id_json["addresses"], list):
-        for multiaddr in id_json["addresses"]:
-            if ("127.0.0.1" not in multiaddr) and ("ip6" not in multiaddr):
-                logger.warning(f"returning {multiaddr}")
-                return multiaddr
-
-    # py-ipfs api returns uppercase keys
-    if "Addresses" in id_json and isinstance(id_json["Addresses"], list):
-        for multiaddr in id_json["Addresses"]:
-            if ("127.0.0.1" not in multiaddr) and ("ip6" not in multiaddr):
-                logger.warning(f"returning {multiaddr}")
-                return multiaddr
-    return None
-
-
 HASH_MIN_LENGTH = 5
 HASH_SALT = "azowernasdfoia"
 
@@ -382,6 +364,9 @@ hashids = Hashids(min_length=5, salt=HASH_SALT)
 
 
 def encode_int_id(id: int):
+    # if id is already a string, assume it has already been encoded
+    if isinstance(id, str):
+        return id
     return cast(str, hashids.encode(id))
 
 

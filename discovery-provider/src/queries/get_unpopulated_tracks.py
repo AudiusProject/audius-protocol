@@ -41,7 +41,11 @@ def set_tracks_in_cache(tracks):
 
 
 def get_unpopulated_tracks(
-    session, track_ids, filter_deleted=False, filter_unlisted=True
+    session,
+    track_ids,
+    filter_deleted=False,
+    filter_unlisted=True,
+    exclude_premium=False,
 ):
     """
     Fetches tracks by checking the redis cache first then
@@ -50,6 +54,9 @@ def get_unpopulated_tracks(
     Args:
         session: DB session
         track_ids: array A list of track ids
+        filter_deleted: boolean indicating whether to filter out deleted tracks
+        filter_unlisted: boolean indicating whether to filter out unlisted tracks
+        exclude_premium: boolean indicating whether to filter out premium tracks
 
     Returns:
         Array of tracks
@@ -63,6 +70,8 @@ def get_unpopulated_tracks(
             res = list(filter(lambda track: not track["is_delete"], res))
         if filter_unlisted:
             res = list(filter(lambda track: not track["is_unlisted"], res))
+        if exclude_premium:
+            res = list(filter(lambda track: not track["is_premium"], res))
         return res
 
     # Create a dict of cached tracks
@@ -87,6 +96,9 @@ def get_unpopulated_tracks(
     if filter_deleted:
         tracks_query = tracks_query.filter(Track.is_delete == False)
 
+    if exclude_premium:
+        tracks_query = tracks_query.filter(Track.is_premium == False)
+
     tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
     queried_tracks = {track["track_id"]: track for track in tracks}
@@ -100,6 +112,8 @@ def get_unpopulated_tracks(
             if filter_unlisted and cached_tracks[track_id]["is_unlisted"]:
                 continue
             if filter_deleted and cached_tracks[track_id]["is_delete"]:
+                continue
+            if exclude_premium and cached_tracks[track_id]["is_premium"]:
                 continue
             tracks_response.append(cached_tracks[track_id])
         elif track_id in queried_tracks:

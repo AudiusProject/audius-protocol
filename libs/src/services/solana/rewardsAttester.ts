@@ -199,6 +199,7 @@ type Challenge = {
 type AttestationResult = Challenge & {
   error?: string
   phase?: string
+  aaoErrorCode?: number
   nodesToReselect?: string[] | null
 }
 
@@ -697,7 +698,7 @@ export class RewardsAttester {
       )}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`
     )
 
-    const { success, error, phase, nodesToReselect } =
+    const { success, error, aaoErrorCode, phase, nodesToReselect } =
       await this.libs.Rewards.submitAndEvaluate({
         challengeId,
         encodedUserId: userId,
@@ -750,6 +751,7 @@ export class RewardsAttester {
       wallet,
       completedBlocknumber,
       error,
+      aaoErrorCode,
       phase,
       nodesToReselect
     }

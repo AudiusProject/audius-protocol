@@ -12,9 +12,10 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
+from opentelemetry.instrumentation.flask import FlaskInstrumentor  # type: ignore
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
-from src import api_helpers, exceptions
+from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
@@ -41,6 +42,7 @@ from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
 from src.utils import helpers
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
@@ -63,6 +65,7 @@ social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
 user_replica_set_manager = None
+entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
@@ -126,6 +129,16 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
+    entity_manager_address = None
+    entity_manager_inst = None
+    if shared_config["contracts"]["entity_manager_address"]:
+        entity_manager_address = web3.toChecksumAddress(
+            shared_config["contracts"]["entity_manager_address"]
+        )
+        entity_manager_inst = web3.eth.contract(
+            address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
+        )
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -134,6 +147,7 @@ def init_contracts():
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
+        "entity_manager": entity_manager_address,
     }
 
     return (
@@ -144,6 +158,7 @@ def init_contracts():
         playlist_factory_inst,
         user_library_factory_inst,
         user_replica_set_manager_inst,
+        entity_manager_inst,
         contract_address_dict,
     )
 
@@ -176,6 +191,7 @@ def create_celery(test_config=None):
     global playlist_factory
     global user_library_factory
     global user_replica_set_manager
+    global entity_manager
     global contract_addresses
     # pylint: enable=W0603
 
@@ -187,6 +203,7 @@ def create_celery(test_config=None):
         playlist_factory,
         user_library_factory,
         user_replica_set_manager,
+        entity_manager,
         contract_addresses,
     ) = init_contracts()
 
@@ -198,7 +215,9 @@ def create(test_config=None, mode="app"):
     assert isinstance(mode, str), f"Expected string, provided {arg_type}"
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
 
+    tracer.configure_tracer()
     app = Flask(__name__)
+    FlaskInstrumentor().instrument_app(app)
 
     # Tell Flask that it should respect the X-Forwarded-For and X-Forwarded-Proto
     # headers coming from a proxy (if any).
@@ -358,7 +377,6 @@ def configure_celery(celery, test_config=None):
         imports=[
             "src.tasks.index",
             "src.tasks.index_metrics",
-            "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -399,10 +417,6 @@ def configure_celery(celery, test_config=None):
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
-            },
-            "update_materialized_views": {
-                "task": "update_materialized_views",
-                "schedule": timedelta(seconds=300),
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
@@ -489,7 +503,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": timedelta(hours=12),  # run every 12 hours
+                "schedule": timedelta(hours=3),
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
@@ -537,10 +551,15 @@ def configure_celery(celery, test_config=None):
         cid_metadata_client,
     )
 
+    registry_address = web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_manager = EthManager(eth_web3, eth_abi_values, registry_address)
+    eth_manager.init_contracts()
+
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
-    redis_inst.delete("materialized_view_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("index_hourly_play_counts_lock")
@@ -579,6 +598,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 anchor_program_indexer=anchor_program_indexer,
+                eth_manager=eth_manager,
             )
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)

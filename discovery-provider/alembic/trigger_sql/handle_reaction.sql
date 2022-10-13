@@ -7,14 +7,15 @@ begin
   
   if sender_user_id is not null then
     insert into notification
-      (slot, user_ids, timestamp, type, specifier, data)
+      (slot, user_ids, timestamp, type, specifier, group_id, data)
     values
       (
       new.slot,
       ARRAY [sender_user_id],
       new.timestamp,
       'reaction',
-      'reaction:' || 'reaction_to:' || new.reacted_to || ':slot:' || new.slot,
+      sender_user_id,
+      'reaction:' || 'reaction_to:' || new.reacted_to || ':reaction_type:' || new.reaction_type || ':reaction_value:' || new.reaction_value || ':timestamp:' || new.timestamp,
       json_build_object('sender_wallet', new.sender_wallet, 'reaction_type', new.reaction_type, 'reacted_to', new.reacted_to, 'reaction_value', new.reaction_value)
     )
     on conflict do nothing;

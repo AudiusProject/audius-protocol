@@ -2,9 +2,12 @@ const fs = require('fs')
 const path = require('path')
 const readline = require('readline')
 const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migration-output.json')
+const dataContractsMigrationOutput = require('../../contracts/migrations/migration-output.json')
 const solanaConfig = require('../../solana-programs/solana-program-config.json')
 
 const ETH_CONTRACTS_REGISTRY = 'audius_eth_contracts_registry'
+const CONTRACTS_REGISTRY = 'audius_contracts_registry'
+const ENTITY_MANAGER_ADDRESS = 'audius_contracts_entity_manager_address'
 const SOLANA_TRACK_LISTEN_COUNT_ADDRESS = 'audius_solana_track_listen_count_address'
 const SOLANA_ENDPOINT = 'audius_solana_endpoint'
 
@@ -23,6 +26,8 @@ const SOLANA_ANCHOR_ADMIN_STORAGE_PUBLIC_KEY = 'audius_solana_anchor_admin_stora
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
   const ethRegistryAddress = ethContractsMigrationOutput.registryAddress
+  const dataRegistryAddress = dataContractsMigrationOutput.registryAddress
+  const entityManagerAddress = dataContractsMigrationOutput.entityManagerProxyAddress
   const solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
   const signerGroup = solanaConfig.signerGroup
   const solanaEndpoint = solanaConfig.endpoint
@@ -48,6 +53,8 @@ const configureLocalDiscProv = async () => {
     rewardsManagerAccount,
     anchorProgramId,
     anchorAdminStoragePublicKey,
+    dataRegistryAddress,
+    entityManagerAddress
   )
 }
 
@@ -65,6 +72,8 @@ const _updateDiscoveryProviderEnvFile = async (
   rewardsManagerAccount,
   anchorProgramId,
   anchorAdminStoragePublicKey,
+  dataRegistryAddress,
+  entityManagerAddress
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
@@ -83,6 +92,8 @@ const _updateDiscoveryProviderEnvFile = async (
   let rewardsAccountFound = false
   let anchorProgramIdFound = false
   let anchorAdminStoragePublicKeyFound = false
+  let dataRegistryLineFound = false
+  let dataContractLineFound = false
 
   const ethRegistryAddressLine = `${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`
   const solanaTrackListenCountAddressLine = `${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}=${solanaTrackListenCountAddress}`
@@ -94,6 +105,8 @@ const _updateDiscoveryProviderEnvFile = async (
   const rewardsManagerAccountLine = `${SOLANA_REWARDS_MANAGER_ACCOUNT}=${rewardsManagerAccount}`
   const anchorProgramIdLine = `${SOLANA_ANCHOR_PROGRAM_ID}=${anchorProgramId}`
   const anchorAdminStoragePublicKeyLine = `${SOLANA_ANCHOR_ADMIN_STORAGE_PUBLIC_KEY}=${anchorAdminStoragePublicKey}`
+  const dataRegistryLine = `${CONTRACTS_REGISTRY}=${dataRegistryAddress}`
+  const entityManagerContractLine = `${ENTITY_MANAGER_ADDRESS}=${entityManagerAddress}`
 
   for await (const line of rl) {
     if (line.includes(ETH_CONTRACTS_REGISTRY)) {
@@ -126,6 +139,12 @@ const _updateDiscoveryProviderEnvFile = async (
     } else if (line.includes(SOLANA_ANCHOR_ADMIN_STORAGE_PUBLIC_KEY)) {
       output.push(anchorAdminStoragePublicKeyLine)
       anchorAdminStoragePublicKeyFound = true
+    } else if (line.includes(CONTRACTS_REGISTRY)) {
+      output.push(dataRegistryLine)
+      dataRegistryLineFound = true
+    } else if (line.includes(ENTITY_MANAGER_ADDRESS)) {
+      output.push(entityManagerContractLine)
+      dataContractLineFound = true
     } else {
       output.push(line)
     }
@@ -159,6 +178,12 @@ const _updateDiscoveryProviderEnvFile = async (
   }
   if (!anchorAdminStoragePublicKeyFound) {
     output.push(anchorAdminStoragePublicKeyLine)
+  }
+  if (!dataRegistryLineFound) {
+    output.push(dataRegistryLine)
+  }
+  if (!dataContractLineFound) {
+    output.push(entityManagerContractLine)
   }
   fs.writeFileSync(writePath, output.join('\n'))
   console.log(`Updated DISCOVERY PROVIDER ${writePath} ${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress} ${output}`)

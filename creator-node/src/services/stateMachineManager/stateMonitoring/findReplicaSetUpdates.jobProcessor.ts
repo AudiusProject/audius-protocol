@@ -13,6 +13,9 @@ import type {
   FindReplicaSetUpdatesJobReturnValue,
   StateMonitoringUser
 } from './types'
+import { instrumentTracing, tracing } from '../../../tracer'
+import { stringifyMap } from '../../../utils'
+import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 
 const _: LoDashStatic = require('lodash')
 
@@ -21,7 +24,6 @@ const {
   QUEUE_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
-const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -42,7 +44,7 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
  * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
  */
-module.exports = async function ({
+async function findReplicaSetUpdates({
   logger,
   users,
   unhealthyPeers,
@@ -52,8 +54,9 @@ module.exports = async function ({
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
 > {
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
+  const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
-  // Parallelize calling _findReplicaSetUpdatesForUser on chunks of 500 users at a time
+  // Parallelize calling findReplicaSetUpdatesForUser on chunks of 500 users at a time
   const userBatches: StateMonitoringUser[][] = _.chunk(
     users,
     FIND_REPLICA_SET_UPDATES_BATCH_SIZE
@@ -66,7 +69,7 @@ module.exports = async function ({
     const resultBatch: PromiseSettledResult<UpdateReplicaSetOp[]>[] =
       await Promise.allSettled(
         userBatch.map((user: StateMonitoringUser) =>
-          _findReplicaSetUpdatesForUser(
+          findReplicaSetUpdatesForUser(
             user,
             thisContentNodeEndpoint,
             unhealthyPeersSet,
@@ -84,6 +87,7 @@ module.exports = async function ({
             },
             minSecondaryUserSyncSuccessPercent,
             minFailedSyncRequestsBeforeReconfig,
+            cNodeEndpointToSpIdMap,
             logger
           )
         )
@@ -100,7 +104,7 @@ module.exports = async function ({
     if (promiseStatus === 'rejected') {
       const { reason } = promiseResult
       logger.error(
-        `_findReplicaSetUpdatesForUser() encountered unexpected failure: ${
+        `findReplicaSetUpdatesForUser() encountered unexpected failure: ${
           reason.message || reason
         }`
       )
@@ -125,7 +129,8 @@ module.exports = async function ({
               updateReplicaSetOp.secondary1,
               updateReplicaSetOp.secondary2
             ]
-          )
+          ),
+          parentSpanContext: tracing.currentSpanContext()
         })
       }
     } else {
@@ -136,7 +141,7 @@ module.exports = async function ({
   }
 
   return {
-    cNodeEndpointToSpIdMap: CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
+    cNodeEndpointToSpIdMap: stringifyMap(cNodeEndpointToSpIdMap),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.UPDATE_REPLICA_SET]: updateReplicaSetJobs
@@ -168,6 +173,7 @@ const _findReplicaSetUpdatesForUser = async (
   },
   minSecondaryUserSyncSuccessPercent: number,
   minFailedSyncRequestsBeforeReconfig: number,
+  cNodeEndpointToSpIdMap: Map<string, number>,
   logger: Logger
 ): Promise<UpdateReplicaSetOp[]> => {
   const requiredUpdateReplicaSetOps: UpdateReplicaSetOp[] = []
@@ -182,6 +188,20 @@ const _findReplicaSetUpdatesForUser = async (
     secondary1SpID,
     secondary2SpID
   } = user
+
+  // If the user was on an old client (pre-URSM), they could have a null replica set on URSM.
+  // This will be resolved by client-side sanity checks next time they use the client.
+  // Any replica set update we issue here will fail because they have no primary SP ID that can be verified from chain.
+  if (
+    primarySpID === null &&
+    secondary1SpID === null &&
+    secondary1SpID === null
+  ) {
+    logger.error(
+      `User ${wallet} has null SP IDs for their entire replica set. Replica set endpoints: [${primary},${secondary1},${secondary2}]`
+    )
+    return requiredUpdateReplicaSetOps
+  }
 
   /**
    * If this node is primary for user, check both secondaries for health
@@ -208,27 +228,17 @@ const _findReplicaSetUpdatesForUser = async (
         userSecondarySyncMetricsBySecondary[secondary]
 
       // Error case 1 - mismatched spID
-      if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
-        secondaryInfo.spId
-      ) {
+      const spIdFromChain = cNodeEndpointToSpIdMap.get(secondary)
+      if (spIdFromChain !== secondaryInfo.spId) {
         logger.error(
-          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${
-            secondaryInfo.spId
-          }, found ${
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary]
-          }. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
-          )}`
+          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${spIdFromChain}. Marking replica as unhealthy.`
         )
         unhealthyReplicas.add(secondary)
 
         // Error case 2 - already marked unhealthy
       } else if (unhealthyPeersSet.has(secondary)) {
         logger.error(
-          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
-          )}`
+          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
         )
         unhealthyReplicas.add(secondary)
 
@@ -238,16 +248,14 @@ const _findReplicaSetUpdatesForUser = async (
         successRate < minSecondaryUserSyncSuccessPercent
       ) {
         logger.error(
-          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy. Endpoint to spID mapping: ${JSON.stringify(
-            CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
-          )}`
+          `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${minSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
         )
         unhealthyReplicas.add(secondary)
       }
     }
 
     /**
-     * If this node is secondary for user, check both secondaries for health and enqueue replica set updates if needed
+     * If this node is secondary for user, check primary and non-self secondary for health and enqueue replica set updates if needed
      */
   } else {
     // filter out false-y values to account for incomplete replica sets and filter out the
@@ -263,10 +271,11 @@ const _findReplicaSetUpdatesForUser = async (
     for (const replica of replicaSetNodesToObserve) {
       // If the map's spId does not match the query's spId, then regardless
       // of the relationship of the node to the user, issue a reconfig for that node
-      if (
-        CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[replica.endpoint] !==
-        replica.spId
-      ) {
+      const spIdFromChain = cNodeEndpointToSpIdMap.get(replica.endpoint)
+      if (spIdFromChain !== replica.spId) {
+        logger.error(
+          `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} mismatched spID. Expected ${replica.spId}, found ${spIdFromChain}.`
+        )
         unhealthyReplicas.add(replica.endpoint)
       } else if (unhealthyPeersSet.has(replica.endpoint)) {
         // Else, continue with conducting extra health check if the current observed node is a primary, and
@@ -280,6 +289,9 @@ const _findReplicaSetUpdatesForUser = async (
         }
 
         if (addToUnhealthyReplicas) {
+          logger.error(
+            `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} was already marked unhealthy and failed an additional health check if it was primary.`
+          )
           unhealthyReplicas.add(replica.endpoint)
         }
       }
@@ -300,6 +312,15 @@ const _findReplicaSetUpdatesForUser = async (
 
   return requiredUpdateReplicaSetOps
 }
+
+const findReplicaSetUpdatesForUser = instrumentTracing({
+  fn: _findReplicaSetUpdatesForUser,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
 
 /**
  * Filters input map to only include the given wallet and replica set nodes
@@ -328,4 +349,28 @@ const _transformAndFilterReplicaToUserInfoMap = (
       // Only include nodes in the user's replica set
       .filter(([node, _]) => replicaSet.includes(node))
   )
+}
+
+module.exports = async (
+  params: DecoratedJobParams<FindReplicaSetUpdateJobParams>
+) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'findReplicaSetUpdates.jobProcessor',
+    fn: findReplicaSetUpdates,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

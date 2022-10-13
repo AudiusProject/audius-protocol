@@ -10,6 +10,7 @@ const {
   HEALTHY_SERVICES_TTL_SEC
 } = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const { instrumentTracing, tracing } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
@@ -21,7 +22,7 @@ const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
  *   syncReqToEnqueue
  * }
  */
-const getNewOrExistingSyncReq = ({
+const getNewOrExistingSyncReq = async ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
@@ -44,19 +45,23 @@ const getNewOrExistingSyncReq = ({
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
    */
-  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-    syncType,
-    userWallet,
-    secondaryEndpoint,
-    immediate
-  )
+  const duplicateSyncJobInfo =
+    await SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
   if (duplicateSyncJobInfo) {
     logger.info(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
 
     return {
-      duplicateSyncReq: duplicateSyncJobInfo
+      duplicateSyncReq: {
+        ...duplicateSyncJobInfo,
+        parentSpanContext: tracing.currentSpanContext()
+      }
     }
   }
 
@@ -79,10 +84,12 @@ const getNewOrExistingSyncReq = ({
   const syncReqToEnqueue = {
     syncType,
     syncMode,
-    syncRequestParameters
+    syncRequestParameters,
+    parentSpanContext: tracing.currentSpanContext()
   }
 
-  SyncRequestDeDuplicator.recordSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
@@ -90,6 +97,7 @@ const getNewOrExistingSyncReq = ({
     immediate
   )
 
+  tracing.info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
 }
 
@@ -97,7 +105,7 @@ const getNewOrExistingSyncReq = ({
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
  */
-const issueSyncRequestsUntilSynced = async (
+const _issueSyncRequestsUntilSynced = async (
   primaryUrl,
   secondaryUrl,
   wallet,
@@ -106,7 +114,7 @@ const issueSyncRequestsUntilSynced = async (
   queue
 ) => {
   // Issue syncRequest before polling secondary for replication
-  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+  const { duplicateSyncReq, syncReqToEnqueue } = await getNewOrExistingSyncReq({
     userWallet: wallet,
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
@@ -119,7 +127,7 @@ const issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    await queue.add({
+    await queue.add('manual-sync', {
       enqueuedBy: 'issueSyncRequestsUntilSynced',
       ...syncReqToEnqueue
     })
@@ -163,6 +171,15 @@ const issueSyncRequestsUntilSynced = async (
   )
 }
 
+const issueSyncRequestsUntilSynced = instrumentTracing({
+  fn: _issueSyncRequestsUntilSynced,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
+
 const getCachedHealthyNodes = async () => {
   const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
   return healthyNodes
@@ -178,8 +195,12 @@ const cacheHealthyNodes = async (healthyNodes) => {
 }
 
 module.exports = {
-  getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced,
-  getCachedHealthyNodes,
-  cacheHealthyNodes
+  getNewOrExistingSyncReq: instrumentTracing({
+    fn: getNewOrExistingSyncReq
+  }),
+  issueSyncRequestsUntilSynced: instrumentTracing({
+    fn: issueSyncRequestsUntilSynced
+  }),
+  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
 }

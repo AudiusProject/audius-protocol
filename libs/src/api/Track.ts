@@ -5,6 +5,7 @@ import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
+import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
 
 const TRACK_PROPS = [
   'owner_id',
@@ -16,7 +17,9 @@ const TRACK_PROPS = [
   'mood',
   'credits_splits',
   'release_date',
-  'file_type'
+  'file_type',
+  'is_premium',
+  'premium_conditions'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
@@ -91,6 +94,50 @@ export class Track extends Base {
   ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return await this.discoveryProvider.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
+  }
+
+  /**
+   * get tracks with all relevant track data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param targetUserId the owner of the tracks being queried
+   * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param minBlockNumber The min block number
+   * @param filterDeleted If set to true filters out deleted tracks
+   * @returns Array of track metadata Objects
+   * additional metadata fields on track objects:
+   *  {Integer} repost_count - repost count for given track
+   *  {Integer} save_count - save count for given track
+   *  {Array} followee_reposts - followees of current user that have reposted given track
+   *  {Boolean} has_current_user_reposted - has current user reposted given track
+   *  {Boolean} has_current_user_saved - has current user saved given track
+   * @example
+   * await getTracks()
+   * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
+   */
+  async getTracksVerbose(
+    limit = 100,
+    offset = 0,
+    idsArray: Nullable<string[]> = null,
+    targetUserId: Nullable<string> = null,
+    sort: Nullable<boolean> = null,
+    minBlockNumber: Nullable<number> = null,
+    filterDeleted: Nullable<boolean> = null,
+    withUsers = false
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getTracksVerbose(
       limit,
       offset,
       idsArray,
@@ -347,7 +394,8 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void
+    onProgress: () => void,
+    useEntityManager: boolean
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -408,25 +456,39 @@ export class Track extends Base {
           }
         }
       )
-
       phase = phases.ADDING_TRACK
 
       // Write metadata to chain
-      const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-      const { txReceipt, trackId } =
-        await this.contracts.TrackFactoryClient.addTrack(
+      let txReceipt: TransactionReceipt
+      let trackId: number
+      if (useEntityManager) {
+        trackId = Track.generateTrackId()
+        const response = await this.contracts.EntityManagerClient!.manageEntity(
+          ownerId,
+          EntityManagerClient.EntityType.TRACK,
+          trackId,
+          EntityManagerClient.Action.CREATE,
+          metadataMultihash
+        )
+        txReceipt = response.txReceipt
+      } else {
+        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+        const response = await this.contracts.TrackFactoryClient.addTrack(
           ownerId,
           multihashDecoded.digest,
           multihashDecoded.hashFn,
           multihashDecoded.size
         )
+        txReceipt = response.txReceipt
+        trackId = response.trackId
+      }
 
       phase = phases.ASSOCIATING_TRACK
       // Associate the track id with the file metadata and block number
       await this.creatorNode.associateTrack(
         trackId,
         metadataFileUUID,
-        txReceipt.blockNumber,
+        txReceipt!.blockNumber,
         transcodedTrackUUID
       )
       return {
@@ -513,7 +575,10 @@ export class Track extends Base {
    * Adds tracks to chain for this user
    * Associates tracks with user on creatorNode
    */
-  async addTracksToChainAndCnode(trackMultihashAndUUIDList: ChainInfo[]) {
+  async addTracksToChainAndCnode(
+    trackMultihashAndUUIDList: ChainInfo[],
+    useEntityManager: boolean
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
     const ownerId = this.userStateManager.getCurrentUserId()
     if (!ownerId) {
@@ -534,15 +599,30 @@ export class Track extends Base {
             trackInfo
 
           // Write metadata to chain
-          const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-          const { txReceipt, trackId } =
-            await this.contracts.TrackFactoryClient.addTrack(
+          let txReceipt: TransactionReceipt
+          let trackId: number
+          if (useEntityManager && this.contracts.EntityManagerClient) {
+            trackId = Track.generateTrackId()
+            const response =
+              await this.contracts.EntityManagerClient.manageEntity(
+                ownerId,
+                EntityManagerClient.EntityType.TRACK,
+                trackId,
+                EntityManagerClient.Action.CREATE,
+                metadataMultihash
+              )
+            txReceipt = response.txReceipt
+          } else {
+            const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+            const response = await this.contracts.TrackFactoryClient.addTrack(
               ownerId,
               multihashDecoded.digest,
               multihashDecoded.hashFn,
               multihashDecoded.size
             )
-
+            txReceipt = response.txReceipt
+            trackId = response.trackId
+          }
           addedToChain[i] = {
             trackId,
             metadataFileUUID,
@@ -598,7 +678,7 @@ export class Track extends Base {
    * such as track content, cover art are already on creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
    */
-  async updateTrack(metadata: TrackMetadata) {
+  async updateTrack(metadata: TrackMetadata, useEntityManager: boolean) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
 
@@ -614,15 +694,28 @@ export class Track extends Base {
     const { metadataMultihash, metadataFileUUID } =
       await this.creatorNode.uploadTrackMetadata(metadata)
     // Write the new metadata to chain
-    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const trackId = metadata.track_id
-    const { txReceipt } = await this.contracts.TrackFactoryClient.updateTrack(
-      trackId,
-      ownerId,
-      multihashDecoded.digest,
-      multihashDecoded.hashFn,
-      multihashDecoded.size
-    )
+    let txReceipt: TransactionReceipt
+    const trackId: number = metadata.track_id
+    if (useEntityManager) {
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        ownerId,
+        EntityManagerClient.EntityType.TRACK,
+        trackId,
+        EntityManagerClient.Action.UPDATE,
+        metadataMultihash
+      )
+      txReceipt = response.txReceipt
+    } else {
+      const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+      const response = await this.contracts.TrackFactoryClient.updateTrack(
+        trackId,
+        ownerId,
+        multihashDecoded.digest,
+        multihashDecoded.hashFn,
+        multihashDecoded.size
+      )
+      txReceipt = response.txReceipt
+    }
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(
       trackId,
@@ -710,10 +803,33 @@ export class Track extends Base {
    * Marks a tracks as deleted
    * @param trackId
    */
-  async deleteTrack(trackId: number) {
-    return await this.contracts.TrackFactoryClient.deleteTrack(trackId)
+  async deleteTrack(trackId: number, useEntityManager: boolean) {
+    if (useEntityManager) {
+      const ownerId = this.userStateManager.getCurrentUserId()
+
+      if (!ownerId) throw new Error('No users loaded for this wallet')
+
+      return await this.contracts.EntityManagerClient!.manageEntity(
+        ownerId,
+        EntityManagerClient.EntityType.TRACK,
+        trackId,
+        EntityManagerClient.Action.DELETE,
+        ''
+      )
+    } else {
+      return await this.contracts.TrackFactoryClient.deleteTrack(trackId)
+    }
   }
 
+  // Minimum track ID, intentionally higher than legacy track ID range
+  static MIN_TRACK_ID = 2000000
+
+  // Maximum track ID, reflects postgres max integer value
+  static MAX_TRACK_ID = 2147483647
+
+  static generateTrackId(): number {
+    return Utils.getRandomInt(Track.MIN_TRACK_ID, Track.MAX_TRACK_ID)
+  }
   /* ------- PRIVATE  ------- */
 
   _validateTrackMetadata(metadata: TrackMetadata) {

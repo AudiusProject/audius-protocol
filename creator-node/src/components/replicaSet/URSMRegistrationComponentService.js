@@ -2,6 +2,7 @@ const axios = require('axios')
 const { promisify } = require('util')
 const crypto = require('crypto')
 const randomBytes = promisify(crypto.randomBytes)
+const config = require('../../config')
 
 const {
   parseCNodeResponse,
@@ -101,6 +102,11 @@ const respondToURSMRequestForSignature = async (
     timeout: 1000,
     params: {
       randomBytesToSign
+    },
+    headers: {
+      'User-Agent': `Axios - @audius/content-node - ${config.get(
+        'creatorNodeEndpoint'
+      )} - URSMRegistrationComponentService#respondToURSMRequestForSignature`
     }
   })
   const { responseData, signatureData } = parseCNodeResponse(

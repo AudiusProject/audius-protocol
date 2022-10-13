@@ -1,31 +1,13 @@
+// This is used by `ts language service` and testing, so it needs to include the test folder
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "pretty": true,
-    "target": "es2020",
-    "module": "commonjs",
-    "lib": [
-      "es2020"
-    ],
-    "outDir": "./build",
-    "allowJs": true,
-    "downlevelIteration": true,
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitThis": false,
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ]
+    "outDir": "./build_test",
+    "types": ["node", "mocha"]
   },
   "include": [
     "src",
+    "test",
     "sequelize"
   ],
   "exclude": [

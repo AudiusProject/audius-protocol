@@ -45,6 +45,7 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
+import { EntityManager } from './api/entityManager'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -145,7 +146,9 @@ export class AudiusLibs {
     // network chain id
     networkId: string,
     // wallet address to force use instead of the first wallet on the provided web3
-    walletOverride: Nullable<string> = null
+    walletOverride: Nullable<string> = null,
+    // entity manager address
+    entityManagerAddress: Nullable<string> = null
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
@@ -154,6 +157,7 @@ export class AudiusLibs {
     const wallets = await web3Instance.eth.getAccounts()
     return {
       registryAddress,
+      entityManagerAddress,
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
@@ -168,7 +172,8 @@ export class AudiusLibs {
   static configInternalWeb3(
     registryAddress: string,
     providers: provider,
-    privateKey: string
+    privateKey: string,
+    entityManagerAddress?: string
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -185,6 +190,7 @@ export class AudiusLibs {
 
     return {
       registryAddress,
+      entityManagerAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
         web3ProviderEndpoints: providerList,
@@ -197,14 +203,12 @@ export class AudiusLibs {
    * Configures an eth web3
    */
   static configEthWeb3(
-    tokenAddress: string,
-    registryAddress: string,
-    // web3 provider endpoint(s)
-    providers: provider,
-    // owner wallet to establish who we are sending transactions on behalf of
-    ownerWallet?: string,
-    claimDistributionContractAddress?: string,
-    wormholeContractAddress?: string
+    tokenAddress,
+    registryAddress,
+    providers,
+    ownerWallet,
+    claimDistributionContractAddress,
+    wormholeContractAddress
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -364,6 +368,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
@@ -445,6 +450,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
@@ -550,7 +556,8 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config.registryAddress,
+        this.web3Config ? this.web3Config.registryAddress : null,
+        this.web3Config ? this.web3Config.entityManagerAddress : null,
         this.isServer,
         this.logger
       )
@@ -558,11 +565,9 @@ export class AudiusLibs {
     }
     await Promise.all(contractsToInit)
     if (
-      this.hedgehog &&
       this.wormholeConfig &&
       this.ethWeb3Manager &&
       this.ethContracts &&
-      this.identityService &&
       this.solanaWeb3Manager
     ) {
       this.wormholeClient = new Wormhole(
@@ -652,6 +657,7 @@ export class AudiusLibs {
     this.File = new File(this.User, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.EntityManager = new EntityManager(...services)
   }
 }
 
