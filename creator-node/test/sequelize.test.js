@@ -6,7 +6,7 @@ const config = require('../src/config')
 
 describe('test postgres and sequelize', function () {
   it('respects the query timeout', async function () {
-    config.set('queryTimeout', 1) // set the query timeout to be 1 milliseond
+    config.set('statementTimeout', 1) // set the query timeout to be 1 milliseond
     const { sequelize } = require('../src/models')
 
     return expect(
