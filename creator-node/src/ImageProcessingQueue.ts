@@ -51,8 +51,8 @@ export class ImageProcessingQueue {
     // this cannot import typescript so we need to give it vanilla js
     // during local dev we're in src/, but prod starts in build/src
     // see scripts/start.sh for entry points
-    if (__dirname.includes('/build')) {
-      processorFile = path.join(__dirname, 'src', 'resizeImage.js')
+    if (__dirname.includes('/build/src')) {
+      processorFile = path.join(__dirname, 'resizeImage.js')
     } else {
       processorFile = path.join(__dirname, '../build/src', 'resizeImage.js')
     }
