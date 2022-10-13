@@ -3,33 +3,25 @@ import { useMemo, createContext } from 'react'
 
 // eslint-disable-next-line import/no-unresolved
 import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import type {
-  DrawerNavigationState,
-  NavigationProp,
-  ParamListBase
-} from '@react-navigation/native'
+import type { NavigationProp } from '@react-navigation/native'
 
-type ContextType = {
+type AppDrawerContextType = {
   drawerHelpers: DrawerNavigationHelpers
   drawerNavigation?: NavigationProp<any>
   gesturesDisabled?: boolean
   setGesturesDisabled?: (gestureDisabled: boolean) => void
-  state?: DrawerNavigationState<ParamListBase>
 }
 
-type NotificationsDrawerNavigationContextValue =
-  | ContextType
-  | Record<string, never>
+type AppDrawerContextValue = AppDrawerContextType | Record<string, never>
 
-export const NotificationsDrawerNavigationContext =
-  createContext<NotificationsDrawerNavigationContextValue>({})
+export const AppDrawerContext = createContext<AppDrawerContextValue>({})
 
-type ProviderProps = ContextType & {
+type AppDrawerContextProviderProps = AppDrawerContextType & {
   children: ReactNode
 }
 
-export const NotificationsDrawerNavigationContextProvider = (
-  props: ProviderProps
+export const AppDrawerContextProvider = (
+  props: AppDrawerContextProviderProps
 ) => {
   const {
     children,
@@ -38,7 +30,8 @@ export const NotificationsDrawerNavigationContextProvider = (
     gesturesDisabled,
     setGesturesDisabled
   } = props
-  const other = useMemo(
+
+  const context = useMemo(
     () => ({
       drawerHelpers,
       drawerNavigation,
@@ -48,8 +41,8 @@ export const NotificationsDrawerNavigationContextProvider = (
     [drawerHelpers, drawerNavigation, gesturesDisabled, setGesturesDisabled]
   )
   return (
-    <NotificationsDrawerNavigationContext.Provider value={other}>
+    <AppDrawerContext.Provider value={context}>
       {children}
-    </NotificationsDrawerNavigationContext.Provider>
+    </AppDrawerContext.Provider>
   )
 }

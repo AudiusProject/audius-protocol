@@ -15,6 +15,10 @@ import { AlbumsTab } from './AlbumsTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
 
+const messages = {
+  header: 'Favorites'
+}
+
 const favoritesScreens = [
   {
     name: 'tracks',
@@ -41,7 +45,7 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <Header text='Favorites' />
+      <Header text={messages.header} />
       {
         // ScreenContent handles the offline indicator.
         // Show favorites screen anyway when offline so users can see their downloads

@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
 
+import { useAppDrawerNavigation } from '../../app-drawer-screen'
 import {
   EntityLink,
   NotificationHeader,
@@ -17,7 +18,6 @@ import {
   NotificationTile,
   NotificationTitle
 } from '../Notification'
-import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntity } = notificationsSelectors
 
 const getRankSuffix = (rank: number) => {
@@ -47,7 +47,7 @@ export const TrendingTrackNotification = (
   const track = useSelector((state) =>
     getNotificationEntity(state, notification)
   ) as Nullable<TrackEntity>
-  const navigation = useDrawerNavigation()
+  const navigation = useAppDrawerNavigation()
 
   const handlePress = useCallback(() => {
     if (track) {

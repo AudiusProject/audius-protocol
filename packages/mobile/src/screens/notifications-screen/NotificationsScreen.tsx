@@ -1,48 +1,36 @@
-import { memo, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { notificationsActions } from '@audius/common'
-import { useDrawerStatus } from '@react-navigation/drawer'
-import { View } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
-import { usePrevious } from 'react-use'
 
-import { makeStyles } from 'app/styles'
+import { Screen } from 'app/components/core'
+import { Header } from 'app/components/header'
 
 import { ScreenContent } from '../ScreenContent'
 
 import { NotificationList } from './NotificationList'
-import { TopBar } from './TopBar'
 const { markAllAsViewed } = notificationsActions
 
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    backgroundColor: palette.background,
-    height: '100%'
-  }
-}))
+const messages = {
+  header: 'Notifications'
+}
 
-/**
- * Memoized to prevent rerender during bottom-bar navigation.
- * It's rerendering because navigation context changes.
- */
-export const NotificationsScreen = memo(function NotificationsScreen() {
-  const styles = useStyles()
+export const NotificationsScreen = () => {
   const dispatch = useDispatch()
-  const isDrawerOpen = useDrawerStatus() === 'open'
-  const wasDrawerOpen = usePrevious(isDrawerOpen)
 
-  useEffect(() => {
-    if (wasDrawerOpen && !isDrawerOpen) {
+  useFocusEffect(
+    useCallback(() => {
       dispatch(markAllAsViewed())
-    }
-  }, [isDrawerOpen, wasDrawerOpen, dispatch])
+    }, [dispatch])
+  )
 
   return (
-    <View style={styles.root}>
-      <TopBar />
+    <Screen>
+      <Header text={messages.header} />
       <ScreenContent>
         <NotificationList />
       </ScreenContent>
-    </View>
+    </Screen>
   )
-})
+}

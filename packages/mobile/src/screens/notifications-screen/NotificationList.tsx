@@ -15,9 +15,10 @@ import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
+import { AppDrawerContext } from '../app-drawer-screen'
+
 import { EmptyNotifications } from './EmptyNotifications'
 import { NotificationListItem } from './NotificationListItem'
-import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
 const { fetchNotifications, refreshNotifications } = notificationsActions
 const {
   getNotificationHasMore,
@@ -108,7 +109,7 @@ export const NotificationList = () => {
   const hasMore = useSelector(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const { gesturesDisabled } = useContext(NotificationsDrawerNavigationContext)
+  const { gesturesDisabled } = useContext(AppDrawerContext)
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)

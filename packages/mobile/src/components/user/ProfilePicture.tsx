@@ -38,10 +38,8 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       uri={profilePicture}
       styles={{
         ...stylesProp,
-        ...{
-          root: {
-            ...styles.profilePhoto
-          }
+        root: {
+          ...styles.profilePhoto
         }
       }}
       {...other}

@@ -1,2 +1,3 @@
 export * from './NotificationsScreen'
-export * from './NotificationsDrawerNavigationContext'
+export * from './NotificationsDrawerScreen'
+export * from './NotificationsDrawer'

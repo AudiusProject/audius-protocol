@@ -30,8 +30,8 @@ import Drawer, {
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
-import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -111,7 +111,7 @@ export const NowPlayingDrawer = memo(function NowPlayngDrawer(
   const isPlaying = useSelector(getPlaying)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
 
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const { drawerNavigation } = useContext(AppDrawerContext)
 
   // When audio starts playing, open the playbar to the initial offset
   useEffect(() => {

@@ -1,3 +1,5 @@
+import { Environment } from '../env'
+
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
@@ -25,13 +27,27 @@ export enum FeatureFlags {
   BUY_AUDIO_COINBASE_ENABLED = 'buy_audio_coinbase_enabled',
   BUY_AUDIO_STRIPE_ENABLED = 'buy_audio_stripe_enabled',
   OFFLINE_MODE_ENABLED = 'offline_mode_enabled',
-  AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow'
+  AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow',
+  MOBILE_NAV_OVERHAUL = 'mobile_nav_overhaul'
+}
+
+type FlagDefaults = Record<FeatureFlags, boolean>
+
+export const environmentFlagDefaults: Record<
+  Environment,
+  Partial<FlagDefaults>
+> = {
+  development: {},
+  staging: {
+    [FeatureFlags.MOBILE_NAV_OVERHAUL]: true
+  },
+  production: {}
 }
 
 /**
  * If optimizely errors, these default values are used.
  */
-export const flagDefaults: { [key in FeatureFlags]: boolean } = {
+export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
@@ -57,5 +73,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.BUY_AUDIO_COINBASE_ENABLED]: false,
   [FeatureFlags.BUY_AUDIO_STRIPE_ENABLED]: false,
   [FeatureFlags.OFFLINE_MODE_ENABLED]: false,
-  [FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW]: false
+  [FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW]: false,
+  [FeatureFlags.MOBILE_NAV_OVERHAUL]: false
 }

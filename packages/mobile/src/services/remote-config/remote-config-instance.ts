@@ -1,3 +1,4 @@
+import type { Environment } from '@audius/common'
 import { remoteConfig } from '@audius/common'
 import * as optimizely from '@optimizely/optimizely-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -19,7 +20,8 @@ export const remoteConfigInstance = remoteConfig({
   },
   setFeatureFlagSessionId: async (id) =>
     AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id.toString()),
-  setLogLevel: () => optimizely.setLogLevel('warn')
+  setLogLevel: () => optimizely.setLogLevel('warn'),
+  environment: Config.ENVIRONMENT as Environment
 })
 
 remoteConfigInstance.init()

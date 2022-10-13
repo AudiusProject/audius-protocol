@@ -15,6 +15,7 @@ import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
 
+import { useAppDrawerNavigation } from '../../app-drawer-screen'
 import {
   EntityLink,
   NotificationHeader,
@@ -24,7 +25,6 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 import { getEntityRoute, getEntityScreen } from '../Notification/utils'
-import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -96,7 +96,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   )
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const navigation = useDrawerNavigation()
+  const navigation = useAppDrawerNavigation()
 
   const handlePress = useCallback(() => {
     if (achievement === Achievement.Followers) {
