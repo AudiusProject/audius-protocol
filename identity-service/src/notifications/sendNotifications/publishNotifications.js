@@ -253,9 +253,7 @@ const publishNotifications = async (
     }
 
     if (solanaNotificationBaseTypes.includes(notification.type)) {
-      await publishSolanaNotification(msg, userId, tx, true, title, types, notification)
-    } else {
-      await publish(
+      await publishSolanaNotification(
         msg,
         userId,
         tx,
@@ -264,6 +262,8 @@ const publishNotifications = async (
         types,
         notification
       )
+    } else {
+      await publish(msg, userId, tx, true, title, types, notification)
     }
   }
 }
