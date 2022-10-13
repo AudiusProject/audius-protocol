@@ -72,7 +72,14 @@ export const TrackScreen = () => {
 
   const handleFetchTrack = useCallback(() => {
     dispatch(tracksActions.reset())
-    dispatch(fetchTrack(id, slug, handle ?? user?.handle, canBeUnlisted))
+    dispatch(
+      fetchTrack(
+        id,
+        decodeURIComponent(slug ?? ''),
+        handle ?? user?.handle,
+        canBeUnlisted
+      )
+    )
   }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle])
 
   useFocusEffect(handleFetchTrack)
