@@ -103,7 +103,6 @@ def get_contract_info_if_exists(self, address):
 
 def initialize_blocks_table_if_necessary(db: SessionManager):
 
-    logger.info(f"asdf initialize blocks")
     redis = update_task.redis
 
     target_blockhash = None
@@ -233,6 +232,7 @@ def fetch_tx_receipts(self, block):
                 logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
+    logger.info(f"index.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}")
     if num_processed_txs != num_submitted_txs:
         raise IndexingError(
             type="tx",
@@ -463,6 +463,7 @@ def create_and_raise_indexing_error(err, redis):
 
 
 def index_blocks(self, db, blocks_list):
+    logger.info(f"asdf index.py blocks")
     web3 = update_task.web3
     redis = update_task.redis
     shared_config = update_task.shared_config
@@ -508,6 +509,7 @@ def index_blocks(self, db, blocks_list):
                     Fetch transaction receipts
                     """
                     fetch_tx_receipts_start_time = time.time()
+                    logger.info(f"index.py fetching block {block}")
                     tx_receipt_dict = fetch_tx_receipts(self, block)
                     metric.save_time(
                         {"scope": "fetch_tx_receipts"},
@@ -975,7 +977,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-    logger.info(f"asdf index")
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
@@ -1057,64 +1058,63 @@ def update_task(self):
                     block_intersection_found = parent_block_query.count() > 0
 
                     num_blocks = len(index_blocks_list)
-                    if num_blocks % 50 == 0:
+                    if num_blocks > 10:
                         logger.info(
                             f"index.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
-                    # Special case for initial block hash value of 0x0 and 0x0000....
-                    reached_initial_block = parent_hash == default_padded_start_hash
-                    if reached_initial_block:
+                    # # Special case for initial block hash value of 0x0 and 0x0000....
+                    # reached_initial_block = parent_hash == default_padded_start_hash
+                    # if reached_initial_block:
                         block_intersection_found = True
-                        intersect_block_hash = default_config_start_hash
-                    else:
-                        latest_block = web3.eth.get_block(parent_hash, True)
-                        intersect_block_hash = web3.toHex(latest_block.hash)
+                    # else:
+                    latest_block = web3.eth.get_block(parent_hash, True)
+                    intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
                 # Important when determining whether undo operations are necessary
-                base_query = session.query(Block)
-                base_query = base_query.filter(Block.is_current == True)
-                db_block_query = base_query.all()
+                # base_query = session.query(Block)
+                # base_query = base_query.filter(Block.is_current == True)
+                # db_block_query = base_query.all()
 
-                assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
-                db_current_block = db_block_query[0]
+                # assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+                # db_current_block = db_block_query[0]
 
-                # Check current block
-                undo_operations_required = (
-                    db_current_block.blockhash != intersect_block_hash
-                )
+                # # Check current block
+                # undo_operations_required = (
+                #     db_current_block.blockhash != intersect_block_hash
+                # )
 
-                if undo_operations_required:
-                    logger.info(
-                        f"index.py | update_task | Undo required - {undo_operations_required}. \
-                                Intersect_blockhash : {intersect_block_hash}.\
-                                DB current blockhash {db_current_block.blockhash}"
-                    )
-                else:
-                    logger.info(
-                        f"index.py | update_task | Intersect_blockhash : {intersect_block_hash}"
-                    )
+                # if undo_operations_required:
+                #     logger.info(
+                #         f"index.py | update_task | Undo required - {undo_operations_required}. \
+                #                 Intersect_blockhash : {intersect_block_hash}.\
+                #                 DB current blockhash {db_current_block.blockhash}"
+                #     )
+                # else:
+                #     logger.info(
+                #         f"index.py | update_task | Intersect_blockhash : {intersect_block_hash}"
+                #     )
 
                 # Assign traverse block to current database block
-                traverse_block = db_current_block
+                # traverse_block = db_current_block
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                while traverse_block.blockhash != intersect_block_hash:
-                    revert_blocks_list.append(traverse_block)
-                    parent_query = session.query(Block).filter(
-                        Block.blockhash == traverse_block.parenthash
-                    )
+                # while traverse_block.blockhash != intersect_block_hash:
+                #     revert_blocks_list.append(traverse_block)
+                #     parent_query = session.query(Block).filter(
+                #         Block.blockhash == traverse_block.parenthash
+                #     )
 
-                    if parent_query.count() == 0:
-                        logger.info(
-                            f"index.py | update_task | Special case exit traverse block parenthash - "
-                            f"{traverse_block.parenthash}"
-                        )
-                        break
-                    traverse_block = parent_query[0]
+                #     if parent_query.count() == 0:
+                #         logger.info(
+                #             f"index.py | update_task | Special case exit traverse block parenthash - "
+                #             f"{traverse_block.parenthash}"
+                #         )
+                #         break
+                #     traverse_block = parent_query[0]
 
                 # Ensure revert blocks list is available after session scope
                 session.expunge_all()

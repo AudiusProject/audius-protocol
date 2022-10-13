@@ -111,6 +111,8 @@ def create_celery(test_config=None):
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider("http://54.187.10.247:8545"))
+
+    # required middleware for POA
     web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     abi_values = helpers.load_abi_values()

@@ -59,6 +59,8 @@ def entity_manager_update(
     metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
+        if entity_manager_txs:
+            logger.info(f"entity_manager.py txs {entity_manager_txs}")
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
@@ -118,6 +120,8 @@ def entity_manager_update(
                         event_blockhash,
                         txhash,
                     )
+                    logger.info(f"asdf entity_manager params {params}")
+
                     if (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
