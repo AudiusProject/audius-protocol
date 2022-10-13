@@ -214,9 +214,7 @@ router.get(
     async function isSyncInProgress() {
       let syncInProgress = false
       try {
-        syncInProgress = await walletWriteLock.syncIsInProgress(
-          walletPublicKey
-        )
+        syncInProgress = await walletWriteLock.syncIsInProgress(walletPublicKey)
       } catch (e) {
         // Swallow error, leave syncInProgress unset
       }

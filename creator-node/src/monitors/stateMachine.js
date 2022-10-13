@@ -87,11 +87,15 @@ const getLatestFindSyncRequestsJobSuccess = async () => {
 }
 
 const getLatestFindReplicaSetUpdatesJobStart = async () => {
-  return redis.client.get(`latestJobStart_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`)
+  return redis.client.get(
+    `latestJobStart_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`
+  )
 }
 
 const getLatestFindReplicaSetUpdatesJobSuccess = async () => {
-  return redis.client.get(`latestJobSuccess_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`)
+  return redis.client.get(
+    `latestJobSuccess_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`
+  )
 }
 
 module.exports = {

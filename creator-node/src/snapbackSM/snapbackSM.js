@@ -6,7 +6,7 @@ const Utils = require('../utils')
 const asyncRetry = require('../utils/asyncRetry')
 const models = require('../models')
 const { logger } = require('../logging')
-const redis = require('../redis.js')
+const { redis } = require('../redis')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
@@ -263,9 +263,12 @@ class SnapbackSM {
         }
 
         try {
-          await redis.set('stateMachineQueueLatestJobStart', Date.now())
+          await redis.client.set('stateMachineQueueLatestJobStart', Date.now())
           await this.processStateMachineOperation(jobId)
-          await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
+          await redis.client.set(
+            'stateMachineQueueLatestJobSuccess',
+            Date.now()
+          )
         } catch (e) {
           this.logError(
             `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`

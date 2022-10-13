@@ -219,7 +219,9 @@ class StateMachineManager {
     const keyPattern =
       FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
       '*'
-    const numDeleted = await redis.client.deleteAllKeysMatchingPattern(keyPattern)
+    const numDeleted = await redis.client.deleteAllKeysMatchingPattern(
+      keyPattern
+    )
     baseLogger.info(
       { numDeleted },
       `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`
