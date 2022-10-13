@@ -132,6 +132,12 @@ const config = convict({
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
   },
+  queryTimeout: {
+    doc: 'Postgres query timeout',
+    format: 'nat',
+    env: 'queryTimeout',
+    default: 10 * 60 * 1000 // 10min
+  },
   logLevel: {
     doc: 'Log level',
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
