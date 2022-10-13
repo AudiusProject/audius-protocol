@@ -1369,7 +1369,7 @@ workflows:
 
       # Auto-deploy `master` to staging
       - deploy:
-          name: 🚧-🏠-stage-discovery
+          name: autodeploy-stage-discovery
           service: discovery
           context:
             - slack-secrets
@@ -1379,9 +1379,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-discovery-mr
+            - build-discovery
+            - test-discovery
       - deploy:
-          name: 🚧-🏠-stage-creator
+          name: autodeploy-stage-creator
           service: creator
           context:
             - slack-secrets
@@ -1391,9 +1392,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-creator-mr
+            - build-creator
+            - test-creator
       - deploy:
-          name: 🚧-🏠-stage-identity
+          name: autodeploy-stage-identity
           service: identity
           context:
             - slack-secrets
@@ -1403,7 +1405,8 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-identity-mr
+            - build-identity
+            - test-identity
       # Force deploy `master` to staging (by service)
       - noop:
           name: 💪-🚧-🏠-stage-<< matrix.service >>-hold
@@ -1415,7 +1418,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 🚧-🏠-stage-<< matrix.service >>
+            - autodeploy-stage-<< matrix.service >>
       - deploy:
           name: 💪-🚧-🏠-stage-<< matrix.service >>
           params: --force
@@ -1439,7 +1442,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🏠-stage-discovery
+            - autodeploy-stage-discovery
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
@@ -1463,7 +1466,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 🚧-🏠-stage-creator
+            - autodeploy-stage-creator
       - deploy:
           name: 💪-🚧-🏠-<< matrix.host >>
           params: --force
