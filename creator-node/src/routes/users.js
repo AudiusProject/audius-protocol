@@ -74,7 +74,7 @@ router.get(
 
     walletPublicKey = walletPublicKey.toLowerCase()
     const userLoginChallengeKey = `${CHALLENGE_PREFIX}${walletPublicKey}`
-    const redisClient = req.app.get('redisClient')
+    const redisClient = req.app.get('redis').client
     const challengeBuffer = await randomBytes(CHALLENGE_VALUE_LENGTH)
     const challengeBytes = base64url.encode(challengeBuffer)
     const challenge = `Click sign to authenticate with creator node: ${challengeBytes}`
@@ -125,7 +125,7 @@ router.post(
       return errorResponseBadRequest('Invalid data or signature')
     }
 
-    const redisClient = req.app.get('redisClient')
+    const redisClient = req.app.get('redis').client
     const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
     const ourChallenge = await redisClient.get(userLoginChallengeKey)
 
@@ -165,7 +165,7 @@ router.post(
 router.get(
   '/users/clock_status/:walletPublicKey',
   handleResponse(async (req, res) => {
-    const redisClient = req.app.get('redisClient')
+    const walletWriteLock = req.app.get('redis').WalletWriteLock
 
     const walletPublicKey = req.params.walletPublicKey.toLowerCase()
     const returnSkipInfo = req.query.returnSkipInfo === 'true' // default false
@@ -214,7 +214,7 @@ router.get(
     async function isSyncInProgress() {
       let syncInProgress = false
       try {
-        syncInProgress = await redisClient.WalletWriteLock.syncIsInProgress(
+        syncInProgress = await walletWriteLock.syncIsInProgress(
           walletPublicKey
         )
       } catch (e) {

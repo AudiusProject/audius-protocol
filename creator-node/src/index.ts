@@ -19,9 +19,9 @@ import { runMigrations, clearRunningQueries } from './migrationManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
+import { redis } from './redis'
 
 const EthereumWallet = require('ethereumjs-wallet')
-const redisClient = require('./redis')
 
 // This should eventually only be instantiated in the primary and then workers should call setupClusterWorker().
 // However, a bug currently requires instantiating this in workers as well:
@@ -208,7 +208,7 @@ const setupDbAndRedis = async () => {
 
   // Clear all redis locks
   try {
-    await redisClient.WalletWriteLock.clearWriteLocks()
+    await redis.WalletWriteLock.clearWriteLocks()
   } catch (e: any) {
     logger.warn(`Could not clear write locks. Skipping..: ${e.message}`)
   }

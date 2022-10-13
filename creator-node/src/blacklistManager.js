@@ -1,6 +1,6 @@
 const { logger } = require('./logging')
 const models = require('./models')
-const redis = require('./redis')
+const { redis } = require('./redis')
 const config = require('./config')
 const { clusterUtils } = require('./utils')
 
@@ -20,6 +20,8 @@ const INVALID_TRACKID_EXPIRATION_SECONDS =
 const PROCESS_TRACKS_BATCH_SIZE = 200
 
 const types = models.ContentBlacklist.Types
+
+const redisClient = redis.client
 
 class BlacklistManager {
   constructor() {
@@ -414,7 +416,10 @@ class BlacklistManager {
         `About to call _addToRedisChunkHelper for ${redisKey} with data of length ${data.length}`
       )
       for (let i = 0; i < data.length; i += redisAddMaxItemsSize) {
-        await redis.sadd(redisKey, data.slice(i, i + redisAddMaxItemsSize))
+        await redisClient.sadd(
+          redisKey,
+          data.slice(i, i + redisAddMaxItemsSize)
+        )
       }
     } catch (e) {
       this._logError(
@@ -440,7 +445,7 @@ class BlacklistManager {
           try {
             await this._addToRedisChunkHelper(redisTrackIdToCIDsKey, cids)
             if (expirationSec) {
-              await redis.expire(redisTrackIdToCIDsKey, expirationSec)
+              await redisClient.expire(redisTrackIdToCIDsKey, expirationSec)
             }
           } catch (e) {
             errors.push(
@@ -484,7 +489,7 @@ class BlacklistManager {
       default: {
         if (!data || data.length === 0) return
         try {
-          const resp = await redis.srem(redisKey, data)
+          const resp = await redisClient.srem(redisKey, data)
           this._logDebug(`redis set remove ${redisKey} response ${resp}`)
         } catch (e) {
           throw new Error(
@@ -608,46 +613,46 @@ class BlacklistManager {
   /** Checks if userId, trackId, and CID exists in redis  */
 
   static async userIdIsInBlacklist(userId) {
-    return redis.sismember(REDIS_SET_BLACKLIST_USERID_KEY, userId)
+    return redisClient.sismember(REDIS_SET_BLACKLIST_USERID_KEY, userId)
   }
 
   static async trackIdIsInBlacklist(trackId) {
-    return redis.sismember(REDIS_SET_BLACKLIST_TRACKID_KEY, trackId)
+    return redisClient.sismember(REDIS_SET_BLACKLIST_TRACKID_KEY, trackId)
   }
 
   // Checks if the input CID is blacklisted from USER, TRACK, or SEGMENT type
   static async CIDIsInBlacklist(cid) {
-    return redis.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, cid)
+    return redisClient.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, cid)
   }
 
   // Check if the input CID belongs to the track with the input trackId in redis.
   static async CIDIsInTrackRedis(trackId, cid) {
     const redisKey = this.getRedisTrackIdToCIDsKey(trackId)
-    return redis.sismember(redisKey, cid)
+    return redisClient.sismember(redisKey, cid)
   }
 
   // Check to see if the input trackId is invalid
   static async trackIdIsInvalid(trackId) {
-    return redis.sismember(REDIS_SET_INVALID_TRACKIDS_KEY, trackId)
+    return redisClient.sismember(REDIS_SET_INVALID_TRACKIDS_KEY, trackId)
   }
 
   // Retrieves all CIDs in redis
   static async getAllCIDs() {
-    return redis.smembers(REDIS_SET_BLACKLIST_SEGMENTCID_KEY)
+    return redisClient.smembers(REDIS_SET_BLACKLIST_SEGMENTCID_KEY)
   }
 
   // Retrieves all user ids in redis
   static async getAllUserIds() {
-    return redis.smembers(REDIS_SET_BLACKLIST_USERID_KEY)
+    return redisClient.smembers(REDIS_SET_BLACKLIST_USERID_KEY)
   }
 
   // Retrieves all track ids in redis
   static async getAllTrackIds() {
-    return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
+    return redisClient.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
   }
 
   static async getAllInvalidTrackIds() {
-    return redis.smembers(REDIS_SET_INVALID_TRACKIDS_KEY)
+    return redisClient.smembers(REDIS_SET_INVALID_TRACKIDS_KEY)
   }
 
   /**
@@ -657,7 +662,7 @@ class BlacklistManager {
    */
   static async _getAllCIDsFromTrackIdInRedis(trackId) {
     const redisKey = this.getRedisTrackIdToCIDsKey(trackId)
-    return redis.smembers(redisKey)
+    return redisClient.smembers(redisKey)
   }
 
   // logger wrapper methods

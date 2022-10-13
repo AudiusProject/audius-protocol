@@ -194,7 +194,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
 
   // TODO: Can remove these when all routes consume serviceRegistry
   app.set('storagePath', storagePath)
-  app.set('redisClient', serviceRegistry.redis)
+  app.set('redis', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
   app.set('trustedNotifierManager', serviceRegistry.trustedNotifierManager)

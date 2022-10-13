@@ -1,4 +1,4 @@
-const redis = require('../redis')
+const { redis } = require('../redis')
 
 /**
  * Parses the result from a redis `info` command
@@ -21,18 +21,18 @@ const parseInfo = (info) => {
 }
 
 const getRedisNumKeys = async () => {
-  const numKeys = await redis.dbsize()
+  const numKeys = await redis.client.dbsize()
   return numKeys
 }
 
 const getRedisUsedMemory = async () => {
-  const info = await redis.info()
+  const info = await redis.client.info()
   const parsedInfo = parseInfo(info)
   return parsedInfo.used_memory
 }
 
 const getRedisTotalMemory = async () => {
-  const info = await redis.info()
+  const info = await redis.client.info()
   const parsedInfo = parseInfo(info)
   return parsedInfo.total_system_memory
 }

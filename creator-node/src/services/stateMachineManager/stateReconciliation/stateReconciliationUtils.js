@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const axios = require('axios')
 
-const redisClient = require('../../../redis')
+const { redis } = require('../../../redis')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
 const {
@@ -13,6 +13,8 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const { instrumentTracing, tracing } = require('../../../tracer')
 
 const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
+
+const redisClient = redis.client
 
 /**
  * Returns a job can be enqueued to add a sync request for the given user to the given secondary,

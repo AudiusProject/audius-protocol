@@ -4,8 +4,8 @@ import fs from 'fs-extra'
 import path from 'path'
 import stream from 'stream'
 import { promisify } from 'util'
+import { redis } from '../redis'
 
-const redis = require('../redis')
 const models = require('../models')
 const pipeline = promisify(stream.pipeline)
 
@@ -58,8 +58,8 @@ export async function getIfAttemptedStateFix(filePath: string) {
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
-  const firstTime = await redis.sadd(key, filePath)
-  await redis.expire(key, 60 * 60 * 24) // expire one day after final write
+  const firstTime = await redis.client.sadd(key, filePath)
+  await redis.client.expire(key, 60 * 60 * 24) // expire one day after final write
 
   // if firstTime is 1, it's a new key. existing key returns 0
   return !firstTime

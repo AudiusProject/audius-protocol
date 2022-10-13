@@ -2,17 +2,17 @@
  * Exports a Singleton Redis client instance, with custom wallet write locking logic
  */
 
-const Redis = require('ioredis')
+import Redis from 'ioredis'
 
-const config = require('./config.js')
-const { logger: genericLogger } = require('./logging')
-const asyncRetry = require('./utils/asyncRetry')
+import { logger as genericLogger } from './logging'
+import asyncRetry from './utils/asyncRetry'
+import config from './config'
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const WRITE_WALLET_LOCK_PREFIX = 'WRITE.WALLET.'
 
-const _getWalletWriteLockKey = function (wallet) {
+const _getWalletWriteLockKey = function (wallet: string) {
   return `${WRITE_WALLET_LOCK_PREFIX}${wallet}`
 }
 
@@ -27,14 +27,14 @@ const WalletWriteLock = {
   /**
    * Return lock holder, if held; else null
    */
-  getCurrentHolder: async function (wallet) {
+  getCurrentHolder: async function (wallet: string) {
     const key = _getWalletWriteLockKey(wallet)
     const holder = await redisClient.get(key)
     return holder
   },
 
   /** Returns true if lock is held by sync, else false */
-  syncIsInProgress: async function (wallet) {
+  syncIsInProgress: async function (wallet: string) {
     const holder = await this.getCurrentHolder(wallet)
 
     return (
@@ -46,13 +46,13 @@ const WalletWriteLock = {
   /**
    * Return true if lock is held, else false
    */
-  isHeld: async function (wallet) {
+  isHeld: async function (wallet: string) {
     const key = _getWalletWriteLockKey(wallet)
     const holder = await redisClient.get(key)
     return !!holder
   },
 
-  ttl: async function (wallet) {
+  ttl: async function (wallet: string) {
     const key = _getWalletWriteLockKey(wallet)
     const ttl = await redisClient.ttl(key)
     return ttl
@@ -67,8 +67,8 @@ const WalletWriteLock = {
    * @param expirationSec
    */
   acquire: async function (
-    wallet,
-    acquirer,
+    wallet: string,
+    acquirer: string,
     expirationSec = this.WALLET_WRITE_LOCK_EXPIRATION_SEC
   ) {
     // Ensure `acquirer` is valid
@@ -107,7 +107,7 @@ const WalletWriteLock = {
    * Throws error on call failure
    * Does not return any value on success
    */
-  release: async function (wallet) {
+  release: async function (wallet: string) {
     const key = _getWalletWriteLockKey(wallet)
 
     await asyncRetry({
@@ -121,9 +121,7 @@ const WalletWriteLock = {
   },
 
   clearWriteLocks: async function () {
-    await redisClient.deleteAllKeysMatchingPattern(
-      `${WRITE_WALLET_LOCK_PREFIX}*`
-    )
+    await deleteAllKeysMatchingPattern(`${WRITE_WALLET_LOCK_PREFIX}*`)
   }
 }
 
@@ -132,7 +130,9 @@ const WalletWriteLock = {
  * @param keyPattern the redis key pattern that matches keys to remove
  * @return {Number} numDeleted number of redis keys deleted
  */
-const deleteAllKeysMatchingPattern = async function (keyPattern) {
+export const deleteAllKeysMatchingPattern = async function (
+  keyPattern: string
+) {
   // Create a readable stream (object mode)
   const stream = redisClient.scanStream({
     match: keyPattern
@@ -143,7 +143,7 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
       // `keys` is an array of strings representing key names
       if (keys.length) {
         const pipeline = redisClient.pipeline()
-        keys.forEach(function (key) {
+        keys.forEach(function (key: string) {
           pipeline.del(key)
           deletedKeysSet.add(key)
         })
@@ -159,7 +159,7 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
   })
 }
 
-redisClient.deleteAllKeysMatchingPattern = deleteAllKeysMatchingPattern
-
-module.exports = redisClient
-module.exports.WalletWriteLock = WalletWriteLock
+export const redis = {
+  client: redisClient,
+  WalletWriteLock
+}

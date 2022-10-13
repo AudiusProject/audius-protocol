@@ -1,8 +1,10 @@
 const { Queue, Worker } = require('bullmq')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
-const redisClient = require('./redis')
+const { redis } = require('./redis')
 const { clusterUtils } = require('./utils')
+
+const redisClient = redis.client
 
 // Processing fns
 const {

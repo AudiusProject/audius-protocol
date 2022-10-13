@@ -1,6 +1,6 @@
 const { Queue, Worker } = require('bullmq')
 
-const redis = require('../redis')
+const { redis } = require('../redis')
 const config = require('../config')
 const {
   MONITORS,
@@ -95,7 +95,7 @@ class MonitoringQueue {
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
-    const isFresh = await redis.get(ttlKey)
+    const isFresh = await redis.client.get(ttlKey)
     if (isFresh) return
 
     const value = await monitorProps.func()
@@ -115,13 +115,13 @@ class MonitoringQueue {
     }
 
     // Set the value
-    await redis.set(key, value)
+    await redis.client.set(key, value)
 
     if (monitorProps.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      await redis.set(ttlKey, 1, 'EX', monitorProps.ttl)
+      await redis.client.set(ttlKey, 1, 'EX', monitorProps.ttl)
     }
   }
 

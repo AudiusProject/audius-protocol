@@ -3,8 +3,10 @@ const rateLimit = require('express-rate-limit')
 const config = require('./config.js')
 const { logger } = require('./logging')
 const RedisStore = require('rate-limit-redis')
-const client = require('./redis.js')
+const { redis } = require('./redis')
 const { verifyRequesterIsValidSP } = require('./apiSigning.js')
+
+const client = redis.client
 
 let endpointRateLimits = {}
 try {

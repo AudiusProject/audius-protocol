@@ -1,7 +1,7 @@
 const _ = require('lodash')
 
 const config = require('../../config')
-const redis = require('../../redis')
+const { redis } = require('../../redis')
 const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
@@ -646,7 +646,7 @@ async function filterOutAlreadyPresentDBEntries({
 
   try {
     // Deletes all data stored at provided redis keys
-    await redis.del(
+    await redis.client.del(
       LOCAL_DB_ENTRIES_SET_KEY,
       FETCHED_ENTRIES_SET_KEY,
       UNIQUE_FETCHED_ENTRIES_SET_KEY
@@ -665,7 +665,7 @@ async function filterOutAlreadyPresentDBEntries({
     const fetchedEntriesComparable = fetchedEntries.map((entry) =>
       JSON.stringify(_.pick(entry, comparisonFields))
     )
-    const numFetchedEntriesAdded = await redis.sadd(
+    const numFetchedEntriesAdded = await redis.client.sadd(
       FETCHED_ENTRIES_SET_KEY,
       fetchedEntriesComparable
     )
@@ -720,7 +720,7 @@ async function filterOutAlreadyPresentDBEntries({
       const localEntriesComparable = localEntries.map((entry) =>
         JSON.stringify(_.pick(entry, comparisonFields))
       )
-      const numLocalEntriesAddedBatch = await redis.sadd(
+      const numLocalEntriesAddedBatch = await redis.client.sadd(
         LOCAL_DB_ENTRIES_SET_KEY,
         localEntriesComparable
       )
@@ -743,7 +743,7 @@ async function filterOutAlreadyPresentDBEntries({
     })
 
     // set(uniqueFetchedEntries) = set(fetchedEntries) - set(localDBEntries)
-    const numUniqueFetchedEntriesComparable = await redis.sdiffstore(
+    const numUniqueFetchedEntriesComparable = await redis.client.sdiffstore(
       UNIQUE_FETCHED_ENTRIES_SET_KEY, // destination set
       FETCHED_ENTRIES_SET_KEY, // set A
       LOCAL_DB_ENTRIES_SET_KEY // set B
@@ -759,7 +759,7 @@ async function filterOutAlreadyPresentDBEntries({
      *
      * Since redis Set uniqueFetchedEntries only contains comparison fields subset, set intersection is performed with a custom comparator
      */
-    const uniqueFetchedEntriesComparable = await redis.smembers(
+    const uniqueFetchedEntriesComparable = await redis.client.smembers(
       UNIQUE_FETCHED_ENTRIES_SET_KEY
     )
     const uniqueFetchedEntries = _.intersectionWith(
@@ -792,7 +792,7 @@ async function filterOutAlreadyPresentDBEntries({
   } finally {
     // Wipe redis state
     try {
-      await redis.del(
+      await redis.client.del(
         LOCAL_DB_ENTRIES_SET_KEY,
         FETCHED_ENTRIES_SET_KEY,
         UNIQUE_FETCHED_ENTRIES_SET_KEY

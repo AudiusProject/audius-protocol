@@ -96,8 +96,8 @@ router.get(
   handleResponse(async (req, res) => {
     const walletPublicKey = req.params.walletPublicKey
 
-    const redisClient = req.app.get('redisClient')
-    if (await redisClient.WalletWriteLock.syncIsInProgress(walletPublicKey)) {
+    const walletWriteLock = req.app.get('redis').WalletWriteLock
+    if (await walletWriteLock.syncIsInProgress(walletPublicKey)) {
       return errorResponse(
         423,
         `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`

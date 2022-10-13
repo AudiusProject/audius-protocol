@@ -1,10 +1,12 @@
-const redisClient = require('../redis')
+const { redis } = require('../redis')
 const { logger: genericLogger } = require('../logging')
 
 const SYNC_STATES = Object.freeze({
   success: 'success',
   fail: 'fail'
 })
+
+const redisClient = redis.client
 
 // Make key expire in 90 days in seconds
 const EXPIRATION = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */

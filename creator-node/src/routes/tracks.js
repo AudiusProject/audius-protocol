@@ -734,7 +734,7 @@ router.get(
   '/tracks/stream/:encodedId',
   async (req, res, next) => {
     const libs = req.app.get('audiusLibs')
-    const redisClient = req.app.get('redisClient')
+    const redisClient = req.app.get('redis').client
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId

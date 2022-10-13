@@ -1,6 +1,8 @@
 const _ = require('lodash')
 
-const redisClient = require('../../../redis')
+const { redis } = require('../../../redis')
+
+const redisClient = redis.client
 
 /**
  * Ensure a sync request for (syncType, userWallet, secondaryEndpoint) can only be enqueued once

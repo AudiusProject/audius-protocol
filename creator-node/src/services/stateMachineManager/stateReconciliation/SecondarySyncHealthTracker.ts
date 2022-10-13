@@ -8,7 +8,8 @@ import type { WalletsToSecondariesMapping } from '../types'
 // eslint-disable-next-line import/no-unresolved
 import { UserSecondarySyncMetricsMap } from '../stateMonitoring/types'
 
-const redisClient = require('../../../redis')
+import { redis } from '../../../redis'
+
 const { logger } = require('../../../logging')
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
@@ -51,7 +52,7 @@ const Utils = {
 
     // This works because vals.length === keys.length
     // https://redis.io/commands/mget
-    const vals = await redisClient.mget(keys)
+    const vals = await redis.client.mget(keys)
 
     // Zip keys and vals arrays into map of key-val pairs
     const keyMap: { [key: string]: any } = {}
@@ -72,12 +73,12 @@ const Utils = {
     pattern: string,
     extraFilter = (_: string) => true
   ): Promise<string[]> {
-    const stream = redisClient.scanStream({ match: pattern })
+    const stream = redis.client.scanStream({ match: pattern })
 
     const keySet = new Set<string>()
     return new Promise<string[]>((resolve, reject) => {
       stream.on('data', async (keys = []) => {
-        keys.filter(extraFilter).forEach((key) => {
+        keys.filter(extraFilter).forEach((key: string) => {
           keySet.add(key)
         })
       })
@@ -130,10 +131,10 @@ const Utils = {
       })
 
       // incr() will create key with value 0 if non-existent
-      await redisClient.incr(redisKey)
+      await redis.client.incr(redisKey)
 
       // Set key expiration time (sec) in case it hasn't already been set (prob not most efficient)
-      await redisClient.expire(redisKey, DailyRedisKeyExpirationSec)
+      await redis.client.expire(redisKey, DailyRedisKeyExpirationSec)
 
       logger.info(
         `SecondarySyncHealthTracker:_recordSyncRequestOutcome || Recorded ${redisKey}`

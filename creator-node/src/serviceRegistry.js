@@ -3,7 +3,7 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
-const redisClient = require('./redis')
+const { redis } = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
@@ -42,7 +42,7 @@ class ServiceRegistry {
 
     // Some services are initialized to `null` and will be initialized in helper functions
 
-    this.redis = redisClient // Redis Client
+    this.redis = redis // Redis exports
     this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
     this.libs = null // instance of Audius Libs
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content

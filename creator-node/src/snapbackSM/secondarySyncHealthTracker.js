@@ -3,7 +3,7 @@
  * API for Primary to measure SyncRequest success and failure counts per Secondary, User, and Day
  */
 
-const redisClient = require('../redis')
+const { redis } = require('../redis')
 const { logger } = require('../logging')
 
 const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
@@ -15,6 +15,8 @@ const Outcomes = Object.freeze({
   SUCCESS: 'Success',
   FAILURE: 'Failure'
 })
+
+const redisClient = redis.client
 
 const Utils = {
   /**

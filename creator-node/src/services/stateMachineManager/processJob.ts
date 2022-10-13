@@ -5,11 +5,9 @@ import type {
   AnyDecoratedJobReturnValue,
   AnyJobParams
 } from './types'
-
-const _ = require('lodash')
+import { redis } from '../../redis'
 
 const { createChildLogger } = require('../../logging')
-const redis = require('../../redis')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -48,10 +46,10 @@ async function processJob(
   )
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
   try {
-    await redis.set(`latestJobStart_${queueName}`, Date.now())
+    await redis.client.set(`latestJobStart_${queueName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
     metricEndTimerFn({ uncaughtError: false })
-    await redis.set(`latestJobSuccess_${queueName}`, Date.now())
+    await redis.client.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {
     tracing.recordException(error)
     jobLogger.error(`Error processing job: ${error}`)

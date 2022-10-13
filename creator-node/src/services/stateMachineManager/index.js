@@ -3,7 +3,7 @@ const { QueueEvents } = require('bullmq')
 
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
-const redis = require('../../redis')
+const { redis } = require('../../redis')
 
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
@@ -219,7 +219,7 @@ class StateMachineManager {
     const keyPattern =
       FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS.FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_PREFIX +
       '*'
-    const numDeleted = await redis.deleteAllKeysMatchingPattern(keyPattern)
+    const numDeleted = await redis.client.deleteAllKeysMatchingPattern(keyPattern)
     baseLogger.info(
       { numDeleted },
       `ensureCleanFilterOutAlreadyPresentDBEntriesRedisState: Deleted all redis keys matching pattern ${keyPattern}`

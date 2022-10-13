@@ -5,7 +5,7 @@ const { chunk } = require('lodash')
 
 const DbManager = require('./dbManager')
 const models = require('./models')
-const redisClient = require('./redis')
+const { redis } = require('./redis')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 
@@ -21,6 +21,8 @@ const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 // variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
 // it every time a track is uploaded
 let TMP_TRACK_ARTIFACTS_CREATED = false
+
+const redisClient = redis.client
 
 class DiskManager {
   /**

@@ -1,5 +1,4 @@
 import type Logger from 'bunyan'
-import type { Redis } from 'ioredis'
 import type {
   RecoverOrphanedDataJobParams,
   RecoverOrphanedDataJobReturnValue
@@ -16,11 +15,11 @@ import {
   MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
 } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { redis } from '../../../redis'
 
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
-const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
 const asyncRetry = require('../../../utils/asyncRetry')
 const Utils = require('../../../utils')
@@ -98,7 +97,7 @@ async function _recoverOrphanedData({
  * Queries this node's db to find all users who have data on it and adds them to a redis set.
  */
 const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
-  await redisClient.del(WALLETS_ON_NODE_KEY)
+  await redis.client.del(WALLETS_ON_NODE_KEY)
 
   type WalletSqlRow = {
     walletPublicKey: string
@@ -128,14 +127,14 @@ const _saveWalletsOnThisNodeToRedis = async (logger: Logger) => {
       walletSqlRows.forEach((row) =>
         walletsOnThisNodeArr.push(row.walletPublicKey)
       )
-      await redisClient.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
+      await redis.client.sadd(WALLETS_ON_NODE_KEY, walletsOnThisNodeArr)
 
       // Move pagination cursor to the end
       prevCnodeUserUUID = walletSqlRows[walletSqlRows.length - 1].cnodeUserUUID
     }
   }
 
-  const numWalletsOnNode = await redisClient.scard(WALLETS_ON_NODE_KEY)
+  const numWalletsOnNode = await redis.client.scard(WALLETS_ON_NODE_KEY)
   logger.info(`Found ${numWalletsOnNode} wallets with data on this node`)
   return numWalletsOnNode
 }
@@ -148,7 +147,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
   discoveryNodeEndpoint: string,
   logger: Logger
 ) => {
-  await redisClient.del(WALLETS_WITH_NODE_IN_REPLICA_SET_KEY)
+  await redis.client.del(WALLETS_WITH_NODE_IN_REPLICA_SET_KEY)
 
   // Make paginated Discovery queries to find all wallets with this current node in their replica set (primary or secondary)
   let prevUserId = 0
@@ -168,7 +167,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
         batchOfUsers.forEach((user) =>
           walletsWithNodeInReplicaSetArr.push(user.wallet)
         )
-        await redisClient.sadd(
+        await redis.client.sadd(
           WALLETS_WITH_NODE_IN_REPLICA_SET_KEY,
           walletsWithNodeInReplicaSetArr
         )
@@ -191,7 +190,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
     prevUserId !== 0
   )
 
-  const numWalletsWithNodeInReplicaSet = await redisClient.scard(
+  const numWalletsWithNodeInReplicaSet = await redis.client.scard(
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
   logger.info(
@@ -206,7 +205,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
  * @returns number of wallets that have data orphaned on this node
  */
 const _saveWalletsWithOrphanedDataToRedis = async (logger: Logger) => {
-  const numWalletsOrphaned: number = await redisClient.sdiffstore(
+  const numWalletsOrphaned: number = await redis.client.sdiffstore(
     WALLETS_ORPHANED_KEY,
     WALLETS_ON_NODE_KEY,
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
@@ -236,7 +235,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
   const start = Date.now()
   let requestsIssued = 0
   for (let i = 0; i < numWalletsWithOrphanedData; i += numUsersPerBatch) {
-    const walletsWithOrphanedData = await redisClient.srandmember(
+    const walletsWithOrphanedData = await redis.client.srandmember(
       WALLETS_ORPHANED_KEY,
       numUsersPerBatch
     )
@@ -262,7 +261,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
           }
         })
         requestsIssued++
-        await redisClient.srem(WALLETS_ORPHANED_KEY, wallet)
+        await redis.client.srem(WALLETS_ORPHANED_KEY, wallet)
       } catch (e: any) {
         logger.error(
           `Error issuing request to recover orphaned data: ${e.message}`

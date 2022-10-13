@@ -2,10 +2,11 @@ import { promisify } from 'util'
 import crypto from 'crypto'
 import base64url from 'base64-url'
 import DBManager from './dbManager'
+import { redis } from './redis'
 
 const randomBytes = promisify(crypto.randomBytes)
 const models = require('./models')
-const redisClient = require('./redis')
+const redisClient = redis.client
 
 const sessionTokenHeaderKey = 'X-Session-ID'
 const sessionTokenLength = 40
@@ -26,13 +27,13 @@ export async function createSession(cnodeUserUUID: string) {
 
 /** Return cnodeUserUUID associated with token if exists, else null. */
 export async function verifySession(sessionToken: string) {
-  let session = await _getSessionFromRedis(sessionToken)
+  const session = await _getSessionFromRedis(sessionToken)
   if (session) {
     return session
   }
 
-  session = await _getSessionFromDB(sessionToken, false)
-  return session ? session.cnodeUserUUID : null
+  const sessionDB = await _getSessionFromDB(sessionToken, false)
+  return sessionDB ? sessionDB.cnodeUserUUID : null
 }
 
 export async function deleteSession(sessionToken: string) {
