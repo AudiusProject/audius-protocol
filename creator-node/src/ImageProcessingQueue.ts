@@ -45,7 +45,7 @@ export class ImageProcessingQueue {
     })
 
     // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
-    const processorFile = path.join(__dirname, 'resizeImage.js')
+    const processorFile = path.join(__dirname, '../build/src/', 'resizeImage.js')
     const worker = new Worker('image-processing-queue', processorFile, {
       connection,
       concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
