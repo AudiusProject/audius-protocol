@@ -90,8 +90,8 @@ const SLIPPAGE = 3 // The slippage amount to allow for exchanges
 const BUY_AUDIO_LOCAL_STORAGE_KEY = 'buy-audio-transaction-details'
 
 const MEMO_MESSAGES = {
-  [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase',
-  [OnRampProvider.STRIPE]: 'In-App $AUDIO Purchase: Stripe',
+  [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase Pay',
+  [OnRampProvider.STRIPE]: 'In-App $AUDIO Purchase: Link by Stripe',
   [OnRampProvider.UNKNOWN]: 'In-App $AUDIO Purchase: Unknown'
 }
 

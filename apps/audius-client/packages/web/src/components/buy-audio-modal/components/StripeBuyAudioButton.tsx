@@ -55,8 +55,6 @@ export const StripeBuyAudioButton = () => {
     })
     const stripeOnRampInstance = StripeOnRamp(STRIPE_PUBLISHABLE_KEY)
     const session = stripeOnRampInstance.createSession({
-      // TODO: Implement createStripeSession
-      // @ts-ignore
       clientSecret: res.client_secret
     })
     session.mount('#stripe-onramp-modal')

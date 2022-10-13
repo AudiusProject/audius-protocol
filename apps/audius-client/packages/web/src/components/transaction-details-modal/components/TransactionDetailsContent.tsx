@@ -7,7 +7,7 @@ import {
 import cn from 'classnames'
 
 import { ReactComponent as LogoCoinbase } from 'assets/img/LogoCoinbase.svg'
-import { ReactComponent as LogoStripe } from 'assets/img/LogoStripe.svg'
+import { ReactComponent as LogoStripeLink } from 'assets/img/LogoStripeLink.svg'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 
 import { Block, BlockContainer } from './Block'
@@ -55,7 +55,11 @@ export const TransactionDetailsContent = ({
           {transactionDetails.method === TransactionMethod.COINBASE ? (
             <LogoCoinbase />
           ) : transactionDetails.method === TransactionMethod.STRIPE ? (
-            <LogoStripe />
+            <LogoStripeLink
+              width={145}
+              height={32}
+              className={styles.stripeLogo}
+            />
           ) : (
             messages.unknown
           )}
