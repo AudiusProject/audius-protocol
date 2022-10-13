@@ -40,7 +40,7 @@ const getTmpTrackUploadArtifactsPath = async () => {
     'tmp_track_artifacts'
   )
   if (!TMP_TRACK_ARTIFACTS_CREATED) {
-    await this.ensureDirPathExists(dirPath)
+    await ensureDirPathExists(dirPath)
     TMP_TRACK_ARTIFACTS_CREATED = true
   }
   return dirPath
@@ -50,10 +50,10 @@ const getTmpTrackUploadArtifactsPath = async () => {
  * Construct the legacy path to a file or directory given a CID
  */
 const computeLegacyFilePath = (cid) => {
-  if (!this.isValidCID(cid)) {
+  if (!isValidCID(cid)) {
     throw new Error(`[computeLegacyFilePath] [CID=${cid}] Invalid CID.`)
   }
-  return path.join(this.getConfigStoragePath(), cid)
+  return path.join(getConfigStoragePath(), cid)
 }
 
 /**
