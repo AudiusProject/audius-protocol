@@ -22,8 +22,7 @@ import {
   SavedPageCollection,
   tracksSocialActions as socialActions,
   playerSelectors,
-  queueSelectors,
-  FeatureFlags
+  queueSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -32,7 +31,6 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
@@ -95,14 +93,11 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   handleFetchSavedTracks = debounce(() => {
-    const isNewTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES)
-    if (isNewTablesEnabled) {
-      this.props.fetchSavedTracks(
-        this.state.filterText,
-        this.state.sortMethod,
-        this.state.sortDirection
-      )
-    }
+    this.props.fetchSavedTracks(
+      this.state.filterText,
+      this.state.sortMethod,
+      this.state.sortDirection
+    )
   }, 300)
 
   handleFetchMoreSavedTracks = (offset: number, limit: number) => {
@@ -414,7 +409,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   render() {
     const isQueued = this.isQueued()
     const playingUid = this.getPlayingUid()
-    const isNewTablesEnabled = getFeatureEnabled(FeatureFlags.NEW_TABLES)
 
     const childProps = {
       title: messages.title,
@@ -455,9 +449,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       onFilterChange: this.onFilterChange,
       onSortChange: this.onSortChange,
       formatMetadata: this.formatMetadata,
-      getFilteredData: isNewTablesEnabled
-        ? this.getFormattedData
-        : this.getFilteredData,
+      getFilteredData: this.getFormattedData,
       onPlay: this.onPlay,
       onSortTracks: this.onSortTracks,
       onChangeTab: this.onChangeTab,

@@ -17,6 +17,7 @@ const Draggable = (props) => {
     kind,
     link,
     id,
+    index,
     isOwner,
     drag,
     drop,
@@ -30,7 +31,7 @@ const Draggable = (props) => {
 
   useEffect(() => {
     const dragStart = (e) => {
-      drag(kind, id, isOwner)
+      drag(kind, id, isOwner, index)
 
       const dt = e.dataTransfer
       dt.effectAllowed = 'copy'
@@ -68,7 +69,7 @@ const Draggable = (props) => {
       draggableRef.current.addEventListener('dragstart', dragStart, false)
       draggableRef.current.addEventListener('dragend', dragEnd, false)
     }
-  }, [drag, drop, id, kind, link, text, isOwner, onDrag, onDrop])
+  }, [drag, drop, id, kind, link, text, isOwner, onDrag, onDrop, index])
 
   const refFunc = (ref) => {
     draggableRef.current = ref
@@ -112,6 +113,7 @@ Draggable.propTypes = {
     'playlist-folder'
   ]),
   id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // One of trackId, collectionId, userId
+  index: PropTypes.number,
   children: PropTypes.element,
   onDrag: PropTypes.func,
   onDrop: PropTypes.func
@@ -125,7 +127,7 @@ Draggable.defaultProps = {
 
 const mapStateToProps = (state, props) => ({})
 const mapDispatchToProps = (dispatch) => ({
-  drag: (kind, id, isOwner) => dispatch(drag(kind, id, isOwner)),
+  drag: (kind, id, isOwner, index) => dispatch(drag(kind, id, isOwner, index)),
   drop: () => dispatch(drop())
 })
 
