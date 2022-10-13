@@ -10,7 +10,7 @@ const { clusterUtils } = require('../utils/clusterUtils')
 const basename = path.basename(__filename)
 const db = {}
 
-const QUERY_TIMEOUT = config.get('queryTimeout')
+const STATEMENT_TIMEOUT = config.get('statementTimeout')
 
 const sequelize = new Sequelize(config.get('dbUrl'), {
   logging: config.get('printSequelizeLogs'),
@@ -23,7 +23,7 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
   },
   dialectOptions: {
     // number of milliseconds before a statement in query will time out, default is no timeout
-    statement_timeout: QUERY_TIMEOUT,
+    statement_timeout: STATEMENT_TIMEOUT,
 
     // number of milliseconds before a query call will timeout, default is no timeout
     // query_timeout: QUERY_TIMEOUT,
@@ -35,7 +35,7 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
     // idle_in_transaction_session_timeout: 1000
     options: {
       // Request to server timeout
-      requestTimeout: QUERY_TIMEOUT
+      requestTimeout: STATEMENT_TIMEOUT
     }
   }
 })
