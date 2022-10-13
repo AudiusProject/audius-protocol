@@ -1285,6 +1285,8 @@ workflows:
          - not: << pipeline.parameters.cut_release >>
     jobs:
       - noop:
+          name: tests
+      - noop:
           name: creator
       - noop:
           name: discovery
@@ -1320,44 +1322,17 @@ workflows:
             - test-identity
 
       - noop:
-          name: built-creator-mr
+          name: built
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
             - build-creator
             - test-creator
-      - noop:
-          name: built-discovery-mr
-          filters:
-            branches:
-              only: /(^release-.*$)/
-          requires:
             - build-discovery
             - test-discovery
-      - noop:
-          name: built-identity-mr
-          filters:
-            branches:
-              only: /(^release-.*$)/
-          requires:
             - build-identity
             - test-identity
-      - noop:
-          name: built
-          filters:
-            branches:
-              only: /(^release-.*$)/
-          requires:
-            - built-creator-mr
-            - built-discovery-mr
-            - built-identity-mr
-            - verified
-      - noop:
-          name: tests
-      - noop:
-          name: verified
-          requires:
             - build-libs
             - test-libs
             - test-contracts
