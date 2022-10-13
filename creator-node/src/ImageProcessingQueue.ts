@@ -47,6 +47,8 @@ export class ImageProcessingQueue {
     // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
     let processorFile
 
+    // run the sandbox worker from the transpiled js resizeImage file
+    // this cannot import typescript so we need to give it vanilla js
     // during local dev we're in src/, but prod starts in build/src
     // see scripts/start.sh for entry points
     if (__dirname.includes('/build')) {
