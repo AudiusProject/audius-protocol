@@ -1,19 +1,23 @@
 Audius GraphQL API
 
+### Running tests:
+
 ```
 docker-compose up -d
+./tests/tests.sh
+```
 
-# run es-indexer to populate
-cd discovery-provider/es-indexer
-source .env
-npm run dev
+should run test inside docker compose to make ENV stuff automatic
 
-# run dev server
+### Run dev server:
+
+```
+export audius_db_url=x
+export audius_elasticsearch_url=y
 npm run dev
 ```
 
-
-manual build + push
+### manual build + push
 
 ```
 DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/graphql-api:latest

@@ -33,13 +33,12 @@ async function processPending(pending: PendingUpdates) {
   ])
 }
 
-async function start() {
-  const cliFlags = program
-    .option('--no-listen', 'exit after catchup is complete')
-    .option('--drop', 'drop and recreate indexes')
-    .parse()
-    .opts()
+type CliFlags = {
+  drop: boolean
+  listen: boolean
+}
 
+export async function start(cliFlags: CliFlags) {
   logger.info(cliFlags, 'booting')
   const health = await waitForHealthyCluster()
   await ensureSaneCluterSettings()
@@ -61,7 +60,7 @@ async function start() {
   await Promise.all(Object.values(indexer).map((i) => i.catchup(checkpoints)))
 
   // refresh indexes before cutting over
-  logger.info(checkpoints, 'refreshing indexes')
+  logger.info('refreshing indexes')
   await Promise.all(Object.values(indexer).map((i) => i.refreshIndex()))
 
   // cutover aliases
@@ -92,14 +91,21 @@ async function start() {
 
 async function main() {
   try {
-    await start()
+    const cliFlags = program
+      .option('--no-listen', 'exit after catchup is complete')
+      .option('--drop', 'drop and recreate indexes')
+      .parse()
+      .opts()
+    await start(cliFlags as CliFlags)
   } catch (e) {
     logger.fatal(e, 'save me pm2')
     process.exit(1)
   }
 }
 
-main()
+if (process.env.NODE_ENV != 'test') {
+  main()
+}
 
 process
   .on('unhandledRejection', (reason, promise) => {

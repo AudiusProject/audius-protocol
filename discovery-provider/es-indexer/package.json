@@ -12,7 +12,7 @@
     "catchup:ci": "ts-node --transpileOnly src/main.ts --drop --no-listen",
     "dev": "ts-node src/main.ts",
     "nuke": "ts-node scripts/nuke.ts",
-    "sql-ts": "ts-node scripts/sql-ts.ts",
+    "sql-ts": "ts-node scripts/sql-ts.ts && pg_dump -s --no-owner --no-privileges $audius_db_url > tests/schema.sql",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
     "test": "vitest",
     "tsc": "tsc --noEmit"
