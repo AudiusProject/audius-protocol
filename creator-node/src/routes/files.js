@@ -217,8 +217,8 @@ const getCID = async (req, res) => {
   let fileFoundOnFS = false
   let storagePath, fsStats
 
-  for (let i = 0; i < storagePaths.length; i++) {
-    const { path: _storagePath, pathType: _pathType } = storagePaths[i]
+  for (const sp of storagePaths) {
+    const { path: _storagePath, pathType: _pathType } = sp
 
     try {
       /**
