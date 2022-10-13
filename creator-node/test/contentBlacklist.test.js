@@ -6,7 +6,9 @@ const _ = require('lodash')
 
 const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
-const { StubPremiumContentAccessChecker } = require('../src/premiumContent/stubPremiumContentAccessChecker')
+const {
+  StubPremiumContentAccessChecker
+} = require('../src/premiumContent/stubPremiumContentAccessChecker')
 const models = require('../src/models')
 const { redis } = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
@@ -61,7 +63,7 @@ describe('test ContentBlacklist', function () {
       isPremium: false,
       error: null
     }
-    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessCheckeredis
+    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessChecker
   })
 
   afterEach(async () => {
