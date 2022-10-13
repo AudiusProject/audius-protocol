@@ -540,6 +540,7 @@ export const TracksTable = ({
       getRowClassName={getRowClassName}
       isPaginated={isPaginated}
       isReorderable={isReorderable}
+      isTracksTable
       isVirtualized={isVirtualized}
       loading={loading}
       onClickRow={handleClickRow}

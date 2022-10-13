@@ -4,7 +4,8 @@ const initialState = {
   dragging: false,
   isOwner: false,
   kind: null,
-  id: null
+  id: null,
+  index: null
 }
 
 const actionsMap = {
@@ -14,6 +15,7 @@ const actionsMap = {
       dragging: true,
       kind: action.kind,
       id: action.id,
+      index: action.index ?? null,
       isOwner: action.isOwner
     }
   },
@@ -23,6 +25,7 @@ const actionsMap = {
       dragging: false,
       kind: null,
       id: null,
+      index: null,
       isOwner: false
     }
   }

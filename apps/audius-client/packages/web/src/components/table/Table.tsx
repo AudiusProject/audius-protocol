@@ -77,6 +77,7 @@ type TableProps = {
   getRowClassName?: (rowIndex: number) => string
   isPaginated?: boolean
   isReorderable?: boolean
+  isTracksTable?: boolean
   isVirtualized?: boolean
   loading?: boolean
   onClickRow?: (e: any, rowInfo: any, index: number) => void
@@ -103,6 +104,7 @@ export const Table = ({
   getRowClassName,
   isPaginated = false,
   isReorderable = false,
+  isTracksTable = false,
   isVirtualized = false,
   loading = false,
   onClickRow,
@@ -386,13 +388,19 @@ export const Table = ({
           key={row.index}
           className={styles.droppable}
           hoverClassName={styles.droppableHover}
-          onDrop={(id: ID | string, draggingKind: string) => {
-            onDragEnd({ source: Number(id), destination: row.index })
+          onDrop={(id: ID | string, draggingKind: string, index: number) => {
+            onDragEnd({ source: index, destination: row.index })
           }}
           stopPropogationOnDrop={true}
-          acceptedKinds={['table-row']}
+          acceptedKinds={['track', 'table-row']}
         >
-          <Draggable id={row.id} text={row.original.title} kind='table-row'>
+          <Draggable
+            id={isTracksTable ? row.original.track_id : row.id}
+            index={row.id}
+            text={row.original.title}
+            isOwner
+            kind={isTracksTable ? 'track' : 'table-row'}
+          >
             {renderTableRow(
               row,
               key,
@@ -403,7 +411,7 @@ export const Table = ({
         </Droppable>
       )
     },
-    [onDragEnd, renderTableRow]
+    [isTracksTable, onDragEnd, renderTableRow]
   )
 
   const renderRow = useCallback(
