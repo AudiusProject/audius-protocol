@@ -13,6 +13,7 @@ import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
+import { useAppDrawerNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -22,7 +23,6 @@ import {
   UserNameLink,
   NotificationTwitterButton
 } from '../Notification'
-import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -41,7 +41,7 @@ export const RemixCreateNotification = (
 ) => {
   const { notification } = props
   const { childTrackId, parentTrackId } = notification
-  const navigation = useDrawerNavigation()
+  const navigation = useAppDrawerNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
   const tracks = useSelector((state) =>
     getNotificationEntities(state, notification)

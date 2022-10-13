@@ -22,11 +22,13 @@ import { IconButton } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
 
+import { AppDrawerContext } from '../app-drawer-screen'
+
+import { AccountPictureHeader } from './AccountPictureHeader'
 import type { AppScreenParamList } from './AppScreen'
 import type { AppTabScreenParamList } from './AppTabScreen'
 const { markAllAsViewed } = notificationsActions
@@ -103,7 +105,7 @@ export const useAppScreenOptions = (
   const dispatch = useDispatch()
   const notificationCount = useSelector(getNotificationUnviewedCount)
   const navigation = useNavigation<AppScreenParamList>()
-  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
+  const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handlePressNotification = useCallback(() => {
     drawerHelpers?.openDrawer()
@@ -115,6 +117,9 @@ export const useAppScreenOptions = (
   }, [navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
+  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
+    FeatureFlags.MOBILE_NAV_OVERHAUL
+  )
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
@@ -162,6 +167,13 @@ export const useAppScreenOptions = (
                       navigation.goBack()
                     }}
                   />
+                </View>
+              )
+            }
+            if (isNavOverhaulEnabled) {
+              return (
+                <View style={styles.headerLeft}>
+                  <AccountPictureHeader onPress={handlePressNotification} />
                 </View>
               )
             }
@@ -234,7 +246,8 @@ export const useAppScreenOptions = (
         accentOrangeLight1,
         notificationCount,
         overrides,
-        isEarlyAccess
+        isEarlyAccess,
+        isNavOverhaulEnabled
       ]
     )
 

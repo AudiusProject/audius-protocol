@@ -8,7 +8,7 @@ import { IconButton, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
 
-import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
+import { AppDrawerContext } from '../app-drawer-screen'
 
 const messages = {
   notifications: 'notifications'
@@ -45,7 +45,7 @@ const useStyles = makeStyles(({ spacing, palette, type }) => ({
 
 export const TopBar = () => {
   const styles = useStyles()
-  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
+  const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handleClose = useCallback(() => {
     drawerHelpers?.closeDrawer()

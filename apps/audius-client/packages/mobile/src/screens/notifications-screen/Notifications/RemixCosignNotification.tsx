@@ -14,6 +14,7 @@ import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
+import { useAppDrawerNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -24,7 +25,6 @@ import {
   ProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
-import { useDrawerNavigation } from '../useDrawerNavigation'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -42,7 +42,7 @@ export const RemixCosignNotification = (
   props: RemixCosignNotificationProps
 ) => {
   const { notification } = props
-  const navigation = useDrawerNavigation()
+  const navigation = useAppDrawerNavigation()
   const { childTrackId, parentTrackUserId } = notification
   const user = useSelector((state) => getNotificationUser(state, notification))
   // TODO: casting from EntityType to TrackEntity here, but

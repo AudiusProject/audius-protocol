@@ -20,10 +20,15 @@ import { PlaylistsTab } from './tabs/PlaylistsTab'
 
 const { fetchExplore } = explorePageActions
 
+const messages = {
+  header: 'Explore',
+  forYou: 'For You'
+}
+
 const exploreScreens = [
   {
     name: 'forYou',
-    label: 'For You',
+    label: messages.forYou,
     Icon: IconForYou,
     component: ForYouTab
   },
@@ -54,7 +59,7 @@ const ExploreScreen = () => {
 
   return (
     <Screen>
-      <Header text='Explore' />
+      <Header text={messages.header} />
       <ScreenContent>
         <TopTabNavigator screens={exploreScreens} />
       </ScreenContent>

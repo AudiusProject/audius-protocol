@@ -32,8 +32,8 @@ import {
 } from 'app/screens/user-list-screen'
 import type { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
+import { AppDrawerContext } from '../app-drawer-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
-import { NotificationsDrawerNavigationContext } from '../notifications-screen/NotificationsDrawerNavigationContext'
 import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 
@@ -98,7 +98,7 @@ type AppTabScreenProps = {
  */
 export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
 
   useEffect(() => {

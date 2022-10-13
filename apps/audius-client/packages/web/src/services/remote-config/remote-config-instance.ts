@@ -1,4 +1,4 @@
-import { remoteConfig } from '@audius/common'
+import { Environment, remoteConfig } from '@audius/common'
 import optimizely from '@optimizely/optimizely-sdk'
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
@@ -32,7 +32,8 @@ export const remoteConfigInstance = remoteConfig({
       FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY,
       id.toString()
     ),
-  setLogLevel: () => optimizely.setLogLevel('warn')
+  setLogLevel: () => optimizely.setLogLevel('warn'),
+  environment: process.env.REACT_APP_ENVIRONMENT as Environment
 })
 
 remoteConfigInstance.init()

@@ -13,9 +13,8 @@ import { SignOnScreen } from 'app/screens/signon'
 import { UpdateRequiredScreen } from 'app/screens/update-required-screen/UpdateRequiredScreen'
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
+import { AppDrawerScreen } from '../app-drawer-screen'
 import { SplashScreen } from '../splash-screen'
-
-import { HomeScreen } from './HomeScreen'
 
 const { getHasAccount, getAccountStatus } = accountSelectors
 
@@ -72,7 +71,7 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
           ) : !hasAccount ? (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           ) : (
-            <Stack.Screen name='HomeStack' component={HomeScreen} />
+            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           )}
         </Stack.Navigator>
       )}

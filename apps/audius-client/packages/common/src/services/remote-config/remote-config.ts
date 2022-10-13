@@ -5,13 +5,19 @@ import optimizely from '@optimizely/optimizely-sdk'
 import { ID } from 'models'
 import { Nullable } from 'utils'
 
+import { Environment } from '../env'
+
 import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,
   remoteConfigDoubleDefaults,
   remoteConfigBooleanDefaults
 } from './defaults'
-import { FeatureFlags, flagDefaults } from './feature-flags'
+import {
+  environmentFlagDefaults,
+  FeatureFlags,
+  flagDefaults
+} from './feature-flags'
 import {
   IntKeys,
   StringKeys,
@@ -36,6 +42,7 @@ export type RemoteConfigOptions<Client> = {
   getFeatureFlagSessionId: () => Promise<Nullable<number>>
   setFeatureFlagSessionId: (id: number) => Promise<void>
   setLogLevel: () => void
+  environment: Environment
 }
 
 export const remoteConfig = <
@@ -52,7 +59,8 @@ export const remoteConfig = <
   createOptimizelyClient,
   getFeatureFlagSessionId,
   setFeatureFlagSessionId,
-  setLogLevel
+  setLogLevel,
+  environment
 }: RemoteConfigOptions<Client>) => {
   const state: State = {
     didInitialize: false,
@@ -200,10 +208,11 @@ export const remoteConfig = <
    * Gets whether a given feature flag is enabled.
    */
   function getFeatureEnabled(flag: FeatureFlags) {
-    // If the client is not ready yet, return early with `null`
-    if (!client || !state.id) return null
+    const defaultVal =
+      environmentFlagDefaults[environment][flag] ?? flagDefaults[flag]
 
-    const defaultVal = flagDefaults[flag]
+    // If the client is not ready yet, return early with `null`
+    if (!client || !state.id) return defaultVal
 
     const id = state.id
 
