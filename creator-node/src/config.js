@@ -136,7 +136,7 @@ const config = convict({
     doc: 'Postgres query timeout',
     format: 'nat',
     env: 'queryTimeout',
-    default: 10 * 60 * 1000 // 10min
+    default: 60 * 60 * 1000 // 1hr
   },
   logLevel: {
     doc: 'Log level',

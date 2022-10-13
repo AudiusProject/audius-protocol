@@ -23,10 +23,10 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
   },
   dialectOptions: {
     // number of milliseconds before a statement in query will time out, default is no timeout
-    // statement_timeout: 1000,
+    statement_timeout: QUERY_TIMEOUT,
 
     // number of milliseconds before a query call will timeout, default is no timeout
-    query_timeout: QUERY_TIMEOUT,
+    // query_timeout: QUERY_TIMEOUT,
 
     // number of milliseconds to wait for connection, default is no timeout
     // connectionTimeoutMillis: 1000
