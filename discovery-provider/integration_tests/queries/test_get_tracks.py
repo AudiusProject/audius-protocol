@@ -3,6 +3,7 @@ from datetime import datetime
 from integration_tests.utils import populate_mock_db
 from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.utils.db_session import get_db
 
 
@@ -88,6 +89,27 @@ def populate_tracks(db):
                 "created_at": datetime(2018, 5, 17),
                 "is_unlisted": True,
             },
+            {
+                "track_id": 12,
+                "title": "track 12",
+                "owner_id": 5,
+                "release_date": "Fri Jun 19 2020 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 21),
+            },
+            {
+                "track_id": 13,
+                "title": "track 13",
+                "owner_id": 5,
+                "release_date": "Fri Oct 7 2022 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 17),
+            },
+            {
+                "track_id": 14,
+                "title": "track 14",
+                "owner_id": 5,
+                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2020, 5, 17),
+            },
         ],
         "track_routes": [
             {"slug": "track-1", "owner_id": 1287289},
@@ -116,6 +138,7 @@ def populate_tracks(db):
         "users": [
             {"user_id": 1287289, "handle": "some-test-user"},
             {"user_id": 4, "handle": "some-other-user"},
+            {"user_id": 5, "handle": "test-user-5", "artist_pick_track_id": 12},
         ],
     }
 
@@ -193,6 +216,57 @@ def test_get_tracks_by_date_authed(app):
         assert tracks[3]["track_id"] == 5
         assert tracks[4]["track_id"] == 4
         assert tracks[5]["track_id"] == 2
+
+
+def test_get_tracks_with_pinned_track(app):
+    """
+    Test getting tracks for a user with a pinned track. The
+    pinned track should be the first result, with all other tracks
+    sorted according to the sort parameter.
+    """
+    with app.app_context():
+        db = get_db()
+
+    populate_tracks(db)
+
+    with db.scoped_session() as session:
+        tracks = _get_tracks(
+            session, {"user_id": 5, "offset": 0, "limit": 10, "sort": "date"}
+        )
+
+        assert len(tracks) == 3
+        assert tracks[0]["track_id"] == 12
+        assert tracks[1]["track_id"] == 13
+        assert tracks[2]["track_id"] == 14
+
+
+def test_get_tracks_with_pinned_track_and_sort_method(app):
+    """
+    Test getting tracks for a user with a pinned track. All tracks
+    should be sorted according the sort method. The pinned track is
+    not necessarily the first result.
+    """
+    with app.app_context():
+        db = get_db()
+
+    populate_tracks(db)
+
+    with db.scoped_session() as session:
+        tracks = _get_tracks(
+            session,
+            {
+                "user_id": 5,
+                "offset": 0,
+                "limit": 10,
+                "sort_method": SortMethod.release_date,
+                "sort_direction": SortDirection.desc,
+            },
+        )
+
+        assert len(tracks) == 3
+        assert tracks[0]["track_id"] == 13
+        assert tracks[1]["track_id"] == 12
+        assert tracks[2]["track_id"] == 14
 
 
 def test_get_track_by_route(app):

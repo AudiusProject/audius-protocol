@@ -255,7 +255,7 @@ const _findReplicaSetUpdatesForUser = async (
     }
 
     /**
-     * If this node is secondary for user, check both secondaries for health and enqueue replica set updates if needed
+     * If this node is secondary for user, check primary and non-self secondary for health and enqueue replica set updates if needed
      */
   } else {
     // filter out false-y values to account for incomplete replica sets and filter out the

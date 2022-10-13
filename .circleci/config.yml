@@ -5,7 +5,6 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
-  discord: antonioned/discord@0.1.0
   slack: circleci/slack@4.9.3
 
 commands:
@@ -43,59 +42,20 @@ commands:
             {
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
-                    "type": "plain_text",
-                    "text": "<< parameters.text >>",
-                    "emoji": true
+                    "text": "*<< parameters.text >>:* ${CIRCLE_JOB}\n*Details:* `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> \n<< parameters.detail >> ",
+                    "type": "mrkdwn"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Job",
+                      "emoji": true
+                    },
+                    "url": "${CIRCLE_BUILD_URL}"
                   }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "<< parameters.detail >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: $CIRCLE_USERNAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Mentions*: << parameters.slack_mentions_user >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Job"
-                      },
-                      "url": "${CIRCLE_BUILD_URL}"
-                    }
-                  ]
                 }
               ]
             }
@@ -1747,11 +1707,12 @@ workflows:
             - slack-secrets
             - gh-tokens.releases
             - discord
+            - governance
           requires:
             - 🚧-🎁-to-SPs-🕹️
-      # Execute Governance Proposal (for release branches)
+      # Evaluate Governance Proposal (for release branches)
       - noop:
-          name: execute-proposal-🕹️
+          name: evaluate-proposal-🕹️
           type: approval
           filters:
             branches:
@@ -1759,12 +1720,13 @@ workflows:
           requires:
             - 🚧-🎁-to-SPs
       - release-scripts:
-          name: execute-proposal
-          target: execute-proposal
+          name: evaluate-proposal
+          target: evaluate-proposal
           context:
             - slack-secrets
+            - governance
           requires:
-            - execute-proposal-🕹️
+            - evaluate-proposal-🕹️
 
       - test-libs:
           name: test-libs

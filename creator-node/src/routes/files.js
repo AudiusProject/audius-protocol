@@ -30,11 +30,8 @@ const {
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
-const {
-  getAllRegisteredCNodes,
-  findCIDInNetwork,
-  timeout
-} = require('../utils')
+const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
+const { findCIDInNetwork, timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -154,7 +151,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
-    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+    req.logger.debug(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
     req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
@@ -464,13 +461,7 @@ const getCID = async (req, res) => {
   try {
     startMs = Date.now()
     const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(
-      storagePath,
-      CID,
-      req.logger,
-      libs,
-      trackId
-    )
+    const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
     if (!found) {
       throw new Error('Not found in network')
     }
@@ -512,6 +503,7 @@ const getDirCID = async (req, res) => {
   const dirCID = req.params.dirCID
   const filename = req.params.filename
   const path = `${dirCID}/${filename}`
+  const logPrefix = '[getDirCID]'
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
@@ -541,10 +533,12 @@ const getDirCID = async (req, res) => {
 
   // Attempt to stream file to client
   try {
-    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    req.logger.info(
+      `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
+    )
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
+    req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
@@ -552,13 +546,13 @@ const getDirCID = async (req, res) => {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
     const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    const found = await findCIDInNetwork(storagePath, CID, req.logger)
     if (!found) throw new Error(`CID=${CID} not found in network`)
 
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
     req.logger.error(
-      `Error calling findCIDInNetwork for path ${storagePath}`,
+      `${logPrefix} - Error calling findCIDInNetwork for path ${storagePath}`,
       e
     )
     return sendResponse(req, res, errorResponseServerError(e.message))
@@ -925,9 +919,8 @@ router.get('/file_lookup', async (req, res) => {
     { filePath, delegateWallet, timestamp },
     signature
   ).toLowerCase()
-  const libs = req.app.get('audiusLibs')
-  const creatorNodes = await getAllRegisteredCNodes(libs)
-  const foundDelegateWallet = creatorNodes.some(
+  const contentNodes = await getAllRegisteredCNodes(req.logger)
+  const foundDelegateWallet = contentNodes.some(
     (node) => node.delegateOwnerWallet.toLowerCase() === recoveredWallet
   )
   if (recoveredWallet !== delegateWallet || !foundDelegateWallet) {
