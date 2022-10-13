@@ -1,6 +1,7 @@
 import logging  # pylint: disable=C0302
+import re
 
-from flask import Blueprint, request
+from flask import Blueprint, Response, request
 from src import api_helpers, exceptions
 from src.queries.get_cid_source import get_cid_source
 from src.queries.get_feed import get_feed
@@ -24,6 +25,15 @@ from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_saves import get_saves
+from src.queries.get_sitemap import (
+    build_default,
+    get_playlist_page,
+    get_playlist_root,
+    get_track_page,
+    get_track_root,
+    get_user_page,
+    get_user_root,
+)
 from src.queries.get_sol_plays import (
     get_sol_play,
     get_total_aggregate_plays,
@@ -44,6 +54,7 @@ from src.queries.get_user_history import get_user_history
 from src.queries.get_users import get_users
 from src.queries.get_users_account import get_users_account
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
+from src.utils.db_session import get_db_read_replica
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -104,6 +115,7 @@ def get_tracks_route():
         args["min_block_number"] = request.args.get("min_block_number", type=int)
     current_user_id = get_current_user_id(required=False)
     args["current_user_id"] = current_user_id
+    args["skip_unlisted_filter"] = True
     tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 
@@ -643,5 +655,64 @@ def get_user_history_route(user_id):
         }
         user_history = get_user_history(args)
         return api_helpers.success_response(user_history)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+@bp.route("/sitemaps/default.xml", methods=("GET",))
+def get_base_sitemap():
+    try:
+        default_sitemap = build_default()
+        return Response(default_sitemap, mimetype="text/xml")
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+@bp.route("/sitemaps/<string:type>/index.xml", methods=("GET",))
+def get_type_base_sitemap(type):
+    try:
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            xml = ""
+            if type == "playlist":
+                xml = get_playlist_root(session)
+            elif type == "track":
+                xml = get_track_root(session)
+            elif type == "user":
+                xml = get_user_root(session)
+            else:
+                return api_helpers.error_response(
+                    f"Invalid sitemap type {type}, should be one of playlist, track, user",
+                    400,
+                )
+            return Response(xml, mimetype="text/xml")
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+@bp.route("/sitemaps/<string:type>/<string:file_name>", methods=("GET",))
+def get_type_sitemap_page(type: str, file_name: str):
+    try:
+        number = re.search("(\d+)\.xml$", file_name)  # noqa: W605
+        if not number:
+            return api_helpers.error_response(
+                f"Invalid filepath {file_name}, should be of format <integer>.xml", 400
+            )
+        page_number = int(number.group(1))
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            xml = ""
+            if type == "playlist":
+                xml = get_playlist_page(session, page_number)
+            elif type == "track":
+                xml = get_track_page(session, page_number)
+            elif type == "user":
+                xml = get_user_page(session, page_number)
+            else:
+                return api_helpers.error_response(
+                    f"Invalid sitemap type {type}, should be one of playlist, track, user",
+                    400,
+                )
+            return Response(xml, mimetype="text/xml")
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

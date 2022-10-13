@@ -45,6 +45,7 @@ describe('test recoverOrphanedData job processor', function () {
   let server: any,
     sandbox: sinon.SinonSandbox,
     originalContentNodeEndpoint: string
+  let initialNumUsersPerBatch = 1
 
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -52,6 +53,7 @@ describe('test recoverOrphanedData job processor', function () {
     server = appInfo.server
     sandbox = sinon.createSandbox()
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
+    initialNumUsersPerBatch = config.get('recoverOrphanedDataNumUsersPerBatch')
     config.set('creatorNodeEndpoint', THIS_CONTENT_NODE_ENDPOINT)
     nock.disableNetConnect()
   })
@@ -61,6 +63,7 @@ describe('test recoverOrphanedData job processor', function () {
     await server.close()
     sandbox.restore()
     config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    config.set('recoverOrphanedDataNumUsersPerBatch', initialNumUsersPerBatch)
     nock.cleanAll()
     nock.enableNetConnect()
   })
@@ -107,7 +110,7 @@ describe('test recoverOrphanedData job processor', function () {
       }
     }
 
-    orphanedUsers.forEach((orphanedUser) => {
+    for (const orphanedUser of orphanedUsers) {
       // Mock fetching the primary endpoint for each orphaned user
       nock(DISCOVERY_NODE_ENDPOINT)
         .get('/users')
@@ -129,8 +132,15 @@ describe('test recoverOrphanedData job processor', function () {
           forceWipe: true
         })
         .reply(200)
-    })
+    }
 
+    if (pagination) {
+      config.set(
+        'recoverOrphanedDataNumUsersPerBatch',
+        pagination.ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH
+      )
+    }
+    config.set('recoverOrphanedDataDelayMsBetweenBatches', 1)
     return proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/recoverOrphanedData.jobProcessor.ts',
       {
@@ -140,15 +150,9 @@ describe('test recoverOrphanedData job processor', function () {
           ? {
               ...stateMachineConstants,
               ORPHANED_DATA_NUM_USERS_PER_QUERY:
-                pagination.ORPHANED_DATA_NUM_USERS_PER_QUERY,
-              ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH:
-                pagination.ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH,
-              ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS: 1
+                pagination.ORPHANED_DATA_NUM_USERS_PER_QUERY
             }
-          : {
-              ...stateMachineConstants,
-              ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS: 1
-            }
+          : stateMachineConstants
       }
     ).default
   }

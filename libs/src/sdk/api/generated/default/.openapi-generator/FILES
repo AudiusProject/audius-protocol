@@ -44,8 +44,10 @@ models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
+models/UserReplicaSet.ts
 models/UserResponse.ts
 models/UserSearch.ts
+models/UsersByContentNode.ts
 models/VerifyToken.ts
 models/VersionMetadata.ts
 models/index.ts

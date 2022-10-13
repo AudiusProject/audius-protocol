@@ -1,5 +1,8 @@
+import os
+import subprocess
+
 from integration_tests.utils import populate_mock_db
-from src.queries.search_user_tags import search_user_tags
+from src.queries.search_es import search_tags_es
 from src.utils.db_session import get_db
 
 
@@ -33,19 +36,19 @@ def test_search_user_tags(app):
 
     populate_mock_db(db, test_entities)
 
-    with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
+    subprocess.run(
+        ["npm", "run", "catchup:ci"],
+        env=os.environ,
+        capture_output=True,
+        text=True,
+        cwd="es-indexer",
+        timeout=5,
+    )
 
-        args = {
-            "search_str": "pop",
-            "current_user_id": None,
-            "user_tag_count": 2,
-            "limit": 10,
-            "offset": 0,
-        }
-        users = search_user_tags(session, args)
+    result = search_tags_es("pop", kind="users")
+    users = result["users"]
 
-        assert len(users) == 2
-        assert users[0]["user_id"] == 2  # Fir. b/c user 2 has 1 follower
-        assert users[1]["user_id"] == 1  # Sec. b/c user 1 has 0 followers
-        # User 3 only has one track with pop, so it does not surface in the results
+    assert len(users) == 3
+    assert users[0]["user_id"] == 3  # user3 has 2 followers
+    assert users[1]["user_id"] == 2  # user2 has 1 follower
+    assert users[2]["user_id"] == 1  # user1 has 0 followers

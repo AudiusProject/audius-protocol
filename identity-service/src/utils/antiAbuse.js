@@ -3,7 +3,12 @@ const config = require('../config.js')
 const { logger } = require('../logging')
 const models = require('../models')
 
-const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
+const aaoEndpoint =
+  config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
+
+const allowRules = new Set([14])
+const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13])
+const blockNotificationsErrorCodes = new Set([7, 9])
 
 /**
  * Gets IP of a user by using the leftmost forwarded-for entry
@@ -34,54 +39,91 @@ const recordIP = async (userIP, handle) => {
   }
 }
 
-const getAbuseAttestation = async (challengeId, handle, reqIP) => {
-  const res = await axios.post(`${aaoEndpoint}/attestation/${handle}`, {
-    challengeId,
-    challengeSpecifier: handle,
-    amount: 0
-  }, {
+const getAbuseData = async (handle, reqIP) => {
+  const res = await axios.get(`${aaoEndpoint}/abuse/${handle}`, {
     headers: {
       'X-Forwarded-For': reqIP
     }
   })
+  const { data: rules } = res
 
-  const data = res.data
-  logger.info(`antiAbuse: aao response: ${JSON.stringify(data)}`)
-  return data
-}
+  const appliedSuccessRules = rules
+    .filter((r) => r.trigger && r.action === 'pass')
+    .map((r) => r.rule)
+  const allowed = appliedSuccessRules.some((r) => allowRules.has(r))
 
-const detectAbuse = async (user, challengeId, reqIP) => {
-  let isAbusive = false
-  let isAbusiveErrorCode = null
-
-  if (!user.handle) {
-    // Something went wrong during sign up and identity has no knowledge
-    // of this user's handle. Flag them as abusive.
-    isAbusive = true
-  } else {
-    try {
-      // Write out the latest user IP to Identity DB - AAO will request it back
-      await recordIP(reqIP, user.handle)
-
-      const { result, errorCode } = await getAbuseAttestation(challengeId, user.handle, reqIP)
-      if (!result) {
-        // The anti abuse system deems them abusive. Flag them as such.
-        isAbusive = true
-        if (errorCode || errorCode === 0) {
-          isAbusiveErrorCode = `${errorCode}`
-        }
-      }
-    } catch (e) {
-      logger.warn(`antiAbuse: aao request failed ${e.message}`)
+  if (allowed) {
+    return {
+      blockedFromRelay: false,
+      blockedFromNotifications: false
     }
   }
-  if (user.isAbusive !== isAbusive || user.isAbusiveErrorCode !== isAbusiveErrorCode) {
-    await user.update({ isAbusive, isAbusiveErrorCode })
+
+  const appliedFailRules = rules
+    .filter((r) => r.trigger && r.action === 'fail')
+    .map((r) => r.rule)
+
+  const blockedFromRelay = appliedFailRules.some((r) =>
+    blockRelayAbuseErrorCodes.has(r)
+  )
+  const blockedFromNotifications = appliedFailRules.some((r) =>
+    blockNotificationsErrorCodes.has(r)
+  )
+
+  return {
+    blockedFromRelay,
+    blockedFromNotifications,
+    appliedRules: appliedFailRules
+  }
+}
+
+const detectAbuse = async (user, reqIP) => {
+  if (config.get('skipAbuseCheck') || !user.handle) {
+    return
+  }
+
+  let blockedFromRelay = false
+  let blockedFromNotifications = false
+  let appliedRules = null
+
+  try {
+    // Write out the latest user IP to Identity DB - AAO will request it back
+    await recordIP(reqIP, user.handle)
+
+    // Perform abuse check conditional on environment
+    ;({ appliedRules, blockedFromRelay, blockedFromNotifications } =
+      await getAbuseData(user.handle, reqIP))
+    logger.info(
+      `detectAbuse: got info for user id ${user.blockchainUserId} handle ${
+        user.handle
+      }: ${JSON.stringify({
+        appliedRules,
+        blockedFromRelay,
+        blockedFromNotifications
+      })}`
+    )
+  } catch (e) {
+    logger.warn(`detectAbuse: aao request failed ${e.message}`)
+  }
+
+  // Use !! for nullable columns :(
+  if (
+    !!user.isBlockedFromRelay !== blockedFromRelay ||
+    !!user.isBlockedFromNotifications !== blockedFromNotifications
+  ) {
+    logger.info(
+      `abuse: state changed for user [${user.handle}], blocked from relay: ${blockedFromRelay} blocked from notifs: [${blockedFromNotifications}]`
+    )
+    await user.update({
+      isBlockedFromRelay: blockedFromRelay,
+      isBlockedFromNotifications: blockedFromNotifications,
+      appliedRules
+    })
   }
 }
 
 module.exports = {
-  getAbuseAttestation,
+  getAbuseAttestation: getAbuseData,
   detectAbuse,
   getIP,
   recordIP

@@ -37,7 +37,7 @@
             {
               "evaluator": {
                 "params": [
-                  1,
+                  3,
                   0
                 ],
                 "type": "gt"
@@ -128,7 +128,7 @@
             {
               "evaluator": {
                 "params": [
-                  3,
+                  4,
                   0
                 ],
                 "type": "gt"

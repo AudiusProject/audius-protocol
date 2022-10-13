@@ -35,7 +35,14 @@ const purchaseMetadataSchema = {
     purchaseTransactionId: { type: 'string' }
   },
   additionalProperties: false,
-  required: ['discriminator', 'usd', 'sol', 'audio', 'swapTransactionId', 'purchaseTransactionId']
+  required: [
+    'discriminator',
+    'usd',
+    'sol',
+    'audio',
+    'swapTransactionId',
+    'purchaseTransactionId'
+  ]
 }
 
 const validator = new Validator()

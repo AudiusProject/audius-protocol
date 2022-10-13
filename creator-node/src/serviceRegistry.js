@@ -22,10 +22,13 @@ const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
 const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 const TrustedNotifierManager = require('./services/TrustedNotifierManager')
-const ImageProcessingQueue = require('./ImageProcessingQueue')
+const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
+const {
+  PremiumContentAccessChecker
+} = require('./premiumContent/premiumContentAccessChecker')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -47,9 +50,10 @@ class ServiceRegistry {
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
+    this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
@@ -92,6 +96,31 @@ class ServiceRegistry {
 
     this.synchronousServicesInitialized = true
 
+    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    // Retries indefinitely
+    await this._recoverNodeL1Identity()
+
+    // Init StateMachineManager
+    this.stateMachineManager = new StateMachineManager()
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue,
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
+    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
+
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
@@ -106,11 +135,12 @@ class ServiceRegistry {
 
     // If error occurs in initializing these services, do not continue with app start up.
     try {
-      await this.blacklistManager.init()
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
+      await this.blacklistManager.init()
     } catch (e) {
       this.logError(e.message)
+      // eslint-disable-next-line no-process-exit
       process.exit(1)
     }
 
@@ -286,8 +316,6 @@ class ServiceRegistry {
   /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
-   *  - recover node L1 identity (requires node health check from server to return success)
-   *  - initialize SnapbackSM service (requires node L1 identity)
    *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
@@ -295,31 +323,6 @@ class ServiceRegistry {
    */
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
-
-    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
-    // Retries indefinitely
-    await this._recoverNodeL1Identity()
-
-    // Init StateMachineManager
-    this.stateMachineManager = new StateMachineManager()
-    const {
-      monitorStateQueue,
-      findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue,
-      manualSyncQueue,
-      recurringSyncQueue,
-      updateReplicaSetQueue,
-      recoverOrphanedDataQueue
-    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.monitorStateQueue = monitorStateQueue
-    this.findSyncRequestsQueue = findSyncRequestsQueue
-    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
-    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = recurringSyncQueue
-    this.updateReplicaSetQueue = updateReplicaSetQueue
-    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

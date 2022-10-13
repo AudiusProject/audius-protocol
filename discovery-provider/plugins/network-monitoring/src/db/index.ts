@@ -2,13 +2,13 @@
 import { Sequelize } from 'sequelize'
 
 import { SequelizeStorage, Umzug } from 'umzug'
-import { getEnv } from '../utils'
+import { getEnv } from '../config'
 import create_foreign_connection from './migrations/create_foreign_connection'
 import create_tables from './migrations/create_tables'
 
 const { db } = getEnv()
 
-const dbConnectionPoolMax: number = 85
+const dbConnectionPoolMax: number = 250
 
 export const sequelizeConn = new Sequelize(
   db.name,

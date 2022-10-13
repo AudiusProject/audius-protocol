@@ -69,21 +69,32 @@ const solanaNotificationBaseTypes = [
 
 // Gets the userId that a notification should be sent to based off the notification's base type
 const getPublishUserId = (notif, baseType) => {
-  if (baseType === notificationTypes.Follow) return notif.metadata.followee_user_id
-  else if (baseType === notificationTypes.Repost.base) return notif.metadata.entity_owner_id
-  else if (baseType === notificationTypes.Favorite.base) return notif.metadata.entity_owner_id
-  else if (baseType === notificationTypes.RemixCreate) return notif.metadata.remix_parent_track_user_id
-  else if (baseType === notificationTypes.RemixCosign) return notif.metadata.entity_owner_id
+  if (baseType === notificationTypes.Follow)
+    return notif.metadata.followee_user_id
+  else if (baseType === notificationTypes.Repost.base)
+    return notif.metadata.entity_owner_id
+  else if (baseType === notificationTypes.Favorite.base)
+    return notif.metadata.entity_owner_id
+  else if (baseType === notificationTypes.RemixCreate)
+    return notif.metadata.remix_parent_track_user_id
+  else if (baseType === notificationTypes.RemixCosign)
+    return notif.metadata.entity_owner_id
   else if (baseType === notificationTypes.Create.base) return notif.subscriberId
-  else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
+  else if (baseType === notificationTypes.ChallengeReward)
+    return notif.initiator
   else if (baseType === notificationTypes.Milestone) return notif.initiator
   else if (baseType === notificationTypes.TierChange) return notif.initiator
-  else if (baseType === notificationTypes.AddTrackToPlaylist) return notif.metadata.trackOwnerId
-  else if (baseType === notificationTypes.Reaction) return notif.metadata.reacted_to_entity.tip_sender_id
-  else if (baseType === notificationTypes.SupporterRankUp) return notif.initiator
-  else if (baseType === notificationTypes.SupportingRankUp) return notif.metadata.entity_id
+  else if (baseType === notificationTypes.AddTrackToPlaylist)
+    return notif.metadata.trackOwnerId
+  else if (baseType === notificationTypes.Reaction)
+    return notif.metadata.reacted_to_entity.tip_sender_id
+  else if (baseType === notificationTypes.SupporterRankUp)
+    return notif.initiator
+  else if (baseType === notificationTypes.SupportingRankUp)
+    return notif.metadata.entity_id
   else if (baseType === notificationTypes.TipReceive) return notif.initiator
-  else if (baseType === notificationTypes.SupporterDethroned) return notif.initiator
+  else if (baseType === notificationTypes.SupporterDethroned)
+    return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -117,15 +128,21 @@ const mapNotificationBaseTypeToSettings = {
  * @param {string} baseNotificationType
  * @param {Object} userNotificationSettings
  */
-const getPublishTypes = (userId, baseNotificationType, userNotificationSettings) => {
+const getPublishTypes = (
+  userId,
+  baseNotificationType,
+  userNotificationSettings
+) => {
   if (alwaysSendNotifications.includes(baseNotificationType)) {
     return [deviceType.Mobile, deviceType.Browser]
   }
   const userSettings = userNotificationSettings[userId]
   const types = []
   const settingKey = mapNotificationBaseTypeToSettings[baseNotificationType]
-  if (userSettings && userSettings.mobile && userSettings.mobile[settingKey]) types.push(deviceType.Mobile)
-  if (userSettings && userSettings.browser && userSettings.browser[settingKey]) types.push(deviceType.Browser)
+  if (userSettings && userSettings.mobile && userSettings.mobile[settingKey])
+    types.push(deviceType.Mobile)
+  if (userSettings && userSettings.browser && userSettings.browser[settingKey])
+    types.push(deviceType.Browser)
   return types
 }
 
@@ -139,13 +156,26 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
     return false
   }
   if (notificationType === notificationTypes.ChallengeReward) {
-    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED)
+    return !getFeatureFlag(
+      optimizelyClient,
+      FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED
+    )
   }
-  if ([notificationTypes.TipReceive, notificationTypes.Reaction, notificationTypes.SupporterRankUp, notificationTypes.SupportingRankUp].includes(notificationType)) {
+  if (
+    [
+      notificationTypes.TipReceive,
+      notificationTypes.Reaction,
+      notificationTypes.SupporterRankUp,
+      notificationTypes.SupportingRankUp
+    ].includes(notificationType)
+  ) {
     return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.TIPPING_ENABLED)
   }
   if (notificationType === notificationTypes.SupporterDethroned) {
-    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED)
+    return !getFeatureFlag(
+      optimizelyClient,
+      FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED
+    )
   }
   return false
 }
@@ -158,10 +188,16 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
  * @param {Object} userNotificationSettings A map of userID to their mobile & browser notification settings
  * @param {*} tx Transction for DB queries
  */
-const publishNotifications = async (notifications, metadata, userNotificationSettings, tx, optimizelyClient) => {
+const publishNotifications = async (
+  notifications,
+  metadata,
+  userNotificationSettings,
+  tx,
+  optimizelyClient
+) => {
   const initiators = models.User.findAll({
     where: {
-      blockchainUserId: notifications.map(notif => notif.initiator)
+      blockchainUserId: notifications.map((notif) => notif.initiator)
     }
   })
   const initiatorMap = initiators.reduce((acc, initiator) => {
@@ -173,27 +209,45 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     const mapNotification = notificationResponseMap[notification.type]
     const populatedNotification = {
       ...notification,
-      ...(mapNotification(notification, metadata))
+      ...mapNotification(notification, metadata)
     }
     const publishNotifType = getPublishNotifBaseType(notification)
-    const msg = pushNotificationMessagesMap[publishNotifType](populatedNotification)
-    const title = notificationResponseTitleMap[notification.type](populatedNotification)
+    const msg = pushNotificationMessagesMap[publishNotifType](
+      populatedNotification
+    )
+    const title = notificationResponseTitleMap[notification.type](
+      populatedNotification
+    )
     const userId = getPublishUserId(notification, publishNotifType)
-    const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
+    const types = getPublishTypes(
+      userId,
+      publishNotifType,
+      userNotificationSettings
+    )
     const initiatorUserId = notification.initiator
 
     // Don't publish events for deactivated users
-    const isReceiverDeactivated = metadata.users[userId] && metadata.users[userId].is_deactivated
-    const isInitiatorAbusive = initiatorMap[initiatorUserId] && initiatorMap[initiatorUserId].isAbusive
+    const isReceiverDeactivated =
+      metadata.users[userId] && metadata.users[userId].is_deactivated
+    const initiatingUser = initiatorMap[initiatorUserId]
+    const isInitiatorAbusive =
+      initiatorMap[initiatorUserId] &&
+      (initiatingUser.isBlockedFromRelay ||
+        initiatingUser.isBlockedFromNotifications)
     if (isReceiverDeactivated) {
       continue
     }
     if (isInitiatorAbusive) {
-      logger.info(`publishNotifications | notification initiator with user id ${initiatorUserId} is abusive, skipping...`)
+      logger.info(
+        `publishNotifications | notification initiator with user id ${initiatorUserId} is abusive, skipping...`
+      )
       continue
     }
 
-    const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
+    const shouldFilter = shouldFilterOutNotification(
+      notification.type,
+      optimizelyClient
+    )
     if (shouldFilter) {
       continue
     }

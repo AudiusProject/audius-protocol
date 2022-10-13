@@ -55,6 +55,9 @@ import {
     TopUsersResponseFull,
     TopUsersResponseFullFromJSON,
     TopUsersResponseFullToJSON,
+    UsersByContentNode,
+    UsersByContentNodeFromJSON,
+    UsersByContentNodeToJSON,
 } from '../models';
 
 export interface GetFavoritesRequest {
@@ -310,6 +313,10 @@ export interface GetTracksByUserRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserFilterTracksEnum;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -345,6 +352,10 @@ export interface GetTracksByUserHandleRequest {
      * The sort direction
      */
     sortDirection?: GetTracksByUserHandleSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
 export interface GetUserRequest {
@@ -363,6 +374,17 @@ export interface GetUserByHandleRequest {
      * A User handle
      */
     handle: string;
+    /**
+     * The user ID of the user making the request
+     */
+    userId?: string;
+}
+
+export interface GetUserReplicaSetRequest {
+    /**
+     * A User ID
+     */
+    id: string;
     /**
      * The user ID of the user making the request
      */
@@ -819,6 +841,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
         }
 
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -865,6 +891,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sortDirection !== undefined) {
             queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -923,6 +953,30 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<FullUserResponse["data"]>>;
+    }
+
+    /**
+     * Gets the user\'s replica set
+     */
+    async getUserReplicaSet(requestParameters: GetUserReplicaSetRequest): Promise<NonNullable<UsersByContentNode["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserReplicaSet.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UsersByContentNode["data"]>>;
     }
 
     /**
@@ -1029,6 +1083,15 @@ export enum GetTracksByUserSortDirectionEnum {
     * @export
     * @enum {string}
     */
+export enum GetTracksByUserFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
+}
+/**
+    * @export
+    * @enum {string}
+    */
 export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
@@ -1055,6 +1118,15 @@ export enum GetTracksByUserHandleSortMethodEnum {
 export enum GetTracksByUserHandleSortDirectionEnum {
     Asc = 'asc',
     Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
 }
 /**
     * @export

@@ -502,7 +502,7 @@ def update_user_model_metadata(
     #         update_task.challenge_event_bus,
     #     )
 
-    # reconstructed endpoints from sp IDs in tx not /ipfs response
+    # reconstructed endpoints from sp IDs in tx not response
     if "creator_node_endpoint" in metadata_dict:
         user_record.creator_node_endpoint = metadata_dict["creator_node_endpoint"]
 

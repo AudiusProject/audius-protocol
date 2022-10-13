@@ -4,6 +4,7 @@ import type {
   SpanOptions,
   AttributeValue,
   Tracer
+  // eslint-disable-next-line node/no-extraneous-import
 } from '@opentelemetry/api'
 
 import { trace, context, SpanStatusCode } from '@opentelemetry/api'
@@ -14,6 +15,7 @@ import {
   SemanticAttributes,
   SemanticResourceAttributes as ResourceAttributesSC
 } from '@opentelemetry/semantic-conventions'
+import { FsInstrumentation } from '@opentelemetry/instrumentation-fs'
 import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
@@ -82,6 +84,9 @@ export const setupTracing = () => {
 
       // Adds spans to redis operations
       new RedisInstrumentation(),
+
+      // Adds spans to filesystem operatioons
+      new FsInstrumentation(),
 
       // Injects traceid, spanid, and SpanContext into bunyan logs
       new BunyanInstrumentation({

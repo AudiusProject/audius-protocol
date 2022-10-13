@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import { ReplicaSet } from '../../../utils'
+import type { ReplicaSetEndpoints } from '../../types'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -21,6 +21,7 @@ import {
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } from '../stateMachineConstants'
+import { getReplicaSetEndpointsByWallet } from '../../ContentNodeInfoManager'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -28,9 +29,6 @@ const _: LoDashStatic = require('lodash')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
-const {
-  getUserReplicaSetEndpointsFromDiscovery
-} = require('../../../middlewares')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
@@ -107,16 +105,23 @@ async function issueSyncRequest({
 
   const startTimeMs = Date.now()
 
-  const { syncReqsToEnqueue, additionalSync, result, error } =
+  const { syncReqsToEnqueue, additionalSync, result, error, abort } =
     await _handleIssueSyncRequest({
       syncType,
       syncMode,
       syncRequestParameters,
       logger
     })
+
   if (error) {
     logger.error(
       `Issuing sync request error: ${error}. Prometheus result: ${result}`
+    )
+  }
+
+  if (abort) {
+    logger.warn(
+      `Issuing sync request abort: ${abort}. Prometheus result: ${result}`
     )
   }
 
@@ -190,7 +195,8 @@ async function _handleIssueSyncRequest({
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
    * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting.
    */
-  SyncRequestDeDuplicator.removeSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.removeSync(
     syncType,
     userWallet,
     secondaryEndpoint,
@@ -232,19 +238,18 @@ async function _handleIssueSyncRequest({
       return { result: 'success_mode_disabled', syncReqsToEnqueue }
     }
 
-    const userReplicaSet: ReplicaSet =
-      await getUserReplicaSetEndpointsFromDiscovery({
-        libs: await initAudiusLibs({
-          enableEthContracts: true,
-          enableContracts: false,
-          enableDiscovery: true,
-          enableIdentity: false,
-          logger
-        }),
-        logger,
+    const libs = await initAudiusLibs({
+      enableEthContracts: true,
+      enableContracts: false,
+      enableDiscovery: true,
+      enableIdentity: false,
+      logger
+    })
+    const userReplicaSet: ReplicaSetEndpoints =
+      await getReplicaSetEndpointsByWallet({
+        libs,
         wallet: userWallet,
-        blockNumber: null,
-        ensurePrimary: false
+        parentLogger: logger
       })
 
     const syncCorrectnessAbort = _ensureSyncsEnqueuedToCorrectNodes(
@@ -356,7 +361,9 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: `${logMsgString} || Error issuing sync request: ${e.message}`,
+      error: `${logMsgString} || Error issuing sync request: ${
+        e.message
+      } - ${JSON.stringify(e.response?.data)}`,
       syncReqsToEnqueue,
       additionalSync
     }
@@ -562,7 +569,7 @@ const _additionalSyncIsRequired = async (
 }
 
 const _ensureSyncsEnqueuedToCorrectNodes = (
-  userReplicaSet: ReplicaSet,
+  userReplicaSet: ReplicaSetEndpoints,
   syncMode: string,
   syncTargetEndpoint: string
 ) => {

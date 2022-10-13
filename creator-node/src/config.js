@@ -1,7 +1,6 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
-const process = require('process')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const _ = require('lodash')
@@ -265,6 +264,18 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
+  clusterModeEnabled: {
+    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
+    format: Boolean,
+    env: 'clusterModeEnabled',
+    default: true
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -374,6 +385,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -402,7 +419,7 @@ const config = convict({
     doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
     format: 'nat',
     env: 'discoveryNodeUnhealthyBlockDiff',
-    default: 500
+    default: 15
   },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
@@ -452,6 +469,18 @@ const config = convict({
     env: 'considerNodeUnhealthy',
     default: false
   },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
+  },
+  premiumContentEnabled: {
+    doc: 'whether or not to enable premium content',
+    format: Boolean,
+    env: 'premiumContentEnabled',
+    default: false
+  },
 
   /** sync / snapback configs */
 
@@ -490,6 +519,18 @@ const config = convict({
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
     default: 1
+  },
+  recoverOrphanedDataNumUsersPerBatch: {
+    doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
+    format: 'nat',
+    env: 'recoverOrphanedDataNumUsersPerBatch',
+    default: 2
+  },
+  recoverOrphanedDataDelayMsBetweenBatches: {
+    doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
+    format: 'nat',
+    env: 'recoverOrphanedDataDelayMsBetweenBatches',
+    default: 60_000 // 1m
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -549,19 +590,19 @@ const config = convict({
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
     env: 'maxManualRequestSyncJobConcurrency',
-    default: 15
+    default: 30
   },
   maxRecurringRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 50
+    default: 20
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 25
+    default: 10
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -746,10 +787,10 @@ const config = convict({
     default: ''
   },
   reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config',
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: ''
+    default: '1,2,3,4,27'
   }
   /**
    * unsupported options at the moment

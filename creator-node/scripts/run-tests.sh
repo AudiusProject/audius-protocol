@@ -29,7 +29,7 @@ if [ "${debug}" ]; then
   UNIT_TIMEOUT=0
   INTEGRATION_TIMEOUT=0
 else
-  UNIT_TIMEOUT=2000
+  UNIT_TIMEOUT=5000
   INTEGRATION_TIMEOUT=30000
 fi
 
@@ -102,6 +102,9 @@ fi
 # delete and recreate the storage path for the test so it doesn't reuse assets from previous runs
 rm -rf $storagePath
 mkdir -p $storagePath
+
+# transpile into typescript
+npm run build
 
 # linter
 npm run lint

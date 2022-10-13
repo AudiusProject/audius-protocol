@@ -38,6 +38,10 @@ import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
+import {
+  ProxyWormhole,
+  ProxyWormholeConfig
+} from './services/wormhole/ProxyWormhole'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -71,6 +75,7 @@ type AudiusLibsConfig = {
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
+  wormholeConfig: ProxyWormholeConfig
   captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
@@ -224,8 +229,7 @@ export class AudiusLibs {
   }
 
   /**
-   * Configures wormhole
-   * This is a stubbed version for native
+   * Configures proxy-only wormhole
    */
   static configWormhole() {
     return {}
@@ -297,6 +301,7 @@ export class AudiusLibs {
   creatorNodeConfig: CreatorNodeConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   comstockConfig: LibsComstockConfig
+  wormholeConfig: ProxyWormholeConfig
   captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
@@ -313,6 +318,7 @@ export class AudiusLibs {
   web3Manager: Nullable<Web3Manager>
   solanaWeb3Manager: Nullable<SolanaWeb3Manager>
   contracts: Nullable<AudiusContracts>
+  wormholeClient: Nullable<ProxyWormhole>
   creatorNode: Nullable<CreatorNode>
   captcha: Nullable<Captcha>
   schemas?: Schemas
@@ -351,6 +357,7 @@ export class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
+    wormholeConfig,
     captchaConfig,
     hedgehogConfig,
     isServer,
@@ -371,6 +378,7 @@ export class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
+    this.wormholeConfig = wormholeConfig
     this.captchaConfig = captchaConfig
     this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
@@ -386,12 +394,13 @@ export class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
     this.captcha = null
     this.comstock = null
 
-    // // API
+    // API
     this.ServiceProvider = null
     this.Account = null
     this.User = null
@@ -506,6 +515,20 @@ export class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
+    if (
+      this.wormholeConfig &&
+      this.ethWeb3Manager &&
+      this.ethContracts &&
+      this.solanaWeb3Manager
+    ) {
+      this.wormholeClient = new ProxyWormhole(
+        this.hedgehog,
+        this.ethWeb3Manager,
+        this.ethContracts,
+        this.identityService,
+        this.solanaWeb3Manager
+      )
+    }
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
@@ -559,7 +582,7 @@ export class AudiusLibs {
       this.ethContracts,
       this.solanaWeb3Manager,
       null as any,
-      null as any,
+      this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,

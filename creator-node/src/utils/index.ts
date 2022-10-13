@@ -6,8 +6,13 @@
  * typed, we'll remove the commonjs export syntax and just use
  * the new way of importing/exporting
  */
-import { strToReplicaSet } from './strToReplicaSet'
-import { timeout, getRandomInt, verifySignature, stringifyMap } from './utils'
+import {
+  timeout,
+  getRandomInt,
+  verifySignature,
+  stringifyMap,
+  isFqdn
+} from './utils'
 import {
   validateMetadata,
   validateAssociatedWallets
@@ -25,20 +30,18 @@ import {
   _streamFileToDiskHelper
 } from './fsUtils'
 import { runShellCommand } from './runShellCommand'
-import {
-  currentNodeShouldHandleTranscode,
-  getAllRegisteredCNodes
-} from './contentNodeUtils'
+import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
+import { clusterUtils } from './clusterUtils'
 
-export type { ReplicaSet } from './strToReplicaSet'
+export type { ValuesOf, RequestWithLogger } from './utils'
 export {
+  isFqdn,
   timeout,
   getRandomInt,
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
   findCIDInNetwork,
-  getAllRegisteredCNodes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -46,18 +49,18 @@ export {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet,
-  stringifyMap
+  stringifyMap,
+  clusterUtils
 }
 
 module.exports = {
+  isFqdn,
   timeout,
   getRandomInt,
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
   findCIDInNetwork,
-  getAllRegisteredCNodes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -65,8 +68,8 @@ module.exports = {
   runShellCommand,
   validateAssociatedWallets,
   validateMetadata,
-  strToReplicaSet,
   stringifyMap,
   verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
+  EMPTY_FILE_CID,
+  clusterUtils
 }

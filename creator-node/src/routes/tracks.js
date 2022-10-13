@@ -1,8 +1,6 @@
 const express = require('express')
 const path = require('path')
-const fs = require('fs')
-const { Buffer } = require('buffer')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
 const config = require('../config')
 const models = require('../models')
@@ -24,6 +22,7 @@ const {
   validateStateForImageDirCIDAndReturnFileUUID,
   currentNodeShouldHandleTranscode
 } = require('../utils')
+const asyncRetry = require('../utils/asyncRetry')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -38,8 +37,6 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
-
-const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
@@ -175,7 +172,7 @@ router.get(
       )
     }
 
-    const basePath = getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
+    const basePath = await getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
     let pathToFile
     if (fileType === 'transcode') {
       pathToFile = path.join(basePath, fileName)
@@ -312,6 +309,90 @@ router.post(
   })
 )
 
+const validateTrackOwner = async ({
+  libs,
+  logger,
+  trackId,
+  userId,
+  blockNumber
+}) => {
+  const logPrefix = `[validateTrackOwner][trackId: ${trackId}][userId: ${userId}][blockNumber: ${blockNumber}]`
+
+  const asyncFn = async () => {
+    const discoveryTrackResponseVerbose = await libs.Track.getTracksVerbose(
+      1,
+      0,
+      [trackId]
+    )
+    const discoveryProviderEndpoint =
+      libs.discoveryProvider.discoveryProviderEndpoint
+    const {
+      latest_indexed_block: latestIndexedBlock,
+      latest_chain_block: latestChainBlock,
+      data: discoveryTrackResponse
+    } = discoveryTrackResponseVerbose
+
+    // Return if malformatted response
+    if (
+      !latestIndexedBlock ||
+      !latestChainBlock ||
+      !Array.isArray(discoveryTrackResponse)
+    ) {
+      logger.warn(
+        `${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
+          discoveryTrackResponseVerbose
+        )}`
+      )
+      return false
+    }
+
+    // Throw if target blockNumber not indexed
+    const blockDiff = latestChainBlock - latestIndexedBlock
+    if (latestIndexedBlock < blockNumber) {
+      throw new Error(
+        `${logPrefix}: targetBlocknumber not indexed. ${discoveryProviderEndpoint} currently at ${latestIndexedBlock} with blockDiff ${blockDiff}`
+      )
+    }
+
+    // Return if track not found at target block
+    if (discoveryTrackResponse.length === 0) {
+      logger.warn(
+        `${logPrefix} No track found from ${discoveryProviderEndpoint}`
+      )
+      return false
+    }
+
+    // Return boolean indicating if track owner matches expected
+    const recoveredOwnerId = discoveryTrackResponse[0].owner_id
+    const ownerMatches = parseInt(userId) === recoveredOwnerId
+    if (!ownerMatches) {
+      logger.warn(
+        `${logPrefix} Recovered owner ID does not match (${recoveredOwnerId}), from ${discoveryProviderEndpoint}`
+      )
+    }
+    return ownerMatches
+  }
+
+  const startMs = Date.now()
+  try {
+    return await asyncRetry({
+      asyncFn,
+      logger,
+      log: true,
+      options: {
+        minTimeout: 1000,
+        maxTimeout: Infinity,
+        factor: 2,
+        retries: 10
+      }
+    })
+  } catch (e) {
+    throw e
+  } finally {
+    logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
+  }
+}
+
 /**
  * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
  * and associates segment & image file entries with track. Ends track creation/update process.
@@ -356,7 +437,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
       if (
         !metadataJSON ||
@@ -427,19 +508,18 @@ router.post(
           throw new Error('Cannot create track without transcodedTrackUUID.')
         }
 
-        // Verify that blockchain track id is owned by user attempting to upload it
-        const serviceRegistry = req.app.get('serviceRegistry')
-        const { libs } = serviceRegistry
-        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
-          blockchainTrackId
-        )
-        if (
-          !trackResp?.trackOwnerId ||
-          parseInt(trackResp.trackOwnerId, 10) !==
-            parseInt(req.session.userId, 10)
-        ) {
+        // Verify that track id is owned by user attempting to upload it
+        const libs = req.app.get('audiusLibs')
+        const isValidTrackOwner = await validateTrackOwner({
+          libs,
+          trackId: blockchainTrackId,
+          userId: req.session.userId,
+          logger: req.logger,
+          blockNumber
+        })
+        if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
+            `Failed to confirm that user ${req.session.userId} is owner of ${blockchainTrackId} at blocknumber ${blockNumber}`
           )
         }
 

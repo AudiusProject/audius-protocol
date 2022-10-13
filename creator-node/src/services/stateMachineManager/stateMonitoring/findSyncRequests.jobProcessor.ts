@@ -253,10 +253,29 @@ async function _findSyncsForUser(
 
     // Determine if secondary requires a sync by comparing its user data against primary (this node)
     let syncMode
-    const { clock: primaryClock, filesHash: primaryFilesHash } =
-      replicaToAllUserInfoMaps[primary][wallet]
+    const primaryUserInfo = replicaToAllUserInfoMaps[primary][wallet]
+    const secondaryUserInfo = replicaToAllUserInfoMaps[secondary][wallet]
+
+    if (
+      primaryUserInfo === undefined ||
+      primaryUserInfo === null ||
+      secondaryUserInfo === undefined ||
+      secondaryUserInfo === null
+    ) {
+      tracing.error(
+        `undefined user info - primary ${JSON.stringify(
+          primaryUserInfo
+        )}, secondary ${JSON.stringify(secondaryUserInfo)}`
+      )
+      outcomesBySecondary[secondary].result = 'no_sync_unexpected_error'
+      continue
+    }
+
+    const { clock: primaryClock, filesHash: primaryFilesHash } = primaryUserInfo
+
     const { clock: secondaryClock, filesHash: secondaryFilesHash } =
-      replicaToAllUserInfoMaps[secondary][wallet]
+      secondaryUserInfo
+
     try {
       syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -283,13 +302,14 @@ async function _findSyncsForUser(
       syncMode === SYNC_MODES.MergePrimaryAndSecondary
     ) {
       try {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          primaryEndpoint: thisContentNodeEndpoint,
-          secondaryEndpoint: secondary,
-          syncType: SyncType.Recurring,
-          syncMode
-        })
+        const { duplicateSyncReq, syncReqToEnqueue } =
+          await getNewOrExistingSyncReq({
+            userWallet: wallet,
+            primaryEndpoint: thisContentNodeEndpoint,
+            secondaryEndpoint: secondary,
+            syncType: SyncType.Recurring,
+            syncMode
+          })
 
         if (!_.isEmpty(syncReqToEnqueue)) {
           result = 'new_sync_request_enqueued'

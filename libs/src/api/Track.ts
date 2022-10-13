@@ -17,7 +17,9 @@ const TRACK_PROPS = [
   'mood',
   'credits_splits',
   'release_date',
-  'file_type'
+  'file_type',
+  'is_premium',
+  'premium_conditions'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
@@ -92,6 +94,50 @@ export class Track extends Base {
   ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return await this.discoveryProvider.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
+  }
+
+  /**
+   * get tracks with all relevant track data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param targetUserId the owner of the tracks being queried
+   * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param minBlockNumber The min block number
+   * @param filterDeleted If set to true filters out deleted tracks
+   * @returns Array of track metadata Objects
+   * additional metadata fields on track objects:
+   *  {Integer} repost_count - repost count for given track
+   *  {Integer} save_count - save count for given track
+   *  {Array} followee_reposts - followees of current user that have reposted given track
+   *  {Boolean} has_current_user_reposted - has current user reposted given track
+   *  {Boolean} has_current_user_saved - has current user saved given track
+   * @example
+   * await getTracks()
+   * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
+   */
+  async getTracksVerbose(
+    limit = 100,
+    offset = 0,
+    idsArray: Nullable<string[]> = null,
+    targetUserId: Nullable<string> = null,
+    sort: Nullable<boolean> = null,
+    minBlockNumber: Nullable<number> = null,
+    filterDeleted: Nullable<boolean> = null,
+    withUsers = false
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getTracksVerbose(
       limit,
       offset,
       idsArray,

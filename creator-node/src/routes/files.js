@@ -30,19 +30,16 @@ const {
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
-const {
-  getAllRegisteredCNodes,
-  findCIDInNetwork,
-  timeout
-} = require('../utils')
+const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
+const { findCIDInNetwork, timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const { promisify } = require('util')
-
-const fsStat = promisify(fs.stat)
+const {
+  premiumContentMiddleware
+} = require('../middlewares/premiumContent/premiumContentMiddleware')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -66,7 +63,7 @@ const streamFromFileSystem = async (
   try {
     if (checkExistence) {
       // If file cannot be found on disk, throw error
-      if (!fs.existsSync(path)) {
+      if (!(await fs.pathExists(path))) {
         throw new Error(`File could not be found on disk, path=${path}`)
       }
     }
@@ -74,7 +71,7 @@ const streamFromFileSystem = async (
     // Stream file from file system
     let fileStream
 
-    const stat = fsStats || (await fsStat(path))
+    const stat = fsStats || (await fs.stat(path))
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -120,8 +117,15 @@ const streamFromFileSystem = async (
       )
     }
 
-    // Set the CID cache-control so that client caches the response for 30 days
-    res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    // If content is premium, set cache-control to no-cache.
+    // Otherwise, set the CID cache-control so that client caches the response for 30 days.
+    // The premiumContentMiddleware sets the req.premiumContent object so that we do not
+    // have to make another database round trip to get this info.
+    if (req.premiumContent?.isPremium) {
+      res.setHeader('cache-control', 'no-cache')
+    } else {
+      res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    }
 
     await new Promise((resolve, reject) => {
       fileStream
@@ -147,7 +151,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
-    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+    req.logger.debug(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
     req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
@@ -162,14 +166,6 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
-  if (!(req.params && req.params.CID)) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(`Invalid request, no CID provided`)
-    )
-  }
-
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
@@ -204,7 +200,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = DiskManager.computeFilePath(CID, false)
+    storagePath = await DiskManager.computeFilePath(CID, false)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
@@ -465,13 +461,7 @@ const getCID = async (req, res) => {
   try {
     startMs = Date.now()
     const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(
-      storagePath,
-      CID,
-      req.logger,
-      libs,
-      trackId
-    )
+    const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
     if (!found) {
       throw new Error('Not found in network')
     }
@@ -513,6 +503,7 @@ const getDirCID = async (req, res) => {
   const dirCID = req.params.dirCID
   const filename = req.params.filename
   const path = `${dirCID}/${filename}`
+  const logPrefix = '[getDirCID]'
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
@@ -542,10 +533,12 @@ const getDirCID = async (req, res) => {
 
   // Attempt to stream file to client
   try {
-    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    req.logger.info(
+      `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
+    )
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
+    req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
@@ -553,13 +546,13 @@ const getDirCID = async (req, res) => {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
     const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    const found = await findCIDInNetwork(storagePath, CID, req.logger)
     if (!found) throw new Error(`CID=${CID} not found in network`)
 
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
     req.logger.error(
-      `Error calling findCIDInNetwork for path ${storagePath}`,
+      `${logPrefix} - Error calling findCIDInNetwork for path ${storagePath}`,
       e
     )
     return sendResponse(req, res, errorResponseServerError(e.message))
@@ -753,13 +746,18 @@ router.post(
  * Serve data hosted by creator node and create download route using query string pattern
  * `...?filename=<file_name.mp3>`.
  * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
+ *
+ * This route uses the premium content middleware to check if content requested is premium.
+ * If so, the middleware ensures that the user does have access to the content before
+ * proceeding to the getCID logic that returns the premium content.
+ *
  * @param req
  * @param req.query
  * @param {string} req.query.filename filename to set as the content-disposition header
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], getCID)
+router.get(['/ipfs/:CID', '/content/:CID'], premiumContentMiddleware, getCID)
 
 /**
  * Serve images hosted by content node.
@@ -921,9 +919,8 @@ router.get('/file_lookup', async (req, res) => {
     { filePath, delegateWallet, timestamp },
     signature
   ).toLowerCase()
-  const libs = req.app.get('audiusLibs')
-  const creatorNodes = await getAllRegisteredCNodes(libs)
-  const foundDelegateWallet = creatorNodes.some(
+  const contentNodes = await getAllRegisteredCNodes(req.logger)
+  const foundDelegateWallet = contentNodes.some(
     (node) => node.delegateOwnerWallet.toLowerCase() === recoveredWallet
   )
   if (recoveredWallet !== delegateWallet || !foundDelegateWallet) {

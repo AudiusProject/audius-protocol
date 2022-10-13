@@ -9,14 +9,15 @@ from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
-from src.utils import helpers
+from src.utils import helpers, web3_provider
+from src.utils.config import shared_config
 from src.utils.eth_contracts_helpers import (
     content_node_service_type,
     sp_factory_registry_key,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_json_cached_key, get_sp_id_key
+from src.utils.redis_cache import get_cn_sp_id_key, get_json_cached_key
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
@@ -33,7 +34,7 @@ def user_replica_set_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _metadata,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of User model state changes found in transaction and set of user_id values"""
 
@@ -206,19 +207,19 @@ def get_user_replica_set_mgr_tx(update_task, event_type, tx_receipt):
 # creator_node_endpoint
 # If this discrepancy occurs, a client replica set health check sweep will
 # result in a client-initiated failover operation to a valid set of replicas
-def get_endpoint_string_from_sp_ids(update_task, primary, secondaries):
+def get_endpoint_string_from_sp_ids(redis, primary, secondaries):
     sp_factory_inst = None
     endpoint_string = None
     primary_endpoint = None
     try:
         sp_factory_inst, primary_endpoint = get_endpoint_from_id(
-            update_task, sp_factory_inst, primary
+            redis, sp_factory_inst, primary
         )
         endpoint_string = f"{primary_endpoint}"
         for secondary_id in secondaries:
             secondary_endpoint = None
             sp_factory_inst, secondary_endpoint = get_endpoint_from_id(
-                update_task, sp_factory_inst, secondary_id
+                redis, sp_factory_inst, secondary_id
             )
             # Conditionally log if endpoint is None after fetching
             if not secondary_endpoint:
@@ -246,7 +247,7 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
     sp_factory_inst = None
     try:
         sp_factory_inst, endpoint = get_endpoint_from_id(
-            update_task, sp_factory_inst, sp_id
+            update_task.redis, sp_factory_inst, sp_id
         )
     except Exception as exc:
         logger.error(
@@ -259,12 +260,12 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
 
 # Initializes sp_factory if necessary and retrieves spID
 # Returns initialized instance of contract and endpoint
-def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
+def get_endpoint_from_id(redis, sp_factory_inst, sp_id):
     endpoint = None
     # Get sp_id cache key
-    cache_key = get_sp_id_key(sp_id)
+    cache_key = get_cn_sp_id_key(sp_id)
     # Attempt to fetch from cache
-    sp_info_cached = get_json_cached_key(update_task.redis, cache_key)
+    sp_info_cached = get_json_cached_key(redis, cache_key)
     if sp_info_cached:
         endpoint = sp_info_cached[1]
         logger.info(
@@ -277,7 +278,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
             f"index.py | user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}"
         )
         if sp_factory_inst is None:
-            sp_factory_inst = get_sp_factory_inst(update_task)
+            sp_factory_inst = get_sp_factory_inst()
 
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
             content_node_service_type, sp_id
@@ -291,9 +292,8 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
 
 
 # Return instance of ServiceProviderFactory initialized with configs
-def get_sp_factory_inst(update_task):
-    shared_config = update_task.shared_config
-    eth_web3 = update_task.eth_web3
+def get_sp_factory_inst():
+    eth_web3 = web3_provider.get_eth_web3()
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -352,7 +352,7 @@ def parse_user_record(update_task, entry, user_record, block_timestamp):
 
     # Update cnode endpoint string reconstructed from sp ID
     creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
-        update_task, primary, secondaries
+        update_task.redis, primary, secondaries
     )
     user_record.creator_node_endpoint = creator_node_endpoint_str
 

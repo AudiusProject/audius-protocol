@@ -39,7 +39,8 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   poa-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -60,7 +61,8 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   # eth-contracts
 
@@ -92,7 +94,8 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   eth-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -113,7 +116,8 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   # solana-programs
 
@@ -177,6 +181,7 @@ services:
       ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
 
       POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
       POA_PROVIDER_URL: "http://poa-ganache:8545"
 
       SOLANA_ENDPOINT: "http://solana-test-validator:8899"
@@ -251,6 +256,7 @@ services:
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
       registryAddress: "${POA_REGISTRY_ADDRESS}"
+      entityManagerAddress: "${ENTITY_MANAGER_ADDRESS}"
       ownerWallet: "${POA_OWNER_WALLET}"
 
       ethProviderUrl: "http://eth-ganache:8545"
@@ -323,6 +329,7 @@ services:
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 
@@ -358,6 +365,56 @@ services:
     deploy:
       mode: replicated
       replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
+
+  discovery-provider-test:
+    build: discovery-provider
+    command: sh -c "scripts/test_setup.sh"
+    environment:
+      PYTHONPYCACHEPREFIX: /tmp/pycache"
+
+      # Discovery test relies on global blockchains & global elasticsearch
+      # TODO: Consider moving these into the container itself for testing purposes?
+
+      audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
+      audius_redis_url: "redis://localhost:6379/00"
+
+      audius_web3_host: "poa-ganache"
+      audius_web3_port: "8545"
+      audius_web3_eth_provider_url: "http://eth-ganache:8545"
+      audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
+      audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
+      audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
+
+      audius_solana_endpoint: "http://solana-test-validator:8899"
+      audius_solana_track_listen_count_address: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
+      audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
+      audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      audius_solana_waudio_mint: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      audius_solana_rewards_manager_program_address: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      audius_solana_rewards_manager_account: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      audius_solana_anchor_data_program_id: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
+      audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
+    volumes:
+      - ./discovery-provider/src:/audius-discovery-provider/src
+      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
+      - poa-contracts-abis:/audius-discovery-provider/build/contracts
+      - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
+      - solana-programs-idl:/audius-discovery-provider/idl
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+      eth-ganache:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
+      discovery-provider:
+        condition: service_healthy
+      discovery-provider-elasticsearch:
+        condition: "${ELASTICSEARCH_CONDITION}"
+    logging: *default-logging
+    deploy:
+      mode: global
 
   # creator-node
 
@@ -409,9 +466,9 @@ services:
 
   # port forwarder
 
-  proxy:
+  port-forwarder:
     image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/proxy.sh
+    command: sh /tmp/dev-tools/startup/port-forwarder.sh
     ports:
       - "4000-4010:4000-4010"
       - "5000-5010:5000-5010"
@@ -421,20 +478,18 @@ services:
     deploy:
       mode: global
 
-  # SOCKS5 proxy for use with client
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
 
-  socks5-proxy:
-    image: serjs/go-socks5-proxy:v0.0.3
+  sshuttle-server:
+    image: linuxserver/openssh-server:latest # don't pin
+    command: bash -c "apk add python3 && sleep inf"
+    environment:
+      PASSWORD_ACCESS: "true"
+      USER_NAME: "sshuttle"
+      USER_PASSWORD: "sshuttle"
     ports:
-      - "1080:1080"
-
-  socks5-proxy-pac:
-    image: python:3.10.5
-    command: sh -c "head -n-1 /etc/hosts > /etc/hosts && python /tmp/dev-tools/startup/socks5-proxy-pac.py"
-    ports:
-      - "8080:80"
-    volumes:
-      - ./dev-tools:/tmp/dev-tools
+      - "2222:2222"
 
 volumes:
   poa-contracts-abis:

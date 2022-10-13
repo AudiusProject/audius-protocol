@@ -26,32 +26,12 @@ async function main() {
 
   await audiusLibs.init();
 
-  // Wait for node to be healthy
-  let healthy = false;
-  while (!healthy) {
-    try {
-      const { data } = await axios({
-        url: "/health_check",
-        baseURL: config.get("creatorNodeEndpoint"),
-        method: "get",
-        timeout: 1000,
-      });
-
-      healthy = data.data.healthy;
-    } catch (e) {
-    }
-
-    if (!healthy) {
-      console.log("waiting for node to be healthy");
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
-
   const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.registerWithDelegate(
     "content-node",
     config.get("creatorNodeEndpoint"),
     new BN("200000000000000000000000"),
     config.get("delegateOwnerWallet"),
+    false,
   );
 }
 

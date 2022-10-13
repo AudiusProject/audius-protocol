@@ -5,14 +5,14 @@ import type {
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
 
-import { getContentNodeInfoFromSpId } from '../ContentNodeInfoManager'
-
-const _ = require('lodash')
-
-const { logger: genericLogger } = require('../../logging')
-const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
-
-const asyncRetry = require('../../utils/asyncRetry')
+import {
+  getContentNodeInfoFromEndpoint,
+  getReplicaSetEndpointsByWallet
+} from '../ContentNodeInfoManager'
+import config from '../../config'
+import { isFqdn } from '../../utils'
+import { logger as genericLogger } from '../../logging'
+import { recoverWallet, signatureHasExpired } from '../../apiSigning'
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
@@ -73,13 +73,15 @@ const shouldForceResync = async (
 
   try {
     // Get the delegate wallet from the primary of the observed user
-    const userPrimaryId: number = await asyncRetry({
-      asyncFn: async () => {
-        return (await libs.User.getUsers(1, 0, null, wallet))[0].primary_id
-      },
-      logLabel: 'shouldForceResync'
+    const replicaSetEndpoints = await getReplicaSetEndpointsByWallet({
+      libs,
+      wallet,
+      parentLogger: logger
     })
-    const primaryInfo = await getContentNodeInfoFromSpId(userPrimaryId, logger)
+    const primaryInfo = await getContentNodeInfoFromEndpoint(
+      replicaSetEndpoints.primary!,
+      logger
+    )
     if (primaryInfo === undefined) return false
     const { delegateOwnerWallet: actualPrimaryWallet } = primaryInfo
 
@@ -100,4 +102,51 @@ const shouldForceResync = async (
   return false
 }
 
-export { shouldForceResync, generateDataForSignatureRecovery }
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ * and throws if it doesn't match.
+ */
+const getAndValidateOwnEndpoint = async (logger: Logger): Promise<string> => {
+  const cNodeEndpoint = config.get('creatorNodeEndpoint')
+
+  if (!cNodeEndpoint) {
+    throw new Error('Must provide creatorNodeEndpoint config var.')
+  }
+
+  const cNodeInfo = await getContentNodeInfoFromEndpoint(cNodeEndpoint, logger)
+
+  // Confirm on-chain endpoint exists and is valid FQDN
+  // Error condition is met if any of the following are true
+  // - No spInfo returned from chain
+  // - Configured spOwnerWallet does not match on chain spOwnerWallet
+  // - Configured delegateOwnerWallet does not match on chain delegateOwnerWallet
+  // - Endpoint returned from chain but is an invalid FQDN, preventing successful operations
+  // - Endpoint returned from chain does not match configured endpoint
+  if (
+    cNodeInfo === undefined ||
+    !cNodeInfo.hasOwnProperty('endpoint') ||
+    cNodeInfo.owner.toLowerCase() !==
+      config.get('spOwnerWallet').toLowerCase() ||
+    cNodeInfo.delegateOwnerWallet.toLowerCase() !==
+      config.get('delegateOwnerWallet').toLowerCase() ||
+    !isFqdn(cNodeInfo.endpoint) ||
+    cNodeInfo.endpoint !== cNodeEndpoint
+  ) {
+    throw new Error(
+      `Cannot getAndValidateOwnEndpoint for node. Returned from chain=${JSON.stringify(
+        cNodeInfo
+      )}, configs=(creatorNodeEndpoint=${config.get(
+        'creatorNodeEndpoint'
+      )}, spOwnerWallet=${config.get(
+        'spOwnerWallet'
+      )}, delegateOwnerWallet=${config.get('delegateOwnerWallet')})`
+    )
+  }
+  return cNodeInfo.endpoint
+}
+
+export {
+  shouldForceResync,
+  generateDataForSignatureRecovery,
+  getAndValidateOwnEndpoint
+}

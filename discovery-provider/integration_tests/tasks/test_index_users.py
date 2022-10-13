@@ -235,14 +235,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -264,14 +264,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -286,14 +286,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -308,14 +308,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -334,14 +334,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -359,14 +359,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -382,14 +382,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -408,14 +408,14 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            None,  # ipfs_metadata - not used
+            None,  # metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -430,7 +430,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
 
         parse_user_event(
             None,  # self - not used
-            update_task,  # only need the ipfs client for get_metadata
+            update_task,
             session,
             None,  # tx_receipt - not used
             block_number,  # not used
@@ -441,31 +441,27 @@ def test_index_users(bus_mock: mock.MagicMock, app):
                 helpers.multihash_digest_to_cid(entry.args._multihashDigest),
                 user_metadata_format,
                 "",
-            ),  # ipfs_metadata
+            ),  # metadata
             block_timestamp,  # Used to update the user.updated_at field
         )
         session.flush()
 
         entry_multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
-        ipfs_metadata = update_task.cid_metadata_client.get_metadata(
-            entry_multihash, "", ""
-        )
+        metadata = update_task.cid_metadata_client.get_metadata(entry_multihash, "", "")
 
-        assert user_record.profile_picture == ipfs_metadata["profile_picture"]
-        assert user_record.cover_photo == ipfs_metadata["cover_photo"]
-        assert user_record.bio == ipfs_metadata["bio"]
-        assert user_record.name == ipfs_metadata["name"]
-        assert user_record.location == ipfs_metadata["location"]
-        assert (
-            user_record.profile_picture_sizes == ipfs_metadata["profile_picture_sizes"]
-        )
-        assert user_record.cover_photo_sizes == ipfs_metadata["cover_photo_sizes"]
+        assert user_record.profile_picture == metadata["profile_picture"]
+        assert user_record.cover_photo == metadata["cover_photo"]
+        assert user_record.bio == metadata["bio"]
+        assert user_record.name == metadata["name"]
+        assert user_record.location == metadata["location"]
+        assert user_record.profile_picture_sizes == metadata["profile_picture_sizes"]
+        assert user_record.cover_photo_sizes == metadata["cover_photo_sizes"]
         assert user_record.has_collectibles == True
-        assert user_record.playlist_library == ipfs_metadata["playlist_library"]
+        assert user_record.playlist_library == metadata["playlist_library"]
 
         assert user_record.is_deactivated == True
 
-        ipfs_associated_wallets = ipfs_metadata["associated_wallets"]
+        metadata_associated_wallets = metadata["associated_wallets"]
         associated_wallets = (
             session.query(AssociatedWallet)
             .filter_by(
@@ -477,10 +473,10 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             .all()
         )
         for associated_wallet in associated_wallets:
-            assert associated_wallet.wallet in ipfs_associated_wallets
-        assert len(associated_wallets) == len(ipfs_associated_wallets)
+            assert associated_wallet.wallet in metadata_associated_wallets
+        assert len(associated_wallets) == len(associated_wallets)
 
-        ipfs_associated_sol_wallets = ipfs_metadata["associated_sol_wallets"]
+        metadata_associated_sol_wallets = metadata["associated_sol_wallets"]
         associated_sol_wallets = (
             session.query(AssociatedWallet)
             .filter_by(
@@ -492,8 +488,8 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             .all()
         )
         for associated_wallet in associated_sol_wallets:
-            assert associated_wallet.wallet in ipfs_associated_sol_wallets
-        assert len(associated_sol_wallets) == len(ipfs_associated_sol_wallets)
+            assert associated_wallet.wallet in metadata_associated_sol_wallets
+        assert len(associated_sol_wallets) == len(associated_sol_wallets)
 
         user_events = (
             session.query(UserEvent)
@@ -634,7 +630,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         ],
         autospec=True,
     )
-    test_ipfs_metadata: Dict[str, Any] = {}
+    test_metadata: Dict[str, Any] = {}
 
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         try:
@@ -653,7 +649,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                 test_block_number,
                 test_block_timestamp,
                 block_hash,
-                test_ipfs_metadata,
+                test_metadata,
             )
             assert len(updated_user_ids_set) == 1
             assert list(updated_user_ids_set)[0] == blessed_user_record.user_id
