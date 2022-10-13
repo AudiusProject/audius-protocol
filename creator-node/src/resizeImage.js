@@ -1,12 +1,12 @@
-const Jimp = require('jimp')
-const ExifParser = require('exif-parser')
-const fs = require('fs-extra')
-const path = require('path')
+import Jimp from 'jimp'
+import ExifParser from 'exif-parser'
+import fs from 'fs-extra'
+import path from 'path'
 
-const { logger: genericLogger } = require('./logging')
-const { libs } = require('@audius/sdk')
+import { logger as genericLogger } from './logging'
+import DiskManager from './diskManager'
+import { libs } from '@audius/sdk'
 const Utils = libs.Utils
-const DiskManager = require('./diskManager')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
