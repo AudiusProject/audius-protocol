@@ -22,7 +22,19 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
     idle: 10000
   },
   dialectOptions: {
+    // number of milliseconds before a statement in query will time out, default is no timeout
+    // statement_timeout: 1000,
+
+    // number of milliseconds before a query call will timeout, default is no timeout
+    query_timeout: QUERY_TIMEOUT,
+
+    // number of milliseconds to wait for connection, default is no timeout
+    // connectionTimeoutMillis: 1000
+
+    // number of milliseconds before terminating any session with an open idle transaction, default is no timeout
+    // idle_in_transaction_session_timeout: 1000
     options: {
+      // Request to server timeout
       requestTimeout: QUERY_TIMEOUT
     }
   }
