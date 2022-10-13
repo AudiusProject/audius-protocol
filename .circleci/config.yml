@@ -1490,7 +1490,7 @@ workflows:
           requires:
             - unlock-<< matrix.service >>-deploy-jobs
       - deploy:
-          name: reserve-stage-<< matrix.service >>
+          name: reserving-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1515,7 +1515,7 @@ workflows:
           requires:
             - unlock-discovery-deploy-jobs
       - deploy:
-          name: reserve-<< matrix.host >>
+          name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1543,7 +1543,7 @@ workflows:
           requires:
             - unlock-creator-deploy-jobs
       - deploy:
-          name: reserve-<< matrix.host >>
+          name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
