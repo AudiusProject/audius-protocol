@@ -11,7 +11,7 @@ See the dev-tools [README](https://github.com/AudiusProject/audius-protocol/tree
 ```bash
 audius-compose up
 
-curl http://audius-protocol-discovery-provider-1:5000/health_check
+curl localhost:5000/health_check
 ```
 
 

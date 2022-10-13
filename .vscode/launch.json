@@ -15,8 +15,8 @@
             "protocol": "inspector"
         },
         {
-            "command": "cd identity-service; npm run test:debug",
             "name": "(Identity) Test",
+            "command": "cd identity-service; npm run test:debug",
             "request": "launch",
             "type": "node-terminal"
         },
@@ -24,18 +24,33 @@
             "name": "(Content Node) Attach",
             "type": "node",
             "request": "attach",
-            // Increment this port to connect to a different content node instance
-            "port": 9230,
+            "port": 9700,
             "address": "localhost",
             "localRoot": "${workspaceFolder}/creator-node/",
             "remoteRoot": "/usr/src/app",
             "protocol": "inspector"
         },
         {
-            "command": "cd creator-node; npm run test:debug",
             "name": "(Content Node) Test",
+            "command": "cd creator-node; npm run test:debug",
             "request": "launch",
             "type": "node-terminal"
+        },
+        {
+            "name": "(Discovery Node) Attach",
+            "type": "python",
+            "request": "attach",
+            "port": 5000,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/discovery-provider/",
+            "remoteRoot": "/usr/src/app",
+            "protocol": "inspector"
+        },
+        {
+            "name": "(Discovery Node) Test",
+            "command": "cd discovery-provider; pytest src/api/v1/api_unit_test.py",
+            "request": "launch",
+            "type": "python"
         }
     ]
 }

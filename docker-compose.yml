@@ -230,9 +230,6 @@ services:
   identity-service:
     build: identity-service
     command: scripts/dev-server.sh
-    ports:
-      - "7000:7000"
-      - "9229:9229"
     environment:
       logLevel: debug
       minimumBalance: 1
@@ -380,7 +377,7 @@ services:
       logLevel: "debug"
       devMode: "true"
       creatorNodeIsDebug: "true"
-      debuggerPort: 10000
+      debuggerPort: 9400
 
       rateLimitingAudiusUserReqLimit: 3000
       rateLimitingUserReqLimit: 3000
@@ -426,8 +423,18 @@ services:
     image: alpine:3.16.0
     command: sh /tmp/dev-tools/startup/port-forwarder.sh
     ports:
+      # creator-node ports
       - "4000-4010:4000-4010"
+      # creator-node debugger ports
+      - "9400-9410:9400-9410"
+      # discovery-provider ports
       - "5000-5010:5000-5010"
+      # discovery-provider debugger ports
+      - "9500-9510:9500-9510"
+      # identity-service ports
+      - "7000:7000"
+      # identity-service debugger ports
+      - "9700:9700"
     volumes:
       - ./dev-tools:/tmp/dev-tools
     logging: *default-logging
