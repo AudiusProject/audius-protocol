@@ -20,6 +20,7 @@ export type CustomRequest = Request & {
   logger: Logger
   normalizedPath?: string
   endMetricTimer?: Function
+  premiumContent?: { trackId: number | null; isPremium: boolean }
 }
 
 type ApiResponse = {
