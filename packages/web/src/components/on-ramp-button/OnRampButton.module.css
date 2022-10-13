@@ -1,10 +1,17 @@
+.coinbaseButton {
+  --brandColor: #0052ff;
+}
+.stripeButton {
+  --brandColor: #00aaf5;
+}
+
 /** Default **/
-.button:not(:disabled) {
-  background: transparent !important;
-  border-width: 1px;
-  border-style: solid;
+.button:enabled {
+  background: var(--brandColor);
+  border: 1px solid var(--brandColor);
 }
 .button .textClassName {
+  color: var(--static-white);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -14,47 +21,19 @@
 }
 .logo path {
   transition: all var(--quick);
-}
-.stripeButton:not(:disabled) {
-  border-color: #635bff;
-}
-.coinbaseButton:not(:disabled) {
-  border-color: #0052ff;
-}
-.stripeButton .textClassName {
-  color: #635bff;
-}
-.coinbaseButton .textClassName {
-  color: #0052ff;
-}
-
-/** Dark mode special cases **/
-.button.darkMode {
-  border: 1px solid var(--neutral);
-}
-.button.darkMode .textClassName {
-  color: var(--neutral);
-}
-.button.darkMode .logo path {
-  fill: var(--neutral);
+  fill: var(--static-white);
 }
 
 /** Hover **/
-.button:hover:not(:disabled) {
+.button:hover:enabled {
   transform: none;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+    var(--brandColor) !important;
 }
-.stripeButton:hover:not(:disabled) {
-  background: #635bff !important;
-  border-color: #635bff;
-}
-.coinbaseButton:hover:not(:disabled) {
-  background: #0052ff !important;
-  border-color: #0052ff;
-}
-.button:hover:not(:disabled) .textClassName {
+.button:hover:enabled .textClassName {
   color: var(--static-white);
 }
-.button:hover:not(:disabled) .logo path {
+.button:hover:enabled .logo path {
   fill: var(--static-white);
 }
 

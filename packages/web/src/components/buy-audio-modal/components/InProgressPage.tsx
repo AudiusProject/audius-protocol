@@ -25,7 +25,7 @@ const {
 const messages = {
   pleaseHold: 'Please hold on. This may take a few moments.',
   completeWithCoinbase: 'Complete this step with Coinbase',
-  completeWithStripe: 'Complete this step with Stripe',
+  completeWithStripe: 'Complete this step with Link by Stripe',
   step1: 'Step 1/3',
   step2: 'Step 2/3',
   step3: 'Step 3/3',
@@ -37,7 +37,7 @@ const messages = {
   usd: 'USD',
   sol: 'SOL',
   audio: '$AUDIO',
-  stripeClosedErrorMessage: 'Stripe was Closed Unexpectedly',
+  stripeClosedErrorMessage: 'Link by Stripe was Closed Unexpectedly',
   coinbaseClosedErrorMessage: 'Coinbase Pay Was Closed Unexpectedly',
   swapErrorMessage:
     'Refresh and we’ll try again.\nDon’t worry your funds are safe!',

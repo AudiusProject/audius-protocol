@@ -22,7 +22,7 @@ const messages = {
   intermediateSolNoticeCoinbase:
     'An intermediate purchase of SOL will be made via Coinbase Pay and then converted to $AUDIO.',
   intermediateSolNoticeStripe:
-    'An intermediate purchase of SOL will be made via Stripe and then converted to $AUDIO.'
+    'An intermediate purchase of SOL will be made via Link by Stripe and then converted to $AUDIO.'
 }
 
 const { getBuyAudioProvider } = buyAudioSelectors
