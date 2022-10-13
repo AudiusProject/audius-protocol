@@ -11,10 +11,10 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
+const { ensureStorageMiddleware } = require('../../middlewares')
 const {
-  ensureStorageMiddleware,
-  getReplicaSetSpIDs
-} = require('../../middlewares')
+  getReplicaSetSpIdsByUserId
+} = require('../../services/ContentNodeInfoManager')
 const {
   SyncType,
   SYNC_MODES
@@ -262,10 +262,11 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
     )
   }
 
-  const currentSpIds = await getReplicaSetSpIDs({
-    serviceRegistry,
-    logger: req.logger,
-    userId
+  const currentSpIds = await getReplicaSetSpIdsByUserId({
+    libs: serviceRegistry.libs,
+    userId,
+    parentLogger: req.logger,
+    logger: req.logger
   })
   if (config.get('entityManagerReplicaSetEnabled')) {
     await audiusLibs.User.updateEntityManagerReplicaSet({
