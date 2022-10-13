@@ -397,6 +397,7 @@ jobs:
           instance-name: mad-dog-test
           command: |
             cd /home/ubuntu/audius-protocol;
+            rm -rf /home/ubuntu/.audius;
             git pull;
             git checkout $CIRCLE_BRANCH;
             cd ./dev-tools;
