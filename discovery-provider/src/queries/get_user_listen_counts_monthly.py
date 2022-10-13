@@ -35,9 +35,6 @@ def get_user_listen_counts_monthly(args: GetUserListenCountsMonthlyArgs):
         formatted_user_listen_counts_monthly = format_aggregate_monthly_plays_for_user(
             user_listen_counts_monthly
         )
-        print("query results!!!")
-        print(user_listen_counts_monthly)
-        # return formatted_user_listen_counts_monthly
         return formatted_user_listen_counts_monthly
 
 

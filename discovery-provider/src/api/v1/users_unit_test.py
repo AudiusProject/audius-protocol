@@ -1,5 +1,8 @@
+from unittest.mock import ANY
+
+import pytest
 from flask import Flask
-from src.api.v1.users import UserTrackListenCountsMonthly
+from src.api.v1.users import TrackList, UserTrackListenCountsMonthly
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 
 app = Flask(__name__)
@@ -8,50 +11,35 @@ END_TIME = "2021-01-01"
 
 
 def test_user_listen_counts_monthly_get(mocker):
+    listen_counts = {
+        "2023-01-01": {
+            "totalListens": 23,
+            "trackIds": [3],
+            "listenCounts": [
+                {
+                    "trackId": 3,
+                    "date": "2023-01-01",
+                    "listens": 23,
+                }
+            ],
+        },
+    }
     mock_get_user_listen_counts_monthly = mocker.patch(
-        "src.api.v1.users.get_user_listen_counts_monthly",
-        return_value=[
-            AggregateMonthlyPlay(timestamp="2022-01-01", play_item_id=3, count=2),
-            AggregateMonthlyPlay(timestamp="2023-01-01", play_item_id=3, count=23),
-        ],
+        "src.api.v1.users.get_user_listen_counts_monthly", return_value=listen_counts
     )
+
+    mock_decoder = mocker.patch("src.api.v1.users.decode_with_abort", return_value=3)
 
     mock_success_response = mocker.patch(
         "src.api.v1.users.success_response", side_effect=(lambda input: {"data": input})
     )
     with app.test_request_context(
-        data={"start_time": START_TIME, "end_time": END_TIME}
+        data={"start_time": START_TIME, "end_time": END_TIME},
     ):
-        expected_formatted_data = {
-            "2022-01-01": {
-                "totalListens": 2,
-                "trackIds": [3],
-                "listenCounts": [
-                    {
-                        "trackId": 3,
-                        "date": "2022-01-01",
-                        "listens": 2,
-                    }
-                ],
-            },
-            "2023-01-01": {
-                "totalListens": 23,
-                "trackIds": [3],
-                "listenCounts": [
-                    {
-                        "trackId": 3,
-                        "date": "2023-01-01",
-                        "listens": 23,
-                    }
-                ],
-            },
+        assert UserTrackListenCountsMonthly().get("id_to_decode") == {
+            "data": listen_counts
         }
-        print("here!!")
-        lc = UserTrackListenCountsMonthly()
-        print(lc.get.__wrapped__(lc, 3))
-        assert UserTrackListenCountsMonthly().get(3) == {
-            "data": expected_formatted_data
-        }
+        mock_decoder.assert_called_once_with("id_to_decode", ANY)
         mock_get_user_listen_counts_monthly.assert_called_once_with(
             {
                 "user_id": 3,
@@ -59,54 +47,4 @@ def test_user_listen_counts_monthly_get(mocker):
                 "end_time": END_TIME,
             }
         )
-        mock_success_response.assert_called_once_with(expected_formatted_data)
-
-
-# def test_user_listen_counts_monthly_get_sums_total_listens(mocker):
-#     mocker.patch(
-#         "src.api.v1.users.get_user_listen_counts_monthly",
-#         return_value=[
-#             AggregateMonthlyPlay(timestamp="2022-01-01", play_item_id=3, count=2),
-#             AggregateMonthlyPlay(timestamp="2022-01-01", play_item_id=4, count=23),
-#         ],
-#     )
-#     mocker.patch(
-#         "src.api.v1.users.success_response", side_effect=(lambda input: {"data": input})
-#     )
-#     with app.test_request_context(
-#         data={"start_time": START_TIME, "end_time": END_TIME}
-#     ):
-#         assert UserTrackListenCountsMonthly().get(2) == {
-#             "data": {
-#                 "2022-01-01": {
-#                     "totalListens": 25,
-#                     "trackIds": [3, 4],
-#                     "listenCounts": [
-#                         {
-#                             "trackId": 3,
-#                             "date": "2022-01-01",
-#                             "listens": 2,
-#                         },
-#                         {
-#                             "trackId": 4,
-#                             "date": "2022-01-01",
-#                             "listens": 23,
-#                         },
-#                     ],
-#                 },
-#             }
-#         }
-
-
-# def test_user_listen_counts_monthly_get_no_results(mocker):
-#     mocker.patch(
-#         "src.api.v1.users.get_user_listen_counts_monthly",
-#         return_value=[],
-#     )
-#     mocker.patch(
-#         "src.api.v1.users.success_response", side_effect=(lambda input: {"data": input})
-#     )
-#     with app.test_request_context(
-#         data={"start_time": START_TIME, "end_time": END_TIME}
-#     ):
-#         assert UserTrackListenCountsMonthly().get(2) == {"data": {}}
+        mock_success_response.assert_called_once_with(listen_counts)
