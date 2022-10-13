@@ -3,7 +3,6 @@ import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const { redis } = require('../../src/redis')
-const redisClient = redis.client
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
@@ -33,12 +32,12 @@ export async function getApp(
   const mockServiceRegistry = {
     libs: libsClient,
     blacklistManager,
-    redis: redisClient,
+    redis: redis,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: apq,
     imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: new SyncQueue(nodeConfig, redis.client),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
     prometheusRegistry
   }
@@ -60,9 +59,9 @@ export function getServiceRegistryMock(libsClient, blacklistManager) {
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
-    redis: redisClient,
+    redis: redis,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: new SyncQueue(nodeConfig, redis.client),
     nodeConfig,
     initLibs: async function () {},
     prometheusRegistry: new PrometheusRegistry()
