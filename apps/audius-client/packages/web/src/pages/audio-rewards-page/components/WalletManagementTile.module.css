@@ -149,6 +149,9 @@
 .onRampButton {
   width: 100%;
 }
+.onRampButtons > div:only-child > .onRampButton {
+  transition: all 120ms ease-in-out !important;
+}
 
 .manageWalletsButton:hover,
 div:only-child > .onRampButton:not(:disabled):hover {
