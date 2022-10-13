@@ -1290,18 +1290,56 @@ workflows:
           name: discovery
       - noop:
           name: identity
+
       - noop:
-          name: built-creator
+          name: deploy-creator
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
           requires:
             - build-creator
             - test-creator
       - noop:
-          name: built-discovery
+          name: deploy-discovery
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
           requires:
             - build-discovery
             - test-discovery
       - noop:
-          name: built-identity
+          name: deploy-identity
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
+          requires:
+            - build-identity
+            - test-identity
+
+      - noop:
+          name: built-creator-mr
+          filters:
+            branches:
+              only: /(^master|release-.*$)/
+          requires:
+            - build-creator
+            - test-creator
+      - noop:
+          name: built-discovery-mr
+          filters:
+            branches:
+              only: /(^master|release-.*$)/
+          requires:
+            - build-discovery
+            - test-discovery
+      - noop:
+          name: built-identity-mr
+          filters:
+            branches:
+              only: /(^master|release-.*$)/
           requires:
             - build-identity
             - test-identity
@@ -1311,9 +1349,9 @@ workflows:
             branches:
               only: /(^release-.*$)/
           requires:
-            - built-creator
-            - built-discovery
-            - built-identity
+            - built-creator-mr
+            - built-discovery-mr
+            - built-identity-mr
             - verified
       - noop:
           name: tests
@@ -1341,7 +1379,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-discovery
+            - built-discovery-mr
       - deploy:
           name: 🚧-🏠-stage-creator
           service: creator
@@ -1353,7 +1391,7 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-creator
+            - built-creator-mr
       - deploy:
           name: 🚧-🏠-stage-identity
           service: identity
@@ -1365,10 +1403,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-identity
+            - built-identity-mr
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+          name: 💪-🚧-🏠-stage-<< matrix.service >>-hold
           type: approval
           filters:
             branches:
@@ -1389,10 +1427,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+            - 💪-🚧-🏠-stage-<< matrix.service >>-hold
       # Force deploy `master` to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: 💪-🚧-🏠-<< matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1413,10 +1451,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - 💪-🚧-🏠-<< matrix.host >>-hold
       # Force deploy `master` to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: 💪-🚧-🏠-<< matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1437,11 +1475,11 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - 💪-🚧-🏠-<< matrix.host >>-hold
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+          name: stage-<< matrix.service >>-hold
           type: approval
           filters:
             branches:
@@ -1450,9 +1488,9 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - built-<< matrix.service >>
+            - deploy-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>
+          name: stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1463,10 +1501,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+            - stage-<< matrix.service >>-hold
       # Deploy branch to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: << matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1475,9 +1513,9 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - built-discovery
+            - deploy-discovery
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: << matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1491,10 +1529,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - << matrix.host >>-hold
       # Deploy branch to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: << matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1503,9 +1541,9 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - built-creator
+            - deploy-creator
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: << matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1519,7 +1557,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - << matrix.host >>-hold
 
       # Bump Tags (for release branch hot-fixes)
       - release-scripts:
@@ -1535,7 +1573,7 @@ workflows:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-dn-prod-🕹️
+          name: 🚧-🎁-to-dn-prod-hold
           type: approval
           filters:
             branches:
@@ -1552,10 +1590,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-dn-prod-🕹️
+            - 🚧-🎁-to-dn-prod-hold
       # Deploy Identity to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-is-prod-🕹️
+          name: 🚧-🎁-to-is-prod-hold
           type: approval
           filters:
             branches:
@@ -1572,10 +1610,10 @@ workflows:
             - gh-tokens
             - open-vpn
           requires:
-            - 🚧-🎁-to-is-prod-🕹️
+            - 🚧-🎁-to-is-prod-hold
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-<< matrix.host >>-prod-🕹️
+          name: 🚧-🎁-to-<< matrix.host >>-prod-hold
           type: approval
           filters:
             branches:
@@ -1598,10 +1636,10 @@ workflows:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, user-metadata]
           requires:
-            - 🚧-🎁-to-<< matrix.host >>-prod-🕹️
+            - 🚧-🎁-to-<< matrix.host >>-prod-hold
       # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
       - noop:
-          name: 🚧-🎁-to-SPs-🕹️
+          name: 🚧-🎁-to-SPs-hold
           type: approval
           filters:
             branches:
@@ -1617,10 +1655,10 @@ workflows:
             - discord
             - governance
           requires:
-            - 🚧-🎁-to-SPs-🕹️
+            - 🚧-🎁-to-SPs-hold
       # Evaluate Governance Proposal (for release branches)
       - noop:
-          name: evaluate-proposal-🕹️
+          name: evaluate-proposal-hold
           type: approval
           filters:
             branches:
@@ -1634,7 +1672,7 @@ workflows:
             - slack-secrets
             - governance
           requires:
-            - evaluate-proposal-🕹️
+            - evaluate-proposal-hold
 
       - test-libs:
           name: test-libs
