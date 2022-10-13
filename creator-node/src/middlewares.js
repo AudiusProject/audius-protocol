@@ -979,7 +979,9 @@ function routeMetricMiddleware(req, res, next) {
     }
   } catch (e) {
     const fullPath = req.baseUrl + req.path
-    req.logger.warn(`Could not start metric for path=${fullPath}: ${e.message}`)
+    req.logger.warn(
+      `Could not start metric for path=${fullPath} noramlizedPath=${req.normalizedPath}: ${e.message}`
+    )
   }
 
   next()
