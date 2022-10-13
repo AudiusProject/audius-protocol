@@ -130,7 +130,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     txReceipt = receipt
 
     // WIP: nethermind fire and forget
-    wipRelayToNethermind(contractAddress, encodedABI)
+    await wipRelayToNethermind(contractAddress, encodedABI)
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -325,6 +325,10 @@ const createAndSendTransaction = async (
 //
 // WIP relay txn to staging nethermind "fire and forget" style
 //
+
+// TODO: shared nethermind web3 instance
+const web3 = new Web3('http://34.136.137.33:8545')
+
 async function wipRelayToNethermind(contractAddress, encodedABI) {
   // staging EM address
   // TODO: config
@@ -343,9 +347,6 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
   const privateKey =
     '7d25e249080b581280a0c0bbecfdba52d73e45486f9ba4ed4676e93c176a5fbc'
 
-  // TODO: shared nethermind web3 instance
-  const web3 = new Web3('http://34.67.210.7:8545')
-
   try {
     const fromAddress = web3.eth.accounts.privateKeyToAccount(privateKey)
     const nonce = await web3.eth.getTransactionCount(fromAddress.address)
@@ -363,16 +364,16 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
       transaction,
       privateKey
     )
-    console.log('wipRelayToNethermind sending', signedTx)
+    console.log('wipRelayToNethermind sending', JSON.stringify(signedTx))
 
     const receipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
 
-    console.log('wipRelayToNethermind ok', { receipt })
+    console.log('wipRelayToNethermind ok', JSON.stringify(receipt))
     return receipt
   } catch (err) {
-    console.log('wipRelayToNethermind error', err)
+    console.log('wipRelayToNethermind error', err.toString())
   }
 }
 
