@@ -327,7 +327,11 @@ class ServiceRegistry {
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(config, this.redis.client, this)
-    this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis.client, this)
+    this.syncImmediateQueue = new SyncImmediateQueue(
+      config,
+      this.redis.client,
+      this
+    )
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
