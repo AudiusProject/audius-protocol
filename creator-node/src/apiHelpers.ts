@@ -101,33 +101,33 @@ export const handleResponseWithHeartbeat = <
 }
 
 export const sendResponse = (
-  _req: Request,
+  inputReq: Request,
   res: Response,
   resp: ApiResponse
 ) => {
-  const req = _req as CustomRequest
-  const duration = getDuration(_req as any)
+  const req = inputReq as CustomRequest
+  const duration = getDuration(inputReq as any)
   let logger = createChildLogger(req.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
   if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(_req.originalUrl)) {
+    if (requestNotExcludedFromLogging(inputReq.originalUrl)) {
       logger.info('Success')
     }
   } else {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
-    if (_req && _req.body) {
+    if (inputReq && inputReq.body) {
       logger.info(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
-        _req.body,
+        inputReq.body,
         '|| Request Query Params:',
-        _req.query
+        inputReq.query
       )
     } else {
       logger.info('Error processing request:', resp.object.error)
@@ -166,31 +166,31 @@ export const sendResponseWithMetric = (
 }
 
 export const sendResponseWithHeartbeatTerminator = (
-  _req: Request,
+  inputReq: Request,
   res: Response,
   resp: ApiResponse
 ) => {
-  const duration = getDuration(_req as any)
-  const req = _req as CustomRequest
+  const duration = getDuration(inputReq as any)
+  const req = inputReq as CustomRequest
   let logger = createChildLogger(req.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
   if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(_req.originalUrl)) {
+    if (requestNotExcludedFromLogging(inputReq.originalUrl)) {
       logger.info('Success')
     }
   } else {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
-    if (_req && _req.body) {
+    if (inputReq && inputReq.body) {
       logger.info(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
-        _req.body
+        inputReq.body
       )
     } else {
       logger.info('Error processing request:', resp.object.error)

@@ -162,8 +162,8 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
       autoregister: false,
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
-      normalizePath: function (_req, opts) {
-        const req = _req as CustomRequest
+      normalizePath: function (inputReq, opts) {
+        const req = inputReq as CustomRequest
         const path = prometheusMiddleware.normalizePath(req, opts)
         try {
           for (const { regex, path: normalizedPath } of routesWithParams) {
@@ -183,8 +183,8 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
       // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
       // Technically, this function is redundant because we specify the routes to match on in the first
       // param of app.use([paths,]). This fn is used for specific metric tracking
-      bypass: function (_req) {
-        const req = _req as CustomRequest
+      bypass: function (inputReq) {
+        const req = inputReq as CustomRequest
         const path = prometheusMiddleware.normalizePath(
           req,
           {} /* empty option */
