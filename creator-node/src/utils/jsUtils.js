@@ -132,5 +132,6 @@ module.exports = {
   ensureDirPathExists,
   getConfigStoragePath,
   computeFilePath,
-  computeFilePathInDir
+  computeFilePathInDir,
+  RawStdOutWithLevelName
 }
