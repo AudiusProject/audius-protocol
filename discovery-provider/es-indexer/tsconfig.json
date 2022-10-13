@@ -8,5 +8,6 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "isolatedModules": true
-  }
+  },
+  "exclude": ["node_modules", "**/*.test.ts"]
 }

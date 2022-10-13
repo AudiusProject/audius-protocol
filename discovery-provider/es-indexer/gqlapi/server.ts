@@ -272,7 +272,7 @@ const queryResolvers: QueryResolvers<Ctx> = {
       mdsl.push({ index: indexNames.reposts })
       mdsl.push(
         bodybuilder()
-          .filter('range', 'created_at', { gte: 'now-90d' })
+          .filter('range', 'created_at', { gte: 'now-120d' })
           .filter('term', 'is_delete', false)
           .filter('terms', 'user_id', {
             index: indexNames.users,
@@ -354,15 +354,18 @@ const queryResolvers: QueryResolvers<Ctx> = {
           kind == 'track' ? indexNames.tracks : indexNames.playlists
         return { _index, _id }
       })
-      const docs = await esc.mget({ docs: ops })
 
-      docs.docs.forEach((d: any, idx) => {
-        const item = d._source as FeedItem
-        const bucket = repostBuckets[idx]
-        item.activity_timestamp = bucket.ts
-        seenItemKeys.add(bucket.key)
-        sortedFeed.push(item)
-      })
+      if (ops.length) {
+        const docs = await esc.mget({ docs: ops })
+
+        docs.docs.forEach((d: any, idx) => {
+          const item = d._source as FeedItem
+          const bucket = repostBuckets[idx]
+          item.activity_timestamp = bucket.ts
+          seenItemKeys.add(bucket.key)
+          sortedFeed.push(item)
+        })
+      }
     }
 
     if (loadOrig) {
@@ -497,7 +500,7 @@ type Ctx = {
   me?: Promise<UserDoc | undefined>
 }
 
-const server = new ApolloServer({
+export const server = new ApolloServer({
   typeDefs,
   resolvers,
   csrfPrevention: true,
@@ -524,6 +527,9 @@ const server = new ApolloServer({
   },
 })
 
-server.listen().then(({ url }) => {
-  console.log(`🚀  Server ready at ${url}`)
-})
+const isTest = process.env.NODE_ENV == 'test'
+if (!isTest) {
+  server.listen().then(({ url }) => {
+    console.log(`🚀  Server ready at ${url}`)
+  })
+}
