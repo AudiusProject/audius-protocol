@@ -330,14 +330,14 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
   // TODO: config
   const entityManagerAddress = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
 
-  if (contractAddress !== entityManagerAddress) {
-    console.log(
-      'wipRelayToNethermind skipping: contractAddress != entityManagerAddress',
-      contractAddress,
-      entityManagerAddress
-    )
-    return
-  }
+  // if (contractAddress !== entityManagerAddress) {
+  //   console.log(
+  //     'wipRelayToNethermind skipping: contractAddress != entityManagerAddress',
+  //     contractAddress,
+  //     entityManagerAddress
+  //   )
+  //   return
+  // }
 
   // any ol random private key
   const privateKey =
