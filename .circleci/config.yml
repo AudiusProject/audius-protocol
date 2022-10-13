@@ -180,6 +180,7 @@ commands:
 
               # Delete GCP firewall
               # gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+              echo "cleanup"
             }
             trap cleanup EXIT
 
