@@ -967,9 +967,8 @@ async function ensureValidSPMiddleware(req, res, next) {
 }
 
 // General middleware for routes to start tracking metrics
-async function routeMetricMiddleware(req, res, next) {
-  const serviceRegistry = req.app.get('serviceRegistry')
-  const { prometheusRegistry } = serviceRegistry
+function routeMetricMiddleware(req, res, next) {
+  const { prometheusRegistry } = req.app.get('serviceRegistry')
 
   try {
     const metric = prometheusRegistry.getMetricByRoute(req.normalizedPath)
