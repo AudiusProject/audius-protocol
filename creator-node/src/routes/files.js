@@ -166,6 +166,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
+  const logPrefix = { function: 'getCID', CID }
 
   // Used for prometheus metrics
   let mode = 'default'
@@ -276,7 +277,7 @@ const getCID = async (req, res) => {
           req.endMetricTimer({ result: 'success_found_in_fs', mode })
         } catch (e) {
           req.logger.warn(
-            { cid: CID },
+            logPrefix,
             `Could not end stream content metric: ${e.message}`
           )
         }
@@ -285,7 +286,7 @@ const getCID = async (req, res) => {
       return fsStream
     } catch (e) {
       req.logger.warn(
-        { cid: CID },
+        logPrefix,
         `Could not stream CID from local fs. Attempting to fetch and stream from network..`
       )
     }
@@ -352,10 +353,7 @@ const getCID = async (req, res) => {
       throw new Error('Not found in network')
     }
   } catch (e) {
-    req.logger.error(
-      { cid: CID },
-      `Could not find cid in network: ${e.message}`
-    )
+    req.logger.error(logPrefix, `Could not find cid in network: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
@@ -372,7 +370,7 @@ const getCID = async (req, res) => {
         req.endMetricTimer({ result: 'success_found_in_network', mode })
       } catch (e) {
         req.logger.warn(
-          { cid: CID },
+          logPrefix,
           `Could not end stream content metric: ${e.message}`
         )
       }
@@ -380,7 +378,7 @@ const getCID = async (req, res) => {
 
     return fsStream
   } catch (e) {
-    req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
+    req.logger.error(logPrefix, `Could not stream: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
@@ -405,7 +403,7 @@ const getDirCID = async (req, res) => {
   const dirCID = req.params.dirCID
   const filename = req.params.filename
   const path = `${dirCID}/${filename}`
-  const logPrefix = '[getDirCID]'
+  const logPrefix = { function: 'getDirCID', dirCID, filename }
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
@@ -436,7 +434,10 @@ const getDirCID = async (req, res) => {
 
   // Attempt to stream file to client
   try {
-    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    req.logger.info(
+      logPrefix,
+      `Retrieving ${storagePath} directly from filesystem`
+    )
     const fsStream = await streamFromFileSystem(req, res, storagePath)
 
     if (req.endMetricTimer) {
@@ -444,7 +445,7 @@ const getDirCID = async (req, res) => {
         req.endMetricTimer({ result: 'abort_cid_not_found_in_db' })
       } catch (e) {
         req.logger.warn(
-          { cid: CID },
+          logPrefix,
           `Could not end stream content dir metric: ${e.message}`
         )
       }
@@ -452,7 +453,7 @@ const getDirCID = async (req, res) => {
 
     return fsStream
   } catch (e) {
-    req.logger.warn(`Failed to retrieve ${storagePath} from FS`)
+    req.logger.warn(logPrefix, `Failed to retrieve ${storagePath} from FS`)
   }
 
   // Attempt to find and stream CID from other content nodes in the network
@@ -465,6 +466,7 @@ const getDirCID = async (req, res) => {
     if (!found) throw new Error(`CID=${CID} not found in network`)
   } catch (e) {
     req.logger.error(
+      logPrefix,
       `Error calling findCIDInNetwork for path ${storagePath}: ${e.message}`
     )
     return sendResponseWithMetric(
@@ -483,7 +485,7 @@ const getDirCID = async (req, res) => {
         req.endMetricTimer({ result: 'success_found_in_network' })
       } catch (e) {
         req.logger.warn(
-          { cid: CID },
+          logPrefix,
           `Could not end stream content metric: ${e.message}`
         )
       }
@@ -491,7 +493,7 @@ const getDirCID = async (req, res) => {
 
     return fsStream
   } catch (e) {
-    req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
+    req.logger.error(logPrefix, `Could not stream: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
