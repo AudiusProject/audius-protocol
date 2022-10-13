@@ -121,12 +121,18 @@ def get_feed_es(args, limit=10):
         #    instead of doing it dynamically here?
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
-        # Q: should we add playlist tracks to seen?
-        #    get_feed will "debounce" tracks in playlist
         unsorted_feed.append(playlist)
+
+        # add playlist track_ids to seen
+        # if a user uploads an orig playlist or album
+        # surpress individual tracks from said album appearing in feed
+        for track in playlist["tracks"]:
+            seen.add(item_key(track))
 
     for track in tracks:
         track["item_key"] = item_key(track)
+        if track["item_key"] in seen:
+            continue
         seen.add(track["item_key"])
         unsorted_feed.append(track)
 
