@@ -1,11 +1,12 @@
 from unittest.mock import ANY
 
-import pytest
 from flask import Flask
-from src.api.v1.users import TrackList, UserTrackListenCountsMonthly
-from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
+from src.api.v1.users import UserTrackListenCountsMonthly
 
 app = Flask(__name__)
+# Bypasses the @marshal_with decorator
+app.config["RESTX_MASK_HEADER"] = "*"
+
 START_TIME = "2020-01-01"
 END_TIME = "2021-01-01"
 
@@ -31,14 +32,19 @@ def test_user_listen_counts_monthly_get(mocker):
     mock_decoder = mocker.patch("src.api.v1.users.decode_with_abort", return_value=3)
 
     mock_success_response = mocker.patch(
-        "src.api.v1.users.success_response", side_effect=(lambda input: {"data": input})
+        "src.api.v1.users.success_response",
+        # Cache decorator expects a tuple response
+        side_effect=(lambda input: ({"data": input}, 200)),
     )
     with app.test_request_context(
         data={"start_time": START_TIME, "end_time": END_TIME},
     ):
-        assert UserTrackListenCountsMonthly().get("id_to_decode") == {
-            "data": listen_counts
-        }
+        assert UserTrackListenCountsMonthly().get("id_to_decode") == (
+            {"data": listen_counts},
+            200,
+            # Redis metrics add this empty dict
+            {},
+        )
         mock_decoder.assert_called_once_with("id_to_decode", ANY)
         mock_get_user_listen_counts_monthly.assert_called_once_with(
             {

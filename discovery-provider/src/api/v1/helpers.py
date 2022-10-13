@@ -370,8 +370,6 @@ def decode_with_abort(identifier: str, namespace) -> int:
 
 
 def make_response(name, namespace, modelType):
-    print("this is model!")
-    print(modelType)
     return namespace.model(
         name,
         {
