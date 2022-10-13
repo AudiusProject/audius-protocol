@@ -44,7 +44,8 @@ function _formatIOSMessage(
   targetARN,
   badgeCount,
   playSound = true,
-  title = null
+  title = null,
+  notification
 ) {
   let type = null
   if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
@@ -61,13 +62,8 @@ function _formatIOSMessage(
         alert: `${message}`,
         sound: playSound && 'default',
         badge: badgeCount
-        // TODO: Enable title/body for iOS, makes a much better notification
-        // keeping these properties here so we can use them if we want to
-        // "alert": {
-        //   "title" : `${title}`,
-        //   "body" : `${body}`
-        // },
-      }
+      },
+      data: notification
     }
 
     if (title) {
@@ -102,7 +98,8 @@ function _formatAndroidMessage(
   message,
   targetARN,
   playSound = true,
-  title = null
+  title = null,
+  notification
 ) {
   const type = 'GCM'
 
@@ -116,7 +113,8 @@ function _formatAndroidMessage(
         ...(title ? { title } : {}),
         body: message,
         sound: playSound && 'default'
-      }
+      },
+      data: notification
     }
     jsonMessage[type] = JSON.stringify(messageData)
   }
@@ -147,7 +145,7 @@ const deleteEndpoint = _promisifySNS('deleteEndpoint')
 async function drainMessageObject(bufferObj) {
   let numSentNotifs = 0
 
-  const { userId } = bufferObj
+  const { userId, notification } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
   // Ensure badge count entry exists for user
@@ -182,7 +180,8 @@ async function drainMessageObject(bufferObj) {
             awsARN,
             newBadgeCount,
             playSound,
-            title
+            title,
+            notification
           )
         }
         if (deviceType === 'android') {
@@ -190,7 +189,8 @@ async function drainMessageObject(bufferObj) {
             message,
             awsARN,
             playSound,
-            title
+            title,
+            notification
           )
         }
 
