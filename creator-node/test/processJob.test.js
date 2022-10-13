@@ -33,7 +33,9 @@ describe('test processJob() util function', function () {
           createChildLogger
         },
         '../../redis': {
-          set: sandbox.stub()
+          client: {
+            set: sandbox.stub()
+          }
         }
       }
     )
@@ -75,7 +77,9 @@ describe('test processJob() util function', function () {
           createChildLogger
         },
         '../../redis': {
-          set: sandbox.stub()
+          client: {
+            set: sandbox.stub()
+          }
         }
       }
     )

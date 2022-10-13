@@ -23,7 +23,8 @@ const { uploadTrack } = require('./lib/helpers')
 const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
 
-const redisClient = require('../src/redis')
+const { redis } = require('../src/redis')
+const redisClient = redis.client
 const { stringifiedDateFields } = require('./lib/utils')
 
 const { saveFileForMultihashToFS } = require('../src/fileManager')

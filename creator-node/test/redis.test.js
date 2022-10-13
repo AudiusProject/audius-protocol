@@ -1,23 +1,23 @@
 const assert = require('assert')
 
-const redis = require('../src/redis')
+const { redis } = require('../src/redis')
 const { WalletWriteLock } = redis
 const utils = require('../src/utils')
 
 describe('test Redis client', function () {
   /** Reset redis state */
   beforeEach(async function () {
-    await redis.flushall()
+    await redis.client.flushall()
   })
 
   it('Confirms redis client connection, and tests GET & SET', async function () {
-    assert.equal(await redis.ping(), 'PONG')
+    assert.equal(await redis.client.ping(), 'PONG')
 
-    assert.equal(await redis.get('key'), null)
+    assert.equal(await redis.client.get('key'), null)
 
-    assert.equal(await redis.set('key', 'value'), 'OK')
+    assert.equal(await redis.client.set('key', 'value'), 'OK')
 
-    assert.equal(await redis.get('key'), 'value')
+    assert.equal(await redis.client.get('key'), 'value')
   })
 
   it('Confirms user write locking works', async function () {

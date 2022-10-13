@@ -2,7 +2,7 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 const BlacklistManager = require('../src/blacklistManager')
-const redis = require('../src/redis')
+const { redis } = require('../src/redis')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
@@ -28,7 +28,7 @@ describe('test blacklistManager', () => {
   })
 
   afterEach(async () => {
-    await restartBlacklistManager(redis)
+    await restartBlacklistManager(redis.client)
     sinon.restore()
     await server.close()
   })

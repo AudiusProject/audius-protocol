@@ -8,7 +8,7 @@ const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
 const { StubPremiumContentAccessChecker } = require('../src/premiumContent/stubPremiumContentAccessChecker')
 const models = require('../src/models')
-const redis = require('../src/redis')
+const { redis } = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 
 const { getApp } = require('./lib/app')
@@ -61,12 +61,12 @@ describe('test ContentBlacklist', function () {
       isPremium: false,
       error: null
     }
-    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessChecker
+    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessCheckeredis
   })
 
   afterEach(async () => {
     // Reinitialize BlacklistManager and clear redis state
-    await restartBlacklistManager(redis)
+    await restartBlacklistManager(redis.client)
 
     // clear TrustedNotifier wallet key
     mockServiceRegistry.trustedNotifierManager.trustedNotifierData.wallet = null
@@ -77,7 +77,7 @@ describe('test ContentBlacklist', function () {
   })
 
   after(async () => {
-    await redis.flushall()
+    await redis.client.flushall()
   })
 
   it('should expose the proper tracks if added', async function () {

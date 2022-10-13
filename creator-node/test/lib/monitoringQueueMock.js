@@ -1,5 +1,6 @@
 const { MONITORS, getMonitorRedisKey } = require('../../src/monitors/monitors')
-const redisClient = require('../../src/redis')
+const { redis } = require('../../src/redis')
+const redisClient = redis.client
 
 // Mock monitoring queue that sets monitor values on construction
 class MonitoringQueueMock {
