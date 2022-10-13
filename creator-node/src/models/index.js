@@ -4,16 +4,17 @@ const fs = require('fs-extra')
 const path = require('path')
 const Sequelize = require('sequelize')
 
-const globalConfig = require('../config')
+const config = require('../config')
+const { clusterUtils } = require('../utils/clusterUtils')
 
 const basename = path.basename(__filename)
 const db = {}
 
-const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
-  logging: globalConfig.get('printSequelizeLogs'),
+const sequelize = new Sequelize(config.get('dbUrl'), {
+  logging: config.get('printSequelizeLogs'),
   operatorsAliases: false,
   pool: {
-    max: globalConfig.get('dbConnectionPoolMax'),
+    max: config.get('dbConnectionPoolMax') / clusterUtils.getNumWorkers(),
     min: 5,
     acquire: 60000,
     idle: 10000
