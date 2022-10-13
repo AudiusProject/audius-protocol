@@ -167,7 +167,8 @@ const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
-  const prometheusResult = { result: null, mode: 'default' }
+  // Used for prometheus metrics
+  let mode = 'default'
 
   /**
    * Check if CID is servable from BlacklistManager; return error if not
@@ -175,12 +176,11 @@ const getCID = async (req, res) => {
   const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
   if (!isServable) {
-    prometheusResult.result = 'abort_delisted'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseForbidden('CID has been delisted by this node'),
-      prometheusResult
+      { result: 'abort_delisted', mode }
     )
   }
 
@@ -200,12 +200,11 @@ const getCID = async (req, res) => {
       pathType: 'legacy_storage_path'
     })
   } catch (e) {
-    prometheusResult.result = 'abort_bad_cid'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseBadRequest('Invalid CID'),
-      prometheusResult
+      { result: 'abort_bad_cid', mode }
     )
   }
 
@@ -236,26 +235,22 @@ const getCID = async (req, res) => {
           fileFoundOnFS = true
           storagePath = _storagePath
 
-          prometheusResult.mode = _pathType
+          mode = _pathType
           break
         }
       } else if (fsStats.isDirectory()) {
-        prometheusResult.result = 'abort_cid_is_directory'
-        prometheusResult.mode = _pathType
         return sendResponseWithMetric(
           req,
           res,
           errorResponseBadRequest('this dag node is a directory'),
-          prometheusResult
+          { result: 'abort_cid_is_directory', mode: _pathType }
         )
       } else {
-        prometheusResult.result = 'abort_cid_is_not_file'
-        prometheusResult.mode = _pathType
         return sendResponseWithMetric(
           req,
           res,
           errorResponseBadRequest('CID is of invalid file type'),
-          prometheusResult
+          { result: 'abort_cid_is_not_file', mode: _pathType }
         )
       }
     } catch (e) {
@@ -278,8 +273,7 @@ const getCID = async (req, res) => {
 
       if (req.endMetricTimer) {
         try {
-          prometheusResult.result = 'success_found_in_fs'
-          req.endMetricTimer(prometheusResult)
+          req.endMetricTimer({ result: 'success_found_in_fs', mode })
         } catch (e) {
           req.logger.warn(
             { cid: CID },
@@ -300,6 +294,10 @@ const getCID = async (req, res) => {
   /**
    * If not found on FS, check if CID record is in DB, error if not found
    */
+
+  // Reset `mode` to default
+  mode = 'default'
+
   try {
     const queryResults = await models.File.findOne({
       where: {
@@ -309,31 +307,29 @@ const getCID = async (req, res) => {
     })
 
     if (!queryResults) {
-      prometheusResult.result = 'abort_cid_not_found_in_db'
       return sendResponseWithMetric(
         req,
         res,
         errorResponseNotFound('No valid file found for provided CID'),
-        prometheusResult
+        { result: 'abort_cid_not_found_in_db', mode }
       )
     } else if (queryResults.type === 'dir') {
-      prometheusResult.result = 'abort_cid_is_directory_from_db_query'
       return sendResponseWithMetric(
         req,
         res,
         errorResponseBadRequest('this dag node is a directory'),
-        prometheusResult
+        { result: 'abort_cid_is_directory_from_db_query', mode }
       )
     } else {
       storagePath = queryResults.storagePath
+      mode = 'db_storage_path'
     }
   } catch (e) {
-    prometheusResult.result = 'failure_cid_db_query'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseServerError('DB query failed'),
-      prometheusResult
+      { result: 'failure_cid_db_query', mode }
     )
   }
 
@@ -356,7 +352,6 @@ const getCID = async (req, res) => {
       throw new Error('Not found in network')
     }
   } catch (e) {
-    prometheusResult.mode = 'abort_cid_not_found_in_network'
     req.logger.error(
       { cid: CID },
       `Could not find cid in network: ${e.message}`
@@ -365,7 +360,7 @@ const getCID = async (req, res) => {
       req,
       res,
       errorResponseServerError('CID not found in network'),
-      prometheusResult
+      { result: 'abort_cid_not_found_in_network', mode }
     )
   }
 
@@ -374,8 +369,7 @@ const getCID = async (req, res) => {
 
     if (req.endMetricTimer) {
       try {
-        prometheusResult.result = 'success_found_in_network'
-        req.endMetricTimer(prometheusResult)
+        req.endMetricTimer({ result: 'success_found_in_network', mode })
       } catch (e) {
         req.logger.warn(
           { cid: CID },
@@ -386,28 +380,24 @@ const getCID = async (req, res) => {
 
     return fsStream
   } catch (e) {
-    prometheusResult.mode = 'failure_stream'
     req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
       errorResponseServerError('Failed to stream track'),
-      prometheusResult
+      { result: 'failure_stream', mode }
     )
   }
 }
 
 // Gets a CID in a directory, streaming from the filesystem if available
 const getDirCID = async (req, res) => {
-  const prometheusResult = { result: null }
-
   if (!(req.params && req.params.dirCID && req.params.filename)) {
-    prometheusResult.result = 'abort_improper_parameters'
     return sendResponseWithMetric(
       req,
       res,
       errorResponseBadRequest(`Invalid request, no multihash provided`),
-      prometheusResult
+      { result: 'abort_improper_parameters' }
     )
   }
 
@@ -431,14 +421,13 @@ const getDirCID = async (req, res) => {
       order: [['clock', 'DESC']]
     })
     if (!queryResults) {
-      prometheusResult.result = 'abort_cid_not_found_in_db'
       return sendResponseWithMetric(
         req,
         res,
         errorResponseNotFound(
           `No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`
         ),
-        prometheusResult
+        { result: 'abort_cid_not_found_in_db' }
       )
     }
     storagePath = queryResults.storagePath
@@ -452,8 +441,7 @@ const getDirCID = async (req, res) => {
 
     if (req.endMetricTimer) {
       try {
-        prometheusResult.result = 'success_found_in_fs'
-        req.endMetricTimer(prometheusResult)
+        req.endMetricTimer({ result: 'abort_cid_not_found_in_db' })
       } catch (e) {
         req.logger.warn(
           { cid: CID },
@@ -476,7 +464,6 @@ const getDirCID = async (req, res) => {
     const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
     if (!found) throw new Error(`CID=${CID} not found in network`)
   } catch (e) {
-    prometheusResult.result = 'abort_cid_not_found_in_network'
     req.logger.error(
       `Error calling findCIDInNetwork for path ${storagePath}: ${e.message}`
     )
@@ -484,7 +471,7 @@ const getDirCID = async (req, res) => {
       req,
       res,
       errorResponseServerError('Could not find CID in network'),
-      prometheusResult
+      { result: 'abort_cid_not_found_in_network' }
     )
   }
 
@@ -493,8 +480,7 @@ const getDirCID = async (req, res) => {
 
     if (req.endMetricTimer) {
       try {
-        prometheusResult.result = 'success_found_in_network'
-        req.endMetricTimer(prometheusResult)
+        req.endMetricTimer({ result: 'success_found_in_network' })
       } catch (e) {
         req.logger.warn(
           { cid: CID },
@@ -505,13 +491,12 @@ const getDirCID = async (req, res) => {
 
     return fsStream
   } catch (e) {
-    prometheusResult.mode = 'failure_stream'
     req.logger.error({ cid: CID }, `Could not stream: ${e.message}`)
     return sendResponseWithMetric(
       req,
       res,
       errorResponseServerError('Failed to stream'),
-      prometheusResult
+      { result: 'failure_stream' }
     )
   }
 }

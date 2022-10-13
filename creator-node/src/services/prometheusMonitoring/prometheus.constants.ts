@@ -116,7 +116,12 @@ export const METRIC_LABELS = Object.freeze({
     buckets: exponentialBucketsRange(0.1, 60, 10)
   },
   [METRIC_NAMES.STREAM_CONTENT_HISTOGRAM]: {
-    mode: ['new_storage_path', 'legacy_storage_path', 'default'],
+    mode: [
+      'new_storage_path',
+      'legacy_storage_path',
+      'db_storage_path',
+      'default'
+    ],
     result: [
       'success_found_in_fs',
       'success_found_in_network',
