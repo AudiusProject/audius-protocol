@@ -10,10 +10,8 @@ import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
 import { makeStyles } from 'app/styles'
 
-import { BottomTabBarButton } from './BottomTabBarButton'
+import { bottomTabBarButtons } from './bottom-tab-bar-buttons'
 import { BOTTOM_BAR_HEIGHT } from './constants'
-
-type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
 const useStyles = makeStyles(({ palette }) => ({
   root: {
@@ -35,17 +33,25 @@ const useStyles = makeStyles(({ palette }) => ({
 const interpolatePostion = (
   translationAnim: Animated.Value,
   bottomInset: number
-) =>
-  translationAnim.interpolate({
-    inputRange: [
-      0,
-      FULL_DRAWER_HEIGHT - bottomInset - BOTTOM_BAR_HEIGHT - PLAY_BAR_HEIGHT,
-      FULL_DRAWER_HEIGHT
-    ],
-    outputRange: [bottomInset + BOTTOM_BAR_HEIGHT, 0, 0]
-  })
+) => ({
+  transform: [
+    {
+      translateY: translationAnim.interpolate({
+        inputRange: [
+          0,
+          FULL_DRAWER_HEIGHT -
+            bottomInset -
+            BOTTOM_BAR_HEIGHT -
+            PLAY_BAR_HEIGHT,
+          FULL_DRAWER_HEIGHT
+        ],
+        outputRange: [bottomInset + BOTTOM_BAR_HEIGHT, 0, 0]
+      })
+    }
+  ]
+})
 
-export type BottomTabBarProps = RNBottomTabBarProps & {
+export type BottomTabBarProps = Pick<RNBottomTabBarProps, 'state'> & {
   /**
    * Translation animation to move the bottom bar as drawers
    * are opened behind it
@@ -63,20 +69,22 @@ export type BottomTabBarProps = RNBottomTabBarProps & {
 }
 
 export const BottomTabBar = (props: BottomTabBarProps) => {
-  const { state, navigation, translationAnim } = props
   const styles = useStyles()
+  const { translationAnim, navigation, state } = props
+  const { routes, index: activeIndex } = state
+  const insets = useSafeAreaInsets()
 
-  const navigate = useCallback(
-    (route: NavigationRoute, isFocused) => {
+  const handlePress = useCallback(
+    (isFocused: boolean, routeName: string, routeKey: string) => {
       const event = navigation.emit({
         type: 'tabPress',
-        target: route.key,
+        target: routeKey,
         canPreventDefault: true
       })
 
       // Native navigation
       if (!isFocused && !event.defaultPrevented) {
-        navigation.navigate(route.name)
+        navigation.navigate(routeName)
       } else if (isFocused) {
         navigation.emit({
           type: 'scrollToTop'
@@ -92,33 +100,25 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
     })
   }, [navigation])
 
-  const insets = useSafeAreaInsets()
-
-  const rootStyle = [
-    styles.root,
-    {
-      transform: [
-        { translateY: interpolatePostion(translationAnim, insets.bottom) }
-      ]
-    }
-  ]
-
   return (
-    <Animated.View style={rootStyle}>
+    <Animated.View
+      style={[styles.root, interpolatePostion(translationAnim, insets.bottom)]}
+    >
       <SafeAreaView
         style={styles.bottomBar}
         edges={['bottom']}
         pointerEvents='auto'
       >
-        {state.routes.map((route, index) => {
-          const isFocused = state.index === index
-          const key = `${route.name}-button`
+        {routes.map(({ name, key }, index) => {
+          const BottomButton = bottomTabBarButtons[name]
+
           return (
-            <BottomTabBarButton
-              route={route}
+            <BottomButton
               key={key}
-              isFocused={isFocused}
-              navigate={navigate}
+              routeName={name}
+              routeKey={key}
+              isActive={index === activeIndex}
+              onPress={handlePress}
               onLongPress={handleLongPress}
             />
           )
