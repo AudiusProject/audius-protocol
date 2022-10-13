@@ -10,6 +10,7 @@ import { NowPlayingDrawer } from 'app/components/now-playing-drawer'
 type TabBarProps = BottomTabBarProps
 
 export const AppTabBar = (props: TabBarProps) => {
+  const { navigation, state } = props
   // Set handlers for the NowPlayingDrawer and BottomTabBar
   // When the drawer is open, the bottom bar should hide (animated away).
   // When the drawer is closed, the bottom bar should reappear (animated in).
@@ -18,7 +19,11 @@ export const AppTabBar = (props: TabBarProps) => {
   return (
     <>
       <NowPlayingDrawer translationAnim={translationAnim} />
-      <BottomTabBar {...props} translationAnim={translationAnim} />
+      <BottomTabBar
+        translationAnim={translationAnim}
+        navigation={navigation}
+        state={state}
+      />
     </>
   )
 }

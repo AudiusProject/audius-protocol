@@ -15,7 +15,7 @@ import { usePrevious } from 'react-use'
 import { light, medium } from 'app/haptics'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
-type IconJSON = AnimatedLottieViewProps['source']
+export type IconJSON = AnimatedLottieViewProps['source']
 
 export type Haptics = boolean | 'light' | 'medium'
 
