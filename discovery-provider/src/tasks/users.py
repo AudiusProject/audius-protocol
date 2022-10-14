@@ -378,7 +378,8 @@ def update_user_metadata(
     if "location" in metadata and metadata["location"]:
         user_record.location = metadata["location"]
 
-    if "artist_pick_track_id" in metadata and metadata["artist_pick_track_id"]:
+    # Artist pick can be set back to null
+    if "artist_pick_track_id" in metadata:
         user_record.artist_pick_track_id = metadata["artist_pick_track_id"]
 
     # Fields with no on-chain counterpart
