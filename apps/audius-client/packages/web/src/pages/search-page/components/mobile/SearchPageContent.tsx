@@ -239,8 +239,7 @@ const CardSearchPage = ({
               route: profilePage(user.handle),
               primaryText: user.name,
               secondaryText: followers,
-              imageSize: user._profile_picture_sizes,
-              isVerified: user.is_verified
+              imageSize: user._profile_picture_sizes
             }
           }
           case CardType.ALBUM:
@@ -258,8 +257,7 @@ const CardSearchPage = ({
               ),
               primaryText: collection.playlist_name,
               secondaryText: collection.user.handle,
-              imageSize: collection._cover_art_sizes,
-              isVerified: false
+              imageSize: collection._cover_art_sizes
             }
           }
         }

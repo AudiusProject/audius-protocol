@@ -6,5 +6,5 @@ export enum Variant {
 }
 
 export type PillButtonProps = ButtonProps & {
-  variant: Variant
+  variant?: Variant
 }

@@ -53,8 +53,8 @@ describe('watchPlay', () => {
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.load).toBeCalled()
-    expect(initialPlayer.audio.play).toBeCalled()
+    expect(initialPlayer.audio.load).toHaveBeenCalled()
+    expect(initialPlayer.audio.play).toHaveBeenCalled()
   })
 
   it('plays by resuming', async () => {
@@ -77,7 +77,7 @@ describe('watchPlay', () => {
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.play).toBeCalled()
+    expect(initialPlayer.audio.play).toHaveBeenCalled()
   })
 })
 
@@ -100,7 +100,7 @@ describe('watchPause', () => {
     expect(storeState.player).toMatchObject({
       playing: false
     })
-    expect(initialPlayer.audio.pause).toBeCalled()
+    expect(initialPlayer.audio.pause).toHaveBeenCalled()
   })
 })
 
@@ -123,7 +123,7 @@ describe('watchStop', () => {
     expect(storeState.player).toMatchObject({
       playing: false
     })
-    expect(initialPlayer.audio.stop).toBeCalled()
+    expect(initialPlayer.audio.stop).toHaveBeenCalled()
   })
 })
 
@@ -146,6 +146,6 @@ describe('watchSeek', () => {
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.seek).toBeCalledWith(30)
+    expect(initialPlayer.audio.seek).toHaveBeenCalledWith(30)
   })
 })

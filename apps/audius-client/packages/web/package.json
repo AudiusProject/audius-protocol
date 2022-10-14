@@ -254,7 +254,7 @@
     "terser": "4.8.0",
     "tls": "0.0.1",
     "tls-browserify": "^0.2.2",
-    "typescript": "4.4.4",
+    "typescript": "4.8.4",
     "typescript-plugin-css-modules": "^3.4.0",
     "url": "^0.11.0",
     "util": "^0.12.4",

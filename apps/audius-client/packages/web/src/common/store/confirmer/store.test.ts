@@ -36,8 +36,8 @@ describe('requestConfirmation', () => {
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(confirm).toBeCalled()
-    expect(success).toBeCalledWith(1)
+    expect(confirm).toHaveBeenCalled()
+    expect(success).toHaveBeenCalledWith(1)
   })
 
   it('chains calls', async () => {
@@ -77,10 +77,10 @@ describe('requestConfirmation', () => {
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(confirm1).toBeCalled()
-    expect(success1).toBeCalledWith(1)
-    expect(confirm2).toBeCalledWith(1)
-    expect(success2).toBeCalledWith(2)
+    expect(confirm1).toHaveBeenCalled()
+    expect(success1).toHaveBeenCalledWith(1)
+    expect(confirm2).toHaveBeenCalledWith(1)
+    expect(success2).toHaveBeenCalledWith(2)
   })
 
   it('chains calls and uses results selector', async () => {
@@ -120,10 +120,10 @@ describe('requestConfirmation', () => {
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(confirm1).toBeCalled()
-    expect(success1).toBeCalledWith({ id: 1 })
-    expect(confirm2).toBeCalledWith(1)
-    expect(success2).toBeCalledWith({ id: 2 })
+    expect(confirm1).toHaveBeenCalled()
+    expect(success1).toHaveBeenCalledWith({ id: 1 })
+    expect(confirm2).toHaveBeenCalledWith(1)
+    expect(success2).toHaveBeenCalledWith({ id: 2 })
   })
 
   it('makes fail call', async () => {
@@ -165,8 +165,8 @@ describe('requestConfirmation', () => {
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(confirm).toBeCalled()
-    expect(fail).toBeCalledWith({
+    expect(confirm).toHaveBeenCalled()
+    expect(fail).toHaveBeenCalledWith({
       error: true,
       message: 'Error Message',
       timeout: false
@@ -219,15 +219,15 @@ describe('requestConfirmation', () => {
       .put(actions._clearConfirm('222'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(confirm11).toBeCalled()
-    expect(success11).toBeCalledWith(11)
-    expect(confirm12).toBeCalled()
-    expect(success12).toBeCalledWith(12)
+    expect(confirm11).toHaveBeenCalled()
+    expect(success11).toHaveBeenCalledWith(11)
+    expect(confirm12).toHaveBeenCalled()
+    expect(success12).toHaveBeenCalledWith(12)
 
-    expect(confirm21).toBeCalled()
-    expect(success21).toBeCalledWith(21)
-    expect(confirm22).toBeCalled()
-    expect(success22).toBeCalledWith(22)
+    expect(confirm21).toHaveBeenCalled()
+    expect(success21).toHaveBeenCalledWith(21)
+    expect(confirm22).toHaveBeenCalled()
+    expect(success22).toHaveBeenCalledWith(22)
   })
 })
 
@@ -296,8 +296,8 @@ describe('requestConfirmation timeouts', () => {
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
-    expect(success1).toBeCalledWith(1)
-    expect(fail2).toBeCalled()
+    expect(success1).toHaveBeenCalledWith(1)
+    expect(fail2).toHaveBeenCalled()
   })
 })
 
@@ -386,14 +386,14 @@ it('handles parallelization', async () => {
     .put(actions._clearConfirm('111'))
     .silentRun()
   expect(storeState.confirmer).toEqual(initialState)
-  expect(confirm11).toBeCalled()
-  expect(success11).toBeCalledWith(11)
-  expect(confirm12).toBeCalled()
-  expect(success12).toBeCalledWith(12)
-  expect(confirm13).toBeCalled()
-  expect(success13).toBeCalledWith(13)
-  expect(confirm14).toBeCalled()
-  expect(success14).toBeCalledWith(14)
+  expect(confirm11).toHaveBeenCalled()
+  expect(success11).toHaveBeenCalledWith(11)
+  expect(confirm12).toHaveBeenCalled()
+  expect(success12).toHaveBeenCalledWith(12)
+  expect(confirm13).toHaveBeenCalled()
+  expect(success13).toHaveBeenCalledWith(13)
+  expect(confirm14).toHaveBeenCalled()
+  expect(success14).toHaveBeenCalledWith(14)
 })
 
 it('handles squashable calls', async () => {
@@ -477,10 +477,10 @@ it('handles squashable calls', async () => {
     .put(actions._clearConfirm('111'))
     .silentRun()
   expect(storeState.confirmer).toEqual(initialState)
-  expect(confirm11).toBeCalled()
-  expect(success11).toBeCalledWith(11)
-  expect(confirm14).toBeCalled()
-  expect(success14).toBeCalledWith(14)
+  expect(confirm11).toHaveBeenCalled()
+  expect(success11).toHaveBeenCalledWith(11)
+  expect(confirm14).toHaveBeenCalled()
+  expect(success14).toHaveBeenCalledWith(14)
 })
 
 it('only calls the success call of the last function to resolve if `useOnlyLastSuccessCall` is passed', async () => {
@@ -535,8 +535,8 @@ it('only calls the success call of the last function to resolve if `useOnlyLastS
     .put(actions._clearConfirm('111'))
     .silentRun()
   expect(storeState.confirmer).toEqual(initialState)
-  expect(confirm11).toBeCalled()
-  expect(success11).not.toBeCalled()
-  expect(confirm12).toBeCalled()
-  expect(success12).toBeCalledWith(12)
+  expect(confirm11).toHaveBeenCalled()
+  expect(success11).not.toHaveBeenCalled()
+  expect(confirm12).toHaveBeenCalled()
+  expect(success12).toHaveBeenCalledWith(12)
 })

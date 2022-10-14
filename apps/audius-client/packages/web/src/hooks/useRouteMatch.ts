@@ -6,7 +6,9 @@ import { matchPath, useHistory } from 'react-router-dom'
  * @param route
  * @returns an object of <T> with the values filled
  */
-export function useRouteMatch<T>(route: string) {
+export function useRouteMatch<T extends { [K in keyof T]?: string }>(
+  route: string
+) {
   const { location } = useHistory()
   const { pathname } = location
   const match = matchPath<T>(pathname, {
