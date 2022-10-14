@@ -13,26 +13,31 @@
  * Do not edit the class manually.
  */
 
-import {
-    User,
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
-
 /**
  * 
  * @export
- * @interface TopUsersResponse
+ * @interface ListenCount
  */
-export interface TopUsersResponse 
+export interface ListenCount 
     {
         /**
         * 
-        * @type {Array<User>}
-        * @memberof TopUsersResponse
+        * @type {number}
+        * @memberof ListenCount
         */
-        data?: Array<User>;
+        trackId?: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof ListenCount
+        */
+        date?: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof ListenCount
+        */
+        listens?: number;
     }
 
 

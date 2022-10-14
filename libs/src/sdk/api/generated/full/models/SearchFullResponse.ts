@@ -31,54 +31,56 @@ import {
  * @export
  * @interface SearchFullResponse
  */
-export interface SearchFullResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchFullResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchFullResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchFullResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchFullResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchFullResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchFullResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof SearchFullResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {SearchModel}
-     * @memberof SearchFullResponse
-     */
-    data?: SearchModel;
-}
+export interface SearchFullResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchFullResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchFullResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchFullResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchFullResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof SearchFullResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof SearchFullResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof SearchFullResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {SearchModel}
+        * @memberof SearchFullResponse
+        */
+        data?: SearchModel;
+    }
+
 

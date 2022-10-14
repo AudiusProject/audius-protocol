@@ -25,24 +25,26 @@ import {
  * @export
  * @interface TrendingTimesIds
  */
-export interface TrendingTimesIds {
-    /**
-     * 
-     * @type {Array<TrackId>}
-     * @memberof TrendingTimesIds
-     */
-    week?: Array<TrackId>;
-    /**
-     * 
-     * @type {Array<TrackId>}
-     * @memberof TrendingTimesIds
-     */
-    month?: Array<TrackId>;
-    /**
-     * 
-     * @type {Array<TrackId>}
-     * @memberof TrendingTimesIds
-     */
-    year?: Array<TrackId>;
-}
+export interface TrendingTimesIds 
+    {
+        /**
+        * 
+        * @type {Array<TrackId>}
+        * @memberof TrendingTimesIds
+        */
+        week?: Array<TrackId>;
+        /**
+        * 
+        * @type {Array<TrackId>}
+        * @memberof TrendingTimesIds
+        */
+        month?: Array<TrackId>;
+        /**
+        * 
+        * @type {Array<TrackId>}
+        * @memberof TrendingTimesIds
+        */
+        year?: Array<TrackId>;
+    }
+
 

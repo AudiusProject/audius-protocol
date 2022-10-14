@@ -18,12 +18,14 @@
  * @export
  * @interface TagsResponse
  */
-export interface TagsResponse {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof TagsResponse
-     */
-    data?: Array<string>;
-}
+export interface TagsResponse 
+    {
+        /**
+        * 
+        * @type {Array<string>}
+        * @memberof TagsResponse
+        */
+        data?: Array<string>;
+    }
+
 

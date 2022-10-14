@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullTrackResponse
  */
-export interface FullTrackResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrackResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrackResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrackResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrackResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTrackResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTrackResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullTrackResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {TrackFull}
-     * @memberof FullTrackResponse
-     */
-    data?: TrackFull;
-}
+export interface FullTrackResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrackResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrackResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrackResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrackResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTrackResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTrackResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullTrackResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {TrackFull}
+        * @memberof FullTrackResponse
+        */
+        data?: TrackFull;
+    }
+
 

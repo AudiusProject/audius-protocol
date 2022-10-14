@@ -25,12 +25,14 @@ import {
  * @export
  * @interface GetSupporters
  */
-export interface GetSupporters {
-    /**
-     * 
-     * @type {Array<Supporter>}
-     * @memberof GetSupporters
-     */
-    data?: Array<Supporter>;
-}
+export interface GetSupporters 
+    {
+        /**
+        * 
+        * @type {Array<Supporter>}
+        * @memberof GetSupporters
+        */
+        data?: Array<Supporter>;
+    }
+
 

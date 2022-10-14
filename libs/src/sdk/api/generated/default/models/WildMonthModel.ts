@@ -14,25 +14,18 @@
  */
 
 import {
-    User,
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
+    MonthlyAggregatePlay,
+    MonthlyAggregatePlayFromJSON,
+    MonthlyAggregatePlayFromJSONTyped,
+    MonthlyAggregatePlayToJSON,
+} from './MonthlyAggregatePlay';
 
 /**
  * 
  * @export
- * @interface TopUsersResponse
+ * @interface WildMonthModel
  */
-export interface TopUsersResponse 
-    {
-        /**
-        * 
-        * @type {Array<User>}
-        * @memberof TopUsersResponse
-        */
-        data?: Array<User>;
-    }
+export interface WildMonthModel 
+        { [key: string]: MonthlyAggregatePlay; }
 
 

@@ -25,12 +25,14 @@ import {
  * @export
  * @interface Reposts
  */
-export interface Reposts {
-    /**
-     * 
-     * @type {Array<Activity>}
-     * @memberof Reposts
-     */
-    data?: Array<Activity>;
-}
+export interface Reposts 
+    {
+        /**
+        * 
+        * @type {Array<Activity>}
+        * @memberof Reposts
+        */
+        data?: Array<Activity>;
+    }
+
 

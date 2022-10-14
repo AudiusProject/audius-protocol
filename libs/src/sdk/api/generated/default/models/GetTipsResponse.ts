@@ -25,12 +25,14 @@ import {
  * @export
  * @interface GetTipsResponse
  */
-export interface GetTipsResponse {
-    /**
-     * 
-     * @type {Array<Tip>}
-     * @memberof GetTipsResponse
-     */
-    data?: Array<Tip>;
-}
+export interface GetTipsResponse 
+    {
+        /**
+        * 
+        * @type {Array<Tip>}
+        * @memberof GetTipsResponse
+        */
+        data?: Array<Tip>;
+    }
+
 
