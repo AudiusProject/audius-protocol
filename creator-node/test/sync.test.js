@@ -74,6 +74,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     try {
       await destroyUsers()
     } catch (e) {
@@ -200,7 +201,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         if (trackIds[0] === blockchainTrackId) {
           trackOwnerId = userId
         }
-        return ({
+        return {
           latest_chain_block: 10,
           latest_indexed_block: 10,
           data: [
@@ -209,7 +210,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
               owner_id: trackOwnerId
             }
           ]
-        })
+        }
       })
       libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -1110,16 +1111,26 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
@@ -1147,20 +1158,32 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
       setupMocks(sampleExport)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1202,16 +1225,26 @@ describe('Test secondarySyncFromPrimary()', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
         wallet: userWallets[0],
@@ -1263,21 +1296,26 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
       config.set('syncForceWipeEnabled', true)
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
           },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1291,7 +1329,9 @@ describe('Test secondarySyncFromPrimary()', async function () {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
-      const { sampleExport } = await unpackSampleExportData(sampleExportDummyCIDPath)
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
 
       setupMocks(sampleExport)
 
@@ -1316,21 +1356,26 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
       config.set('syncForceWipeEnabled', false)
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
           },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
 
       const result = await secondarySyncFromPrimaryMock({
         serviceRegistry: serviceRegistryMock,
@@ -1390,12 +1435,16 @@ describe('Test secondarySyncFromPrimary()', async function () {
         )
         .reply(404)
 
-      const secondarySyncFromPrimaryMock = proxyquire(
-        '../src/services/sync/secondarySyncFromPrimary',
-        {
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../../fileManager': {
             saveFileForMultihashToFS: async function (
@@ -1419,9 +1468,15 @@ describe('Test secondarySyncFromPrimary()', async function () {
                 0 /* numRetries */
               )
             }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
-        }
-      )
+        })
 
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
@@ -1739,6 +1794,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     await destroyUsers()
 
     await redisClient.flushdb()
@@ -1765,7 +1821,14 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       {
         '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
         '../initAudiusLibs': async () => libsMock,
-        './../../config': config
+        './../../config': config,
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
+        }
       }
     )
   })
@@ -2277,6 +2340,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
               0 /* numRetries */
             )
           }
+        },
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
         }
       }
     )

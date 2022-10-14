@@ -30,6 +30,7 @@ type UID = string
 export type UserMetadata = {
   user_id: number
   album_count: number
+  artist_pick_track_id: number
   bio: string | null
   cover_photo: Nullable<CID>
   creator_node_endpoint: string

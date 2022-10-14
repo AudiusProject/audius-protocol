@@ -22,6 +22,7 @@ const USER_PROPS = [
   'cover_photo_sizes',
   'bio',
   'location',
+  'artist_pick_track_id',
   'creator_node_endpoint',
   'associated_wallets',
   'associated_sol_wallets',
