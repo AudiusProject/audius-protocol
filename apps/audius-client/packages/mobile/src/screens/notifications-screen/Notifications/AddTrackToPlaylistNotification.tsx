@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -39,7 +39,7 @@ export const AddTrackToPlaylistNotification = (
   const { track, playlist } = entities
   const playlistOwner = playlist.user
 
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
     if (playlist) {

@@ -4,7 +4,7 @@ import type { EntityType } from '@audius/common'
 
 import { Text } from 'app/components/core'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNotificationNavigation } from '../../app-drawer-screen'
 
 type EntityLinkProps = {
   entity: EntityType
@@ -12,7 +12,7 @@ type EntityLinkProps = {
 
 export const EntityLink = (props: EntityLinkProps) => {
   const { entity } = props
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNotificationNavigation()
 
   const onPress = useCallback(() => {
     if ('track_id' in entity) {

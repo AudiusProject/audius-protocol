@@ -133,6 +133,7 @@ export const useAppScreenOptions = (
         // Notifications uses this in order to remove animations when going from the drawer
         // to a nested stack screen.
         const isFromNotifs =
+          !isNavOverhaulEnabled &&
           params &&
           'fromNotifications' in params &&
           (params as ContextualParams).fromNotifications

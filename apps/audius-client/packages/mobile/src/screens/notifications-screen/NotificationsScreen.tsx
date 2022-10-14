@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
+import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 
 import { ScreenContent } from '../ScreenContent'
 
@@ -17,6 +18,7 @@ const messages = {
 }
 
 export const NotificationsScreen = () => {
+  usePopToTopOnDrawerOpen()
   const dispatch = useDispatch()
 
   useFocusEffect(

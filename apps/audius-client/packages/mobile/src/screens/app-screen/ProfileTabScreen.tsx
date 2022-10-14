@@ -10,11 +10,9 @@ export type ProfileTabScreenParamList = AppTabScreenParamList & {
 
 export const ProfileTabScreen =
   createAppTabScreenStack<ProfileTabScreenParamList>((Stack) => (
-    <>
-      <Stack.Screen
-        name='UserProfile'
-        component={ProfileScreen}
-        initialParams={{ handle: 'accountUser' }}
-      />
-    </>
+    <Stack.Screen
+      name='UserProfile'
+      component={ProfileScreen}
+      initialParams={{ handle: 'accountUser' }}
+    />
   ))

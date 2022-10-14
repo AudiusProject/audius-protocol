@@ -115,7 +115,6 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
           return (
             <BottomButton
               key={key}
-              routeName={name}
               routeKey={key}
               isActive={index === activeIndex}
               onPress={handlePress}

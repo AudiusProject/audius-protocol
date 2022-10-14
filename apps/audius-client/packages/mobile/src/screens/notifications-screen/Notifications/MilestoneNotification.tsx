@@ -15,7 +15,7 @@ import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   EntityLink,
   NotificationHeader,
@@ -96,7 +96,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   )
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
     if (achievement === Achievement.Followers) {

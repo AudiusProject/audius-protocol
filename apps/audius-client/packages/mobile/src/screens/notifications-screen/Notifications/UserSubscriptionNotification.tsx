@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 
 import IconStars from 'app/assets/images/iconStars.svg'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -39,7 +39,7 @@ export const UserSubscriptionNotification = (
 ) => {
   const { notification } = props
   const { entityType } = notification
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
   const entities = useProxySelector(
     (state) => getNotificationEntities(state, notification),
