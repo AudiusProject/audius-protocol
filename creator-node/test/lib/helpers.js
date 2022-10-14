@@ -24,7 +24,8 @@ const uploadTrack = async (filePath, cnodeUserUUID) => {
       fileName: `${fileUUID}.mp3`,
       fileDir,
       fileDestination: fileDir,
-      cnodeUserUUID
+      cnodeUserUUID,
+      isPremium: false
     }
   )
 

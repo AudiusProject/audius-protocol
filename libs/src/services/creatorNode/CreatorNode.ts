@@ -68,6 +68,8 @@ export type CreatorNodeConfig = {
   fallbackUrl: string
 }
 
+const UPLOAD_FILE_NUM_RETRIES = 2
+
 // Currently only supports a single logged-in audius user
 export class CreatorNode {
   /* Static Utils */
@@ -363,7 +365,7 @@ export class CreatorNode {
     }
 
     const uploadPromises = []
-    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress, metadata.is_premium))
     if (coverArtFile)
       uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
@@ -528,14 +530,22 @@ export class CreatorNode {
    * @param onProgress called with loaded bytes and total bytes
    * @return response body
    */
-  async uploadTrackAudio(file: File, onProgress: ProgressCB) {
-    return await this.handleAsyncTrackUpload(file, onProgress)
+  async uploadTrackAudio(file: File, onProgress: ProgressCB, isPremium: boolean) {
+    return await this.handleAsyncTrackUpload(file, onProgress, isPremium)
   }
 
-  async handleAsyncTrackUpload(file: File, onProgress: ProgressCB) {
+  async handleAsyncTrackUpload(file: File, onProgress: ProgressCB, isPremium: boolean) {
     const {
       data: { uuid }
-    } = await this._uploadFile(file, '/track_content_async', onProgress)
+    } = await this._uploadFile(
+      file,
+      '/track_content_async',
+      onProgress,
+      /* extraFormDataOptions */ {},
+      UPLOAD_FILE_NUM_RETRIES,
+      /* timeoutMs */ null,
+      isPremium
+    )
     return await this.pollProcessingStatus(uuid)
   }
 
@@ -982,8 +992,9 @@ export class CreatorNode {
     route: string,
     onProgress: ProgressCB = () => {},
     extraFormDataOptions: Record<string, unknown> = {},
-    retries = 2,
-    timeoutMs: number | null = null
+    retries = UPLOAD_FILE_NUM_RETRIES,
+    timeoutMs: number | null = null,
+    isPremium = false
     // @ts-expect-error re-throwing at the end of this function breaks exisiting impl
   ): Promise<FileUploadResponse> {
     await this.ensureConnected()
@@ -1014,7 +1025,7 @@ export class CreatorNode {
       console.debug(`Uploading file to ${url}`)
 
       const reqParams: AxiosRequestConfig = {
-        headers: headers,
+        headers: { ...headers, ['x-is-premium']: isPremium },
         adapter: isBrowser
           ? require('axios/lib/adapters/xhr')
           : require('axios/lib/adapters/http'),
@@ -1064,7 +1075,9 @@ export class CreatorNode {
           route,
           onProgress,
           extraFormDataOptions,
-          retries - 1
+          retries - 1,
+          /* timeoutMs */ null,
+          isPremium
         )
       } else if (
         error.response?.data?.error?.includes?.('Invalid authentication token')

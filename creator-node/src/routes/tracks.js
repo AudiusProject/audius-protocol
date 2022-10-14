@@ -79,7 +79,8 @@ router.post(
           fileName: req.fileName,
           fileDir: req.fileDir,
           fileDestination: req.file.destination,
-          cnodeUserUUID: req.session.cnodeUserUUID
+          cnodeUserUUID: req.session.cnodeUserUUID,
+          isPremium: req.headers['x-is-premium']
         }
       })
     } else {
@@ -93,7 +94,8 @@ router.post(
           fileNameNoExtension: req.fileNameNoExtension,
           fileDestination: req.file.destination,
           cnodeUserUUID: req.session.cnodeUserUUID,
-          headers: req.headers
+          headers: req.headers,
+          isPremium: req.headers['x-is-premium']
         }
       })
     }

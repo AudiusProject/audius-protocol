@@ -22,7 +22,7 @@ const TrackContentUploadManager = require('./trackContentUploadManager')
  */
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
-  const { fileName, fileDir, fileDestination, cnodeUserUUID } = requestProps
+  const { fileName, fileDir, fileDestination, cnodeUserUUID, isPremium } = requestProps
 
   const routeTimeStart = getStartTime()
 
@@ -46,7 +46,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
       fileDir,
       transcodeFilePath,
       segmentFileNames,
-      fileDestination
+      fileDestination,
+      isPremium
     }
   )
   logInfoWithDuration(

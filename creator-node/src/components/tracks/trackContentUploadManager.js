@@ -97,7 +97,8 @@ class TrackContentUploadManager {
       fileDir,
       fileDestination,
       transcodeFilePath,
-      segmentFileNames
+      segmentFileNames,
+      isPremium
     }
   ) {
     const logger = genericLogger.child(logContext)
@@ -140,6 +141,7 @@ class TrackContentUploadManager {
       fileDir,
       cnodeUserUUID,
       segmentFileResult,
+      isPremium,
       logContext,
       logger
     })
@@ -167,6 +169,7 @@ class TrackContentUploadManager {
  * @param {string} dbParams.fileDir the dir path of the temp track artifacts
  * @param {string} dbParams.cnodeUserUUID the observed user's uuid
  * @param {Object} dbParams.segmentFileResult an array of { multihash, srcPath: segmentFilePath, dstPath }
+ * @param {number} dbParams.isPremium whether or not the file is for a premium track
  * @param {Object} dbParams.logContext
  * @returns the transcoded file's uuid
  */
@@ -176,6 +179,7 @@ async function addFilesToDb({
   fileDir,
   cnodeUserUUID,
   segmentFileResult,
+  isPremium,
   logContext
 }) {
   const transaction = await models.sequelize.transaction()
