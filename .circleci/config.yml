@@ -1647,42 +1647,6 @@ workflows:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
             - release-<< matrix.host >>-hold
-      # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
-      - noop:
-          name: release-service-providers-hold
-          type: approval
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-          requires:
-            - bump-hotfix
-      - release-scripts:
-          name: release-service-providers
-          target: release-to-service-providers
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-            - discord
-            - governance
-          requires:
-            - release-service-providers-hold
-      # Evaluate Governance Proposal (for release branches)
-      - noop:
-          name: evaluate-proposal-hold
-          type: approval
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-          requires:
-            - release-service-providers
-      - release-scripts:
-          name: evaluate-proposal
-          target: evaluate-proposal
-          context:
-            - slack-secrets
-            - governance
-          requires:
-            - evaluate-proposal-hold
 
       - test-libs:
           name: test-libs
