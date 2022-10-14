@@ -48,6 +48,7 @@ export type CollectionPageProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   playlistId: ID | SmartCollectionVariant
   playing: boolean
   getPlayingUid: () => string | null
@@ -84,6 +85,7 @@ const CollectionPage = ({
   title,
   description: pageDescription,
   canonicalUrl,
+  structuredData,
   playlistId,
   getPlayingUid,
   playing,
@@ -226,6 +228,7 @@ const CollectionPage = ({
         title={title}
         description={pageDescription}
         canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
       >
         <div className={styles.collectionContent}>
           <div>

@@ -68,6 +68,7 @@ const getRangesToDisable = (timeRange: TimeRange) => {
 const TrendingPageContent = (props: TrendingPageContentProps) => {
   const {
     trendingTitle,
+    pageTitle,
     trendingDescription,
     trendingWeek,
     trendingMonth,
@@ -355,7 +356,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   return (
     <>
       <Page
-        title={trendingTitle}
+        title={pageTitle}
         description={trendingDescription}
         size='large'
         header={header}

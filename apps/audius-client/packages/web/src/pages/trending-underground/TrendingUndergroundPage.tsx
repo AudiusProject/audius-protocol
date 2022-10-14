@@ -16,6 +16,7 @@ import Page from 'components/page/Page'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
 import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
+import { createSeoDescription } from 'utils/seo'
 
 import styles from './TrendingUndergroundPage.module.css'
 const { getLineup } = trendingUndergroundPageLineupSelectors
@@ -34,7 +35,9 @@ const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
 
 const messages = {
   trendingUndergroundTitle: 'Underground Trending',
-  description: "Listen to what's trending on the Audius platform"
+  description: createSeoDescription(
+    "Listen to what's trending on the Audius platform"
+  )
 }
 
 type TrendingUndergroundPageProps = {

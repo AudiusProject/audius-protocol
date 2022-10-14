@@ -65,12 +65,12 @@ import {
   NOT_FOUND_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
-  fullPlaylistPage,
   playlistPage,
   albumPage,
   getPathname
 } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
+import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
@@ -720,21 +720,24 @@ class CollectionPage extends Component<
 
     const { playlistId, allowReordering } = this.state
 
-    const title = metadata?.playlist_name ?? ''
-    const description = metadata?.description ?? ''
-    const canonicalUrl =
-      user && metadata
-        ? fullPlaylistPage(
-            user?.handle,
-            metadata?.playlist_name,
-            metadata?.playlist_id
-          )
-        : ''
+    const {
+      title = '',
+      description = '',
+      canonicalUrl = '',
+      structuredData
+    } = getCollectionPageSEOFields({
+      playlistName: metadata?.playlist_name,
+      playlistId: metadata?.playlist_id,
+      userName: user?.name,
+      userHandle: user?.handle,
+      isAlbum: metadata?.is_album
+    })
 
     const childProps = {
       title,
       description,
       canonicalUrl,
+      structuredData,
       playlistId: playlistId!,
       allowReordering,
       playing,
@@ -779,6 +782,7 @@ class CollectionPage extends Component<
           title={title}
           description={description}
           canonicalUrl={canonicalUrl}
+          structuredData={structuredData}
           playable={{
             metadata,
             type: metadata?.is_album

@@ -34,6 +34,7 @@ export type OwnProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   // Hero Track Props
   heroTrack: Track | null
   hasValidRemixParent: boolean
@@ -76,6 +77,7 @@ const TrackPage = ({
   title,
   description,
   canonicalUrl,
+  structuredData,
   hasValidRemixParent,
   // Hero Track Props
   heroTrack,
@@ -215,6 +217,7 @@ const TrackPage = ({
       title={title}
       description={description}
       canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
       variant='flush'
       scrollableSearch
     >

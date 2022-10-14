@@ -115,6 +115,7 @@ const tabHeaders = [
 
 export type ExplorePageProps = {
   title: string
+  pageTitle: string
   description: string
   playlists: UserCollection[]
   profiles: User[]
@@ -125,7 +126,7 @@ export type ExplorePageProps = {
 }
 
 const ExplorePage = ({
-  title,
+  pageTitle,
   description,
   playlists,
   profiles,
@@ -313,7 +314,7 @@ const ExplorePage = ({
 
   return (
     <MobilePageContainer
-      title={title}
+      title={pageTitle}
       description={description}
       canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
     >

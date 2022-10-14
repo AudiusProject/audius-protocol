@@ -28,6 +28,7 @@ type OwnProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   user: User
   playable: Playable
   deletedByArtist: boolean
