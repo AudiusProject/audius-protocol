@@ -660,11 +660,17 @@ const config = convict({
     default: 20
   },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
-    doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
+    doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
     // 24 hours in seconds
-    default: 86400
+    default: 86400 // 24hr in s
+  },
+  maxNumberSecondsSecondaryRemainsUnhealthy: {
+    doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
+    format: 'nat',
+    env: 'maxNumberSecondsSecondaryRemainsUnhealthy',
+    default: 600 // 10min in s
   },
   secondaryUserSyncDailyFailureCountThreshold: {
     doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',

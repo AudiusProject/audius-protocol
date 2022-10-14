@@ -51,7 +51,7 @@ const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
  * @param {number} param.primary the current primary endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
- * @param {string[]} param.unhealthyReplicas the endpoints of the user's replica set that are currently unhealthy
+ * @param {string[]} param.nodesToReconfigOffOf the endpoints of the user's replica set that are currently unhealthy and not in a grace period
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
@@ -62,7 +62,7 @@ const updateReplicaSetJobProcessor = async function ({
   primary,
   secondary1,
   secondary2,
-  unhealthyReplicas,
+  nodesToReconfigOffOf,
   replicaToUserInfoMap,
   enabledReconfigModes
 }: DecoratedJobParams<UpdateReplicaSetJobParams>): Promise<
@@ -188,7 +188,7 @@ const updateReplicaSetJobProcessor = async function ({
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicasSet: new Set(unhealthyReplicas || []),
+      nodesToReconfigOffOf: new Set(nodesToReconfigOffOf || []),
       healthyNodes,
       replicaToUserInfoMap,
       enabledReconfigModes
@@ -259,7 +259,7 @@ type DetermineNewReplicaSetParams = {
   secondary1: string
   secondary2: string
   wallet: string
-  unhealthyReplicasSet: Set<string>
+  nodesToReconfigOffOf: Set<string>
   healthyNodes: string[]
   replicaToUserInfoMap: ReplicaToUserInfoMap
   enabledReconfigModes: string[]
@@ -269,14 +269,14 @@ type DetermineNewReplicaSetParams = {
  *
  * The logic below is as follows:
  * 1. Select the unhealthy replica set nodes size worth of healthy nodes to prepare for issuing reconfig
- * 2. Depending the number and type of unhealthy nodes in `unhealthyReplicaSet`, issue reconfig depending on if the reconfig mode is enabled:
+ * 2. Depending the number and type of unhealthy nodes in `nodesToReconfigOffOf`, issue reconfig depending on if the reconfig mode is enabled:
  *  - if one secondary is unhealthy -> {primary: current primary, secondary1: the healthy secondary, secondary2: new healthy node}
  *  - if two secondaries are unhealthy -> {primary: current primary, secondary1: new healthy node, secondary2: new healthy node}
  *  - ** if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
  *  - ** if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
  *  - if entire replica set is unhealthy -> {primary: null, secondary1: null, secondary2: null, issueReconfig: false}
  *
- * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. See `../CNodeHealthManager.js` for more information.
+ * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. See `../CNodeHealthManager.ts` for more information.
  *
  * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on the currently enabled reconfig mode. See `RECONFIG_MODE` variable for more information.
  *
@@ -286,7 +286,7 @@ type DetermineNewReplicaSetParams = {
  * @param {string} param.secondary1 current user's first secondary endpoint
  * @param {string} param.secondary2 current user's second secondary endpoint
  * @param {string} param.wallet current user's wallet address
- * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
+ * @param {Set<string>} param.nodesToReconfigOffOf a set of endpoints of unhealthy replica set nodes that are not in a grace period
  * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
  * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
@@ -305,7 +305,7 @@ const _determineNewReplicaSet = async ({
   secondary1,
   secondary2,
   wallet,
-  unhealthyReplicasSet,
+  nodesToReconfigOffOf,
   healthyNodes,
   replicaToUserInfoMap,
   enabledReconfigModes
@@ -316,34 +316,34 @@ const _determineNewReplicaSet = async ({
       // Ensure exists
       .filter((node) => Boolean)
       // Node is not marked unhealthy
-      .filter((node) => !unhealthyReplicasSet.has(node))
+      .filter((node) => !nodesToReconfigOffOf.has(node))
   )
   const numberOfEmptyReplicas = currentReplicaSet.filter((node) => !node).length
   const newReplicaNodes = await _selectRandomReplicaSetNodes(
     healthyReplicaSet,
-    unhealthyReplicasSet,
+    nodesToReconfigOffOf,
     numberOfEmptyReplicas,
     healthyNodes,
     wallet,
     logger
   )
 
-  if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 1) {
+  if (nodesToReconfigOffOf.size + numberOfEmptyReplicas === 1) {
     return _determineNewReplicaSetWhenOneNodeIsUnhealthy(
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicasSet,
+      nodesToReconfigOffOf,
       replicaToUserInfoMap,
       newReplicaNodes[0],
       enabledReconfigModes
     )
-  } else if (unhealthyReplicasSet.size + numberOfEmptyReplicas === 2) {
+  } else if (nodesToReconfigOffOf.size + numberOfEmptyReplicas === 2) {
     return _determineNewReplicaSetWhenTwoNodesAreUnhealthy(
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicasSet,
+      nodesToReconfigOffOf,
       newReplicaNodes,
       enabledReconfigModes
     )
@@ -364,7 +364,7 @@ const _determineNewReplicaSet = async ({
  * @param {*} primary user's current primary endpoint
  * @param {*} secondary1 user's current first secondary endpoint
  * @param {*} secondary2 user's current second secondary endpoint
- * @param {*} unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
+ * @param {*} nodesToReconfigOffOf a set of endpoints of unhealthy replica set nodes that are not in a grace period
  * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {*} newReplicaNode endpoint of node that will replace the unhealthy node
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy node
@@ -373,14 +373,14 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   primary: string,
   secondary1: string,
   secondary2: string,
-  unhealthyReplicasSet: Set<string>,
+  nodesToReconfigOffOf: Set<string>,
   replicaToUserInfoMap: ReplicaToUserInfoMap,
   newReplicaNode: string,
   enabledReconfigModes: string[]
 ) => {
   // If we already already checked this primary and it failed the health check, select the higher clock
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
-  if (unhealthyReplicasSet.has(primary) || !primary) {
+  if (nodesToReconfigOffOf.has(primary) || !primary) {
     const secondary1Clock = replicaToUserInfoMap[secondary1]?.clock || -1
     const secondary2Clock = replicaToUserInfoMap[secondary2]?.clock || -1
     const [newPrimary, currentHealthySecondary] =
@@ -401,7 +401,7 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
 
   // If one secondary is unhealthy, select a new secondary
   const currentHealthySecondary =
-    unhealthyReplicasSet.has(secondary1) || !secondary1
+    nodesToReconfigOffOf.has(secondary1) || !secondary1
       ? secondary2
       : secondary1
   return {
@@ -421,7 +421,7 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
  * @param {*} primary user's current primary endpoint
  * @param {*} secondary1 user's current first secondary endpoint
  * @param {*} secondary2 user's current second secondary endpoint
- * @param {*} unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
+ * @param {*} nodesToReconfigOffOf a set of endpoints of unhealthy replica set nodes that are not in a grace period
  * @param {*} newReplicaNodes array of endpoints of nodes that will replace the unhealthy nodes
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy nodes
  */
@@ -429,14 +429,14 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
   primary: string,
   secondary1: string,
   secondary2: string,
-  unhealthyReplicasSet: Set<string>,
+  nodesToReconfigOffOf: Set<string>,
   newReplicaNodes: string[],
   enabledReconfigModes: string[]
 ) => {
   // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
-  if (unhealthyReplicasSet.has(primary) || !primary) {
+  if (nodesToReconfigOffOf.has(primary) || !primary) {
     return {
-      newPrimary: !unhealthyReplicasSet.has(secondary1)
+      newPrimary: !nodesToReconfigOffOf.has(secondary1)
         ? secondary1
         : secondary2,
       newSecondary1: newReplicaNodes[0],
@@ -467,7 +467,7 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  *
  * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
  * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
- * @param {Set<string>} unhealthyReplicasSet a set of the unhealthy replica set endpoints
+ * @param {Set<string>} nodesToReconfigOffOf a set of the unhealthy replica set endpoints that are not in a grace period
  * @param {number} numberOfEmptyReplicas the number of the user's replicas that are an empty string (deregistered SP ID)
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
@@ -476,16 +476,16 @@ const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  */
 const _selectRandomReplicaSetNodes = async (
   healthyReplicaSet: Set<string>,
-  unhealthyReplicasSet: Set<string>,
+  nodesToReconfigOffOf: Set<string>,
   numberOfEmptyReplicas: number,
   healthyNodes: string[],
   wallet: string,
   logger: Logger
 ): Promise<string[]> => {
-  const numberOfUnhealthyReplicas = unhealthyReplicasSet.size
+  const numberOfNodesToReconfigOffOf = nodesToReconfigOffOf.size
   const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
-  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberOfEmptyReplicas=${numberOfEmptyReplicas} healthyNodes=${[
+  ]}] numberOfNodesToReconfigOffOf=${numberOfNodesToReconfigOffOf} numberOfEmptyReplicas=${numberOfEmptyReplicas} healthyNodes=${[
     ...healthyNodes
   ]} ||`
 
@@ -498,7 +498,7 @@ const _selectRandomReplicaSetNodes = async (
   let selectNewReplicaSetAttemptCounter = 0
   while (
     newReplicaNodesSet.size <
-      numberOfUnhealthyReplicas + numberOfEmptyReplicas &&
+      numberOfNodesToReconfigOffOf + numberOfEmptyReplicas &&
     selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
   ) {
     const randomHealthyNode = _.sample(viablePotentialReplicas)
@@ -507,7 +507,7 @@ const _selectRandomReplicaSetNodes = async (
     if (newReplicaNodesSet.has(randomHealthyNode)) continue
 
     // If the node was marked as healthy before, keep finding a unique healthy node
-    if (unhealthyReplicasSet.has(randomHealthyNode)) {
+    if (nodesToReconfigOffOf.has(randomHealthyNode)) {
       logger.warn(
         `Selected node ${randomHealthyNode} that is marked as healthy now but was previously marked as unhealthy. Unselecting it and finding another healthy node...`
       )
@@ -536,7 +536,7 @@ const _selectRandomReplicaSetNodes = async (
 
   if (
     newReplicaNodesSet.size <
-    numberOfUnhealthyReplicas + numberOfEmptyReplicas
+    numberOfNodesToReconfigOffOf + numberOfEmptyReplicas
   ) {
     throw new Error(
       `${logStr} Not enough healthy nodes found to issue new replica set after ${MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS} attempts`

@@ -173,7 +173,7 @@ describe('test findReplicaSetUpdates job processor', function () {
         primary,
         secondary1,
         secondary2,
-        unhealthyReplicas: expectedUnhealthyReplicas,
+        nodesToReconfigOffOf: expectedUnhealthyReplicas,
         replicaToUserInfoMap: REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
       })
     } else {

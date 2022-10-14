@@ -295,7 +295,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
 
   function determinePeerHealth(verboseHealthCheckResp) {
     const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
       {
         './../../config': config
       }
@@ -438,7 +438,7 @@ describe('test CNodeHealthManager -- isPrimaryHealthy()', function () {
   it('returns true when health check fails during grace period, then false when grace period ends, then true when health check starts passing again', async function () {
     // Mock CNodeHealthManager to use the config with our shorter grace period
     const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
       {
         './../../config': config
       }
@@ -516,7 +516,7 @@ describe('test CNodeHealthManager logger', function () {
     const logInfoStub = sandbox.stub()
     const logErrorStub = sandbox.stub()
     const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
       {
         './../../logging': {
           logger: {
