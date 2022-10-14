@@ -309,40 +309,78 @@ router.post(
     // Await 2/3 write quorum (replicating data to at least 1 secondary)
     await issueAndWaitForSecondarySyncRequests(req)
 
-    // Update the premium content cache.
+    // If this is not the first track upload, meaning it is an update,
+    // update the premium cid files and cache accordingly.
     // If track is premium, add CIDs which do not exist in other non-premium tracks to cache.
     // Otherwise, remove premium CIDs which also exist in this track.
-    const {
-      is_premium: isPremium,
-      track_id: trackId,
-      track_segments: trackSegments
-    } = metadataJSON
-    const trackSegmentCIDs = trackSegments.map((segment) => segment.multihash)
-    if (isPremium) {
-      // todo: make sure this query is fast
-      const result = await models.sequelize.query(
-        `select "multihash" from "Files"
-          where "multihash" in :cids
-          and "isPremium" is false`,
-        {
-          replacements: { cids: trackSegmentCIDs },
-          type: QueryTypes.SELECT
-        }
-      )
-      const nonPremiumCIDSet = new Set(result.map(({ multihash }) => multihash))
-      const cacheMap = {}
-      trackSegmentCIDs.forEach((cid) => {
-        if (!nonPremiumCIDSet.has(cid)) {
-          // todo: ensure i can rely on existence of track id here
-          cacheMap[cid] = trackId
-        }
-      })
-      await updatePremiumContentCIDCache({ cacheMap, logger: req.logger })
-    } else {
-      removePremiumContentCIDsFromCache({
-        cids: trackSegmentCIDs,
-        logger: req.logger
-      })
+    if (!req.body.isFirstUpload) {
+      const {
+        is_premium: isPremium,
+        track_id: trackId,
+        track_segments: trackSegments
+      } = metadataJSON
+      // Map of premium cids that determines whether a track file is premium or not.
+      // Used below where we create new File records.
+      const premiumCIDMap = {}
+
+      const cids = trackSegments.map((segment) => segment.multihash)
+
+      if (isPremium) {
+        const nonPremiumCIDs = await models.File.findAll({
+          attributes: ['multihash'],
+          where: {
+            [models.Sequelize.Op.in]: cids,
+            isPremium: false
+          },
+          transaction
+        })
+        const nonPremiumCIDSet = new Set(
+          nonPremiumCIDs.map(({ multihash }) => multihash)
+        )
+        cids.forEach((cid) => {
+          if (!nonPremiumCIDSet.has(cid)) {
+            premiumCIDMap[cid] = trackId
+          }
+        })
+        const premiumCIDs = Object.keys(premiumCIDMap)
+
+        // Update premiumness of cids in the Files table that match this track's cids
+        await models.sequelize.query(
+          `update "Files" set "isPremium" = true
+            where f."multihash" in :cids`,
+          {
+            replacements: { cids: premiumCIDs },
+            type: QueryTypes.UPDATE
+          }
+        )
+
+        // Update premium content cid cache with new premium cids
+        updatePremiumContentCIDCache({
+          cacheMap: premiumCIDMap,
+          logger: req.logger
+        })
+      } else {
+        // Update premiumness of cids in the Files table that match this track's cids
+        await models.sequelize.query(
+          `update "Files" f set "isPremium" = false
+            from (
+              select "multihash" from "Files"
+                where "multihash" in :cids
+                and "isPremium" is true
+            ) premium_cids
+            where f."multihash" = premium_cids."multihash"`,
+          {
+            replacements: { cids },
+            type: QueryTypes.UPDATE
+          }
+        )
+
+        // Remove cids in premium content cache that match this track's cids
+        await removePremiumContentCIDsFromCache({
+          cids,
+          logger: req.logger
+        })
+      }
     }
 
     return successResponse({

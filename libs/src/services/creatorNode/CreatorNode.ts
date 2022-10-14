@@ -391,7 +391,11 @@ export class CreatorNode {
     }
     // Creates new track entity on creator node, making track's metadata available
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
-    const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
+    const metadataResp = await this.uploadTrackMetadata(
+      metadata,
+      sourceFile,
+      /* isFirstUpload */ true
+    )
     return { ...metadataResp, ...trackContentResp }
   }
 
@@ -402,7 +406,11 @@ export class CreatorNode {
    * @param metadata
    * @param sourceFile
    */
-  async uploadTrackMetadata(metadata: TrackMetadata, sourceFile?: string) {
+  async uploadTrackMetadata(
+    metadata: TrackMetadata,
+    sourceFile?: string,
+    isFirstUpload = false
+  ) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -417,7 +425,8 @@ export class CreatorNode {
         method: 'post',
         data: {
           metadata,
-          sourceFile
+          sourceFile,
+          isFirstUpload
         }
       },
       true

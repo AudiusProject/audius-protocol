@@ -206,12 +206,15 @@ async function addFilesToDb({
         },
         transaction
       })
-      const nonPremiumCIDSet = new Set(nonPremiumCIDs)
+      const nonPremiumCIDSet = new Set(
+        nonPremiumCIDs.map(({ multihash }) => multihash)
+      )
       cids.forEach((cid) => {
         if (!nonPremiumCIDSet.has(cid)) {
           premiumCIDMap[cid] = true
         }
       })
+
       // todo: update cid cache with these premium cids
     } else {
       // Update premiumness of cids in the Files table that match this track's cids
