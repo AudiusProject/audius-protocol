@@ -1,4 +1,3 @@
-/** @deprecated - Use SegmentedControl from Stems instead. */
 import { createRef, Fragment, useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'

@@ -21,7 +21,7 @@ describe('single value', () => {
 
     t.end(s)
 
-    expect(sendToAnalytics).toBeCalledWith({
+    expect(sendToAnalytics).toHaveBeenCalledWith({
       name: 'single_value',
       duration: 1000
     })
@@ -45,7 +45,7 @@ describe('batches values', () => {
       t.end(s)
     }
 
-    expect(sendToAnalytics).toBeCalledWith({
+    expect(sendToAnalytics).toHaveBeenCalledWith({
       name: 'batched_value',
       duration: 1000
     })
@@ -67,7 +67,7 @@ describe('batches values', () => {
       t.end(s)
     }
 
-    expect(sendToAnalytics).not.toBeCalled()
+    expect(sendToAnalytics).not.toHaveBeenCalled()
   })
 
   it('records multiple batches', () => {
@@ -86,6 +86,6 @@ describe('batches values', () => {
       t.end(s)
     }
 
-    expect(sendToAnalytics).toBeCalledTimes(3)
+    expect(sendToAnalytics).toHaveBeenCalledTimes(3)
   })
 })

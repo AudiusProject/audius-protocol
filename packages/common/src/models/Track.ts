@@ -8,6 +8,8 @@ import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
 import { User, UserMetadata } from './User'
 
+type EpochTimeStamp = number
+
 export interface TrackSegment {
   duration: string
   multihash: CID

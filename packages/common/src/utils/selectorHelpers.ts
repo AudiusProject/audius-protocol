@@ -1,7 +1,7 @@
 import { isEqual } from 'lodash'
 import { createSelectorCreator, defaultMemoize } from 'reselect'
 
-const shallowCompare = (a: Record<string, any>, b: Record<string, any>) =>
+const shallowCompare = <T>(a: T, b: T) =>
   a &&
   b &&
   Object.keys(a).length === Object.keys(b).length &&

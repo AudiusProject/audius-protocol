@@ -65,8 +65,8 @@ describe('load hls.js', () => {
   it('loads segments with hlsjs', () => {
     audioStream.load(segments, () => {})
 
-    expect(audioStream.hls.loadSource).toBeCalled()
-    expect(audioStream.hls.attachMedia).toBeCalledWith(audioStream.audio)
+    expect(audioStream.hls.loadSource).toHaveBeenCalled()
+    expect(audioStream.hls.attachMedia).toHaveBeenCalledWith(audioStream.audio)
     expect(audioStream.duration).toEqual(18)
   })
 })
@@ -111,14 +111,14 @@ describe('load native hls', () => {
 
     audioStream.audio.dispatchEvent(new Event('waiting'))
     expect(audioStream.buffering).toEqual(true)
-    expect(onBufferingChange).toBeCalledWith(true)
+    expect(onBufferingChange).toHaveBeenCalledWith(true)
 
     audioStream.audio.dispatchEvent(new Event('canplay'))
     expect(audioStream.buffering).toEqual(false)
-    expect(onBufferingChange).toBeCalledWith(false)
+    expect(onBufferingChange).toHaveBeenCalledWith(false)
 
     audioStream.audio.dispatchEvent(new Event('ended'))
-    expect(onEnd).toBeCalled()
+    expect(onEnd).toHaveBeenCalled()
   })
 })
 
@@ -135,7 +135,7 @@ describe('play', () => {
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.play()
 
-    expect(play).toBeCalled()
+    expect(play).toHaveBeenCalled()
   })
 })
 
@@ -154,7 +154,7 @@ describe('pause', () => {
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.pause()
 
-    expect(pause).toBeCalled()
+    expect(pause).toHaveBeenCalled()
   })
 })
 
@@ -171,7 +171,7 @@ describe('stop', () => {
     audioStream.load([{ duration: 6 }], () => {})
     audioStream.stop()
 
-    expect(pause).toBeCalled()
+    expect(pause).toHaveBeenCalled()
     setTimeout(() => {
       expect(audioStream.audio.currentTime).toEqual(0)
     }, 0)
