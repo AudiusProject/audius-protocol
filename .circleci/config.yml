@@ -1601,7 +1601,7 @@ workflows:
           requires:
             - bump-hotfix
       - deploy:
-          name: release-discovery-foundation
+          name: releasing-discovery-foundation
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: discovery
@@ -1622,7 +1622,7 @@ workflows:
           requires:
             - bump-hotfix
       - deploy:
-          name: release-identity-foundation
+          name: releasing-identity-foundation
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: identity
