@@ -1426,7 +1426,7 @@ workflows:
             - test-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: unreserve-stage-<< matrix.service >>-hold
+          name: unreserve-stage-<< matrix.service >>
           type: approval
           filters:
             branches:
@@ -1447,10 +1447,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - unreserve-stage-<< matrix.service >>-hold
+            - unreserve-stage-<< matrix.service >>
       # Force deploy `master` to staging (by host) - discovery
       - noop:
-          name: unreserve-<< matrix.host >>-hold
+          name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1471,10 +1471,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - unreserve-<< matrix.host >>-hold
+            - unreserve-<< matrix.host >>
       # Force deploy `master` to staging (by host) - creator
       - noop:
-          name: unreserve-<< matrix.host >>-hold
+          name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1495,11 +1495,11 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - unreserve-<< matrix.host >>-hold
+            - unreserve-<< matrix.host >>
 
       # Deploy branch to staging (by service)
       - noop:
-          name: reserve-stage-<< matrix.service >>-hold
+          name: reserve-stage-<< matrix.service >>
           type: approval
           filters:
             branches:
@@ -1521,10 +1521,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - reserve-stage-<< matrix.service >>-hold
+            - reserve-stage-<< matrix.service >>
       # Deploy branch to staging (by host) - discovery
       - noop:
-          name: reserve-<< matrix.host >>-hold
+          name: reserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1549,10 +1549,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - reserve-<< matrix.host >>-hold
+            - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
-          name: reserve-<< matrix.host >>-hold
+          name: reserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1577,7 +1577,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - reserve-<< matrix.host >>-hold
+            - reserve-<< matrix.host >>
 
       # Bump Tags (for release branch hot-fixes)
       - release-scripts:
