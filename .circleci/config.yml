@@ -1336,7 +1336,7 @@ workflows:
           name: identity
 
       - noop:
-          name: unlock-creator-deploy-jobs
+          name: creator-deploy-hold
           type: approval
           filters:
             branches:
@@ -1345,7 +1345,7 @@ workflows:
             - build-creator
             - test-creator
       - noop:
-          name: unlock-discovery-deploy-jobs
+          name: discovery-deploy-hold
           type: approval
           filters:
             branches:
@@ -1354,7 +1354,7 @@ workflows:
             - build-discovery
             - test-discovery
       - noop:
-          name: unlock-identity-deploy-jobs
+          name: identity-deploy-hold
           type: approval
           filters:
             branches:
@@ -1508,7 +1508,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - unlock-<< matrix.service >>-deploy-jobs
+            - << matrix.service >>-deploy-hold
       - deploy:
           name: reserving-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
@@ -1533,7 +1533,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - unlock-discovery-deploy-jobs
+            - discovery-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
@@ -1561,7 +1561,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - unlock-creator-deploy-jobs
+            - creator-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
