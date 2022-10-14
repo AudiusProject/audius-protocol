@@ -10,7 +10,8 @@ import type {
 import { notificationsUserListActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNavigation } from 'app/hooks/useNavigation'
+
 const { setNotificationId } = notificationsUserListActions
 
 /**
@@ -25,7 +26,7 @@ export const useSocialActionHandler = (
   const firstUser = users?.[0]
   const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNavigation()
 
   return useCallback(() => {
     if (isMultiUser) {
@@ -37,7 +38,7 @@ export const useSocialActionHandler = (
         fromNotifications: true
       })
     } else if (firstUser) {
-      navigation.navigate('Profile', {
+      navigation.push('Profile', {
         handle: firstUser.handle,
         fromNotifications: true
       })

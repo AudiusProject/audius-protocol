@@ -1,8 +1,11 @@
 import { useCallback } from 'react'
 
+import LinearGradient from 'react-native-linear-gradient'
+
 import type { IconJSON } from 'app/components/core'
 import { AnimatedButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 import { BOTTOM_BAR_BUTTON_HEIGHT } from '../constants'
 
@@ -39,6 +42,7 @@ const useStyles = makeStyles(() => ({
 export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
   const { name, routeKey, isActive, iconJSON, onPress, onLongPress } = props
   const styles = useStyles()
+  const { neutralLight8, neutralLight10 } = useThemeColors()
 
   const handlePress = useCallback(() => {
     onPress(isActive, name, routeKey)
@@ -55,6 +59,14 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
       onPress={handlePress}
       style={styles.animatedButton}
       wrapperStyle={styles.iconWrapper}
+      renderUnderlay={({ pressed }) =>
+        pressed ? (
+          <LinearGradient
+            style={styles.underlay}
+            colors={[neutralLight8, neutralLight10]}
+          />
+        ) : null
+      }
     />
   )
 }

@@ -6,7 +6,7 @@ import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/compone
 import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
 import { makeStyles } from 'app/styles'
 
-import { useAppDrawerNavigation } from '../../app-drawer-screen'
+import { useNotificationNavigation } from '../../app-drawer-screen'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   image: {
@@ -35,7 +35,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     ...other
   } = props
   const styles = useStyles()
-  const navigation = useAppDrawerNavigation()
+  const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
     if (profile) {
