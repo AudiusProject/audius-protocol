@@ -33,7 +33,18 @@ import {
 import type { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { AppDrawerContext } from '../app-drawer-screen'
+import { AudioScreen } from '../audio-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
+import { EditProfileScreen } from '../edit-profile-screen'
+import {
+  AboutScreen,
+  AccountSettingsScreen,
+  AccountVerificationScreen,
+  ChangePasswordScreen,
+  ListeningHistoryScreen,
+  NotificationSettingsScreen,
+  SettingsScreen
+} from '../settings-screen'
 import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 
@@ -71,6 +82,14 @@ export type AppTabScreenParamList = {
     count: number
   }
   TipArtist: undefined
+  SettingsScreen: undefined
+  AboutScreen: undefined
+  ListeningHistoryScreen: undefined
+  AccountSettingsScreen: undefined
+  AccountVerificationScreen: undefined
+  ChangePasswordScreen: undefined
+  NotificationSettingsScreen: undefined
+  AudioScreen: Record<string, unknown>
 }
 
 const forFade = ({ current }) => ({
@@ -226,6 +245,33 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={SupportingUsersScreen}
         options={screenOptions}
       />
+      <Stack.Screen name='AudioScreen' component={AudioScreen} />
+
+      <Stack.Group>
+        <Stack.Screen name='EditProfile' component={EditProfileScreen} />
+        <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
+        <Stack.Screen name='AboutScreen' component={AboutScreen} />
+        <Stack.Screen
+          name='ListeningHistoryScreen'
+          component={ListeningHistoryScreen}
+        />
+        <Stack.Screen
+          name='AccountSettingsScreen'
+          component={AccountSettingsScreen}
+        />
+        <Stack.Screen
+          name='NotificationSettingsScreen'
+          component={NotificationSettingsScreen}
+        />
+        <Stack.Screen
+          name='AccountVerificationScreen'
+          component={AccountVerificationScreen}
+        />
+        <Stack.Screen
+          name='ChangePasswordScreen'
+          component={ChangePasswordScreen}
+        />
+      </Stack.Group>
     </Stack.Navigator>
   )
 }
