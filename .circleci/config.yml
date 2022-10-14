@@ -1646,7 +1646,7 @@ workflows:
           requires:
             - built
       - deploy:
-          name: release-<< matrix.host >>
+          name: releasing-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
