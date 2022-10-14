@@ -1635,7 +1635,7 @@ workflows:
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: release-<< matrix.host >>-hold
+          name: release-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1659,7 +1659,7 @@ workflows:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
-            - release-<< matrix.host >>-hold
+            - release-<< matrix.host >>
 
       - test-libs:
           name: test-libs
