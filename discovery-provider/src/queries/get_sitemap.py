@@ -70,7 +70,7 @@ LIMIT = 50_000
 def build_default():
     root = etree.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     for site_map_route in default_routes:
-        sitemap_el = etree.Element("sitemap")
+        sitemap_el = etree.Element("url")
         loc = etree.Element("loc")
         loc.text = create_client_url(site_map_route)
         sitemap_el.append(loc)
@@ -91,8 +91,7 @@ def get_max_track_count(session: Session) -> int:
 
 def get_max_user_count(session: Session) -> int:
     max = (
-        session.query(func.count(User.user_id))
-        .filter(User.is_current == True, User.is_deactivated == False)
+        session.query(func.count(AggregateUser.user_id))
         .one()
     )
     return max[0]
