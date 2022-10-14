@@ -16,13 +16,14 @@ import Page from 'components/page/Page'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
 import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
+import { createSeoDescription } from 'utils/seo'
 
 import styles from './TrendingPlaylistPage.module.css'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
 
 const messages = {
   trendingPlaylistTile: 'Trending Playlists',
-  description: 'Trending Playlists on Audius'
+  description: createSeoDescription('Trending Playlists on Audius')
 }
 
 /** Wraps useLineupProps to return trending playlist lineup props */

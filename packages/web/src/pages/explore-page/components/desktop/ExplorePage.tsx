@@ -78,6 +78,7 @@ const lifestyle = [
 
 export type ExplorePageProps = {
   title: string
+  pageTitle: string
   description: string
   playlists: UserCollection[]
   profiles: User[]
@@ -87,6 +88,7 @@ export type ExplorePageProps = {
 
 const ExplorePage = ({
   title,
+  pageTitle,
   description,
   playlists,
   profiles,
@@ -115,7 +117,7 @@ const ExplorePage = ({
 
   return (
     <Page
-      title={title}
+      title={pageTitle}
       description={description}
       canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
       contentClassName={styles.page}

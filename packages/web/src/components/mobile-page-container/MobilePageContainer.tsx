@@ -23,6 +23,7 @@ type OwnProps = {
   title?: string
   description?: string | null
   canonicalUrl?: string
+  structuredData?: Object | null
 
   children: ReactNode
 
@@ -58,6 +59,7 @@ const MobilePageContainer = ({
   title,
   description,
   canonicalUrl,
+  structuredData,
   children,
   backgroundClassName,
   containerClassName,
@@ -106,7 +108,7 @@ const MobilePageContainer = ({
 
   return (
     <>
-      <Helmet>
+      <Helmet encodeSpecialCharacters={false}>
         {title ? (
           <title>{`${title} ${messages.dotAudius}`}</title>
         ) : (
@@ -114,6 +116,11 @@ const MobilePageContainer = ({
         )}
         {description && <meta name='description' content={description} />}
         {canonicalUrl && <link rel='canonical' href={canonicalUrl} />}
+        {structuredData && (
+          <script type='application/ld+json'>
+            {JSON.stringify(structuredData)}
+          </script>
+        )}
       </Helmet>
       <div
         className={cn(styles.container, {

@@ -23,6 +23,7 @@ import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
+import { createSeoDescription } from 'utils/seo'
 const { makeGetCurrent } = queueSelectors
 
 const { getBuffering, getPlaying } = playerSelectors
@@ -45,7 +46,10 @@ const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   trendingTitle: 'Trending',
-  trendingDescription: "Listen to what's trending on the Audius platform"
+  pageTitle: "Listen to what's trending on the Audius platform",
+  trendingDescription: createSeoDescription(
+    "Listen to what's trending on the Audius platform"
+  )
 }
 
 // Dynamically dispatch call to a lineup action based on a timeRange
@@ -178,6 +182,7 @@ class TrendingPageProvider extends PureComponent {
   render() {
     const childProps = {
       trendingTitle: messages.trendingTitle,
+      pageTitle: messages.pageTitle,
       trendingDescription: messages.trendingDescription,
       trending: this.props.trending,
       trendingWeek: this.props.trendingWeek,
