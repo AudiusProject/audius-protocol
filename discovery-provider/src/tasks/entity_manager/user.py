@@ -66,6 +66,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             session.query(User).filter(User.handle == user_metadata["handle"]).exists()
         ).scalar()
         if user_handle_exists:
+            logger.info(
+                "entity_manager/user.py | invalid user handle"
+            )
             # Invalid user handle - should not continue to save...
             return
         user_record.handle = user_metadata["handle"]
@@ -87,6 +90,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if not track_id_exists:
             # Invalid artist pick. Should not continue to save
+            logger.info(
+                "entity_manager/user.py | invalid artist pick track id"
+            )
             return
 
     return user_record
@@ -164,6 +170,9 @@ def update_user(params: ManageEntityParameters):
 
     if not user_record:
         # Validations failed. Do not continue to save.
+        logger.info(
+            "entity_manager/user.py | user metadata validations failed"
+        )
         return
 
     user_record = update_user_metadata(
@@ -173,6 +182,9 @@ def update_user(params: ManageEntityParameters):
         user_metadata,
         params.web3,
         params.challenge_bus,
+    )
+    logger.info(
+        f"entity_manager/user.py | updated user record: {user_record}"
     )
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
