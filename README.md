@@ -23,9 +23,11 @@
 
 | Name                          | Description                              |
 | ----------------------------- | ---------------------------------------- |
-| [`web`](./packages/web)       | The decentralized Audius web application |
+| [`web`](./packages/web)       | The Audius web and desktop application   |
 | [`mobile`](./packages/mobile) | The Audius mobile application            |
 | [`stems`](./packages/stems)   | The Audius client component library      |
+| [`common`](./packages/common) | Shared code between web and mobile       |
+| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration       |
 
 ### Getting Started
 
@@ -40,3 +42,38 @@ This will do the following:
 - Install root dependencies
 - Install all package dependencies using `lerna bootstrap`
 - Initialize git hooks (`npx @escape.tech/mookme init --only-hook --skip-types-selection`)
+
+### Running A Client
+
+Environments:
+
+- *:dev runs against local services
+- *:stage runs against the staging testnet
+- *:prod runs against production infrastructure
+
+```bash
+# web
+npm run web:dev
+npm run web:stage
+npm run web:prod
+
+# desktop
+npm run desktop:dev
+npm run desktop:stage
+npm run desktop:prod
+
+# mobile (append -- --device to target a physical device)
+npm run ios:dev
+npm run ios:stage
+npm run ios:prod
+
+npm run android:dev
+npm run android:stage
+npm run android:prod
+
+# stems in watch mode
+npm run stems
+
+# common in watch mode
+npm run common
+```
