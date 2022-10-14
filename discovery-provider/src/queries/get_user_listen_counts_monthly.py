@@ -4,6 +4,7 @@ from sqlalchemy.orm.session import Session
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import query_result_to_list
 
 
 class GetUserListenCountsMonthlyArgs(TypedDict):
@@ -32,37 +33,7 @@ def get_user_listen_counts_monthly(args: GetUserListenCountsMonthlyArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user_listen_counts_monthly = _get_user_listen_counts_monthly(session, args)
-        formatted_user_listen_counts_monthly = format_aggregate_monthly_plays_for_user(
-            user_listen_counts_monthly
-        )
-        return formatted_user_listen_counts_monthly
-
-
-def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user):
-    formatted_response_data = {}
-    for aggregate_monthly_play in aggregate_monthly_plays_for_user:
-        month = aggregate_monthly_play.timestamp.strftime("%Y-%m-%dT%H:%M:%S Z")
-        if month not in formatted_response_data:
-            formatted_response_data[month] = {}
-            formatted_response_by_month = formatted_response_data[month]
-            formatted_response_by_month["totalListens"] = 0
-            formatted_response_by_month["trackIds"] = []
-            formatted_response_by_month["listenCounts"] = []
-
-        formatted_response_by_month = formatted_response_data[month]
-        formatted_response_by_month["listenCounts"].append(
-            {
-                "trackId": aggregate_monthly_play.play_item_id,
-                "date": month,
-                "listens": aggregate_monthly_play.count,
-            }
-        )
-        formatted_response_by_month["trackIds"].append(
-            aggregate_monthly_play.play_item_id
-        )
-        formatted_response_by_month["totalListens"] += aggregate_monthly_play.count
-
-    return formatted_response_data
+        return query_result_to_list(user_listen_counts_monthly)
 
 
 def _get_user_listen_counts_monthly(

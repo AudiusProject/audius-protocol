@@ -1,3 +1,4 @@
+import datetime
 from unittest.mock import ANY
 
 from flask import Flask
@@ -11,22 +12,43 @@ START_TIME = "2020-01-01"
 END_TIME = "2021-01-01"
 
 
-def test_user_listen_counts_monthly_get(mocker):
-    listen_counts = {
-        "2023-01-01": {
-            "totalListens": 23,
-            "trackIds": [3],
+def test_user_listen_counts_monthly_get_formats_correctly(mocker):
+    expected_formatted_listen_counts = {
+        "2022-02-01T00:00:00 Z": {
+            "totalListens": 18,
+            "trackIds": [4, 5],
             "listenCounts": [
                 {
-                    "trackId": 3,
-                    "date": "2023-01-01",
-                    "listens": 23,
+                    "trackId": 4,
+                    "date": "2022-02-01T00:00:00 Z",
+                    "listens": 10,
+                },
+                {
+                    "trackId": 5,
+                    "date": "2022-02-01T00:00:00 Z",
+                    "listens": 8,
+                },
+            ],
+        },
+        "2022-01-01T00:00:00 Z": {
+            "totalListens": 7,
+            "trackIds": [1],
+            "listenCounts": [
+                {
+                    "trackId": 1,
+                    "date": "2022-01-01T00:00:00 Z",
+                    "listens": 7,
                 }
             ],
         },
     }
     mock_get_user_listen_counts_monthly = mocker.patch(
-        "src.api.v1.users.get_user_listen_counts_monthly", return_value=listen_counts
+        "src.api.v1.users.get_user_listen_counts_monthly",
+        return_value=[
+            {"play_item_id": 4, "timestamp": datetime.date(2022, 2, 1), "count": 10},
+            {"play_item_id": 1, "timestamp": datetime.date(2022, 1, 1), "count": 7},
+            {"play_item_id": 5, "timestamp": datetime.date(2022, 2, 1), "count": 8},
+        ],
     )
 
     mock_decoder = mocker.patch("src.api.v1.users.decode_with_abort", return_value=3)
@@ -40,7 +62,7 @@ def test_user_listen_counts_monthly_get(mocker):
         data={"start_time": START_TIME, "end_time": END_TIME},
     ):
         assert UserTrackListenCountsMonthly().get("id_to_decode") == (
-            {"data": listen_counts},
+            {"data": expected_formatted_listen_counts},
             200,
             # Redis metrics add this empty dict
             {},
@@ -53,4 +75,4 @@ def test_user_listen_counts_monthly_get(mocker):
                 "end_time": END_TIME,
             }
         )
-        mock_success_response.assert_called_once_with(listen_counts)
+        mock_success_response.assert_called_once_with(expected_formatted_listen_counts)

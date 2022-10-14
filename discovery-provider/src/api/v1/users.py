@@ -17,6 +17,7 @@ from src.api.v1.helpers import (
     extend_supporting,
     extend_track,
     extend_user,
+    format_aggregate_monthly_plays_for_user,
     format_limit,
     format_offset,
     format_query,
@@ -275,7 +276,11 @@ class UserTrackListenCountsMonthly(Resource):
             }
         )
 
-        return success_response(user_listen_counts)
+        formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
+            user_listen_counts
+        )
+
+        return success_response(formatted_user_listen_counts)
 
 
 @ns.route(USER_TRACKS_ROUTE)
