@@ -25,12 +25,14 @@ import {
  * @export
  * @interface UserAssociatedWalletResponse
  */
-export interface UserAssociatedWalletResponse {
-    /**
-     * 
-     * @type {EncodedUserId}
-     * @memberof UserAssociatedWalletResponse
-     */
-    data?: EncodedUserId;
-}
+export interface UserAssociatedWalletResponse 
+    {
+        /**
+        * 
+        * @type {EncodedUserId}
+        * @memberof UserAssociatedWalletResponse
+        */
+        data?: EncodedUserId;
+    }
+
 

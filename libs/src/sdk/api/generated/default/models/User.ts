@@ -31,126 +31,128 @@ import {
  * @export
  * @interface User
  */
-export interface User {
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    album_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    bio?: string;
-    /**
-     * 
-     * @type {CoverPhoto}
-     * @memberof User
-     */
-    cover_photo?: CoverPhoto;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    followee_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    follower_count: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof User
-     */
-    does_follow_current_user?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    handle: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    id: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof User
-     */
-    is_verified: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    location?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    name: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    playlist_count: number;
-    /**
-     * 
-     * @type {ProfilePicture}
-     * @memberof User
-     */
-    profile_picture?: ProfilePicture;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    repost_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    track_count: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof User
-     */
-    is_deactivated: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    erc_wallet?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof User
-     */
-    spl_wallet: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    supporter_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof User
-     */
-    supporting_count: number;
-}
+export interface User 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        album_count: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        bio?: string;
+        /**
+        * 
+        * @type {CoverPhoto}
+        * @memberof User
+        */
+        cover_photo?: CoverPhoto;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        followee_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        follower_count: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof User
+        */
+        does_follow_current_user?: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        handle: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        id: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof User
+        */
+        is_verified: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        location?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        name: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        playlist_count: number;
+        /**
+        * 
+        * @type {ProfilePicture}
+        * @memberof User
+        */
+        profile_picture?: ProfilePicture;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        repost_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        track_count: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof User
+        */
+        is_deactivated: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        erc_wallet?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof User
+        */
+        spl_wallet: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        supporter_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof User
+        */
+        supporting_count: number;
+    }
+
 
