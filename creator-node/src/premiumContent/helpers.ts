@@ -76,7 +76,7 @@ export async function removePremiumContentCIDsFromCache({
     )
   } catch (e) {
     logger.error(
-      `Could not remove all premium content cids from cache: [${cids}]. Error: ${
+      `Could not remove premium content cids from cache: [${cids}]. Error: ${
         (e as Error).message
       }`
     )

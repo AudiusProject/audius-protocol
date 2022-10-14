@@ -365,7 +365,9 @@ export class CreatorNode {
     }
 
     const uploadPromises = []
-    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress, metadata.is_premium))
+    uploadPromises.push(
+      this.uploadTrackAudio(trackFile, onTrackProgress, metadata.is_premium)
+    )
     if (coverArtFile)
       uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
@@ -530,11 +532,19 @@ export class CreatorNode {
    * @param onProgress called with loaded bytes and total bytes
    * @return response body
    */
-  async uploadTrackAudio(file: File, onProgress: ProgressCB, isPremium: boolean) {
+  async uploadTrackAudio(
+    file: File,
+    onProgress: ProgressCB,
+    isPremium: boolean
+  ) {
     return await this.handleAsyncTrackUpload(file, onProgress, isPremium)
   }
 
-  async handleAsyncTrackUpload(file: File, onProgress: ProgressCB, isPremium: boolean) {
+  async handleAsyncTrackUpload(
+    file: File,
+    onProgress: ProgressCB,
+    isPremium: boolean
+  ) {
     const {
       data: { uuid }
     } = await this._uploadFile(
@@ -1025,7 +1035,7 @@ export class CreatorNode {
       console.debug(`Uploading file to ${url}`)
 
       const reqParams: AxiosRequestConfig = {
-        headers: { ...headers, ['x-is-premium']: isPremium },
+        headers: { ...headers, 'x-is-premium': isPremium },
         adapter: isBrowser
           ? require('axios/lib/adapters/xhr')
           : require('axios/lib/adapters/http'),

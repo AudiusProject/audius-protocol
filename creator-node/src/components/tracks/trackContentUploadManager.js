@@ -13,6 +13,10 @@ const Utils = libs.Utils
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
+const {
+  removePremiumContentCIDsFromCache
+} = require('../../premiumContent/helpers')
+const { QueryTypes } = require('sequelize')
 
 const SEGMENT_FILE_BATCH_SIZE = 10
 
@@ -185,12 +189,60 @@ async function addFilesToDb({
   const transaction = await models.sequelize.transaction()
   let transcodeFileUUID
   try {
+    // Map of premium cids that determines whether a track file is premium or not.
+    // Used below where we create new File records.
+    const premiumCIDMap = {}
+
+    const cids = segmentFileResult
+      .map(({ multihash }) => multihash)
+      .concat(transcodeFileResult.multihash)
+
+    if (isPremium) {
+      const nonPremiumCIDs = await models.File.findAll({
+        attributes: ['multihash'],
+        where: {
+          [models.Sequelize.Op.in]: cids,
+          isPremium: false
+        },
+        transaction
+      })
+      const nonPremiumCIDSet = new Set(nonPremiumCIDs)
+      cids.forEach((cid) => {
+        if (!nonPremiumCIDSet.has(cid)) {
+          premiumCIDMap[cid] = true
+        }
+      })
+      // todo: update cid cache with these premium cids
+    } else {
+      // Update premiumness of cids in the Files table that match this track's cids
+      await models.sequelize.query(
+        `update "Files" f set "isPremium" = false
+          from (
+            select "multihash" from "Files"
+              where "multihash" in :cids
+              and "isPremium" is true
+          ) premium_cids
+          where f."multihash" = premium_cids."multihash"`,
+        {
+          replacements: { cids },
+          type: QueryTypes.UPDATE
+        }
+      )
+
+      // Remove cids in premium content cache that match this track's cids
+      await removePremiumContentCIDsFromCache({
+        cids,
+        logger: genericLogger.child(logContext)
+      })
+    }
+
     // Record transcode file entry in DB
     const createTranscodeFileQueryObj = {
       multihash: transcodeFileResult.multihash,
       sourceFile: fileName,
       storagePath: transcodeFileResult.dstPath,
-      type: models.File.Types.copy320
+      type: models.File.Types.copy320,
+      isPremium: premiumCIDMap[transcodeFileResult.multihash]
     }
     const file = await DBManager.createNewDataRecord(
       createTranscodeFileQueryObj,
@@ -207,7 +259,8 @@ async function addFilesToDb({
         multihash,
         sourceFile: fileName,
         storagePath: dstPath,
-        type: models.File.Types.track
+        type: models.File.Types.track,
+        isPremium: premiumCIDMap[multihash]
       }
       await DBManager.createNewDataRecord(
         createSegmentFileQueryObj,
