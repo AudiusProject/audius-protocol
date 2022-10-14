@@ -40,7 +40,8 @@ import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useAsyncPoll from 'hooks/useAsyncPoll'
 import useTabs from 'hooks/useTabs/useTabs'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
-import { albumPage, playlistPage, fullProfilePage } from 'utils/route'
+import { albumPage, playlistPage } from 'utils/route'
+import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
@@ -615,6 +616,12 @@ const ProfilePage = g(
       variable: status,
       value: Status.SUCCESS
     })
+    const {
+      title = '',
+      description = '',
+      canonicalUrl = '',
+      structuredData
+    } = getUserPageSEOFields({ handle, userName: name, bio })
 
     return (
       <>
@@ -623,9 +630,10 @@ const ProfilePage = g(
           onDidRegainConnectivity={asyncRefresh}
         >
           <MobilePageContainer
-            title={name && handle ? `${name} (${handle})` : ''}
-            description={bio}
-            canonicalUrl={fullProfilePage(handle)}
+            title={title}
+            description={description}
+            canonicalUrl={canonicalUrl}
+            structuredData={structuredData}
             containerClassName={styles.container}
           >
             <PullToRefresh

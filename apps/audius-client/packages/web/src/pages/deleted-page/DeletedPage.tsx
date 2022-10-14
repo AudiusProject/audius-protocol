@@ -10,6 +10,7 @@ type DeletedPageContentProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   playable: Playable
   user: User
   deletedByArtist?: boolean
@@ -19,6 +20,7 @@ const DeletedPage = ({
   title,
   description,
   canonicalUrl,
+  structuredData,
   playable,
   user,
   deletedByArtist = true
@@ -34,6 +36,7 @@ const DeletedPage = ({
       title={title}
       description={description}
       canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
       playable={playable}
       user={user}
       deletedByArtist={deletedByArtist}

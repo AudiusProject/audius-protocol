@@ -41,11 +41,11 @@ import {
   albumPage,
   playlistPage,
   profilePage,
-  fullProfilePage,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE
 } from 'utils/route'
+import { getUserPageSEOFields } from 'utils/seo'
 
 import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
@@ -635,12 +635,18 @@ const ProfilePage = ({
     initialTab: activeTab || undefined,
     elements
   })
-
+  const {
+    title = '',
+    description = '',
+    canonicalUrl = '',
+    structuredData
+  } = getUserPageSEOFields({ handle, userName: name, bio })
   return (
     <Page
-      title={name && handle ? `${name} (${handle})` : ''}
-      description={bio}
-      canonicalUrl={fullProfilePage(handle)}
+      title={title}
+      description={description}
+      canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
       variant='flush'
       contentClassName={styles.profilePageWrapper}
       scrollableSearch

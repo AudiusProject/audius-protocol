@@ -109,7 +109,7 @@ export const Page = (props) => {
             [props.containerClassName]: !!props.containerClassName
           })}
         >
-          <Helmet>
+          <Helmet encodeSpecialCharacters={false}>
             {props.title ? (
               <title>{`${props.title} ${messages.dotAudius}`}</title>
             ) : (
@@ -120,6 +120,11 @@ export const Page = (props) => {
             ) : null}
             {props.canonicalUrl && (
               <link rel='canonical' href={props.canonicalUrl} />
+            )}
+            {props.structuredData && (
+              <script type='application/ld+json'>
+                {JSON.stringify(props.structuredData)}
+              </script>
             )}
           </Helmet>
           {props.header && (
@@ -167,6 +172,7 @@ Page.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string,
   canonicalUrl: PropTypes.string,
+  structuredData: PropTypes.object,
   variant: PropTypes.oneOf(['inset', 'flush']),
   size: PropTypes.oneOf(['medium', 'large']),
   containerRef: PropTypes.node,
