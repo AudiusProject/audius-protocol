@@ -143,6 +143,27 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+
+  bi-weekly:
+    parameters:
+      odd_week:
+        type: boolean
+        default: true
+    steps:
+      - run:
+          name: "Bi-weekly check (Odd week: << parameters.odd_week >>)"
+          command: |
+            week=$(date +%-U)
+            echo "This week: ${week}"
+            echo "Continue on odd week? << parameters.odd_week >>"
+            if [ $(($week % 2)) == 0 ]; then
+                echo "Even week"
+                << parameters.odd_week >> && circleci-agent step halt
+            else
+                echo "Odd week"
+                << parameters.odd_week >> || circleci-agent step halt
+            fi
+
   run-on-gcp:
     parameters:
       command:
@@ -255,6 +276,17 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - run: echo
+
+  release-week:
+    docker:
+      - image: alpine
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - bi-weekly:
+          # really want true
+          odd_week: false
 
   bake-gcp-dev-image:
     docker:
@@ -1764,26 +1796,19 @@ workflows:
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
   # 2. click "Trigger Pipeline"
-  # 3. Add string parameter "cut_release" with any non-null value
-  cut-release:
-    when: << pipeline.parameters.cut_release >>
-    jobs:
-      - release-scripts:
-          name: cut-release
-          target: cut-release
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-      - generate-release-checklist:
-          requires:
-            - release-scripts
-
-  # in order to trigger this job
-  # 1. go to the CircleCI dashboard
-  # 2. click "Trigger Pipeline"
   # 3. Add string parameter "reservations" with any non-null value
   reservations:
     when: << pipeline.parameters.reservations >>
+    jobs:
+      - deploy:
+          name: reservations
+          reservations: true
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+
+  reservations-cron:
     jobs:
       - deploy:
           name: reservations
@@ -1796,6 +1821,59 @@ workflows:
     triggers:
       - schedule:
           cron: '0 15 * * 1,2,3,4,5'
+          filters:
+            branches:
+              only: /(^master$)/
+
+  release-to-service-providers-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: release-to-service-providers
+          target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+            - discord
+            - governance
+    triggers:
+      - schedule:
+          cron: '0 15 * * 1'
+          filters:
+            branches:
+              only: /(^master$)/
+
+  evaluate-proposal-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: evaluate-proposal
+          target: evaluate-proposal
+          context:
+            - slack-secrets
+            - governance
+    triggers:
+      - schedule:
+          cron: '0 19 * * 5'
+          filters:
+            branches:
+              only: /(^master$)/
+
+  cut-release-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+      - generate-release-checklist:
+          requires:
+            - release-scripts
+    triggers:
+      - schedule:
+          cron: '0 7 * * 6'
           filters:
             branches:
               only: /(^master$)/
