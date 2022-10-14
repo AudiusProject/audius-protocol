@@ -826,9 +826,9 @@ def revert_blocks(self, db, revert_blocks_list):
         raise Exception("Unexpected revert, >10,0000 blocks")
 
     if num_revert_blocks > 50:
-        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500")
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 50")
         logger.error(revert_blocks_list)
-        revert_blocks_list = revert_blocks_list[:500]
+        revert_blocks_list = revert_blocks_list[:50]
         logger.error(
             f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
