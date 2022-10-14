@@ -1593,7 +1593,7 @@ workflows:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
       - noop:
-          name: release-discovery-foundation-hold
+          name: release-discovery-foundation
           type: approval
           filters:
             branches:
@@ -1611,10 +1611,10 @@ workflows:
             - open-vpn
             - restricted-ci-jobs
           requires:
-            - release-discovery-foundation-hold
+            - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
       - noop:
-          name: release-identity-foundation-hold
+          name: release-identity-foundation
           type: approval
           filters:
             branches:
@@ -1632,7 +1632,7 @@ workflows:
             - open-vpn
             - restricted-ci-jobs
           requires:
-            - release-identity-foundation-hold
+            - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
           name: release-<< matrix.host >>-hold
