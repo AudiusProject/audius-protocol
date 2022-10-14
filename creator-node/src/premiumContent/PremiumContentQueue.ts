@@ -60,32 +60,14 @@ export class PremiumContentQueue {
   }
 
   /**
-   * Joins the "Tracks" and "Files" tables on track ids and sees if the
-   * corresponding track is premium.
-   * Returns map of these premium CIDs to their corresponding track ids.
+   * Returns map of all premium CIDs and their corresponding track ids.
    */
   async getPremiumContentCIDMap() {
     const result = await models.sequelize.query(
-      `with premium as (
-        select "blockchainId"
-          from "Tracks"
-          where ("metadataJSON" ->> 'is_premium')::text = 'true'
-      ), non_premium as (
-        select "blockchainId"
-          from "Tracks"
-          where ("metadataJSON" ->> 'is_premium')::text != 'true'
-      ), cid_non_premium as (
-        select f."multihash"
-          from "Files" f join non_premium
-          on f."trackBlockchainId" = non_premium."blockchainId"
-          group by "multihash"
-      )
-      select premium.*, f."multihash"
-        from premium join "Files" f
-        on premium."blockchainId" = f."trackBlockchainId"
-        left outer join cid_non_premium
-        on f."multihash" = cid_non_premium."multihash"
-        where cid_non_premium."multihash" is null`,
+      `select t."blockchainId", f."multihash"
+        from "Tracks" t join "Files" f
+        on t."blockchainId" = f."trackBlockchainId"
+        where f."isPremium" is true`,
       {
         type: QueryTypes.SELECT
       }
