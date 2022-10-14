@@ -10,7 +10,13 @@ const { clusterUtils } = require('../utils/clusterUtils')
 const basename = path.basename(__filename)
 const db = {}
 
-const STATEMENT_TIMEOUT = config.get('statementTimeout')
+const STATEMENT_TIMEOUT = config.get('sequelizeStatementTimeout')
+
+/**
+ * https://github.com/sequelize/sequelize/blob/v4/lib/dialects/postgres/connection-manager.js
+ *
+ * NOTE: whenever we upgrade to higher sequelize version, we should revisit the docs as more dialectOptions have been added
+ */
 
 const sequelize = new Sequelize(config.get('dbUrl'), {
   logging: config.get('printSequelizeLogs'),
@@ -23,20 +29,7 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
   },
   dialectOptions: {
     // number of milliseconds before a statement in query will time out, default is no timeout
-    statement_timeout: STATEMENT_TIMEOUT,
-
-    // number of milliseconds before a query call will timeout, default is no timeout
-    // query_timeout: QUERY_TIMEOUT,
-
-    // number of milliseconds to wait for connection, default is no timeout
-    // connectionTimeoutMillis: 1000
-
-    // number of milliseconds before terminating any session with an open idle transaction, default is no timeout
-    // idle_in_transaction_session_timeout: 1000
-    options: {
-      // Request to server timeout
-      requestTimeout: STATEMENT_TIMEOUT
-    }
+    statement_timeout: STATEMENT_TIMEOUT
   }
 })
 

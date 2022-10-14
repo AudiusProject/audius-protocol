@@ -132,10 +132,10 @@ const config = convict({
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
   },
-  statementTimeout: {
-    doc: 'Postgres statement timeout',
+  sequelizeStatementTimeout: {
+    doc: 'Sequelize (postgres) statement timeout',
     format: 'nat',
-    env: 'statementTimeout',
+    env: 'sequelizeStatementTimeout',
     default: 60 * 60 * 1000 // 1hr
   },
   logLevel: {
