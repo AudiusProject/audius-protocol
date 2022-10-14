@@ -16,6 +16,12 @@ const { getIP } = require('../utils/antiAbuse')
 const { libs } = require('@audius/sdk')
 const config = require('../config.js')
 
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  connectionString: process.env.dbUrl
+})
+
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
@@ -101,20 +107,24 @@ module.exports = function (app) {
 
           // When EntityManager is enabled for replica sets, throw error for URSM
           // Fallback to EntityManager
+          const decodedABI = libs.AudiusABIDecoder.decodeMethod(
+            txProps.contractRegistryKey,
+            txProps.encodedABI
+          )
           if (
             config.get('entityManagerReplicaSetEnabled') &&
             txProps.contractRegistryKey === 'UserReplicaSetManager'
           ) {
-            const decodedABI = libs.AudiusABIDecoder.decodeMethod(
-              txProps.contractRegistryKey,
-              txProps.encodedABI
-            )
             if (decodedABI.name === 'updateReplicaSet') {
               throw new Error(
                 'Cannot relay UserReplicaSetManager transactions when EntityManager is enabled'
               )
             }
           }
+
+          // relay_event "fire and forget"
+          insertRelayEvent(body, decodedABI)
+
           receipt = await txRelay.sendTransaction(
             req,
             false, // resetNonce
@@ -164,4 +174,28 @@ module.exports = function (app) {
       )
     })
   )
+
+  app.get('/relay_event', async (req, resp) => {
+    const after = req.query.after
+    if (!after) {
+      return resp.status(400).json({ error: 'param after is required' })
+    }
+    const result = await pool.query(
+      `select * from relay_event where id > $1 limit 10000`,
+      [after]
+    )
+    resp.json(result.rows)
+  })
+}
+
+async function insertRelayEvent(body, abi) {
+  try {
+    await pool.query(
+      `insert into relay_event (body, abi, created_at) 
+        values ($1, $2, NOW())`,
+      [body, abi]
+    )
+  } catch (e) {
+    console.log('relay_event failed', e)
+  }
 }

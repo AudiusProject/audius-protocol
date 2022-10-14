@@ -37,4 +37,8 @@ describe('test relay endpoint', function () {
       // and haven't mocked this yet
       .expect(500, done)
   })
+
+  it('responds to relay_event', function (done) {
+    request(app).get('/relay_event?after=0').expect(200, done)
+  })
 })
