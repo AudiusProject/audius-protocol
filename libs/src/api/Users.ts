@@ -605,8 +605,16 @@ export class Users extends Base {
   ) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
+    console.log(
+      `updateCreator input metadata artist pick ${metadata.artist_pick_track_id}`
+    )
+
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
+
+    console.log(
+      `updateCreator cleaned and validated metadata artist pick ${metadata.artist_pick_track_id}`
+    )
 
     const logPrefix = `[User:updateCreator()] [userId: ${userId}] [useEntityManager: ${useEntityManager}]`
     const fnStartMs = Date.now()
@@ -632,6 +640,7 @@ export class Users extends Base {
 
     // Preserve old metadata object
     const oldMetadata = { ...user }
+    console.log(`old metadata artist pick: ${oldMetadata.artist_pick_track_id}`)
 
     // Update user creator_node_endpoint on chain if applicable
     const updateEndpointTxBlockNumber = null
@@ -686,6 +695,9 @@ export class Users extends Base {
         updateUserResp.latestBlockNumber
       )
     } else {
+      console.log(
+        `metadataMultihash sent to entity manager: ${metadataMultihash}`
+      )
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         userId,
         EntityManagerClient.EntityType.USER,
