@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy import and_, asc, case, desc, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -79,6 +79,8 @@ def _get_tracks(session, args):
                 )
             )
         base_query = base_query.filter(or_(*filter_cond))
+    elif "skip_unlisted_filter" in args and args.get("skip_unlisted_filter"):
+        pass
     else:
         # Only return unlisted tracks if either
         # - above case, routes are present (direct links to hidden tracks)
@@ -177,6 +179,21 @@ def _get_tracks(session, args):
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
                 sort_fn(AggregateTrack.save_count)
             )
+    else:
+        # Return the user's pinned track first if there is no specified sort_method
+        if "user_id" in args and args.get("user_id") is not None:
+            user_id = args.get("user_id")
+            pinned_track_id = (
+                session.query(User.artist_pick_track_id)
+                .filter(User.is_current == True, User.user_id == user_id)
+                .scalar()
+            )
+            if pinned_track_id:
+                base_query = base_query.order_by(
+                    case(
+                        ((TrackWithAggregates.track_id == pinned_track_id, 0),), else_=1
+                    )
+                )
 
     # Deprecated, use sort_method and sort_direction
     if "sort" in args and args.get("sort") is not None:
