@@ -251,7 +251,7 @@ def test(protocol_dir, service, args):
                 f"--project-directory={protocol_dir}",
                 f"--file={protocol_dir / 'docker-compose.test.yml'}",
                 "down",
-                "--rmi=local",
+                "--rmi=all",
                 "--timeout=1",
                 "-v",
             ],
