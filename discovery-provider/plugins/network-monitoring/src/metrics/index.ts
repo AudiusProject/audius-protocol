@@ -2,14 +2,18 @@ import axios from "axios";
 import {
   allUserCountGauge,
   fullySyncedUsersByPrimaryCountGauge,
+  fullySyncedUsersByReplicaCountGauge,
   fullySyncedUsersCountGauge,
   gateway,
   generatingMetricsDurationGauge,
   nullPrimaryUsersCountGauge,
   partiallySyncedUsersByPrimaryCountGauge,
+  partiallySyncedUsersByReplicaCountGauge,
   partiallySyncedUsersCountGauge,
   primaryUserCountGauge,
+  unhealthyReplicaUsersCountGauge,
   unsyncedUsersByPrimaryCountGauge,
+  unsyncedUsersByReplicaCountGauge,
   unsyncedUsersCountGauge,
   userCountGauge,
   usersWithAllFoundationNodeReplicaSetGauge,
@@ -28,6 +32,8 @@ import {
   getRunStartTime,
   getUsersWithEntireReplicaSetNotInSpidSetCount,
   getUserStatusByPrimary,
+  getUserStatusByReplica,
+  getUsersWithUnhealthyReplica,
 } from "./queries";
 import { instrumentTracing, tracing } from "..//tracer"
 
@@ -54,6 +60,8 @@ const _generateMetrics = async (run_id: number) => {
 
   const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id);
 
+  const usersWithUnhealthyReplica = await getUsersWithUnhealthyReplica(run_id);
+
   const usersWithAllFoundationNodeReplicaSetCount =
     await getUsersWithEntireReplicaSetInSpidSetCount(run_id, foundationNodes);
 
@@ -64,6 +72,7 @@ const _generateMetrics = async (run_id: number) => {
     );
 
   const userStatusByPrimary = await getUserStatusByPrimary(run_id);
+  const userStatusByReplica = await getUserStatusByReplica(run_id);
 
   allUserCount.forEach(({ endpoint, count }) => {
     allUserCountGauge.set({ endpoint, run_id }, count);
@@ -83,12 +92,25 @@ const _generateMetrics = async (run_id: number) => {
       unsyncedUsersByPrimaryCountGauge.set({ endpoint, run_id }, unsyncedCount);
     }
   );
+  userStatusByReplica.forEach(
+    ({
+      endpoint,
+      fullySyncedCount,
+      partiallySyncedCount,
+      unsyncedCount,
+    }) => {
+      fullySyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, fullySyncedCount);
+      partiallySyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, partiallySyncedCount);
+      unsyncedUsersByReplicaCountGauge.set({ endpoint, run_id }, unsyncedCount);
+    }
+  );
 
   userCountGauge.set({ run_id }, userCount);
   fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount);
   partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount);
   unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount);
   nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock);
+  unhealthyReplicaUsersCountGauge.set({ run_id }, usersWithUnhealthyReplica);
   usersWithAllFoundationNodeReplicaSetGauge.set(
     { run_id },
     usersWithAllFoundationNodeReplicaSetCount
@@ -118,6 +140,10 @@ const _generateMetrics = async (run_id: number) => {
         ) + "%",
       usersWithNoFoundationNodeReplicaSetCount:
         ((usersWithNoFoundationNodeReplicaSetCount / userCount) * 100).toFixed(
+          2
+        ) + "%",
+        usersWithUnhealthyReplica:
+        ((usersWithUnhealthyReplica / userCount) * 100).toFixed(
           2
         ) + "%",
       runDuration: msToTime(endTime - runStartTime.getTime()),

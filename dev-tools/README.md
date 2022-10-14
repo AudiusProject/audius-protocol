@@ -9,7 +9,6 @@ exit
 
 # build and pull
 audius-compose build # About 10 minutes
-docker compose pull
 audius-compose up # About 20 seconds
 ```
 
@@ -20,9 +19,9 @@ To use the client from a mac, we need to setup a transparent proxy server to int
 To setup the transparent proxy server from a mac:
 ```
 brew install sshuttle
-sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o "StrictHostKeyChecking=no"'
+sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 ```
 
 The password is `sshuttle`
 
-Then on your local machine you can go to http://discovery-provider:5000/health_check
+Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check

@@ -179,11 +179,6 @@ export enum UpdateReplicaSetJobResult {
 // Number of users to query in each orphaned data recovery query to Discovery and to its own db
 export const ORPHANED_DATA_NUM_USERS_PER_QUERY = 2000
 
-// Number of users to fetch from redis and issue requests for (sequentially) in each batch
-export const ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH = 2
-// Milliseconds to wait between processing every ORPHANED_DATA_NUM_USERS_TO_RECOVER_PER_BATCH users
-export const ORPHAN_DATA_DELAY_BETWEEN_BATCHES_MS = 60 /* seconds */ * 1000
-
 // Milliseconds after which to gracefully end a recover-orphaned-data job early
 export const MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS =
   2 /* hours */ * 60 /* minutes */ * 60 /* seconds */ * 1000

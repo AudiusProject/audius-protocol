@@ -13,6 +13,9 @@ const {
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
+  getReplicaSetSpIdsByUserId
+} = require('../../services/ContentNodeInfoManager')
+const {
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
@@ -230,6 +233,62 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
   return successResponse()
 }
 
+/**
+ * Changes a user's replica set. Gated by`devMode` env var to only work locally.
+ */
+const manuallyUpdateReplicaSetController = async (req, res) => {
+  const audiusLibs = req.app.get('audiusLibs')
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const { nodeConfig: config } = serviceRegistry
+
+  const isRouteEnabled = config.get('devMode')
+  if (!isRouteEnabled) {
+    return errorResponseBadRequest('This route is disabled')
+  }
+
+  const userId = req.query.userId
+  const newPrimarySpId = req.query.newPrimarySpId
+  const newSecondary1SpId = req.query.newSecondary1SpId
+  const newSecondary2SpId = req.query.newSecondary2SpId
+
+  if (!userId) {
+    return errorResponseBadRequest(
+      `Must provide userId param (the user whose replica set will be updated)`
+    )
+  }
+  if (!newPrimarySpId || !newSecondary1SpId || !newSecondary2SpId) {
+    return errorResponseBadRequest(
+      'Must provide a new replica set via the following params: newPrimarySpId, newSecondary1SpId, newSecondary2SpId'
+    )
+  }
+
+  const currentSpIds = await getReplicaSetSpIdsByUserId({
+    libs: serviceRegistry.libs,
+    userId,
+    parentLogger: req.logger,
+    logger: req.logger
+  })
+  if (config.get('entityManagerReplicaSetEnabled')) {
+    await audiusLibs.User.updateEntityManagerReplicaSet({
+      userId: parseInt(userId),
+      primary: parseInt(newPrimarySpId),
+      secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      oldPrimary: currentSpIds.primaryId,
+      oldSecondaries: currentSpIds.secondaryIds
+    })
+  } else {
+    await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+      parseInt(userId),
+      parseInt(newPrimarySpId),
+      [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      currentSpIds.primaryId,
+      currentSpIds.secondaryIds
+    )
+  }
+
+  return successResponse()
+}
+
 // Routes
 
 router.get(
@@ -244,6 +303,10 @@ router.post(
 router.post(
   '/merge_primary_and_secondary',
   handleResponse(mergePrimaryAndSecondaryController)
+)
+router.post(
+  '/manually_update_replica_set',
+  handleResponse(manuallyUpdateReplicaSetController)
 )
 
 module.exports = router

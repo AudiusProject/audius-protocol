@@ -25,7 +25,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job started. :crossed_fingers:"
+        default: ":rocket: Job started"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -42,59 +42,20 @@ commands:
             {
               "blocks": [
                 {
-                  "type": "header",
+                  "type": "section",
                   "text": {
-                    "type": "plain_text",
-                    "text": "<< parameters.text >>",
-                    "emoji": true
+                    "text": "*<< parameters.text >>:* ${CIRCLE_JOB}\n*Details:* `$CIRCLE_PROJECT_REPONAME`:`$CIRCLE_BRANCH` ($CIRCLE_USERNAME) << parameters.slack_mentions_user >> \n<< parameters.detail >> ",
+                    "type": "mrkdwn"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Job",
+                      "emoji": true
+                    },
+                    "url": "${CIRCLE_BUILD_URL}"
                   }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: ${CIRCLE_JOB}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "<< parameters.detail >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Branch*: $CIRCLE_BRANCH"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Author*: $CIRCLE_USERNAME"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Mentions*: << parameters.slack_mentions_user >> "
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Job"
-                      },
-                      "url": "${CIRCLE_BUILD_URL}"
-                    }
-                  ]
                 }
               ]
             }
@@ -116,7 +77,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Job Failed. :red_circle:"
+        default: ":red_circle: Job Failed"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -150,7 +111,7 @@ commands:
       text:
         description: Markdown formatted Slack message
         type: string
-        default: "Deployment Successful! :tada:"
+        default: ":tada: Deployment Successful"
       detail:
         description: Markdown formatted Slack detail
         type: string
@@ -340,7 +301,7 @@ jobs:
               --storage-location=us
       - slack-fail:
           branch_pattern: master
-          slack_mentions_user: "@Dheeraj"
+          slack_mentions_user: "@dheeraj"
 
   publish-sdk:
     docker:
@@ -1024,6 +985,10 @@ jobs:
         description: Show current reservation status
         type: boolean
         default: false
+      reservation_notification:
+        description: Send Slack notification with reservation text
+        type: boolean
+        default: false
     steps:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
@@ -1213,6 +1178,15 @@ jobs:
           steps:
             - slack-success:
                 detail: ${SLACK_DETAIL}
+      - when:
+          condition:
+            and:
+              - << parameters.reservations >>
+              - << parameters.reservation_notification >>
+          steps:
+            - slack-success:
+                text: Current Staging Reservations
+                detail: ${SLACK_DETAIL}
       - store_artifacts:
           path: /tmp/summary.md
           destination: summary.md
@@ -1232,7 +1206,7 @@ jobs:
       target:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
-        enum: [cut-release, bump-hotfix, release-to-service-providers, execute-proposal]
+        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1254,21 +1228,30 @@ jobs:
             equal: [ cut-release, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Release branch has been cut! :git-fork:"
+                text: ":git-fork: Release branch has been cut"
+      - when:
+          condition:
+            equal: [ evaluate-proposal, << parameters.target >> ]
+          steps:
+            - slack-success:
+                text: ":done: Governance Proposal has been evaluated"
       - when:
           condition:
             equal: [ release-to-service-providers, << parameters.target >> ]
           steps:
             - slack-success:
-                text: "Deployment Released to Service Providers! :gift:"
-                detail: "New Governance Proposals are out. :vote:"
-                slack_mentions_user: "@Dheeraj @ray @roneil @Forrest"
-      - when:
-          condition:
-            equal: [ execute-proposal, << parameters.target >> ]
-          steps:
-            - slack-success:
-                text: "Governance Proposal has been executed! :done:"
+                text: ":gift: Deployment Released to Service Providers"
+                detail: ":vote: New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
+                slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
+            - run: |
+                curl -d '{
+                  "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
+                  "embeds": null,
+                  "attachments": []
+                }' \
+                -H "Content-Type: application/json" \
+                -X POST \
+                "${DISCORD_WEBHOOK}"
 
   generate-release-checklist:
     docker:
@@ -1607,7 +1590,6 @@ workflows:
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
-          params: --dry-run
           context:
             - slack-secrets
             - gh-tokens
@@ -1632,11 +1614,13 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens.releases
+            - discord
+            - governance
           requires:
             - 🚧-🎁-to-SPs-🕹️
-      # Execute Governance Proposal (for release branches)
+      # Evaluate Governance Proposal (for release branches)
       - noop:
-          name: execute-proposal-🕹️
+          name: evaluate-proposal-🕹️
           type: approval
           filters:
             branches:
@@ -1644,12 +1628,13 @@ workflows:
           requires:
             - 🚧-🎁-to-SPs
       - release-scripts:
-          name: execute-proposal
-          target: execute-proposal
+          name: evaluate-proposal
+          target: evaluate-proposal
           context:
             - slack-secrets
+            - governance
           requires:
-            - execute-proposal-🕹️
+            - evaluate-proposal-🕹️
 
       - test-libs:
           name: test-libs
@@ -1787,10 +1772,17 @@ workflows:
       - deploy:
           name: reservations
           reservations: true
+          reservation_notification: true
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+    triggers:
+      - schedule:
+          cron: '0 15 * * 1,2,3,4,5'
+          filters:
+            branches:
+              only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard

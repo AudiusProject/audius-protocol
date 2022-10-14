@@ -22,6 +22,7 @@ const USER_PROPS = [
   'cover_photo_sizes',
   'bio',
   'location',
+  'artist_pick_track_id',
   'creator_node_endpoint',
   'associated_wallets',
   'associated_sol_wallets',
@@ -724,13 +725,25 @@ export class Users extends Base {
   async updateIsVerified(
     userId: number,
     isVerified: boolean,
-    privateKey: string
+    privateKey: string,
+    useEntityManager?: boolean
   ) {
-    return await this.contracts.UserFactoryClient.updateIsVerified(
-      userId,
-      isVerified,
-      privateKey
-    )
+    if (useEntityManager) {
+      return await this.contracts.EntityManagerClient!.getManageEntityParams(
+        userId,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.VERIFY,
+        '',
+        privateKey
+      )
+    } else {
+      return await this.contracts.UserFactoryClient.updateIsVerified(
+        userId,
+        isVerified,
+        privateKey
+      )
+    }
   }
 
   /**

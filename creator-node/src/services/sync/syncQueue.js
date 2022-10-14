@@ -8,7 +8,7 @@ const {
   logErrorWithDuration,
   getStartTime
 } = require('../../logging')
-const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
+const { secondarySyncFromPrimary } = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
 
@@ -81,6 +81,10 @@ class SyncQueue {
         )
       }
     )
+    const prometheusRegistry = serviceRegistry?.prometheusRegistry
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
+    }
   }
 
   async processTask(job) {

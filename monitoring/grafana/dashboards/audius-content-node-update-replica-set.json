@@ -329,138 +329,6 @@
         "fieldConfig": {
           "defaults": {
             "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisCenteredZero": false,
-              "axisColorMode": "text",
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                }
-              ]
-            }
-          },
-          "overrides": [
-            {
-              "matcher": {
-                "id": "byFrameRefID",
-                "options": "success"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "green",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            },
-            {
-              "matcher": {
-                "id": "byFrameRefID",
-                "options": "failure"
-              },
-              "properties": [
-                {
-                  "id": "color",
-                  "value": {
-                    "fixedColor": "dark-red",
-                    "mode": "fixed"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "gridPos": {
-          "h": 13,
-          "w": 24,
-          "x": 0,
-          "y": 7
-        },
-        "id": 2,
-        "options": {
-          "legend": {
-            "calcs": [
-              "lastNotNull",
-              "mean"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "showLegend": true,
-            "sortBy": "Mean",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
-        },
-        "pluginVersion": "9.1.0",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "increase(audius_cn_state_machine_update_replica_set_queue_job_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success\", issuedReconfig=~\"$issuedReconfig\", reconfigType=~\"$reconfigType\"}[$__rate_interval])",
-            "legendFormat": "[issuedReconfig = true] {{host}} // {{reconfigType}} // result:{{result}}",
-            "range": true,
-            "refId": "success"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "builder",
-            "expr": "increase(audius_cn_state_machine_update_replica_set_queue_job_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"failure.*\", issuedReconfig=~\"$issuedReconfig\", reconfigType=~\"$reconfigType\"}[$__rate_interval])",
-            "hide": false,
-            "legendFormat": "[issuedReconfig = false] {{host}} // {{reconfigType}} // result:{{result}}",
-            "range": true,
-            "refId": "failure"
-          }
-        ],
-        "title": "IssueUpdateReplicaSet Job Counts by Host, Type, and Error",
-        "type": "timeseries"
-      },
-      {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
               "fixedColor": "#808080",
               "mode": "palette-classic"
             },
@@ -543,7 +411,7 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 20
+          "y": 7
         },
         "id": 8,
         "options": {
@@ -690,7 +558,7 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 20
+          "y": 7
         },
         "id": 9,
         "options": {
@@ -745,6 +613,138 @@
           }
         ],
         "title": "IssueUpdateReplicaSet Job Counts by Result",
+        "type": "timeseries"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "success"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "failure"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "dark-red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 12,
+          "x": 0,
+          "y": 18
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [
+              "lastNotNull",
+              "mean"
+            ],
+            "displayMode": "table",
+            "placement": "bottom",
+            "showLegend": true,
+            "sortBy": "Mean",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.1.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "increase(audius_cn_state_machine_update_replica_set_queue_job_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"success\", issuedReconfig=~\"$issuedReconfig\", reconfigType=~\"$reconfigType\"}[$__rate_interval])",
+            "legendFormat": "[issuedReconfig = true] {{host}} // {{reconfigType}} // result:{{result}}",
+            "range": true,
+            "refId": "success"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "expr": "increase(audius_cn_state_machine_update_replica_set_queue_job_duration_seconds_count{environment=~\"$env\", host=~\"$host\", result=~\"failure.*\", issuedReconfig=~\"$issuedReconfig\", reconfigType=~\"$reconfigType\"}[$__rate_interval])",
+            "hide": false,
+            "legendFormat": "[issuedReconfig = false] {{host}} // {{reconfigType}} // result:{{result}}",
+            "range": true,
+            "refId": "failure"
+          }
+        ],
+        "title": "IssueUpdateReplicaSet Job Counts by Host, Type, and Error",
         "type": "timeseries"
       }
     ],

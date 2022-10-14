@@ -43,27 +43,27 @@ class ClusterUtils {
   }
 
   getNumWorkers() {
+    // When cluster mode is disabled there's no primary and no workers, but for math we want to pretend there's 1 worker so we don't divide by 0
+    if (!this.isClusterEnabled()) return 1
+
     // This is called `cpus()` but it actually returns the # of logical cores, which is possibly higher than # of physical cores if there's hyperthreading
     const logicalCores = cpus().length
     return config.get('expressAppConcurrency') || logicalCores
   }
 
-  getConcurrencyForEnvVar(envVar: string) {
-    const globalConcurrency = config.get(envVar)
-    return this.getConcurrencyPerWorker(globalConcurrency)
-  }
-
   /**
-   * Calculates the concurrency that each worker should have to achieve the given global concurrency.
+   * Calculates the concurrency that each worker should have to achieve *at least* the given global concurrency.
+   * This is a minimum global concurrency that increments by number of workers.
+   * Ex: If there are 16 workers, 1 extra job per worker = 16 extra jobs. So global concurrency of 30 would be 32
    * Note that a global concurrency of 1 is not possible with multiple workers, as per the docs:
    * https://docs.bullmq.io/guide/workers/concurrency
    * This means that if the global concurrency given is set to 1, it will have to be 1 per worker not 1 globally.
    * @param globalConcurrency the global concurrency to achieve by splitting concurrency across workers
-   * @returns concurrency that each worker process on this machine needs to achieve the desired global concurrency
+   * @returns concurrency that each worker process on this machine needs to achieve at least the desired global concurrency
    */
   getConcurrencyPerWorker(globalConcurrency: number) {
     const numWorkers = this.getNumWorkers()
-    const concurrencyPerWorker = Math.floor(globalConcurrency / numWorkers)
+    const concurrencyPerWorker = Math.ceil(globalConcurrency / numWorkers)
     return concurrencyPerWorker || 1
   }
 }

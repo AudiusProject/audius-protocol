@@ -86,7 +86,7 @@ Note that the first time setup takes a bit of time to pull images, but subsequen
 ## Contributing
 
 We welcome contributions to Audius from anyone who opens a PR. Feel free to reach out to
-our team [on Discord](https://discord.com/invite/yNUg2e2) or via other channels for feedback and/or support!
+our team [on Discord](https://discord.gg/audius) or via other channels for feedback and/or support!
 
 ## Security
 

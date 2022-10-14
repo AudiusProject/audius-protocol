@@ -121,12 +121,18 @@ def get_feed_es(args, limit=10):
         #    instead of doing it dynamically here?
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
-        # Q: should we add playlist tracks to seen?
-        #    get_feed will "debounce" tracks in playlist
         unsorted_feed.append(playlist)
+
+        # add playlist track_ids to seen
+        # if a user uploads an orig playlist or album
+        # surpress individual tracks from said album appearing in feed
+        for track in playlist["tracks"]:
+            seen.add(item_key(track))
 
     for track in tracks:
         track["item_key"] = item_key(track)
+        if track["item_key"] in seen:
+            continue
         seen.add(track["item_key"])
         unsorted_feed.append(track)
 
@@ -217,14 +223,8 @@ def get_feed_es(args, limit=10):
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = user_by_id[uid]
 
-    # add context: followee_reposts, followee_saves
-    # currently this over-fetches because there is no per-item grouping
-    # really it should use an aggregation with top hits
-    # to bucket ~3 saves / reposts per item
-    item_keys = [i["item_key"] for i in sorted_feed]
-
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys
+        current_user, sorted_feed
     )
 
     for item in sorted_feed:
@@ -287,61 +287,49 @@ def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
     }
 
 
-def fetch_followed_saves_and_reposts(current_user_id, item_keys):
+def fetch_followed_saves_and_reposts(current_user, items):
+    item_keys = [item_key(i) for i in items]
     follow_reposts = {k: [] for k in item_keys}
     follow_saves = {k: [] for k in item_keys}
 
-    if not current_user_id or not item_keys:
+    if not current_user or not item_keys:
         return (follow_saves, follow_reposts)
 
-    save_repost_query = {
-        "query": {
-            "bool": {
-                "must": [
-                    following_ids_terms_lookup(current_user_id, "user_id"),
-                    {"terms": {"item_key": item_keys}},
-                    {"term": {"is_delete": False}},
-                ]
-            }
-        },
-        "collapse": {
-            "field": "item_key",
-            "inner_hits": {
-                "name": "most_recent",
-                "size": 5,
-                "sort": [{"created_at": "desc"}],
-            },
-            "max_concurrent_group_searches": 4,
-        },
-        "sort": {"created_at": "desc"},
-        "size": len(item_keys),
-        "_source": False,
-    }
-    mdsl = [
-        {"index": ES_REPOSTS},
-        save_repost_query,
-        {"index": ES_SAVES},
-        save_repost_query,
-    ]
+    mget_social_activity = []
+    my_friends = set(current_user.get("following_ids", []))
 
-    founds = esclient.msearch(searches=mdsl)
-    collapsed_reposts = founds["responses"][0]["hits"]["hits"]
-    collapsed_saves = founds["responses"][1]["hits"]["hits"]
+    for item in items:
+        key = item_key(item)
+        saved_by = item.get("saved_by", [])
+        reposted_by = item.get("reposted_by", [])
 
-    for group in collapsed_reposts:
-        reposts = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = reposts[0]["item_key"]
-        follow_reposts[item_key] = reposts
-    for group in collapsed_saves:
-        saves = pluck_hits(group["inner_hits"]["most_recent"])
-        item_key = saves[0]["item_key"]
-        follow_saves[item_key] = saves
+        save_friends = [f"{uid}:{key}" for uid in saved_by if uid in my_friends]
+        for id in save_friends[0:5]:
+            mget_social_activity.append({"_index": ES_SAVES, "_id": id})
+
+        repost_friends = [f"{uid}:{key}" for uid in reposted_by if uid in my_friends]
+        for id in repost_friends[0:5]:
+            mget_social_activity.append({"_index": ES_REPOSTS, "_id": id})
+
+    if mget_social_activity:
+        social_activity = esclient.mget(docs=mget_social_activity)
+        for doc in social_activity["docs"]:
+            if not doc["found"]:
+                print("elasticsearch not found", doc)
+                continue
+            s = doc["_source"]
+            if "repost_type" in s:
+                follow_reposts[s["item_key"]].append(s)
+            else:
+                follow_saves[s["item_key"]].append(s)
 
     return (follow_saves, follow_reposts)
 
 
 def item_key(item):
-    if "track_id" in item:
+    if "item_key" in item:
+        return item["item_key"]
+    elif "track_id" in item:
         return "track:" + str(item["track_id"])
     elif "playlist_id" in item:
         if item["is_album"]:

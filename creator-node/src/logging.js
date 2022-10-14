@@ -110,7 +110,8 @@ function createChildLogger(logger, options = {}) {
 
 /**
  * Pulls the start time of the req object to calculate the duration of the fn
- * @param {number} startTime the start time
+ * @param {Object} param
+ * @param {number} param.startTime the start time
  * @returns the duration of the fn call in ms
  */
 function getDuration({ startTime }) {
@@ -129,11 +130,15 @@ function getDuration({ startTime }) {
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration({ logger, startTime }, msg) {
+function logInfoWithDuration(
+  { logger, startTime },
+  msg,
+  durationKey = 'duration'
+) {
   const durationMs = getDuration({ startTime })
 
   if (durationMs) {
-    logger.info({ duration: durationMs }, msg)
+    logger.info({ [durationKey]: durationMs }, msg)
   } else {
     logger.info(msg)
   }

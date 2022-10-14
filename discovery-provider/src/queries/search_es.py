@@ -255,15 +255,15 @@ def finalize_response(
         raise Exception("esclient is None")
 
     # hydrate users, saves, reposts
-    item_keys = []
+    items = []
     user_ids = set()
     if current_user_id:
         user_ids.add(current_user_id)
 
     # collect keys for fetching
-    for items in response.values():
-        for item in items:
-            item_keys.append(item_key(item))
+    for docs in response.values():
+        for item in docs:
+            items.append(item)
             user_ids.add(item.get("owner_id", item.get("playlist_owner_id")))
 
     # fetch users
@@ -282,7 +282,7 @@ def finalize_response(
     # fetch followed saves + reposts
     if not is_auto_complete:
         (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-            current_user_id, item_keys
+            current_user, items
         )
 
     # tracks: finalize
@@ -312,7 +312,7 @@ def finalize_response(
     return response
 
 
-def base_match(search_str: str, operator="or"):
+def base_match(search_str: str, operator="or", extra_fields=[]):
     return [
         {
             "multi_match": {
@@ -321,6 +321,7 @@ def base_match(search_str: str, operator="or"):
                     "suggest",
                     "suggest._2gram",
                     "suggest._3gram",
+                    *extra_fields,
                 ],
                 "operator": operator,
                 "type": "bool_prefix",
@@ -412,14 +413,15 @@ def track_dsl(
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
+    # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
-            *base_match(search_str),
+            *base_match(search_str, extra_fields=["handle"]),
             {"term": {"is_deactivated": {"value": False}}},
         ],
         "must_not": [],
         "should": [
-            *base_match(search_str, operator="and"),
+            *base_match(search_str, operator="and", extra_fields=["handle"]),
             {"term": {"is_verified": {"value": True}}},
         ],
     }

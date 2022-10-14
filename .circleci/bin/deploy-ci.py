@@ -23,14 +23,13 @@ logger = logging.getLogger("cli")
 ENVIRONMENTS = ("staging", "prod")
 SERVICES = ("all", "discovery", "creator", "identity")
 STAGE_CREATOR_NODES = (
-    "stage-creator-4",  # canary
     "stage-creator-5",
     "stage-creator-6",
     "stage-creator-7",
     "stage-creator-8",
     "stage-creator-9",
     "stage-creator-10",
-    #     "stage-creator-11",
+    "stage-creator-11",
     "stage-user-metadata",
 )
 PROD_CREATOR_NODES = (
@@ -39,7 +38,7 @@ PROD_CREATOR_NODES = (
     "prod-creator-3",
     "prod-creator-4",  # prod-canary
     "prod-creator-5",
-    "user-metadata",
+    "prod-user-metadata",
 )
 CREATOR_NODES = STAGE_CREATOR_NODES + PROD_CREATOR_NODES
 
@@ -64,7 +63,6 @@ IDENTITY_NODES = STAGE_IDENTITY_NODES + PROD_IDENTITY_NODES
 
 ALL_NODES = CREATOR_NODES + DISCOVERY_NODES + IDENTITY_NODES
 CANARIES = (
-    "stage-creator-4",  # canary
     "stage-discovery-4",  # canary
     "prod-creator-4",  # prod-canary
     "prod-discovery-4",  # prod-canary
@@ -193,7 +191,7 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
     """
 
     # test ssh access
-    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=5)
+    output = ssh(host, "hostname", exit_on_error=RAISE, timeout_sec=15)
     if not output:
         snapshot.update(
             {
@@ -437,6 +435,8 @@ def format_artifacts(
             f.write("Reservation List:\n")
             for h in hosts:
                 host = release_summary[PRE_DEPLOY][h]
+                tag = host["tag"][:7]
+                branch = host["branch"]
                 if "author" in host:
                     owner = host["author"]
                     fg = "reset"
@@ -449,7 +449,7 @@ def format_artifacts(
                     else:
                         fg = "yellow"
 
-                output = f"{h.ljust(25)}{owner}"
+                output = f"{h.ljust(25)}{owner.ljust(20)}{tag.ljust(10)}{branch}"
                 click.echo(click.style(output, fg=fg))
                 f.write(f"{output}\n")
             f.write("\n\n")

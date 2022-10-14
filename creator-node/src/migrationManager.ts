@@ -1,10 +1,10 @@
-const Umzug = require('umzug')
-const path = require('path')
+import Umzug from 'umzug'
+import path from 'path'
+import { logger } from './logging'
 
 const { sequelize } = require('./models')
-const { logger } = require('./logging')
 
-async function runMigrations() {
+export async function runMigrations() {
   const umzug = new Umzug({
     storage: 'sequelize',
 
@@ -20,14 +20,14 @@ async function runMigrations() {
   return umzug.up()
 }
 
-async function clearDatabase() {
+export async function clearDatabase() {
   // clear and recreate database schema, which cascades to all tables and rows in tables
   // for use in testing only - will delete all data in the database!!
   await sequelize.query('DROP SCHEMA IF EXISTS public CASCADE')
   await sequelize.query('CREATE SCHEMA public')
 }
 
-async function clearRunningQueries() {
+export async function clearRunningQueries() {
   logger.info(`Clearing running db queries...`)
   try {
     await sequelize.query(`
@@ -43,11 +43,9 @@ async function clearRunningQueries() {
         ORDER BY query_start DESC;
     COMMIT;
   `)
-  } catch (e) {
+  } catch (e: any) {
     logger.error(
       `Error running clearRunningQueries: ${e.message}. Continuing with content node setup`
     )
   }
 }
-
-module.exports = { runMigrations, clearDatabase, clearRunningQueries }
