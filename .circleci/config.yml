@@ -1426,7 +1426,7 @@ workflows:
             - test-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>-hold
+          name: unreserve-stage-<< matrix.service >>-hold
           type: approval
           filters:
             branches:
@@ -1437,7 +1437,7 @@ workflows:
           requires:
             - autodeploy-stage-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>
+          name: unreserving-stage-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1447,10 +1447,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-stage-<< matrix.service >>-hold
+            - unreserve-stage-<< matrix.service >>-hold
       # Force deploy `master` to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-hold
+          name: unreserve-<< matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1461,7 +1461,7 @@ workflows:
           requires:
             - autodeploy-stage-discovery
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: unreserving-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1471,10 +1471,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-hold
+            - unreserve-<< matrix.host >>-hold
       # Force deploy `master` to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-hold
+          name: unreserve-<< matrix.host >>-hold
           type: approval
           filters:
             branches:
@@ -1485,7 +1485,7 @@ workflows:
           requires:
             - autodeploy-stage-creator
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: unreserving-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1495,7 +1495,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-hold
+            - unreserve-<< matrix.host >>-hold
 
       # Deploy branch to staging (by service)
       - noop:
