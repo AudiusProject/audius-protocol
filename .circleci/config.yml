@@ -1609,6 +1609,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           requires:
             - release-discovery-foundation-hold
       # Deploy Identity to prod (for release branches)
@@ -1629,6 +1630,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           requires:
             - release-identity-foundation-hold
       # Deploy Creator Nodes to prod (for release branches)
@@ -1652,6 +1654,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           matrix:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
