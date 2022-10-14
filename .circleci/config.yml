@@ -1025,6 +1025,16 @@ jobs:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
+            and:
+              - equal: [ master, ${CIRCLE_BRANCH} ]
+              - equal: [ staging, << parameters.environment >> ]
+              - not:
+                  equal: [ all, << parameters.service >> ]
+          steps:
+            - diff-if-necessary:
+                service: << parameters.service >>
+      - when:
+          condition:
             or:
               - equal: [ prod, << parameters.environment >> ]
               - << parameters.params >>
