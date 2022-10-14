@@ -55,150 +55,152 @@ import {
  * @export
  * @interface PlaylistFull
  */
-export interface PlaylistFull {
-    /**
-     * 
-     * @type {PlaylistArtwork}
-     * @memberof PlaylistFull
-     */
-    artwork?: PlaylistArtwork;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    description?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    id: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PlaylistFull
-     */
-    is_album: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    playlist_name: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistFull
-     */
-    repost_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistFull
-     */
-    favorite_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistFull
-     */
-    total_play_count: number;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof PlaylistFull
-     */
-    user: UserFull;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistFull
-     */
-    blocknumber: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    created_at?: string;
-    /**
-     * 
-     * @type {Array<Repost>}
-     * @memberof PlaylistFull
-     */
-    followee_reposts: Array<Repost>;
-    /**
-     * 
-     * @type {Array<Favorite>}
-     * @memberof PlaylistFull
-     */
-    followee_favorites: Array<Favorite>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PlaylistFull
-     */
-    has_current_user_reposted: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PlaylistFull
-     */
-    has_current_user_saved: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PlaylistFull
-     */
-    is_delete: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PlaylistFull
-     */
-    is_private: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    updated_at?: string;
-    /**
-     * 
-     * @type {Array<PlaylistAddedTimestamp>}
-     * @memberof PlaylistFull
-     */
-    added_timestamps: Array<PlaylistAddedTimestamp>;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    user_id: string;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof PlaylistFull
-     */
-    tracks: Array<TrackFull>;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    cover_art?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    cover_art_sizes?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistFull
-     */
-    track_count: number;
-}
+export interface PlaylistFull 
+    {
+        /**
+        * 
+        * @type {PlaylistArtwork}
+        * @memberof PlaylistFull
+        */
+        artwork?: PlaylistArtwork;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        description?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        id: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof PlaylistFull
+        */
+        is_album: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        playlist_name: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistFull
+        */
+        repost_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistFull
+        */
+        favorite_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistFull
+        */
+        total_play_count: number;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof PlaylistFull
+        */
+        user: UserFull;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistFull
+        */
+        blocknumber: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        created_at?: string;
+        /**
+        * 
+        * @type {Array<Repost>}
+        * @memberof PlaylistFull
+        */
+        followee_reposts: Array<Repost>;
+        /**
+        * 
+        * @type {Array<Favorite>}
+        * @memberof PlaylistFull
+        */
+        followee_favorites: Array<Favorite>;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof PlaylistFull
+        */
+        has_current_user_reposted: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof PlaylistFull
+        */
+        has_current_user_saved: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof PlaylistFull
+        */
+        is_delete: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof PlaylistFull
+        */
+        is_private: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        updated_at?: string;
+        /**
+        * 
+        * @type {Array<PlaylistAddedTimestamp>}
+        * @memberof PlaylistFull
+        */
+        added_timestamps: Array<PlaylistAddedTimestamp>;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        user_id: string;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof PlaylistFull
+        */
+        tracks: Array<TrackFull>;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        cover_art?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
+        cover_art_sizes?: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistFull
+        */
+        track_count: number;
+    }
+
 

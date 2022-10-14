@@ -25,30 +25,32 @@ import {
  * @export
  * @interface Tip
  */
-export interface Tip {
-    /**
-     * 
-     * @type {string}
-     * @memberof Tip
-     */
-    amount: string;
-    /**
-     * 
-     * @type {User}
-     * @memberof Tip
-     */
-    sender?: User;
-    /**
-     * 
-     * @type {User}
-     * @memberof Tip
-     */
-    receiver?: User;
-    /**
-     * 
-     * @type {string}
-     * @memberof Tip
-     */
-    created_at: string;
-}
+export interface Tip 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof Tip
+        */
+        amount: string;
+        /**
+        * 
+        * @type {User}
+        * @memberof Tip
+        */
+        sender?: User;
+        /**
+        * 
+        * @type {User}
+        * @memberof Tip
+        */
+        receiver?: User;
+        /**
+        * 
+        * @type {string}
+        * @memberof Tip
+        */
+        created_at: string;
+    }
+
 

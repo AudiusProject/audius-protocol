@@ -31,60 +31,62 @@ import {
  * @export
  * @interface Playlist
  */
-export interface Playlist {
-    /**
-     * 
-     * @type {PlaylistArtwork}
-     * @memberof Playlist
-     */
-    artwork?: PlaylistArtwork;
-    /**
-     * 
-     * @type {string}
-     * @memberof Playlist
-     */
-    description?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Playlist
-     */
-    id: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof Playlist
-     */
-    is_album: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof Playlist
-     */
-    playlist_name: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof Playlist
-     */
-    repost_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Playlist
-     */
-    favorite_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Playlist
-     */
-    total_play_count: number;
-    /**
-     * 
-     * @type {User}
-     * @memberof Playlist
-     */
-    user: User;
-}
+export interface Playlist 
+    {
+        /**
+        * 
+        * @type {PlaylistArtwork}
+        * @memberof Playlist
+        */
+        artwork?: PlaylistArtwork;
+        /**
+        * 
+        * @type {string}
+        * @memberof Playlist
+        */
+        description?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Playlist
+        */
+        id: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof Playlist
+        */
+        is_album: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof Playlist
+        */
+        playlist_name: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof Playlist
+        */
+        repost_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof Playlist
+        */
+        favorite_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof Playlist
+        */
+        total_play_count: number;
+        /**
+        * 
+        * @type {User}
+        * @memberof Playlist
+        */
+        user: User;
+    }
+
 

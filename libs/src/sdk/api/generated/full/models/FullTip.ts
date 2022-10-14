@@ -31,48 +31,50 @@ import {
  * @export
  * @interface FullTip
  */
-export interface FullTip {
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTip
-     */
-    amount: string;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof FullTip
-     */
-    sender: UserFull;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof FullTip
-     */
-    receiver: UserFull;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTip
-     */
-    created_at: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTip
-     */
-    slot: number;
-    /**
-     * 
-     * @type {Array<SupporterReference>}
-     * @memberof FullTip
-     */
-    followee_supporters: Array<SupporterReference>;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTip
-     */
-    tx_signature: string;
-}
+export interface FullTip 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTip
+        */
+        amount: string;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof FullTip
+        */
+        sender: UserFull;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof FullTip
+        */
+        receiver: UserFull;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTip
+        */
+        created_at: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTip
+        */
+        slot: number;
+        /**
+        * 
+        * @type {Array<SupporterReference>}
+        * @memberof FullTip
+        */
+        followee_supporters: Array<SupporterReference>;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTip
+        */
+        tx_signature: string;
+    }
+
 
