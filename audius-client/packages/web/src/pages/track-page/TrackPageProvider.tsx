@@ -14,8 +14,6 @@ import {
   Status,
   Track,
   Uid,
-  getCanonicalName,
-  formatSeconds,
   formatDate,
   accountSelectors,
   cacheTracksActions as cacheTrackActions,
@@ -61,11 +59,10 @@ import {
   FEED_PAGE,
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE,
-  fullTrackPage,
   trackRemixesPage
 } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
-import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
+import { getTrackPageSEOFields } from 'utils/seo'
 
 import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
@@ -415,22 +412,18 @@ class TrackPageProvider extends Component<
       onClickReposts: this.onClickReposts,
       onClickFavorites: this.onClickFavorites
     }
-
-    const title = getTrackPageTitle({
-      title: track ? track.title : '',
-      handle: user ? user.handle : ''
-    })
-
     const releaseDate = track ? track.release_date || track.created_at : ''
-    const description = getTrackPageDescription({
-      releaseDate: releaseDate ? formatDate(releaseDate) : '',
-      description: track?.description ?? '',
-      mood: track?.mood ?? '',
-      genre: track ? getCanonicalName(track.genre) : '',
-      duration: track ? formatSeconds(track.duration) : '',
-      tags: track ? (track.tags || '').split(',').filter(Boolean) : []
+    const {
+      title = '',
+      description = '',
+      canonicalUrl = '',
+      structuredData
+    } = getTrackPageSEOFields({
+      title: track?.title,
+      permalink: track?.permalink,
+      userName: user?.name,
+      releaseDate: releaseDate ? formatDate(releaseDate) : ''
     })
-    const canonicalUrl = user && track ? fullTrackPage(track.permalink) : ''
 
     // If the track has a remix parent and it's not deleted and the original's owner is not deactivated.
     const hasValidRemixParent =
@@ -449,6 +442,7 @@ class TrackPageProvider extends Component<
           title={title}
           description={description}
           canonicalUrl={canonicalUrl}
+          structuredData={structuredData}
           playable={{ metadata: track, type: PlayableType.TRACK }}
           user={user}
           deletedByArtist={deletedByArtist}
@@ -460,6 +454,7 @@ class TrackPageProvider extends Component<
       title,
       description,
       canonicalUrl,
+      structuredData,
       heroTrack: track,
       hasValidRemixParent,
       user,

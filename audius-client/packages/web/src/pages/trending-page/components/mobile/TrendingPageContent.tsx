@@ -54,7 +54,7 @@ const tabHeaders = [
 ]
 
 const TrendingPageMobileContent = ({
-  trendingTitle,
+  pageTitle,
   trendingDescription,
 
   trendingTimeRange,
@@ -268,7 +268,7 @@ const TrendingPageMobileContent = ({
 
   return (
     <MobilePageContainer
-      title={trendingTitle}
+      title={pageTitle}
       description={trendingDescription}
       canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}
     >

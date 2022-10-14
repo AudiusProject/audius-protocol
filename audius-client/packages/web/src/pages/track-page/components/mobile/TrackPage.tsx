@@ -39,6 +39,7 @@ export type OwnProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   hasValidRemixParent: boolean
   // Hero Track Props
   heroTrack: Track | null
@@ -80,6 +81,7 @@ const TrackPage = ({
   title,
   description,
   canonicalUrl,
+  structuredData,
   hasValidRemixParent,
   // Hero Track Props
   heroTrack,
@@ -179,6 +181,7 @@ const TrackPage = ({
         title={title}
         description={description}
         canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
       >
         <div className={styles.trackContent}>
           <TrackPageHeader

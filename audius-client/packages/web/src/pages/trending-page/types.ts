@@ -4,6 +4,7 @@ type ExtraTrendingLineupProps = {}
 
 export interface TrendingPageContentProps {
   trendingTitle: string
+  pageTitle: string
   trendingDescription: string
   trending: Lineup<any>
   trendingWeek: Lineup<any, ExtraTrendingLineupProps>

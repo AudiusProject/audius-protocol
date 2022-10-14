@@ -55,6 +55,7 @@ export type CollectionPageProps = {
   title: string
   description: string
   canonicalUrl: string
+  structuredData?: Object
   playlistId: ID
   playing: boolean
   getPlayingUid: () => string | null
@@ -108,6 +109,7 @@ const CollectionPage = ({
   title,
   description: pageDescription,
   canonicalUrl,
+  structuredData,
   playlistId,
   allowReordering,
   playing,
@@ -271,6 +273,7 @@ const CollectionPage = ({
       title={title}
       description={pageDescription}
       canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
       containerClassName={styles.pageContainer}
       scrollableSearch
     >
