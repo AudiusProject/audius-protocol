@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# default case for discovery provider
 export REDIS_ADDR=${audius_redis_url}
 
 if [ "$*" = "--creator-node" ]; then

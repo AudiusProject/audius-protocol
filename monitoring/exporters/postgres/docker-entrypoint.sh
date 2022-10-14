@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# default case for discovery provider
 export DATA_SOURCE_NAME="${audius_db_url}?sslmode=disable"
 
 if [ "$*" = "--read-replica" ]; then
