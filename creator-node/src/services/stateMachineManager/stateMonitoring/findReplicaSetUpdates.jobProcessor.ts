@@ -16,7 +16,7 @@ import type {
 import { instrumentTracing, tracing } from '../../../tracer'
 import { stringifyMap } from '../../../utils'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
-import { isNodeHealthyOrInGracePeriod } from '../CNodeHealthManager'
+import { CNodeHealthManager } from '../CNodeHealthManager'
 
 const _: LoDashStatic = require('lodash')
 
@@ -291,10 +291,11 @@ const _findReplicaSetUpdatesForUser = async (
   // If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
   const nodesToReconfigOffOf = new Set<string>()
   for (const node of unhealthyReplicas) {
-    const shouldReconfigOffNode = !(await isNodeHealthyOrInGracePeriod(
-      node,
-      node === primary
-    ))
+    const shouldReconfigOffNode =
+      !(await CNodeHealthManager.isNodeHealthyOrInGracePeriod(
+        node,
+        node === primary
+      ))
     if (shouldReconfigOffNode) nodesToReconfigOffOf.add(node)
   }
   if (nodesToReconfigOffOf.size) {

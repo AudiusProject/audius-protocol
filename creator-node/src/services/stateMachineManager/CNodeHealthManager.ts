@@ -31,6 +31,18 @@ const MAX_NUMBER_SECONDS_SECONDARY_REMAINS_UNHEALTHY = config.get(
 const REDIS_KEY_PREFIX_PRIMARY = 'earliestFailedHealthCheckPrimary:'
 const REDIS_KEY_PREFIX_SECONDARY = 'earliestFailedHealthCheckSecondary:'
 
+const CNodeHealthManager = {
+  getUnhealthyPeers,
+  isNodeHealthy,
+  determinePeerHealth,
+  isNodeHealthyOrInGracePeriod,
+  getEarliestFailedHealthCheckTimestamp,
+  setHealthCheckTimestampToNow,
+  resetEarliestUnhealthyTimestamp,
+  _queryVerboseHealthCheck,
+  _computeContentNodePeerSet
+}
+
 /**
  * Performs a health check on the peer set
  * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
@@ -42,13 +54,16 @@ const REDIS_KEY_PREFIX_SECONDARY = 'earliestFailedHealthCheckSecondary:'
  * @note consider returning healthy set?
  * TODO - add retry logic to node requests
  */
-export async function getUnhealthyPeers(
+async function getUnhealthyPeers(
   nodeUsers: StateMonitoringUser[],
   thisContentNodeEndpoint: string,
   performSimpleCheck = false
 ) {
   // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-  const peerSet = _computeContentNodePeerSet(nodeUsers, thisContentNodeEndpoint)
+  const peerSet = CNodeHealthManager._computeContentNodePeerSet(
+    nodeUsers,
+    thisContentNodeEndpoint
+  )
 
   /**
    * Determine health for every peer & build list of unhealthy peers
@@ -57,7 +72,10 @@ export async function getUnhealthyPeers(
   const unhealthyPeers = new Set()
 
   for await (const peer of peerSet) {
-    const isHealthy = await isNodeHealthy(peer, performSimpleCheck)
+    const isHealthy = await CNodeHealthManager.isNodeHealthy(
+      peer,
+      performSimpleCheck
+    )
     if (!isHealthy) {
       unhealthyPeers.add(peer)
     }
@@ -66,19 +84,20 @@ export async function getUnhealthyPeers(
   return unhealthyPeers
 }
 
-export async function isNodeHealthy(peer: string, performSimpleCheck = false) {
+async function isNodeHealthy(node: string, performSimpleCheck = false) {
   try {
-    const verboseHealthCheckResp = await _queryVerboseHealthCheck(peer)
+    const verboseHealthCheckResp =
+      await CNodeHealthManager._queryVerboseHealthCheck(node)
     // if node returns healthy: false consider that unhealthy just like non-200 response
     const { healthy } = verboseHealthCheckResp
     if (!healthy) {
       throw new Error(`Node health check returned healthy: false`)
     }
     if (!performSimpleCheck) {
-      determinePeerHealth(verboseHealthCheckResp)
+      CNodeHealthManager.determinePeerHealth(verboseHealthCheckResp)
     }
   } catch (e: any) {
-    logger.error(`isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`)
+    logger.error(`isNodeHealthy() peer=${node} is unhealthy: ${e.toString()}`)
     return false
   }
 
@@ -91,7 +110,7 @@ export async function isNodeHealthy(peer: string, performSimpleCheck = false) {
  *
  * TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
  */
-export function determinePeerHealth(verboseHealthCheckResp: any) {
+function determinePeerHealth(verboseHealthCheckResp: any) {
   // Check for sufficient minimum storage size
   const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
   if (
@@ -185,20 +204,18 @@ export function determinePeerHealth(verboseHealthCheckResp: any) {
  * - healthy; or
  * - unhealthy but in a grace period (extra time where it can be unhealthy before being reconfiged)
  */
-export async function isNodeHealthyOrInGracePeriod(
-  node: string,
-  isPrimary: boolean
-) {
-  const isHealthy = await isNodeHealthy(node, isPrimary)
+async function isNodeHealthyOrInGracePeriod(node: string, isPrimary: boolean) {
+  const isHealthy = await CNodeHealthManager.isNodeHealthy(node, isPrimary)
   if (isHealthy) {
     // If a node ever becomes healthy again and was once marked as unhealthy, remove tracker
-    await resetEarliestUnhealthyTimestamp(node, isPrimary)
+    await CNodeHealthManager.resetEarliestUnhealthyTimestamp(node, isPrimary)
     return true
   } else {
-    const failedTimestamp = await getEarliestFailedHealthCheckTimestamp(
-      node,
-      isPrimary
-    )
+    const failedTimestamp =
+      await CNodeHealthManager.getEarliestFailedHealthCheckTimestamp(
+        node,
+        isPrimary
+      )
 
     if (failedTimestamp) {
       // Grace period ends X seconds after the first failed health check
@@ -213,13 +230,13 @@ export async function isNodeHealthyOrInGracePeriod(
       const now = new Date()
       if (now >= gracePeriodEndDate) return false
     } else {
-      await setHealthCheckTimestampToNow(node, isPrimary)
+      await CNodeHealthManager.setHealthCheckTimestampToNow(node, isPrimary)
     }
     return true
   }
 }
 
-export async function getEarliestFailedHealthCheckTimestamp(
+async function getEarliestFailedHealthCheckTimestamp(
   node: string,
   isPrimary: boolean
 ): Promise<Date | null> {
@@ -231,10 +248,7 @@ export async function getEarliestFailedHealthCheckTimestamp(
   return timestampString ? new Date(timestampString) : null
 }
 
-export async function setHealthCheckTimestampToNow(
-  node: string,
-  isPrimary: boolean
-) {
+async function setHealthCheckTimestampToNow(node: string, isPrimary: boolean) {
   return redis.set(
     `${
       isPrimary ? REDIS_KEY_PREFIX_PRIMARY : REDIS_KEY_PREFIX_SECONDARY
@@ -243,7 +257,7 @@ export async function setHealthCheckTimestampToNow(
   )
 }
 
-export async function resetEarliestUnhealthyTimestamp(
+async function resetEarliestUnhealthyTimestamp(
   node: string,
   isPrimary: boolean
 ) {
@@ -261,7 +275,7 @@ export async function resetEarliestUnhealthyTimestamp(
  * @param {string} endpoint the endpoint to query
  * @returns {Object} the /health_check/verbose response from the endpoint
  */
-export async function _queryVerboseHealthCheck(endpoint: string) {
+async function _queryVerboseHealthCheck(endpoint: string) {
   // Axios request will throw on timeout or non-200 response
   const resp = await axios({
     baseURL: endpoint,
@@ -282,7 +296,7 @@ export async function _queryVerboseHealthCheck(endpoint: string) {
  * @param {StateMonitoringUser[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
  * @returns {Set<string>} Set of content node endpoint strings
  */
-export function _computeContentNodePeerSet(
+function _computeContentNodePeerSet(
   nodeUserInfoList: StateMonitoringUser[],
   thisContentNodeEndpoint: string
 ) {
@@ -300,3 +314,5 @@ export function _computeContentNodePeerSet(
 
   return peerSet
 }
+
+export { CNodeHealthManager }

@@ -98,7 +98,7 @@ describe('test findReplicaSetUpdates job processor', function () {
   }
 
   function getJobProcessorStub(
-    isPrimaryHealthyStub,
+    isNodeHealthyOrInGracePeriodStub,
     getCNodeEndpointToSpIdMapStub
   ) {
     return proxyquire(
@@ -106,7 +106,9 @@ describe('test findReplicaSetUpdates job processor', function () {
       {
         '../../../config': config,
         '../CNodeHealthManager': {
-          isPrimaryHealthy: isPrimaryHealthyStub
+          CNodeHealthManager: {
+            isNodeHealthyOrInGracePeriod: isNodeHealthyOrInGracePeriodStub
+          }
         },
         '../../ContentNodeInfoManager': {
           getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
@@ -119,17 +121,17 @@ describe('test findReplicaSetUpdates job processor', function () {
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
     userSecondarySyncMetricsMap = {},
     unhealthyPeers = [],
-    isPrimaryHealthyInExtraHealthCheck = true
+    isPrimaryHealthyInExtraHealthCheck = false
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
       .resolves(cNodeEndpointToSpIdMap)
-    const isPrimaryHealthyStub = sandbox
+    const isNodeHealthyOrInGracePeriodStub = sandbox
       .stub()
       .resolves(isPrimaryHealthyInExtraHealthCheck)
 
     const findReplicaSetUpdatesJobProcessor = getJobProcessorStub(
-      isPrimaryHealthyStub,
+      isNodeHealthyOrInGracePeriodStub,
       getCNodeEndpointToSpIdMapStub
     )
 
