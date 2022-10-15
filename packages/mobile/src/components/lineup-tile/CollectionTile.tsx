@@ -130,20 +130,16 @@ const CollectionTileComponent = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const handlePress = useCallback(
-    ({ isPlaying }) => {
-      if (!tracks.length) return
+  const handlePress = useCallback(() => {
+    if (!tracks.length) return
 
-      togglePlay({
-        uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
-        id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
-        source: PlaybackSource.PLAYLIST_TILE_TRACK,
-        isPlaying,
-        isPlayingUid
-      })
-    },
-    [isPlayingUid, currentTrack, togglePlay, tracks]
-  )
+    togglePlay({
+      uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
+      id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
+      source: PlaybackSource.PLAYLIST_TILE_TRACK,
+      isPlayingUid
+    })
+  }, [currentTrack, togglePlay, tracks, isPlayingUid])
 
   const handlePressTitle = useCallback(() => {
     navigation.push('Collection', { id: playlist_id })

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
+import type { CommonState } from '@audius/common'
 import { accountSelectors, playerSelectors } from '@audius/common'
 import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -55,8 +56,11 @@ export const LineupTile = ({
     save_count
   } = item
   const { _artist_pick, name, user_id } = user
-  const isPlaying = useSelector(getPlaying)
   const currentUserId = useSelector(getUserId)
+
+  const isPlaying = useSelector(
+    (state: CommonState) => getPlaying(state) && isPlayingUid
+  )
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
@@ -77,12 +81,8 @@ export const LineupTile = ({
     }
   }, [onLoad, isLoaded, index, opacity])
 
-  const handlePress = useCallback(() => {
-    onPress?.({ isPlaying })
-  }, [isPlaying, onPress])
-
   return (
-    <LineupTileRoot onPress={handlePress}>
+    <LineupTileRoot onPress={onPress}>
       {showArtistPick && _artist_pick === id ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}
@@ -101,7 +101,7 @@ export const LineupTile = ({
           coSign={coSign}
           imageUrl={imageUrl}
           onPressTitle={onPressTitle}
-          isPlaying={isPlayingUid && isPlaying}
+          isPlaying={isPlaying}
           setArtworkLoaded={setArtworkLoaded}
           title={title}
           user={user}

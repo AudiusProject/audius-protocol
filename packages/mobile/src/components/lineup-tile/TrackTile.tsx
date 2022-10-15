@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Track, User } from '@audius/common'
+import type { CommonState, Track, User } from '@audius/common'
 import {
   removeNullable,
   playerSelectors,
@@ -68,8 +68,9 @@ const TrackTileComponent = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const currentScreen = useNavigationState((state) => state.history?.[0])
-  const playingUid = useSelector(getUid)
-  const isPlayingUid = playingUid === lineupTileProps.uid
+  const isPlayingUid = useSelector(
+    (state: CommonState) => getUid(state) === lineupTileProps.uid
+  )
 
   const {
     _cover_art_sizes,
@@ -92,18 +93,14 @@ const TrackTileComponent = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const handlePress = useCallback(
-    ({ isPlaying }) => {
-      togglePlay({
-        uid: lineupTileProps.uid,
-        id: track_id,
-        source: PlaybackSource.TRACK_TILE,
-        isPlaying,
-        isPlayingUid
-      })
-    },
-    [togglePlay, lineupTileProps.uid, track_id, isPlayingUid]
-  )
+  const handlePress = useCallback(() => {
+    togglePlay({
+      uid: lineupTileProps.uid,
+      id: track_id,
+      source: PlaybackSource.TRACK_TILE,
+      isPlayingUid
+    })
+  }, [togglePlay, lineupTileProps.uid, track_id, isPlayingUid])
 
   const handlePressTitle = useCallback(() => {
     navigation.push('Track', { id: track_id })

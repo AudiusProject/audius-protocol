@@ -5,7 +5,7 @@ import type {
   TrackEntity,
   RemixCreateNotification as RemixCreateNotificationType
 } from '@audius/common'
-import { notificationsSelectors } from '@audius/common'
+import { useProxySelector, notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
@@ -43,8 +43,9 @@ export const RemixCreateNotification = (
   const { childTrackId, parentTrackId } = notification
   const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
-  const tracks = useSelector((state) =>
-    getNotificationEntities(state, notification)
+  const tracks = useProxySelector(
+    (state) => getNotificationEntities(state, notification),
+    [notification]
   ) as EntityType[]
 
   const childTrack = tracks?.find(

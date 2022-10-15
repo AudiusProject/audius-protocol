@@ -1,5 +1,5 @@
 import type { Nullable, Track, User } from '@audius/common'
-import { Pressable, View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
@@ -42,12 +42,12 @@ export const TrackInfo = ({
     <View style={styles.root}>
       {user && track ? (
         <>
-          <Pressable onPress={onPressTitle}>
+          <TouchableOpacity onPress={onPressTitle}>
             <Text numberOfLines={2} style={styles.trackTitle} variant='h1'>
               {track.title}
             </Text>
-          </Pressable>
-          <Pressable onPress={onPressArtist}>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onPressArtist}>
             <View style={styles.artistInfo}>
               <Text
                 numberOfLines={1}
@@ -59,7 +59,7 @@ export const TrackInfo = ({
               </Text>
               <UserBadges user={user} badgeSize={12} hideName />
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </>
       ) : null}
     </View>

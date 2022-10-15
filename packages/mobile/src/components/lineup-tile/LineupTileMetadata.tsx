@@ -1,51 +1,49 @@
 import { useCallback } from 'react'
 
 import type { Remix, User } from '@audius/common'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import IconVolume from 'app/assets/images/iconVolume.svg'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
-import { createStyles as createTrackTileStyles } from './styles'
+import { useStyles as useTrackTileStyles } from './styles'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    metadata: {
-      flexDirection: 'row'
-    },
-    titlesActive: {
-      color: themeColors.primary
-    },
-    titlesPressed: {
-      textDecorationLine: 'underline'
-    },
-    titleText: {
-      fontSize: 16
-    },
-    playingIndicator: {
-      marginLeft: 8
-    },
-    badge: {
-      marginLeft: 4
-    },
-    coSignLabel: {
-      position: 'absolute',
-      bottom: -3,
-      left: 96,
-      color: themeColors.primary,
-      fontSize: 12,
-      letterSpacing: 1,
-      lineHeight: 15,
-      textTransform: 'uppercase'
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  metadata: {
+    flexDirection: 'row'
+  },
+  titlesActive: {
+    color: palette.primary
+  },
+  titlesPressed: {
+    textDecorationLine: 'underline'
+  },
+  titleText: {
+    fontSize: 16
+  },
+  playingIndicator: {
+    marginLeft: 8
+  },
+  badge: {
+    marginLeft: 4
+  },
+  coSignLabel: {
+    position: 'absolute',
+    bottom: -3,
+    left: 96,
+    color: palette.primary,
+    fontSize: 12,
+    letterSpacing: 1,
+    lineHeight: 15,
+    textTransform: 'uppercase'
+  }
+}))
 
 const messages = {
   coSign: 'Co-Sign'
@@ -73,8 +71,8 @@ export const LineupTileMetadata = ({
   user
 }: Props) => {
   const navigation = useNavigation()
-  const styles = useThemedStyles(createStyles)
-  const trackTileStyles = useThemedStyles(createTrackTileStyles)
+  const styles = useStyles()
+  const trackTileStyles = useTrackTileStyles()
   const { primary } = useThemeColors()
 
   const handleArtistPress = useCallback(() => {

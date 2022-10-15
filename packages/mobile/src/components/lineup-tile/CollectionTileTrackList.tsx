@@ -1,4 +1,4 @@
-import type { LineupTrack } from '@audius/common'
+import type { CommonState, LineupTrack, UID } from '@audius/common'
 import { playerSelectors } from '@audius/common'
 import { range } from 'lodash'
 import { Pressable, Text, View } from 'react-native'
@@ -61,14 +61,17 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 type TrackItemProps = {
-  active: boolean
   showSkeleton?: boolean
   index: number
   track?: LineupTrack
+  uid?: UID
 }
 
-const TrackItem = ({ track, active, index, showSkeleton }: TrackItemProps) => {
+const TrackItem = ({ track, index, showSkeleton, uid }: TrackItemProps) => {
   const styles = useStyles()
+  const isPlayingUid = useSelector(
+    (state: CommonState) => getUid(state) === uid
+  )
   return (
     <>
       <View style={styles.divider} />
@@ -77,17 +80,21 @@ const TrackItem = ({ track, active, index, showSkeleton }: TrackItemProps) => {
           <Skeleton width='100%' height='10' />
         ) : !track ? null : (
           <>
-            <Text style={[styles.text, active && styles.active]}>
+            <Text style={[styles.text, isPlayingUid && styles.active]}>
               {index + 1}
             </Text>
             <Text
-              style={[styles.text, styles.title, active && styles.active]}
+              style={[styles.text, styles.title, isPlayingUid && styles.active]}
               numberOfLines={1}
             >
               {track.title}
             </Text>
             <Text
-              style={[styles.text, styles.artist, active && styles.active]}
+              style={[
+                styles.text,
+                styles.artist,
+                isPlayingUid && styles.active
+              ]}
               numberOfLines={1}
             >
               {`by ${track.user.name}`}
@@ -106,13 +113,12 @@ export const CollectionTileTrackList = ({
   tracks
 }: LineupTileTrackListProps) => {
   const styles = useStyles()
-  const playingUid = useSelector(getUid)
 
   if (!tracks.length && isLoading) {
     return (
       <>
         {range(DISPLAY_TRACK_COUNT).map((i) => (
-          <TrackItem key={i} active={false} index={i} showSkeleton />
+          <TrackItem key={i} index={i} showSkeleton />
         ))}
       </>
     )
@@ -123,7 +129,7 @@ export const CollectionTileTrackList = ({
       {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
         <TrackItem
           key={track.uid}
-          active={playingUid === track.uid}
+          uid={track.uid}
           index={index}
           track={track}
         />

@@ -1,3 +1,5 @@
+import { PlaybackSource } from 'models'
+
 import { ID, UID } from '../../models/Identifiers'
 import { TrackMetadata } from '../../models/Track'
 
@@ -22,6 +24,7 @@ export const UPDATE_LINEUP_ORDER = 'UPDATE_LINEUP_ORDER'
 
 export const PLAY = 'PLAY'
 export const PAUSE = 'PAUSE'
+export const TOGGLE_PLAY = 'TOGGLE_PLAY'
 
 export const RESET = 'RESET'
 export const RESET_SUCCEEDED = 'RESET_SUCCEEDED'
@@ -171,6 +174,16 @@ export class LineupActions {
   pause() {
     return {
       type: addPrefix(this.prefix, PAUSE)
+    }
+  }
+
+  togglePlay(uid: UID, id: ID, source: PlaybackSource, isPlayingUid: boolean) {
+    return {
+      type: addPrefix(this.prefix, TOGGLE_PLAY),
+      uid,
+      id,
+      source,
+      isPlayingUid
     }
   }
 

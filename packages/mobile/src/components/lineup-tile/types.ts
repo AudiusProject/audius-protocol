@@ -37,7 +37,6 @@ export type LineupItemProps = {
     uid: UID
     id: ID
     source: PlaybackSource
-    isPlaying: boolean
     isPlayingUid: boolean
   }) => void
 
@@ -76,7 +75,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   item: Track | Collection
 
   /** Function to call when tile is pressed */
-  onPress?: (args: { isPlaying: boolean }) => void
+  onPress?: () => void
 
   /** Function to call when the overflow menu button is pressed */
   onPressOverflow?: GestureResponderHandler

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
 import type { StyleProp, ViewStyle } from 'react-native'
-import { Animated, Easing, StyleSheet, View } from 'react-native'
+import { Animated, Easing, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 const ANIMATION_DURATION_MS = 1500
@@ -20,29 +19,27 @@ type SkeletonProps = {
   noShimmer?: boolean
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    view: {
-      position: 'relative',
-      overflow: 'hidden',
-      borderRadius: 4
-    },
-    skeleton: {
-      position: 'absolute',
-      width: '400%',
-      height: '100%',
-      backgroundColor: themeColors.skeleton
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  view: {
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 4
+  },
+  skeleton: {
+    position: 'absolute',
+    width: '400%',
+    height: '100%',
+    backgroundColor: palette.skeleton
+  }
+}))
 
 const Skeleton = ({ width, height, style, noShimmer }: SkeletonProps) => {
-  const styles = useThemedStyles(createStyles)
-  const [shimmerWidth, setShimmerWidth] = useState(0)
-  const [shimmerPos, setShimmerPos] = useState(new Animated.Value(0))
+  const styles = useStyles()
+  const shimmerPos = useRef(new Animated.Value(0)).current
   const { skeleton, skeletonHighlight } = useThemeColors()
 
-  useEffect(() => {
-    if (shimmerWidth !== 0 && !noShimmer) {
+  const shimmer = useMemo(
+    () =>
       Animated.loop(
         Animated.timing(shimmerPos, {
           toValue: 0,
@@ -50,9 +47,9 @@ const Skeleton = ({ width, height, style, noShimmer }: SkeletonProps) => {
           useNativeDriver: true,
           easing: Easing.ease
         })
-      ).start()
-    }
-  }, [shimmerPos, shimmerWidth, noShimmer])
+      ),
+    [shimmerPos]
+  )
 
   return (
     <View style={[styles.view, { height, width }, style]}>
@@ -60,8 +57,8 @@ const Skeleton = ({ width, height, style, noShimmer }: SkeletonProps) => {
         onLayout={(e) => {
           if (noShimmer) return
           const { width } = e.nativeEvent.layout
-          setShimmerWidth(width)
-          setShimmerPos(new Animated.Value(-0.75 * width))
+          shimmerPos.setValue(-0.75 * width)
+          shimmer.start()
         }}
         style={[styles.skeleton, { transform: [{ translateX: shimmerPos }] }]}
       >
