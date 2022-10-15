@@ -222,12 +222,13 @@ export async function isNodeHealthyOrInGracePeriod(
 export async function getEarliestFailedHealthCheckTimestamp(
   node: string,
   isPrimary: boolean
-) {
-  return redis.get(
+): Promise<Date | null> {
+  const timestampString = await redis.get(
     `${
       isPrimary ? REDIS_KEY_PREFIX_PRIMARY : REDIS_KEY_PREFIX_SECONDARY
     }${node}`
   )
+  return timestampString ? new Date(timestampString) : null
 }
 
 export async function setHealthCheckTimestampToNow(
