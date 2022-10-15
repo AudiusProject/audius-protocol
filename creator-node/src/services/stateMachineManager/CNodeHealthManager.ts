@@ -67,12 +67,6 @@ export async function getUnhealthyPeers(
 }
 
 export async function isNodeHealthy(peer: string, performSimpleCheck = false) {
-  if (
-    peer === 'http://cn1_creator-node_1:4000' ||
-    peer === 'http://cn2_creator-node_1:4001'
-  ) {
-    return false
-  }
   try {
     const verboseHealthCheckResp = await _queryVerboseHealthCheck(peer)
     // if node returns healthy: false consider that unhealthy just like non-200 response
