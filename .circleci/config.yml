@@ -285,8 +285,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - bi-weekly:
-          # really want true
-          odd_week: false
+          odd_week: true
 
   bake-gcp-dev-image:
     docker:
