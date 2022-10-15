@@ -5,7 +5,7 @@ import type {
   RemixCosignNotification as RemixCosignNotificationType,
   TrackEntity
 } from '@audius/common'
-import { notificationsSelectors } from '@audius/common'
+import { useProxySelector, notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -47,8 +47,9 @@ export const RemixCosignNotification = (
   const user = useSelector((state) => getNotificationUser(state, notification))
   // TODO: casting from EntityType to TrackEntity here, but
   // getNotificationEntities should be smart enough based on notif type
-  const tracks = useSelector((state) =>
-    getNotificationEntities(state, notification)
+  const tracks = useProxySelector(
+    (state) => getNotificationEntities(state, notification),
+    [notification]
   ) as Nullable<TrackEntity[]>
 
   const childTrack = tracks?.find(({ track_id }) => track_id === childTrackId)

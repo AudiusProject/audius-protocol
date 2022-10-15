@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID, UID } from '@audius/common'
-import {
-  Name,
-  PlaybackSource,
-  Kind,
-  Status,
-  tippingSelectors
-} from '@audius/common'
+import type { ID, UID, PlaybackSource } from '@audius/common'
+import { Kind, Status, tippingSelectors } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
@@ -21,7 +15,6 @@ import {
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { make, track } from 'app/services/analytics'
 
 import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
 
@@ -41,7 +34,6 @@ type TogglePlayConfig = {
   id: ID
   source: PlaybackSource
   isPlayingUid: boolean
-  isPlaying: boolean
 }
 
 // The max number of tiles to load
@@ -275,26 +267,8 @@ export const Lineup = ({
   }, [handleLoadMore, selfLoad, lineupLength, status])
 
   const togglePlay = useCallback(
-    ({ uid, id, source, isPlayingUid, isPlaying }: TogglePlayConfig) => {
-      if (!isPlayingUid || !isPlaying) {
-        dispatch(actions.play(uid))
-        track(
-          make({
-            eventName: Name.PLAYBACK_PLAY,
-            id: `${id}`,
-            source: source || PlaybackSource.TRACK_TILE
-          })
-        )
-      } else {
-        dispatch(actions.pause())
-        track(
-          make({
-            eventName: Name.PLAYBACK_PAUSE,
-            id: `${id}`,
-            source: source || PlaybackSource.TRACK_TILE
-          })
-        )
-      }
+    ({ uid, id, source, isPlayingUid }: TogglePlayConfig) => {
+      dispatch(actions.togglePlay(uid, id, source, isPlayingUid))
     },
     [actions, dispatch]
   )

@@ -1,11 +1,10 @@
 import { StyleSheet, View } from 'react-native'
 
 import Skeleton from 'app/components/skeleton'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileRoot } from './LineupTileRoot'
-import { createStyles } from './styles'
+import { useStyles as useTrackTileStyles } from './styles'
 
 const styles = StyleSheet.create({
   skeleton: {
@@ -23,7 +22,7 @@ const styles = StyleSheet.create({
 })
 
 export const LineupTileSkeleton = () => {
-  const trackTileStyles = useThemedStyles(createStyles)
+  const trackTileStyles = useTrackTileStyles()
   return (
     <LineupTileRoot>
       <View style={styles.metadata}>

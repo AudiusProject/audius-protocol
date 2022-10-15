@@ -7,7 +7,7 @@ import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
 
-import { createStyles as createTrackTileStyles } from './styles'
+import { useStyles as useTrackTileStyles } from './styles'
 
 type Props = {
   /** Whether or not to show the crown icon */
@@ -28,7 +28,7 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const LineupTileRankIcon = ({ showCrown, index }: Props) => {
   const styles = useThemedStyles(createStyles)
-  const trackTileStyles = useThemedStyles(createTrackTileStyles)
+  const trackTileStyles = useTrackTileStyles()
   const { secondary } = useThemeColors()
   const Icon = showCrown ? IconCrown : IconTrending
   return (

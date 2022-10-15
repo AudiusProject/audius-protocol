@@ -6,11 +6,10 @@ import type { SvgProps } from 'react-native-svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { createStyles as createTrackTileStyles } from './styles'
+import { useStyles as useTrackTileStyles } from './styles'
 
 const messages = {
   artistPick: "Artist's Pick",
@@ -52,7 +51,7 @@ type ItemProps = {
 
 const LineupTileTopRightItem = ({ icon: Icon, label }: ItemProps) => {
   const { neutralLight4 } = useThemeColors()
-  const trackTileStyles = useThemedStyles(createTrackTileStyles)
+  const trackTileStyles = useTrackTileStyles()
   return (
     <View style={styles.item}>
       <Icon height={16} width={16} fill={neutralLight4} style={styles.icon} />
@@ -86,7 +85,7 @@ export const LineupTileTopRight = ({
   isUnlisted,
   showArtistPick
 }: Props) => {
-  const trackTileStyles = useThemedStyles(createTrackTileStyles)
+  const trackTileStyles = useTrackTileStyles()
 
   return (
     <View style={styles.topRight}>

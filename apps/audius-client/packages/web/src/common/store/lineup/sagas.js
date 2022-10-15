@@ -1,5 +1,6 @@
 import {
   Kind,
+  Name,
   makeUid,
   makeUids,
   Uid,
@@ -30,7 +31,7 @@ import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSource, getUid, getPositions } = queueSelectors
-const { getUid: getCurrentPlayerTrackUid } = playerSelectors
+const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -343,6 +344,27 @@ function* pause(action) {
   yield put(queueActions.pause({}))
 }
 
+function* togglePlay(lineupActions, lineupSelector, prefix, action) {
+  const isPlaying = yield select(getPlaying)
+  const analytics = yield getContext('analytics')
+
+  if (!action.isPlayingUid || !isPlaying) {
+    yield put(lineupActions.play(action.uid))
+    analytics.track({
+      eventName: Name.PLAYBACK_PLAY,
+      id: `${action.id}`,
+      source: action.source
+    })
+  } else {
+    yield put(lineupActions.pause())
+    analytics.track({
+      eventName: Name.PLAYBACK_PAUSE,
+      id: `${action.id}`,
+      source: action.source
+    })
+  }
+}
+
 function* reset(
   lineupActions,
   lineupPrefix,
@@ -528,6 +550,22 @@ export class LineupSagas {
     }
   }
 
+  watchTogglePlay = () => {
+    const instance = this
+    return function* () {
+      yield takeLatest(
+        baseLineupActions.addPrefix(
+          instance.prefix,
+          baseLineupActions.TOGGLE_PLAY
+        ),
+        togglePlay,
+        instance.actions,
+        instance.selector,
+        instance.prefix
+      )
+    }
+  }
+
   watchReset = () => {
     const instance = this
     return function* () {
@@ -597,6 +635,7 @@ export class LineupSagas {
       this.watchFetchLineupMetadata(),
       this.watchPlay(),
       this.watchPauseTrack(),
+      this.watchTogglePlay(),
       this.watchReset(),
       this.watchAdd(),
       this.watchRemove(),

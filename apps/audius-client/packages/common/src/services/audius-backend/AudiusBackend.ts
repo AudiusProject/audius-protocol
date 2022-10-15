@@ -3029,7 +3029,7 @@ export const audiusBackend = ({
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (!ownerWAudioBalance) {
-        console.error('Failed to fetch account waudio balance')
+        console.log('Failed to fetch account waudio balance')
         return new BN('0')
       }
       return ownerWAudioBalance

@@ -94,7 +94,7 @@ type NowPlayingDrawerProps = {
  * Memoized to prevent rerender during bottom-bar navigation.
  * It's rerendering because bottomTab render function rerenders a lot.
  */
-export const NowPlayingDrawer = memo(function NowPlayngDrawer(
+export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   props: NowPlayingDrawerProps
 ) {
   const { translationAnim } = props

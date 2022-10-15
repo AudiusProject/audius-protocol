@@ -6,20 +6,18 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
-import { View, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { flexRowCentered } from 'app/styles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles, flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileRankIcon } from './LineupTileRankIcon'
-import { createStyles as createTrackTileStyles } from './styles'
+import { useStyles as useTrackTileStyles } from './styles'
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 
@@ -31,39 +29,38 @@ const formatPlayCount = (playCount?: number) => {
   return `${formatCount(playCount)} ${suffix}`
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    stats: {
-      flexDirection: 'row',
-      flex: 0,
-      alignItems: 'stretch',
-      paddingVertical: 2,
-      marginRight: 10,
-      height: 26
-    },
-    listenCount: {
-      ...flexRowCentered(),
-      justifyContent: 'center',
-      marginLeft: 'auto'
-    },
-    leftStats: {
-      ...flexRowCentered()
-    },
-    disabledStatItem: {
-      opacity: 0.5
-    },
-    statIcon: {
-      marginLeft: 4
-    },
-    favoriteStat: {
-      height: 14,
-      width: 14
-    },
-    repostStat: {
-      height: 16,
-      width: 16
-    }
-  })
+const useStyles = makeStyles(() => ({
+  stats: {
+    flexDirection: 'row',
+    flex: 0,
+    alignItems: 'stretch',
+    paddingVertical: 2,
+    marginRight: 10,
+    height: 26
+  },
+  listenCount: {
+    ...flexRowCentered(),
+    justifyContent: 'center',
+    marginLeft: 'auto'
+  },
+  leftStats: {
+    ...flexRowCentered()
+  },
+  disabledStatItem: {
+    opacity: 0.5
+  },
+  statIcon: {
+    marginLeft: 4
+  },
+  favoriteStat: {
+    height: 14,
+    width: 14
+  },
+  repostStat: {
+    height: 16,
+    width: 16
+  }
+}))
 
 type Props = {
   favoriteType: FavoriteType
@@ -92,8 +89,8 @@ export const LineupTileStats = ({
   saveCount,
   showRankIcon
 }: Props) => {
-  const styles = useThemedStyles(createStyles)
-  const trackTileStyles = useThemedStyles(createTrackTileStyles)
+  const styles = useStyles()
+  const trackTileStyles = useTrackTileStyles()
   const { neutralLight4 } = useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
