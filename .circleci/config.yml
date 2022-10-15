@@ -165,6 +165,33 @@ commands:
                 << parameters.odd_week >> || circleci-agent step halt
             fi
 
+  deploy-lock:
+    steps:
+      - queue/block_workflow:
+          job-regex: '.*stage.*discovery.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*stage.*(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*stage.*identity.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          job-regex: '.*dn.*prod.*'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          job-regex: '.*cn.*prod.*'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          job-regex: '.*is.*prod.*'
+          consider-branch: false
+          dont-quit: false
+
   run-on-gcp:
     parameters:
       command:
@@ -1023,30 +1050,7 @@ jobs:
         type: boolean
         default: false
     steps:
-      - queue/block_workflow:
-          job-regex: '.*stage.*discovery.*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*stage.*(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*stage.*identity.*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*dn.*prod.*'
-          consider-branch: false
-          dont-quit: false
-      - queue/block_workflow:
-          job-regex: '.*cn.*prod.*'
-          consider-branch: false
-          dont-quit: false
-      - queue/block_workflow:
-          job-regex: '.*is.*prod.*'
-          consider-branch: false
-          dont-quit: false
+      - deploy-lock
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
