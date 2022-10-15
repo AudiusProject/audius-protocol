@@ -823,7 +823,7 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(f"index.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
 
     if num_revert_blocks > 100:
-        raise Exception("Unexpected revert, >10,0000 blocks")
+        raise Exception("Unexpected revert, >100 blocks")
 
     if num_revert_blocks > 50:
         logger.error(f"index.py | {self.request.id} | Revert blocks list > 50")
