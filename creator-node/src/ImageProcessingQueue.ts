@@ -54,7 +54,11 @@ export class ImageProcessingQueue {
     if (__dirname.includes('/build/src')) {
       processorFile = path.join(__dirname, 'workers/resizeImage.js')
     } else {
-      processorFile = path.join(__dirname, '../build/src', 'workers/resizeImage.js')
+      processorFile = path.join(
+        __dirname,
+        '../build/src',
+        'workers/resizeImage.js'
+      )
     }
     const worker = new Worker('image-processing-queue', processorFile, {
       connection,
