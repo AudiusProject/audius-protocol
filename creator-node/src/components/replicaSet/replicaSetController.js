@@ -273,16 +273,16 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
       userId: parseInt(userId),
       primary: parseInt(newPrimarySpId),
       secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: parseInt(currentSpIds[0]),
-      oldSecondaries: [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      oldPrimary: currentSpIds.primaryId,
+      oldSecondaries: currentSpIds.secondaryIds
     })
   } else {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
       parseInt(userId),
       parseInt(newPrimarySpId),
       [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      parseInt(currentSpIds[0]),
-      [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      currentSpIds.primaryId,
+      currentSpIds.secondaryIds
     )
   }
 

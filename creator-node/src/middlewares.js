@@ -178,14 +178,19 @@ async function ensurePrimaryMiddleware(req, res, next) {
    * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
    * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
    */
-  req.session.creatorNodeEndpoints = await replicaSetSpIdsToEndpoints(
+  const replicaSetIdsToEndpointsMapping = await replicaSetSpIdsToEndpoints(
     replicaSetSpIDs
   )
+  req.session.creatorNodeEndpoints = [
+    replicaSetIdsToEndpointsMapping.primary,
+    replicaSetIdsToEndpointsMapping.secondary1,
+    replicaSetIdsToEndpointsMapping.secondary2
+  ]
 
   req.logger.info(
     `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${
       req.session.creatorNodeEndpoints
-    }`
+    }. nodeIsPrimary: ${req.session.nodeIsPrimary}`
   )
   next()
 }

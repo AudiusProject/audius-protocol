@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FavoritesResponseFull
  */
-export interface FavoritesResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof FavoritesResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FavoritesResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FavoritesResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FavoritesResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FavoritesResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FavoritesResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FavoritesResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<ActivityFull>}
-     * @memberof FavoritesResponseFull
-     */
-    data?: Array<ActivityFull>;
-}
+export interface FavoritesResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FavoritesResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FavoritesResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FavoritesResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FavoritesResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FavoritesResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FavoritesResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FavoritesResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<ActivityFull>}
+        * @memberof FavoritesResponseFull
+        */
+        data?: Array<ActivityFull>;
+    }
+
 
