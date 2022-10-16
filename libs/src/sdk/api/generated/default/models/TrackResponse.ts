@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TrackResponse
  */
-export interface TrackResponse {
-    /**
-     * 
-     * @type {Track}
-     * @memberof TrackResponse
-     */
-    data?: Track;
-}
+export interface TrackResponse 
+    {
+        /**
+        * 
+        * @type {Track}
+        * @memberof TrackResponse
+        */
+        data?: Track;
+    }
+
 

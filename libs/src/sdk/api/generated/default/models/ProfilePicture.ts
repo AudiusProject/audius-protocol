@@ -18,24 +18,26 @@
  * @export
  * @interface ProfilePicture
  */
-export interface ProfilePicture {
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _150x150?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ProfilePicture
-     */
-    _1000x1000?: string;
-}
+export interface ProfilePicture 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof ProfilePicture
+        */
+        _150x150?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof ProfilePicture
+        */
+        _480x480?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof ProfilePicture
+        */
+        _1000x1000?: string;
+    }
+
 
