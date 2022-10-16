@@ -31,54 +31,56 @@ import {
  * @export
  * @interface RemixingResponse
  */
-export interface RemixingResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixingResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixingResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixingResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixingResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemixingResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemixingResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof RemixingResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof RemixingResponse
-     */
-    data?: Array<TrackFull>;
-}
+export interface RemixingResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixingResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixingResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixingResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixingResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof RemixingResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof RemixingResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof RemixingResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof RemixingResponse
+        */
+        data?: Array<TrackFull>;
+    }
+
 

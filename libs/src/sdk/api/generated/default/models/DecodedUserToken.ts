@@ -25,54 +25,56 @@ import {
  * @export
  * @interface DecodedUserToken
  */
-export interface DecodedUserToken {
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    userId: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    email: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    handle: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DecodedUserToken
-     */
-    verified: boolean;
-    /**
-     * 
-     * @type {ProfilePicture}
-     * @memberof DecodedUserToken
-     */
-    profilePicture?: ProfilePicture;
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    sub: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DecodedUserToken
-     */
-    iat: string;
-}
+export interface DecodedUserToken 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        userId: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        email: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        name: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        handle: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof DecodedUserToken
+        */
+        verified: boolean;
+        /**
+        * 
+        * @type {ProfilePicture}
+        * @memberof DecodedUserToken
+        */
+        profilePicture?: ProfilePicture;
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        sub: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof DecodedUserToken
+        */
+        iat: string;
+    }
+
 

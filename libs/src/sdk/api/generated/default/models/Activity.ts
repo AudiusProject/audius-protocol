@@ -18,24 +18,26 @@
  * @export
  * @interface Activity
  */
-export interface Activity {
-    /**
-     * 
-     * @type {string}
-     * @memberof Activity
-     */
-    timestamp?: string;
-    /**
-     * 
-     * @type {object}
-     * @memberof Activity
-     */
-    item_type?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof Activity
-     */
-    item?: object;
-}
+export interface Activity 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof Activity
+        */
+        timestamp?: string;
+        /**
+        * 
+        * @type {object}
+        * @memberof Activity
+        */
+        item_type?: object;
+        /**
+        * 
+        * @type {object}
+        * @memberof Activity
+        */
+        item?: object;
+    }
+
 

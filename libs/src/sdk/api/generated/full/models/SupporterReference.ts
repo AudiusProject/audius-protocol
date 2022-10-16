@@ -18,12 +18,14 @@
  * @export
  * @interface SupporterReference
  */
-export interface SupporterReference {
-    /**
-     * 
-     * @type {string}
-     * @memberof SupporterReference
-     */
-    user_id: string;
-}
+export interface SupporterReference 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof SupporterReference
+        */
+        user_id: string;
+    }
+
 
