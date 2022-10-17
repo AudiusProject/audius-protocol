@@ -175,7 +175,7 @@ const startAppForWorker = async () => {
     } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
       try {
         const { prometheusRegistry } = serviceRegistry
-        prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
+        prometheusRegistry.resolvePromiseToGetAggregatedMetrics!(msg?.val)
       } catch (error: any) {
         logger.error(
           `Failed to send aggregated metrics data back to worker: ${error}`
