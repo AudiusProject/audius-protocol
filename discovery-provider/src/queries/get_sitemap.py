@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from typing import List, Tuple
 
 from lxml import etree
@@ -7,11 +8,11 @@ from sqlalchemy.orm.session import Session
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.utils.get_all_other_nodes import get_node_endpoint
 
 logger = logging.getLogger(__name__)
-
 
 root_site_maps_routes = [
     "defaults.xml",
@@ -32,12 +33,14 @@ def set_base_url():
 
 def create_client_url(route):
     client_base = get_client_base_url()
-    return f"{client_base}/{route}"
+    safe_route = urllib.parse.quote(route)
+    return f"{client_base}/{safe_route}"
 
 
 def create_xml_url(route):
     self_base = set_base_url()
-    return f"{self_base}/{route}"
+    safe_route = urllib.parse.quote(route)
+    return f"{self_base}/{safe_route}"
 
 
 default_routes = [
@@ -70,7 +73,7 @@ LIMIT = 50_000
 def build_default():
     root = etree.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     for site_map_route in default_routes:
-        sitemap_el = etree.Element("sitemap")
+        sitemap_el = etree.Element("url")
         loc = etree.Element("loc")
         loc.text = create_client_url(site_map_route)
         sitemap_el.append(loc)
@@ -90,11 +93,7 @@ def get_max_track_count(session: Session) -> int:
 
 
 def get_max_user_count(session: Session) -> int:
-    max = (
-        session.query(func.count(User.user_id))
-        .filter(User.is_current == True, User.is_deactivated == False)
-        .one()
-    )
+    max = session.query(func.count(AggregateUser.user_id)).one()
     return max[0]
 
 
@@ -141,7 +140,10 @@ def get_track_slugs(session: Session, limit: int, offset: int):
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
         .filter(
-            Track.is_current == True, Track.stem_of == None, User.is_current == True
+            Track.is_current == True,
+            Track.stem_of == None,
+            User.is_current == True,
+            TrackRoute.is_current == True,
         )
         .order_by(asc(Track.track_id))
         .limit(limit)
