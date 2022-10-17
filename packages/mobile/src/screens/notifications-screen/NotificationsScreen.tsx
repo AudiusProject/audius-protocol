@@ -4,11 +4,9 @@ import { notificationsActions } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import IconNotification from 'app/assets/images/iconNotification.svg'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-
-import { ScreenContent } from '../ScreenContent'
 
 import { NotificationList } from './NotificationList'
 const { markAllAsViewed } = notificationsActions
@@ -29,7 +27,11 @@ export const NotificationsScreen = () => {
 
   return (
     <Screen>
-      <Header text={messages.header} />
+      <ScreenHeader
+        text={messages.header}
+        icon={IconNotification}
+        iconProps={{ height: 28, width: 28 }}
+      />
       <ScreenContent>
         <NotificationList />
       </ScreenContent>

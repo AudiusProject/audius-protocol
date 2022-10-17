@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import { FeedFilter, feedPageSelectors, modalsActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { ScreenHeaderButton } from 'app/components/core'
 import { messages } from 'app/components/feed-filter-drawer'
-import { HeaderButton } from 'app/components/header'
 
 const { getFeedFilter } = feedPageSelectors
 const { setVisibility } = modalsActions
@@ -23,5 +23,7 @@ export const FeedFilterButton = () => {
     dispatch(setVisibility({ modal: 'FeedFilter', visible: true }))
   }, [dispatch])
 
-  return <HeaderButton onPress={handlePress} title={messageMap[feedFilter]} />
+  return (
+    <ScreenHeaderButton onPress={handlePress} title={messageMap[feedFilter]} />
+  )
 }

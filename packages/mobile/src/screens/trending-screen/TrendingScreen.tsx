@@ -4,13 +4,11 @@ import { useSelector } from 'react-redux'
 import IconAllTime from 'app/assets/images/iconAllTime.svg'
 import IconDay from 'app/assets/images/iconDay.svg'
 import IconMonth from 'app/assets/images/iconMonth.svg'
+import IconTrending from 'app/assets/images/iconTrending.svg'
 import { RewardsBanner } from 'app/components/audio-rewards'
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-
-import { ScreenContent } from '../ScreenContent'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
@@ -60,9 +58,9 @@ export const TrendingScreen = () => {
 
   return (
     <Screen>
-      <Header text='Trending'>
+      <ScreenHeader text='Trending' icon={IconTrending}>
         <TrendingFilterButton />
-      </Header>
+      </ScreenHeader>
       <ScreenContent>
         <TopTabNavigator screens={trendingScreens} />
       </ScreenContent>

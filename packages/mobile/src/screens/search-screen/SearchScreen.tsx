@@ -6,12 +6,9 @@ import pick from 'lodash/pick'
 import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { getSearchQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
-
-import { ScreenContent } from '../ScreenContent'
 
 import { SearchBar } from './SearchBar'
 import SearchHistory from './SearchHistory'
@@ -85,7 +82,7 @@ export const SearchScreen = () => {
       title={null}
       headerTitle={null}
     >
-      <Header text='Search' />
+      <ScreenHeader text='Search' />
       <ScreenContent unboxed>{renderBody()}</ScreenContent>
     </Screen>
   )

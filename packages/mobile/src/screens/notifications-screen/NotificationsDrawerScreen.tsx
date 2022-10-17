@@ -6,9 +6,8 @@ import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
+import { ScreenContent } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-
-import { ScreenContent } from '../ScreenContent'
 
 import { NotificationList } from './NotificationList'
 import { TopBar } from './TopBar'
