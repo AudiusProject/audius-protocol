@@ -1,10 +1,8 @@
 from datetime import datetime
 
-import pytest
 from integration_tests.utils import populate_mock_db
 from src.queries.get_user_listen_counts_monthly import (
     GetUserListenCountsMonthlyArgs,
-    _get_user_listen_counts_monthly,
     get_user_listen_counts_monthly,
 )
 from src.utils.db_session import get_db
