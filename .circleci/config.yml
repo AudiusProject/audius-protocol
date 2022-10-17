@@ -158,10 +158,10 @@ commands:
             echo "Continue on odd week? << parameters.odd_week >>"
             if [ $(($week % 2)) == 0 ]; then
                 echo "Even week"
-                << parameters.odd_week >> && circleci-agent step halt
+                << parameters.odd_week >> && exit 1
             else
                 echo "Odd week"
-                << parameters.odd_week >> || circleci-agent step halt
+                << parameters.odd_week >> || exit 1
             fi
 
   run-on-gcp:
@@ -1815,56 +1815,64 @@ workflows:
             branches:
               only: /(^master$)/
 
-#   release-to-service-providers-cron:
-#     jobs:
-#       - release-week
-#       - release-scripts:
-#           name: release-to-service-providers
-#           target: release-to-service-providers
-#           context:
-#             - slack-secrets
-#             - gh-tokens.releases
-#             - discord
-#             - governance
-#     triggers:
-#       - schedule:
-#           cron: '0 15 * * 1'
-#           filters:
-#             branches:
-#               only: /(^master$)/
+  # release-to-service-providers-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: release-to-service-providers
+  #         target: release-to-service-providers
+  #         context:
+  #           - slack-secrets
+  #           - gh-tokens.releases
+  #           - discord
+  #           - governance
+  #         requires:
+  #           - release-week
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 15 * * 1'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
 
-#   evaluate-proposal-cron:
-#     jobs:
-#       - release-week
-#       - release-scripts:
-#           name: evaluate-proposal
-#           target: evaluate-proposal
-#           context:
-#             - slack-secrets
-#             - governance
-#     triggers:
-#       - schedule:
-#           cron: '0 19 * * 5'
-#           filters:
-#             branches:
-#               only: /(^master$)/
+  # evaluate-proposal-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: evaluate-proposal
+  #         target: evaluate-proposal
+  #         context:
+  #           - slack-secrets
+  #           - governance
+  #         requires:
+  #           - release-week
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 19 * * 5'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
 
-#   cut-release-cron:
-#     jobs:
-#       - release-week
-#       - release-scripts:
-#           name: cut-release
-#           target: cut-release
-#           context:
-#             - slack-secrets
-#             - gh-tokens.releases
-#       - generate-release-checklist
-#     triggers:
-#       - schedule:
-#           cron: '0 7 * * 6'
-#           filters:
-#             branches:
-#               only: /(^master$)/
+  # cut-release-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: cut-release
+  #         target: cut-release
+  #         context:
+  #           - slack-secrets
+  #           - gh-tokens.releases
+  #         requires:
+  #           - release-week
+  #     - generate-release-checklist:
+  #         requires:
+  #           - cut-release
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 7 * * 6'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
