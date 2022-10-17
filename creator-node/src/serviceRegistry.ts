@@ -25,9 +25,7 @@ import TrustedNotifierManager from './services/TrustedNotifierManager'
 import { ImageProcessingQueue } from './ImageProcessingQueue'
 import TranscodingQueue from './TranscodingQueue'
 import StateMachineManager from './services/stateMachineManager'
-import {
-  PremiumContentAccessChecker
-} from './premiumContent/premiumContentAccessChecker'
+import { PremiumContentAccessChecker } from './premiumContent/premiumContentAccessChecker'
 import { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
 
 const config = require('./config')
