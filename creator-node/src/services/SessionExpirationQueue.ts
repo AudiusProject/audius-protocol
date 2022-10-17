@@ -1,12 +1,11 @@
-import {Job} from 'bullmq'
-import { Queue, Worker } from 'bullmq'
+import { Job, Queue, Worker } from 'bullmq'
 import Sequelize from 'sequelize'
 
-import {deleteSessions} from '../sessionManager'
-const config = require('../config')
+import { deleteSessions } from '../sessionManager'
 import { logger } from '../logging'
-const { SessionToken } = require('../models')
 import { clusterUtils } from '../utils'
+const config = require('../config')
+const { SessionToken } = require('../models')
 
 const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
@@ -24,7 +23,7 @@ export class SessionExpirationQueue {
   batchSize: number
   runInterval: number
   queue: Queue
-  
+
   constructor() {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
@@ -44,11 +43,11 @@ export class SessionExpirationQueue {
     })
   }
 
-  async expireSessions (sessionExpiredCondition: Date){
+  async expireSessions(sessionExpiredCondition: Date) {
     const sessionsToDelete = await SessionToken.findAll(
       Object.assign(sessionExpiredCondition, { limit: this.batchSize })
     )
-    await sessionManager.deleteSessions(sessionsToDelete)
+    await deleteSessions(sessionsToDelete)
   }
 
   /**
@@ -66,7 +65,7 @@ export class SessionExpirationQueue {
   /**
    * Starts the session expiration queue on a daily cron.
    */
-  async start () {
+  async start() {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
