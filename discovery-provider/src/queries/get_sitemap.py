@@ -93,10 +93,7 @@ def get_max_track_count(session: Session) -> int:
 
 
 def get_max_user_count(session: Session) -> int:
-    max = (
-        session.query(func.count(AggregateUser.user_id))
-        .one()
-    )
+    max = session.query(func.count(AggregateUser.user_id)).one()
     return max[0]
 
 
@@ -143,7 +140,10 @@ def get_track_slugs(session: Session, limit: int, offset: int):
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
         .filter(
-            Track.is_current == True, Track.stem_of == None, User.is_current == True, TrackRoute.is_current == True
+            Track.is_current == True,
+            Track.stem_of == None,
+            User.is_current == True,
+            TrackRoute.is_current == True,
         )
         .order_by(asc(Track.track_id))
         .limit(limit)
