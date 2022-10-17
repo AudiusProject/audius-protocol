@@ -10,7 +10,7 @@ import BlacklistManager from './blacklistManager'
 import initAudiusLibs from './services/initAudiusLibs'
 import URSMRegistrationManager from './services/URSMRegistrationManager'
 import {
-  logger: genericLogger,
+  logger as genericLogger,
   getStartTime,
   logInfoWithDuration
 } from './logging'
