@@ -43,7 +43,7 @@ export class SessionExpirationQueue {
     })
   }
 
-  async expireSessions(sessionExpiredCondition: Date) {
+  async expireSessions(sessionExpiredCondition: Object) {
     const sessionsToDelete = await SessionToken.findAll(
       Object.assign(sessionExpiredCondition, { limit: this.batchSize })
     )
