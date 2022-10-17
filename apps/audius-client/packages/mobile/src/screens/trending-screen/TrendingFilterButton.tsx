@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Genre, trendingPageSelectors, modalsActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { HeaderButton } from 'app/components/header'
+import { ScreenHeaderButton } from 'app/components/core'
 
 import { MODAL_NAME } from './TrendingFilterDrawer'
 const { getTrendingGenre } = trendingPageSelectors
@@ -17,5 +17,5 @@ export const TrendingFilterButton = () => {
     dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: true }))
   }, [dispatchWeb])
 
-  return <HeaderButton title={trendingGenre} onPress={handlePress} />
+  return <ScreenHeaderButton title={trendingGenre} onPress={handlePress} />
 }

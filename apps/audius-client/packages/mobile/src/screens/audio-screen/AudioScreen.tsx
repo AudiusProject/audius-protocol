@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { BNWei, StringWei, Nullable, CommonState } from '@audius/common'
 import {
+  FeatureFlags,
   vipDiscordModalActions,
   formatWei,
   tokenDashboardPageSelectors,
@@ -17,6 +18,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import IconReceive from 'app/assets/images/iconReceive.svg'
@@ -32,9 +34,10 @@ import {
   Button,
   GradientText,
   Text,
-  Tile
+  Tile,
+  ScreenHeader
 } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -162,6 +165,9 @@ export const AudioScreen = () => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
   const dispatch = useDispatch()
+  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
+    FeatureFlags.MOBILE_NAV_OVERHAUL
+  )
 
   const totalBalance: Nullable<BNWei> =
     useSelector(getAccountTotalBalance) ?? null
@@ -431,8 +437,13 @@ export const AudioScreen = () => {
   }
 
   return (
-    <Screen url='/audio'>
-      <Header text={messages.title} />
+    <Screen
+      url='/audio'
+      variant='secondary'
+      icon={IconCrown}
+      title={messages.title}
+    >
+      {isNavOverhaulEnabled ? null : <ScreenHeader text={messages.title} />}
       <ScrollView style={styles.tiles}>
         {renderAudioTile()}
         {renderWalletTile()}

@@ -10,8 +10,7 @@ import {
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { Screen, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -107,7 +106,7 @@ export const TrackRemixesScreen = () => {
 
   return (
     <Screen>
-      <Header text={messages.header} />
+      <ScreenHeader text={messages.header} />
       <Lineup
         lineup={lineup}
         loadMore={loadMore}

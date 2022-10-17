@@ -6,7 +6,7 @@ import {
 import { useSelector } from 'react-redux'
 
 import { RewardsBanner } from 'app/components/audio-rewards'
-import { Header } from 'app/components/header'
+import { ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getLineup } = trendingUndergroundPageLineupSelectors
@@ -22,7 +22,7 @@ export const TrendingUndergroundScreen = () => {
 
   return (
     <>
-      <Header text={messages.header} />
+      <ScreenHeader text={messages.header} />
       <Lineup
         lineup={lineup}
         header={<RewardsBanner type='underground' />}

@@ -18,13 +18,15 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     width: spacing(8)
   },
   notificationBubble: {
-    height: spacing(2),
-    width: spacing(2),
+    height: spacing(3) + 2,
+    width: spacing(3) + 2,
+    borderColor: palette.white,
+    borderWidth: 2,
     borderRadius: spacing(2),
     backgroundColor: palette.secondary,
     position: 'absolute',
-    top: 2,
-    right: 10
+    top: 0,
+    right: 2
   }
 }))
 

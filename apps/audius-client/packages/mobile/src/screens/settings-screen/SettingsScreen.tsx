@@ -6,6 +6,7 @@ import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.p
 import Bell from 'app/assets/images/emojis/bell.png'
 import Headphone from 'app/assets/images/emojis/headphone.png'
 import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
+import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen, ScrollView } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -58,10 +59,11 @@ export const SettingsScreen = () => {
 
   return (
     <Screen
-      title={messages.title}
-      topbarRight={null}
       variant='secondary'
+      title={messages.title}
+      icon={IconSettings}
       url='/settings'
+      topbarRight={null}
     >
       <ScrollView>
         <Image source={audiusLogoHorizontal} style={styles.logo} />

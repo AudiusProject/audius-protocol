@@ -21,9 +21,9 @@ const useStyles = makeStyles(({ palette, typography }) => ({
   }
 }))
 
-type HeaderButtonProps = ButtonProps
+type ScreenHeaderButtonProps = ButtonProps
 
-export const HeaderButton = (props: HeaderButtonProps) => {
+export const ScreenHeaderButton = (props: ScreenHeaderButtonProps) => {
   const styles = useStyles()
 
   return <Button variant='primary' size='small' styles={styles} {...props} />

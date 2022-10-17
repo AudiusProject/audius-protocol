@@ -2,16 +2,14 @@ import { explorePageActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
+import IconExplore from 'app/assets/images/iconExplore.svg'
 import IconForYou from 'app/assets/images/iconExploreForYou.svg'
 import IconMoods from 'app/assets/images/iconExploreMoods.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-
-import { ScreenContent } from '../ScreenContent'
 
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
@@ -59,7 +57,11 @@ const ExploreScreen = () => {
 
   return (
     <Screen>
-      <Header text={messages.header} />
+      <ScreenHeader
+        text={messages.header}
+        icon={IconExplore}
+        iconProps={{ height: 30 }}
+      />
       <ScreenContent>
         <TopTabNavigator screens={exploreScreens} />
       </ScreenContent>

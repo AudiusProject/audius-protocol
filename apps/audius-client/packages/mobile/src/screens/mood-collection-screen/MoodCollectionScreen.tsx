@@ -10,8 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
-import { Screen } from 'app/components/core'
-import { Header } from 'app/components/header'
+import { Screen, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import type { ExploreMoodCollection } from 'app/screens/explore-screen/collections'
 const { getCollections, getStatus } = explorePageCollectionsSelectors
@@ -43,7 +42,7 @@ export const MoodCollectionScreen = ({
 
   return (
     <Screen>
-      <Header text={`${collection.title} Playlists`} />
+      <ScreenHeader text={`${collection.title} Playlists`} />
       <WithLoader loading={status === Status.LOADING}>
         <CollectionList collection={exploreData} />
       </WithLoader>
