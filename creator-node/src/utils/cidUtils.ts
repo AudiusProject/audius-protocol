@@ -5,7 +5,7 @@ import axios from 'axios'
 import config from '../config'
 import { generateTimestampAndSignature } from '../apiSigning'
 import { libs } from '@audius/sdk'
-import { getAllRegisteredCNodes } from './contentNodeUtils'
+import { getAllRegisteredCNodes } from '../services/ContentNodeInfoManager'
 import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
 
 const DecisionTree = require('./decisionTree')
@@ -23,7 +23,6 @@ export const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' /
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
  * @param {Object} logger logger object
- * @param {Object} libs libs instance
  * @param {Integer?} trackId optional trackId that corresponds to the cid, see file_lookup route for more info
  * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
  * @param {number?} [numRetries=5] the number of retries to attempt to fetch cid, write to disk, and verify
@@ -33,7 +32,6 @@ export async function findCIDInNetwork(
   filePath: string,
   cid: string,
   logger: Logger,
-  libs: any,
   trackId: string | null = null,
   excludeList: string[] = [],
   numRetries = 5
@@ -44,13 +42,13 @@ export async function findCIDInNetwork(
   if (attemptedStateFix) return false
 
   // Get all registered Content Nodes
-  const creatorNodes = await getAllRegisteredCNodes(libs)
-  if (!creatorNodes.length) return false
+  const contentNodes = await getAllRegisteredCNodes(logger)
+  if (!contentNodes.length) return false
 
-  // Remove excluded nodes from list of creator nodes or self, no-op if empty list or nothing passed in
-  const creatorNodesFiltered = creatorNodes.filter(
-    (c: { endpoint: string }) =>
-      !excludeList.includes(c.endpoint) ||
+  // Remove excluded nodes + this self endpoint from list, no-op if empty list or nothing passed in
+  const creatorNodesFiltered = contentNodes.filter(
+    (c) =>
+      !excludeList.includes(c.endpoint) &&
       config.get('creatorNodeEndpoint') !== c.endpoint
   )
 

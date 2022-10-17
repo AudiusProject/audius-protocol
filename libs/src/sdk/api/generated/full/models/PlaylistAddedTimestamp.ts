@@ -18,24 +18,26 @@
  * @export
  * @interface PlaylistAddedTimestamp
  */
-export interface PlaylistAddedTimestamp {
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistAddedTimestamp
-     */
-    metadata_timestamp: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PlaylistAddedTimestamp
-     */
-    timestamp: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistAddedTimestamp
-     */
-    track_id: string;
-}
+export interface PlaylistAddedTimestamp 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistAddedTimestamp
+        */
+        metadata_timestamp: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof PlaylistAddedTimestamp
+        */
+        timestamp: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistAddedTimestamp
+        */
+        track_id: string;
+    }
+
 

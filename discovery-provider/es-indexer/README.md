@@ -33,8 +33,10 @@ and then:
 
 ```
 source .env
-npm run dev
+npm run dev --drop
 ```
+
+> it's important to run with `--drop` to catch any errors in index settings. Without --drop 400 errors will be silently ignored.
 
 ## How it works
 

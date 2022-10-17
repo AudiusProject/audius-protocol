@@ -31,54 +31,56 @@ import {
  * @export
  * @interface TrackRepostsResponseFull
  */
-export interface TrackRepostsResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackRepostsResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackRepostsResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackRepostsResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackRepostsResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackRepostsResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackRepostsResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof TrackRepostsResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof TrackRepostsResponseFull
-     */
-    data?: Array<UserFull>;
-}
+export interface TrackRepostsResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackRepostsResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackRepostsResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackRepostsResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackRepostsResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackRepostsResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackRepostsResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof TrackRepostsResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof TrackRepostsResponseFull
+        */
+        data?: Array<UserFull>;
+    }
+
 

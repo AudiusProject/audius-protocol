@@ -12,6 +12,7 @@ module.exports = {
     'plugin:node/recommended',
     'plugin:import/typescript',
     'plugin:@typescript-eslint/recommended',
+    'plugin:promise/recommended',
     // 'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'prettier'
   ],
@@ -19,7 +20,7 @@ module.exports = {
     node: true,
     mocha: true
   },
-  plugins: ['prettier'],
+  plugins: ['prettier', 'promise'],
   settings: {
     node: {
       allowModules: [],
@@ -73,7 +74,7 @@ module.exports = {
 
     'no-use-before-define': 'off',
     camelcase: 'off',
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'warn',
     'func-call-spacing': 'off',
     semi: ['error', 'never'],
     'no-undef': 'error',
