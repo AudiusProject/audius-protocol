@@ -504,6 +504,4 @@ class ServiceRegistry {
 }
 
 //  Export a singleton instance of the ServiceRegistry
-module.exports = {
-  serviceRegistry: new ServiceRegistry()
-}
+export const serviceRegistry = new ServiceRegistry()
