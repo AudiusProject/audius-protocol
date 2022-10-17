@@ -33,7 +33,7 @@ async function fetchCNodeEndpointToSpIdMap({
   }
 }
 
-module.exports = async (
+export const fetchCNodeEndpointToSpIdMapJobProcessor = async (
   params: DecoratedJobParams<FetchCNodeEndpointToSpIdMapJobParams>
 ) => {
   const { parentSpanContext } = params

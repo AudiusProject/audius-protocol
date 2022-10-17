@@ -20,7 +20,7 @@ const redis = require('../../redis')
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
-async function processJob(
+async function _processJob(
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
@@ -63,8 +63,8 @@ async function processJob(
   return result
 }
 
-module.exports = instrumentTracing({
-  fn: processJob,
+export const processJob = instrumentTracing({
+  fn: _processJob,
   options: {
     attributes: {
       [tracing.CODE_FILEPATH]: __filename

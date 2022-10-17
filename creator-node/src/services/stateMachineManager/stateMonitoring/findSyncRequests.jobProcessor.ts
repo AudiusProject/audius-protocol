@@ -343,7 +343,7 @@ async function _findSyncsForUser(
   }
 }
 
-module.exports = async (
+export const findSyncRequestsJobProcessor = async (
   params: DecoratedJobParams<FindSyncRequestsJobParams>
 ) => {
   const { parentSpanContext } = params

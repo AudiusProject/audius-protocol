@@ -5,7 +5,7 @@ const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
 const redis = require('../../redis')
 
-const StateMonitoringManager = require('./stateMonitoring')
+const { StateMonitoringManager } = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
 const {
   RECONFIG_MODES,

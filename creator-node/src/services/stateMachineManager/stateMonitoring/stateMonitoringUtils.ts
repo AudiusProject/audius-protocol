@@ -17,7 +17,7 @@ const { logger } = require('../../../logging')
 
 const DBManager = require('../../../dbManager')
 
-const {
+export const {
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
@@ -29,7 +29,9 @@ const {
  * @param discoveryNodeEndpoint the endpoint of the Discovery Node to request the latest user ID from
  * @returns the ID of the newest user on Audius
  */
-const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
+export const getLatestUserIdFromDiscovery = async (
+  discoveryNodeEndpoint: string
+) => {
   // Will throw error on non-200 response
   let latestUserId = 0
   try {
@@ -68,7 +70,7 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
  * @param maxUsers the maximum number of users to fetch
  * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
  */
-const getNodeUsers = async (
+export const getNodeUsers = async (
   discoveryNodeEndpoint: string,
   contentNodeEndpoint: string,
   prevUserId = 0,
@@ -150,7 +152,7 @@ const getNodeUsers = async (
  * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
  * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
  */
-const buildReplicaSetNodesToUserWalletsMap = (
+export const buildReplicaSetNodesToUserWalletsMap = (
   nodeUsers: StateMonitoringUser[]
 ): ReplicaSetNodesToUserWalletsMap => {
   const replicaSetNodesToUserWalletsMap: ReplicaSetNodesToUserWalletsMap = {}
@@ -171,7 +173,7 @@ const buildReplicaSetNodesToUserWalletsMap = (
   return replicaSetNodesToUserWalletsMap
 }
 
-const computeUserSecondarySyncSuccessRatesMap = async (
+export const computeUserSecondarySyncSuccessRatesMap = async (
   users: StateMonitoringUser[] = []
 ): Promise<UserSecondarySyncMetricsMap> => {
   // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
@@ -204,7 +206,7 @@ const computeUserSecondarySyncSuccessRatesMap = async (
  * @param {string} param.secondaryFilesHash filesHash on user's secondary
  * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, MergePrimaryAndSecondary
  */
-const computeSyncModeForUserAndReplica = async ({
+export const computeSyncModeForUserAndReplica = async ({
   wallet,
   primaryClock,
   secondaryClock,

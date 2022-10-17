@@ -266,6 +266,19 @@ const makeMetricToRecord = (
   return metric
 }
 
+/**
+ * @param {Object} param
+ * @param {string} param.name
+ * @param {JobProcessor} param.processor
+ * @param {Logger} param.logger
+ * @param {number} param.removeOnComplete
+ * @param {number} param.removeOnFail
+ * @param {PrometheusRegistry} param.prometheusRegistry
+ * @param {number=} param.globalConcurrency
+ * @param {Object=} param.limiter
+ * @param {Function=} param.onFailCallback
+ * @returns the queue, the worker, and a logger
+ */
 const makeQueue = ({
   name,
   processor,

@@ -351,7 +351,7 @@ const _transformAndFilterReplicaToUserInfoMap = (
   )
 }
 
-module.exports = async (
+export const findReplicaSetUpdatesJobProcessor = async (
   params: DecoratedJobParams<FindReplicaSetUpdateJobParams>
 ) => {
   const { parentSpanContext } = params

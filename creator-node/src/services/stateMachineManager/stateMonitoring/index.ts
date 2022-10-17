@@ -1,33 +1,38 @@
-const _ = require('lodash')
+import type { PrometheusRegistry } from '../../prometheusMonitoring/prometheusRegistry'
+import type { Queue, Job } from 'bullmq'
+import type Logger from 'bunyan'
 
-const config = require('../../../config')
-const {
+import _ from 'lodash'
+import {
   QUEUE_HISTORY,
   QUEUE_NAMES,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
-} = require('../stateMachineConstants')
-const { makeQueue } = require('../stateMachineUtils')
-const processJob = require('../processJob')
-const { logger: baseLogger, createChildLogger } = require('../../../logging')
-const { clusterUtils } = require('../../../utils')
-const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
-const monitorStateJobProcessor = require('./monitorState.jobProcessor')
-const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
-const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
-const fetchCNodeEndpointToSpIdMapJobProcessor = require('./fetchCNodeEndpointToSpIdMap.jobProcessor')
+} from '../stateMachineConstants'
+import { makeQueue } from '../stateMachineUtils'
+import { processJob } from '../processJob'
+import { logger as baseLogger, createChildLogger } from '../../../logging'
+import { clusterUtils } from '../../../utils'
+import { getLatestUserIdFromDiscovery } from './stateMonitoringUtils'
+import { monitorStateJobProcessor } from './monitorState.jobProcessor'
+import { findSyncRequestsJobProcessor } from './findSyncRequests.jobProcessor'
+import { findReplicaSetUpdatesJobProcessor } from './findReplicaSetUpdates.jobProcessor'
+import { fetchCNodeEndpointToSpIdMapJobProcessor } from './fetchCNodeEndpointToSpIdMap.jobProcessor'
+import { AnyJobParams } from '../types'
+
+const config = require('../../../config')
 
 const monitorStateLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MONITOR_STATE
-})
+}) as Logger
 const findSyncRequestsLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.FIND_SYNC_REQUESTS
-})
+}) as Logger
 const findReplicaSetUpdatesLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES
-})
+}) as Logger
 const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP
-})
+}) as Logger
 
 /**
  * Handles setup and job processing of the queue with jobs for:
@@ -35,8 +40,8 @@ const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
  * - finding syncs that should be issued for users to sync their data from their primary to their secondaries
  * - finding users who need a replica set update (when an unhealthy primary or secondary should be replaced)
  */
-class StateMonitoringManager {
-  async init(prometheusRegistry) {
+export class StateMonitoringManager {
+  async init(prometheusRegistry: typeof PrometheusRegistry) {
     // Create queue to fetch cNodeEndpoint->spId mapping
     const { queue: cNodeEndpointToSpIdMapQueue } = makeQueue({
       name: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
@@ -53,7 +58,7 @@ class StateMonitoringManager {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job: Job, error: any, prev: any) => {
         cNodeEndpointToSpIdMapQueueLogger.error(
           `Queue Job Failed - ID ${job?.id} - Error ${error}`
         )
@@ -78,10 +83,10 @@ class StateMonitoringManager {
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job: Job, error: any, _prev: any) => {
         const logger = createChildLogger(monitorStateLogger, {
           jobId: job?.id || 'unknown'
-        })
+        }) as Logger
         logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
         this.enqueueMonitorStateJobAfterFailure(monitorStateQueue, job)
       }
@@ -136,7 +141,7 @@ class StateMonitoringManager {
    * @param monitoringQueue the queue to re-add the job to
    * @param failedJob the jobData for the previous job that failed
    */
-  enqueueMonitorStateJobAfterFailure(monitoringQueue, failedJob) {
+  enqueueMonitorStateJobAfterFailure(monitoringQueue: Queue, failedJob: Job) {
     const {
       data: { lastProcessedUserId, discoveryNodeEndpoint }
     } = failedJob
@@ -154,7 +159,7 @@ class StateMonitoringManager {
    * @param {Object} queue the StateMonitoringQueue to consume jobs from
    * @param {string} discoveryNodeEndpoint the IP address or URL of a Discovery Node
    */
-  async startMonitorStateQueue(queue, discoveryNodeEndpoint) {
+  async startMonitorStateQueue(queue: Queue, discoveryNodeEndpoint: string) {
     // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
     // pausing the queue and not enqueuing the first job
     if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
@@ -187,7 +192,7 @@ class StateMonitoringManager {
    * @param {Object} queue the cNodeEndpoint->spId map queue to consume jobs from
    * @param {Object} prometheusRegistry the registry of metrics from src/services/prometheusMonitoring/prometheusRegistry.js
    */
-  async startEndpointToSpIdMapQueue(queue) {
+  async startEndpointToSpIdMapQueue(queue: Queue) {
     // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
     // pausing the queue and not enqueuing the first job
     if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
@@ -201,9 +206,12 @@ class StateMonitoringManager {
     }
   }
 
-  makeProcessJob(processor, logger, prometheusRegistry) {
-    return async (job) => processJob(job, processor, logger, prometheusRegistry)
+  makeProcessJob(
+    processor: any,
+    logger: Logger,
+    prometheusRegistry: typeof PrometheusRegistry
+  ) {
+    return async (job: { id: string; data: AnyJobParams }) =>
+      processJob(job, processor, logger, prometheusRegistry)
   }
 }
-
-module.exports = StateMonitoringManager
