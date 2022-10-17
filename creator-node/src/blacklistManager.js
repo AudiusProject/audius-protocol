@@ -26,7 +26,7 @@ class BlacklistManager {
     this.initialized = false
   }
 
-  static async init() {
+  async init() {
     try {
       this._log('Initializing BlacklistManager...')
 

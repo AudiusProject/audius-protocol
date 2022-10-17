@@ -1,34 +1,37 @@
-const _ = require('lodash')
-const { createBullBoard } = require('@bull-board/api')
-const { BullAdapter } = require('@bull-board/api/bullAdapter')
-const { ExpressAdapter } = require('@bull-board/express')
+import type { Queue } from 'bullmq'
+import type { Application } from 'express'
 
-const redisClient = require('./redis')
-const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
-const initAudiusLibs = require('./services/initAudiusLibs')
-const URSMRegistrationManager = require('./services/URSMRegistrationManager')
-const {
+import _ from 'lodash'
+import { createBullBoard } from '@bull-board/api'
+import { BullAdapter } from '@bull-board/api/bullAdapter'
+import { ExpressAdapter } from '@bull-board/express'
+
+import BlacklistManager from './blacklistManager'
+import initAudiusLibs from './services/initAudiusLibs'
+import URSMRegistrationManager from './services/URSMRegistrationManager'
+import {
   logger: genericLogger,
   getStartTime,
   logInfoWithDuration
-} = require('./logging')
-const utils = require('./utils')
-const config = require('./config')
-const MonitoringQueue = require('./monitors/MonitoringQueue')
-const SyncQueue = require('./services/sync/syncQueue')
-const SyncImmediateQueue = require('./services/sync/syncImmediateQueue')
-const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
-const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
-const AsyncProcessingQueue = require('./AsyncProcessingQueue')
-const TrustedNotifierManager = require('./services/TrustedNotifierManager')
-const { ImageProcessingQueue } = require('./ImageProcessingQueue')
-const TranscodingQueue = require('./TranscodingQueue')
-const StateMachineManager = require('./services/stateMachineManager')
-const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
-const {
+} from './logging'
+import { timeout } from './utils'
+import MonitoringQueue from './monitors/MonitoringQueue'
+import SyncQueue from './services/sync/syncQueue'
+import SyncImmediateQueue from './services/sync/syncImmediateQueue'
+import SkippedCIDsRetryQueue from './services/sync/skippedCIDsRetryService'
+import { SessionExpirationQueue } from './services/SessionExpirationQueue'
+import AsyncProcessingQueue from './AsyncProcessingQueue'
+import TrustedNotifierManager from './services/TrustedNotifierManager'
+import { ImageProcessingQueue } from './ImageProcessingQueue'
+import TranscodingQueue from './TranscodingQueue'
+import StateMachineManager from './services/stateMachineManager'
+import {
   PremiumContentAccessChecker
-} = require('./premiumContent/premiumContentAccessChecker')
+} from './premiumContent/premiumContentAccessChecker'
+import { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
+
+const config = require('./config')
+const redisClient = require('./redis')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -36,6 +39,39 @@ const {
  *
  */
 class ServiceRegistry {
+  libs: any
+  redis: any
+  nodeConfig: any
+
+  synchronousServicesInitialized: boolean
+  servicesThatRequireServerInitialized: boolean
+  asynchronousServicesInitialized: boolean
+
+  premiumContentAccessChecker: PremiumContentAccessChecker
+
+  blacklistManager: any
+  trustedNotifierManager: TrustedNotifierManager | null
+  stateMachineManager: StateMachineManager | null
+  prometheusRegistry: PrometheusRegistry
+  URSMRegistrationManager: URSMRegistrationManager | null
+  asyncProcessingQueue: AsyncProcessingQueue | null
+  syncQueue: SyncQueue | null
+  syncImmediateQueue: SyncImmediateQueue | null
+  skippedCIDsRetryQueue: SkippedCIDsRetryQueue | null
+  imageProcessingQueue: ImageProcessingQueue
+  monitoringQueue: MonitoringQueue
+  sessionExpirationQueue: SessionExpirationQueue
+  transcodingQueue: typeof TranscodingQueue
+
+  findSyncRequestsQueue: Queue | null
+  monitorStateQueue: Queue | null
+  findReplicaSetUpdatesQueue: Queue | null
+  cNodeEndpointToSpIdMapQueue: Queue | null
+  manualSyncQueue: Queue | null
+  recurringSyncQueue: Queue | null
+  updateReplicaSetQueue: Queue | null
+  recoverOrphanedDataQueue: Queue | null
+
   constructor() {
     // TODO: this is redundant and we should just rely on the import, but this is too tightly coupled with existing logic
     this.nodeConfig = config
@@ -47,7 +83,6 @@ class ServiceRegistry {
     this.libs = null // instance of Audius Libs
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states
-    this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
     this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
@@ -138,7 +173,7 @@ class ServiceRegistry {
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
       await this.blacklistManager.init()
-    } catch (e) {
+    } catch (e: any) {
       this.logError(e.message)
       // eslint-disable-next-line no-process-exit
       process.exit(1)
@@ -164,17 +199,17 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  _setupBullMonitoring(app) {
+  _setupBullMonitoring(app: Application) {
     this.logInfo('Setting up Bull queue monitoring...')
 
-    const { queue: syncProcessingQueue } = this.syncQueue
-    const { queue: syncImmediateProcessingQueue } = this.syncImmediateQueue
-    const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
+    const { queue: syncProcessingQueue } = this.syncQueue!
+    const { queue: syncImmediateProcessingQueue } = this.syncImmediateQueue!
+    const { queue: asyncProcessingQueue } = this.asyncProcessingQueue!
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
     const { queue: transcodingQueue } = this.transcodingQueue
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
-    const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
+    const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue!
 
     // These queues have very large inputs and outputs, so we truncate job
     // data and results that are nested >=5 levels or contain strings >=10,000 characters
@@ -212,7 +247,7 @@ class ServiceRegistry {
     )
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
-    const serverAdapter = new ExpressAdapter()
+    const serverAdapter = new ExpressAdapter() as any
     createBullBoard({
       queues: [
         monitorStateAdapter,
@@ -256,7 +291,7 @@ class ServiceRegistry {
    * - [Truncated array with <length> elements],
    * - [Truncated object with <length> keys]
    */
-  _truncateBull(dataToTruncate, curDepth = 0) {
+  _truncateBull(dataToTruncate: Object | null | undefined, curDepth = 0) {
     if (
       typeof dataToTruncate === 'object' &&
       dataToTruncate !== null &&
@@ -268,13 +303,13 @@ class ServiceRegistry {
           if (dataToTruncate.length > 100) {
             return `[Truncated array with ${dataToTruncate.length} elements]`
           }
-          const truncatedArr = []
+          const truncatedArr: (Object | null | undefined)[] = []
           dataToTruncate.forEach((element) => {
             truncatedArr.push(this._truncateBull(element, newDepth))
           })
           return truncatedArr
         }
-        const json = Object.assign({}, dataToTruncate)
+        const json: Record<any, any> = Object.assign({}, dataToTruncate)
         Object.entries(dataToTruncate).forEach(([key, value]) => {
           switch (typeof value) {
             case 'string':
@@ -321,7 +356,7 @@ class ServiceRegistry {
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
-  async initServicesThatRequireServer(app) {
+  async initServicesThatRequireServer(app: Application) {
     const start = getStartTime()
 
     // SyncQueue construction (requires L1 identity)
@@ -340,7 +375,7 @@ class ServiceRegistry {
 
     try {
       this._setupBullMonitoring(app)
-    } catch (e) {
+    } catch (e: any) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
       )
@@ -387,7 +422,7 @@ class ServiceRegistry {
         this.logError(`RecoverNodeL1Identity Error ${e}`)
       }
 
-      await utils.timeout(retryTimeoutMs, false)
+      await timeout(retryTimeoutMs, false)
     }
 
     this.logInfo(
@@ -426,7 +461,7 @@ class ServiceRegistry {
         this.logError(`Error initting UserReplicaSetManagerClient ${e}`)
       }
 
-      await utils.timeout(retryTimeoutMs, false)
+      await timeout(retryTimeoutMs, false)
     }
 
     this.URSMRegistrationManager = new URSMRegistrationManager(
@@ -455,17 +490,17 @@ class ServiceRegistry {
         this.logError(`RegisterNodeOnL2URSM Error ${e}`)
       }
 
-      await utils.timeout(retryTimeoutMs, false)
+      await timeout(retryTimeoutMs, false)
     }
 
     this.logInfo('URSM Registration completed')
   }
 
-  logInfo(msg) {
+  logInfo(msg: string) {
     genericLogger.info(`ServiceRegistry || ${msg}`)
   }
 
-  logError(msg) {
+  logError(msg: string) {
     genericLogger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 }
