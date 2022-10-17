@@ -165,33 +165,6 @@ commands:
                 << parameters.odd_week >> || circleci-agent step halt
             fi
 
-  deploy-lock:
-    steps:
-      - queue/block_workflow:
-          job-regex: '.*stage.*discovery.*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*stage.*(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*stage.*identity.*'
-          consider-branch: false
-          dont-quit: true
-      - queue/block_workflow:
-          job-regex: '.*dn.*prod.*'
-          consider-branch: false
-          dont-quit: false
-      - queue/block_workflow:
-          job-regex: '.*cn.*prod.*'
-          consider-branch: false
-          dont-quit: false
-      - queue/block_workflow:
-          job-regex: '.*is.*prod.*'
-          consider-branch: false
-          dont-quit: false
-
   run-on-gcp:
     parameters:
       command:
@@ -1050,7 +1023,6 @@ jobs:
         type: boolean
         default: false
     steps:
-      - deploy-lock
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
@@ -1413,6 +1385,37 @@ workflows:
             - test-mad-dog-e2e
             - test-sdk
 
+      - queue/block_workflow:
+          name: stage-discovery-lock
+          job-regex: '.*reserving-stage-discovery.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          name: stage-creator-lock
+          job-regex: '.*reserving-stage-(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          name: stage-identity-lock
+          job-regex: '.*reserving-stage-identity'
+          consider-branch: false
+          dont-quit: true
+      - queue/block_workflow:
+          name: prod-discovery-lock
+          job-regex: 'releasing-discovery-foundation'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          name: prod-creator-lock
+          job-regex: 'releasing-prod-(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: false
+      - queue/block_workflow:
+          name: prod-identity-lock
+          job-regex: 'releasing-identity-foundation'
+          consider-branch: false
+          dont-quit: false
+
       # Auto-deploy `master` to staging
       - deploy:
           name: autodeploy-stage-discovery
@@ -1476,6 +1479,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
+            - stage-<< matrix.service >>-lock
             - unreserve-stage-<< matrix.service >>
       # Force deploy `master` to staging (by host) - discovery
       - noop:
@@ -1500,6 +1504,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
+            - stage-discovery-lock
             - unreserve-<< matrix.host >>
       # Force deploy `master` to staging (by host) - creator
       - noop:
@@ -1524,6 +1529,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
+            - stage-creator-lock
             - unreserve-<< matrix.host >>
 
       # Deploy branch to staging (by service)
@@ -1550,6 +1556,7 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
+            - stage-<< matrix.service >>-lock
             - reserve-stage-<< matrix.service >>
       # Deploy branch to staging (by host) - discovery
       - noop:
@@ -1578,6 +1585,7 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
+            - stage-discovery-lock
             - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
@@ -1606,6 +1614,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
+            - stage-creator-lock
             - reserve-<< matrix.host >>
 
       # Bump Tags (for release branch hot-fixes)
@@ -1640,6 +1649,7 @@ workflows:
             - open-vpn
             - restricted-ci-jobs
           requires:
+            - prod-discovery-lock
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
       - noop:
@@ -1661,6 +1671,7 @@ workflows:
             - open-vpn
             - restricted-ci-jobs
           requires:
+            - prod-identity-lock
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
@@ -1688,6 +1699,7 @@ workflows:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
+            - prod-creator-lock
             - release-<< matrix.host >>
 
       - test-libs:
