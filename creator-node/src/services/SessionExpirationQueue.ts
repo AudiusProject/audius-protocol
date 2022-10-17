@@ -1,11 +1,11 @@
-const { Queue, Worker } = require('bullmq')
-const Sequelize = require('sequelize')
+import { Queue, Worker } from 'bullmq'
+import Sequelize from 'sequelize'
 
-const sessionManager = require('../sessionManager')
-const config = require('../config')
-const { logger } = require('../logging')
-const { SessionToken } = require('../models')
-const { clusterUtils } = require('../utils')
+import sessionManager from '../sessionManager'
+import config from '../config'
+import { logger } from '../logging'
+import { SessionToken } from '../models'
+import { clusterUtils } from '../utils'
 
 const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
@@ -18,8 +18,7 @@ const PROCESS_NAMES = Object.freeze({
  * A persistent cron-style queue that periodically deletes expired session tokens from Redis cache and the database. Runs on startup, deleting 100 sessions at a time, and then runs daily to clear sessions older than 14d.
  *
  */
-class SessionExpirationQueue {
-  constructor() {
+const SessionExpirationQueue = () => {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
@@ -36,9 +35,9 @@ class SessionExpirationQueue {
         removeOnFail: true
       }
     })
-  }
 
-  async expireSessions(sessionExpiredCondition) {
+
+  const expireSessions = async (sessionExpiredCondition) => {
     const sessionsToDelete = await SessionToken.findAll(
       Object.assign(sessionExpiredCondition, { limit: this.batchSize })
     )
@@ -49,7 +48,7 @@ class SessionExpirationQueue {
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus(message) {
+  const logStatus = async (message) => {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.info(
@@ -60,7 +59,7 @@ class SessionExpirationQueue {
   /**
    * Starts the session expiration queue on a daily cron.
    */
-  async start() {
+  const start = async () => {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -129,4 +128,4 @@ class SessionExpirationQueue {
   }
 }
 
-module.exports = SessionExpirationQueue
+export = SessionExpirationQueue
