@@ -2,7 +2,7 @@ import {Job} from 'bullmq'
 import { Queue, Worker } from 'bullmq'
 import Sequelize from 'sequelize'
 
-const sessionManager = require('../sessionManager')
+import {deleteSessions} from '../sessionManager'
 const config = require('../config')
 import { logger } from '../logging'
 const { SessionToken } = require('../models')
