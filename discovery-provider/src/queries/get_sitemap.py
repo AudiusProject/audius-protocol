@@ -1,8 +1,8 @@
 import logging
+import urllib.parse
 from typing import List, Tuple
 
 from lxml import etree
-import urllib.parse
 from sqlalchemy import asc, func
 from sqlalchemy.orm.session import Session
 from src.models.playlists.playlist import Playlist
