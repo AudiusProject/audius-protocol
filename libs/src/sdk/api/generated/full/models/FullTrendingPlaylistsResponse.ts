@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullTrendingPlaylistsResponse
  */
-export interface FullTrendingPlaylistsResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof FullTrendingPlaylistsResponse
-     */
-    data?: Array<PlaylistFull>;
-}
+export interface FullTrendingPlaylistsResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof FullTrendingPlaylistsResponse
+        */
+        data?: Array<PlaylistFull>;
+    }
+
 

@@ -156,6 +156,7 @@ def cache(**kwargs):
 
                 return resp, status_code
             set_json_cached_key(redis, key, response, ttl_sec)
+
             return transform(response)
 
         return inner_wrap

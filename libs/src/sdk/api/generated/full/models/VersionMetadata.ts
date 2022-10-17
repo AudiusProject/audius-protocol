@@ -18,18 +18,20 @@
  * @export
  * @interface VersionMetadata
  */
-export interface VersionMetadata {
-    /**
-     * 
-     * @type {string}
-     * @memberof VersionMetadata
-     */
-    service: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof VersionMetadata
-     */
-    version: string;
-}
+export interface VersionMetadata 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof VersionMetadata
+        */
+        service: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof VersionMetadata
+        */
+        version: string;
+    }
+
 

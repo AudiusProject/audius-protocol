@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullTracks
  */
-export interface FullTracks {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracks
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracks
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracks
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracks
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTracks
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTracks
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullTracks
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof FullTracks
-     */
-    data?: Array<TrackFull>;
-}
+export interface FullTracks 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracks
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracks
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracks
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracks
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTracks
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTracks
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullTracks
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof FullTracks
+        */
+        data?: Array<TrackFull>;
+    }
+
 

@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TracksResponse
  */
-export interface TracksResponse {
-    /**
-     * 
-     * @type {Array<Track>}
-     * @memberof TracksResponse
-     */
-    data?: Array<Track>;
-}
+export interface TracksResponse 
+    {
+        /**
+        * 
+        * @type {Array<Track>}
+        * @memberof TracksResponse
+        */
+        data?: Array<Track>;
+    }
+
 

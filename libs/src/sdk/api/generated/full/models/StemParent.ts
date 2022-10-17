@@ -18,18 +18,20 @@
  * @export
  * @interface StemParent
  */
-export interface StemParent {
-    /**
-     * 
-     * @type {string}
-     * @memberof StemParent
-     */
-    category: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof StemParent
-     */
-    parent_track_id: number;
-}
+export interface StemParent 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof StemParent
+        */
+        category: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof StemParent
+        */
+        parent_track_id: number;
+    }
+
 

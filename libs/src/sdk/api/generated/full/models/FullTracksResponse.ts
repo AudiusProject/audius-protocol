@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullTracksResponse
  */
-export interface FullTracksResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracksResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracksResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracksResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullTracksResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTracksResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullTracksResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullTracksResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof FullTracksResponse
-     */
-    data?: Array<TrackFull>;
-}
+export interface FullTracksResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracksResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracksResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracksResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullTracksResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTracksResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullTracksResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullTracksResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof FullTracksResponse
+        */
+        data?: Array<TrackFull>;
+    }
+
 

@@ -25,12 +25,14 @@ import {
  * @export
  * @interface VerifyToken
  */
-export interface VerifyToken {
-    /**
-     * 
-     * @type {DecodedUserToken}
-     * @memberof VerifyToken
-     */
-    data?: DecodedUserToken;
-}
+export interface VerifyToken 
+    {
+        /**
+        * 
+        * @type {DecodedUserToken}
+        * @memberof VerifyToken
+        */
+        data?: DecodedUserToken;
+    }
+
 

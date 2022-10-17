@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullPlaylistResponse
  */
-export interface FullPlaylistResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullPlaylistResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullPlaylistResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullPlaylistResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof FullPlaylistResponse
-     */
-    data?: Array<PlaylistFull>;
-}
+export interface FullPlaylistResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullPlaylistResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullPlaylistResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullPlaylistResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof FullPlaylistResponse
+        */
+        data?: Array<PlaylistFull>;
+    }
+
 

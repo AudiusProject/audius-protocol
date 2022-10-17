@@ -85,264 +85,266 @@ import {
  * @export
  * @interface TrackFull
  */
-export interface TrackFull {
-    /**
-     * 
-     * @type {TrackArtwork}
-     * @memberof TrackFull
-     */
-    artwork?: TrackArtwork;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    description?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    genre?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    mood?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    release_date?: string;
-    /**
-     * 
-     * @type {FullRemixParent}
-     * @memberof TrackFull
-     */
-    remix_of?: FullRemixParent;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFull
-     */
-    repost_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFull
-     */
-    favorite_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    tags?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    title: string;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof TrackFull
-     */
-    user: UserFull;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFull
-     */
-    duration: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    downloadable?: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFull
-     */
-    play_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    permalink?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    is_streamable?: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFull
-     */
-    blocknumber: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    create_date?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    cover_art_sizes?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    created_at?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    credits_splits?: string;
-    /**
-     * 
-     * @type {DownloadMetadata}
-     * @memberof TrackFull
-     */
-    download?: DownloadMetadata;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    isrc?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    license?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    iswc?: string;
-    /**
-     * 
-     * @type {FieldVisibility}
-     * @memberof TrackFull
-     */
-    field_visibility?: FieldVisibility;
-    /**
-     * 
-     * @type {Array<Repost>}
-     * @memberof TrackFull
-     */
-    followee_reposts: Array<Repost>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    has_current_user_reposted: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    is_unlisted: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    has_current_user_saved: boolean;
-    /**
-     * 
-     * @type {Array<Favorite>}
-     * @memberof TrackFull
-     */
-    followee_favorites: Array<Favorite>;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    route_id: string;
-    /**
-     * 
-     * @type {StemParent}
-     * @memberof TrackFull
-     */
-    stem_of?: StemParent;
-    /**
-     * 
-     * @type {Array<TrackSegment>}
-     * @memberof TrackFull
-     */
-    track_segments?: Array<TrackSegment>;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    updated_at?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    user_id: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    is_delete?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFull
-     */
-    cover_art?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    is_available?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    is_premium?: boolean;
-    /**
-     * 
-     * @type {PremiumConditions}
-     * @memberof TrackFull
-     */
-    premium_conditions?: PremiumConditions;
-    /**
-     * 
-     * @type {PremiumContentSignature}
-     * @memberof TrackFull
-     */
-    premium_content_signature?: PremiumContentSignature;
-}
+export interface TrackFull 
+    {
+        /**
+        * 
+        * @type {TrackArtwork}
+        * @memberof TrackFull
+        */
+        artwork?: TrackArtwork;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        description?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        genre?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        mood?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        release_date?: string;
+        /**
+        * 
+        * @type {FullRemixParent}
+        * @memberof TrackFull
+        */
+        remix_of?: FullRemixParent;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFull
+        */
+        repost_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFull
+        */
+        favorite_count: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        tags?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        title: string;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof TrackFull
+        */
+        user: UserFull;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFull
+        */
+        duration: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        downloadable?: boolean;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFull
+        */
+        play_count: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        permalink?: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        is_streamable?: boolean;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFull
+        */
+        blocknumber: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        create_date?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        cover_art_sizes?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        created_at?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        credits_splits?: string;
+        /**
+        * 
+        * @type {DownloadMetadata}
+        * @memberof TrackFull
+        */
+        download?: DownloadMetadata;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        isrc?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        license?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        iswc?: string;
+        /**
+        * 
+        * @type {FieldVisibility}
+        * @memberof TrackFull
+        */
+        field_visibility?: FieldVisibility;
+        /**
+        * 
+        * @type {Array<Repost>}
+        * @memberof TrackFull
+        */
+        followee_reposts: Array<Repost>;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        has_current_user_reposted: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        is_unlisted: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        has_current_user_saved: boolean;
+        /**
+        * 
+        * @type {Array<Favorite>}
+        * @memberof TrackFull
+        */
+        followee_favorites: Array<Favorite>;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        route_id: string;
+        /**
+        * 
+        * @type {StemParent}
+        * @memberof TrackFull
+        */
+        stem_of?: StemParent;
+        /**
+        * 
+        * @type {Array<TrackSegment>}
+        * @memberof TrackFull
+        */
+        track_segments?: Array<TrackSegment>;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        updated_at?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        user_id: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        is_delete?: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        cover_art?: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        is_available?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof TrackFull
+        */
+        is_premium?: boolean;
+        /**
+        * 
+        * @type {PremiumConditions}
+        * @memberof TrackFull
+        */
+        premium_conditions?: PremiumConditions;
+        /**
+        * 
+        * @type {PremiumContentSignature}
+        * @memberof TrackFull
+        */
+        premium_content_signature?: PremiumContentSignature;
+    }
+
 

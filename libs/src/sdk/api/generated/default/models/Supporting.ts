@@ -25,24 +25,26 @@ import {
  * @export
  * @interface Supporting
  */
-export interface Supporting {
-    /**
-     * 
-     * @type {number}
-     * @memberof Supporting
-     */
-    rank: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof Supporting
-     */
-    amount: string;
-    /**
-     * 
-     * @type {User}
-     * @memberof Supporting
-     */
-    receiver: User;
-}
+export interface Supporting 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof Supporting
+        */
+        rank: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof Supporting
+        */
+        amount: string;
+        /**
+        * 
+        * @type {User}
+        * @memberof Supporting
+        */
+        receiver: User;
+    }
+
 

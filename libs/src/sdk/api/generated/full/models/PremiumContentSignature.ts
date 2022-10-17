@@ -18,18 +18,20 @@
  * @export
  * @interface PremiumContentSignature
  */
-export interface PremiumContentSignature {
-    /**
-     * 
-     * @type {string}
-     * @memberof PremiumContentSignature
-     */
-    data?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PremiumContentSignature
-     */
-    signature?: string;
-}
+export interface PremiumContentSignature 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof PremiumContentSignature
+        */
+        data?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PremiumContentSignature
+        */
+        signature?: string;
+    }
+
 
