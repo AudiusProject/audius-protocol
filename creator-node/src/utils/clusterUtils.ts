@@ -48,7 +48,7 @@ class ClusterUtils {
 
     // This is called `cpus()` but it actually returns the # of logical cores, which is possibly higher than # of physical cores if there's hyperthreading
     const logicalCores = cpus().length
-    return config.get('expressAppConcurrency') || logicalCores
+    return config.get('expressAppConcurrency') / 2 || logicalCores
   }
 
   /**
