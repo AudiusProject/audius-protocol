@@ -18,8 +18,7 @@ import {
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import CollectionHeader from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/page/Page'
-import { TracksTable } from 'components/tracks-table'
-import { TracksTableColumn } from 'components/tracks-table/TracksTable'
+import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'

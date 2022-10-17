@@ -566,7 +566,9 @@ class CollectionPage extends Component<
         .map((metadata) => metadata.uid)
       this.setState({ allowReordering: false })
     }
-    this.props.updateLineupOrder(updatedOrder)
+    if (updatedOrder) {
+      this.props.updateLineupOrder(updatedOrder)
+    }
   }
 
   onReorderTracks = (source: number, destination: number) => {
