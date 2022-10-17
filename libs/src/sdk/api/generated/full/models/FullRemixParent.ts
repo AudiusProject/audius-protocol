@@ -25,12 +25,14 @@ import {
  * @export
  * @interface FullRemixParent
  */
-export interface FullRemixParent {
-    /**
-     * 
-     * @type {Array<FullRemix>}
-     * @memberof FullRemixParent
-     */
-    tracks?: Array<FullRemix>;
-}
+export interface FullRemixParent 
+    {
+        /**
+        * 
+        * @type {Array<FullRemix>}
+        * @memberof FullRemixParent
+        */
+        tracks?: Array<FullRemix>;
+    }
+
 

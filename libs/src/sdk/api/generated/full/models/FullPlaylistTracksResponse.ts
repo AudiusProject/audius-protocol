@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullPlaylistTracksResponse
  */
-export interface FullPlaylistTracksResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistTracksResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistTracksResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistTracksResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullPlaylistTracksResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullPlaylistTracksResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullPlaylistTracksResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullPlaylistTracksResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof FullPlaylistTracksResponse
-     */
-    data?: Array<TrackFull>;
-}
+export interface FullPlaylistTracksResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistTracksResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistTracksResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistTracksResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullPlaylistTracksResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullPlaylistTracksResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullPlaylistTracksResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullPlaylistTracksResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof FullPlaylistTracksResponse
+        */
+        data?: Array<TrackFull>;
+    }
+
 

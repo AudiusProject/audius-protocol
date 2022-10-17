@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TrendingPlaylistsResponse
  */
-export interface TrendingPlaylistsResponse {
-    /**
-     * 
-     * @type {Array<Playlist>}
-     * @memberof TrendingPlaylistsResponse
-     */
-    data?: Array<Playlist>;
-}
+export interface TrendingPlaylistsResponse 
+    {
+        /**
+        * 
+        * @type {Array<Playlist>}
+        * @memberof TrendingPlaylistsResponse
+        */
+        data?: Array<Playlist>;
+    }
+
 

@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FollowingResponse
  */
-export interface FollowingResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FollowingResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FollowingResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FollowingResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<User>}
-     * @memberof FollowingResponse
-     */
-    data?: Array<User>;
-}
+export interface FollowingResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FollowingResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FollowingResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FollowingResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<User>}
+        * @memberof FollowingResponse
+        */
+        data?: Array<User>;
+    }
+
 

@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TopGenreUsersResponse
  */
-export interface TopGenreUsersResponse {
-    /**
-     * 
-     * @type {Array<User>}
-     * @memberof TopGenreUsersResponse
-     */
-    data?: Array<User>;
-}
+export interface TopGenreUsersResponse 
+    {
+        /**
+        * 
+        * @type {Array<User>}
+        * @memberof TopGenreUsersResponse
+        */
+        data?: Array<User>;
+    }
+
 
