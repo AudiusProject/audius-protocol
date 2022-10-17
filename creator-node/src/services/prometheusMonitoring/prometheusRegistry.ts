@@ -227,5 +227,3 @@ export class PrometheusRegistry {
     this.promiseToGetAggregatedMetrics = undefined
   }
 }
-
-module.exports = PrometheusRegistry
