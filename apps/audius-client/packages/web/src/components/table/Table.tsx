@@ -193,6 +193,8 @@ export const Table = ({
 
       if (sorter) {
         onSort?.({ column: { sorter }, order })
+      } else {
+        onSort?.({ column: null, order })
       }
     }
   }, [columns, defaultSorter, isVirtualized, onSort, sortBy])
