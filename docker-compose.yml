@@ -148,6 +148,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      resources:
+          limits:
+            cpus: '.25'
+            memory: 1G
 
   # build libs
 
@@ -463,6 +467,9 @@ services:
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
+      resources:
+          limits:
+            memory: 800M
 
   # port forwarder
 
