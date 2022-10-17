@@ -2,16 +2,17 @@ import logging
 from typing import List, Tuple
 
 from lxml import etree
+import urllib.parse
 from sqlalchemy import asc, func
 from sqlalchemy.orm.session import Session
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.utils.get_all_other_nodes import get_node_endpoint
 
 logger = logging.getLogger(__name__)
-
 
 root_site_maps_routes = [
     "defaults.xml",
@@ -32,12 +33,14 @@ def set_base_url():
 
 def create_client_url(route):
     client_base = get_client_base_url()
-    return f"{client_base}/{route}"
+    safe_route = urllib.parse.quote(route)
+    return f"{client_base}/{safe_route}"
 
 
 def create_xml_url(route):
     self_base = set_base_url()
-    return f"{self_base}/{route}"
+    safe_route = urllib.parse.quote(route)
+    return f"{self_base}/{safe_route}"
 
 
 default_routes = [
@@ -140,7 +143,7 @@ def get_track_slugs(session: Session, limit: int, offset: int):
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
         .filter(
-            Track.is_current == True, Track.stem_of == None, User.is_current == True
+            Track.is_current == True, Track.stem_of == None, User.is_current == True, TrackRoute.is_current == True
         )
         .order_by(asc(Track.track_id))
         .limit(limit)
