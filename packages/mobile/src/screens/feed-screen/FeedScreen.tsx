@@ -39,7 +39,11 @@ export const FeedScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader text={messages.header} icon={IconFeed}>
+      <ScreenHeader
+        text={messages.header}
+        icon={IconFeed}
+        styles={{ icon: { marginLeft: 2 } }}
+      >
         <FeedFilterButton />
       </ScreenHeader>
       <ScreenContent>

@@ -25,6 +25,7 @@ import IconUserList from 'app/assets/images/iconUserList.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Divider, Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
+import UserBadges from 'app/components/user-badges'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -54,14 +55,16 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     justifyContent: 'space-between'
   },
   accountImage: {
-    height: spacing(12),
-    width: spacing(12),
-    marginBottom: spacing(3)
+    height: spacing(12.5),
+    width: spacing(12.5),
+    marginBottom: spacing(3),
+    borderWidth: 1
   },
   divider: {
     marginVertical: spacing(4)
   },
   accountInfo: {},
+  accountBadges: { alignSelf: 'center' },
   tokens: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -73,6 +76,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(1)
   },
   accountStats: { flexDirection: 'row', paddingLeft: spacing(4) },
+  accountName: { flexDirection: 'row' },
   accountStat: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,9 +145,16 @@ export const AccountDrawer = (props: AccountDrawerProps) => {
       <View style={styles.header}>
         <Pressable style={styles.accountInfo} onPress={handlePressAccount}>
           <ProfilePicture profile={accountUser} style={styles.accountImage} />
-          <Text variant='h1' noGutter>
-            {name}
-          </Text>
+          <View style={styles.accountName}>
+            <Text variant='h1' noGutter>
+              {name}
+            </Text>
+            <UserBadges
+              user={accountUser}
+              hideName
+              style={styles.accountBadges}
+            />
+          </View>
           <Text weight='medium' fontSize='medium'>
             @{handle}
           </Text>

@@ -33,6 +33,7 @@ export type AnimatedButtonProps = {
   haptics?: Haptics
   hapticsConfig?: Haptics[]
   waitForAnimationFinish?: boolean
+  children?: ReactNode
 } & PressableProps
 
 export const AnimatedButton = ({
@@ -49,6 +50,7 @@ export const AnimatedButton = ({
   haptics,
   hapticsConfig,
   waitForAnimationFinish,
+  children,
   ...pressableProps
 }: AnimatedButtonProps) => {
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
@@ -198,6 +200,7 @@ export const AnimatedButton = ({
               resizeMode={resizeMode}
             />
           </View>
+          {children}
         </>
       )}
     </Pressable>
