@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import LinearGradient from 'react-native-linear-gradient'
@@ -19,6 +20,7 @@ export type BaseBottomTabBarButtonProps = {
 export type BottomTabBarButtonProps = BaseBottomTabBarButtonProps & {
   name: string
   iconJSON: IconJSON
+  children?: ReactNode
 }
 
 const hitSlop = { top: 0, right: 0, bottom: 0, left: 0 }
@@ -40,7 +42,8 @@ const useStyles = makeStyles(() => ({
 }))
 
 export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
-  const { name, routeKey, isActive, iconJSON, onPress, onLongPress } = props
+  const { name, routeKey, isActive, iconJSON, onPress, onLongPress, children } =
+    props
   const styles = useStyles()
   const { neutralLight8, neutralLight10 } = useThemeColors()
 
@@ -67,6 +70,8 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
           />
         ) : null
       }
-    />
+    >
+      {children}
+    </AnimatedButton>
   )
 }

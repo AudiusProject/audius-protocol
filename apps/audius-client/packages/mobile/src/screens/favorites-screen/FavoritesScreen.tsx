@@ -43,7 +43,11 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader text={messages.header} icon={IconFavorite} />
+      <ScreenHeader
+        text={messages.header}
+        icon={IconFavorite}
+        styles={{ icon: { marginLeft: 3 } }}
+      />
       {
         // ScreenContent handles the offline indicator.
         // Show favorites screen anyway when offline so users can see their downloads

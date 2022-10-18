@@ -61,6 +61,7 @@ const ExploreScreen = () => {
         text={messages.header}
         icon={IconExplore}
         iconProps={{ height: 30 }}
+        styles={{ icon: { marginLeft: 1 } }}
       />
       <ScreenContent>
         <TopTabNavigator screens={exploreScreens} />

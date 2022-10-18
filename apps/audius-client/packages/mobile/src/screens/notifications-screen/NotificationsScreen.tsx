@@ -31,6 +31,7 @@ export const NotificationsScreen = () => {
         text={messages.header}
         icon={IconNotification}
         iconProps={{ height: 28, width: 28 }}
+        styles={{ icon: { marginLeft: -1 } }}
       />
       <ScreenContent>
         <NotificationList />

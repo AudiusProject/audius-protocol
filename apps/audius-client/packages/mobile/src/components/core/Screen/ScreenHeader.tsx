@@ -88,7 +88,7 @@ export const ScreenHeader = (props: ScreenHeaderProps) => {
           <GradientIcon
             icon={icon}
             height={20}
-            style={[styles.headerIcon, stylesProp?.header]}
+            style={[styles.headerIcon, stylesProp?.icon]}
             {...iconProps}
           />
         ) : null}

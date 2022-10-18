@@ -23,6 +23,7 @@ import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -173,7 +174,7 @@ export const useAppScreenOptions = (
             }
             if (isNavOverhaulEnabled) {
               return (
-                <View style={styles.headerLeft}>
+                <View style={[styles.headerLeft, { marginLeft: spacing(-2) }]}>
                   <AccountPictureHeader onPress={handlePressNotification} />
                 </View>
               )
