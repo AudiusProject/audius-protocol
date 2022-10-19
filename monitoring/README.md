@@ -367,7 +367,7 @@ The `team` value will be applied as an Alert label and thus affects which Alert 
 
 When present, the `alert_on` value is a comma-delimited list that restricts auto-generating alerts to only Panel Queries with Query Names found in the `alert_on` list.
 
-When present, the `env` value is a comma-delimited list that restricts auto-generating alerts to only environments found in the `env` list.
+When present, the `envs` value is a comma-delimited list that restricts auto-generating alerts to only environments found in the `envs` list.
 
 #### Thresholds
 
