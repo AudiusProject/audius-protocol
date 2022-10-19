@@ -251,7 +251,7 @@ const getCID = async (req, res) => {
           req,
           res,
           errorResponseBadRequest('CID is of invalid file type'),
-          { result: 'abort_cid_is_not_file', mode: _pathType }
+          { result: 'abort_cid_invalid_type', mode: _pathType }
         )
       }
     } catch (e) {

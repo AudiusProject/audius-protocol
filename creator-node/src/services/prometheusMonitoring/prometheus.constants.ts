@@ -132,7 +132,7 @@ export const METRIC_LABELS = Object.freeze({
       'abort_delisted',
       'abort_bad_cid',
       'abort_cid_is_directory',
-      'abort_cid_is_not_file',
+      'abort_cid_invalid_type',
       'abort_cid_not_found_in_db',
       'abort_cid_is_directory_from_db_query',
       'abort_cid_not_found_in_network',
