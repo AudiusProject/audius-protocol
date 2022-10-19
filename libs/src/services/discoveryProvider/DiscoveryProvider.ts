@@ -929,12 +929,29 @@ export class DiscoveryProvider {
   }
 
   /**
-   * Retrieves the user's replica se
+   * Retrieves listen counts for all tracks of a given artist grouped by month.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.startTime start time of query
+   * @param params.endTime end time of query
+   * @return object containing listen counts for an artist's tracks grouped by month
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ): Promise<Object | null | undefined> {
+    const req = Requests.getUserListenCountsMonthly(encodedUserId, startTime, endTime)
+
+    return await this._makeRequest<Object | null>(req)
+  }
+
+  /**
+   * Retrieves the user's replica set
    * @param params.encodedUserId string of the encoded user id
    * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
    * @return object containing the user replica set
    */
-   async getUserReplicaSet({
+  async getUserReplicaSet({
     encodedUserId,
     blockNumber
   }: {
@@ -949,25 +966,6 @@ export class DiscoveryProvider {
       0,
       false,
       blockNumber
-    )
-  }
-
-  /**
-   * Retrieves listen counts for all tracks of a given artist grouped by month.
-   * @param params.encodedUserId string of the encoded user id
-   * @param params.start_time start time of query
-   * @param params.end_time end time of query
-   * @return object containing listen counts for an artist's tracks grouped by month
-   */
-  async getUserListenCountsMonthly(
-    encodedUserId: string,
-    start_time: string,
-    end_time: string
-): Promise<Object | null | undefined> {
-    const req = Requests.getUserListenCountsMonthly(encodedUserId, start_time, end_time)
-
-    return await this._makeRequest<Object | null>(
-      req
     )
   }
 

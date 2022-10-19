@@ -773,7 +773,11 @@ export class Users extends Base {
    * Gets listen count data for a user's tracks grouped by month
    * @returns Dictionary of listen count data where keys are requested months
    */
-   async getUserListenCountsMonthly(encodedUserId: string, startTime: string, endTime: string) {
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return await this.discoveryProvider.getUserListenCountsMonthly(
       encodedUserId,
