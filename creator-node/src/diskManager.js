@@ -323,8 +323,6 @@ class DiskManager {
         )
       }
       return numFilesDeleted
-    } catch (e) {
-      throw e
     } finally {
       await redisClient.del(redisSetKey)
     }

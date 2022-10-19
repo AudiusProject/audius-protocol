@@ -386,8 +386,6 @@ const validateTrackOwner = async ({
         retries: 10
       }
     })
-  } catch (e) {
-    throw e
   } finally {
     logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
   }
