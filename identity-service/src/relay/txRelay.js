@@ -1,6 +1,7 @@
 const Web3 = require('web3')
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const Accounts = require('web3-eth-accounts')
 
 const models = require('../models')
 const config = require('../config')
@@ -9,7 +10,7 @@ const { Lock } = require('../redis')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
-
+const NETHERMIND_PROVIDER = 'http://54.187.10.247:8545'
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
@@ -20,6 +21,7 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const accounts = new Accounts(NETHERMIND_PROVIDER)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -327,7 +329,7 @@ const createAndSendTransaction = async (
 //
 
 // TODO: shared nethermind web3 instance
-const web3 = new Web3('http://34.136.137.33:8545')
+const web3 = new Web3(NETHERMIND_PROVIDER)
 
 async function wipRelayToNethermind(contractAddress, encodedABI) {
   // staging EM address
@@ -344,8 +346,8 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
   // }
 
   // any ol random private key
-  const privateKey =
-    '7d25e249080b581280a0c0bbecfdba52d73e45486f9ba4ed4676e93c176a5fbc'
+  const wallet = accounts.create()
+  const privateKey = wallet.privateKey.substring(2)
 
   try {
     const fromAddress = web3.eth.accounts.privateKeyToAccount(privateKey)
