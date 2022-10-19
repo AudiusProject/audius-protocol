@@ -103,6 +103,9 @@ fi
 rm -rf $storagePath
 mkdir -p $storagePath
 
+# transpile into typescript
+npm run build
+
 # linter
 npm run lint
 

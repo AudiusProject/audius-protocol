@@ -25,12 +25,14 @@ import {
  * @export
  * @interface RemixParent
  */
-export interface RemixParent {
-    /**
-     * 
-     * @type {Array<TrackElement>}
-     * @memberof RemixParent
-     */
-    tracks?: Array<TrackElement>;
-}
+export interface RemixParent 
+    {
+        /**
+        * 
+        * @type {Array<TrackElement>}
+        * @memberof RemixParent
+        */
+        tracks?: Array<TrackElement>;
+    }
+
 

@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullFollowersResponse
  */
-export interface FullFollowersResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullFollowersResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullFollowersResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullFollowersResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullFollowersResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullFollowersResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullFollowersResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullFollowersResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof FullFollowersResponse
-     */
-    data?: Array<UserFull>;
-}
+export interface FullFollowersResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullFollowersResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullFollowersResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullFollowersResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullFollowersResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullFollowersResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullFollowersResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullFollowersResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof FullFollowersResponse
+        */
+        data?: Array<UserFull>;
+    }
+
 

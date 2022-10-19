@@ -18,24 +18,26 @@
  * @export
  * @interface Favorite
  */
-export interface Favorite {
-    /**
-     * 
-     * @type {string}
-     * @memberof Favorite
-     */
-    favorite_item_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Favorite
-     */
-    favorite_type: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Favorite
-     */
-    user_id: string;
-}
+export interface Favorite 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof Favorite
+        */
+        favorite_item_id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Favorite
+        */
+        favorite_type: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Favorite
+        */
+        user_id: string;
+    }
+
 
