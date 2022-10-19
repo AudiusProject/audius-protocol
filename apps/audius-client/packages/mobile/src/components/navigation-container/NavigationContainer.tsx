@@ -34,8 +34,10 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
   const linking = {
     prefixes: [
+      'audius://',
       'https://audius.co',
       'http://audius.co',
+      'audius-staging://',
       'https://staging.audius.co',
       'http://staging.audius.co'
     ],
