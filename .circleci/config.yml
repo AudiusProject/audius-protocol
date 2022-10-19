@@ -1815,7 +1815,7 @@ workflows:
             branches:
               only: /(^master$)/
 
-  release-to-service-providers-cron:
+  joaquins-cron-test:
     jobs:
       - release-week
       - noop:
@@ -1827,7 +1827,7 @@ workflows:
           cron: '33,35,38,40 * * * 1'
           filters:
             branches:
-              only: jc-inf-295.fix
+              only: master
 
   # release-to-service-providers-cron:
   #   jobs:
