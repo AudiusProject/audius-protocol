@@ -1827,7 +1827,7 @@ workflows:
           cron: '33,35,38,40 * * * 1'
           filters:
             branches:
-              only: /(jc-inf-295.fix)/
+              only: jc-inf-295.fix
 
   # release-to-service-providers-cron:
   #   jobs:
