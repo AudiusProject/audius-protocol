@@ -1824,7 +1824,7 @@ workflows:
             - release-week
     triggers:
       - schedule:
-          cron: '15 * * * 1'
+          cron: '19 * * * 1'
           filters:
             branches:
               only: /(^jc-inf-295.*$)/
