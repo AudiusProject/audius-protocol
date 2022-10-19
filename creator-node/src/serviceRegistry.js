@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
@@ -16,7 +15,7 @@ const {
 const utils = require('./utils')
 const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
-const SyncQueue = require('./services/sync/syncQueue')
+const { SyncQueue } = require('./services/sync/syncQueue')
 const SyncImmediateQueue = require('./services/sync/syncImmediateQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
