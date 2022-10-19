@@ -940,7 +940,11 @@ export class DiscoveryProvider {
     startTime: string,
     endTime: string
   ): Promise<Object | null | undefined> {
-    const req = Requests.getUserListenCountsMonthly(encodedUserId, startTime, endTime)
+    const req = Requests.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
+    )
 
     return await this._makeRequest<Object | null>(req)
   }
