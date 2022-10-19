@@ -1815,6 +1815,20 @@ workflows:
             branches:
               only: /(^master$)/
 
+  release-to-service-providers-cron:
+    jobs:
+      - release-week
+      - noop:
+          name: special-release-job
+          requires:
+            - release-week
+    triggers:
+      - schedule:
+          cron: '33,35,38,40 * * * 1'
+          filters:
+            branches:
+              only: /(^master$)/
+
   # release-to-service-providers-cron:
   #   jobs:
   #     - release-week
