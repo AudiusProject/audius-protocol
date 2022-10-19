@@ -18,24 +18,26 @@
  * @export
  * @interface ActivityFull
  */
-export interface ActivityFull {
-    /**
-     * 
-     * @type {string}
-     * @memberof ActivityFull
-     */
-    timestamp?: string;
-    /**
-     * 
-     * @type {object}
-     * @memberof ActivityFull
-     */
-    item_type?: object;
-    /**
-     * 
-     * @type {object}
-     * @memberof ActivityFull
-     */
-    item?: object;
-}
+export interface ActivityFull 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof ActivityFull
+        */
+        timestamp?: string;
+        /**
+        * 
+        * @type {object}
+        * @memberof ActivityFull
+        */
+        item_type?: object;
+        /**
+        * 
+        * @type {object}
+        * @memberof ActivityFull
+        */
+        item?: object;
+    }
+
 

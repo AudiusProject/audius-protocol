@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullReposts
  */
-export interface FullReposts {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullReposts
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullReposts
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullReposts
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullReposts
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullReposts
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullReposts
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullReposts
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<ActivityFull>}
-     * @memberof FullReposts
-     */
-    data?: Array<ActivityFull>;
-}
+export interface FullReposts 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullReposts
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullReposts
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullReposts
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullReposts
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullReposts
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullReposts
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullReposts
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<ActivityFull>}
+        * @memberof FullReposts
+        */
+        data?: Array<ActivityFull>;
+    }
+
 

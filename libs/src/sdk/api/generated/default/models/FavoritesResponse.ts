@@ -25,12 +25,14 @@ import {
  * @export
  * @interface FavoritesResponse
  */
-export interface FavoritesResponse {
-    /**
-     * 
-     * @type {Array<Favorite>}
-     * @memberof FavoritesResponse
-     */
-    data?: Array<Favorite>;
-}
+export interface FavoritesResponse 
+    {
+        /**
+        * 
+        * @type {Array<Favorite>}
+        * @memberof FavoritesResponse
+        */
+        data?: Array<Favorite>;
+    }
+
 

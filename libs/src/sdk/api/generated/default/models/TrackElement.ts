@@ -18,12 +18,14 @@
  * @export
  * @interface TrackElement
  */
-export interface TrackElement {
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackElement
-     */
-    parent_track_id: string;
-}
+export interface TrackElement 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackElement
+        */
+        parent_track_id: string;
+    }
+
 

@@ -5,7 +5,7 @@ const _ = require('lodash')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
-const asyncRetry = require('../../utils/asyncRetry')
+const { asyncRetry } = require('../../utils/asyncRetry')
 const { logger: genericLogger } = require('../../logging')
 const {
   generateTimestampAndSignatureForSPVerification

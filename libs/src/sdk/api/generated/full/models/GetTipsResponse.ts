@@ -31,54 +31,56 @@ import {
  * @export
  * @interface GetTipsResponse
  */
-export interface GetTipsResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof GetTipsResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof GetTipsResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof GetTipsResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof GetTipsResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof GetTipsResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof GetTipsResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof GetTipsResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<FullTip>}
-     * @memberof GetTipsResponse
-     */
-    data?: Array<FullTip>;
-}
+export interface GetTipsResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof GetTipsResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof GetTipsResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof GetTipsResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof GetTipsResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof GetTipsResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof GetTipsResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof GetTipsResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<FullTip>}
+        * @memberof GetTipsResponse
+        */
+        data?: Array<FullTip>;
+    }
+
 

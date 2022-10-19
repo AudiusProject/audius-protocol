@@ -37,252 +37,254 @@ import {
  * @export
  * @interface UserFull
  */
-export interface UserFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    album_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    artist_pick_track_id?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    bio?: string;
-    /**
-     * 
-     * @type {CoverPhoto}
-     * @memberof UserFull
-     */
-    cover_photo?: CoverPhoto;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    followee_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    follower_count: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserFull
-     */
-    does_follow_current_user?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    handle: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    id: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserFull
-     */
-    is_verified: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    location?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    name: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    playlist_count: number;
-    /**
-     * 
-     * @type {ProfilePicture}
-     * @memberof UserFull
-     */
-    profile_picture?: ProfilePicture;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    repost_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    track_count: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserFull
-     */
-    is_deactivated: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    erc_wallet?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    spl_wallet: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    supporter_count: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    supporting_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    balance: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    associated_wallets_balance: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    total_balance: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    waudio_balance: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    associated_sol_wallets_balance: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    blocknumber: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    wallet: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    created_at: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    creator_node_endpoint?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserFull
-     */
-    current_user_followee_follow_count: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserFull
-     */
-    does_current_user_follow: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    handle_lc: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    updated_at: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    cover_photo_sizes?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    cover_photo_legacy?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    profile_picture_sizes?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    profile_picture_legacy?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserFull
-     */
-    metadata_multihash?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserFull
-     */
-    has_collectibles: boolean;
-    /**
-     * 
-     * @type {PlaylistLibrary}
-     * @memberof UserFull
-     */
-    playlist_library?: PlaylistLibrary;
-}
+export interface UserFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        album_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        artist_pick_track_id?: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        bio?: string;
+        /**
+        * 
+        * @type {CoverPhoto}
+        * @memberof UserFull
+        */
+        cover_photo?: CoverPhoto;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        followee_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        follower_count: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof UserFull
+        */
+        does_follow_current_user?: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        handle: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        id: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof UserFull
+        */
+        is_verified: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        location?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        name: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        playlist_count: number;
+        /**
+        * 
+        * @type {ProfilePicture}
+        * @memberof UserFull
+        */
+        profile_picture?: ProfilePicture;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        repost_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        track_count: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof UserFull
+        */
+        is_deactivated: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        erc_wallet?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        spl_wallet: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        supporter_count: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        supporting_count: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        balance: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        associated_wallets_balance: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        total_balance: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        waudio_balance: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        associated_sol_wallets_balance: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        blocknumber: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        wallet: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        created_at: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        creator_node_endpoint?: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserFull
+        */
+        current_user_followee_follow_count: number;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof UserFull
+        */
+        does_current_user_follow: boolean;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        handle_lc: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        updated_at: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        cover_photo_sizes?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        cover_photo_legacy?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        profile_picture_sizes?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        profile_picture_legacy?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserFull
+        */
+        metadata_multihash?: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof UserFull
+        */
+        has_collectibles: boolean;
+        /**
+        * 
+        * @type {PlaylistLibrary}
+        * @memberof UserFull
+        */
+        playlist_library?: PlaylistLibrary;
+    }
+
 

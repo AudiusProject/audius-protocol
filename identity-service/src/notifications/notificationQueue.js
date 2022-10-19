@@ -21,7 +21,8 @@ async function publish(
   tx,
   playSound = true,
   title = null,
-  types
+  types,
+  notification
 ) {
   await addNotificationToBuffer(
     message,
@@ -30,7 +31,8 @@ async function publish(
     pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
     playSound,
     title,
-    types
+    types,
+    notification
   )
 }
 
@@ -40,7 +42,8 @@ async function publishSolanaNotification(
   tx,
   playSound = true,
   title = null,
-  types
+  types,
+  notification
 ) {
   await addNotificationToBuffer(
     message,
@@ -49,7 +52,8 @@ async function publishSolanaNotification(
     pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER,
     playSound,
     title,
-    types
+    types,
+    notification
   )
 }
 
@@ -77,12 +81,14 @@ async function addNotificationToBuffer(
   buffer,
   playSound,
   title,
-  types
+  types,
+  notification
 ) {
   const bufferObj = {
     userId,
     notificationParams: { message, title, playSound },
-    types
+    types,
+    notification
   }
   const existingEntriesCheck = buffer.filter(
     (entry) =>
