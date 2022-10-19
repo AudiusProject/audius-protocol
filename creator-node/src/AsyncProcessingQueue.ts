@@ -44,7 +44,7 @@ type AddTaskParams = {
   logContext: { requestID: string }
   task: string
   req: Request
-  parentSpanContext?: SpanContext | undefined
+  parentSpanContext?: SpanContext
 }
 
 /**
