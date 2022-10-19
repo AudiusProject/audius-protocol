@@ -212,6 +212,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=user_meta.get("is_current", True),
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
+                artist_pick_track_id=user_meta.get("artist_pick_track_id"),
                 wallet=user_meta.get("wallet", str(i)),
                 bio=user_meta.get("bio", str(i)),
                 profile_picture=user_meta.get("profile_picture"),

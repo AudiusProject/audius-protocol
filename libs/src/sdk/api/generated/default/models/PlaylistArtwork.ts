@@ -18,24 +18,26 @@
  * @export
  * @interface PlaylistArtwork
  */
-export interface PlaylistArtwork {
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistArtwork
-     */
-    _150x150?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistArtwork
-     */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PlaylistArtwork
-     */
-    _1000x1000?: string;
-}
+export interface PlaylistArtwork 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistArtwork
+        */
+        _150x150?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistArtwork
+        */
+        _480x480?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistArtwork
+        */
+        _1000x1000?: string;
+    }
+
 

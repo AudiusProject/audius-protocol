@@ -25,12 +25,14 @@ import {
  * @export
  * @interface UserResponse
  */
-export interface UserResponse {
-    /**
-     * 
-     * @type {User}
-     * @memberof UserResponse
-     */
-    data?: User;
-}
+export interface UserResponse 
+    {
+        /**
+        * 
+        * @type {User}
+        * @memberof UserResponse
+        */
+        data?: User;
+    }
+
 
