@@ -17,6 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -33,7 +34,8 @@ type Props = {
 
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
-  const { navigation } = useContext(AppTabNavigationContext)
+  const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
+  const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID

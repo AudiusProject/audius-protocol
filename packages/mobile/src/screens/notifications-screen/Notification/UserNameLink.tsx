@@ -1,11 +1,10 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import type { User as UserType } from '@audius/common'
 
 import type { TextProps } from 'app/components/core'
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 
 type UserNameLinkProps = TextProps & {
   user: UserType
@@ -13,8 +12,7 @@ type UserNameLinkProps = TextProps & {
 
 export const UserNameLink = (props: UserNameLinkProps) => {
   const { user, ...other } = props
-  const { drawerHelpers } = useContext(AppDrawerContext)
-  const navigation = useNavigation({ customNativeNavigation: drawerHelpers })
+  const navigation = useNavigation()
 
   const onPress = useCallback(() => {
     navigation.navigate('Profile', {
