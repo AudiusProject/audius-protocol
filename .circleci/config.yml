@@ -1825,6 +1825,9 @@ workflows:
     triggers:
       - schedule:
           cron: '33,35,38,40 * * * 1'
+          filters:
+            branches:
+              only: /(.*)/
 
   # release-to-service-providers-cron:
   #   jobs:
