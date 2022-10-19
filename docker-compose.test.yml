@@ -85,8 +85,6 @@ services:
       service: discovery-provider
     entrypoint: scripts/test_entrypoint.sh
     command: ""
-    environment:
-      audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
