@@ -57,7 +57,7 @@ type AddTaskParams = {
 export class AsyncProcessingQueue {
   queue: Queue<any, any, string>
   libs: any
-  constructProcessKey: (uuid: any) => string
+  constructProcessKey: (uuid: string) => string
 
   constructor(libs: any, prometheusRegistry: any) {
     const connection = {
