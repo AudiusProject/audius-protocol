@@ -11,6 +11,8 @@ import type {
 } from '@audius/common'
 import type { SectionListProps } from 'react-native'
 
+import type { PlaybackSource } from 'app/types/analytics'
+
 export enum LineupVariant {
   MAIN = 'main',
   PLAYLIST = 'playlist'
@@ -158,3 +160,23 @@ export type LineupProps = {
   SectionListProps<unknown>,
   'showsVerticalScrollIndicator' | 'ListEmptyComponent'
 >
+
+export type TogglePlayConfig = {
+  uid: UID
+  id: ID
+  source: PlaybackSource
+}
+
+export type LineupItemTileProps = Pick<
+  LineupProps,
+  'isTrending' | 'showLeadingElementArtistPick' | 'leadingElementId'
+> & {
+  rankIconCount: number
+  item: LineupItem | LoadingLineupItem | FeedTipLineupItem
+  index: number
+  togglePlay: ({ uid, id, source }: TogglePlayConfig) => void
+}
+
+export type LineupTileViewProps = Omit<LineupItemTileProps, 'item'> & {
+  item: LineupItem
+}

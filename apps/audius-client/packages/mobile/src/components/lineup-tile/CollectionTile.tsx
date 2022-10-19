@@ -136,10 +136,9 @@ const CollectionTileComponent = ({
     togglePlay({
       uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
       id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
-      source: PlaybackSource.PLAYLIST_TILE_TRACK,
-      isPlayingUid
+      source: PlaybackSource.PLAYLIST_TILE_TRACK
     })
-  }, [currentTrack, togglePlay, tracks, isPlayingUid])
+  }, [currentTrack, togglePlay, tracks])
 
   const handlePressTitle = useCallback(() => {
     navigation.push('Collection', { id: playlist_id })

@@ -195,7 +195,6 @@ export function* watchPlay() {
         trackIsSameButDifferentUid ||
         trackIsSameAndRepeatSingle
       ) {
-        yield* put(playerActions.stop({}))
         yield* put(
           playerActions.play({
             uid,
@@ -255,7 +254,6 @@ export function* watchPlay() {
         const queueUid = yield* select(getPlayerUid)
         const playerTrackId = yield* select(getPlayerTrackId)
         if (queueUid && playerTrackId && queueUid !== playerUid) {
-          yield* put(playerActions.stop({}))
           yield* put(
             playerActions.play({ uid: queueUid, trackId: playerTrackId })
           )
