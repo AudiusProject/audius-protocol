@@ -4,7 +4,7 @@
         "details": [
             {
                 "appID": "LRFCG93S85.co.audius.audiusmusic",
-                "paths": ["*"]
+                "paths": ["NOT /oauth/auth*", "*"]
             }
         ]
     }
