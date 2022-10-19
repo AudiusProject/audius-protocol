@@ -28,6 +28,7 @@ user_model = ns.model(
     "user",
     {
         "album_count": fields.Integer(required=True),
+        "artist_pick_track_id": fields.Integer(allow_null=True),
         "bio": fields.String,
         "cover_photo": fields.Nested(cover_photo, allow_null=True),
         "followee_count": fields.Integer(required=True),

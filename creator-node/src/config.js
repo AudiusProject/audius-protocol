@@ -132,6 +132,12 @@ const config = convict({
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
   },
+  sequelizeStatementTimeout: {
+    doc: 'Sequelize (postgres) statement timeout',
+    format: 'nat',
+    env: 'sequelizeStatementTimeout',
+    default: 60 * 60 * 1000 // 1hr
+  },
   logLevel: {
     doc: 'Log level',
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
@@ -548,7 +554,7 @@ const config = convict({
     doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
-    default: 10
+    default: 5
   },
   syncQueueMaxConcurrency: {
     doc: 'Max concurrency of SyncQueue',
@@ -694,7 +700,7 @@ const config = convict({
     doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: false
+    default: true
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',

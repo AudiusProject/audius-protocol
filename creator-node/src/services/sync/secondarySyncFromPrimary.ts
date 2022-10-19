@@ -1,18 +1,23 @@
 import type Logger from 'bunyan'
 
 import _ from 'lodash'
-import { logger as genericLogger, createChildLogger } from '../../logging'
+import {
+  logger as genericLogger,
+  createChildLogger,
+  getStartTime,
+  logInfoWithDuration
+} from '../../logging'
 import { saveFileForMultihashToFS } from '../../fileManager'
 import DiskManager from '../../diskManager'
-import {
-  getOwnEndpoint,
-  getUserReplicaSetEndpointsFromDiscovery
-} from '../../middlewares'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
-import { shouldForceResync } from './secondarySyncFromPrimaryUtils'
+import {
+  shouldForceResync,
+  getAndValidateOwnEndpoint
+} from './secondarySyncFromPrimaryUtils'
 import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode } from './syncUtil'
+import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
 const models = require('../../models')
@@ -69,12 +74,10 @@ const handleSyncFromPrimary = async ({
     // Ensure this node is syncing from the user's primary
     let userReplicaSet
     try {
-      userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
+      userReplicaSet = await getReplicaSetEndpointsByWallet({
         libs,
-        logger,
         wallet,
-        blockNumber: null,
-        ensurePrimary: false
+        parentLogger: logger
       })
     } catch (e: any) {
       error = new Error(`Error fetching user replica set: ${e.message}`)
@@ -229,6 +232,7 @@ const handleSyncFromPrimary = async ({
      * Secondary requests export of new data by passing its current max clock value in the request.
      * Primary builds an export object of all data beginning from the next clock value.
      */
+    const startFetchExport = getStartTime()
     const {
       fetchedCNodeUser,
       error: fetchExportFromNodeErrorMessage,
@@ -241,6 +245,11 @@ const handleSyncFromPrimary = async ({
       logger
     })
 
+    logInfoWithDuration(
+      { logger, startTime: startFetchExport },
+      'Sync step complete. Fetched export from node',
+      'syncStepDurationFetchExport'
+    )
     if (fetchExportFromNodeErrorMessage) {
       error = new Error(fetchExportFromNodeErrorMessage.message)
       errorResponse = {
@@ -283,13 +292,19 @@ const handleSyncFromPrimary = async ({
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
     let gatewaysToTry: string[] = []
     try {
-      const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
+      const startGetOwnEndpoint = getStartTime()
+      const myCnodeEndpoint = await getAndValidateOwnEndpoint(logger)
+      logInfoWithDuration(
+        { logger, startTime: startGetOwnEndpoint },
+        'Sync step complete. Found and validated own endpoint',
+        'syncStepDurationGetOwnEndpoint'
+      )
 
       // Filter out current node from user's replica set
       gatewaysToTry = [
-        userReplicaSet.primary,
-        userReplicaSet.secondary1,
-        userReplicaSet.secondary2
+        userReplicaSet.primary || '',
+        userReplicaSet.secondary1 || '',
+        userReplicaSet.secondary2 || ''
       ].filter((url) => url !== myCnodeEndpoint)
     } catch (e: any) {
       tracing.recordException(e)
@@ -382,16 +397,23 @@ const handleSyncFromPrimary = async ({
       let cnodeUser
 
       // Fetch current cnodeUser from DB
+      const startFetchCurrentUser = getStartTime()
       const cnodeUserRecord = await models.CNodeUser.findOne({
         where: { walletPublicKey: fetchedWalletPublicKey },
         transaction
       })
+      logInfoWithDuration(
+        { logger, startTime: startFetchCurrentUser },
+        'Sync step complete. Fetched current cnodeUser from DB',
+        'syncStepDurationFetchCurrentUser'
+      )
 
       /**
        * The first sync for a user will enter else case where no local cnodeUserRecord is found
        *    creating a new entry with a new auto-generated cnodeUserUUID.
        * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
        */
+      const startUpsert = getStartTime()
       if (cnodeUserRecord) {
         logger.info(
           `cNodeUserRecord was non-empty -- updating CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}. Clock value: ${fetchedLatestClockVal}`
@@ -452,8 +474,10 @@ const handleSyncFromPrimary = async ({
       }
 
       const cnodeUserUUID = cnodeUser.cnodeUserUUID
-      logger.info(
-        `Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`
+      logInfoWithDuration(
+        { logger, startTime: startUpsert },
+        `Sync step complete. Upserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}. Clock value: ${fetchedLatestClockVal}`,
+        'syncStepDurationUpsert'
       )
 
       /**
@@ -468,6 +492,7 @@ const handleSyncFromPrimary = async ({
        *    but tracks cannot be created until metadata and cover art files have been created.
        */
 
+      const startSaveFiles = getStartTime()
       const trackFiles = fetchedCNodeUser.files.filter((file: any) =>
         models.File.TrackTypes.includes(file.type)
       )
@@ -565,6 +590,12 @@ const handleSyncFromPrimary = async ({
         )
       }
       logger.info('Saved all non-track files to disk.')
+
+      logInfoWithDuration(
+        { logger, startTime: startSaveFiles },
+        'Sync step complete. Saved all track and non-track files to disk',
+        'syncStepDurationSaveFiles'
+      )
 
       /**
        * Write all records to DB
@@ -707,6 +738,14 @@ const handleSyncFromPrimary = async ({
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
+ * @param {Object} param
+ * @param {Object} param.serviceRegistry
+ * @param {string} param.wallet
+ * @param {string} param.creatorNodeEndpoint
+ * @param {Object} param.forceResyncConfig
+ * @param {Object} param.logContext
+ * @param {boolean} [param.forceWipe]
+ * @param {number} [param.blockNumber]
  */
 async function _secondarySyncFromPrimary({
   serviceRegistry,
@@ -732,7 +771,7 @@ async function _secondarySyncFromPrimary({
 
   const start = Date.now()
 
-  const secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
+  let secondarySyncFromPrimaryLogger = createChildLogger(genericLogger, {
     wallet,
     sync: 'secondarySyncFromPrimary',
     primary: creatorNodeEndpoint
@@ -755,6 +794,13 @@ async function _secondarySyncFromPrimary({
     tracing.setSpanAttribute('result', result)
   }
   tracing.setSpanAttribute('mode', mode)
+
+  secondarySyncFromPrimaryLogger = createChildLogger(
+    secondarySyncFromPrimaryLogger,
+    {
+      syncAllStepsDuration: Date.now() - start
+    }
+  ) as Logger
 
   if (error) {
     tracing.setSpanAttribute('error', error)

@@ -31,54 +31,56 @@ import {
  * @export
  * @interface RelatedArtistResponseFull
  */
-export interface RelatedArtistResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof RelatedArtistResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RelatedArtistResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RelatedArtistResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RelatedArtistResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof RelatedArtistResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RelatedArtistResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof RelatedArtistResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof RelatedArtistResponseFull
-     */
-    data?: Array<UserFull>;
-}
+export interface RelatedArtistResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof RelatedArtistResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RelatedArtistResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RelatedArtistResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RelatedArtistResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof RelatedArtistResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof RelatedArtistResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof RelatedArtistResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof RelatedArtistResponseFull
+        */
+        data?: Array<UserFull>;
+    }
+
 

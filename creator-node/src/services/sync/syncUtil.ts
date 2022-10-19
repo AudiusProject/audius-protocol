@@ -2,8 +2,7 @@ import type Logger from 'bunyan'
 
 import axios from 'axios'
 import _ from 'lodash'
-
-const asyncRetry = require('../../utils/asyncRetry')
+import { asyncRetry } from '../../utils/asyncRetry'
 
 const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -71,7 +70,9 @@ async function fetchExportFromNode({
           params: exportQueryParams,
           timeout: EXPORT_REQ_TIMEOUT_MS
         }),
-      retries: EXPORT_REQ_MAX_RETRIES,
+      options: {
+        retries: EXPORT_REQ_MAX_RETRIES
+      },
       log: false
     })
   } catch (e: any) {

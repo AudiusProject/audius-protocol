@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TrackSearch
  */
-export interface TrackSearch {
-    /**
-     * 
-     * @type {Array<Track>}
-     * @memberof TrackSearch
-     */
-    data?: Array<Track>;
-}
+export interface TrackSearch 
+    {
+        /**
+        * 
+        * @type {Array<Track>}
+        * @memberof TrackSearch
+        */
+        data?: Array<Track>;
+    }
+
 

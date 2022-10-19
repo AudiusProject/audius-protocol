@@ -37,54 +37,56 @@ import {
  * @export
  * @interface SearchModel
  */
-export interface SearchModel {
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof SearchModel
-     */
-    users: Array<UserFull>;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof SearchModel
-     */
-    followed_users?: Array<UserFull>;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof SearchModel
-     */
-    tracks: Array<TrackFull>;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof SearchModel
-     */
-    saved_tracks?: Array<TrackFull>;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof SearchModel
-     */
-    playlists: Array<PlaylistFull>;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof SearchModel
-     */
-    saved_playlists?: Array<PlaylistFull>;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof SearchModel
-     */
-    albums: Array<PlaylistFull>;
-    /**
-     * 
-     * @type {Array<PlaylistFull>}
-     * @memberof SearchModel
-     */
-    saved_albums?: Array<PlaylistFull>;
-}
+export interface SearchModel 
+    {
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof SearchModel
+        */
+        users: Array<UserFull>;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof SearchModel
+        */
+        followed_users?: Array<UserFull>;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof SearchModel
+        */
+        tracks: Array<TrackFull>;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof SearchModel
+        */
+        saved_tracks?: Array<TrackFull>;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof SearchModel
+        */
+        playlists: Array<PlaylistFull>;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof SearchModel
+        */
+        saved_playlists?: Array<PlaylistFull>;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof SearchModel
+        */
+        albums: Array<PlaylistFull>;
+        /**
+        * 
+        * @type {Array<PlaylistFull>}
+        * @memberof SearchModel
+        */
+        saved_albums?: Array<PlaylistFull>;
+    }
+
 

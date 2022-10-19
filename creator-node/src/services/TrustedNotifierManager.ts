@@ -1,9 +1,26 @@
-const { logger } = require('../logging')
-const { timeout } = require('../utils')
+import { tracing } from '../tracer'
+import { logger } from '../logging'
+import { timeout } from '../utils'
 
 const TEN_MINS_IN_MS = 1000 * 60 * 10
-class TrustedNotifierManager {
-  constructor(nodeConfig, audiusLibs) {
+export class TrustedNotifierManager {
+  nodeConfig: any
+  audiusLibs: any
+  trustedNotifierID: any
+  trustedNotifierEnabled: boolean
+  trustedNotifierData: {
+    email: string | null
+    wallet: string | null
+    endpoint: string | null
+  }
+
+  trustedNotifierChainData: {
+    email: string | null
+    wallet: string | null
+    endpoint: string | null
+  } | null
+
+  constructor(nodeConfig: any, audiusLibs: any) {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
 
@@ -27,15 +44,17 @@ class TrustedNotifierManager {
     }
   }
 
-  logInfo(msg) {
+  logInfo(msg: string) {
+    tracing.info(msg)
     logger.info(`TrustedNotifierManager || ${msg}`)
   }
 
-  logError(msg) {
+  logError(msg: string) {
+    tracing.error(msg)
     logger.error(`TrustedNotifierManager ERROR || ${msg}`)
   }
 
-  async init() {
+  async init(): Promise<void> {
     if (!this.trustedNotifierEnabled) {
       const nodeOperatorEmailAddress = this.nodeConfig.get(
         'nodeOperatorEmailAddress'
@@ -52,7 +71,7 @@ class TrustedNotifierManager {
 
       // if notifier is not registered at that index, retry
       if (
-        this.trustedNotifierChainData.wallet ===
+        this.trustedNotifierChainData!.wallet ===
         '0x0000000000000000000000000000000000000000'
       ) {
         this.logInfo(
@@ -62,8 +81,9 @@ class TrustedNotifierManager {
         return this.init()
       }
 
-      this.trustedNotifierData = this.trustedNotifierChainData
-    } catch (e) {
+      this.trustedNotifierData = this.trustedNotifierChainData!
+    } catch (e: any) {
+      tracing.recordException(e)
       this.logError(`Failed to initialize: ${e}`)
     }
   }
@@ -72,5 +92,3 @@ class TrustedNotifierManager {
     return this.trustedNotifierData
   }
 }
-
-module.exports = TrustedNotifierManager

@@ -1,5 +1,5 @@
 const assert = require('assert')
-const asyncRetry = require('../src/utils/asyncRetry')
+const { asyncRetry } = require('../src/utils/asyncRetry')
 
 describe('test asyncRetry', function () {
   it('does not retry on bails', async function () {
