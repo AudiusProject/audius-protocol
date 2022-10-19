@@ -93,10 +93,11 @@ const streamFromFileSystem = async (
       if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
-        return sendResponse(
+        return sendResponseWithMetric(
           req,
           res,
-          errorResponseRangeNotSatisfiable('Range not satisfiable')
+          errorResponseRangeNotSatisfiable('Range not satisfiable'),
+          { result: 'abort_range_not_satisfiable', mode: 'default' }
         )
       }
 
@@ -187,7 +188,7 @@ const getCID = async (req, res) => {
 
   const storagePaths = []
 
-  // Compute expected storagePath for CID
+  // Compute expected storagePath for CID, legacy and new. Prefer new
   try {
     const currentStoragePath = await DiskManager.computeFilePath(CID, false)
     storagePaths.push({
@@ -219,7 +220,7 @@ const getCID = async (req, res) => {
   let storagePath, fsStats
 
   for (const sp of storagePaths) {
-    const { path: _storagePath, pathType: _pathType } = sp
+    const { path: currStoragePath, pathType: currPathType } = sp
 
     try {
       /**
@@ -227,16 +228,16 @@ const getCID = async (req, res) => {
        * Throws error if nothing found
        * https://nodejs.org/api/fs.html#fspromisesstatpath-options
        */
-      fsStats = await fs.stat(_storagePath)
+      fsStats = await fs.stat(currStoragePath)
       if (fsStats.isFile()) {
         if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
           // Remove file if it is empty and force fetch from CN network
-          await fs.unlink(_storagePath)
+          await fs.unlink(currStoragePath)
         } else {
           fileFoundOnFS = true
-          storagePath = _storagePath
+          storagePath = currStoragePath
 
-          mode = _pathType
+          mode = currPathType
           break
         }
       } else if (fsStats.isDirectory()) {
@@ -244,14 +245,14 @@ const getCID = async (req, res) => {
           req,
           res,
           errorResponseBadRequest('this dag node is a directory'),
-          { result: 'abort_cid_is_directory', mode: _pathType }
+          { result: 'abort_cid_is_directory', mode: currPathType }
         )
       } else {
         return sendResponseWithMetric(
           req,
           res,
           errorResponseBadRequest('CID is of invalid file type'),
-          { result: 'abort_cid_invalid_type', mode: _pathType }
+          { result: 'abort_cid_invalid_type', mode: currPathType }
         )
       }
     } catch (e) {

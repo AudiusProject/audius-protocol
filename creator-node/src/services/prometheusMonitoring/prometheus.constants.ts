@@ -131,6 +131,7 @@ export const METRIC_LABELS = Object.freeze({
       'abort_premium_content_failed_match_verification',
       'abort_delisted',
       'abort_bad_cid',
+      'abort_range_not_satisfiable',
       'abort_cid_is_directory',
       'abort_cid_invalid_type',
       'abort_cid_not_found_in_db',
@@ -144,6 +145,7 @@ export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.STREAM_CONTENT_DIR_HISTOGRAM]: {
     result: [
       'success_found_in_fs',
+      'abort_range_not_satisfiable',
       'abort_improper_parameters',
       'abort_cid_not_found_in_db',
       'abort_cid_not_found_in_network',
