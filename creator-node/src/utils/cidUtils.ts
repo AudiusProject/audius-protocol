@@ -7,9 +7,9 @@ import { generateTimestampAndSignature } from '../apiSigning'
 import { libs } from '@audius/sdk'
 import { getAllRegisteredCNodes } from '../services/ContentNodeInfoManager'
 import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
+import { asyncRetry } from './asyncRetry'
 
 const DecisionTree = require('./decisionTree')
-const asyncRetry = require('./asyncRetry')
 const LibsUtils = libs.Utils
 
 export const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file

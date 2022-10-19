@@ -2,7 +2,7 @@ const axios = require('axios')
 const { CancelToken } = axios
 
 const config = require('../config')
-const asyncRetry = require('../utils/asyncRetry')
+const { asyncRetry } = require('../utils/asyncRetry')
 const { logger } = require('../logging')
 const {
   GET_NODE_USERS_TIMEOUT_MS,
