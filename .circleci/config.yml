@@ -287,6 +287,16 @@ jobs:
       - bi-weekly:
           odd_week: true
 
+  not-release-week:
+    docker:
+      - image: alpine
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - bi-weekly:
+          odd_week: false
+
   bake-gcp-dev-image:
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -1817,14 +1827,14 @@ workflows:
 
   joaquins-cron-test:
     jobs:
-      - release-week
+      - not-release-week
       - noop:
           name: special-release-job
           requires:
-            - release-week
+            - not-release-week
     triggers:
       - schedule:
-          cron: '21,23,25,27,29 * * * *'
+          cron: '9,11,13,15 * * * *'
           filters:
             branches:
               only: /(^jc-inf-295.*$)/
