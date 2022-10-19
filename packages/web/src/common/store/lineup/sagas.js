@@ -348,7 +348,10 @@ function* togglePlay(lineupActions, lineupSelector, prefix, action) {
   const isPlaying = yield select(getPlaying)
   const analytics = yield getContext('analytics')
 
-  if (!action.isPlayingUid || !isPlaying) {
+  const playingUid = yield select(getCurrentPlayerTrackUid)
+  const isPlayingUid = playingUid === action.uid
+
+  if (!isPlayingUid || !isPlaying) {
     yield put(lineupActions.play(action.uid))
     analytics.track({
       eventName: Name.PLAYBACK_PLAY,
@@ -540,16 +543,6 @@ export class LineupSagas {
     }
   }
 
-  watchPauseTrack = () => {
-    const instance = this
-    return function* () {
-      yield takeLatest(
-        baseLineupActions.addPrefix(instance.prefix, baseLineupActions.PAUSE),
-        pause
-      )
-    }
-  }
-
   watchTogglePlay = () => {
     const instance = this
     return function* () {
@@ -562,6 +555,16 @@ export class LineupSagas {
         instance.actions,
         instance.selector,
         instance.prefix
+      )
+    }
+  }
+
+  watchPauseTrack = () => {
+    const instance = this
+    return function* () {
+      yield takeLatest(
+        baseLineupActions.addPrefix(instance.prefix, baseLineupActions.PAUSE),
+        pause
       )
     }
   }

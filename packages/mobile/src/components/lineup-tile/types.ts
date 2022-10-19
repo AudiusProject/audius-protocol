@@ -33,12 +33,7 @@ export type LineupItemProps = {
   showRankIcon?: boolean
 
   /** Function that will toggle play of a track */
-  togglePlay: (args: {
-    uid: UID
-    id: ID
-    source: PlaybackSource
-    isPlayingUid: boolean
-  }) => void
+  togglePlay: (args: { uid: UID; id: ID; source: PlaybackSource }) => void
 
   /** Uid of the item */
   uid: UID
@@ -67,9 +62,6 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Url of the image */
   imageUrl?: string
-
-  /** Does the tile uid match the playing uid */
-  isPlayingUid: boolean
 
   /** The item (track or collection) */
   item: Track | Collection
@@ -103,4 +95,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** User associated with the item */
   user: User
+
+  /** Does the tile uid match the playing uid */
+  isPlayingUid: boolean
 }

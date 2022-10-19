@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ID, UID, PlaybackSource } from '@audius/common'
 import { Kind, Status, tippingSelectors } from '@audius/common'
@@ -22,9 +22,11 @@ import { Delineator } from './Delineator'
 import { delineateByTime } from './delineate'
 import type {
   FeedTipLineupItem,
-  LineupItem,
   LineupProps,
-  LoadingLineupItem
+  LoadingLineupItem,
+  LineupItem,
+  LineupItemTileProps,
+  LineupTileViewProps
 } from './types'
 import { LineupVariant } from './types'
 const { getShowTip } = tippingSelectors
@@ -33,7 +35,6 @@ type TogglePlayConfig = {
   uid: UID
   id: ID
   source: PlaybackSource
-  isPlayingUid: boolean
 }
 
 // The max number of tiles to load
@@ -113,6 +114,89 @@ type Section = {
   title?: string
   data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
 }
+
+const getLineupTileComponent = (item: LineupItem) => {
+  if (item.kind === Kind.TRACKS || item.track_id) {
+    if (item._marked_deleted) {
+      return null
+    }
+    return TrackTile
+  } else if (item.kind === Kind.COLLECTIONS || item.playlist_id) {
+    return CollectionTile
+  }
+  return null
+}
+
+const SkeletonTrackTileView = memo(function BaseTrackTileView() {
+  return (
+    <View style={styles.item}>
+      <LineupTileSkeleton />
+    </View>
+  )
+})
+
+const LineupTileView = memo(function BaseLineupTileView({
+  item,
+  index,
+  isTrending,
+  showLeadingElementArtistPick,
+  leadingElementId,
+  rankIconCount,
+  togglePlay
+}: LineupTileViewProps) {
+  const LineupTile = getLineupTileComponent(item)
+
+  if (LineupTile) {
+    return (
+      <View style={styles.item}>
+        <LineupTile
+          {...item}
+          index={index}
+          isTrending={isTrending}
+          showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
+          showRankIcon={index < rankIconCount}
+          togglePlay={togglePlay}
+          uid={item.uid}
+        />
+      </View>
+    )
+  } else {
+    return null
+  }
+})
+
+const LineupItemTile = memo(function BaseLineupItem({
+  item,
+  index,
+  isTrending,
+  showLeadingElementArtistPick,
+  leadingElementId,
+  rankIconCount,
+  togglePlay
+}: LineupItemTileProps) {
+  if (!item) return null
+
+  if ('_feedTip' in item) {
+    return <FeedTipTile />
+  } else if ('_loading' in item) {
+    if (item._loading) {
+      return <SkeletonTrackTileView />
+    }
+  } else {
+    return (
+      <LineupTileView
+        item={item}
+        index={index}
+        isTrending={isTrending}
+        showLeadingElementArtistPick={showLeadingElementArtistPick}
+        leadingElementId={leadingElementId}
+        rankIconCount={rankIconCount}
+        togglePlay={togglePlay}
+      />
+    )
+  }
+  return null
+})
 
 /** `Lineup` encapsulates the logic for displaying a list of items such as Tracks (e.g. prefetching items
  * displaying loading states, etc).
@@ -267,65 +351,40 @@ export const Lineup = ({
   }, [handleLoadMore, selfLoad, lineupLength, status])
 
   const togglePlay = useCallback(
-    ({ uid, id, source, isPlayingUid }: TogglePlayConfig) => {
-      dispatch(actions.togglePlay(uid, id, source, isPlayingUid))
+    ({ uid, id, source }: TogglePlayConfig) => {
+      dispatch(actions.togglePlay(uid, id, source))
     },
     [actions, dispatch]
   )
 
-  const getLineupTileComponent = (item: LineupItem) => {
-    if (item.kind === Kind.TRACKS || item.track_id) {
-      if (item._marked_deleted) {
-        return null
-      }
-      return TrackTile
-    } else if (item.kind === Kind.COLLECTIONS || item.playlist_id) {
-      return CollectionTile
-    }
-    return null
-  }
-
-  const renderItem = ({
-    index,
-    item
-  }: {
-    index: number
-    item: LineupItem | LoadingLineupItem | FeedTipLineupItem
-  }) => {
-    if (!item) return null
-
-    if ('_feedTip' in item) {
-      return <FeedTipTile />
-    } else if ('_loading' in item) {
-      if (item._loading) {
-        return (
-          <View style={styles.item}>
-            <LineupTileSkeleton />
-          </View>
-        )
-      }
-    } else {
-      const LineupTile = getLineupTileComponent(item)
-      if (LineupTile) {
-        return (
-          <View style={styles.item}>
-            <LineupTile
-              {...item}
-              index={index}
-              isTrending={isTrending}
-              showArtistPick={
-                showLeadingElementArtistPick && !!leadingElementId
-              }
-              showRankIcon={index < rankIconCount}
-              togglePlay={togglePlay}
-              uid={item.uid}
-            />
-          </View>
-        )
-      }
-    }
-    return null
-  }
+  const renderItem = useCallback(
+    ({
+      index,
+      item
+    }: {
+      index: number
+      item: LineupItem | LoadingLineupItem | FeedTipLineupItem
+    }) => {
+      return (
+        <LineupItemTile
+          index={index}
+          item={item}
+          isTrending={isTrending}
+          leadingElementId={leadingElementId}
+          rankIconCount={rankIconCount}
+          showLeadingElementArtistPick={showLeadingElementArtistPick}
+          togglePlay={togglePlay}
+        />
+      )
+    },
+    [
+      isTrending,
+      leadingElementId,
+      rankIconCount,
+      showLeadingElementArtistPick,
+      togglePlay
+    ]
+  )
 
   // Calculate the sections of data to provide to SectionList
   const sections: Section[] = useMemo(() => {

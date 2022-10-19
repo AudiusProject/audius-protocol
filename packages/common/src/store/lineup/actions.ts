@@ -177,13 +177,12 @@ export class LineupActions {
     }
   }
 
-  togglePlay(uid: UID, id: ID, source: PlaybackSource, isPlayingUid: boolean) {
+  togglePlay(uid: UID, id: ID, source: PlaybackSource) {
     return {
       type: addPrefix(this.prefix, TOGGLE_PLAY),
       uid,
       id,
-      source,
-      isPlayingUid
+      source
     }
   }
 

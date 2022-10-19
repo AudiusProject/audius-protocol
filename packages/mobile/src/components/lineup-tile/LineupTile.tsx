@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import type { CommonState } from '@audius/common'
-import { accountSelectors, playerSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { Animated, Easing } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -18,7 +17,6 @@ import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
 const getUserId = accountSelectors.getUserId
-const { getPlaying } = playerSelectors
 
 export const LineupTile = ({
   children,
@@ -30,7 +28,6 @@ export const LineupTile = ({
   id,
   imageUrl,
   index,
-  isPlayingUid,
   isTrending,
   isUnlisted,
   onLoad,
@@ -47,7 +44,8 @@ export const LineupTile = ({
   title,
   item,
   uid,
-  user
+  user,
+  isPlayingUid
 }: LineupTileProps) => {
   const {
     has_current_user_reposted,
@@ -57,10 +55,6 @@ export const LineupTile = ({
   } = item
   const { _artist_pick, name, user_id } = user
   const currentUserId = useSelector(getUserId)
-
-  const isPlaying = useSelector(
-    (state: CommonState) => getPlaying(state) && isPlayingUid
-  )
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
@@ -79,7 +73,7 @@ export const LineupTile = ({
         useNativeDriver: true
       }).start()
     }
-  }, [onLoad, isLoaded, index, opacity])
+  }, [onLoad, isLoaded, index, opacity, title])
 
   return (
     <LineupTileRoot onPress={onPress}>
@@ -101,10 +95,11 @@ export const LineupTile = ({
           coSign={coSign}
           imageUrl={imageUrl}
           onPressTitle={onPressTitle}
-          isPlaying={isPlaying}
           setArtworkLoaded={setArtworkLoaded}
+          uid={uid}
           title={title}
           user={user}
+          isPlayingUid={isPlayingUid}
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats
