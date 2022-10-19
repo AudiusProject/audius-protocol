@@ -20,6 +20,8 @@ models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
 models/HistoryResponse.ts
+models/ListenCount.ts
+models/MonthlyAggregatePlay.ts
 models/Playlist.ts
 models/PlaylistArtwork.ts
 models/PlaylistResponse.ts
@@ -47,8 +49,11 @@ models/UserAssociatedWalletResponse.ts
 models/UserReplicaSet.ts
 models/UserResponse.ts
 models/UserSearch.ts
+models/UserTrackListenCountsResponse.ts
+models/UserTrackListenCountsResponseData.ts
 models/UsersByContentNode.ts
 models/VerifyToken.ts
 models/VersionMetadata.ts
+models/WildMonthModel.ts
 models/index.ts
 runtime.ts

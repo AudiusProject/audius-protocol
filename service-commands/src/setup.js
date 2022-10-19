@@ -779,7 +779,7 @@ const allUp = async ({
   }
 
   // Add Centralized Logging
-  nodeUpCommands.push([[Service.LOGGING, SetupCommand.UP]])
+  // nodeUpCommands.push([[Service.LOGGING, SetupCommand.UP]])
 
   // Spin up local exporters, as well as standalone Prometheus/Grafana
   nodeUpCommands.push([[Service.MONITORING, SetupCommand.UP]])

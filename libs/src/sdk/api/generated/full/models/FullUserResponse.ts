@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullUserResponse
  */
-export interface FullUserResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullUserResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullUserResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullUserResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullUserResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullUserResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullUserResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullUserResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof FullUserResponse
-     */
-    data?: Array<UserFull>;
-}
+export interface FullUserResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullUserResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullUserResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullUserResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullUserResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullUserResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullUserResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullUserResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof FullUserResponse
+        */
+        data?: Array<UserFull>;
+    }
+
 

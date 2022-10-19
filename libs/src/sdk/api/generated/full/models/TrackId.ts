@@ -18,12 +18,14 @@
  * @export
  * @interface TrackId
  */
-export interface TrackId {
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackId
-     */
-    id: string;
-}
+export interface TrackId 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackId
+        */
+        id: string;
+    }
+
 

@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FollowingResponseFull
  */
-export interface FollowingResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FollowingResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FollowingResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FollowingResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FollowingResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof FollowingResponseFull
-     */
-    data?: Array<UserFull>;
-}
+export interface FollowingResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FollowingResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FollowingResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FollowingResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FollowingResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof FollowingResponseFull
+        */
+        data?: Array<UserFull>;
+    }
+
 
