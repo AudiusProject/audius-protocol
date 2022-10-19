@@ -16,6 +16,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useNavigation } from 'app/hooks/useNavigation'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -39,7 +40,8 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
-  const { navigation } = useContext(AppTabNavigationContext)
+  const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
+  const navigation = useNavigation({ customNavigation: contextNavigation })
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 

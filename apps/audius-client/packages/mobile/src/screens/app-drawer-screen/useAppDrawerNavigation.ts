@@ -1,12 +1,9 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 
 import { FeatureFlags } from '@audius/common'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-
-import type { AppTabScreenParamList } from '../app-screen'
-import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { AppDrawerContext } from '.'
 
@@ -20,27 +17,35 @@ export const useNotificationNavigation = () => {
     FeatureFlags.MOBILE_NAV_OVERHAUL
   )
 
-  const navigationOptions = isNavOverhaulEnabled
-    ? undefined
-    : {
-        customNativeNavigation: drawerHelpers
-      }
+  const navigation = useNavigation()
 
-  const navigation = useNavigation<
-    AppTabScreenParamList & ProfileTabScreenParamList
-  >(navigationOptions)
+  const notificationNavigation = useMemo(
+    () => ({
+      ...navigation,
+      ...drawerHelpers
+    }),
+    [drawerHelpers, navigation]
+  )
 
   if (isNavOverhaulEnabled) {
-    navigation.navigate = navigation.push
+    notificationNavigation.navigate = notificationNavigation.push as any
   }
 
-  return navigation
+  return notificationNavigation
 }
 
 export const useAppDrawerNavigation = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
 
-  return useNavigation<AppTabScreenParamList & ProfileTabScreenParamList>({
-    customNativeNavigation: drawerHelpers
-  })
+  const navigation = useNavigation()
+
+  const drawerNavigation = useMemo(
+    () => ({
+      ...navigation,
+      ...drawerHelpers
+    }),
+    [drawerHelpers, navigation]
+  )
+
+  return drawerNavigation
 }

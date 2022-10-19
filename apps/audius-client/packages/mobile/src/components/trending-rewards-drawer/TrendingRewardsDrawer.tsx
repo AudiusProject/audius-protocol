@@ -191,7 +191,7 @@ export const TrendingRewardsDrawer = () => {
 
   const handleGoToTrending = useCallback(() => {
     const [screen, params] = TRENDING_PAGES[modalType]
-    navigation.navigate(screen, params)
+    navigation.navigate(screen, params!)
     onClose()
   }, [modalType, navigation, onClose])
 

@@ -105,7 +105,7 @@ export const useAppScreenOptions = (
   const { accentOrangeLight1, neutralLight4 } = useThemeColors()
   const dispatch = useDispatch()
   const notificationCount = useSelector(getNotificationUnviewedCount)
-  const navigation = useNavigation<AppScreenParamList>()
+  const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handlePressNotification = useCallback(() => {

@@ -27,6 +27,10 @@ export const SetAppTabNavigationContext =
 
 type AppTabNavigationProviderProps = { children: ReactNode }
 
+/**
+ * Context that provides the AppTabNavigation to any components
+ * that need it outside of the AppTabScreen stack context
+ */
 export const AppTabNavigationProvider = (
   props: AppTabNavigationProviderProps
 ) => {
