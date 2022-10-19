@@ -1824,7 +1824,7 @@ workflows:
             - release-week
     triggers:
       - schedule:
-          cron: '45,47,49,51,53,55 * * * 1'
+          cron: '51,53,55,57,59 * * * 1'
           filters:
             branches:
               only: master
