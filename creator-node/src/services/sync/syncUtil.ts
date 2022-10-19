@@ -4,10 +4,8 @@ import type { Redis } from 'ioredis'
 import axios from 'axios'
 import _ from 'lodash'
 
-import {
-  SyncType,
-  SYNC_MONITORING_RETRY_DELAY_MS
-} from '../../services/stateMachineManager/stateMachineConstants'
+import { SyncType } from '../../services/stateMachineManager/stateMachineConstants'
+import { SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS } from '../prometheusMonitoring/prometheus.constants'
 
 const config = require('../../config')
 const redisClient: Redis & {
@@ -57,28 +55,7 @@ export type FetchExportOutput = {
 }
 export type SyncStatus =
   | 'waiting'
-  | 'success'
-  | 'success_clocks_already_match'
-  | 'success_force_wipe'
-  | 'abort_user_does_not_exist_on_node'
-  | 'abort_multiple_users_returned_from_export'
-  | 'abort_missing_user_export_key_fields'
-  | 'abort_mismatched_export_wallet'
-  | 'abort_current_node_is_not_user_primary'
-  | 'abort_current_node_is_not_user_secondary'
-  | 'abort_sync_in_progress'
-  | 'abort_force_wipe_disabled'
-  | 'failure_fetching_user_replica_set'
-  | 'failure_force_resync_check'
-  | 'failure_fetching_user_gateway'
-  | 'failure_delete_db_data'
-  | 'failure_delete_disk_data'
-  | 'failure_sync_secondary_from_primary'
-  | 'failure_db_transaction'
-  | 'failure_export_wallet'
-  | 'failure_import_not_consistent'
-  | 'failure_import_not_contiguous'
-  | 'failure_inconsistent_clock'
+  | typeof SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS[number]
 
 export async function fetchExportFromNode({
   nodeEndpointToFetchFrom,
