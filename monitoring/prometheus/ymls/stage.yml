@@ -6,7 +6,18 @@
   # monitor identity service
   ##########################
 
-  - job_name: redis_exporter
+  - job_name: 'stage-identity_postgres_exporter'
+    scheme: 'http'
+    metrics_path: '/prometheus/postgres'
+    static_configs:
+      - targets: ['stage-identity:9121']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'postgres'
+          component: 'identity'
+  - job_name: 'stage-identity_redis_exporter'
+    scheme: 'http'
     metrics_path: '/prometheus/redis'
     static_configs:
       - targets: ['stage-identity:9121']
@@ -14,6 +25,16 @@
           host: 'stage-identity'
           environment: 'stage'
           service: 'redis'
+          component: 'identity'
+  - job_name: 'stage-identity_linux_exporter'
+    scheme: 'http'
+    metrics_path: '/prometheus/linux'
+    static_configs:
+      - targets: ['stage-identity:9121']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'linux'
           component: 'identity'
 
   #############################################

@@ -6,7 +6,18 @@
   # monitor identity service
   ##########################
 
-  - job_name: redis_exporter
+  - job_name: 'prod-identity_postgres_exporter'
+    scheme: 'http'
+    metrics_path: '/prometheus/postgres'
+    static_configs:
+      - targets: ['prod-identity:9121']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'postgres'
+          component: 'identity'
+  - job_name: 'prod-identity_redis_exporter'
+    scheme: 'http'
     metrics_path: '/prometheus/redis'
     static_configs:
       - targets: ['prod-identity:9121']
@@ -14,6 +25,16 @@
           host: 'prod-identity'
           environment: 'prod'
           service: 'redis'
+          component: 'identity'
+  - job_name: 'prod-identity_linux_exporter'
+    scheme: 'http'
+    metrics_path: '/prometheus/linux'
+    static_configs:
+      - targets: ['prod-identity:9121']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'linux'
           component: 'identity'
 
   #############################################
