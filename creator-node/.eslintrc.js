@@ -83,7 +83,6 @@ module.exports = {
     'padded-blocks': 'off',
     'no-prototype-builtins': 'off', // added by Dheeraj, to remove
     'no-async-promise-executor': 'off', // added by Dheeraj, to remove
-    'no-useless-catch': 'off', // added by Dheeraj, to remove
     'prefer-regex-literals': 'off', // added by Dheeraj, to remove
     'no-unmodified-loop-condition': 'off', // added by Dheeraj, to remove
     'array-callback-return': 'off', // added by Dheeraj, to remove
