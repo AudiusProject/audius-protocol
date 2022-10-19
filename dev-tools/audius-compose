@@ -3,6 +3,8 @@
 import json
 import pathlib
 import subprocess
+import string
+import random
 
 import click
 import dotenv
@@ -147,8 +149,7 @@ def build(
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "build",
         ],
     )
@@ -179,8 +180,7 @@ def up(
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "up",
             "--build",
             "-d",
@@ -195,12 +195,76 @@ def down(protocol_dir):
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "down",
             "-v",
         ],
     )
+
+
+@cli.command()
+@click.argument("service")
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+@click.pass_obj
+def test(protocol_dir, service, args):
+    generate_env(
+        protocol_dir,
+        0,  # amount of replicas don't matter here
+        0,  # amount of replicas don't matter here
+        0,  # amount of replicas don't matter here
+        False,
+    )
+
+    project_name = f"audius-compose-{''.join(random.choice(string.ascii_lowercase) for i in range(9))}"
+
+    no_deps = False
+    if service == "discovery-provider":
+        no_deps = args and not any(arg.startswith("integration_tests") for arg in args)
+
+    try:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--project-name={project_name}",
+                f"--project-directory={protocol_dir}",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                "build",
+            ],
+        )
+
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--project-name={project_name}",
+                f"--project-directory={protocol_dir}",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                "run",
+                "--rm",
+                *(["--no-deps"] if no_deps else []),
+                f"test-{service}",
+                *args,
+            ],
+        )
+    finally:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--project-name={project_name}",
+                f"--project-directory={protocol_dir}",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                "down",
+                "--timeout=1",
+                "-v",
+            ],
+        )
+
+        subprocess.run(
+            f'docker rmi $(docker images --filter "reference={project_name}-*" -q)',
+            shell=True,
+        )
 
 
 @cli.command()
@@ -218,8 +282,7 @@ def exec(protocol_dir, service, command, args):
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "exec",
             "--index",
             str(index),
@@ -241,8 +304,7 @@ def ps(protocol_dir):
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "ps",
             "--format=json",
         ],
@@ -317,8 +379,7 @@ def logs(protocol_dir, service):
         [
             "docker",
             "compose",
-            "--project-directory",
-            protocol_dir,
+            f"--project-directory={protocol_dir}",
             "logs",
             service,
         ],
