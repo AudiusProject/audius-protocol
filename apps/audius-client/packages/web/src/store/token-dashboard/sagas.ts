@@ -169,7 +169,7 @@ function* disconnectWeb3(web3Instance: any) {
           // Do nothing
         }
       }
-      yield* web3Instance.currentProvider.close()
+      yield* call(web3Instance.currentProvider.close)
     }
   } catch (e) {
     console.error('Failed to disconnect web3 instance')
@@ -509,7 +509,8 @@ function* connectEthWallet(web3Instance: any) {
         collectibleCount
       })
     )
-    const signature = yield* web3Instance.eth.personal.sign(
+    const signature = yield* call(
+      web3Instance.eth.personal.sign,
       `AudiusUserID:${accountUserId}`,
       accounts[0]
     )
@@ -604,7 +605,7 @@ function* connectEthWallet(web3Instance: any) {
             )
           }
           // Disconnect the web3 instance because after we've linked, we no longer need it
-          yield* disconnectWeb3(web3Instance)
+          yield* call(disconnectWeb3, web3Instance)
         },
         function* () {
           yield* put(
@@ -614,13 +615,13 @@ function* connectEthWallet(web3Instance: any) {
             })
           )
           // Disconnect the web3 instance in the event of an error, we no longer need it
-          yield* disconnectWeb3(web3Instance)
+          yield* call(disconnectWeb3, web3Instance)
         }
       )
     )
   } catch (error) {
     // Disconnect the web3 instance in the event of an error, we no longer need it
-    yield* disconnectWeb3(web3Instance)
+    yield* call(disconnectWeb3, web3Instance)
     yield* put(
       updateWalletError({
         errorMessage:
