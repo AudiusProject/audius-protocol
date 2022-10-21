@@ -604,11 +604,17 @@ function* followArtists() {
     }
 
     const signOn = yield select(getSignOn)
+    const referrer = signOn.referrer
+
     const {
       followArtists: { selectedUserIds }
     } = signOn
     const userIdsToFollow = [
-      ...new Set([...defaultFollowUserIds, ...selectedUserIds])
+      ...new Set([
+        ...defaultFollowUserIds,
+        ...selectedUserIds,
+        ...(referrer == null ? [] : [referrer])
+      ])
     ]
     for (const userId of userIdsToFollow) {
       yield put(socialActions.followUser(userId))
