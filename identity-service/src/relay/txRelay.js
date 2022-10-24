@@ -11,7 +11,7 @@ const { Lock } = require('../redis')
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 const NETHERMIND_PROVIDER = 'http://54.187.10.247:8545'
-const NETHERMIND_BLOCK_OFFSET = 10000000
+const NETHERMIND_BLOCK_OFFSET = 30000000
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
