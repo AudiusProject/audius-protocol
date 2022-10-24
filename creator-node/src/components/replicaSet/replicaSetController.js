@@ -65,7 +65,7 @@ const respondToURSMRequestForProposalController = async (req) => {
   }
 }
 
-const getSyncStatusController = async (req, res) => {
+const getSyncStatusController = async (req, _res) => {
   try {
     const syncStatus = await getSyncStatus(req.params.syncUuid)
     return successResponse({ syncStatus })
