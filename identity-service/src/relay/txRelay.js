@@ -107,6 +107,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
+  let txParams
   let redisLogParams
   let wallet = await selectWallet()
 
@@ -120,19 +121,28 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     req.logger.info(
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
     )
-    const { receipt, txParams } = await createAndSendTransaction(
-      wallet,
-      contractAddress,
-      '0x00',
-      web3,
-      req.logger,
-      gasLimit,
-      encodedABI
-    )
-    txReceipt = receipt
 
-    // WIP: nethermind fire and forget
-    wipRelayToNethermind(contractAddress, encodedABI)
+    // SEND to either POA or Nethermind here...
+    const sendToNethermind = true
+    let txReceipt
+
+    if (sendToNethermind) {
+      const ok = await wipRelayToNethermind(contractAddress, encodedABI)
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    } else {
+      const ok = await createAndSendTransaction(
+        wallet,
+        contractAddress,
+        '0x00',
+        web3,
+        req.logger,
+        gasLimit,
+        encodedABI
+      )
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    }
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -162,7 +172,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
     await redis.hset(
       'txHashToSenderAddress',
-      receipt.transactionHash,
+      txReceipt.transactionHash,
       senderAddress
     )
   } catch (e) {
@@ -332,18 +342,8 @@ const createAndSendTransaction = async (
 const web3 = new Web3(NETHERMIND_PROVIDER)
 
 async function wipRelayToNethermind(contractAddress, encodedABI) {
-  // staging EM address
-  // TODO: config
+  // staging EM address on nethermind NOT POA
   const entityManagerAddress = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
-
-  // if (contractAddress !== entityManagerAddress) {
-  //   console.log(
-  //     'wipRelayToNethermind skipping: contractAddress != entityManagerAddress',
-  //     contractAddress,
-  //     entityManagerAddress
-  //   )
-  //   return
-  // }
 
   // any ol random private key
   const wallet = accounts.create()
@@ -377,9 +377,13 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
     var time = end - start
     console.log('wipRelayToNethermind ok', JSON.stringify(receipt))
     console.log('wipRelayToNethermind took', time)
-    return receipt
+    return {
+      txParams: transaction,
+      receipt
+    }
   } catch (err) {
     console.log('wipRelayToNethermind error', err.toString())
+    throw err
   }
 }
 
