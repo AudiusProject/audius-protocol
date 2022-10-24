@@ -24,6 +24,7 @@ type EnqueueSyncArgs = {
   forceWipe?: boolean
   logContext: Object
   parentSpanContext: SpanContext
+  syncUuid: string | null
 }
 
 /**
@@ -116,7 +117,8 @@ export class SyncQueue {
       forceWipe,
       blockNumber,
       logContext,
-      serviceRegistry
+      serviceRegistry,
+      syncUuid
     } = job.data
 
     let result = {}
@@ -129,7 +131,8 @@ export class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
-        logContext
+        logContext,
+        syncUuid: syncUuid || null
       })
       logInfoWithDuration(
         { logger, startTime },
@@ -154,7 +157,8 @@ export class SyncQueue {
     forceResyncConfig,
     forceWipe,
     logContext,
-    parentSpanContext
+    parentSpanContext,
+    syncUuid = null // Could be null for backwards compatibility
   }: EnqueueSyncArgs) {
     const job = await this.queue.add('process-sync', {
       wallet,
@@ -163,7 +167,8 @@ export class SyncQueue {
       forceResyncConfig,
       forceWipe,
       logContext,
-      parentSpanContext
+      parentSpanContext,
+      syncUuid: syncUuid || null
     })
     return job
   }
