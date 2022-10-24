@@ -1,11 +1,11 @@
-import { Job, Queue, Worker } from 'bullmq'
-import Sequelize from 'sequelize'
+const { Queue, Worker } = require('bullmq')
+const Sequelize = require('sequelize')
 
-import { deleteSessions } from '../sessionManager'
-import { logger } from '../logging'
-import { clusterUtils } from '../utils'
+const sessionManager = require('../sessionManager')
 const config = require('../config')
+const { logger } = require('../logging')
 const { SessionToken } = require('../models')
+const { clusterUtils } = require('../utils')
 
 const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
@@ -18,12 +18,7 @@ const PROCESS_NAMES = Object.freeze({
  * A persistent cron-style queue that periodically deletes expired session tokens from Redis cache and the database. Runs on startup, deleting 100 sessions at a time, and then runs daily to clear sessions older than 14d.
  *
  */
-export class SessionExpirationQueue {
-  sessionExpirationAge: number
-  batchSize: number
-  runInterval: number
-  queue: Queue
-
+class SessionExpirationQueue {
   constructor() {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
@@ -43,18 +38,18 @@ export class SessionExpirationQueue {
     })
   }
 
-  async expireSessions(sessionExpiredCondition: Object) {
+  async expireSessions(sessionExpiredCondition) {
     const sessionsToDelete = await SessionToken.findAll(
       Object.assign(sessionExpiredCondition, { limit: this.batchSize })
     )
-    await deleteSessions(sessionsToDelete)
+    await sessionManager.deleteSessions(sessionsToDelete)
   }
 
   /**
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus(message: string) {
+  async logStatus(message) {
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
     logger.info(
@@ -78,7 +73,7 @@ export class SessionExpirationQueue {
 
     const worker = new Worker(
       'session-expiration-queue',
-      async (job: Job) => {
+      async (job) => {
         try {
           await this.logStatus('Starting')
           let progress = 0
@@ -133,3 +128,5 @@ export class SessionExpirationQueue {
     }
   }
 }
+
+module.exports = SessionExpirationQueue
