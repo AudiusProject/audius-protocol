@@ -263,6 +263,9 @@ parameters:
   slack_mentions_user:
     type: string
     default: ""
+  sp_release:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -286,16 +289,6 @@ jobs:
     steps:
       - bi-weekly:
           odd_week: false
-
-  not-release-week:
-    docker:
-      - image: alpine
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
-    steps:
-      - bi-weekly:
-          odd_week: true
 
   bake-gcp-dev-image:
     docker:
@@ -1334,6 +1327,7 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.slash_address >>
+         - not: << pipeline.parameters.sp_release >>
     jobs:
       - noop:
           name: tests
@@ -1825,19 +1819,24 @@ workflows:
             branches:
               only: /(^master$)/
 
-  joaquins-cron-test:
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. click "Trigger Pipeline"
+  # 3. Add string parameter "sp_release" with any non-null value
+  release-to-service-providers:
+    when: << pipeline.parameters.sp_release >>
     jobs:
       - release-week
-      - noop:
-          name: special-release-job
+      - release-scripts:
+          name: release-to-service-providers
+          target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+            - discord
+            - governance
           requires:
             - release-week
-    triggers:
-      - schedule:
-          cron: '34 * * * *'
-          filters:
-            branches:
-              only: /(^jc-inf-295.*$)/
 
   # release-to-service-providers-cron:
   #   jobs:
@@ -1859,44 +1858,44 @@ workflows:
   #           branches:
   #             only: /(^master$)/
 
-  # evaluate-proposal-cron:
-  #   jobs:
-  #     - release-week
-  #     - release-scripts:
-  #         name: evaluate-proposal
-  #         target: evaluate-proposal
-  #         context:
-  #           - slack-secrets
-  #           - governance
-  #         requires:
-  #           - release-week
-  #   triggers:
-  #     - schedule:
-  #         cron: '0 19 * * 5'
-  #         filters:
-  #           branches:
-  #             only: /(^master$)/
+  evaluate-proposal-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: evaluate-proposal
+          target: evaluate-proposal
+          context:
+            - slack-secrets
+            - governance
+          requires:
+            - release-week
+    triggers:
+      - schedule:
+          cron: '0 19 * * 5'
+          filters:
+            branches:
+              only: /(^master$)/
 
-  # cut-release-cron:
-  #   jobs:
-  #     - release-week
-  #     - release-scripts:
-  #         name: cut-release
-  #         target: cut-release
-  #         context:
-  #           - slack-secrets
-  #           - gh-tokens.releases
-  #         requires:
-  #           - release-week
-  #     - generate-release-checklist:
-  #         requires:
-  #           - cut-release
-  #   triggers:
-  #     - schedule:
-  #         cron: '0 7 * * 6'
-  #         filters:
-  #           branches:
-  #             only: /(^master$)/
+  cut-release-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+          requires:
+            - release-week
+      - generate-release-checklist:
+          requires:
+            - cut-release
+    triggers:
+      - schedule:
+          cron: '0 7 * * 6'
+          filters:
+            branches:
+              only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
