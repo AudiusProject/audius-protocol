@@ -1,4 +1,3 @@
-import type Logger from 'bunyan'
 import type { CustomRequest } from '../../apiHelpers'
 
 import {

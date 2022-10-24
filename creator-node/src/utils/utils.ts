@@ -1,5 +1,3 @@
-import type Logger from 'bunyan'
-import type { Request } from 'express'
 import { recoverPersonalSignature } from 'eth-sig-util'
 import { logger as genericLogger } from '../logging'
 import config from '../config'
