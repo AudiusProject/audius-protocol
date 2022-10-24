@@ -285,7 +285,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - bi-weekly:
-          odd_week: true
+          odd_week: false
 
   not-release-week:
     docker:
@@ -295,7 +295,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - bi-weekly:
-          odd_week: false
+          odd_week: true
 
   bake-gcp-dev-image:
     docker:
@@ -1834,7 +1834,7 @@ workflows:
             - not-release-week
     triggers:
       - schedule:
-          cron: '9,11,13,15 * * * *'
+          cron: '32 * * * *'
           filters:
             branches:
               only: /(^jc-inf-295.*$)/
