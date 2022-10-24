@@ -343,18 +343,14 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
     )
   })
 
-  it('throws when low on memory', function () {
+  it('does not throw when low on memory', function () {
     const usedMemory = 90
     const totalMemory = 100
     const verboseHealthCheckResp = {
       usedMemory,
       totalMemory
     }
-    expect(() => determinePeerHealth(verboseHealthCheckResp)).to.throw(
-      `Running low on memory=${
-        totalMemory - usedMemory
-      }bytes remaining. Minimum memory required=${minimumMemoryAvailable}bytes`
-    )
+    expect(() => determinePeerHealth(verboseHealthCheckResp)).to.not.throw()
   })
 
   it('throws when low on file descriptor space', function () {

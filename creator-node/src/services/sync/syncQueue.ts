@@ -1,36 +1,58 @@
-const { Queue, Worker } = require('bullmq')
+import type { SpanContext } from '@opentelemetry/api'
 
-const { clusterUtils } = require('../../utils')
-const { instrumentTracing, tracing } = require('../../tracer')
-const {
+import { Job, Queue, Worker } from 'bullmq'
+import { Redis } from 'ioredis'
+
+import { clusterUtils } from '../../utils'
+import { instrumentTracing, tracing } from '../../tracer'
+import {
   logger,
   logInfoWithDuration,
   logErrorWithDuration,
   getStartTime
-} = require('../../logging')
-const { secondarySyncFromPrimary } = require('./secondarySyncFromPrimary')
+} from '../../logging'
+import { secondarySyncFromPrimary } from './secondarySyncFromPrimary'
+import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
 const SYNC_QUEUE_HISTORY = 500
+
+type EnqueueSyncArgs = {
+  wallet: string
+  creatorNodeEndpoint: string
+  blockNumber: number
+  forceResyncConfig: ForceResyncConfig
+  forceWipe?: boolean
+  logContext: Object
+  parentSpanContext: SpanContext
+  syncUuid: string | null
+}
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
  * sync job = this node (secondary) will sync data for a user from their primary
  */
-class SyncQueue {
+export class SyncQueue {
+  nodeConfig: any
+  redis: Redis
+  serviceRegistry: any
+  queue: Queue
   /**
    * Construct bull queue and define job processor
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig, redis, serviceRegistry) {
+  constructor(nodeConfig: any, redis: Redis, serviceRegistry: any) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
 
+    /**
+     * TODO - set default value for host and port in nodeConfig, @see TcpSocketConnectOpts
+     */
     const connection = {
       host: nodeConfig.get('redisHost'),
       port: nodeConfig.get('redisPort')
-    }
+    } as any
     this.queue = new Queue('sync-processing-queue', {
       connection,
       defaultJobOptions: {
@@ -87,7 +109,7 @@ class SyncQueue {
     }
   }
 
-  async processTask(job) {
+  private async processTask(job: Job) {
     const {
       wallet,
       creatorNodeEndpoint,
@@ -95,7 +117,8 @@ class SyncQueue {
       forceWipe,
       blockNumber,
       logContext,
-      serviceRegistry
+      serviceRegistry,
+      syncUuid
     } = job.data
 
     let result = {}
@@ -108,13 +131,14 @@ class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
-        logContext
+        logContext,
+        syncUuid: syncUuid || null
       })
       logInfoWithDuration(
         { logger, startTime },
         `syncQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
       )
-    } catch (e) {
+    } catch (e: any) {
       tracing.recordException(e)
       logErrorWithDuration(
         { logger, startTime },
@@ -126,15 +150,16 @@ class SyncQueue {
     return result
   }
 
-  async enqueueSync({
+  public async enqueueSync({
     wallet,
     creatorNodeEndpoint,
     blockNumber,
     forceResyncConfig,
     forceWipe,
     logContext,
-    parentSpanContext
-  }) {
+    parentSpanContext,
+    syncUuid = null // Could be null for backwards compatibility
+  }: EnqueueSyncArgs) {
     const job = await this.queue.add('process-sync', {
       wallet,
       creatorNodeEndpoint,
@@ -142,10 +167,9 @@ class SyncQueue {
       forceResyncConfig,
       forceWipe,
       logContext,
-      parentSpanContext
+      parentSpanContext,
+      syncUuid: syncUuid || null
     })
     return job
   }
 }
-
-module.exports = SyncQueue

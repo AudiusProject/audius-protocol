@@ -314,7 +314,7 @@ const _determineNewReplicaSet = async ({
   const healthyReplicaSet = new Set(
     currentReplicaSet
       // Ensure exists
-      .filter((node) => Boolean)
+      .filter((_node) => Boolean)
       // Node is not marked unhealthy
       .filter((node) => !nodesToReconfigOffOf.has(node))
   )

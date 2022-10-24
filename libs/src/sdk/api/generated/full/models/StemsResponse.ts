@@ -31,54 +31,56 @@ import {
  * @export
  * @interface StemsResponse
  */
-export interface StemsResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof StemsResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof StemsResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof StemsResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof StemsResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemsResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemsResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof StemsResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<StemFull>}
-     * @memberof StemsResponse
-     */
-    data?: Array<StemFull>;
-}
+export interface StemsResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof StemsResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof StemsResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof StemsResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof StemsResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemsResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemsResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof StemsResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<StemFull>}
+        * @memberof StemsResponse
+        */
+        data?: Array<StemFull>;
+    }
+
 
