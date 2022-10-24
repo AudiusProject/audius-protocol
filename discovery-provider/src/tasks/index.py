@@ -93,6 +93,7 @@ default_config_start_hash = "0x0"
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
 
+NETHERMIND_BLOCK_OFFSET = 10000000
 
 def get_contract_info_if_exists(self, address):
     for contract_name, contract_address in get_contract_addresses().items():
@@ -102,7 +103,6 @@ def get_contract_info_if_exists(self, address):
 
 
 def initialize_blocks_table_if_necessary(db: SessionManager):
-
     redis = update_task.redis
 
     target_blockhash = None
@@ -181,6 +181,7 @@ def get_latest_block(db: SessionManager):
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
         latest_block = update_task.web3.eth.get_block(target_latest_block_number, True)
+        latest_block.block_number += NETHERMIND_BLOCK_OFFSET
     return latest_block
 
 
@@ -1058,63 +1059,66 @@ def update_task(self):
                     block_intersection_found = parent_block_query.count() > 0
 
                     num_blocks = len(index_blocks_list)
-                    if num_blocks > 10:
+                    if num_blocks % 50 == 0:
                         logger.info(
                             f"index.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
-                    # # Special case for initial block hash value of 0x0 and 0x0000....
-                    # reached_initial_block = parent_hash == default_padded_start_hash
-                    # if reached_initial_block:
+                    # Special case for initial block hash value of 0x0 and 0x0000....
+                    reached_initial_block = parent_hash == default_padded_start_hash
+                    if reached_initial_block:
                         block_intersection_found = True
-                    # else:
-                    latest_block = web3.eth.get_block(parent_hash, True)
-                    intersect_block_hash = web3.toHex(latest_block.hash)
+                        intersect_block_hash = default_config_start_hash
+                    else:
+                        latest_block = web3.eth.get_block(parent_hash, True)
+                        latest_block.block_number += NETHERMIND_BLOCK_OFFSET
+                        intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
                 # Important when determining whether undo operations are necessary
-                # base_query = session.query(Block)
-                # base_query = base_query.filter(Block.is_current == True)
-                # db_block_query = base_query.all()
+                base_query = session.query(Block)
+                base_query = base_query.filter(Block.is_current == True)
+                db_block_query = base_query.all()
 
-                # assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
-                # db_current_block = db_block_query[0]
+                assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+                db_current_block = db_block_query[0]
 
-                # # Check current block
-                # undo_operations_required = (
-                #     db_current_block.blockhash != intersect_block_hash
-                # )
+                # Check current block
+                undo_operations_required = (
+                    db_current_block.blockhash != intersect_block_hash
+                )
 
-                # if undo_operations_required:
-                #     logger.info(
-                #         f"index.py | update_task | Undo required - {undo_operations_required}. \
-                #                 Intersect_blockhash : {intersect_block_hash}.\
-                #                 DB current blockhash {db_current_block.blockhash}"
-                #     )
-                # else:
-                #     logger.info(
-                #         f"index.py | update_task | Intersect_blockhash : {intersect_block_hash}"
-                #     )
+                if undo_operations_required:
+                    logger.info(
+                        f"index.py | update_task | Undo required - {undo_operations_required}. \
+                                Intersect_blockhash : {intersect_block_hash}.\
+                                DB current blockhash {db_current_block.blockhash}"
+                    )
+                else:
+                    logger.info(
+                        f"index.py | update_task | Intersect_blockhash : {intersect_block_hash}"
+                    )
 
                 # Assign traverse block to current database block
-                # traverse_block = db_current_block
+                traverse_block = db_current_block
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                # while traverse_block.blockhash != intersect_block_hash:
-                #     revert_blocks_list.append(traverse_block)
-                #     parent_query = session.query(Block).filter(
-                #         Block.blockhash == traverse_block.parenthash
-                #     )
+                while traverse_block.blockhash != intersect_block_hash:
+                    break
+                    revert_blocks_list.append(traverse_block)
+                    parent_query = session.query(Block).filter(
+                        Block.blockhash == traverse_block.parenthash
+                    )
 
-                #     if parent_query.count() == 0:
-                #         logger.info(
-                #             f"index.py | update_task | Special case exit traverse block parenthash - "
-                #             f"{traverse_block.parenthash}"
-                #         )
-                #         break
-                #     traverse_block = parent_query[0]
+                    if parent_query.count() == 0:
+                        logger.info(
+                            f"index.py | update_task | Special case exit traverse block parenthash - "
+                            f"{traverse_block.parenthash}"
+                        )
+                        break
+                    traverse_block = parent_query[0]
 
                 # Ensure revert blocks list is available after session scope
                 session.expunge_all()
