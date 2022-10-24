@@ -4,6 +4,7 @@ const { isEmpty } = require('lodash')
 const { logger } = require('./logging')
 const models = require('./models')
 const sequelize = models.sequelize
+const { QueryTypes } = models.Sequelize
 
 class DBManager {
   /**
@@ -180,24 +181,57 @@ class DBManager {
     prevStoragePath,
     batchSize
   ) {
-    const files = (
-      await models.File.findAll({
-        attributes: ['storagePath'],
-        where: {
-          [sequelize.Op.and]: [
-            sequelize.literal(`"multihash" IN
-          (SELECT "multihash" FROM "Files" WHERE "cnodeUserUUID" = '${cnodeUserUUID}' AND "storagePath" > '${prevStoragePath}')`)
-          ]
-        },
-        group: 'storagePath',
-        having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`),
-        order: [['storagePath', 'ASC']],
-        limit: batchSize
-      })
-    ).map((result) => result.dataValues)
+    // TODO: Remove after v0.3.69 is on all nodes
+    // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
+    if (await DBManager.isStoragePathIndexBeingCreated())
+      throw new Error(
+        "Can't get files to delete while Files_storagePath_idx is being created"
+      )
 
-    if (isEmpty(files)) return []
-    return files.map((file) => path.normalize(file.storagePath))
+    // Get a batch of file that this user needs
+    const userFiles = []
+    const userFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        cnodeUserUUID,
+        storagePath: {
+          [sequelize.Op.gte]: prevStoragePath
+        }
+      },
+      distinct: true,
+      order: [['storagePath', 'ASC']],
+      limit: batchSize
+    })
+    if (isEmpty(userFilesQueryResult?.dataValues)) return []
+    for (const file of userFilesQueryResult.dataValues) {
+      userFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Get all files that: 1. could match a file in the above batch; and 2. are only needed by 1 user
+    const allUniqueFiles = []
+    const allUniqueFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        storagePath: {
+          [sequelize.Op.between]: [
+            userFiles[0],
+            userFiles[userFiles.length - 1]
+          ]
+        }
+      },
+      group: 'storagePath',
+      having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`)
+    })
+    if (isEmpty(allUniqueFilesQueryResult?.dataValues)) return []
+    for (const file of allUniqueFilesQueryResult.dataValues) {
+      allUniqueFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Return files that only this user needs (files that aren't associated with anyone else)
+    const userUniqueFiles = allUniqueFiles.filter((file) =>
+      userFiles.includes(file)
+    )
+    return userUniqueFiles
   }
 
   /**
@@ -371,6 +405,22 @@ class DBManager {
 
     const numRowsUpdated = metadata?.rowCount || 0
     return numRowsUpdated
+  }
+
+  static async createStoragePathIndexOnFilesTable() {
+    return sequelize.query(
+      `CREATE INDEX CONCURRENTLY IF NOT EXISTS "Files_storagePath_idx" ON "Files" USING btree ("storagePath")`
+    )
+  }
+
+  static async isStoragePathIndexBeingCreated() {
+    const runningIndexCreations = await sequelize.query(
+      `SELECT relname FROM pg_class, pg_index WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid`,
+      { type: QueryTypes.SELECT }
+    )
+    return runningIndexCreations?.filter(
+      (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
+    )?.length
   }
 }
 
