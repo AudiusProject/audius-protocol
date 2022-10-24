@@ -6,6 +6,7 @@ import { ButtonProps } from './types'
 const ProfileButton = ({
   darkMode,
   onClick,
+  href,
   isActive,
   isMatrixMode
 }: ButtonProps) => {
@@ -16,6 +17,7 @@ const ProfileButton = ({
       darkMode={darkMode}
       isMatrix={isMatrixMode}
       onClick={onClick}
+      href={href}
       iconLightJSON={() => require('assets/animations/iconProfileLight.json')}
       iconDarkJSON={() => require('assets/animations/iconProfileDark.json')}
     />

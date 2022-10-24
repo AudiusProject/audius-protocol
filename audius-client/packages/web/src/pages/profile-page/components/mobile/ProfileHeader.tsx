@@ -351,7 +351,7 @@ const ProfileHeader = ({
                 </h1>
               </div>
               <div className={styles.artistHandleWrapper}>
-                <h2 className={styles.artistHandle}>{handle}</h2>
+                <div className={styles.artistHandle}>{handle}</div>
                 {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
               </div>
             </div>
@@ -444,14 +444,14 @@ const ProfileHeader = ({
             // https://github.com/Soapbox/linkifyjs/issues/292
             // @ts-ignore
             <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
-              <div
+              <p
                 ref={bioRefCb}
                 className={cn(styles.bio, {
                   [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
                 })}
               >
                 {squashNewLines(bio)}
-              </div>
+              </p>
             </Linkify>
           ) : null}
           {hasEllipsis && !isDescriptionMinimized && (website || donation) && (

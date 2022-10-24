@@ -31,19 +31,24 @@ const ColorTile = ({
   goToRoute,
   isIncentivized
 }: ColorTileProps) => {
+  const onClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault()
+    goToRoute(link)
+  }
   return (
-    <div
+    <a
       className={cn(styles.colorTile, className, {
         [styles.hasEmoji]: !!emoji
       })}
-      onClick={() => goToRoute(link)}
+      href={link}
+      onClick={onClick}
       style={{
         boxShadow: `0 2px 8px -2px ${shadow}`,
         background: gradient
       }}
     >
-      <div className={styles.title}>{title}</div>
-      <div className={styles.description}>{description}</div>
+      <h3 className={styles.title}>{title}</h3>
+      <p className={styles.description}>{description}</p>
       {emoji && <i className={`emoji xl ${emoji}`} />}
       {icon && <div className={styles.icon}>{icon}</div>}
       {isIncentivized ? (
@@ -51,7 +56,7 @@ const ColorTile = ({
           <IconAudioRewardsPill />
         </div>
       ) : null}
-    </div>
+    </a>
   )
 }
 

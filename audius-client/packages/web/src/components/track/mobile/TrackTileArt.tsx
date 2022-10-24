@@ -24,6 +24,7 @@ type TrackTileArtProps = {
   className?: string
   showSkeleton?: boolean
   coSign?: Remix | null
+  label?: string
   // Called when the image is done loading
   callback: () => void
 }
@@ -35,6 +36,7 @@ const TrackTileArt = ({
   coverArtSizes,
   showSkeleton,
   coSign,
+  label,
   callback
 }: TrackTileArtProps) => {
   const useImage = isTrack ? useTrackCoverArt : useCollectionCoverArt
@@ -54,12 +56,14 @@ const TrackTileArt = ({
       <DynamicImage
         image={showSkeleton ? '' : image}
         wrapperClassName={styles.imageWrapper}
+        aria-label={label}
       />
     </CoSign>
   ) : (
     <DynamicImage
       image={showSkeleton ? '' : image}
       wrapperClassName={cn(styles.container, styles.imageWrapper, className)}
+      aria-label={label}
     />
   )
 }

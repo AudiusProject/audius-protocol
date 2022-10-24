@@ -47,6 +47,7 @@ const PlaylistTile = memo(
     trackCount,
     isTrending,
     showRankIcon,
+    href,
     TileTrackContainer = DefaultTileContainer
   }: PlaylistTileProps) => {
     const renderTracks = useCallback(
@@ -113,6 +114,7 @@ const PlaylistTile = memo(
             onTogglePlay={onTogglePlay}
             showRankIcon={showRankIcon}
             isTrending={isTrending}
+            permalink={href}
           />
         </TileTrackContainer>
         {renderTracks()}
