@@ -124,11 +124,13 @@ const ConnectedTrackTile = memo(
     }
 
     const goToTrackPage = (e: MouseEvent<HTMLElement>) => {
+      e.preventDefault()
       e.stopPropagation()
       goToRoute(permalink)
     }
 
     const goToArtistPage = (e: MouseEvent<HTMLElement>) => {
+      e.preventDefault()
       e.stopPropagation()
       goToRoute(profilePage(handle))
     }
@@ -206,6 +208,7 @@ const ConnectedTrackTile = memo(
         artistName={name}
         artistIsVerified={is_verified}
         // Playback
+        permalink={permalink}
         togglePlay={togglePlay}
         isActive={uid === playingUid}
         isLoading={isBuffering}

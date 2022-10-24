@@ -6,6 +6,7 @@ import { ButtonProps } from './types'
 const FeedButton = ({
   darkMode,
   onClick,
+  href,
   isActive,
   isMatrixMode
 }: ButtonProps) => {
@@ -16,6 +17,7 @@ const FeedButton = ({
       isActive={isActive}
       darkMode={darkMode}
       onClick={onClick}
+      href={href}
       iconLightJSON={() => require('assets/animations/iconFeedLight.json')}
       iconDarkJSON={() => require('assets/animations/iconFeedDark.json')}
     />

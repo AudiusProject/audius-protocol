@@ -92,7 +92,7 @@ const CollectionsPage = ({
         isReposted={playlist.has_current_user_reposted}
         isSaved={playlist.has_current_user_saved}
         cardCoverImageSizes={playlist._cover_art_sizes}
-        link={
+        href={
           playlist.is_album
             ? fullAlbumPage(
                 playlist.user.handle,

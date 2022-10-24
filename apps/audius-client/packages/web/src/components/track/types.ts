@@ -196,6 +196,9 @@ export type DesktopTrackTileProps = {
 
   /** Whether to show an icon indicating rank in lineup */
   showRankIcon: boolean
+
+  /** The relative link of the track */
+  permalink: string
 }
 
 export type DesktopPlaylistTileProps = {
@@ -300,6 +303,9 @@ export type DesktopPlaylistTileProps = {
 
   /** Whether to show an icon indicating rank in lineup */
   showRankIcon: boolean
+
+  /** Relative link to playlist page */
+  href: string
 }
 
 export type SkeletonTileProps = {

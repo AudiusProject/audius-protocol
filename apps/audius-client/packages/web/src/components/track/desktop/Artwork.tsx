@@ -80,6 +80,7 @@ const ArtworkIcon = ({
 
 type ArtworkProps = TileArtworkProps & {
   image: any
+  label?: string
 }
 
 const Artwork = memo(
@@ -91,7 +92,8 @@ const Artwork = memo(
     isBuffering,
     isPlaying,
     image,
-    coSign
+    coSign,
+    label
   }: ArtworkProps) => {
     const playStatus = isBuffering
       ? PlayStatus.Buffering
@@ -107,6 +109,7 @@ const Artwork = memo(
         })}
         className={styles.artwork}
         image={showSkeleton ? '' : image}
+        aria-label={label}
       >
         {showArtworkIcon && (
           <ArtworkIcon

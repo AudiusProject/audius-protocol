@@ -150,7 +150,8 @@
   white-space: nowrap;
 }
 
-.titlesSkeleton div {
+.titlesSkeleton div,
+.titlesSkeleton a {
   width: 100%;
 }
 
@@ -165,10 +166,16 @@
   align-items: center;
   position: relative;
   width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.title:hover {
+  color: inherit;
 }
 
 .title:active {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .title svg {
@@ -186,10 +193,17 @@
   align-items: center;
   position: relative;
   display: flex;
+  color: inherit;
+  text-decoration: none;
+}
+
+.artist:hover {
+  color: inherit;
+  text-decoration: none;
 }
 
 .artist:active {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .userName {

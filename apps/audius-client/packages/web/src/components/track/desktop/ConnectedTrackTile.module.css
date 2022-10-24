@@ -48,6 +48,13 @@
   opacity: 0.75;
 }
 
+.name,
+.name:hover,
+.name:active {
+  color: inherit;
+  text-decoration: inherit;
+}
+
 .userName {
   display: inline-flex;
   font-weight: var(--font-medium);
@@ -68,7 +75,7 @@
 .artistNameLink:hover {
   cursor: pointer;
   color: var(--primary);
-  text-decoration: underline;
+  text-decoration: underline !important;
   text-decoration-color: var(--primary-light-2);
 }
 

@@ -87,7 +87,8 @@ const TrackTile = memo(
     onClickFavorite,
     onClickShare,
     onTogglePlay,
-    showRankIcon
+    showRankIcon,
+    permalink
   }: TrackTileProps) => {
     const hasOrdering = order !== undefined
     const onStopPropagation = useCallback(
@@ -188,12 +189,16 @@ const TrackTile = memo(
               {isLoading ? (
                 <Skeleton width='80%' className={styles.skeleton} />
               ) : (
-                <span className={styles.title} onClick={onClickTitle}>
+                <a
+                  href={permalink}
+                  className={styles.title}
+                  onClick={onClickTitle}
+                >
                   {title}
                   {isActive ? (
                     <IconVolume className={styles.volumeIcon} />
                   ) : null}
-                </span>
+                </a>
               )}
             </div>
             <div className={styles.creatorRow}>
