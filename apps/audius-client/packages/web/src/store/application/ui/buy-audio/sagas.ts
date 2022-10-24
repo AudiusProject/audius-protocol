@@ -23,7 +23,8 @@ import {
   createUserBankIfNeeded,
   deriveUserBank,
   modalsActions,
-  AmountObject
+  AmountObject,
+  FeatureFlags
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
@@ -933,6 +934,12 @@ function* doBuyAudio({
 function* recoverPurchaseIfNecessary() {
   let didNeedRecovery = false
   try {
+    // Bail if not enabled
+    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    if (!getFeatureEnabled(FeatureFlags.BUY_AUDIO_ENABLED)) {
+      return
+    }
+
     // Setup
     const rootAccount: Keypair = yield* call(getRootSolanaAccount)
     const connection = yield* call(getSolanaConnection)
