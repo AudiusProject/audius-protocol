@@ -1827,14 +1827,14 @@ workflows:
 
   joaquins-cron-test:
     jobs:
-      - not-release-week
+      - release-week
       - noop:
           name: special-release-job
           requires:
-            - not-release-week
+            - release-week
     triggers:
       - schedule:
-          cron: '32 * * * *'
+          cron: '34 * * * *'
           filters:
             branches:
               only: /(^jc-inf-295.*$)/
