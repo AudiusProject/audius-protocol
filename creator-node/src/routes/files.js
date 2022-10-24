@@ -63,6 +63,7 @@ const streamFromFileSystem = async (
   req,
   res,
   path,
+  prometheusMode,
   checkExistence = true,
   fsStats = null
 ) => {
@@ -93,11 +94,17 @@ const streamFromFileSystem = async (
       if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
+
+        const prometheusResult = { result: 'abort_range_not_satisfiable' }
+        if (prometheusMode) {
+          prometheusResult.mode = prometheusMode
+        }
+
         return sendResponseWithMetric(
           req,
           res,
           errorResponseRangeNotSatisfiable('Range not satisfiable'),
-          { result: 'abort_range_not_satisfiable', mode: 'default' }
+          prometheusResult
         )
       }
 
@@ -269,6 +276,7 @@ const getCID = async (req, res) => {
         req,
         res,
         storagePath,
+        mode,
         false,
         fsStats
       )
@@ -364,7 +372,14 @@ const getCID = async (req, res) => {
   }
 
   try {
-    const fsStream = await streamFromFileSystem(req, res, storagePath, false)
+    const fsStream = await streamFromFileSystem(
+      req,
+      res,
+      storagePath,
+      mode,
+      false,
+      null
+    )
 
     if (req.endMetricTimer) {
       try {
