@@ -1288,8 +1288,9 @@ jobs:
                 detail: ":vote: New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             - run: |
+                VERSION=$(curl -s "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/discovery-provider/.version.json" | jq -r '.version')
                 curl -d '{
-                  "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
+                  "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
                   "embeds": null,
                   "attachments": []
                 }' \
