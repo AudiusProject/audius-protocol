@@ -1835,6 +1835,9 @@ workflows:
             - gh-tokens.releases
             - discord
             - governance
+          filters:
+            branches:
+              only: /(^master$)/
           requires:
             - release-week
 
