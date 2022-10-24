@@ -1286,7 +1286,7 @@ jobs:
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             - run: |
                 curl -d '{
-                  "content": "New service version is out now!\n\nCompose files have been updated [here](<https://github.com/AudiusProject/audius-docker-compose>).\n\n* [Changelogs](<https://github.com/AudiusProject/audius-protocol/release>)\n\n* [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
+                  "content": "New service version is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/release>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
                   "embeds": null,
                   "attachments": []
                 }' \
