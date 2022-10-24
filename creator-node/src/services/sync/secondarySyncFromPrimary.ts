@@ -872,13 +872,13 @@ const wasThisNodeEverPrimaryFor = async (
       baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
       url: `users/history/${userId}`,
       params: {
-        limit: 500
+        limit: 100
       },
       method: 'get',
       timeout: 45_000
     })
   ).data.data
-  if (history.length >= 500) return true
+  if (history.length >= 100) return true
   for (const snapshot of history) {
     if (snapshot.primary_id === selfSpId) return true
   }
