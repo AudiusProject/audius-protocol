@@ -187,6 +187,7 @@ class DBManager {
       throw new Error(
         "Can't get files to delete while Files_storagePath_idx is being created"
       )
+
     // Get a batch of file that this user needs
     const userFiles = []
     const userFilesQueryResult = await models.File.findAll({
