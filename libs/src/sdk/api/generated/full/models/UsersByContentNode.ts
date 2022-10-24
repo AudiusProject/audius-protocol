@@ -31,54 +31,56 @@ import {
  * @export
  * @interface UsersByContentNode
  */
-export interface UsersByContentNode {
-    /**
-     * 
-     * @type {number}
-     * @memberof UsersByContentNode
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UsersByContentNode
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UsersByContentNode
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UsersByContentNode
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsersByContentNode
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsersByContentNode
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof UsersByContentNode
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {UserReplicaSet}
-     * @memberof UsersByContentNode
-     */
-    data?: UserReplicaSet;
-}
+export interface UsersByContentNode 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof UsersByContentNode
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UsersByContentNode
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UsersByContentNode
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UsersByContentNode
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof UsersByContentNode
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UsersByContentNode
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof UsersByContentNode
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {UserReplicaSet}
+        * @memberof UsersByContentNode
+        */
+        data?: UserReplicaSet;
+    }
+
 

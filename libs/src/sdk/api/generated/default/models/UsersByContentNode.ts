@@ -25,12 +25,14 @@ import {
  * @export
  * @interface UsersByContentNode
  */
-export interface UsersByContentNode {
-    /**
-     * 
-     * @type {UserReplicaSet}
-     * @memberof UsersByContentNode
-     */
-    data?: UserReplicaSet;
-}
+export interface UsersByContentNode 
+    {
+        /**
+        * 
+        * @type {UserReplicaSet}
+        * @memberof UsersByContentNode
+        */
+        data?: UserReplicaSet;
+    }
+
 

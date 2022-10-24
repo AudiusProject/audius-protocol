@@ -22,6 +22,7 @@ const USER_PROPS = [
   'cover_photo_sizes',
   'bio',
   'location',
+  'artist_pick_track_id',
   'creator_node_endpoint',
   'associated_wallets',
   'associated_sol_wallets',
@@ -65,6 +66,7 @@ export class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
 
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
@@ -764,6 +766,23 @@ export class Users extends Base {
     return await this.contracts.SocialFeatureFactoryClient.deleteUserFollow(
       followerUserId!,
       followeeUserId
+    )
+  }
+
+  /**
+   * Gets listen count data for a user's tracks grouped by month
+   * @returns Dictionary of listen count data where keys are requested months
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
     )
   }
 

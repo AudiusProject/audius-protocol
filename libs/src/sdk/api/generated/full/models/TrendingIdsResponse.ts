@@ -25,12 +25,14 @@ import {
  * @export
  * @interface TrendingIdsResponse
  */
-export interface TrendingIdsResponse {
-    /**
-     * 
-     * @type {TrendingTimesIds}
-     * @memberof TrendingIdsResponse
-     */
-    data?: TrendingTimesIds;
-}
+export interface TrendingIdsResponse 
+    {
+        /**
+        * 
+        * @type {TrendingTimesIds}
+        * @memberof TrendingIdsResponse
+        */
+        data?: TrendingTimesIds;
+    }
+
 

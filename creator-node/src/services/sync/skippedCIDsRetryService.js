@@ -4,6 +4,9 @@ const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
 const { clusterUtils } = require('../../utils')
+const {
+  getAllRegisteredCNodes
+} = require('../../services/ContentNodeInfoManager')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
@@ -60,9 +63,9 @@ class SkippedCIDsRetryQueue {
       const CIDMaxAgeMs =
         this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
-      const worker = new Worker(
+      const _worker = new Worker(
         'skipped-cids-retry-queue',
-        async (job) => {
+        async (_job) => {
           try {
             await this.process(CIDMaxAgeMs, this.libs)
           } catch (e) {
@@ -103,7 +106,7 @@ class SkippedCIDsRetryQueue {
       order: [['createdAt', 'DESC']]
     })
 
-    let registeredGateways = await utils.getAllRegisteredCNodes(libs)
+    let registeredGateways = await getAllRegisteredCNodes(logger)
     registeredGateways = registeredGateways.map((nodeInfo) => nodeInfo.endpoint)
 
     // Intentionally run sequentially to minimize node load

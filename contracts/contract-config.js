@@ -109,5 +109,7 @@ module.exports = {
     ],
     userReplicaSetBootstrapAddress: '0x3d2563ACCD9E6D189bA2a61F116905D520054286',
     registryAddress: '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
+  },
+  nethermind: {
   }
 }

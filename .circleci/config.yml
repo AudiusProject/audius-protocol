@@ -143,6 +143,27 @@ commands:
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+
+  bi-weekly:
+    parameters:
+      odd_week:
+        type: boolean
+        default: true
+    steps:
+      - run:
+          name: "Bi-weekly check (Odd week: << parameters.odd_week >>)"
+          command: |
+            week=$(date +%-U)
+            echo "This week: ${week}"
+            echo "Continue on odd week? << parameters.odd_week >>"
+            if [ $(($week % 2)) == 0 ]; then
+                echo "Even week"
+                << parameters.odd_week >> && exit 1
+            else
+                echo "Odd week"
+                << parameters.odd_week >> || exit 1
+            fi
+
   run-on-gcp:
     parameters:
       command:
@@ -233,7 +254,7 @@ parameters:
   deploy_args:
     type: string
     default: ""
-  cut_release:
+  slash_address:
     type: string
     default: ""
   reservations:
@@ -255,6 +276,16 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - run: echo
+
+  release-week:
+    docker:
+      - image: alpine
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - bi-weekly:
+          odd_week: true
 
   bake-gcp-dev-image:
     docker:
@@ -993,6 +1024,16 @@ jobs:
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
+            and:
+              - equal: [ master, "${CIRCLE_BRANCH}" ]
+              - equal: [ staging, << parameters.environment >> ]
+              - not:
+                  equal: [ all, << parameters.service >> ]
+          steps:
+            - diff-if-necessary:
+                service: << parameters.service >>
+      - when:
+          condition:
             or:
               - equal: [ prod, << parameters.environment >> ]
               - << parameters.params >>
@@ -1282,44 +1323,57 @@ workflows:
          - not: << pipeline.parameters.sdk_release_commit >>
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
-         - not: << pipeline.parameters.cut_release >>
+         - not: << pipeline.parameters.slash_address >>
     jobs:
+      - noop:
+          name: tests
       - noop:
           name: creator
       - noop:
           name: discovery
       - noop:
           name: identity
+
       - noop:
-          name: built-creator
+          name: creator-deploy-hold
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
           requires:
             - build-creator
             - test-creator
       - noop:
-          name: built-discovery
+          name: discovery-deploy-hold
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
           requires:
             - build-discovery
             - test-discovery
       - noop:
-          name: built-identity
+          name: identity-deploy-hold
+          type: approval
+          filters:
+            branches:
+              ignore: /(^master|release-.*$)/
           requires:
             - build-identity
             - test-identity
+
       - noop:
           name: built
           filters:
             branches:
               only: /(^release-.*$)/
           requires:
-            - built-creator
-            - built-discovery
-            - built-identity
-            - verified
-      - noop:
-          name: tests
-      - noop:
-          name: verified
-          requires:
+            - build-creator
+            - test-creator
+            - build-discovery
+            - test-discovery
+            - build-identity
+            - test-identity
             - build-libs
             - test-libs
             - test-contracts
@@ -1331,7 +1385,7 @@ workflows:
 
       # Auto-deploy `master` to staging
       - deploy:
-          name: 🚧-🏠-stage-discovery
+          name: autodeploy-stage-discovery
           service: discovery
           context:
             - slack-secrets
@@ -1341,9 +1395,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-discovery
+            - build-discovery
+            - test-discovery
       - deploy:
-          name: 🚧-🏠-stage-creator
+          name: autodeploy-stage-creator
           service: creator
           context:
             - slack-secrets
@@ -1353,9 +1408,10 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-creator
+            - build-creator
+            - test-creator
       - deploy:
-          name: 🚧-🏠-stage-identity
+          name: autodeploy-stage-identity
           service: identity
           context:
             - slack-secrets
@@ -1365,10 +1421,11 @@ workflows:
             branches:
               only: /(^master$)/
           requires:
-            - built-identity
+            - build-identity
+            - test-identity
       # Force deploy `master` to staging (by service)
       - noop:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+          name: unreserve-stage-<< matrix.service >>
           type: approval
           filters:
             branches:
@@ -1377,9 +1434,9 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 🚧-🏠-stage-<< matrix.service >>
+            - autodeploy-stage-<< matrix.service >>
       - deploy:
-          name: 💪-🚧-🏠-stage-<< matrix.service >>
+          name: unreserving-stage-<< matrix.service >>
           params: --force
           context:
             - slack-secrets
@@ -1389,10 +1446,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🏠-stage-<< matrix.service >>-🕹️
+            - unreserve-stage-<< matrix.service >>
       # Force deploy `master` to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1401,9 +1458,9 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 🚧-🏠-stage-discovery
+            - autodeploy-stage-discovery
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: unreserving-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1413,10 +1470,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - unreserve-<< matrix.host >>
       # Force deploy `master` to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🏠-<< matrix.host >>-🕹️
+          name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1425,9 +1482,9 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 🚧-🏠-stage-creator
+            - autodeploy-stage-creator
       - deploy:
-          name: 💪-🚧-🏠-<< matrix.host >>
+          name: unreserving-<< matrix.host >>
           params: --force
           context:
             - slack-secrets
@@ -1437,11 +1494,11 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 💪-🚧-🏠-<< matrix.host >>-🕹️
+            - unreserve-<< matrix.host >>
 
       # Deploy branch to staging (by service)
       - noop:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+          name: reserve-stage-<< matrix.service >>
           type: approval
           filters:
             branches:
@@ -1450,9 +1507,9 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - built-<< matrix.service >>
+            - << matrix.service >>-deploy-hold
       - deploy:
-          name: 💪-🚧-🌿-stage-<< matrix.service >>
+          name: reserving-stage-<< matrix.service >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1463,10 +1520,10 @@ workflows:
             parameters:
               service: [discovery, creator, identity]
           requires:
-            - 💪-🚧-🌿-stage-<< matrix.service >>-🕹️
+            - reserve-stage-<< matrix.service >>
       # Deploy branch to staging (by host) - discovery
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: reserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1475,9 +1532,9 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - built-discovery
+            - discovery-deploy-hold
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1491,10 +1548,10 @@ workflows:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
-          name: 💪-🚧-🌿-<< matrix.host >>-🕹️
+          name: reserve-<< matrix.host >>
           type: approval
           filters:
             branches:
@@ -1503,9 +1560,9 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - built-creator
+            - creator-deploy-hold
       - deploy:
-          name: 💪-🚧-🌿-<< matrix.host >>
+          name: reserving-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1519,7 +1576,7 @@ workflows:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
           requires:
-            - 💪-🚧-🌿-<< matrix.host >>-🕹️
+            - reserve-<< matrix.host >>
 
       # Bump Tags (for release branch hot-fixes)
       - release-scripts:
@@ -1535,7 +1592,7 @@ workflows:
             - built
       # Deploy Discovery Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-dn-prod-🕹️
+          name: release-discovery-foundation
           type: approval
           filters:
             branches:
@@ -1543,7 +1600,7 @@ workflows:
           requires:
             - bump-hotfix
       - deploy:
-          name: 🚧-🎁-to-dn-prod
+          name: releasing-discovery-foundation
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: discovery
@@ -1551,11 +1608,12 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           requires:
-            - 🚧-🎁-to-dn-prod-🕹️
+            - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-is-prod-🕹️
+          name: release-identity-foundation
           type: approval
           filters:
             branches:
@@ -1563,7 +1621,7 @@ workflows:
           requires:
             - bump-hotfix
       - deploy:
-          name: 🚧-🎁-to-is-prod
+          name: releasing-identity-foundation
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: identity
@@ -1571,22 +1629,23 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           requires:
-            - 🚧-🎁-to-is-prod-🕹️
+            - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
-          name: 🚧-🎁-to-<< matrix.host >>-prod-🕹️
+          name: release-<< matrix.host >>
           type: approval
           filters:
             branches:
               only: /(^release-v.*-patch-.*$)/
           matrix:
             parameters:
-              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, user-metadata]
+              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
             - built
       - deploy:
-          name: 🚧-🎁-to-<< matrix.host >>-prod
+          name: releasing-<< matrix.host >>
           git_tag: ${CIRCLE_SHA1}
           environment: prod
           service: creator
@@ -1594,47 +1653,12 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - restricted-ci-jobs
           matrix:
             parameters:
-              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, user-metadata]
+              host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
-            - 🚧-🎁-to-<< matrix.host >>-prod-🕹️
-      # Deploy to SPs (update audius-docker-compose + create/vote governance proposal, for release branches)
-      - noop:
-          name: 🚧-🎁-to-SPs-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-          requires:
-            - bump-hotfix
-      - release-scripts:
-          name: 🚧-🎁-to-SPs
-          target: release-to-service-providers
-          context:
-            - slack-secrets
-            - gh-tokens.releases
-            - discord
-            - governance
-          requires:
-            - 🚧-🎁-to-SPs-🕹️
-      # Evaluate Governance Proposal (for release branches)
-      - noop:
-          name: evaluate-proposal-🕹️
-          type: approval
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-          requires:
-            - 🚧-🎁-to-SPs
-      - release-scripts:
-          name: evaluate-proposal
-          target: evaluate-proposal
-          context:
-            - slack-secrets
-            - governance
-          requires:
-            - evaluate-proposal-🕹️
+            - release-<< matrix.host >>
 
       - test-libs:
           name: test-libs
@@ -1748,19 +1772,16 @@ workflows:
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
   # 2. click "Trigger Pipeline"
-  # 3. Add string parameter "cut_release" with any non-null value
-  cut-release:
-    when: << pipeline.parameters.cut_release >>
+  # 3. Add string parameter "slash_address" with any non-null value
+  slash-proposal:
+    when: << pipeline.parameters.slash_address >>
     jobs:
       - release-scripts:
-          name: cut-release
-          target: cut-release
+          name: slash-proposal
+          target: slash-proposal
           context:
             - slack-secrets
             - gh-tokens.releases
-      - generate-release-checklist:
-          requires:
-            - release-scripts
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
@@ -1768,6 +1789,16 @@ workflows:
   # 3. Add string parameter "reservations" with any non-null value
   reservations:
     when: << pipeline.parameters.reservations >>
+    jobs:
+      - deploy:
+          name: reservations
+          reservations: true
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+
+  reservations-cron:
     jobs:
       - deploy:
           name: reservations
@@ -1783,6 +1814,79 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
+
+  joaquins-cron-test:
+    jobs:
+      - release-week
+      - noop:
+          name: special-release-job
+          requires:
+            - release-week
+    triggers:
+      - schedule:
+          cron: '1,3,5,7,9,11 * * * 1'
+          filters:
+            branches:
+              only: master
+
+  # release-to-service-providers-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: release-to-service-providers
+  #         target: release-to-service-providers
+  #         context:
+  #           - slack-secrets
+  #           - gh-tokens.releases
+  #           - discord
+  #           - governance
+  #         requires:
+  #           - release-week
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 15 * * 1'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
+
+  # evaluate-proposal-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: evaluate-proposal
+  #         target: evaluate-proposal
+  #         context:
+  #           - slack-secrets
+  #           - governance
+  #         requires:
+  #           - release-week
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 19 * * 5'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
+
+  # cut-release-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: cut-release
+  #         target: cut-release
+  #         context:
+  #           - slack-secrets
+  #           - gh-tokens.releases
+  #         requires:
+  #           - release-week
+  #     - generate-release-checklist:
+  #         requires:
+  #           - cut-release
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 7 * * 6'
+  #         filters:
+  #           branches:
+  #             only: /(^master$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard

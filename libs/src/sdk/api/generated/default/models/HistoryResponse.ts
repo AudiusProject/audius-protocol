@@ -31,54 +31,56 @@ import {
  * @export
  * @interface HistoryResponse
  */
-export interface HistoryResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof HistoryResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof HistoryResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof HistoryResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<Activity>}
-     * @memberof HistoryResponse
-     */
-    data?: Array<Activity>;
-}
+export interface HistoryResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof HistoryResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof HistoryResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof HistoryResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<Activity>}
+        * @memberof HistoryResponse
+        */
+        data?: Array<Activity>;
+    }
+
 

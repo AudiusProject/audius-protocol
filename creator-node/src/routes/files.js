@@ -30,11 +30,8 @@ const {
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
-const {
-  getAllRegisteredCNodes,
-  findCIDInNetwork,
-  timeout
-} = require('../utils')
+const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
+const { findCIDInNetwork, timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -463,14 +460,7 @@ const getCID = async (req, res) => {
   const blockStartMs = Date.now()
   try {
     startMs = Date.now()
-    const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(
-      storagePath,
-      CID,
-      req.logger,
-      libs,
-      trackId
-    )
+    const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
     if (!found) {
       throw new Error('Not found in network')
     }
@@ -554,8 +544,7 @@ const getDirCID = async (req, res) => {
   try {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
-    const libs = req.app.get('audiusLibs')
-    const found = await findCIDInNetwork(storagePath, CID, req.logger, libs)
+    const found = await findCIDInNetwork(storagePath, CID, req.logger)
     if (!found) throw new Error(`CID=${CID} not found in network`)
 
     return await streamFromFileSystem(req, res, storagePath)
@@ -621,7 +610,7 @@ async function _generateContentToHash(resizeResp, dirCID) {
 
 router.get(
   '/async_processing_status',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const AsyncProcessingQueue =
       req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -643,7 +632,7 @@ router.post(
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   uploadTempDiskStorage.single('file'),
-  handleResponseWithHeartbeat(async (req, res) => {
+  handleResponseWithHeartbeat(async (req, _res) => {
     if (
       !req.body.square ||
       !(req.body.square === 'true' || req.body.square === 'false')
@@ -788,7 +777,7 @@ router.get(['/ipfs/:dirCID/:filename', '/content/:dirCID/:filename'], getDirCID)
  */
 router.post(
   '/batch_cids_exist',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { cids } = req.body
 
     if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
@@ -846,7 +835,7 @@ router.post(
  */
 router.post(
   '/batch_image_cids_exist',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { cids } = req.body
 
     if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
@@ -928,9 +917,8 @@ router.get('/file_lookup', async (req, res) => {
     { filePath, delegateWallet, timestamp },
     signature
   ).toLowerCase()
-  const libs = req.app.get('audiusLibs')
-  const creatorNodes = await getAllRegisteredCNodes(libs)
-  const foundDelegateWallet = creatorNodes.some(
+  const contentNodes = await getAllRegisteredCNodes(req.logger)
+  const foundDelegateWallet = contentNodes.some(
     (node) => node.delegateOwnerWallet.toLowerCase() === recoveredWallet
   )
   if (recoveredWallet !== delegateWallet || !foundDelegateWallet) {

@@ -1,36 +1,51 @@
-const { Queue, Worker } = require('bullmq')
-const { logger: genericLogger } = require('./logging')
-const config = require('./config')
-const redisClient = require('./redis')
-const { clusterUtils } = require('./utils')
+import type { Job } from 'bullmq'
+import type { Request } from 'express'
+import type { SpanContext } from '@opentelemetry/api'
+
+import { Queue, Worker } from 'bullmq'
+import { logger as genericLogger } from './logging'
+import { clusterUtils, ValuesOf } from './utils'
 
 // Processing fns
-const {
-  handleTrackContentRoute: trackContentUpload,
-  handleTranscodeAndSegment: transcodeAndSegment,
-  handleTranscodeHandOff: transcodeHandOff
-} = require('./components/tracks/tracksComponentService')
+import {
+  handleTrackContentRoute as trackContentUpload,
+  handleTranscodeAndSegment as transcodeAndSegment,
+  handleTranscodeHandOff as transcodeHandOff
+} from './components/tracks/tracksComponentService'
+import { instrumentTracing, tracing } from './tracer'
+
 const {
   processTranscodeAndSegments
 } = require('./components/tracks/trackContentUploadManager')
-const { instrumentTracing, tracing } = require('./tracer')
+const redisClient = require('./redis')
+const config = require('./config')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
-const PROCESS_NAMES = Object.freeze({
+
+const QUEUE_NAME = 'async-processing'
+
+const ASYNC_PROCESSING_QUEUE_HISTORY = 500
+
+export const ProcessNames = {
   trackContentUpload: 'trackContentUpload',
   transcodeAndSegment: 'transcodeAndSegment',
   processTranscodeAndSegments: 'processTranscodeAndSegments',
   transcodeHandOff: 'transcodeHandOff'
-})
-const PROCESS_STATES = Object.freeze({
+} as const
+
+export const ProcessStates = {
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE',
   FAILED: 'FAILED'
-})
-const QUEUE_NAME = 'async-processing'
+} as const
 
-const ASYNC_PROCESSING_QUEUE_HISTORY = 500
+type AddTaskParams = {
+  logContext: { requestID: string }
+  task: string
+  req: Request
+  parentSpanContext?: SpanContext
+}
 
 /**
  * This queue accepts jobs (any function) that needs to be processed asynchonously.
@@ -39,8 +54,12 @@ const ASYNC_PROCESSING_QUEUE_HISTORY = 500
  * as part of the query params.
  */
 
-class AsyncProcessingQueue {
-  constructor(libs, prometheusRegistry) {
+export class AsyncProcessingQueue {
+  queue: Queue<any, any, string>
+  libs: any
+  constructProcessKey: (uuid: string) => string
+
+  constructor(libs: any, prometheusRegistry: any) {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -91,32 +110,32 @@ class AsyncProcessingQueue {
     )
     prometheusRegistry.startQueueMetrics(this.queue, worker)
 
-    this.PROCESS_NAMES = PROCESS_NAMES
-    this.PROCESS_STATES = PROCESS_STATES
-
     this.getAsyncProcessingQueueJobs =
       this.getAsyncProcessingQueueJobs.bind(this)
     this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
   }
 
-  async processTask(job) {
+  async processTask(job: Job) {
     const { logContext, task } = job.data
 
     const func = this.getFn(task)
 
-    if (task === PROCESS_NAMES.transcodeHandOff) {
+    if (task === ProcessNames.transcodeHandOff) {
       const { transcodeFilePath, segmentFileNames, sp } =
         await this.monitorProgress(task, transcodeHandOff, job.data)
 
       if (!transcodeFilePath || !segmentFileNames) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.logStatus(
           'Failed to hand off transcode. Retrying upload to current node...'
         )
         await this.addTrackContentUploadTask({
           logContext,
-          req: job.data.req
+          req: job.data.req,
+          parentSpanContext: tracing.currentSpanContext()
         })
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.logStatus(
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
@@ -131,8 +150,9 @@ class AsyncProcessingQueue {
       try {
         const response = await this.monitorProgress(task, func, job.data)
         return { response }
-      } catch (e) {
+      } catch (e: any) {
         tracing.recordException(e)
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.logError(
           `Could not process taskType=${task} uuid=${
             logContext.requestID
@@ -144,7 +164,7 @@ class AsyncProcessingQueue {
     }
   }
 
-  async logStatus(message, logContext = {}) {
+  async logStatus(message: string, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
@@ -156,7 +176,7 @@ class AsyncProcessingQueue {
     )
   }
 
-  async logError(message, logContext = {}) {
+  async logError(message: string, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
@@ -170,27 +190,35 @@ class AsyncProcessingQueue {
 
   // TODO: Make these jobs background processes
 
-  async addTrackContentUploadTask(params) {
-    params.task = PROCESS_NAMES.trackContentUpload
-    return this.addTask(params)
+  async addTrackContentUploadTask(params: Omit<AddTaskParams, 'task'>) {
+    return this.addTask({
+      task: ProcessNames.trackContentUpload,
+      ...params
+    })
   }
 
-  async addTranscodeAndSegmentTask(params) {
-    params.task = PROCESS_NAMES.transcodeAndSegment
-    return this.addTask(params)
+  async addTranscodeAndSegmentTask(params: Omit<AddTaskParams, 'task'>) {
+    return this.addTask({
+      task: ProcessNames.transcodeAndSegment,
+      ...params
+    })
   }
 
-  async addProcessTranscodeAndSegmentTask(params) {
-    params.task = PROCESS_NAMES.processTranscodeAndSegments
-    return this.addTask(params)
+  async addProcessTranscodeAndSegmentTask(params: Omit<AddTaskParams, 'task'>) {
+    return this.addTask({
+      task: ProcessNames.processTranscodeAndSegments,
+      ...params
+    })
   }
 
-  async addTranscodeHandOffTask(params) {
-    params.task = PROCESS_NAMES.transcodeHandOff
-    return this.addTask(params)
+  async addTranscodeHandOffTask(params: Omit<AddTaskParams, 'task'>) {
+    return this.addTask({
+      task: ProcessNames.transcodeHandOff,
+      ...params
+    })
   }
 
-  async addTask(params) {
+  async addTask(params: AddTaskParams) {
     const { logContext, task } = params
 
     await this.logStatus(
@@ -210,22 +238,22 @@ class AsyncProcessingQueue {
    * @param {string} task a process in PROCESS_NAMES
    * @returns the processing fn
    */
-  getFn(task) {
+  getFn(task: string) {
     switch (task) {
       // Called via /track_content_async route (runs on primary)
-      case PROCESS_NAMES.trackContentUpload:
+      case ProcessNames.trackContentUpload:
         return trackContentUpload
 
       // Called via /transcode_and_segment (running on node that has been handed off track)
-      case PROCESS_NAMES.transcodeAndSegment:
+      case ProcessNames.transcodeAndSegment:
         return transcodeAndSegment
 
       // Part 1 of transcode handoff flow - called via /track_content_async if currentNodeShouldHandleTranscode = false (runs on primary)
-      case PROCESS_NAMES.transcodeHandOff:
+      case ProcessNames.transcodeHandOff:
         return transcodeHandOff
 
       // Part 2 of transcode handoff flow - called by process function in this queue after transcodeHandoff successfully runs (runs on primary)
-      case PROCESS_NAMES.processTranscodeAndSegments:
+      case ProcessNames.processTranscodeAndSegments:
         return processTranscodeAndSegments
 
       default:
@@ -243,11 +271,20 @@ class AsyncProcessingQueue {
    * @param {Object} param.req the request associated with the func
    * @returns the expected response from the func
    */
-  async monitorProgress(task, func, { logContext, req }) {
+  async monitorProgress(
+    task: string,
+    func: (...args: any) => any,
+    { logContext, req }: { logContext: any; req: Request }
+  ) {
     const uuid = logContext.requestID
     const redisKey = this.constructAsyncProcessingKey(uuid)
 
-    let state = { task, status: PROCESS_STATES.IN_PROGRESS }
+    let state: {
+      task: string
+      status: ValuesOf<typeof ProcessStates>
+      resp?: any
+    } = { task, status: ProcessStates.IN_PROGRESS }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
     await redisClient.set(
       redisKey,
@@ -259,7 +296,8 @@ class AsyncProcessingQueue {
     let response
     try {
       response = await func({ logContext }, { ...req, libs: this.libs })
-      state = { task, status: PROCESS_STATES.DONE, resp: response }
+      state = { task, status: ProcessStates.DONE, resp: response }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
       await redisClient.set(
         redisKey,
@@ -267,8 +305,9 @@ class AsyncProcessingQueue {
         'EX',
         EXPIRATION_SECONDS
       )
-    } catch (e) {
-      state = { task, status: PROCESS_STATES.FAILED, resp: e.message }
+    } catch (e: any) {
+      state = { task, status: ProcessStates.FAILED, resp: e.message }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.logError(
         `Error with ${task}. uuid=${uuid}} resp=${JSON.stringify(e.message)}`,
         logContext
@@ -301,8 +340,8 @@ class AsyncProcessingQueue {
    * }
    *
    */
-  getTasks(jobs) {
-    const response = {
+  getTasks(jobs: Job[]) {
+    const response: Record<string, number> = {
       trackContentUpload: 0,
       transcodeAndSegment: 0,
       processTranscodeAndSegments: 0,
@@ -335,9 +374,7 @@ class AsyncProcessingQueue {
     return allTasks
   }
 
-  constructAsyncProcessingKey(uuid) {
+  constructAsyncProcessingKey(uuid: string) {
     return `async:::${uuid}`
   }
 }
-
-module.exports = AsyncProcessingQueue

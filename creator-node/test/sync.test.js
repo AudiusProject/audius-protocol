@@ -74,6 +74,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     try {
       await destroyUsers()
     } catch (e) {
@@ -1114,8 +1115,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
       const result = await secondarySyncFromPrimaryMock({
@@ -1155,8 +1168,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
 
@@ -1204,8 +1229,20 @@ describe('Test secondarySyncFromPrimary()', async function () {
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
       const result = await secondarySyncFromPrimaryMock({
@@ -1261,15 +1298,22 @@ describe('Test secondarySyncFromPrimary()', async function () {
       config.set('syncForceWipeEnabled', true)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
           },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
 
@@ -1314,15 +1358,22 @@ describe('Test secondarySyncFromPrimary()', async function () {
       config.set('syncForceWipeEnabled', false)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
           './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
             shouldForceResync: async () => {
               return true
             }
           },
-          '../../config': config,
-          '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
 
@@ -1387,8 +1438,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../middlewares': {
-            ...middlewares,
-            getOwnEndpoint: sinon.stub().resolves(MOCK_CN2)
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
           },
           '../../fileManager': {
             saveFileForMultihashToFS: async function (
@@ -1412,6 +1468,13 @@ describe('Test secondarySyncFromPrimary()', async function () {
                 0 /* numRetries */
               )
             }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
           }
         })
 
@@ -1731,6 +1794,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     await destroyUsers()
 
     await redisClient.flushdb()
@@ -1757,7 +1821,14 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       {
         '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
         '../initAudiusLibs': async () => libsMock,
-        './../../config': config
+        './../../config': config,
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
+        }
       }
     )
   })
@@ -2269,6 +2340,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
               0 /* numRetries */
             )
           }
+        },
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
         }
       }
     )

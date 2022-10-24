@@ -33,16 +33,19 @@ function _promisifySNS(functionName) {
 
 /**
  * Formats a push notification in a way that's compatible with SNS
- * @param {String} title title of push notification
- * @param {String} body body of push notification
+ * @param {String} message message of push notification
  * @param {String} targetARN aws arn address for device
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
+ * @param {Number} badgeCount notification badge count
+ * @param {any} notification notification object for the push notification
  * @param {Boolean=True} playSound should play a sound when it's sent
+ * @param {String} title title of push notification
  */
 function _formatIOSMessage(
   message,
   targetARN,
   badgeCount,
+  notification,
   playSound = true,
   title = null
 ) {
@@ -61,13 +64,8 @@ function _formatIOSMessage(
         alert: `${message}`,
         sound: playSound && 'default',
         badge: badgeCount
-        // TODO: Enable title/body for iOS, makes a much better notification
-        // keeping these properties here so we can use them if we want to
-        // "alert": {
-        //   "title" : `${title}`,
-        //   "body" : `${body}`
-        // },
-      }
+      },
+      data: notification
     }
 
     if (title) {
@@ -91,16 +89,18 @@ function _formatIOSMessage(
 
 /**
  * Formats a push notification in a way that's compatible with SNS for android
- * @param {String} title title of push notification
  * @param {String} message message of push notification
  * @param {String} targetARN aws arn address for device
  *                           `arn:aws:sns:us-west-1:<id>:endpoint/APNS/<namespace>/<uuid>`
+ * @param {any} notification notification object for the push notification
  * @param {Boolean=True} playSound should play a sound when it's sent
+ * @param {String} title title of push notification
  * NOTE: For reference on https://firebase.google.com/docs/cloud-messaging/http-server-ref
  */
 function _formatAndroidMessage(
   message,
   targetARN,
+  notification,
   playSound = true,
   title = null
 ) {
@@ -116,7 +116,8 @@ function _formatAndroidMessage(
         ...(title ? { title } : {}),
         body: message,
         sound: playSound && 'default'
-      }
+      },
+      data: notification
     }
     jsonMessage[type] = JSON.stringify(messageData)
   }
@@ -147,7 +148,7 @@ const deleteEndpoint = _promisifySNS('deleteEndpoint')
 async function drainMessageObject(bufferObj) {
   let numSentNotifs = 0
 
-  const { userId } = bufferObj
+  const { userId, notification } = bufferObj
   const { message, title, playSound } = bufferObj.notificationParams
 
   // Ensure badge count entry exists for user
@@ -181,6 +182,7 @@ async function drainMessageObject(bufferObj) {
             message,
             awsARN,
             newBadgeCount,
+            notification,
             playSound,
             title
           )
@@ -189,6 +191,7 @@ async function drainMessageObject(bufferObj) {
           formattedMessage = _formatAndroidMessage(
             message,
             awsARN,
+            notification,
             playSound,
             title
           )
