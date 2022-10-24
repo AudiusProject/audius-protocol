@@ -417,10 +417,6 @@ class DBManager {
       `SELECT relname FROM pg_class, pg_index WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid`,
       { type: QueryTypes.SELECT }
     )
-    // TODO: Remove debug after testing on staging
-    logger.warn(
-      `theo runningIndexCreations: ${JSON.stringify(runningIndexCreations)}`
-    )
     return runningIndexCreations?.filter(
       (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
     )?.length
