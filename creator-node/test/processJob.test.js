@@ -27,7 +27,7 @@ describe('test processJob() util function', function () {
       error: sandbox.stub()
     }
     const createChildLogger = sandbox.stub().returns(loggerStub)
-    const processJob = proxyquire(
+    const { processJob } = proxyquire(
       '../src/services/stateMachineManager/processJob.ts',
       {
         '../../logging': {

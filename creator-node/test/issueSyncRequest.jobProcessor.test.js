@@ -124,10 +124,12 @@ describe('test issueSyncRequest job processor', function () {
         primarySyncFromSecondaryStub
     }
 
-    return proxyquire(
+    const { issueSyncRequest } = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor.ts',
       stubs
     )
+
+    return issueSyncRequest
   }
 
   it('issues correct sync when no additional sync is required', async function () {

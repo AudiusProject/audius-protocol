@@ -109,7 +109,7 @@ describe('test monitorState job processor', function () {
     }
 
     // Make monitorState.jobProcessor.ts's imports return our stubs
-    return proxyquire(
+    const { monitorState } = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.ts',
       {
         '../../../config': config,
@@ -131,6 +131,8 @@ describe('test monitorState job processor', function () {
         }
       }
     )
+
+    return monitorState
   }
 
   // Return the promise created from running processStateMonitoringJob with the given params

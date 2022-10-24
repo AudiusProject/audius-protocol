@@ -126,7 +126,7 @@ describe('test updateReplicaSet job processor', function () {
         })
       }
     }
-    return proxyquire(
+    const { updateReplicaSet } = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
         '../../../config': config,
@@ -149,6 +149,8 @@ describe('test updateReplicaSet job processor', function () {
         }
       }
     )
+
+    return updateReplicaSet
   }
 
   it('reconfigs 1 secondary when 1 secondary is unhealthy and reconfigs are enabled', async function () {

@@ -70,7 +70,7 @@ describe('test findSyncRequests job processor', function () {
     getCNodeEndpointToSpIdMapStub,
     computeSyncModeForUserAndReplicaStub
   ) {
-    return proxyquire(
+    const { findSyncRequest } = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/findSyncRequests.jobProcessor.ts',
       {
         '../../../config': config,
@@ -85,6 +85,8 @@ describe('test findSyncRequests job processor', function () {
         }
       }
     )
+
+    return findSyncRequest
   }
 
   /**
