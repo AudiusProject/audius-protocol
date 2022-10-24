@@ -434,7 +434,7 @@ async function _getReplicaSetSpIdsByUserIdUrsm({
     // Error if indexed blockNumber but didn't find any replicaSet for user
     if (!replicaSet.primaryId) {
       throw new Error(
-        `ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`
+        `ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpId) {

@@ -98,7 +98,7 @@ class StateReconciliationManager {
           config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job, error, _prev) => {
         const logger = createChildLogger(recoverOrphanedDataLogger, {
           jobId: job?.id || 'unknown'
         })
