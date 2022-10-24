@@ -91,6 +91,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   } = txProps
   const redis = req.app.get('redis')
 
+  // SEND to either POA or Nethermind here...
+  const sendToNethermind = true
+
   const existingTx = await models.Transaction.findOne({
     where: {
       encodedABI: encodedABI // this should always be unique because of the nonce / sig
@@ -113,7 +116,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   let wallet = await selectWallet()
 
   // If all wallets are currently in use, keep iterating until a wallet is freed up
-  while (!wallet) {
+  while (!sendToNethermind && !wallet) {
     await delay(200)
     wallet = await selectWallet()
   }
@@ -122,10 +125,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     req.logger.info(
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
     )
-
-    // SEND to either POA or Nethermind here...
-    const sendToNethermind = true
-    let txReceipt
 
     if (sendToNethermind) {
       const ok = await wipRelayToNethermind(contractAddress, encodedABI)
