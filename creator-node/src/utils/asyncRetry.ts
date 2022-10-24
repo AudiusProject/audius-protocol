@@ -16,7 +16,7 @@ const { logger: genericLogger } = require('../logging')
  * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
  * @param {number} [param.options.factor=2] exponential factor for timeout between retries
  * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5. So, this will attempt once and retry 5 times for a total of 6 tries.
- * @param {number} [param.options.minTimeout=10000] minimum number of ms to wait after first retry. Default is 10s in ms
+ * @param {number} [param.options.minTimeout=3000] minimum number of ms to wait after first retry. Default is 3s in ms
  * @param {number} [param.options.maxTimeout=600000] maximum number of ms between two retries. Default is 10m in ms
  * @param {func} [param.options.onRetry] fn that gets called per retry
  * @param {Object} param.logger
@@ -40,7 +40,7 @@ export function asyncRetry({
   options = {
     retries: 5,
     factor: 2,
-    minTimeout: 10000,
+    minTimeout: 3000,
     maxTimeout: 600000,
     onRetry: (err: any, i: number) => {
       if (err && log) {
