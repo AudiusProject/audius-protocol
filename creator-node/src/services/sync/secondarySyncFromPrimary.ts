@@ -870,7 +870,7 @@ const wasThisNodeEverPrimaryFor = async (
   const history = (
     await axios({
       baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
-      url: `/users/history/${userId}`,
+      url: `users/history/${userId}?limit=500`,
       method: 'get',
       timeout: 45_000
     })
