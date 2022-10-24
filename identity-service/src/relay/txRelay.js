@@ -132,7 +132,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     txReceipt = receipt
 
     // WIP: nethermind fire and forget
-    await wipRelayToNethermind(contractAddress, encodedABI)
+    wipRelayToNethermind(contractAddress, encodedABI)
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -348,6 +348,7 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
   // any ol random private key
   const wallet = accounts.create()
   const privateKey = wallet.privateKey.substring(2)
+  var start = new Date().getTime()
 
   try {
     const fromAddress = web3.eth.accounts.privateKeyToAccount(privateKey)
@@ -372,7 +373,10 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
       signedTx.rawTransaction
     )
 
+    var end = new Date().getTime()
+    var time = end - start
     console.log('wipRelayToNethermind ok', JSON.stringify(receipt))
+    console.log('wipRelayToNethermind took', time)
     return receipt
   } catch (err) {
     console.log('wipRelayToNethermind error', err.toString())
