@@ -1295,22 +1295,6 @@ jobs:
                 -X POST \
                 "${DISCORD_WEBHOOK}"
 
-  discord-test:
-    docker:
-      - image: cimg/go:1.17
-    steps:
-      - run: |
-          VERSION=$(curl -s "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/discovery-provider/.version.json" | jq -r '.version')
-          echo "${VERSION}"
-          curl -d '{
-            "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
-            "embeds": null,
-            "attachments": []
-          }' \
-          -H "Content-Type: application/json" \
-          -X POST \
-          "${DISCORD_TEST_WEBHOOK}"
-
   generate-release-checklist:
     docker:
       - image: circleci/node:14.17.5
@@ -1342,9 +1326,6 @@ workflows:
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.slash_address >>
     jobs:
-      - discord-test:
-          context:
-            - discord
       - noop:
           name: tests
       - noop:
