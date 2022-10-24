@@ -1303,7 +1303,7 @@ jobs:
           VERSION=$(curl -s "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/discovery-provider/.version.json" | jq -r '.version')
           echo "${VERSION}"
           curl -d '{
-            "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/release>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
+            "content": "New service version () is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/release>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
             "embeds": null,
             "attachments": []
           }' \
