@@ -6,6 +6,7 @@ import { ButtonProps } from './types'
 const TrendingButton = ({
   darkMode,
   onClick,
+  href,
   isActive,
   isMatrixMode
 }: ButtonProps) => {
@@ -16,6 +17,7 @@ const TrendingButton = ({
       darkMode={darkMode}
       isMatrix={isMatrixMode}
       onClick={onClick}
+      href={href}
       iconLightJSON={() => require('assets/animations/iconTrendingLight.json')}
       iconDarkJSON={() => require('assets/animations/iconTrendingDark.json')}
     />

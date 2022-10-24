@@ -170,7 +170,8 @@ const ConnectedTrackTile = memo(
         artworkIconClassName: styles.artworkIcon,
         showArtworkIcon: !isLoading,
         showSkeleton: isLoading,
-        callback: () => setArtworkLoaded(true)
+        callback: () => setArtworkLoaded(true),
+        label: `${title} by ${name}`
       }
       return <TrackArtwork {...artworkProps} />
     }
@@ -222,6 +223,7 @@ const ConnectedTrackTile = memo(
 
     const onClickArtistName = useCallback(
       (e) => {
+        e.preventDefault()
         e.stopPropagation()
         if (goToRoute) goToRoute(profilePage(handle))
       },
@@ -230,6 +232,7 @@ const ConnectedTrackTile = memo(
 
     const onClickTitle = useCallback(
       (e) => {
+        e.preventDefault()
         e.stopPropagation()
         if (goToRoute) goToRoute(permalink)
       },
@@ -240,14 +243,15 @@ const ConnectedTrackTile = memo(
       return (
         <div className={styles.userName}>
           <ArtistPopover handle={handle}>
-            <span
+            <a
               className={cn(styles.name, {
                 [styles.artistNameLink]: onClickArtistName
               })}
               onClick={onClickArtistName}
+              href={profilePage(handle)}
             >
               {name}
-            </span>
+            </a>
           </ArtistPopover>
           <UserBadges
             userId={user?.user_id ?? 0}
@@ -375,6 +379,7 @@ const ConnectedTrackTile = memo(
           onTogglePlay={onTogglePlay}
           isTrending={isTrending}
           showRankIcon={showRankIcon}
+          permalink={permalink}
         />
       </Draggable>
     )

@@ -1,4 +1,4 @@
-import { useCallback, memo } from 'react'
+import { useCallback, memo, MouseEvent } from 'react'
 
 import {
   ID,
@@ -283,11 +283,13 @@ const ProfilePage = ({
         cardCoverImageSizes={album._cover_art_sizes}
         isReposted={album.has_current_user_reposted}
         isSaved={album.has_current_user_saved}
-        onClick={() =>
+        href={albumPage(profile.handle, album.playlist_name, album.playlist_id)}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           goToRoute(
             albumPage(profile.handle, album.playlist_name, album.playlist_id)
           )
-        }
+        }}
       />
     ))
     if (isOwner) {
@@ -324,7 +326,13 @@ const ProfilePage = ({
         cardCoverImageSizes={playlist._cover_art_sizes}
         isReposted={playlist.has_current_user_reposted}
         isSaved={playlist.has_current_user_saved}
-        onClick={() =>
+        href={playlistPage(
+          profile.handle,
+          playlist.playlist_name,
+          playlist.playlist_id
+        )}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           goToRoute(
             playlistPage(
               profile.handle,
@@ -332,7 +340,7 @@ const ProfilePage = ({
               playlist.playlist_id
             )
           )
-        }
+        }}
       />
     ))
     if (isOwner) {
@@ -516,7 +524,13 @@ const ProfilePage = ({
         isReposted={playlist.has_current_user_reposted}
         isSaved={playlist.has_current_user_saved}
         cardCoverImageSizes={playlist._cover_art_sizes}
-        onClick={() =>
+        href={playlistPage(
+          profile.handle,
+          playlist.playlist_name,
+          playlist.playlist_id
+        )}
+        onClick={(e: MouseEvent) => {
+          e.preventDefault()
           goToRoute(
             playlistPage(
               profile.handle,
@@ -524,7 +538,7 @@ const ProfilePage = ({
               playlist.playlist_id
             )
           )
-        }
+        }}
       />
     ))
     playlistCards.unshift(

@@ -32,6 +32,7 @@ const animationMap = {
 
 type AnimatedIconButtonProps = {
   onClick?: (e: MouseEvent) => void
+  href?: string
   isDisabled?: boolean
   isActive?: boolean
   className?: string
@@ -45,6 +46,7 @@ type AnimatedIconButtonProps = {
 
 const AnimatedIconButton = ({
   onClick,
+  href,
   className,
   activeClassName,
   disabledClassName,
@@ -65,6 +67,7 @@ const AnimatedIconButton = ({
       darkMode={darkMode}
       isMatrix={isMatrix}
       onClick={onClick || ((e: MouseEvent) => {})}
+      href={href}
       iconLightJSON={() => require(`assets/animations/${light}.json`)}
       iconDarkJSON={() => require(`assets/animations/${dark}.json`)}
       activeClassName={activeClassName}

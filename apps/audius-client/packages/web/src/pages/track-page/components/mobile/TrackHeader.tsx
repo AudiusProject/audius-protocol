@@ -252,8 +252,8 @@ const TrackHeader = ({
     return trackLabels.map((infoFact) => {
       return (
         <div key={infoFact.label} className={styles.infoFact}>
-          <h2 className={styles.infoLabel}>{infoFact.label}</h2>
-          <h2 className={styles.infoValue}>{infoFact.value}</h2>
+          <div className={styles.infoLabel}>{infoFact.label}</div>
+          <div className={styles.infoValue}>{infoFact.value}</div>
         </div>
       )
     })

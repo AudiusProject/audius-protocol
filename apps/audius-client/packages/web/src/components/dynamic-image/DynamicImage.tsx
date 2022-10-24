@@ -151,9 +151,8 @@ const DynamicImage = (props: DynamicImageProps) => {
     setIsFirstActive,
     immediate
   ])
-
   return (
-    <div className={cn(styles.wrapper, wrapperClassName)} {...other}>
+    <div className={cn(styles.wrapper, wrapperClassName)} {...other} role='img'>
       {useSkeleton && displayImage === placeholder ? (
         <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
       ) : null}

@@ -6,6 +6,7 @@ import { ButtonProps } from './types'
 const FavoritesButton = ({
   darkMode,
   onClick,
+  href,
   isActive,
   isMatrixMode
 }: ButtonProps) => {
@@ -16,6 +17,7 @@ const FavoritesButton = ({
       darkMode={darkMode}
       isMatrix={isMatrixMode}
       onClick={onClick}
+      href={href}
       iconLightJSON={() => require('assets/animations/iconFavoriteLight.json')}
       iconDarkJSON={() => require('assets/animations/iconFavoriteDark.json')}
     />
