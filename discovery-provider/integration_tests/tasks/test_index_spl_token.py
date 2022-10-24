@@ -2,12 +2,14 @@ from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
-from src.tasks.index_spl_token import (
-    get_token_balance_change_owners,
-    parse_sol_tx_batch,
-)
+from src.tasks.index_spl_token import parse_sol_tx_batch, parse_spl_token_transaction
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -15,92 +17,6 @@ from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
-
-
-transfer_meta = {
-    "meta": {
-        "postTokenBalances": [
-            {
-                "accountIndex": 1,
-                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-                "uiTokenAmount": {
-                    "amount": "100000000",
-                    "decimals": 8,
-                    "uiAmount": 1.0,
-                    "uiAmountString": "1",
-                },
-            },
-            {
-                "accountIndex": 2,
-                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-                "uiTokenAmount": {
-                    "amount": "700000000",
-                    "decimals": 8,
-                    "uiAmount": 7.0,
-                    "uiAmountString": "7",
-                },
-            },
-        ],
-        "preTokenBalances": [
-            {
-                "accountIndex": 1,
-                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-                "uiTokenAmount": {
-                    "amount": "600000000",
-                    "decimals": 8,
-                    "uiAmount": 6.0,
-                    "uiAmountString": "6",
-                },
-            },
-            {
-                "accountIndex": 2,
-                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-                "uiTokenAmount": {
-                    "amount": "200000000",
-                    "decimals": 8,
-                    "uiAmount": 2.0,
-                    "uiAmountString": "2",
-                },
-            },
-        ],
-    },
-    "transaction": {
-        "message": {
-            "accountKeys": [
-                "CgJhbUdHQNN5HBeNEN7J69Z89emh6BtyYX1CPEGwaeqi",
-                "3fh1U93FEtZJK3uRtRuQ2ocYQApRZQ7g1AmVr9WcrHHv",
-                "2mDP3qspXi1wJUdnaFf2Xa3oSQJZUzqfPZ69zZtee3Sb",
-                "E4rr6UXzeVoaA8Ae7Fm6sEV1dXEuWeuHDBwRnvicUcbu",
-                "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-                "SysvarRent111111111111111111111111111111111",
-                "Sysvar1nstructions1111111111111111111111111",
-                "11111111111111111111111111111111",
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                "KeccakSecp256k11111111111111111111111111111",
-                "Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ",
-            ],
-            "recentBlockhash": "FZbtQTxcSnhyLALk6SFXGrE2omGhhyCns8yFWDvpGYFw",
-        },
-        "signatures": [
-            "arAQYgyyHVG2CS5PZuQC1G83vfi5HmHVWMchC1tXg1S9qebC2jdsbqyLfmX1cfjefk3S5NLhoE8r3pTzvCthxUc"
-        ],
-    },
-}
-
-
-def test_get_token_balance_change_owners_bank_accts():
-    (root_accounts, token_accounts) = get_token_balance_change_owners(transfer_meta)
-    assert root_accounts == set(["5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx"])
-    assert token_accounts == set(
-        [
-            "3fh1U93FEtZJK3uRtRuQ2ocYQApRZQ7g1AmVr9WcrHHv",
-            "2mDP3qspXi1wJUdnaFf2Xa3oSQJZUzqfPZ69zZtee3Sb",
-        ]
-    )
 
 
 mock_create_account_meta = {
@@ -160,16 +76,37 @@ mock_create_account_meta = {
     },
 }
 
+mock_create_account_tx_info = {
+    "jsonrpc": "2.0",
+    "result": mock_create_account_meta,
+    "id": 2,
+}
 
-def test_get_token_balance_change_owners_no_results():
-    (root_accounts, token_accounts) = get_token_balance_change_owners(
-        mock_create_account_meta
+mock_confirmed_signature_for_address = {
+    "err": None,
+    "memo": None,
+    "signature": "2DUH6nXnS4EXCqPdgxGvAiLyemZ8WkB69VyjhiGgE3HZxsbXWdk8SuZbGCkyV7oN6b7DHHVggaB8QSCKp5YNk7QJ",
+    "slot": 123209431,
+    "blockTime": 1646261596,
+    "confirmationStatus": "finalized",
+}
+
+
+def test_parse_spl_token_transaction_no_results():
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    solana_client_manager_mock.get_sol_tx_info.return_value = (
+        mock_create_account_tx_info
     )
-    assert root_accounts == set()
-    assert token_accounts == set()
+    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+        solana_client_manager_mock, mock_confirmed_signature_for_address
+    )
+    assert tx_info == None
+    assert root_accounts == []
+    assert token_accounts == []
 
 
 mock_transfer_checked_meta = {
+    "blockTime": 1646261596,
     "meta": {
         "err": None,
         "fee": 5000,
@@ -261,29 +198,150 @@ mock_transfer_checked_meta = {
     },
 }
 
-
-def test_get_token_balance_change_owners():
-    (root_accounts, token_accounts) = get_token_balance_change_owners(
-        mock_transfer_checked_meta
-    )
-    assert root_accounts == set(
-        [
-            "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
-            "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4",
-        ]
-    )
-    assert token_accounts == set(
-        [
-            "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD",
-            "7CyoHxibpPrTVc2AsmoSq7gRoDwnwN7LRnHDcR4yWVf9",
-        ]
-    )
-
-
-mock_tx_info = {
+mock_transfer_tx_info = {
     "jsonrpc": "2.0",
     "result": mock_transfer_checked_meta,
     "id": 3,
+}
+
+
+def test_parse_spl_token_transaction():
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    solana_client_manager_mock.get_sol_tx_info.return_value = mock_transfer_tx_info
+    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+        solana_client_manager_mock, mock_confirmed_signature_for_address
+    )
+    assert tx_info["user_bank"] == "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD"
+    assert root_accounts == [
+        "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+        "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4",
+    ]
+    assert token_accounts == [
+        "7CyoHxibpPrTVc2AsmoSq7gRoDwnwN7LRnHDcR4yWVf9",
+        "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD",
+    ]
+
+
+mock_purchase_meta = {
+    "blockTime": 1665685554,
+    "meta": {
+        "err": None,
+        "fee": 5000,
+        "innerInstructions": [],
+        "loadedAddresses": {"readonly": None, "writable": None},
+        "logMessages": [
+            "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo invoke [1]",
+            "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo consumed 651 of 400000 compute units",
+            "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo success",
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [1]",
+            "Program log: Instruction: TransferChecked",
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 6172 of 399349 compute units",
+            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+        ],
+        "postBalances": [
+            2935160,
+            2039280,
+            2039280,
+            260042654,
+            121159680,
+            934087680,
+        ],
+        "postTokenBalances": [
+            {
+                "accountIndex": 1,
+                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "uiTokenAmount": {
+                    "amount": "5623032749",
+                    "decimals": 8,
+                    "uiAmount": 56.23032749,
+                    "uiAmountString": "56.23032749",
+                },
+            },
+            {
+                "accountIndex": 2,
+                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                "owner": "GNkt1SGkdzvfaCYVpSKs7yjLxeyLJFKZv32cVYJ3GyHX",
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "uiTokenAmount": {
+                    "amount": "0",
+                    "decimals": 8,
+                    "uiAmount": None,
+                    "uiAmountString": "0",
+                },
+            },
+        ],
+        "preBalances": [2940160, 2039280, 2039280, 260042654, 121159680, 934087680],
+        "preTokenBalances": [
+            {
+                "accountIndex": 1,
+                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                "owner": "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "uiTokenAmount": {
+                    "amount": "500000000",
+                    "decimals": 8,
+                    "uiAmount": 5.0,
+                    "uiAmountString": "5",
+                },
+            },
+            {
+                "accountIndex": 2,
+                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                "owner": "GNkt1SGkdzvfaCYVpSKs7yjLxeyLJFKZv32cVYJ3GyHX",
+                "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "uiTokenAmount": {
+                    "amount": "5123032749",
+                    "decimals": 8,
+                    "uiAmount": 51.23032749,
+                    "uiAmountString": "51.23032749",
+                },
+            },
+        ],
+        "rewards": [],
+        "status": {"Ok": None},
+    },
+    "slot": 155160519,
+    "transaction": {
+        "message": {
+            "accountKeys": [
+                "GNkt1SGkdzvfaCYVpSKs7yjLxeyLJFKZv32cVYJ3GyHX",
+                "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556",
+                "C4qrWm6kkLwUNExA2Ldt6uXLroRfcTGXJLx1zGvEt5DB",
+                "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            ],
+            "header": {
+                "numReadonlySignedAccounts": 0,
+                "numReadonlyUnsignedAccounts": 3,
+                "numRequiredSignatures": 1,
+            },
+            "instructions": [
+                {
+                    "accounts": [0],
+                    "data": "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz",
+                    "programIdIndex": 4,
+                },
+                {
+                    "accounts": [2, 3, 1, 0],
+                    "data": "iJsU9Sk8HPLQP",
+                    "programIdIndex": 5,
+                },
+            ],
+            "recentBlockhash": "CChCbrfGJgYkqSf3FUHqMmhEd3TXxBoKDAk6ZZx9QGfZ",
+        },
+        "signatures": [
+            "2n4gYtnZLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw"
+        ],
+    },
+}
+
+mock_purchase_tx_info = {
+    "jsonrpc": "2.0",
+    "result": mock_purchase_meta,
+    "id": 4,
 }
 
 
@@ -293,7 +351,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         redis = get_redis()
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
-    solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
+    solana_client_manager_mock.get_sol_tx_info.return_value = mock_transfer_tx_info
 
     test_entries = {
         "users": [
@@ -307,6 +365,11 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
                 "handle": "piazzatron",
                 "wallet": "0x0403be3560116a12b467855cb29a393174a59875",
             },
+            {
+                "user_id": 3,
+                "handle": "asdf33",
+                "wallet": "0x7d12457bd24ce79b62e66e915dbc0a469a6b59ba",
+            },
         ],
         "user_bank_accounts": [
             {  # user 1
@@ -314,9 +377,14 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
                 "ethereum_address": "0x0403be3560116a12b467855cb29a393174a59876",
                 "bank_account": "7CyoHxibpPrTVc2AsmoSq7gRoDwnwN7LRnHDcR4yWVf9",
             },
+            {
+                "signature": "hellothere",
+                "ethereum_address": "0x7d12457bd24ce79b62e66e915dbc0a469a6b59ba",
+                "bank_account": "AoY7fgjKanf2bmrjLgK21xdAVpfVjBc4poT92nexxi8K",
+            },
         ],
         "associated_wallets": [
-            {"user_id": 2, "wallet": "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4"}
+            {"user_id": 2, "wallet": "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4"},
         ],
     }
     mock_confirmed_signature_for_address = {
@@ -353,3 +421,42 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         refresh_user_ids.sort()
         assert len(refresh_user_ids) == 2
         assert refresh_user_ids == [1, 2]
+
+    mock_confirmed_signature_for_address = {
+        "err": None,
+        "memo": None,
+        "signature": "2n4gYtnZLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw",
+        "slot": 155160519,
+        "blockTime": 1665685554,
+        "confirmationStatus": "finalized",
+    }
+    solana_client_manager_mock.get_sol_tx_info.return_value = mock_purchase_tx_info
+    parse_sol_tx_batch(
+        db,
+        solana_client_manager_mock,
+        redis,
+        [mock_confirmed_signature_for_address],
+        solana_logger,
+    )
+
+    with db.scoped_session() as session:
+        audio_tx = (
+            session.query(
+                AudioTransactionsHistory.user_bank,
+                AudioTransactionsHistory.transaction_type,
+                AudioTransactionsHistory.balance,
+                AudioTransactionsHistory.change,
+                AudioTransactionsHistory.method,
+            )
+            .filter(
+                AudioTransactionsHistory.signature
+                == mock_purchase_meta["transaction"]["signatures"][0]
+            )
+            .first()
+        )
+
+        assert audio_tx.user_bank == "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556"
+        assert audio_tx.balance == 5623032749
+        assert audio_tx.change == 5123032749
+        assert audio_tx.transaction_type == TransactionType.purchase_stripe
+        assert audio_tx.method == TransactionMethod.receive
