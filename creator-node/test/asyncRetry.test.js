@@ -97,7 +97,7 @@ describe('test asyncRetry', function () {
     let attempts = 0
     try {
       await asyncRetry({
-        asyncFn: async (bail, num) => {
+        asyncFn: async () => {
           attempts++
 
           await new Promise((resolve) => {
