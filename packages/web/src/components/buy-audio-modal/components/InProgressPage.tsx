@@ -41,9 +41,9 @@ const messages = {
   coinbaseClosedErrorMessage: 'Coinbase Pay Was Closed Unexpectedly',
   swapErrorMessage:
     'Refresh and we’ll try again.\nDon’t worry your funds are safe!',
-  stripeErrorMessage: 'Something went wrong',
   coinbaseErrorMessage:
-    'Something’s gone wrong with Coinbase.\nPlease check your email for more information.'
+    'Something’s gone wrong with Coinbase.\nPlease check your email for more information.',
+  genericError: 'Something went wrong.'
 }
 
 type Token = {
@@ -91,7 +91,12 @@ const providerBasedMessages = {
   [OnRampProvider.STRIPE]: {
     stepOneCallToAction: messages.completeWithStripe,
     purchaseError: messages.stripeClosedErrorMessage,
-    confirmPurchaseError: messages.stripeErrorMessage
+    confirmPurchaseError: messages.genericError
+  },
+  [OnRampProvider.UNKNOWN]: {
+    stepOneCallToAction: messages.genericError,
+    purchaseError: messages.genericError,
+    confirmPurchaseError: messages.genericError
   }
 }
 
@@ -137,9 +142,6 @@ export const InProgressPage = () => {
     } else {
       firstToken = audioToken
     }
-  }
-  if (!buyAudioProvider || buyAudioProvider === OnRampProvider.UNKNOWN) {
-    return null
   }
   return (
     <div className={styles.inProgressPage}>

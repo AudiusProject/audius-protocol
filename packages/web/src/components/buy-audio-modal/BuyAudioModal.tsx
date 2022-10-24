@@ -17,8 +17,7 @@ import { AmountInputPage } from './components/AmountInputPage'
 import { InProgressPage } from './components/InProgressPage'
 import { SuccessPage } from './components/SuccessPage'
 
-const { getBuyAudioFlowStage, getBuyAudioProvider, getBuyAudioFlowError } =
-  buyAudioSelectors
+const { getBuyAudioFlowStage, getBuyAudioFlowError } = buyAudioSelectors
 
 const messages = {
   buyAudio: 'Buy $AUDIO'
@@ -52,7 +51,6 @@ const stageToPage = (stage: BuyAudioStage) => {
 export const BuyAudioModal = () => {
   const [isOpen, setIsOpen] = useModalState('BuyAudio')
   const stage = useSelector(getBuyAudioFlowStage)
-  const provider = useSelector(getBuyAudioProvider)
   const error = useSelector(getBuyAudioFlowError)
   const currentPage = stageToPage(stage)
   const inProgress = currentPage === 1
@@ -61,14 +59,9 @@ export const BuyAudioModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
-  if (provider === undefined && isOpen) {
-    console.error('BuyAudio modal opened without a provider. Aborting...')
-    return null
-  }
-
   return (
     <Modal
-      isOpen={isOpen && provider !== undefined}
+      isOpen={isOpen}
       onClose={handleClose}
       bodyClassName={styles.modal}
       dismissOnClickOutside={!inProgress || error}

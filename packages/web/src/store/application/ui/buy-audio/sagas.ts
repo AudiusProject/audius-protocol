@@ -117,7 +117,7 @@ type BuyAudioLocalStorageState = {
     purchasedLamports?: string
     purchasedAudioWei?: string
   }
-  provider?: OnRampProvider
+  provider: OnRampProvider
   desiredAudioAmount?: AmountObject
 }
 const defaultBuyAudioLocalStorageState: BuyAudioLocalStorageState = {
@@ -787,10 +787,6 @@ function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onRampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
-  if (provider === undefined) {
-    console.error('BuyAudio flow started without a provider - aborting...')
-    return
-  }
   try {
     // Record start
     yield* put(

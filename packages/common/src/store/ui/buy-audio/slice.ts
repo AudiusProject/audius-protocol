@@ -44,10 +44,11 @@ type BuyAudioState = {
     associatedTokenAccountCache: Record<string, boolean>
     transactionFees: number
   }
-  provider?: OnRampProvider
+  provider: OnRampProvider
 }
 
 const initialState: BuyAudioState = {
+  provider: OnRampProvider.UNKNOWN,
   stage: BuyAudioStage.START,
   feesCache: {
     associatedTokenAccountCache: {},
