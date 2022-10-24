@@ -1,6 +1,7 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
 
+import axios from 'axios'
 import _ from 'lodash'
 import {
   logger as genericLogger,
@@ -20,7 +21,6 @@ import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
-import axios from 'axios'
 
 const models = require('../../models')
 const config = require('../../config')
