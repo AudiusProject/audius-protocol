@@ -7,7 +7,9 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 
-const CNodeHealthManager = require('../src/services/stateMachineManager/CNodeHealthManager')
+const {
+  CNodeHealthManager
+} = require('../src/services/stateMachineManager/CNodeHealthManager')
 const config = require('../src/config')
 const Utils = require('../src/utils')
 
@@ -110,20 +112,18 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
       'determinePeerHealth'
     )
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that only the simple check was performed and returned healthy
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, true)
     expect(isHealthy).to.be.true
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
     expect(determinePeerHealthStub).to.not.have.been.called
-    expect(logErrorStub).to.not.have.been.called
   })
 
   it('returns false when health check fails with performSimpleCheck=true', async function () {
@@ -131,13 +131,12 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const error = new Error('test error')
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .rejects(error)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
       'determinePeerHealth'
     )
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that determinePeerHealth is not called because the health
     // check throwing an error causes the function to return false
@@ -145,9 +144,6 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     expect(isHealthy).to.be.false
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
     expect(determinePeerHealthStub).to.not.have.been.called
-    expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
-      `isNodeHealthy() peer=${node} is unhealthy: ${error.toString()}`
-    )
   })
 
   it('returns false when health check fails with performSimpleCheck=false', async function () {
@@ -155,13 +151,12 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const error = new Error('test error')
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .rejects(error)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
       'determinePeerHealth'
     )
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that determinePeerHealth is not called because the health
     // check throwing an error causes the function to return false
@@ -169,33 +164,28 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     expect(isHealthy).to.be.false
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
     expect(determinePeerHealthStub).to.not.have.been.called
-    expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
-      `isNodeHealthy() peer=${node} is unhealthy: ${error.toString()}`
-    )
   })
 
   it('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
     // Stub functions that isNodeHealthy() will call
     const node = 'http://some_content_node.co'
-    const isNodeHealthyError = new Error('Node health check returned healthy: false')
+    const isNodeHealthyError = new Error(
+      'Node health check returned healthy: false'
+    )
     const determinePeerHealthError = new Error('test determinePeerHealthError')
     const verboseHealthCheckResp = { healthy: false }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox
       .stub(CNodeHealthManager, 'determinePeerHealth')
       .throws(determinePeerHealthError)
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that determinePeerHealth throwing causes the function to return false
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, false)
     expect(isHealthy).to.be.false
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
     expect(determinePeerHealthStub).to.not.have.been.called.called
-    expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
-      `isNodeHealthy() peer=${node} is unhealthy: ${isNodeHealthyError.toString()}`
-    )
   })
 
   it("returns true when determinePeerHealth doesn't throw with performSimpleCheck=false", async function () {
@@ -203,13 +193,12 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
       'determinePeerHealth'
     )
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that only the simple check was performed and returned healthy
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, false)
@@ -218,7 +207,6 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     expect(determinePeerHealthStub).to.have.been.calledOnceWithExactly(
       verboseHealthCheckResp
     )
-    expect(logErrorStub).to.not.have.been.called.called
   })
 
   it("returns true when determinePeerHealth doesn't throw with default performSimpleCheck", async function () {
@@ -226,13 +214,12 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
       'determinePeerHealth'
     )
-    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
     // Verify that only the simple check was performed and returned healthy
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node)
@@ -241,11 +228,10 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     expect(determinePeerHealthStub).to.have.been.calledOnceWithExactly(
       verboseHealthCheckResp
     )
-    expect(logErrorStub).to.not.have.been.called.called
   })
 })
 
-describe('test CNodeHealthManager -- queryVerboseHealthCheck()', function () {
+describe('test CNodeHealthManager -- _queryVerboseHealthCheck()', function () {
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
@@ -268,7 +254,7 @@ describe('test CNodeHealthManager -- queryVerboseHealthCheck()', function () {
       .get('/health_check/verbose')
       .reply(200, { data: verboseHealthResp })
 
-    await CNodeHealthManager.queryVerboseHealthCheck(endpoint)
+    await CNodeHealthManager._queryVerboseHealthCheck(endpoint)
     expect(nock.isDone()).to.be.true
   })
 })
@@ -294,8 +280,8 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
   config.set('maxStorageUsedPercent', 95)
 
   function determinePeerHealth(verboseHealthCheckResp) {
-    const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
+    const { CNodeHealthManager: CNodeHealthManagerMock } = proxyquire(
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
       {
         './../../config': config
       }
@@ -326,7 +312,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
       numberOfCPUs: 12,
       latestSyncSuccessTimestamp: '2022-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-  
+
       // Fields to consider in this test
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,
@@ -406,7 +392,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
   })
 })
 
-describe('test CNodeHealthManager -- isPrimaryHealthy()', function () {
+describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function () {
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
@@ -417,24 +403,46 @@ describe('test CNodeHealthManager -- isPrimaryHealthy()', function () {
   })
 
   const primary = 'http://cn1.co'
+  const secondary = 'http://cn2.co'
   const gracePeriodSeconds = 1
   config.set('maxNumberSecondsPrimaryRemainsUnhealthy', 1)
+  config.set('maxNumberSecondsSecondaryRemainsUnhealthy', 1)
 
-  it('returns true (healthy) when healthy', async function () {
+  it('returns true (healthy) when primary is healthy', async function () {
     // Make isNodeHealthy return true
     const isNodeHealthyStub = sandbox
       .stub(CNodeHealthManager, 'isNodeHealthy')
       .resolves(true)
 
-    const isHealthy = await CNodeHealthManager.isPrimaryHealthy(primary)
+    const isHealthy = await CNodeHealthManager.isNodeHealthyOrInGracePeriod(
+      primary,
+      true
+    )
     expect(isHealthy).to.be.true
     expect(isNodeHealthyStub).to.have.been.calledOnceWithExactly(primary, true)
   })
 
-  it('returns true when health check fails during grace period, then false when grace period ends, then true when health check starts passing again', async function () {
+  it('returns true (healthy) when secondary is healthy', async function () {
+    // Make isNodeHealthy return true
+    const isNodeHealthyStub = sandbox
+      .stub(CNodeHealthManager, 'isNodeHealthy')
+      .resolves(true)
+
+    const isHealthy = await CNodeHealthManager.isNodeHealthyOrInGracePeriod(
+      secondary,
+      false
+    )
+    expect(isHealthy).to.be.true
+    expect(isNodeHealthyStub).to.have.been.calledOnceWithExactly(
+      secondary,
+      false
+    )
+  })
+
+  it('(for primary) returns true when health check fails during grace period, then false when grace period ends, then true when health check starts passing again', async function () {
     // Mock CNodeHealthManager to use the config with our shorter grace period
-    const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
+    const { CNodeHealthManager: CNodeHealthManagerMock } = proxyquire(
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
       {
         './../../config': config
       }
@@ -445,22 +453,70 @@ describe('test CNodeHealthManager -- isPrimaryHealthy()', function () {
       .resolves(false)
 
     // Verify that the node is marked as healthy during the grace period (even though it's unhealthy)
-    const isHealthy = await CNodeHealthManagerMock.isPrimaryHealthy(primary)
+    const isHealthy = await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
+      primary,
+      true
+    )
     expect(isHealthy).to.be.true
     const isHealthyDuringGracePeriod =
-      await CNodeHealthManagerMock.isPrimaryHealthy(primary)
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(primary, true)
     expect(isHealthyDuringGracePeriod).to.be.true
 
     // Verify that the node is unhealthy after the grace period ends
     await Utils.timeout(gracePeriodSeconds * 1000 + 1)
     const isHealthyAfterGracePeriod =
-      await CNodeHealthManagerMock.isPrimaryHealthy(primary)
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(primary, true)
     expect(isHealthyAfterGracePeriod).to.be.false
 
     // Verify that the node is healthy when the health check starts passing again
     isNodeHealthyStub.returns(true)
     const isHealthyWhenIsHealthCheckPassesAgain =
-      await CNodeHealthManagerMock.isPrimaryHealthy(primary)
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(primary, true)
+    expect(isHealthyWhenIsHealthCheckPassesAgain).to.be.true
+  })
+
+  it('(for secondary) returns true when health check fails during grace period, then false when grace period ends, then true when health check starts passing again', async function () {
+    // Mock CNodeHealthManager to use the config with our shorter grace period
+    const { CNodeHealthManager: CNodeHealthManagerMock } = proxyquire(
+      '../src/services/stateMachineManager/CNodeHealthManager.ts',
+      {
+        './../../config': config
+      }
+    )
+    // Make isNodeHealthy return false
+    const isNodeHealthyStub = sandbox
+      .stub(CNodeHealthManagerMock, 'isNodeHealthy')
+      .resolves(false)
+
+    // Verify that the node is marked as healthy during the grace period (even though it's unhealthy)
+    const isHealthy = await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
+      secondary,
+      false
+    )
+    expect(isHealthy).to.be.true
+    const isHealthyDuringGracePeriod =
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
+        secondary,
+        false
+      )
+    expect(isHealthyDuringGracePeriod).to.be.true
+
+    // Verify that the node is unhealthy after the grace period ends
+    await Utils.timeout(gracePeriodSeconds * 1000 + 1)
+    const isHealthyAfterGracePeriod =
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
+        secondary,
+        false
+      )
+    expect(isHealthyAfterGracePeriod).to.be.false
+
+    // Verify that the node is healthy when the health check starts passing again
+    isNodeHealthyStub.returns(true)
+    const isHealthyWhenIsHealthCheckPassesAgain =
+      await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
+        secondary,
+        false
+      )
     expect(isHealthyWhenIsHealthCheckPassesAgain).to.be.true
   })
 })
@@ -493,44 +549,6 @@ describe('test CNodeHealthManager -- _computeContentNodePeerSet()', function () 
       'http://cn3.co',
       'http://cn4.co',
       'http://cn5.co'
-    )
-  })
-})
-
-describe('test CNodeHealthManager logger', function () {
-  let sandbox
-  beforeEach(function () {
-    sandbox = sinon.createSandbox()
-  })
-
-  afterEach(function () {
-    sandbox.restore()
-  })
-
-  it('logs info and error with common prefix', function () {
-    // Initialize CNodeHealthManager with stubbed logger
-    const logInfoStub = sandbox.stub()
-    const logErrorStub = sandbox.stub()
-    const CNodeHealthManagerMock = proxyquire(
-      '../src/services/stateMachineManager/CNodeHealthManager.js',
-      {
-        './../../logging': {
-          logger: {
-            info: logInfoStub,
-            error: logErrorStub
-          }
-        }
-      }
-    )
-
-    // Verify that each log function passes the correct message to the logger
-    CNodeHealthManagerMock.log('test info msg')
-    expect(logInfoStub).to.have.been.calledOnceWithExactly(
-      'CNodeHealthManager: test info msg'
-    )
-    CNodeHealthManagerMock.logError('test error msg')
-    expect(logErrorStub).to.have.been.calledOnceWithExactly(
-      'CNodeHealthManager ERROR: test error msg'
     )
   })
 })

@@ -187,7 +187,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
     })
@@ -270,7 +270,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
@@ -362,7 +362,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2: '', // Make secondary2 be unhealthy empty because it was deregistered (this is what happens in prod)
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
@@ -449,7 +449,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
     })
@@ -516,7 +516,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
     })
@@ -533,7 +533,7 @@ describe('test updateReplicaSet job processor', function () {
 
     // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
     expect(rest).to.be.deep.equal({
-      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 numberOfEmptyReplicas=0 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
+      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfNodesToReconfigOffOf=3 numberOfEmptyReplicas=0 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
       issuedReconfig: false,
       newReplicaSet: {
         newPrimary: null,
