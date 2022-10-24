@@ -1,5 +1,4 @@
-import type { Request, Response, NextFunction, IRoute } from 'express'
-import type Logger from 'bunyan'
+import type { Response, NextFunction, IRoute } from 'express'
 
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -32,7 +31,7 @@ function errorHandler(
   err: any,
   req: RequestWithLogger,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)

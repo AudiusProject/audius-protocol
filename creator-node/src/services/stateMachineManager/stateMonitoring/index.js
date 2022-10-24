@@ -53,7 +53,7 @@ class StateMonitoringManager {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job, error, _prev) => {
         cNodeEndpointToSpIdMapQueueLogger.error(
           `Queue Job Failed - ID ${job?.id} - Error ${error}`
         )
@@ -78,7 +78,7 @@ class StateMonitoringManager {
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job, error, _prev) => {
         const logger = createChildLogger(monitorStateLogger, {
           jobId: job?.id || 'unknown'
         })

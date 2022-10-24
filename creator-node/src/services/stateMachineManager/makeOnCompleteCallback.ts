@@ -58,7 +58,7 @@ function makeOnCompleteCallback(
       jobId,
       returnvalue
     }: { jobId: string; returnvalue: string | AnyDecoratedJobReturnValue },
-    id: string
+    _id: string
   ) {
     // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, {

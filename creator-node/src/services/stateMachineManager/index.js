@@ -151,7 +151,7 @@ class StateMachineManager {
    * @param {number} jobId the ID of the job that completed
    * @param {string} returnvalue the stringified JSON of the job's returnValue
    */
-  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, id) {
+  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, _id) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {

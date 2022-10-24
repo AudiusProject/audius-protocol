@@ -161,7 +161,7 @@ const syncHealthCheckController = async (req) => {
  * Controller for health_check/duration route
  * Calls healthCheckComponentService
  */
-const healthCheckDurationController = async (req) => {
+const healthCheckDurationController = async (_req) => {
   const response = await healthCheckDuration()
   return successResponse(response)
 }

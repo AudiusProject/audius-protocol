@@ -119,7 +119,6 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {Object} param.logger
  */
 async function fetchFileFromNetworkAndWriteToDisk({
-  libs,
   gatewayContentRoutes,
   targetGateways,
   multihash,

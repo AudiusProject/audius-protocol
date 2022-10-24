@@ -159,7 +159,7 @@ const _issueSyncRequestsUntilSynced = async (
         responseType: 'json',
         timeout: 1000 // 1000ms = 1s
       })
-      const { clockValue: secondaryClockVal, syncInProgress } =
+      const { clockValue: secondaryClockVal } =
         secondaryClockStatusResp.data.data
 
       // If secondary is synced, return successfully
