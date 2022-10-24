@@ -43,9 +43,12 @@ class ClusterUtils {
   }
 
   getNumWorkers() {
+    // When cluster mode is disabled there's no primary and no workers, but for math we want to pretend there's 1 worker so we don't divide by 0
+    if (!this.isClusterEnabled()) return 1
+
     // This is called `cpus()` but it actually returns the # of logical cores, which is possibly higher than # of physical cores if there's hyperthreading
     const logicalCores = cpus().length
-    return config.get('expressAppConcurrency') || logicalCores
+    return config.get('expressAppConcurrency') || Math.ceil(logicalCores / 2)
   }
 
   /**

@@ -16,6 +16,7 @@ const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
 const { clusterUtils } = require('../../utils')
+const { clearSyncStatuses } = require('../sync/syncUtil')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -25,10 +26,17 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+    if (clusterUtils.isThisWorkerInit()) {
+      await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+      await clearSyncStatuses()
 
-    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
-    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
+      // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+      await updateContentNodeChainInfo(
+        baseLogger,
+        redis,
+        audiusLibs.ethContracts
+      )
+    }
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -74,11 +82,11 @@ class StateMachineManager {
         },
         [QUEUE_NAMES.RECURRING_SYNC]: {
           queue: recurringSyncQueue,
-          maxWaitingJobs: 100000
+          maxWaitingJobs: 10000
         },
         [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
           queue: updateReplicaSetQueue,
-          maxWaitingJobs: 10000
+          maxWaitingJobs: 1000
         },
         [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
           queue: recoverOrphanedDataQueue,

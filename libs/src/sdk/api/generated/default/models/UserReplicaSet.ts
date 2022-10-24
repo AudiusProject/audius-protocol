@@ -18,54 +18,56 @@
  * @export
  * @interface UserReplicaSet
  */
-export interface UserReplicaSet {
-    /**
-     * 
-     * @type {number}
-     * @memberof UserReplicaSet
-     */
-    user_id: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserReplicaSet
-     */
-    wallet: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserReplicaSet
-     */
-    primary?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserReplicaSet
-     */
-    secondary1?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserReplicaSet
-     */
-    secondary2?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserReplicaSet
-     */
-    primarySpID?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserReplicaSet
-     */
-    secondary1SpID?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof UserReplicaSet
-     */
-    secondary2SpID?: number;
-}
+export interface UserReplicaSet 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof UserReplicaSet
+        */
+        user_id: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserReplicaSet
+        */
+        wallet: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserReplicaSet
+        */
+        primary?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserReplicaSet
+        */
+        secondary1?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof UserReplicaSet
+        */
+        secondary2?: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserReplicaSet
+        */
+        primarySpID?: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserReplicaSet
+        */
+        secondary1SpID?: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof UserReplicaSet
+        */
+        secondary2SpID?: number;
+    }
+
 

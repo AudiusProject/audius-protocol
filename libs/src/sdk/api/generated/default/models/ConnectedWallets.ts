@@ -18,18 +18,20 @@
  * @export
  * @interface ConnectedWallets
  */
-export interface ConnectedWallets {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ConnectedWallets
-     */
-    erc_wallets: Array<string>;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ConnectedWallets
-     */
-    spl_wallets: Array<string>;
-}
+export interface ConnectedWallets 
+    {
+        /**
+        * 
+        * @type {Array<string>}
+        * @memberof ConnectedWallets
+        */
+        erc_wallets: Array<string>;
+        /**
+        * 
+        * @type {Array<string>}
+        * @memberof ConnectedWallets
+        */
+        spl_wallets: Array<string>;
+    }
+
 

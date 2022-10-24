@@ -25,12 +25,14 @@ import {
  * @export
  * @interface RelatedArtistResponse
  */
-export interface RelatedArtistResponse {
-    /**
-     * 
-     * @type {Array<User>}
-     * @memberof RelatedArtistResponse
-     */
-    data?: Array<User>;
-}
+export interface RelatedArtistResponse 
+    {
+        /**
+        * 
+        * @type {Array<User>}
+        * @memberof RelatedArtistResponse
+        */
+        data?: Array<User>;
+    }
+
 

@@ -18,18 +18,20 @@
  * @export
  * @interface CoverPhoto
  */
-export interface CoverPhoto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CoverPhoto
-     */
-    _640x?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CoverPhoto
-     */
-    _2000x?: string;
-}
+export interface CoverPhoto 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof CoverPhoto
+        */
+        _640x?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof CoverPhoto
+        */
+        _2000x?: string;
+    }
+
 

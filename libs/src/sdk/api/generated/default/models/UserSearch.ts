@@ -25,12 +25,14 @@ import {
  * @export
  * @interface UserSearch
  */
-export interface UserSearch {
-    /**
-     * 
-     * @type {Array<User>}
-     * @memberof UserSearch
-     */
-    data?: Array<User>;
-}
+export interface UserSearch 
+    {
+        /**
+        * 
+        * @type {Array<User>}
+        * @memberof UserSearch
+        */
+        data?: Array<User>;
+    }
+
 

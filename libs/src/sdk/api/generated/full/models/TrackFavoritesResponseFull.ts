@@ -31,54 +31,56 @@ import {
  * @export
  * @interface TrackFavoritesResponseFull
  */
-export interface TrackFavoritesResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFavoritesResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFavoritesResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFavoritesResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackFavoritesResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFavoritesResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackFavoritesResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof TrackFavoritesResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof TrackFavoritesResponseFull
-     */
-    data?: Array<UserFull>;
-}
+export interface TrackFavoritesResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFavoritesResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFavoritesResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFavoritesResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackFavoritesResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFavoritesResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFavoritesResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof TrackFavoritesResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof TrackFavoritesResponseFull
+        */
+        data?: Array<UserFull>;
+    }
+
 

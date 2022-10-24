@@ -18,12 +18,14 @@
  * @export
  * @interface EncodedUserId
  */
-export interface EncodedUserId {
-    /**
-     * 
-     * @type {string}
-     * @memberof EncodedUserId
-     */
-    user_id?: string;
-}
+export interface EncodedUserId 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof EncodedUserId
+        */
+        user_id?: string;
+    }
+
 
