@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction, IRoute } from 'express'
+import type { Response, NextFunction, IRoute } from 'express'
 import type { CustomRequest } from './apiHelpers'
 
 import express from 'express'
@@ -31,7 +31,7 @@ function errorHandler(
   err: any,
   req: CustomRequest,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)

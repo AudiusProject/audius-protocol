@@ -50,13 +50,13 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
   FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
   // Max number of completed/failed jobs to keep in redis for the manual sync queue
-  MANUAL_SYNC: 100_000,
+  MANUAL_SYNC: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recurring sync queue
-  RECURRING_SYNC: 100_000,
+  RECURRING_SYNC: 1_000,
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-  UPDATE_REPLICA_SET: 100_000,
+  UPDATE_REPLICA_SET: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
-  RECOVER_ORPHANED_DATA: 100_000
+  RECOVER_ORPHANED_DATA: 1_000
 })
 
 export const QUEUE_NAMES = {

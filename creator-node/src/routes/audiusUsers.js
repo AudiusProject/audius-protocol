@@ -32,7 +32,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -95,7 +95,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainUserId || !blockNumber || !metadataFileUUID) {

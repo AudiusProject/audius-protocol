@@ -16,6 +16,7 @@ import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
+import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
@@ -107,6 +108,11 @@ const startAppForPrimary = async () => {
   logger.info(`Primary process with pid=${process.pid} is running`)
 
   await setupDbAndRedis()
+
+  // Don't await - run in background. Remove after v0.3.69
+  // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  DBManager.createStoragePathIndexOnFilesTable()
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)

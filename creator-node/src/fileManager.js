@@ -11,7 +11,7 @@ const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const DecisionTree = require('./utils/decisionTree')
-const asyncRetry = require('./utils/asyncRetry')
+const { asyncRetry } = require('./utils/asyncRetry')
 
 const LibsUtils = audiusLibs.Utils
 
@@ -119,7 +119,6 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {Object} param.logger
  */
 async function fetchFileFromNetworkAndWriteToDisk({
-  libs,
   gatewayContentRoutes,
   targetGateways,
   multihash,
@@ -226,7 +225,6 @@ async function fetchFileFromNetworkAndWriteToDisk({
       path,
       multihash,
       logger,
-      libs,
       /** trackId */ null,
       /** excludeList */ targetGateways
     )

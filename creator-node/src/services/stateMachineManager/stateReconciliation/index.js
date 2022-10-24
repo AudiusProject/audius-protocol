@@ -59,6 +59,10 @@ class StateReconciliationManager {
       prometheusRegistry
     })
 
+    if (config.get('maxRecurringRequestSyncJobConcurrency') === 0) {
+      await recurringSyncQueue.pause()
+    }
+
     const { queue: updateReplicaSetQueue } = makeQueue({
       name: QUEUE_NAMES.UPDATE_REPLICA_SET,
       processor: this.makeProcessJob(
@@ -72,6 +76,10 @@ class StateReconciliationManager {
       removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
       prometheusRegistry
     })
+
+    if (config.get('maxUpdateReplicaSetJobConcurrency') === 0) {
+      await updateReplicaSetQueue.pause()
+    }
 
     const { queue: recoverOrphanedDataQueue } = makeQueue({
       name: QUEUE_NAMES.RECOVER_ORPHANED_DATA,
@@ -90,7 +98,7 @@ class StateReconciliationManager {
           config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
       },
-      onFailCallback: (job, error, prev) => {
+      onFailCallback: (job, error, _prev) => {
         const logger = createChildLogger(recoverOrphanedDataLogger, {
           jobId: job?.id || 'unknown'
         })

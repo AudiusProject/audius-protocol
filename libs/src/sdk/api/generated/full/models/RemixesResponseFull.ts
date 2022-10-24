@@ -31,54 +31,56 @@ import {
  * @export
  * @interface RemixesResponseFull
  */
-export interface RemixesResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixesResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixesResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixesResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixesResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemixesResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RemixesResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof RemixesResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {RemixesResponse}
-     * @memberof RemixesResponseFull
-     */
-    data?: RemixesResponse;
-}
+export interface RemixesResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixesResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixesResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixesResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixesResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof RemixesResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof RemixesResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof RemixesResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {RemixesResponse}
+        * @memberof RemixesResponseFull
+        */
+        data?: RemixesResponse;
+    }
+
 

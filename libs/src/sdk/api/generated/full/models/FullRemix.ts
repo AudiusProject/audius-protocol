@@ -25,30 +25,32 @@ import {
  * @export
  * @interface FullRemix
  */
-export interface FullRemix {
-    /**
-     * 
-     * @type {string}
-     * @memberof FullRemix
-     */
-    parent_track_id: string;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof FullRemix
-     */
-    user: UserFull;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FullRemix
-     */
-    has_remix_author_reposted: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FullRemix
-     */
-    has_remix_author_saved: boolean;
-}
+export interface FullRemix 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof FullRemix
+        */
+        parent_track_id: string;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof FullRemix
+        */
+        user: UserFull;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FullRemix
+        */
+        has_remix_author_reposted: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FullRemix
+        */
+        has_remix_author_saved: boolean;
+    }
+
 

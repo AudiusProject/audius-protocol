@@ -101,6 +101,16 @@ const getNewOrExistingSyncReq = async ({
   return { syncReqToEnqueue }
 }
 
+const getSyncStatusByUuid = async (targetUrl, syncUuid) => {
+  const resp = await axios({
+    baseURL: targetUrl,
+    url: `/sync_status/uuid/${syncUuid}`,
+    method: 'get',
+    timeout: 30_000
+  })
+  return resp?.data?.data?.syncStatus
+}
+
 /**
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
@@ -149,7 +159,7 @@ const _issueSyncRequestsUntilSynced = async (
         responseType: 'json',
         timeout: 1000 // 1000ms = 1s
       })
-      const { clockValue: secondaryClockVal, syncInProgress } =
+      const { clockValue: secondaryClockVal } =
         secondaryClockStatusResp.data.data
 
       // If secondary is synced, return successfully
@@ -202,5 +212,6 @@ module.exports = {
     fn: issueSyncRequestsUntilSynced
   }),
   getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
-  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes })
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes }),
+  getSyncStatusByUuid: instrumentTracing({ fn: getSyncStatusByUuid })
 }

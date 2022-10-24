@@ -1,5 +1,6 @@
 const express = require('express')
 const _ = require('lodash')
+const uuid = require('uuid/v4')
 
 const {
   successResponse,
@@ -11,14 +12,15 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
+const { ensureStorageMiddleware } = require('../../middlewares')
 const {
-  ensureStorageMiddleware,
-  getReplicaSetSpIDs
-} = require('../../middlewares')
+  getReplicaSetSpIdsByUserId
+} = require('../../services/ContentNodeInfoManager')
 const {
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
+const { getSyncStatus, setSyncStatus } = require('../../services/sync/syncUtil')
 const {
   enqueueSync,
   processManualImmediateSync
@@ -63,6 +65,15 @@ const respondToURSMRequestForProposalController = async (req) => {
   }
 }
 
+const getSyncStatusController = async (req, _res) => {
+  try {
+    const syncStatus = await getSyncStatus(req.params.syncUuid)
+    return successResponse({ syncStatus })
+  } catch (e) {
+    return errorResponseServerError(e)
+  }
+}
+
 /**
  * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
  * of all user data, update DB state accordingly, fetch all files and make them available.
@@ -71,7 +82,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  *
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
-const _syncRouteController = async (req, res) => {
+const _syncRouteController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   if (
     _.isEmpty(serviceRegistry?.syncQueue) ||
@@ -110,6 +121,8 @@ const _syncRouteController = async (req, res) => {
    * Else, debounce + add sync to queue
    */
   const data = generateDataForSignatureRecovery(req.body)
+  const syncUuid = uuid()
+  await setSyncStatus(syncUuid, 'waiting')
 
   if (immediate) {
     try {
@@ -129,6 +142,7 @@ const _syncRouteController = async (req, res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncUuid,
 
         // `parentSpanContext` provides a serializable version of the span
         // which the bull queue can save on redis so that
@@ -166,6 +180,7 @@ const _syncRouteController = async (req, res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncUuid,
         parentSpanContext: tracing.currentSpanContext()
       })
       delete syncDebounceQueue[wallet]
@@ -175,7 +190,7 @@ const _syncRouteController = async (req, res) => {
     )
   }
 
-  return successResponse()
+  return successResponse({ syncUuid })
 }
 
 const syncRouteController = instrumentTracing({
@@ -191,7 +206,7 @@ const syncRouteController = instrumentTracing({
  * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
  * @notice This will only work if called on a primary for a user
  */
-const mergePrimaryAndSecondaryController = async (req, res) => {
+const mergePrimaryAndSecondaryController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
 
@@ -236,7 +251,7 @@ const mergePrimaryAndSecondaryController = async (req, res) => {
 /**
  * Changes a user's replica set. Gated by`devMode` env var to only work locally.
  */
-const manuallyUpdateReplicaSetController = async (req, res) => {
+const manuallyUpdateReplicaSetController = async (req, _res) => {
   const audiusLibs = req.app.get('audiusLibs')
   const serviceRegistry = req.app.get('serviceRegistry')
   const { nodeConfig: config } = serviceRegistry
@@ -262,26 +277,27 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
     )
   }
 
-  const currentSpIds = await getReplicaSetSpIDs({
-    serviceRegistry,
-    logger: req.logger,
-    userId
+  const currentSpIds = await getReplicaSetSpIdsByUserId({
+    libs: serviceRegistry.libs,
+    userId,
+    parentLogger: req.logger,
+    logger: req.logger
   })
   if (config.get('entityManagerReplicaSetEnabled')) {
     await audiusLibs.User.updateEntityManagerReplicaSet({
       userId: parseInt(userId),
       primary: parseInt(newPrimarySpId),
       secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: parseInt(currentSpIds[0]),
-      oldSecondaries: [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      oldPrimary: currentSpIds.primaryId,
+      oldSecondaries: currentSpIds.secondaryIds
     })
   } else {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
       parseInt(userId),
       parseInt(newPrimarySpId),
       [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      parseInt(currentSpIds[0]),
-      [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      currentSpIds.primaryId,
+      currentSpIds.secondaryIds
     )
   }
 
@@ -293,6 +309,10 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
 router.get(
   '/ursm_request_for_signature',
   handleResponse(respondToURSMRequestForProposalController)
+)
+router.get(
+  '/sync_status/uuid/:syncUuid',
+  handleResponse(getSyncStatusController)
 )
 router.post(
   '/sync',

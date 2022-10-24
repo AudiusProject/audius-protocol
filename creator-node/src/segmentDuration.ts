@@ -4,7 +4,7 @@ const fs = require('fs-extra')
 const SEGMENT_REGEXP = /(segment[0-9]*.ts)/
 
 // Parse m3u8 file from HLS output and return map(segment filePath (segmentName) => segment duration)
-async function getSegmentsDuration(filename, filedir) {
+export async function getSegmentsDuration(filename: string, filedir: string) {
   try {
     const splitResults = filename.split('.')
     const fileRandomName = splitResults[0]
@@ -12,7 +12,7 @@ async function getSegmentsDuration(filename, filedir) {
     const manifestContents = await fs.readFile(manifestPath)
     const splitManifest = manifestContents.toString().split('\n')
 
-    const segmentDurations = {}
+    const segmentDurations: Record<string, number> = {}
     for (let i = 0; i < splitManifest.length; i += 1) {
       const matchedResults = splitManifest[i].match(SEGMENT_REGEXP)
       if (matchedResults === null) {
@@ -29,5 +29,3 @@ async function getSegmentsDuration(filename, filedir) {
     throw new Error(`Failed - ${e}`)
   }
 }
-
-module.exports = { getSegmentsDuration }
