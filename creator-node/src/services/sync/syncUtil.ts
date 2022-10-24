@@ -1,11 +1,28 @@
 import type Logger from 'bunyan'
+import type { Redis } from 'ioredis'
 
 import axios from 'axios'
 import _ from 'lodash'
+
 import { asyncRetry } from '../../utils/asyncRetry'
+import { SyncType } from '../../services/stateMachineManager/stateMachineConstants'
+import { SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS } from '../prometheusMonitoring/prometheus.constants'
+
+const config = require('../../config')
+const redisClient: Redis & {
+  deleteAllKeysMatchingPattern: (keyPattern: string) => Promise<number>
+} = require('../../redis')
 
 const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3
+const ONE_HOUR_IN_MILLIS = 60 /* min */ * 60 /* sec */ * 1000 /* millis */
+
+const maxSyncMonitoringDurationInMs = config.get(
+  'maxSyncMonitoringDurationInMs'
+)
+const maxManualSyncMonitoringDurationInMs = config.get(
+  'maxManualSyncMonitoringDurationInMs'
+)
 
 type ExportQueryParams = {
   wallet_public_key: string
@@ -13,7 +30,7 @@ type ExportQueryParams = {
   force_export: boolean
   source_endpoint?: string
 }
-type FetchExportParams = {
+export type FetchExportParams = {
   nodeEndpointToFetchFrom: string
   wallet: string
   clockRangeMin: number
@@ -21,7 +38,7 @@ type FetchExportParams = {
   logger: Logger
   forceExport?: boolean
 }
-type FetchExportOutput = {
+export type FetchExportOutput = {
   fetchedCNodeUser?: any
   error?: {
     message: string
@@ -36,8 +53,11 @@ type FetchExportOutput = {
       | 'abort_mismatched_export_wallet'
   }
 }
+export type SyncStatus =
+  | 'waiting'
+  | typeof SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS[number]
 
-async function fetchExportFromNode({
+export async function fetchExportFromNode({
   nodeEndpointToFetchFrom,
   wallet,
   clockRangeMin,
@@ -139,5 +159,30 @@ async function fetchExportFromNode({
   }
 }
 
-export { fetchExportFromNode }
-export type { FetchExportParams, FetchExportOutput }
+export async function getSyncStatus(syncUuid: string) {
+  return redisClient.get(`syncStatus${syncUuid}`) as Promise<SyncStatus | null>
+}
+
+/**
+ * Sets the status of a sync (by UUID) as a redis key that expires after 1 hour.
+ * 1 hour is an upper bound for the node that issued the sync in case that node
+ * increased their maxSyncMonitoringDurationInMs or maxManualSyncMonitoringDurationInMs.
+ */
+export async function setSyncStatus(syncUuid: string, syncStatus: SyncStatus) {
+  await redisClient.set(
+    `syncStatus${syncUuid}`,
+    syncStatus,
+    'PX', // Sets expiration in millis (like how EX is expiration in seconds)
+    ONE_HOUR_IN_MILLIS
+  )
+}
+
+export async function clearSyncStatuses() {
+  return redisClient.deleteAllKeysMatchingPattern('syncStatus*')
+}
+
+export function getMaxSyncMonitoringMs(syncType: string) {
+  return syncType === SyncType.Manual
+    ? maxManualSyncMonitoringDurationInMs
+    : maxSyncMonitoringDurationInMs
+}

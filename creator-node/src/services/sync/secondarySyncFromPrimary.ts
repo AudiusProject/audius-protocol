@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import type { SyncStatus } from './syncUtil'
 
 import _ from 'lodash'
 import {
@@ -16,7 +17,7 @@ import {
   getAndValidateOwnEndpoint
 } from './secondarySyncFromPrimaryUtils'
 import { instrumentTracing, tracing } from '../../tracer'
-import { fetchExportFromNode } from './syncUtil'
+import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
@@ -31,6 +32,7 @@ type SecondarySyncFromPrimaryParams = {
   logContext: Object
   forceWipe?: boolean
   blockNumber?: number | null
+  syncUuid?: string | null
 }
 
 const handleSyncFromPrimary = async ({
@@ -754,7 +756,8 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
-  blockNumber = null
+  blockNumber = null,
+  syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
@@ -801,6 +804,16 @@ async function _secondarySyncFromPrimary({
       syncAllStepsDuration: Date.now() - start
     }
   ) as Logger
+
+  try {
+    if (syncUuid && result?.length) {
+      await setSyncStatus(syncUuid, result as SyncStatus)
+    }
+  } catch (e) {
+    secondarySyncFromPrimaryLogger.error(
+      `Failed to update sync status for polling: ${e}`
+    )
+  }
 
   if (error) {
     tracing.setSpanAttribute('error', error)
