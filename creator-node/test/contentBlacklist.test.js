@@ -6,7 +6,9 @@ const _ = require('lodash')
 
 const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
-const { StubPremiumContentAccessChecker } = require('../src/premiumContent/stubPremiumContentAccessChecker')
+const {
+  StubPremiumContentAccessChecker
+} = require('../src/premiumContent/stubPremiumContentAccessChecker')
 const models = require('../src/models')
 const redis = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
@@ -16,7 +18,8 @@ const { getLibsMock } = require('./lib/libsMock')
 const {
   createStarterCNodeUser,
   getCNodeUser,
-  destroyUsers
+  destroyUsers,
+  testEthereumConstants
 } = require('./lib/dataSeeds')
 const { generateRandomCID } = require('./lib/utils')
 const { uploadTrack } = require('./lib/helpers')
@@ -37,7 +40,12 @@ const trustedNotifierConfig = {
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
-  let app, server, libsMock, mockServiceRegistry, userId, stubPremiumContentAccessChecker
+  let app,
+    server,
+    libsMock,
+    mockServiceRegistry,
+    userId,
+    stubPremiumContentAccessChecker
 
   beforeEach(async () => {
     libsMock = setupLibsMock(libsMock)
@@ -61,7 +69,8 @@ describe('test ContentBlacklist', function () {
       isPremium: false,
       error: null
     }
-    mockServiceRegistry.premiumContentAccessChecker = stubPremiumContentAccessChecker
+    mockServiceRegistry.premiumContentAccessChecker =
+      stubPremiumContentAccessChecker
   })
 
   afterEach(async () => {
@@ -811,18 +820,19 @@ describe('test ContentBlacklist', function () {
     )
   })
 
-  // TODO: fix :(
   it('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
     // Create user and upload track
-    const track1 = await createUserAndUploadTrack()
-    const track2 = await createUserAndUploadTrack({
-      inputUserId: 2,
-      trackId: 2,
-      pubKey: '0x3f8f51ed837b15af580eb96cee740c723d340e7f'
-    })
-    const ids = [track1.track.blockchainId]
+    const data1 = await createUserAndUploadTrack()
 
-    // Blacklist trackId
+    // Upload a second track for the user
+    const track2 = await uploadTrackForUser({
+      cnodeUserUUID: data1.cnodeUser.cnodeUserUUID,
+      userId,
+      sessionToken: data1.sessionToken
+    })
+
+    // Blacklist the first track only
+    const ids = [data1.track.blockchainId]
     const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
@@ -833,7 +843,7 @@ describe('test ContentBlacklist', function () {
       .query({ type, 'values[]': ids, signature, timestamp })
       .expect(200)
 
-    // Hit /ipfs/:CID route for all track CIDs and ensure no error response is returned
+    // Successfully stream the second track
     await Promise.all(
       track2.track.trackSegments.map((segment) =>
         request(app)
@@ -1020,7 +1030,98 @@ describe('test ContentBlacklist', function () {
     }
   })
 
-  /** Helper setup method to test ContentBlacklist.  */
+  // Uploads a track for a user at the specifeid pubKey input. Defaulted to
+  // the default wallet used in these tests
+  // NOTE: This assumes the user is already created. If the user is not created,
+  // use `createUserAndUploadTrack()`
+  async function uploadTrackForUser({
+    cnodeUserUUID,
+    userId,
+    sessionToken,
+    trackId = Utils.getRandomInt(MAX_ID)
+  }) {
+    // Upload a track
+    const trackUploadResponse = await uploadTrack(
+      testAudioFilePath,
+      cnodeUserUUID,
+      mockServiceRegistry.blacklistManager
+    )
+
+    const {
+      transcodedTrackUUID,
+      track_segments: trackSegments,
+      source_file: sourceFile
+    } = trackUploadResponse
+
+    // set track metadata
+    const trackMetadata = {
+      test: 'field1',
+      owner_id: userId,
+      track_segments: trackSegments
+    }
+    const {
+      body: {
+        data: { metadataFileUUID: trackMetadataFileUUID }
+      }
+    } = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .set('Enforce-Write-Quorum', false)
+      .send({ metadata: trackMetadata, source_file: sourceFile })
+      .expect(200)
+
+    // Make chain recognize wallet as owner of track
+    const getTracksStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === trackId) {
+        trackOwnerId = userId
+      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
+    })
+    const getTracksVerboseStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === trackId) {
+        trackOwnerId = userId
+      }
+      return {
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
+      }
+    })
+    libsMock.Track = {
+      getTracks: getTracksStub,
+      getTracksVerbose: getTracksVerboseStub
+    }
+
+    // associate track metadata with track
+    await request(app)
+      .post('/tracks')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainTrackId: trackId,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataFileUUID,
+        transcodedTrackUUID
+      })
+      .expect(200)
+
+    return { track: { trackSegments, blockchainId: trackId } }
+  }
+
+  /** Helper setup method to test ContentBlacklist. */
   async function createUserAndUploadTrack(
     { inputUserId, trackId, pubKey } = {
       inputUserId: userId,
@@ -1058,6 +1159,7 @@ describe('test ContentBlacklist', function () {
       .set('User-Id', inputUserId)
       .set('Enforce-Write-Quorum', false)
       .send(metadata)
+      .expect(200)
 
     const associateRequest = {
       blockchainUserId: inputUserId,
@@ -1071,81 +1173,17 @@ describe('test ContentBlacklist', function () {
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
       .send(associateRequest)
+      .expect(200)
 
     // Upload a track
-    const trackUploadResponse = await uploadTrack(
-      testAudioFilePath,
+    const trackUploadResp = await uploadTrackForUser({
       cnodeUserUUID,
-      mockServiceRegistry.blacklistManager
-    )
-
-    const {
-      transcodedTrackUUID,
-      track_segments: trackSegments,
-      source_file: sourceFile
-    } = trackUploadResponse
-
-    // set track metadata
-    const trackMetadata = {
-      test: 'field1',
-      owner_id: inputUserId,
-      track_segments: trackSegments
-    }
-    const {
-      body: {
-        data: { metadataFileUUID: trackMetadataFileUUID }
-      }
-    } = await request(app)
-      .post('/tracks/metadata')
-      .set('X-Session-ID', sessionToken)
-      .set('User-Id', inputUserId)
-      .set('Enforce-Write-Quorum', false)
-      .send({ metadata: trackMetadata, source_file: sourceFile })
-
-    // Make chain recognize wallet as owner of track
-    const getTracksStub = sinon.stub().callsFake((_, __, trackIds) => {
-      let trackOwnerId = -1
-      if (trackIds[0] === trackId) {
-        trackOwnerId = inputUserId
-      }
-      return [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
-      ]
+      userId: inputUserId,
+      sessionToken
     })
-    const getTracksVerboseStub = sinon.stub().callsFake((_, __, trackIds) => {
-      let trackOwnerId = -1
-      if (trackIds[0] === trackId) {
-        trackOwnerId = inputUserId
-      }
-      return {
-        latest_indexed_block: 10,
-        latest_chain_block: 10,
-        data: [
-        {
-          blocknumber: 99999,
-          owner_id: trackOwnerId
-        }
-      ]}
-    })
-    libsMock.Track = { getTracks: getTracksStub, getTracksVerbose: getTracksVerboseStub }
-
-    // associate track metadata with track
-    await request(app)
-      .post('/tracks')
-      .set('X-Session-ID', sessionToken)
-      .set('User-Id', inputUserId)
-      .send({
-        blockchainTrackId: trackId,
-        blockNumber: 10,
-        metadataFileUUID: trackMetadataFileUUID,
-        transcodedTrackUUID
-      })
 
     // Return user and some track data
-    return { cnodeUser, track: { trackSegments, blockchainId: trackId } }
+    return { cnodeUser, ...trackUploadResp, sessionToken }
   }
 })
 
@@ -1179,5 +1217,12 @@ const setupLibsMock = (libsMock) => {
     })
   })
   libsMock.Track.getTracks.atLeast(0)
+
+  // Set the return wallet to the dummy wallet constant
+  libsMock.contracts.UserFactoryClient = {}
+  libsMock.contracts.UserFactoryClient.getUser = sinon
+    .mock()
+    .returns({ wallet: testEthereumConstants.pubKey })
+
   return libsMock
 }

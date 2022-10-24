@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { LoDashStatic } from 'lodash'
-import { ReplicaSet } from '../../../utils'
+import type { ReplicaSetEndpoints } from '../../types'
 import type {
   DecoratedJobParams,
   DecoratedJobReturnValue,
@@ -22,6 +22,7 @@ import {
   MAX_ISSUE_MANUAL_SYNC_JOB_ATTEMPTS,
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } from '../stateMachineConstants'
+import { getReplicaSetEndpointsByWallet } from '../../ContentNodeInfoManager'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -29,9 +30,6 @@ const _: LoDashStatic = require('lodash')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
-const {
-  getUserReplicaSetEndpointsFromDiscovery
-} = require('../../../middlewares')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
@@ -236,19 +234,12 @@ async function _handleIssueSyncRequest({
       return { result: 'success_mode_disabled', syncReqsToEnqueue }
     }
 
-    const userReplicaSet: ReplicaSet =
-      await getUserReplicaSetEndpointsFromDiscovery({
-        libs: await initAudiusLibs({
-          enableEthContracts: true,
-          enableContracts: false,
-          enableDiscovery: true,
-          enableIdentity: false,
-          logger
-        }),
-        logger,
+    const libs = await initAudiusLibs({ logger })
+    const userReplicaSet: ReplicaSetEndpoints =
+      await getReplicaSetEndpointsByWallet({
+        libs,
         wallet: userWallet,
-        blockNumber: null,
-        ensurePrimary: false
+        parentLogger: logger
       })
 
     const syncCorrectnessAbort = _ensureSyncsEnqueuedToCorrectNodes(
@@ -361,7 +352,9 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: `${logMsgString} || Error issuing sync request: ${e.message} - ${e.response?.data}`,
+      error: `${logMsgString} || Error issuing sync request: ${
+        e.message
+      } - ${JSON.stringify(e.response?.data)}`,
       syncReqsToEnqueue,
       additionalSync
     }
@@ -646,7 +639,7 @@ const _additionalSyncIsRequired = async (
 }
 
 const _ensureSyncsEnqueuedToCorrectNodes = (
-  userReplicaSet: ReplicaSet,
+  userReplicaSet: ReplicaSetEndpoints,
   syncMode: string,
   syncTargetEndpoint: string
 ) => {

@@ -4,6 +4,7 @@ import type { Redis } from 'ioredis'
 import axios from 'axios'
 import _ from 'lodash'
 
+import { asyncRetry } from '../../utils/asyncRetry'
 import { SyncType } from '../../services/stateMachineManager/stateMachineConstants'
 import { SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS } from '../prometheusMonitoring/prometheus.constants'
 
@@ -11,7 +12,6 @@ const config = require('../../config')
 const redisClient: Redis & {
   deleteAllKeysMatchingPattern: (keyPattern: string) => Promise<number>
 } = require('../../redis')
-const asyncRetry = require('../../utils/asyncRetry')
 
 const EXPORT_REQ_TIMEOUT_MS = 60 /* sec */ * 1000 /* millis */
 const EXPORT_REQ_MAX_RETRIES = 3
@@ -90,7 +90,9 @@ export async function fetchExportFromNode({
           params: exportQueryParams,
           timeout: EXPORT_REQ_TIMEOUT_MS
         }),
-      retries: EXPORT_REQ_MAX_RETRIES,
+      options: {
+        retries: EXPORT_REQ_MAX_RETRIES
+      },
       log: false
     })
   } catch (e: any) {

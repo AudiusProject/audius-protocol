@@ -18,18 +18,20 @@
  * @export
  * @interface PremiumConditions
  */
-export interface PremiumConditions {
-    /**
-     * 
-     * @type {string}
-     * @memberof PremiumConditions
-     */
-    nft_collection?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof PremiumConditions
-     */
-    follow_user_id?: number;
-}
+export interface PremiumConditions 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof PremiumConditions
+        */
+        nft_collection?: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof PremiumConditions
+        */
+        follow_user_id?: number;
+    }
+
 

@@ -1,0 +1,97 @@
+# Do not expose any ports in this file to allow running multiple tests at the same time
+
+version: "3.9"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
+
+services:
+  # TODO: remove duplication between docker-compose.yml and docker-compose.test.yml
+
+  poa-ganache:
+    build:
+      context: contracts
+      dockerfile: Dockerfile.dev
+      args:
+        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
+        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
+        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    command: bash /tmp/dev-tools/startup/poa-ganache.sh
+    volumes:
+      - poa-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  eth-ganache:
+    build:
+      context: eth-contracts
+      dockerfile: Dockerfile.dev
+      args:
+        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
+        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    command: bash /tmp/dev-tools/startup/eth-ganache.sh
+    volumes:
+      - eth-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  solana-test-validator:
+    build:
+      context: solana-programs
+      dockerfile: Dockerfile.dev
+      args:
+        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
+        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
+        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
+        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
+        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
+        owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
+        feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
+        token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
+        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
+        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
+        signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
+        valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
+        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
+        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
+        valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
+    volumes:
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  # discovery-provider
+
+  discovery-provider-elasticsearch:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider-elasticsearch
+    deploy:
+      mode: global
+      replicas: 1
+
+  test-discovery-provider:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider
+    entrypoint: scripts/test_entrypoint.sh
+    command: ""
+    depends_on:
+      discovery-provider-elasticsearch:
+        condition: service_healthy
+    deploy:
+      mode: global
+
+volumes:
+  poa-contracts-abis:
+  eth-contracts-abis:
+  solana-programs-idl:

@@ -12,10 +12,10 @@ const {
 const {
   respondToURSMRequestForSignature
 } = require('./URSMRegistrationComponentService')
+const { ensureStorageMiddleware } = require('../../middlewares')
 const {
-  ensureStorageMiddleware,
-  getReplicaSetSpIDs
-} = require('../../middlewares')
+  getReplicaSetSpIdsByUserId
+} = require('../../services/ContentNodeInfoManager')
 const {
   SyncType,
   SYNC_MODES
@@ -277,26 +277,27 @@ const manuallyUpdateReplicaSetController = async (req, res) => {
     )
   }
 
-  const currentSpIds = await getReplicaSetSpIDs({
-    serviceRegistry,
-    logger: req.logger,
-    userId
+  const currentSpIds = await getReplicaSetSpIdsByUserId({
+    libs: serviceRegistry.libs,
+    userId,
+    parentLogger: req.logger,
+    logger: req.logger
   })
   if (config.get('entityManagerReplicaSetEnabled')) {
     await audiusLibs.User.updateEntityManagerReplicaSet({
       userId: parseInt(userId),
       primary: parseInt(newPrimarySpId),
       secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: parseInt(currentSpIds[0]),
-      oldSecondaries: [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      oldPrimary: currentSpIds.primaryId,
+      oldSecondaries: currentSpIds.secondaryIds
     })
   } else {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
       parseInt(userId),
       parseInt(newPrimarySpId),
       [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      parseInt(currentSpIds[0]),
-      [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      currentSpIds.primaryId,
+      currentSpIds.secondaryIds
     )
   }
 

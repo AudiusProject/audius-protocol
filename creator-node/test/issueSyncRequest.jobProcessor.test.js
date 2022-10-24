@@ -38,6 +38,7 @@ describe('test issueSyncRequest job processor', function () {
     syncRequestParameters
 
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     syncType = SyncType.Manual
     syncMode = SYNC_MODES.SyncSecondaryFromPrimary
     primary = 'http://primary_cn.co'
@@ -111,15 +112,19 @@ describe('test issueSyncRequest job processor', function () {
       },
       '../../initAudiusLibs': sandbox.stub().resolves({
         User: {
-          getUsers: sandbox.stub().resolves([
-            {
-              blocknumber: 1,
-              track_blocknumber: 1,
-              creator_node_endpoint: `${primary},${secondary},http://anotherSecondary.co`
-            }
-          ])
+          getUsers: sandbox.stub().resolves()
+        },
+        contracts: {
+          UserReplicaSetManagerClient: sandbox.stub().resolves()
         }
-      })
+      }),
+      '../../ContentNodeInfoManager': {
+        getReplicaSetEndpointsByWallet: sandbox.stub().resolves({
+          primary: primary,
+          secondary1: secondary,
+          secondary2: 'http://anotherSecondary.co'
+        })
+      }
     }
 
     if (primarySyncFromSecondaryStub) {

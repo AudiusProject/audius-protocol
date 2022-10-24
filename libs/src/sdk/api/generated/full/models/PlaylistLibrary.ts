@@ -18,12 +18,14 @@
  * @export
  * @interface PlaylistLibrary
  */
-export interface PlaylistLibrary {
-    /**
-     * 
-     * @type {Array<object>}
-     * @memberof PlaylistLibrary
-     */
-    contents?: Array<object>;
-}
+export interface PlaylistLibrary 
+    {
+        /**
+        * 
+        * @type {Array<object>}
+        * @memberof PlaylistLibrary
+        */
+        contents?: Array<object>;
+    }
+
 

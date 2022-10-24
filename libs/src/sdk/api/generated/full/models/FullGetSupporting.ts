@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullGetSupporting
  */
-export interface FullGetSupporting {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporting
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporting
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporting
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporting
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporting
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporting
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullGetSupporting
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {FullSupporting}
-     * @memberof FullGetSupporting
-     */
-    data?: FullSupporting;
-}
+export interface FullGetSupporting 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporting
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporting
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporting
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporting
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporting
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporting
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullGetSupporting
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {FullSupporting}
+        * @memberof FullGetSupporting
+        */
+        data?: FullSupporting;
+    }
+
 

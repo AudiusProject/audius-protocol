@@ -18,42 +18,44 @@
  * @export
  * @interface FieldVisibility
  */
-export interface FieldVisibility {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    mood?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    tags?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    genre?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    share?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    play_count?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof FieldVisibility
-     */
-    remixes?: boolean;
-}
+export interface FieldVisibility 
+    {
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        mood?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        tags?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        genre?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        share?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        play_count?: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof FieldVisibility
+        */
+        remixes?: boolean;
+    }
+
 

@@ -18,24 +18,26 @@
  * @export
  * @interface DownloadMetadata
  */
-export interface DownloadMetadata {
-    /**
-     * 
-     * @type {string}
-     * @memberof DownloadMetadata
-     */
-    cid?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DownloadMetadata
-     */
-    is_downloadable: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DownloadMetadata
-     */
-    requires_follow: boolean;
-}
+export interface DownloadMetadata 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof DownloadMetadata
+        */
+        cid?: string;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof DownloadMetadata
+        */
+        is_downloadable: boolean;
+        /**
+        * 
+        * @type {boolean}
+        * @memberof DownloadMetadata
+        */
+        requires_follow: boolean;
+    }
+
 
