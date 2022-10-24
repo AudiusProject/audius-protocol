@@ -41,6 +41,7 @@ def get_unpopulated_playlists(session, playlist_ids, filter_deleted=False):
 
     playlists_response = []
     for playlist_id in playlist_ids:
-        playlists_response.append(queried_playlists[playlist_id])
+        if playlist_id in queried_playlists:
+            playlists_response.append(queried_playlists[playlist_id])
 
     return playlists_response

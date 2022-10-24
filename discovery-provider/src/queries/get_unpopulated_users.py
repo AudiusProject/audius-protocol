@@ -36,6 +36,7 @@ def get_unpopulated_users(session, user_ids):
 
     users_response = []
     for user_id in user_ids:
-        users_response.append(queried_users[user_id])
+        if user_id in queried_users:
+            users_response.append(queried_users[user_id])
 
     return users_response

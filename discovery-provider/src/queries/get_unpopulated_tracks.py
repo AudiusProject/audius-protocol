@@ -58,6 +58,7 @@ def get_unpopulated_tracks(
 
     tracks_response = []
     for track_id in track_ids:
-        tracks_response.append(queried_tracks[track_id])
+        if track_id in queried_tracks:
+            tracks_response.append(queried_tracks[track_id])
 
     return tracks_response
