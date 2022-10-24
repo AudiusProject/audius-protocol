@@ -870,11 +870,15 @@ const wasThisNodeEverPrimaryFor = async (
   const history = (
     await axios({
       baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
-      url: `users/history/${userId}?limit=500`,
+      url: `users/history/${userId}`,
+      params: {
+        limit: 500
+      },
       method: 'get',
       timeout: 45_000
     })
   ).data.data
+  if (history.length >= 500) return true
   for (const snapshot of history) {
     if (snapshot.primary_id === selfSpId) return true
   }
