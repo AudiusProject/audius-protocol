@@ -7,7 +7,7 @@ const { hasEnoughStorageSpace } = require('../../fileManager')
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
 )
-const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
+// const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
 const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE =
   config.get('maxFileDescriptorsAllocatedPercentage') / 100
 const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
@@ -156,18 +156,18 @@ class CNodeHealthManager {
     }
 
     // Check for sufficient memory space
-    const { usedMemory, totalMemory } = verboseHealthCheckResp
-    if (
-      usedMemory &&
-      totalMemory &&
-      totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE
-    ) {
-      throw new Error(
-        `Running low on memory=${
-          totalMemory - usedMemory
-        }bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`
-      )
-    }
+    // const { usedMemory, totalMemory } = verboseHealthCheckResp
+    // if (
+    //   usedMemory &&
+    //   totalMemory &&
+    //   totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE
+    // ) {
+    //   throw new Error(
+    //     `Running low on memory=${
+    //       totalMemory - usedMemory
+    //     }bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`
+    //   )
+    // }
 
     // Check for sufficient file descriptors space
     const { allocatedFileDescriptors, maxFileDescriptors } =
