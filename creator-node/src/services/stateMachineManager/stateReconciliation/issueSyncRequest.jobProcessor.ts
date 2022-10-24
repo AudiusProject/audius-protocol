@@ -11,6 +11,7 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
+import { SyncStatus, getMaxSyncMonitoringMs } from '../../sync/syncUtil'
 
 import { instrumentTracing, tracing } from '../../../tracer'
 import {
@@ -43,17 +44,12 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
   generateDataForSignatureRecovery
 } = require('../../sync/secondarySyncFromPrimaryUtils')
+const { getSyncStatusByUuid } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 const { generateTimestampAndSignature } = require('../../../apiSigning')
 
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
   'secondaryUserSyncDailyFailureCountThreshold'
-)
-const maxSyncMonitoringDurationInMs = config.get(
-  'maxSyncMonitoringDurationInMs'
-)
-const maxManualSyncMonitoringDurationInMs = config.get(
-  'maxManualSyncMonitoringDurationInMs'
 )
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
@@ -238,13 +234,7 @@ async function _handleIssueSyncRequest({
       return { result: 'success_mode_disabled', syncReqsToEnqueue }
     }
 
-    const libs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: false,
-      enableDiscovery: true,
-      enableIdentity: false,
-      logger
-    })
+    const libs = await initAudiusLibs({ logger })
     const userReplicaSet: ReplicaSetEndpoints =
       await getReplicaSetEndpointsByWallet({
         libs,
@@ -321,6 +311,7 @@ async function _handleIssueSyncRequest({
    *    - above call to primarySyncFromSecondary must have succeeded to get here
    *    - Only apply forceResync flag to this initial sync request, any future syncs proceed as usual
    */
+  let syncReqResp
   try {
     if (
       syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
@@ -332,7 +323,7 @@ async function _handleIssueSyncRequest({
         config.get('delegatePrivateKey')
       )
 
-      await axios({
+      syncReqResp = await axios({
         ...syncRequestParameters,
         data: {
           ...syncRequestParameters.data,
@@ -343,7 +334,7 @@ async function _handleIssueSyncRequest({
         }
       })
     } else {
-      await axios(syncRequestParameters)
+      syncReqResp = await axios(syncRequestParameters)
     }
   } catch (e: any) {
     tracing.recordException(e)
@@ -361,26 +352,40 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: `${logMsgString} || Error issuing sync request: ${e.message} - ${e.response?.data}`,
+      error: `${logMsgString} || Error issuing sync request: ${
+        e.message
+      } - ${JSON.stringify(e.response?.data)}`,
       syncReqsToEnqueue,
       additionalSync
     }
   }
-
-  // primaryClockValue is used in additionalSyncIsRequired() call below
-  const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
-    userWallet
-  ]
+  const syncUuid: string | undefined = syncReqResp?.data?.data?.syncUuid
 
   // Wait until has sync has completed (within time threshold)
-  const { outcome, syncReqToEnqueue: additionalSync } =
-    await _additionalSyncIsRequired(
-      primaryClockValue,
-      syncType,
-      syncMode,
-      syncRequestParameters,
-      logger
-    )
+  let outcome
+  let additionalSync
+  if (syncUuid?.length) {
+    ;({ outcome, syncReqToEnqueue: additionalSync } =
+      await _additionalSyncIsRequired(
+        syncType,
+        syncRequestParameters,
+        syncUuid,
+        logger
+      ))
+  } else {
+    // This is only reached if the node processing the sync isn't up to date (i.e., doesn't return syncUuid)
+    const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
+      userWallet
+    ]
+    ;({ outcome, syncReqToEnqueue: additionalSync } =
+      await _deprecatedAdditionalSyncIsRequired(
+        primaryClockValue,
+        syncType,
+        syncMode,
+        syncRequestParameters,
+        logger
+      ))
+  }
 
   tracing.info(outcome)
 
@@ -422,11 +427,14 @@ const _getUserPrimaryClockValues = async (wallets: string[]) => {
 }
 
 /**
+ * @deprecated - For backwards compat only. Use _additionalSyncIsRequired to poll by UUID instead of clock value.
+ * TODO: Remove after all SPs are updated to v0.3.69. Close https://linear.app/audius/issue/CON-464/remove-deprecatedadditionalsyncisrequired-after-v0369
+ *
  * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
  * Return boolean indicating if an additional sync is required and reason why (or 'none' if no additional sync is required)
  * Record SyncRequest outcomes to SecondarySyncHealthTracker
  */
-const _additionalSyncIsRequired = async (
+const _deprecatedAdditionalSyncIsRequired = async (
   primaryClockValue = -1,
   syncType: string,
   syncMode: string,
@@ -435,14 +443,10 @@ const _additionalSyncIsRequired = async (
 ): Promise<AdditionalSyncIsRequiredResponse> => {
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryUrl = syncRequestParameters.baseURL
-  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
+  const logMsgString = `deprecatedAdditionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
   const startTimeMs = Date.now()
-  const maxMonitoringTimeMs =
-    startTimeMs +
-    (syncType === SyncType.Manual
-      ? maxManualSyncMonitoringDurationInMs
-      : maxSyncMonitoringDurationInMs)
+  const maxMonitoringTimeMs = startTimeMs + getMaxSyncMonitoringMs(syncType)
 
   /**
    * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
@@ -561,6 +565,74 @@ const _additionalSyncIsRequired = async (
       syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
       syncRequestParameters
     }
+  }
+
+  return response
+}
+
+/**
+ * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
+ * Return boolean indicating if an additional sync is required and reason why
+ * Record SyncRequest outcomes to SecondarySyncHealthTracker
+ */
+const _additionalSyncIsRequired = async (
+  syncType: string,
+  syncRequestParameters: SyncRequestAxiosParams,
+  syncUuid: string,
+  logger: any
+): Promise<AdditionalSyncIsRequiredResponse> => {
+  const userWallet = syncRequestParameters.data.wallet[0]
+  const targetNode = syncRequestParameters.baseURL
+  const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${targetNode} syncUuid: ${syncUuid}`
+
+  const startTimeMs = Date.now()
+  const maxMonitoringTimeMs = startTimeMs + getMaxSyncMonitoringMs(syncType)
+
+  /**
+   * Poll target node for sync completion, up to `maxMonitoringTimeMs`
+   */
+
+  let syncStatus: SyncStatus | 'failure_polling_timed_out' = 'waiting'
+  while (Date.now() < maxMonitoringTimeMs && syncStatus === 'waiting') {
+    try {
+      syncStatus = await getSyncStatusByUuid(targetNode, syncUuid)
+    } catch (e: any) {
+      tracing.recordException(e)
+      logger.warn(`${logMsgString} || Error: ${e.message}`)
+    }
+
+    // Delay between retries
+    await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
+  }
+
+  if (syncStatus === 'waiting') syncStatus = 'failure_polling_timed_out'
+  const response: AdditionalSyncIsRequiredResponse = { outcome: syncStatus }
+  // Retry if the error was something that could be intermittent (e.g., network-related issues)
+  if (
+    syncStatus === 'failure_fetching_user_replica_set' ||
+    syncStatus === 'failure_sync_secondary_from_primary' ||
+    syncStatus === 'failure_export_wallet' ||
+    syncStatus === 'failure_db_transaction'
+  ) {
+    response.syncReqToEnqueue = {
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
+      syncRequestParameters
+    }
+  }
+
+  if (syncStatus.startsWith('success')) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      targetNode,
+      userWallet,
+      syncType
+    )
+  } else {
+    await SecondarySyncHealthTracker.recordFailure(
+      targetNode,
+      userWallet,
+      syncType
+    )
   }
 
   return response

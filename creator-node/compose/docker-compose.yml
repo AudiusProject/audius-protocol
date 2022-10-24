@@ -41,6 +41,8 @@ services:
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148
       - /usr/src/app/node_modules
+      # Also exclude build directory from host
+      - /usr/src/app/build
       # Mount audius libs as a directory
       - ../../libs:/usr/src/audius-libs
       # Mount solana-programs

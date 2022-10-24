@@ -22,7 +22,7 @@ const {
   validateStateForImageDirCIDAndReturnFileUUID,
   currentNodeShouldHandleTranscode
 } = require('../utils')
-const asyncRetry = require('../utils/asyncRetry')
+const { asyncRetry } = require('../utils/asyncRetry')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -386,8 +386,6 @@ const validateTrackOwner = async ({
         retries: 10
       }
     })
-  } catch (e) {
-    throw e
   } finally {
     logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
   }

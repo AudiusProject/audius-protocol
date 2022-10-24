@@ -18,24 +18,26 @@
  * @export
  * @interface Repost
  */
-export interface Repost {
-    /**
-     * 
-     * @type {string}
-     * @memberof Repost
-     */
-    repost_item_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Repost
-     */
-    repost_type: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Repost
-     */
-    user_id: string;
-}
+export interface Repost 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof Repost
+        */
+        repost_item_id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Repost
+        */
+        repost_type: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Repost
+        */
+        user_id: string;
+    }
+
 

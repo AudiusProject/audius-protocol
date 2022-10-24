@@ -1,4 +1,5 @@
 import type Logger from 'bunyan'
+import type { SyncStatus } from './syncUtil'
 
 import _ from 'lodash'
 import {
@@ -16,7 +17,7 @@ import {
   getAndValidateOwnEndpoint
 } from './secondarySyncFromPrimaryUtils'
 import { instrumentTracing, tracing } from '../../tracer'
-import { fetchExportFromNode } from './syncUtil'
+import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
@@ -31,6 +32,7 @@ type SecondarySyncFromPrimaryParams = {
   logContext: Object
   forceWipe?: boolean
   blockNumber?: number | null
+  syncUuid?: string | null
 }
 
 const handleSyncFromPrimary = async ({
@@ -738,6 +740,14 @@ const handleSyncFromPrimary = async ({
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
+ * @param {Object} param
+ * @param {Object} param.serviceRegistry
+ * @param {string} param.wallet
+ * @param {string} param.creatorNodeEndpoint
+ * @param {Object} param.forceResyncConfig
+ * @param {Object} param.logContext
+ * @param {boolean} [param.forceWipe]
+ * @param {number} [param.blockNumber]
  */
 async function _secondarySyncFromPrimary({
   serviceRegistry,
@@ -746,7 +756,8 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
-  blockNumber = null
+  blockNumber = null,
+  syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
@@ -793,6 +804,16 @@ async function _secondarySyncFromPrimary({
       syncAllStepsDuration: Date.now() - start
     }
   ) as Logger
+
+  try {
+    if (syncUuid && result?.length) {
+      await setSyncStatus(syncUuid, result as SyncStatus)
+    }
+  } catch (e) {
+    secondarySyncFromPrimaryLogger.error(
+      `Failed to update sync status for polling: ${e}`
+    )
+  }
 
   if (error) {
     tracing.setSpanAttribute('error', error)

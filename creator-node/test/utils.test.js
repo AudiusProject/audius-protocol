@@ -7,7 +7,7 @@ const { logger: genericLogger } = require('../src/logging')
 
 // Module under test
 const Utils = require('../src/utils')
-const asyncRetry = require('../src/utils/asyncRetry')
+const { asyncRetry } = require('../src/utils/asyncRetry')
 
 const DUMMY_NON_EMPTY_CID_1 = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
 const DUMMY_NON_EMPTY_CID_2 = 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8V'

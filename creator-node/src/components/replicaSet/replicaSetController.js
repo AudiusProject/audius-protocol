@@ -1,5 +1,6 @@
 const express = require('express')
 const _ = require('lodash')
+const uuid = require('uuid/v4')
 
 const {
   successResponse,
@@ -19,6 +20,7 @@ const {
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
+const { getSyncStatus, setSyncStatus } = require('../../services/sync/syncUtil')
 const {
   enqueueSync,
   processManualImmediateSync
@@ -60,6 +62,15 @@ const respondToURSMRequestForProposalController = async (req) => {
     return successResponse(response)
   } catch (e) {
     return handleApiError(e)
+  }
+}
+
+const getSyncStatusController = async (req, res) => {
+  try {
+    const syncStatus = await getSyncStatus(req.params.syncUuid)
+    return successResponse({ syncStatus })
+  } catch (e) {
+    return errorResponseServerError(e)
   }
 }
 
@@ -110,6 +121,8 @@ const _syncRouteController = async (req, _res) => {
    * Else, debounce + add sync to queue
    */
   const data = generateDataForSignatureRecovery(req.body)
+  const syncUuid = uuid()
+  await setSyncStatus(syncUuid, 'waiting')
 
   if (immediate) {
     try {
@@ -129,6 +142,7 @@ const _syncRouteController = async (req, _res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncUuid,
 
         // `parentSpanContext` provides a serializable version of the span
         // which the bull queue can save on redis so that
@@ -166,6 +180,7 @@ const _syncRouteController = async (req, _res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncUuid,
         parentSpanContext: tracing.currentSpanContext()
       })
       delete syncDebounceQueue[wallet]
@@ -175,7 +190,7 @@ const _syncRouteController = async (req, _res) => {
     )
   }
 
-  return successResponse()
+  return successResponse({ syncUuid })
 }
 
 const syncRouteController = instrumentTracing({
@@ -273,16 +288,16 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
       userId: parseInt(userId),
       primary: parseInt(newPrimarySpId),
       secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: parseInt(currentSpIds[0]),
-      oldSecondaries: [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      oldPrimary: currentSpIds.primaryId,
+      oldSecondaries: currentSpIds.secondaryIds
     })
   } else {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
       parseInt(userId),
       parseInt(newPrimarySpId),
       [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      parseInt(currentSpIds[0]),
-      [parseInt(currentSpIds[1]), parseInt(currentSpIds[2])]
+      currentSpIds.primaryId,
+      currentSpIds.secondaryIds
     )
   }
 
@@ -294,6 +309,10 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
 router.get(
   '/ursm_request_for_signature',
   handleResponse(respondToURSMRequestForProposalController)
+)
+router.get(
+  '/sync_status/uuid/:syncUuid',
+  handleResponse(getSyncStatusController)
 )
 router.post(
   '/sync',
