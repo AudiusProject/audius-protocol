@@ -11,6 +11,7 @@ const { Lock } = require('../redis')
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 const NETHERMIND_PROVIDER = 'http://54.187.10.247:8545'
+const NETHERMIND_BLOCK_OFFSET = 10000000
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
@@ -372,6 +373,7 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
     const receipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
+    receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
 
     var end = new Date().getTime()
     var time = end - start
