@@ -1,9 +1,8 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
 
-from dateutil import parser
 from src.models.users.user import User
-from src.utils import helpers, redis_connection
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,6 @@ def get_unpopulated_users(session, user_ids):
     )
     users = helpers.query_result_to_list(users)
     queried_users = {user["user_id"]: user for user in users}
-
 
     users_response = []
     for user_id in user_ids:

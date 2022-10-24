@@ -1,9 +1,8 @@
 import logging
 from datetime import datetime
 
-from dateutil import parser
 from src.models.tracks.track import Track
-from src.utils import helpers, redis_connection
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 

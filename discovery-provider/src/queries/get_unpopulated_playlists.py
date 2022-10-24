@@ -1,9 +1,8 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
 
-from dateutil import parser
 from src.models.playlists.playlist import Playlist
-from src.utils import helpers, redis_connection
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +38,6 @@ def get_unpopulated_playlists(session, playlist_ids, filter_deleted=False):
     playlists = playlists_query.all()
     playlists = helpers.query_result_to_list(playlists)
     queried_playlists = {playlist["playlist_id"]: playlist for playlist in playlists}
-
 
     playlists_response = []
     for playlist_id in playlist_ids:
