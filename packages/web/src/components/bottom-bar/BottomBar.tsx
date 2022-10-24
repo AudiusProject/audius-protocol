@@ -71,30 +71,35 @@ const BottomBar = ({
         isActive={tempCurrentPage === FEED_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickFeed, FEED_PAGE)}
+        href={FEED_PAGE}
         isMatrixMode={isMatrixMode}
       />
       <TrendingButton
         isActive={tempCurrentPage === TRENDING_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickTrending, TRENDING_PAGE)}
+        href={TRENDING_PAGE}
         isMatrixMode={isMatrixMode}
       />
       <ExploreButton
         isActive={tempCurrentPage === EXPLORE_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickExplore, EXPLORE_PAGE)}
+        href={EXPLORE_PAGE}
         isMatrixMode={isMatrixMode}
       />
       <FavoritesButton
         isActive={tempCurrentPage === FAVORITES_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickFavorites, FAVORITES_PAGE)}
+        href={FAVORITES_PAGE}
         isMatrixMode={isMatrixMode}
       />
       <ProfileButton
         isActive={tempCurrentPage === userProfilePageRoute}
         darkMode={isDarkMode}
         onClick={onClick(onClickProfile, userProfilePageRoute)}
+        href={userProfilePageRoute || undefined}
         isMatrixMode={isMatrixMode}
       />
     </div>

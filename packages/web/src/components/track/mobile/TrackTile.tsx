@@ -11,6 +11,7 @@ import RepostButton from 'components/alt-button/RepostButton'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { profilePage } from 'utils/route'
 
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 
@@ -28,6 +29,7 @@ const messages = {
 }
 
 type ExtraProps = {
+  permalink: string
   goToTrackPage: (e: MouseEvent<HTMLElement>) => void
   goToArtistPage: (e: MouseEvent<HTMLElement>) => void
   toggleSave: (trackId: ID) => void
@@ -95,7 +97,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     isMatrix,
     userId,
     isTrending,
-    showRankIcon
+    showRankIcon,
+    permalink,
+    artistHandle
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -177,6 +181,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             coverArtSizes={props.coverArtSizes}
             coSign={coSign}
             className={styles.albumArtContainer}
+            label={`${props.title} by ${props.artistName}`}
           />
           <div
             className={cn(styles.titles, {
@@ -184,7 +189,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               [styles.titlesSkeleton]: props.showSkeleton
             })}
           >
-            <div className={styles.title} onClick={props.goToTrackPage}>
+            <a
+              className={styles.title}
+              href={permalink}
+              onClick={props.goToTrackPage}
+            >
               <div className={cn(fadeIn)}>{props.title}</div>
               {props.isPlaying && <IconVolume />}
               {(!artworkLoaded || showSkeleton) && (
@@ -194,8 +203,12 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   height='80%'
                 />
               )}
-            </div>
-            <div className={styles.artist} onClick={props.goToArtistPage}>
+            </a>
+            <a
+              className={styles.artist}
+              href={profilePage(artistHandle)}
+              onClick={props.goToArtistPage}
+            >
               <span className={cn(fadeIn, styles.userName)}>
                 {props.artistName}
               </span>
@@ -211,7 +224,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   height='80%'
                 />
               )}
-            </div>
+            </a>
           </div>
           {coSign && (
             <div className={styles.coSignLabel}>{messages.coSign}</div>

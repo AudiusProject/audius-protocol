@@ -170,6 +170,13 @@
   display: inline-flex;
 }
 
+.creatorRow .userName,
+.creatorRow .userName:active,
+.creatorRow .userName:hover {
+  text-decoration: inherit;
+  color: inherit
+}
+
 .creatorRow .skeleton {
   height: 16px;
 }
@@ -211,7 +218,7 @@
 .creatorRow .name.artistNameLink:hover {
   cursor: pointer;
   color: var(--primary);
-  text-decoration: underline;
+  text-decoration: underline !important;
   text-decoration-color: var(--primary-light-2);
 }
 

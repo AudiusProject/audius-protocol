@@ -226,17 +226,16 @@ const ConnectedPlaylistTile = memo(
         record
       ]
     )
+    const href = isAlbum
+      ? albumPage(handle, title, id)
+      : playlistPage(handle, title, id)
 
     const onClickTitle = useCallback(
       (e: MouseEvent) => {
         e.stopPropagation()
-        goToRoute(
-          isAlbum
-            ? albumPage(handle, title, id)
-            : playlistPage(handle, title, id)
-        )
+        goToRoute(href)
       },
-      [goToRoute, isAlbum, handle, title, id]
+      [goToRoute, href]
     )
 
     const [artworkLoaded, setArtworkLoaded] = useState(false)
@@ -534,6 +533,7 @@ const ConnectedPlaylistTile = memo(
         trackCount={trackCount}
         isTrending={isTrending}
         showRankIcon={showRankIcon}
+        href={href}
       />
     )
   }
