@@ -23,6 +23,7 @@ const {
 } = require('../apiHelpers')
 const { recoverWallet } = require('../apiSigning')
 
+const { tracing } = require('../tracer')
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
@@ -260,7 +261,7 @@ const getCID = async (req, res) => {
         )
       }
     } catch (e) {
-      // swallow error
+      tracing.recordException(e)
     }
   }
 
@@ -291,6 +292,7 @@ const getCID = async (req, res) => {
 
       return fsStream
     } catch (e) {
+      tracing.recordException(e)
       req.logger.warn(
         logPrefix,
         `Could not stream CID from local fs. Attempting to fetch and stream from network..`
