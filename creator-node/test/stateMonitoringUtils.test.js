@@ -1,19 +1,17 @@
-/* eslint-disable no-unused-expressions */
+const _ = require('lodash')
+const { CancelToken } = require('axios').default
+const { asyncRetry } = require('../src/utils/asyncRetry')
+
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const assert = require('assert')
 const { expect } = chai
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
-const proxyquire = require('proxyquire')
-const _ = require('lodash')
-const { CancelToken } = require('axios').default
-const assert = require('assert')
 
 const DBManager = require('../src/dbManager')
-const config = require('../src/config')
-const { getApp } = require('./lib/app')
-const { getLibsMock } = require('./lib/libsMock')
 const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
@@ -26,6 +24,9 @@ const {
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
+
+const { getApp } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test getLatestUserIdFromDiscovery()', function () {
   const DISCOVERY_NODE_ENDPOINT = 'https://discovery_endpoint.audius.co'
@@ -50,6 +51,21 @@ describe('test getLatestUserIdFromDiscovery()', function () {
   })
 
   it('throws when the axios request fails', async function () {
+    const { getLatestUserIdFromDiscovery } = proxyquire(
+      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.ts',
+      {
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
+        }
+      }
+    )
+
     nock(DISCOVERY_NODE_ENDPOINT)
       .get('/latest/user')
       .times(5) // asyncRetry retries 5 times
@@ -98,6 +114,13 @@ describe('test getNodeUsers()', function () {
           GET_NODE_USERS_CANCEL_TOKEN_MS,
           GET_NODE_USERS_DEFAULT_PAGE_SIZE:
             DEFAULT_GET_NODE_USERS_DEFAULT_PAGE_SIZE
+        },
+        asyncRetry: async function (params) {
+          // Default the max timeout to a low number for tests
+          params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+          // Call the original asyncRetry fn with hardcoded maxTimeout
+          return asyncRetry(params)
         }
       }
     )
@@ -556,9 +579,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return secondaryFilesHash
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -583,9 +609,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return primaryFilesHashMock
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -613,9 +642,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         throw new Error(errorMsg)
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       try {
         await computeSyncModeForUserAndReplica({
