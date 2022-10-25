@@ -123,7 +123,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, true)
     expect(isHealthy).to.be.true
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
-    expect(determinePeerHealthStub).to.not.have.been.called
+    expect(determinePeerHealthStub).to.have.been.called
   })
 
   it('returns false when health check fails with performSimpleCheck=true', async function () {
@@ -419,7 +419,7 @@ describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function (
       true
     )
     expect(isHealthy).to.be.true
-    expect(isNodeHealthyStub).to.have.been.calledOnceWithExactly(primary, true)
+    expect(isNodeHealthyStub).to.have.been.calledOnceWithExactly(primary)
   })
 
   it('returns true (healthy) when secondary is healthy', async function () {
@@ -434,8 +434,7 @@ describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function (
     )
     expect(isHealthy).to.be.true
     expect(isNodeHealthyStub).to.have.been.calledOnceWithExactly(
-      secondary,
-      false
+      secondary
     )
   })
 
