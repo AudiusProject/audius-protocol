@@ -436,7 +436,7 @@ class DiskManager {
   }
 
   static async _execShellCommand(cmd) {
-    const { stdout, stderr } = await exec(`${cmd}`)
+    const { stdout, stderr } = await exec(`${cmd}`, {maxBuffer: 1024 * 1024 * 5}) // 5mb buffer
     if (stderr) throw stderr
 
     return stdout
