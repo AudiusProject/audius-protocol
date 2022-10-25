@@ -294,7 +294,7 @@ const createAndSendTransaction = async (
     nonce: web3.utils.toHex(nonce),
     gasPrice,
     gasLimit,
-    maxPriorityFeePerGas: 0
+    maxPriorityFeePerGas: 0,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
