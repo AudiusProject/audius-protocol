@@ -433,6 +433,9 @@ class DiskManager {
         `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
       )
     }
+
+    // keep calling this function recursively without an await so the original function scope can close
+    return this.sweepSubdirectoriesInFiles()
   }
 
   static async _execShellCommand(cmd) {
