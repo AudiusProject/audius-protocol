@@ -433,7 +433,7 @@ async function renderAndSendNotificationEmail(
   audiusLibs
 ) {
   try {
-    logger.info(
+    logger.debug(
       `renderAndSendNotificationEmail | ${userId}, ${userEmail}, ${frequency}, from ${startTime}`
     )
 
@@ -448,7 +448,7 @@ async function renderAndSendNotificationEmail(
     const timeAfterEmailNotifications = Date.now()
     const getEmailDuration =
       (timeAfterEmailNotifications - timeBeforeEmailNotifications) / 1000
-    logger.info(
+    logger.debug(
       `renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`
     )
 
@@ -456,7 +456,7 @@ async function renderAndSendNotificationEmail(
       notificationCount > 1 ? 's' : ''
     } on Audius`
     if (notificationCount === 0) {
-      logger.info(
+      logger.debug(
         `renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`
       )
       return
