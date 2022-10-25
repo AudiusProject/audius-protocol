@@ -78,7 +78,7 @@ export type ReplicaToUserInfoMap = {
 }
 export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
   UpdateReplicaSetUser & {
-    unhealthyReplicas: string[]
+    nodesToReconfigOffOf: string[]
     replicaToUserInfoMap: ReplicaToUserInfoMap
     parentSpanContext?: SpanContext
   }

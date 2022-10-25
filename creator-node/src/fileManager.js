@@ -441,7 +441,6 @@ async function saveFileForMultihashToFS(
     }
 
     await fetchFileFromNetworkAndWriteToDisk({
-      libs,
       gatewayContentRoutes,
       targetGateways,
       multihash,

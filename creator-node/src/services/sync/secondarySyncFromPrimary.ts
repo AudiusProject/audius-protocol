@@ -1,6 +1,7 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
 
+import axios from 'axios'
 import _ from 'lodash'
 import {
   logger as genericLogger,
@@ -23,6 +24,8 @@ import { ForceResyncConfig } from '../../services/stateMachineManager/stateRecon
 
 const models = require('../../models')
 const config = require('../../config')
+
+const selfSpId = config.get('spID')
 
 type SecondarySyncFromPrimaryParams = {
   serviceRegistry: any
@@ -137,6 +140,16 @@ const handleSyncFromPrimary = async ({
         return {
           abort: 'Stopping sync early because syncForceWipeEnabled=false',
           result: 'abort_force_wipe_disabled'
+        }
+      }
+
+      // Short circuit if this node was ever the user's primary. This is a temporary
+      // guardrail to prevent deleting corrupted data caused by the trackBlockchainId bug
+      if (await wasThisNodeEverPrimaryFor(wallet, libs)) {
+        return {
+          abort:
+            "Stopping sync early because forceWipe=true and this node used to be the user's primary",
+          result: 'abort_node_used_to_be_primary'
         }
       }
 
@@ -843,6 +856,34 @@ async function _secondarySyncFromPrimary({
   }
 
   return { result }
+}
+
+const wasThisNodeEverPrimaryFor = async (
+  wallet: string,
+  libs: any
+): Promise<boolean> => {
+  // Get userId from wallet
+  const users = await libs.User.getUsers(1, 0, null, wallet)
+  const userId = users[0].user_id
+
+  // Return true if any snapshot of the user's history had this node as their primary
+  const history = (
+    await axios({
+      baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
+      url: `/users/history/${userId}`,
+      params: {
+        limit: 100
+      },
+      method: 'get',
+      timeout: 45_000
+    })
+  ).data.data
+  if (history.length >= 100) return true
+  for (const snapshot of history) {
+    if (snapshot.primary_id === selfSpId) return true
+  }
+
+  return false
 }
 
 export const secondarySyncFromPrimary = instrumentTracing({
