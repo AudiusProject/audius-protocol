@@ -140,7 +140,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
    */
   let replicaSetSpIDs
   try {
-    replicaSetSpIDs = asyncRetry({
+    replicaSetSpIDs = await asyncRetry({
       asyncFn: async () => {
         const spids = await getReplicaSetSpIdsByUserId({
           libs: serviceRegistry.libs,
