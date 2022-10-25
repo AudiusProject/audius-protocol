@@ -144,7 +144,7 @@ export async function findCIDInNetwork(
         logLabel: 'findCIDInNetwork',
         options: {
           retries: numRetries,
-          minTimeout: 3000
+          maxTimeout: 10000
         }
       })
     } catch (e: any) {

@@ -22,7 +22,8 @@ const {
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
   SYNC_MODES,
-  FETCH_FILES_HASH_NUM_RETRIES
+  FETCH_FILES_HASH_NUM_RETRIES,
+  FETCH_FILES_HASH_MAX_TIMEOUT
 } = require('../stateMachineConstants')
 
 /**
@@ -44,7 +45,10 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
           timeout: 10_000 // 10s
         })
       },
-      logger
+      logger,
+      options: {
+        maxTimeout: 10_000 // 10s
+      }
     })
     latestUserId = resp.data.data
   } catch (e: any) {
@@ -104,7 +108,10 @@ const getNodeUsers = async (
           cancelToken: cancelTokenSource.token
         })
       },
-      logger
+      logger,
+      options: {
+        maxTimeout: GET_NODE_USERS_TIMEOUT_MS
+      }
     })
     nodeUsers = resp.data.data
   } catch (e: any) {
@@ -265,7 +272,10 @@ const computeSyncModeForUserAndReplica = async ({
             clockMin: 0,
             clockMax: secondaryClock + 1
           }),
-        options: { retries: FETCH_FILES_HASH_NUM_RETRIES },
+        options: {
+          retries: FETCH_FILES_HASH_NUM_RETRIES,
+          maxTimeout: FETCH_FILES_HASH_MAX_TIMEOUT
+        },
         logger,
         logLabel:
           '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'
