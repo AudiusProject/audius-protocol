@@ -823,8 +823,15 @@ const _issueUpdateReplicaSetOp = async (
  */
 const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
-  if (RECONFIG_MODE_PRIMARY_ONLY)
-    return mode === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+
+  // If primary only override is enabled, only issue reconfig if mode is in enabled modes set and indicates a primary reconfig
+  if (RECONFIG_MODE_PRIMARY_ONLY) {
+    return (
+      enabledReconfigModes.includes(mode) &&
+      mode === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+  }
+
   return enabledReconfigModes.includes(mode)
 }
 
