@@ -1152,6 +1152,29 @@ export const audiusBackend = ({
       console.error(getErrorMessage(err))
       return []
     }
+  } 
+  
+  // userId, start, end
+  async function getUserListenCountsMonthly(
+    currentUserId: number,
+    startTime: string,
+    endTime: string,
+  ) {
+    try {
+      const userListenCountsMonthly = await withEagerOption(
+        {
+          normal: (libs) => libs.User.getUserListenCountsMonthly,
+          eager: DiscoveryAPI.getUserListenCountsMonthly
+        },
+        encodeHashId(currentUserId),
+        startTime,
+        endTime
+      )
+      return userListenCountsMonthly
+    } catch (e) {
+      console.error(getErrorMessage(e))
+      return []
+    }
   }
 
   async function recordTrackListen(trackId: ID) {
@@ -3377,6 +3400,7 @@ export const audiusBackend = ({
     getUserEmail,
     getUserFeed,
     getUserImages,
+    getUserListenCountsMonthly,
     getUserSubscribed,
     getUserSubscriptions,
     getWAudioBalance,
