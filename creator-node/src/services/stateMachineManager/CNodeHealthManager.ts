@@ -57,7 +57,7 @@ async function getUnhealthyPeers(
   nodeUsers: StateMonitoringUser[],
   thisContentNodeEndpoint: string,
   performSimpleCheck = false
-) {
+): Promise<Set<string>> {
   // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
   const peerSet = CNodeHealthManager._computeContentNodePeerSet(
     nodeUsers,
@@ -68,7 +68,7 @@ async function getUnhealthyPeers(
    * Determine health for every peer & build list of unhealthy peers
    * TODO: change from sequential to chunked parallel
    */
-  const unhealthyPeers = new Set()
+  const unhealthyPeers = new Set<string>()
 
   for await (const peer of peerSet) {
     const isHealthy = await CNodeHealthManager.isNodeHealthy(
