@@ -194,7 +194,7 @@ const _saveWalletsWithThisNodeInReplicaToRedis = async (
   const numWalletsWithNodeInReplicaSet = await redisClient.scard(
     WALLETS_WITH_NODE_IN_REPLICA_SET_KEY
   )
-  logger.info(
+  logger.debug(
     `Found ${numWalletsWithNodeInReplicaSet} wallets with this node in their replica set`
   )
   return numWalletsWithNodeInReplicaSet
