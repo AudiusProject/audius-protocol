@@ -18,7 +18,6 @@ import { AppDrawerContextProvider } from './AppDrawerContext'
 const SCREEN_WIDTH = Dimensions.get('window').width
 
 const baseDrawerScreenOptions = {
-  drawerType: 'slide' as const,
   headerShown: false,
   swipeEdgeWidth: SCREEN_WIDTH
 }
@@ -47,20 +46,27 @@ const AppStack = (props: AppTabScreenProps) => {
 
 export const AppDrawerScreen = () => {
   const [disableGestures, setDisableGestures] = useState(false)
-  const { isEnabled } = useFeatureFlag(FeatureFlags.MOBILE_NAV_OVERHAUL)
-  const DrawerComponent = isEnabled ? AccountDrawer : NotificationsDrawer
+  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
+    FeatureFlags.MOBILE_NAV_OVERHAUL
+  )
+  const DrawerComponent = isNavOverhaulEnabled
+    ? AccountDrawer
+    : NotificationsDrawer
 
   const drawerScreenOptions = useMemo(
     () => ({
       ...baseDrawerScreenOptions,
+      drawerType: isNavOverhaulEnabled
+        ? ('front' as const)
+        : ('slide' as const),
       drawerStyle: {
-        width: isEnabled ? '75%' : '100%'
+        width: isNavOverhaulEnabled ? '75%' : '100%'
       },
       gestureHandlerProps: {
         enabled: !disableGestures
       }
     }),
-    [isEnabled, disableGestures]
+    [isNavOverhaulEnabled, disableGestures]
   )
 
   return (
