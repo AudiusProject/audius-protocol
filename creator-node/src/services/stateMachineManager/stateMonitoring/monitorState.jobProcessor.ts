@@ -15,7 +15,7 @@ import { QUEUE_NAMES } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
 
 const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
+const { CNodeHealthManager } = require('../CNodeHealthManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
@@ -109,7 +109,7 @@ async function monitorState({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
+      unhealthyPeers = await CNodeHealthManager.getUnhealthyPeers(users)
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
