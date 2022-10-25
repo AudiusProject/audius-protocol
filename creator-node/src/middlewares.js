@@ -21,7 +21,7 @@ const {
   getReplicaSetSpIdsByUserId,
   replicaSetSpIdsToEndpoints
 } = require('./services/ContentNodeInfoManager')
-const { isFqdn } = require('./utils')
+const { isFqdn, asyncRetry } = require('./utils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -140,13 +140,19 @@ async function ensurePrimaryMiddleware(req, res, next) {
    */
   let replicaSetSpIDs
   try {
-    replicaSetSpIDs = await getReplicaSetSpIdsByUserId({
-      libs: serviceRegistry.libs,
-      userId,
-      blockNumber: req.body.blockNumber,
-      ensurePrimary: true,
-      selfSpId: selfSpID,
-      parentLogger: req.logger
+    replicaSetSpIDs = asyncRetry({
+      asyncFn: async () => {
+        const spids = await getReplicaSetSpIdsByUserId({
+          libs: serviceRegistry.libs,
+          userId,
+          blockNumber: req.body.blockNumber,
+          ensurePrimary: true,
+          selfSpId: selfSpID,
+          parentLogger: req.logger
+        })
+
+        return spids
+      }
     })
 
     // Error if returned primary spID does not match self spID
