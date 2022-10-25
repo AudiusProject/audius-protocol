@@ -275,7 +275,7 @@
             "title": "CID"
         },
         "PremiumConditions": {
-            "type": "object",
+            "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
                 "nft_collection": {
