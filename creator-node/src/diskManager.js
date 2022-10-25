@@ -1,5 +1,5 @@
 const util = require('util')
-const exec = util.promisify(require('child_process').exec);
+const exec = util.promisify(require('child_process').exec)
 const path = require('path')
 const fs = require('fs-extra')
 const CID = require('cids')
@@ -337,7 +337,7 @@ class DiskManager {
 
   // lists all the folders in /file_storage/files/
   static async listSubdirectoriesInFiles() {
-    let subdirectories
+    const subdirectories = []
     try {
       // const { stdout, stderr } = await exec(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
       // if (stderr) {
@@ -350,42 +350,52 @@ class DiskManager {
 
       // return subdirectories
 
-      const stdout = await this._execShellCommand(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
+      const stdout = await this._execShellCommand(
+        `find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`
+      )
       // stdout is a string so split on newline and remove any empty strings
-      subdirectories = stdout.split('\n').filter(Boolean)
+      for (const dir of stdout.split('\n')) {
+        const dirTrimmed = dir.trim()
+        // if dirTrimmed is a non-null string and is not just equal to base directory
+        if (
+          dirTrimmed &&
+          dirTrimmed !== path.join(this.getConfigStoragePath(), 'files')
+        ) {
+          subdirectories.push(dirTrimmed)
+        }
+      }
 
       return subdirectories
     } catch (e) {
-      genericLogger.error(`Error in diskManager - listSubdirectoriesInFiles: ${e}`)
+      genericLogger.error(
+        `Error in diskManager - listSubdirectoriesInFiles: ${e}`
+      )
     }
   }
 
   // list all the CIDs in /file_storage/files/AqN
   static async listNestedCIDsInFilePath(filesSubdirectory) {
-    let cids
+    const cids = []
     // find files older than 3 days in filesSubdirectory (eg /file_storage/files/AqN)
     try {
-      // const { stdout, stderr } = await exec(`find ${filesSubdirectory} -mtime +3`)
-      // if (stderr) {
-      //   genericLogger.error(`Error in diskManager - listNestedCIDsInFilePath: ${stderr}`)
-      //   return
-      // }
-      const stdout = await this._execShellCommand(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
+      const stdout = await this._execShellCommand(
+        `find ${filesSubdirectory} -mtime +3`
+      )
 
-      // stdout is a string so split on newline and remove any empty strings
-      cids = stdout
-      .split('\n')
-      .map((s) => {
-        // we need the last CID in the path in case it's a image dirCID
-        // that's what the Files table stores as it's `multihash`
-        const parts = s.replace(filesSubdirectory, '').split('/')
-        return parts[parts.length - 1]
-      })
-      .filter(Boolean)
+      for (const file of stdout.split('\n')) {
+        const fileTrimmed = file.trim()
+        // if fileTrimmed is a non-null string and is not just equal to base directory
+        if (fileTrimmed && fileTrimmed !== filesSubdirectory) {
+          const parts = fileTrimmed.split('/')
+          cids.push(parts[parts.length - 1])
+        }
+      }
 
-    return cids
-    } catch(e) {
-      genericLogger.error(`Error in diskManager - listNestedCIDsInFilePath: ${e}`)
+      return cids
+    } catch (e) {
+      genericLogger.error(
+        `Error in diskManager - listNestedCIDsInFilePath: ${e}`
+      )
     }
   }
 
@@ -393,7 +403,7 @@ class DiskManager {
     const subdirectories = await this.listSubdirectoriesInFiles()
     if (!subdirectories) return
 
-    for (let i = 0; i < subdirectories.length; i += 5) {
+    for (let i = 0; i < subdirectories.length; i += 1) {
       const cids = await this.listNestedCIDsInFilePath(s)
 
       // TODO - parallelize into batches
@@ -425,10 +435,10 @@ class DiskManager {
     }
   }
 
-  static async _execShellCommand (cmd) {
+  static async _execShellCommand(cmd) {
     const { stdout, stderr } = await exec(`${cmd}`)
     if (stderr) throw stderr
-  
+
     return stdout
   }
 }

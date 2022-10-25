@@ -2,8 +2,18 @@ const DiskManager = require('./diskManager')
 const assert = require('assert')
 const config = require('./config')
 const path = require('path')
+const sinon = require('sinon')
 
 describe('Test DiskManager', function () {
+  let sandbox
+  beforeEach(function () {
+    sandbox = sinon.createSandbox()
+  })
+
+  afterEach(function () {
+    sandbox.restore()
+  })
+
   before(function () {
     // stub out this function which ensures the directory path exists to return true
     DiskManager.ensureDirPathExists = async () => true
@@ -155,5 +165,77 @@ describe('Test DiskManager', function () {
     const path = '/file_storage/files/QMcidhere'
     const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj, null)
+  })
+
+  it('should list subdirectories in /file_storage/files', async function () {
+    sandbox.stub(DiskManager, '_execShellCommand').resolves(`
+    ${DiskManager.getConfigStoragePath()}/files
+    ${DiskManager.getConfigStoragePath()}/files/d8A
+    ${DiskManager.getConfigStoragePath()}/files/Pyx
+    ${DiskManager.getConfigStoragePath()}/files/BJg
+    ${DiskManager.getConfigStoragePath()}/files/nVU    
+    `)
+
+    const subdirectories = await DiskManager.listSubdirectoriesInFiles()
+
+    assert.deepStrictEqual(subdirectories.length, 4)
+    assert.deepStrictEqual(
+      subdirectories[0],
+      `${DiskManager.getConfigStoragePath()}/files/d8A`
+    )
+    assert.deepStrictEqual(
+      subdirectories[1],
+      `${DiskManager.getConfigStoragePath()}/files/Pyx`
+    )
+    assert.deepStrictEqual(
+      subdirectories[2],
+      `${DiskManager.getConfigStoragePath()}/files/BJg`
+    )
+    assert.deepStrictEqual(
+      subdirectories[3],
+      `${DiskManager.getConfigStoragePath()}/files/nVU`
+    )
+  })
+
+  it('should list subdirectories in /file_storage/files', async function () {
+    sandbox.stub(DiskManager, '_execShellCommand').resolves(`
+    ${DiskManager.getConfigStoragePath()}/files/b8p
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt
+    ${DiskManager.getConfigStoragePath()}/files/b8p/Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1    
+    `)
+
+    const cids = await DiskManager.listNestedCIDsInFilePath(
+      `${DiskManager.getConfigStoragePath()}/files/b8p`
+    )
+
+    assert.deepStrictEqual(cids.length, 6)
+    assert.deepStrictEqual(
+      cids[0],
+      `QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg`
+    )
+    assert.deepStrictEqual(
+      cids[1],
+      `QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ`
+    )
+    assert.deepStrictEqual(
+      cids[2],
+      `QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j`
+    )
+    assert.deepStrictEqual(
+      cids[3],
+      `QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa`
+    )
+    assert.deepStrictEqual(
+      cids[4],
+      `QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt`
+    )
+    assert.deepStrictEqual(
+      cids[5],
+      `Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1`
+    )
   })
 })
