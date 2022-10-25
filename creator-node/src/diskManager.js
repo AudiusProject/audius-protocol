@@ -1,3 +1,5 @@
+const util = require('util')
+const exec = util.promisify(require('child_process').exec);
 const path = require('path')
 const fs = require('fs-extra')
 const CID = require('cids')
@@ -331,6 +333,103 @@ class DiskManager {
   static async clearFilePathsToDelete(walletPublicKey) {
     const redisSetKey = `${REDIS_DEL_FILE_KEY_PREFIX}${walletPublicKey}`
     await redisClient.del(redisSetKey)
+  }
+
+  // lists all the folders in /file_storage/files/
+  static async listSubdirectoriesInFiles() {
+    let subdirectories
+    try {
+      // const { stdout, stderr } = await exec(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
+      // if (stderr) {
+      //   genericLogger.error(`Error in diskManager - listSubdirectoriesInFiles: ${stderr}`)
+      //   return
+      // }
+
+      // // stdout is a string so split on newline and remove any empty strings
+      // subdirectories = stdout.split('\n').filter(Boolean)
+
+      // return subdirectories
+
+      const stdout = await this._execShellCommand(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
+      // stdout is a string so split on newline and remove any empty strings
+      subdirectories = stdout.split('\n').filter(Boolean)
+
+      return subdirectories
+    } catch (e) {
+      genericLogger.error(`Error in diskManager - listSubdirectoriesInFiles: ${e}`)
+    }
+  }
+
+  // list all the CIDs in /file_storage/files/AqN
+  static async listNestedCIDsInFilePath(filesSubdirectory) {
+    let cids
+    // find files older than 3 days in filesSubdirectory (eg /file_storage/files/AqN)
+    try {
+      // const { stdout, stderr } = await exec(`find ${filesSubdirectory} -mtime +3`)
+      // if (stderr) {
+      //   genericLogger.error(`Error in diskManager - listNestedCIDsInFilePath: ${stderr}`)
+      //   return
+      // }
+      const stdout = await this._execShellCommand(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
+
+      // stdout is a string so split on newline and remove any empty strings
+      cids = stdout
+      .split('\n')
+      .map((s) => {
+        // we need the last CID in the path in case it's a image dirCID
+        // that's what the Files table stores as it's `multihash`
+        const parts = s.replace(filesSubdirectory, '').split('/')
+        return parts[parts.length - 1]
+      })
+      .filter(Boolean)
+
+    return cids
+    } catch(e) {
+      genericLogger.error(`Error in diskManager - listNestedCIDsInFilePath: ${e}`)
+    }
+  }
+
+  static async sweepSubdirectoriesInFiles() {
+    const subdirectories = await this.listSubdirectoriesInFiles()
+    if (!subdirectories) return
+
+    for (let i = 0; i < subdirectories.length; i += 5) {
+      const cids = await this.listNestedCIDsInFilePath(s)
+
+      // TODO - parallelize into batches
+      // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
+      // const cids = cidsArray.flat()
+
+      const queryResults = await models.File.findAll({
+        attributes: ['multihash', 'storagePath'],
+        raw: true,
+        where: {
+          multihash: {
+            [models.Sequelize.Op.in]: cids
+          }
+        }
+      })
+
+      const cidToFileLookup = {}
+      for (const file of queryResults) {
+        cidToFileLookup[file.multihash] = file.storagePath
+      }
+
+      for (const cid of cids) {
+        // if db doesn't contain file, log as okay to delete
+        if (!cidToFileLookup.hasOwnProperty(cid)) {
+          // TODO - actually delete files
+          logger.info(`diskmanager.js - safe to delete ${cid}`)
+        }
+      }
+    }
+  }
+
+  static async _execShellCommand (cmd) {
+    const { stdout, stderr } = await exec(`${cmd}`)
+    if (stderr) throw stderr
+  
+    return stdout
   }
 }
 
