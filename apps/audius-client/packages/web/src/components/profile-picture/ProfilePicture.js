@@ -68,6 +68,7 @@ const ProfilePicture = ({
     >
       <div className={styles.profilePictureBackground}>
         <DynamicImage
+          usePlaceholder={false}
           image={updatedProfilePicture || image}
           skeletonClassName={styles.profilePictureSkeleton}
           wrapperClassName={styles.profilePicture}
