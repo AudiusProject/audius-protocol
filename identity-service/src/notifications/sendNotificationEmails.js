@@ -372,7 +372,7 @@ async function processEmailNotifications(expressApp, audiusLibs) {
                 return { result: Results.ERROR, error: 'Unable to send email' }
               }
               return {
-                result: Results.ERROR,
+                result: Results.SHOULD_SKIP,
                 error: 'No notifications to send in email'
               }
             }
