@@ -19,7 +19,7 @@ if [ -z "${PG_PORT}" ]; then
   PG_PORT=4432
 fi
 
-export storagePath=$(pwd)/test_file_storage
+export storagePath='./test_file_storage'
 export logLevel='info'
 export printSequelizeLogs=false
 

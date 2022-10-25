@@ -8,10 +8,12 @@ describe('Test DiskManager', function () {
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
+    config.set('storagePath', '/test_file_storage')
   })
 
   afterEach(function () {
     sandbox.restore()
+    config.reset('storagePath')
   })
 
   before(function () {
