@@ -404,7 +404,7 @@ class DiskManager {
     if (!subdirectories) return
 
     for (let i = 0; i < subdirectories.length; i += 1) {
-      const cids = await this.listNestedCIDsInFilePath(s)
+      const cids = await this.listNestedCIDsInFilePath(subdirectories[i])
 
       // TODO - parallelize into batches
       // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
@@ -429,7 +429,7 @@ class DiskManager {
         // if db doesn't contain file, log as okay to delete
         if (!cidToFileLookup.hasOwnProperty(cid)) {
           // TODO - actually delete files
-          logger.info(`diskmanager.js - safe to delete ${cid}`)
+          genericLogger.info(`diskmanager.js - safe to delete ${cid}`)
         }
       }
     }
