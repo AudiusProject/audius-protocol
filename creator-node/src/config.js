@@ -669,7 +669,6 @@ const config = convict({
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    // 24 hours in seconds
     default: 600 // 10min in s
   },
   maxNumberSecondsSecondaryRemainsUnhealthy: {
