@@ -31,6 +31,7 @@ export type DynamicImageProps = Omit<ImageProps, 'source'> & {
   // callback when image finishes loading
   onLoad?: () => void
   animatedValue?: Animated.Value
+  firstOpacity?: number
 }
 
 const styles = StyleSheet.create({
@@ -94,13 +95,14 @@ export const DynamicImage = memo(function DynamicImage({
   children,
   onLoad,
   animatedValue,
+  firstOpacity: firstOpacityProp = 0.5,
   ...imageProps
 }: DynamicImageProps) {
   const [size, setSize] = useState(0)
   const [firstImage, setFirstImage] = useState<string>()
   const [secondImage, setSecondImage] = useState<string>()
 
-  const firstOpacity = useRef(new Animated.Value(0.5)).current
+  const firstOpacity = useRef(new Animated.Value(firstOpacityProp)).current
   const secondOpacity = useRef(new Animated.Value(0.5)).current
 
   const [isFirstImageActive, setIsFirstImageActive] = useState(true)

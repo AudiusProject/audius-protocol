@@ -21,6 +21,7 @@ const ImageLoader = (props: ImageLoadProps) => {
       useNativeDriver: true
     }).start()
   }, [opacity])
+
   return (
     <View
       style={[

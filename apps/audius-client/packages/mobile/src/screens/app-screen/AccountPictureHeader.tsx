@@ -44,7 +44,11 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
 
   return (
     <TouchableOpacity onPress={onPress}>
-      <ProfilePicture profile={accountUser} style={styles.root} />
+      <ProfilePicture
+        profile={accountUser}
+        style={styles.root}
+        firstOpacity={0}
+      />
       {hasClaimableRewards ? <View style={styles.notificationBubble} /> : null}
     </TouchableOpacity>
   )
