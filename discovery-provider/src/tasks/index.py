@@ -87,7 +87,7 @@ logger = logging.getLogger(__name__)
 # HELPER FUNCTIONS
 
 default_padded_start_hash = (
-    "0xb7f98b3f831b071f33401a8691e1ff8b80ea63d25a8b5217439693c20a0e0ada"
+    "0x7ef3e7395b68247c807e301774a94df3decdd4e17b7527524b57b58c694252b2"
 )
 default_config_start_hash = "0x0"
 
