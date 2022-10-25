@@ -449,7 +449,7 @@ const config = convict({
     doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
     format: Boolean,
     env: 'reconfigModePrimaryOnly',
-    default: false
+    default: true
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
