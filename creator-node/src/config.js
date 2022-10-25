@@ -449,7 +449,7 @@ const config = convict({
     doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
     format: Boolean,
     env: 'reconfigModePrimaryOnly',
-    default: false
+    default: true
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -669,8 +669,7 @@ const config = convict({
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    // 24 hours in seconds
-    default: 86400 // 24hr in s
+    default: 600 // 10min in s
   },
   maxNumberSecondsSecondaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
