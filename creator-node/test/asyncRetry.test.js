@@ -2,7 +2,7 @@ const assert = require('assert')
 const { asyncRetry } = require('../src/utils/asyncRetry')
 
 describe('test asyncRetry', function () {
-  it('will retry the default number of times', async function () {
+  it.only('will retry the default number of times', async function () {
     const defaultNumberOfRetries = 5
 
     let attempts = 0
@@ -12,8 +12,10 @@ describe('test asyncRetry', function () {
           attempts++
           throw new Error(`Test ${num}`)
         },
-        minTimeout: 0,
-        maxTimeout: 100
+        options: {
+          minTimeout: 0,
+          maxTimeout: 100
+        }
       })
 
       assert.fail('Should have thrown')
@@ -34,8 +36,10 @@ describe('test asyncRetry', function () {
 
           throw new Error(`Test ${num}`)
         },
-        minTimeout: 0,
-        maxTimeout: 100
+        options: {
+          minTimeout: 0,
+          maxTimeout: 100
+        }
       })
       assert.fail('Should have thrown')
     } catch (e) {
@@ -111,8 +115,7 @@ describe('test asyncRetry', function () {
         options: {
           minTimeout: 0,
           maxTimeout: 100,
-          maxRetryTime: 401,
-          onRetry: console.log
+          maxRetryTime: 401
         }
       })
 
