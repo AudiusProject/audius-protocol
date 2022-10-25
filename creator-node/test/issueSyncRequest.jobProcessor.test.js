@@ -62,6 +62,7 @@ describe('test issueSyncRequest job processor', function () {
     config.set('creatorNodeEndpoint', primary)
     logger = {
       info: sandbox.stub(),
+      debug: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()
     }
