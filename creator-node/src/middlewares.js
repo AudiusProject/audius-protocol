@@ -21,7 +21,8 @@ const {
   getReplicaSetSpIdsByUserId,
   replicaSetSpIdsToEndpoints
 } = require('./services/ContentNodeInfoManager')
-const { isFqdn, asyncRetry } = require('./utils')
+const { isFqdn } = require('./utils')
+const { asyncRetry } = require('./utils/asyncRetry')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
