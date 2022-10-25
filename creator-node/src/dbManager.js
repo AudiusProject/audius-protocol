@@ -202,8 +202,13 @@ class DBManager {
       order: [['storagePath', 'ASC']],
       limit: batchSize
     })
-    if (isEmpty(userFilesQueryResult?.dataValues)) return []
-    for (const file of userFilesQueryResult.dataValues) {
+    logger.debug(
+      `userFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        userFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(userFilesQueryResult)) return []
+    for (const file of userFilesQueryResult) {
       userFiles.push(path.normalize(file.storagePath))
     }
 
@@ -222,8 +227,13 @@ class DBManager {
       group: 'storagePath',
       having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`)
     })
-    if (isEmpty(allUniqueFilesQueryResult?.dataValues)) return []
-    for (const file of allUniqueFilesQueryResult.dataValues) {
+    logger.debug(
+      `allUniqueFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        allUniqueFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(allUniqueFilesQueryResult)) return []
+    for (const file of allUniqueFilesQueryResult) {
       allUniqueFiles.push(path.normalize(file.storagePath))
     }
 
@@ -231,6 +241,7 @@ class DBManager {
     const userUniqueFiles = allUniqueFiles.filter((file) =>
       userFiles.includes(file)
     )
+    logger.debug(`userUniqueFiles for ${cnodeUserUUID}: ${userUniqueFiles}`)
     return userUniqueFiles
   }
 
