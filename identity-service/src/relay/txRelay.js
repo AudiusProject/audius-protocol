@@ -130,21 +130,23 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
     if (sendToNethermind) {
       // fire and forget
-      wipRelayToNethermind(contractAddress, encodedABI)
+      const ok = await wipRelayToNethermind(contractAddress, encodedABI)
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    } else {
+      // use POA receipt as main receipt
+      const ok = await createAndSendTransaction(
+        wallet,
+        contractAddress,
+        '0x00',
+        web3,
+        req.logger,
+        gasLimit,
+        encodedABI
+      )
+      txParams = ok.txParams
+      txReceipt = ok.receipt
     }
-
-    // use POA receipt as main receipt
-    const ok = await createAndSendTransaction(
-      wallet,
-      contractAddress,
-      '0x00',
-      web3,
-      req.logger,
-      gasLimit,
-      encodedABI
-    )
-    txParams = ok.txParams
-    txReceipt = ok.receipt
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -340,6 +342,8 @@ const createAndSendTransaction = async (
 // WIP relay txn to staging nethermind "fire and forget" style
 //
 
+let inFlight = 0
+
 async function wipRelayToNethermind(contractAddress, encodedABI) {
   // staging EM address on nethermind NOT POA
   const entityManagerAddress = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
@@ -362,8 +366,11 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
       transaction,
       privateKey
     )
-    console.log('wipRelayToNethermind sending', JSON.stringify(signedTx))
 
+    inFlight++
+    const nnn = inFlight
+
+    console.log('wipRelayToNethermind sending', nnn, JSON.stringify(signedTx))
     const receipt = await nethermindWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
@@ -371,8 +378,9 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
 
     var end = new Date().getTime()
     var time = end - start
-    console.log('wipRelayToNethermind ok', JSON.stringify(receipt))
-    console.log('wipRelayToNethermind took', time)
+    inFlight--
+    console.log('wipRelayToNethermind ok', nnn, JSON.stringify(receipt))
+    console.log('wipRelayToNethermind took', nnn, time, inFlight)
     return {
       txParams: transaction,
       receipt
