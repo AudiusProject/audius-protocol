@@ -339,17 +339,6 @@ class DiskManager {
   static async listSubdirectoriesInFiles() {
     const subdirectories = []
     try {
-      // const { stdout, stderr } = await exec(`find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`)
-      // if (stderr) {
-      //   genericLogger.error(`Error in diskManager - listSubdirectoriesInFiles: ${stderr}`)
-      //   return
-      // }
-
-      // // stdout is a string so split on newline and remove any empty strings
-      // subdirectories = stdout.split('\n').filter(Boolean)
-
-      // return subdirectories
-
       const stdout = await this._execShellCommand(
         `find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`
       )
@@ -404,6 +393,9 @@ class DiskManager {
     if (!subdirectories) return
 
     for (let i = 0; i < subdirectories.length; i += 1) {
+      genericLogger.info(
+        `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
+      )
       const cids = await this.listNestedCIDsInFilePath(subdirectories[i])
 
       // TODO - parallelize into batches
@@ -425,18 +417,28 @@ class DiskManager {
         cidToFileLookup[file.multihash] = file.storagePath
       }
 
+      const cidsToDelete = []
+      const cidsNotToDelete = []
       for (const cid of cids) {
         // if db doesn't contain file, log as okay to delete
         if (!cidToFileLookup.hasOwnProperty(cid)) {
-          // TODO - actually delete files
-          genericLogger.info(`diskmanager.js - safe to delete ${cid}`)
-        }
+          cidsToDelete.push(cid)
+        } else cidsNotToDelete.push(cid)
       }
+      // TODO - actually delete files
+      genericLogger.info(
+        `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+      )
+      genericLogger.info(
+        `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+      )
     }
   }
 
   static async _execShellCommand(cmd) {
-    const { stdout, stderr } = await exec(`${cmd}`, {maxBuffer: 1024 * 1024 * 5}) // 5mb buffer
+    const { stdout, stderr } = await exec(`${cmd}`, {
+      maxBuffer: 1024 * 1024 * 5
+    }) // 5mb buffer
     if (stderr) throw stderr
 
     return stdout
