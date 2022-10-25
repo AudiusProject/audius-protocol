@@ -113,24 +113,28 @@ def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
     cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
 
 
+CHALLENGE_TYPE_MAP: Dict[str, TransactionType] = {}
+
+
 def get_challenge_type_map(
     session: Session,
-    challenge_type_map: Dict[str, TransactionType],
 ):
-    if bool(challenge_type_map):
-        return challenge_type_map
-    else:
+    # pylint: disable=W0603
+    global CHALLENGE_TYPE_MAP
+    if not bool(CHALLENGE_TYPE_MAP):
         challenges = (
             session.query(Challenge.id, Challenge.type)
             .filter(bool(Challenge.active))
             .all()
         )
-        return {
+        CHALLENGE_TYPE_MAP = {
             challenge[0]: TransactionType.trending_reward
             if challenge[1] == ChallengeType.trending
             else TransactionType.user_reward
             for challenge in challenges
         }
+
+    return CHALLENGE_TYPE_MAP
 
 
 def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
@@ -245,7 +249,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
         challenge_id, specifier = transfer_instruction
         receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
         pre_balance, post_balance = get_solana_tx_balances(meta, receiver_index)
-        if pre_balance is None or post_balance is None:
+        if pre_balance == -1 or post_balance == -1:
             raise Exception("Reward recipient balance missing!")
         tx_metadata["transfer_instruction"] = {
             "amount": amount,
@@ -267,7 +271,6 @@ def process_batch_sol_reward_manager_txs(
     session: Session,
     reward_manager_txs: List[RewardManagerTransactionInfo],
     redis: Redis,
-    challenge_type_map: Dict[str, TransactionType],
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
@@ -299,7 +302,7 @@ def process_batch_sol_reward_manager_txs(
             .all()
         )
         user_challenge_specifiers = {challenge[0] for challenge in user_challenges}
-        challenge_type_map = get_challenge_type_map(session, challenge_type_map)
+        challenge_type_map = get_challenge_type_map(session)
 
         challenge_disbursements = []
         audio_tx_histories = []
@@ -516,7 +519,6 @@ def process_transaction_signatures(
     last_tx: Optional[RewardManagerTransactionInfo] = None
     if transaction_signatures and transaction_signatures[-1]:
         last_tx_sig = transaction_signatures[-1][0]
-    challenge_type_map: Dict[str, TransactionType] = {}
 
     for tx_sig_batch in transaction_signatures:
         logger.info(f"index_rewards_manager.py | processing {tx_sig_batch}")
@@ -549,9 +551,7 @@ def process_transaction_signatures(
                     logger.error(f"index_rewards_manager.py | {exc}")
                     raise exc
         with db.scoped_session() as session:
-            process_batch_sol_reward_manager_txs(
-                session, transfer_instructions, redis, challenge_type_map
-            )
+            process_batch_sol_reward_manager_txs(session, transfer_instructions, redis)
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(
