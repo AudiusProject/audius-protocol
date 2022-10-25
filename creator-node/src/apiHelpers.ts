@@ -7,7 +7,6 @@ import { tracing } from './tracer'
 import config from './config'
 
 import {
-  requestNotExcludedFromLogging,
   getDuration,
   createChildLogger,
   logger as genericLogger
