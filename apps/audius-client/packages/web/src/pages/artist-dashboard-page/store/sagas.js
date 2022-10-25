@@ -102,14 +102,13 @@ const formatMonth = (date) => moment.utc(date).format('MMM').toUpperCase()
 
 function* fetchDashboardListenDataAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const account = yield call(waitForValue, getAccountUser)
   const listenData = yield call(
-    audiusBackendInstance.getTrackListens,
-    action.period,
-    action.trackIds,
+    audiusBackendInstance.getUserListenCountsMonthly,
+    account.user_id,
     action.start,
     action.end
   )
-
   const labels = []
   const labelIndexMap = {}
   const startDate = moment.utc(action.start)
