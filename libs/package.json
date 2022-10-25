@@ -133,7 +133,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/master/libs"
+    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/main/libs"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -143,5 +143,5 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/master/libs"
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/libs"
 }
