@@ -115,12 +115,14 @@ describe('test getNodeUsers()', function () {
           GET_NODE_USERS_DEFAULT_PAGE_SIZE:
             DEFAULT_GET_NODE_USERS_DEFAULT_PAGE_SIZE
         },
-        asyncRetry: async function (params) {
-          // Default the max timeout to a low number for tests
-          params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
 
-          // Call the original asyncRetry fn with hardcoded maxTimeout
-          return asyncRetry(params)
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
         }
       }
     )
