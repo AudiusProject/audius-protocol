@@ -10,7 +10,7 @@ const { Lock } = require('../redis')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
-const NETHERMIND_PROVIDER = 'http://54.187.10.247:8545'
+const NETHERMIND_PROVIDER = 'http://34.136.137.33:8545'
 const NETHERMIND_BLOCK_OFFSET = 10000000
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
@@ -22,7 +22,9 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+
 const accounts = new Accounts(NETHERMIND_PROVIDER)
+const nethermindWeb3 = new Web3(NETHERMIND_PROVIDER)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -127,22 +129,22 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
 
     if (sendToNethermind) {
-      const ok = await wipRelayToNethermind(contractAddress, encodedABI)
-      txParams = ok.txParams
-      txReceipt = ok.receipt
-    } else {
-      const ok = await createAndSendTransaction(
-        wallet,
-        contractAddress,
-        '0x00',
-        web3,
-        req.logger,
-        gasLimit,
-        encodedABI
-      )
-      txParams = ok.txParams
-      txReceipt = ok.receipt
+      // fire and forget
+      wipRelayToNethermind(contractAddress, encodedABI)
     }
+
+    // use POA receipt as main receipt
+    const ok = await createAndSendTransaction(
+      wallet,
+      contractAddress,
+      '0x00',
+      web3,
+      req.logger,
+      gasLimit,
+      encodedABI
+    )
+    txParams = ok.txParams
+    txReceipt = ok.receipt
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -338,9 +340,6 @@ const createAndSendTransaction = async (
 // WIP relay txn to staging nethermind "fire and forget" style
 //
 
-// TODO: shared nethermind web3 instance
-const web3 = new Web3(NETHERMIND_PROVIDER)
-
 async function wipRelayToNethermind(contractAddress, encodedABI) {
   // staging EM address on nethermind NOT POA
   const entityManagerAddress = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
@@ -351,25 +350,21 @@ async function wipRelayToNethermind(contractAddress, encodedABI) {
   var start = new Date().getTime()
 
   try {
-    const fromAddress = web3.eth.accounts.privateKeyToAccount(privateKey)
-    const nonce = await web3.eth.getTransactionCount(fromAddress.address)
-
     const transaction = {
       to: entityManagerAddress,
       value: 0,
-      gas: 10485760,
+      gas: '100880',
       gasPrice: 0,
-      nonce,
       data: encodedABI
     }
 
-    const signedTx = await web3.eth.accounts.signTransaction(
+    const signedTx = await nethermindWeb3.eth.accounts.signTransaction(
       transaction,
       privateKey
     )
     console.log('wipRelayToNethermind sending', JSON.stringify(signedTx))
 
-    const receipt = await web3.eth.sendSignedTransaction(
+    const receipt = await nethermindWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
     receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
