@@ -2,7 +2,7 @@ const assert = require('assert')
 const { asyncRetry } = require('../src/utils/asyncRetry')
 
 describe('test asyncRetry', function () {
-  it.only('will retry the default number of times', async function () {
+  it('will retry the default number of times', async function () {
     const defaultNumberOfRetries = 5
 
     let attempts = 0
