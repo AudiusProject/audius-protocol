@@ -34,7 +34,7 @@ class DiskManager {
    * Empties the tmp track artifacts directory of any old artifacts
    */
   static async emptyTmpTrackUploadArtifacts() {
-    const dirPath = this.getTmpTrackUploadArtifactsPath()
+    const dirPath = await this.getTmpTrackUploadArtifactsPath()
     await fs.emptyDir(dirPath)
   }
 
