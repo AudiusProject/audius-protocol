@@ -78,7 +78,7 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
   if (!imageDirCID) {
     return null
   }
-  req.logger.info(
+  req.logger.debug(
     `Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
   )
 
@@ -125,7 +125,7 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
     })
   )
 
-  req.logger.info(
+  req.logger.debug(
     `Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
   )
   return dirFile.fileUUID

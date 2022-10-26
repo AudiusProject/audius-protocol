@@ -63,9 +63,9 @@ class SkippedCIDsRetryQueue {
       const CIDMaxAgeMs =
         this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
-      const worker = new Worker(
+      const _worker = new Worker(
         'skipped-cids-retry-queue',
-        async (job) => {
+        async (_job) => {
           try {
             await this.process(CIDMaxAgeMs, this.libs)
           } catch (e) {

@@ -128,12 +128,12 @@ def setup_command_parser(subparser):
 
     parser_setup.add_argument(
         "--protocol-git-ref",
-        help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
+        help="git ref to use for audius-protocol (only used for remote-dev) (default: main)",
     )
 
     parser_setup.add_argument(
         "--client-git-ref",
-        help="git ref to use for audius-client (only used for remote-dev) (default: master)",
+        help="git ref to use for audius-client (only used for remote-dev) (default: main)",
     )
 
     parser_setup.add_argument(

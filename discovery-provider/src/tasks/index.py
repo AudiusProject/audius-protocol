@@ -57,11 +57,6 @@ from src.utils.prometheus_metric import (
     PrometheusMetricNames,
     save_duration_metric,
 )
-from src.utils.redis_cache import (
-    remove_cached_playlist_ids,
-    remove_cached_track_ids,
-    remove_cached_user_ids,
-)
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
     latest_block_redis_key,
@@ -419,9 +414,6 @@ def process_state_changes(
         "number", "hash", "timestamp"
     )(block)
 
-    changed_entity_ids_map = {
-    }
-
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
 
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -438,19 +430,13 @@ def process_state_changes(
 
         (
             total_changes_for_tx_type,
-            changed_entity_ids,
+            _,
         ) = bulk_processor(*tx_processing_args)
-
-        if tx_type in changed_entity_ids_map.keys():
-            changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
-
-    return changed_entity_ids_map
-
 
 
 def create_and_raise_indexing_error(err, redis):
@@ -479,7 +465,6 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
-    changed_entity_ids_map = {}
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
@@ -613,7 +598,7 @@ def index_blocks(self, db, blocks_list):
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
-                    changed_entity_ids_map = process_state_changes(
+                    process_state_changes(
                         self,
                         session,
                         cid_metadata,
@@ -669,10 +654,6 @@ def index_blocks(self, db, blocks_list):
                 )
             if skip_tx_hash:
                 clear_indexing_error(redis)
-
-        logger.info(
-            f"index.py | redis cache clean operations complete for block=${block_number}"
-        )
 
         add_indexed_block_to_redis(block, redis)
         logger.info(

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bakes from latest master on gcp by default
+# bakes from latest main on gcp by default
 
 set -x
 
@@ -17,7 +17,7 @@ handle_provisioning_error () {
 # Default values of arguments
 USE_AZURE=0 # GCP by default
 SOURCE_DISK="cj-remote-zsh-bake" # name of remote box to bake as AMI
-PROTOCOL_GIT_REF="master"
+PROTOCOL_GIT_REF="main"
 CLIENT_GIT_REF="main"
 USERNAME="ubuntu"
 d=`date +%m-%d-%Y`

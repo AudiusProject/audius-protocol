@@ -76,7 +76,7 @@ export class SessionExpirationQueue {
       await this.queue.drain(true)
     }
 
-    const worker = new Worker(
+    const _worker = new Worker(
       'session-expiration-queue',
       async (job: Job) => {
         try {
