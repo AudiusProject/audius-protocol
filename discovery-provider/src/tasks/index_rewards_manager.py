@@ -44,7 +44,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_balances
+from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,

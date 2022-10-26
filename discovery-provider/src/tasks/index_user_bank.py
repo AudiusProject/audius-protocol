@@ -46,7 +46,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_balances
+from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
@@ -179,8 +179,10 @@ def process_transfer_instruction(
         )
         return
 
-    pre_sender_balance, post_sender_balance = get_solana_tx_balances(meta, sender_index)
-    pre_receiver_balance, post_receiver_balance = get_solana_tx_balances(
+    pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
+        meta, sender_index
+    )
+    pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
         meta, receiver_index
     )
     if (

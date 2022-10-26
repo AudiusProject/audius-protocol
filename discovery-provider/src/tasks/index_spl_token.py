@@ -1,14 +1,21 @@
 import concurrent.futures
+import datetime
 import json
 import logging
 import time
-from typing import List, Optional, Set, Tuple
+from decimal import Decimal
+from typing import List, Optional, Set, Tuple, TypedDict
 
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
@@ -22,7 +29,6 @@ from src.solana.solana_helpers import get_base_address
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
     ConfirmedTransaction,
-    TransactionInfoResult,
 )
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
@@ -31,6 +37,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import get_solana_tx_root_account, get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
@@ -51,51 +58,34 @@ REDIS_TX_CACHE_QUEUE_PREFIX = "spl-token-tx-cache-queue"
 # Intended to relieve RPC and DB pressure
 TX_SIGNATURES_PROCESSING_SIZE = 100
 
+# Index of memo instruction in instructions list
+MEMO_INSTRUCTION_INDEX = 4
+# Index of receiver account in solana transaction pre/post balances
+# Note: the receiver index is currently the same for purchase and transfer instructions
+# but this assumption could change in the future.
+RECEIVER_ACCOUNT_INDEX = 1
+# Thought we don't index transfers from the sender's side in this task, we must still
+# enqueue the sender's accounts for balance refreshes if they are Audius accounts.
+SENDER_ACCOUNT_INDEX = 2
+
+purchase_vendor_map = {
+    "Link by Stripe": TransactionType.purchase_stripe,
+    "Coinbase Pay": TransactionType.purchase_coinbase,
+    "Unknown": TransactionType.unknown,
+}
+
 logger = logging.getLogger(__name__)
 
-# Parse a spl token transaction information to check if the token balances change
-# by comparing the pre token balance and post token balance fields
-# NOTE: that the account index is used instead of the owner field
-# because the owner could be the same for both - in the case for user bank accts
-# Return a tuple of the owners - corresponding to the root accounts and the
-# token accounts which are the accounts in the transaction account keys
 
-
-def get_token_balance_change_owners(
-    tx_result: TransactionInfoResult,
-) -> Tuple[Set[str], Set[str]]:
-    root_accounts_to_refresh: Set[str] = set()
-    token_accounts_to_refresh: Set[str] = set()
-    if (
-        "meta" not in tx_result
-        or "preTokenBalances" not in tx_result["meta"]
-        or "postTokenBalances" not in tx_result["meta"]
-        or "transaction" not in tx_result
-        or "message" not in tx_result["transaction"]
-        or "accountKeys" not in tx_result["transaction"]["message"]
-    ):
-        logger.error("invalid format, return early")
-        return (root_accounts_to_refresh, token_accounts_to_refresh)
-    owner_balance_dict = {}
-    account_keys = tx_result["transaction"]["message"]["accountKeys"]
-    for pre_balance in tx_result["meta"]["preTokenBalances"]:
-        owner_balance_dict[pre_balance["accountIndex"]] = pre_balance["uiTokenAmount"][
-            "amount"
-        ]
-    for post_balance in tx_result["meta"]["postTokenBalances"]:
-        account_index = post_balance["accountIndex"]
-        amount = post_balance["uiTokenAmount"]["amount"]
-        owner = post_balance["owner"]
-        if account_index not in owner_balance_dict and amount != "0":
-            root_accounts_to_refresh.add(owner)
-            token_accounts_to_refresh.add(account_keys[account_index])
-        elif (
-            account_index in owner_balance_dict
-            and amount != owner_balance_dict[account_index]
-        ):
-            root_accounts_to_refresh.add(owner)
-            token_accounts_to_refresh.add(account_keys[account_index])
-    return (root_accounts_to_refresh, token_accounts_to_refresh)
+class SplTokenTransactionInfo(TypedDict):
+    user_bank: str
+    signature: str
+    slot: int
+    timestamp: datetime.datetime
+    memo: str
+    prebalance: int
+    postbalance: int
+    sender_wallet: str
 
 
 # Cache the latest value committed to DB in redis
@@ -107,21 +97,114 @@ def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
 def parse_spl_token_transaction(
     solana_client_manager: SolanaClientManager,
     tx_sig: ConfirmedSignatureForAddressResult,
-) -> Tuple[ConfirmedTransaction, List[str], List[str]]:
+) -> Tuple[Optional[SplTokenTransactionInfo], List[str], List[str]]:
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"])
         result = tx_info["result"]
-        error = tx_info["result"]["meta"]["err"]
+        meta = result["meta"]
+        error = meta["err"]
 
         if error:
-            return (tx_info, [], [])
-        root_accounts, token_accounts = get_token_balance_change_owners(result)
-        return (tx_info, list(root_accounts), list(token_accounts))
+            return (None, [], [])
+
+        sender_root_account = get_solana_tx_root_account(meta, SENDER_ACCOUNT_INDEX)
+        receiver_root_account = get_solana_tx_root_account(meta, RECEIVER_ACCOUNT_INDEX)
+        account_keys = result["transaction"]["message"]["accountKeys"]
+        receiver_token_account = account_keys[RECEIVER_ACCOUNT_INDEX]
+        sender_token_account = account_keys[SENDER_ACCOUNT_INDEX]
+        memo_instruction = next(
+            (
+                inst
+                for inst in result["transaction"]["message"]["instructions"]
+                if inst["programIdIndex"] == MEMO_INSTRUCTION_INDEX
+            ),
+            None,
+        )
+        # Not a transfer receive or purchase instruction, no need to refresh balances
+        if not memo_instruction:
+            return (None, [], [])
+        memo_encoded = memo_instruction["data"]
+        memo = str(base58.b58decode(memo_encoded))
+        prebalance, postbalance = get_solana_tx_token_balances(
+            meta, RECEIVER_ACCOUNT_INDEX
+        )
+        receiver_spl_tx_info: SplTokenTransactionInfo = {
+            "user_bank": receiver_token_account,
+            "signature": tx_sig["signature"],
+            "slot": result["slot"],
+            "timestamp": datetime.datetime.utcfromtimestamp(result["blockTime"]),
+            "memo": memo,
+            "prebalance": prebalance,
+            "postbalance": postbalance,
+            "sender_wallet": sender_root_account,
+        }
+        return (
+            receiver_spl_tx_info,
+            [sender_root_account, receiver_root_account],
+            [sender_token_account, receiver_token_account],
+        )
 
     except Exception as e:
         signature = tx_sig["signature"]
         logger.error(
             f"index_spl_token.py | Error processing {signature}, {e}", exc_info=True
+        )
+        raise e
+
+
+def process_spl_token_transactions(
+    txs: List[ConfirmedTransaction], session
+) -> List[AudioTransactionsHistory]:
+    try:
+        audio_txs = []
+        for tx_info in txs:
+            logger.info(
+                f"index_spl_token.py | processing transaction: {tx_info['signature']} | slot={tx_info['slot']}"
+            )
+            # Index as an external receive transaction
+            # Note: external sends are under a different program, see index_user_bank.py
+            if tx_info["memo"] and "In-App $AUDIO Purchase:" not in tx_info["memo"]:
+                audio_txs.append(
+                    AudioTransactionsHistory(
+                        user_bank=tx_info["user_bank"],
+                        slot=tx_info["slot"],
+                        signature=tx_info["signature"],
+                        transaction_type=(TransactionType.transfer),
+                        method=TransactionMethod.receive,
+                        transaction_created_at=tx_info["timestamp"],
+                        change=Decimal(tx_info["postbalance"] - tx_info["prebalance"]),
+                        balance=Decimal(tx_info["postbalance"]),
+                        tx_metadata=tx_info["sender_wallet"],
+                    )
+                )
+
+            # Index as purchase transaction
+            else:
+                vendor = tx_info["memo"][1:-1].split(":")[1][1:]
+                if vendor not in purchase_vendor_map.keys():
+                    raise Exception(
+                        f"Purchase instruction from unsupported vendor: {vendor}"
+                    )
+
+                audio_txs.append(
+                    AudioTransactionsHistory(
+                        user_bank=tx_info["user_bank"],
+                        slot=tx_info["slot"],
+                        signature=tx_info["signature"],
+                        transaction_type=purchase_vendor_map[vendor],
+                        method=TransactionMethod.receive,
+                        transaction_created_at=tx_info["timestamp"],
+                        change=Decimal(tx_info["postbalance"] - tx_info["prebalance"]),
+                        balance=Decimal(tx_info["postbalance"]),
+                        tx_metadata=None,
+                    )
+                )
+        return audio_txs
+
+    except Exception as e:
+        logger.error(
+            f"index_spl_token.py | Error processing transaction {tx_info}, {e}",
+            exc_info=True,
         )
         raise e
 
@@ -162,6 +245,7 @@ def parse_sol_tx_batch(
     # Important to note that the batch records are in time DESC order
     updated_root_accounts: Set[str] = set()
     updated_token_accounts: Set[str] = set()
+    spl_token_txs: List[ConfirmedTransaction] = []
     # Process each batch in parallel
     with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
@@ -176,10 +260,12 @@ def parse_sol_tx_batch(
             for future in concurrent.futures.as_completed(
                 parse_sol_tx_futures, timeout=45
             ):
-                _, root_accounts, token_accounts = future.result()
+                tx_info, root_accounts, token_accounts = future.result()
                 if root_accounts or token_accounts:
                     updated_root_accounts.update(root_accounts)
                     updated_token_accounts.update(token_accounts)
+                if tx_info:
+                    spl_token_txs.append(tx_info)
 
         except Exception as exc:
             logger.error(
@@ -224,6 +310,9 @@ def parse_sol_tx_batch(
                 f"index_spl_token.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
             )
             enqueue_immediate_balance_refresh(redis, user_ids)
+
+        audio_txs = process_spl_token_transactions(spl_token_txs, session)
+        session.bulk_save_objects(audio_txs)
 
         if tx_sig_batch_records:
             last_tx = tx_sig_batch_records[0]

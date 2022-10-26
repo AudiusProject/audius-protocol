@@ -12,6 +12,7 @@ class TransactionType(str, enum.Enum):
     transfer = "TRANSFER"
     purchase_stripe = "PURCHASE_STRIPE"
     purchase_coinbase = "PURCHASE_COINBASE"
+    unknown = "UNKNOWN"
 
 
 class TransactionMethod(str, enum.Enum):
@@ -36,4 +37,4 @@ class AudioTransactionsHistory(Base, RepresentableMixin):
     transaction_created_at = Column(DateTime, nullable=False)
     change = Column(Numeric, nullable=False)
     balance = Column(Numeric, nullable=False)
-    tx_metadata = Column(String, nullable=False)
+    tx_metadata = Column(String, nullable=True)

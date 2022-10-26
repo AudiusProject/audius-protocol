@@ -484,7 +484,7 @@ def split_list(list, n):
 
 
 # Extracts the pre and post balances for a given index from a solana transaction metadata
-def get_solana_tx_balances(meta: Any, idx: int) -> Tuple[int, int]:
+def get_solana_tx_token_balances(meta, idx):
     pre_balance_dict = next(
         (
             balance
@@ -506,3 +506,14 @@ def get_solana_tx_balances(meta: Any, idx: int) -> Tuple[int, int]:
     pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
     post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
     return (pre_balance, post_balance)
+
+
+def get_solana_tx_root_account(meta, idx) -> str:
+    return next(
+        (
+            balance["owner"]
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        "",
+    )
