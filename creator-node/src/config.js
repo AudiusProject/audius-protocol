@@ -493,6 +493,12 @@ const config = convict({
     env: 'premiumContentEnabled',
     default: false
   },
+  diskPruneEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
+    format: Boolean,
+    env: 'diskPruneEnabled',
+    default: true
+  },
 
   /** sync / snapback configs */
 
