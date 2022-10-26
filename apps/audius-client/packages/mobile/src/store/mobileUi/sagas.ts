@@ -1,4 +1,4 @@
-import { Dimensions, Platform } from 'react-native'
+import { Dimensions, Platform, StatusBar } from 'react-native'
 import { getNavigationBarHeight } from 'react-native-android-navbar-height'
 import { call, put } from 'typed-redux-saga'
 
@@ -9,9 +9,14 @@ function* calculateAndroidNavigationBarHeight() {
     const scale = Dimensions.get('screen').scale
     const navigationBarHeight = yield* call(getNavigationBarHeight)
 
+    // Account for statusBar height because it is translucent and `getNavigationbarHeight`
+    // does not account for it
+    const statusBarHeight = StatusBar.currentHeight ?? 0
+
     yield* put(
       setAndroidNavigationBarHeight({
-        androidNavigationBarHeight: navigationBarHeight / scale
+        androidNavigationBarHeight:
+          navigationBarHeight / scale - statusBarHeight
       })
     )
   }

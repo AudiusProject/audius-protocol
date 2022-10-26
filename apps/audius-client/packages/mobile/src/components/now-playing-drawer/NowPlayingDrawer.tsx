@@ -19,7 +19,7 @@ import type {
   GestureResponderEvent,
   PanResponderGestureState
 } from 'react-native'
-import { View, StatusBar, Pressable } from 'react-native'
+import { Platform, View, StatusBar, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -150,7 +150,10 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   }, [staticTopInset, insets.top])
 
   useEffect(() => {
-    if (staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD) {
+    if (
+      Platform.OS === 'ios' &&
+      staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD
+    ) {
       if (isOpen) {
         StatusBar.setHidden(true, 'fade')
       } else {
@@ -165,7 +168,10 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     (e: GestureResponderEvent, gestureState: PanResponderGestureState) => {
       // Do not hide the status bar for smaller insets
       // This is to prevent layout shift which breaks the animation
-      if (staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD) {
+      if (
+        Platform.OS === 'ios' &&
+        staticTopInset.current > INSET_STATUS_BAR_HIDE_THRESHOLD
+      ) {
         if (gestureState.vy > 0) {
           // Dragging downwards
           if (drawerPercentOpen.current < STATUS_BAR_FADE_CUTOFF) {
