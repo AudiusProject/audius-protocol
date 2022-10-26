@@ -69,18 +69,18 @@ module.exports = class DecisionTree {
     this.tree.push(stage)
 
     if (log) {
-      this.printLastStage({ logLevel })
+      this._printLastStage({ logLevel })
     }
   }
 
-  printTree({ logLevel = 'info' }) {
+  printTree({ logLevel = 'info' } = {}) {
     this._log({
       msg: `DecisionTree Full - ${JSON.stringify(this.tree, null, 2)}`,
       logLevel
     })
   }
 
-  printLastStage({ logLevel = 'info' }) {
+  private _printLastStage({ logLevel = 'info' } = {}) {
     if (this.tree.length > 0) {
       this._log({
         msg: `DecisionTree Last Stage - ${JSON.stringify(
@@ -98,7 +98,7 @@ module.exports = class DecisionTree {
     }
   }
 
-  private _log({ msg = '', logLevel = 'info' }) {
+  private _log({ msg = '', logLevel = 'info' } = {}) {
     let logFn
     switch (logLevel) {
       case 'error':
