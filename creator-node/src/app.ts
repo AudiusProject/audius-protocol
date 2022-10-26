@@ -146,7 +146,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
 
   // Metric tracking middleware
   app.use(
-    routes.map((route) => route.path), // this inherently matches on those weird routes like /ipfs/cid/and/other/stuff (thanks express)
+    routes.map((route) => route.path),
     prometheusMiddleware({
       // Use existing registry for compatibility with custom metrics. Can see
       // the metrics on /prometheus_metrics_worker
