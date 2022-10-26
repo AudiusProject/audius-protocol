@@ -49,7 +49,7 @@ class DiskManager {
    */
   static async emptyTmpTrackUploadArtifacts() {
     const dirPath = await this.getTmpTrackUploadArtifactsPath()
-    const dirSize = await this.getDirSize(path)
+    const dirSize = await this.getDirSize(dirPath)
     await fs.emptyDir(dirPath)
 
     return dirSize
