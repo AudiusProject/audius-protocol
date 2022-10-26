@@ -160,16 +160,20 @@ export class SyncQueue {
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
   }: EnqueueSyncArgs) {
-    const job = await this.queue.add('process-sync', {
-      wallet,
-      creatorNodeEndpoint,
-      blockNumber,
-      forceResyncConfig,
-      forceWipe,
-      logContext,
-      parentSpanContext,
-      syncUuid: syncUuid || null
-    })
+    const job = await this.queue.add(
+      'process-sync',
+      {
+        wallet,
+        creatorNodeEndpoint,
+        blockNumber,
+        forceResyncConfig,
+        forceWipe,
+        logContext,
+        parentSpanContext,
+        syncUuid: syncUuid || null
+      },
+      { lifo: !!forceWipe }
+    )
     return job
   }
 }
