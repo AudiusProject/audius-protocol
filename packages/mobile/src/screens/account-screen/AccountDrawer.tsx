@@ -14,12 +14,13 @@ import {
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
-import { Pressable, TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
+import IconUser from 'app/assets/images/iconUser.svg'
 import IconUserFollowers from 'app/assets/images/iconUserFollowers.svg'
 import IconUserList from 'app/assets/images/iconUserList.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
@@ -38,8 +39,16 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 
 const messages = {
+  profile: 'Profile',
   audio: '$AUDIO & Rewards',
   settings: 'Settings'
+}
+
+const accountStatHitSlop = {
+  top: spacing(2),
+  right: spacing(2),
+  bottom: spacing(2),
+  left: spacing(2)
 }
 
 type AccountDrawerProps = DrawerContentComponentProps & {
@@ -71,8 +80,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     paddingRight: spacing(4)
   },
   tokenBadge: {
-    height: spacing(7),
-    width: spacing(7),
     marginRight: spacing(1)
   },
   accountStats: { flexDirection: 'row', paddingLeft: spacing(4) },
@@ -105,6 +112,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const AccountDrawer = (props: AccountDrawerProps) => {
+  const { navigation: drawerHelpers } = props
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
   const { user_id, name, handle, track_count, followee_count, follower_count } =
@@ -119,31 +127,39 @@ export const AccountDrawer = (props: AccountDrawerProps) => {
   const navigation = useAppDrawerNavigation()
 
   const handlePressAccount = useCallback(() => {
-    navigation.navigate('Profile', { handle: 'accountUser' })
-  }, [navigation])
+    navigation.push('Profile', { handle: 'accountUser' })
+    drawerHelpers.closeDrawer()
+  }, [navigation, drawerHelpers])
 
   const handlePressRewards = useCallback(() => {
-    navigation.navigate('AudioScreen')
-  }, [navigation])
+    navigation.push('AudioScreen')
+    drawerHelpers.closeDrawer()
+  }, [navigation, drawerHelpers])
 
   const handlePressFollowing = useCallback(() => {
     dispatch(setFollowing(user_id))
-    navigation.navigate('Following', { userId: user_id })
-  }, [dispatch, user_id, navigation])
+    navigation.push('Following', { userId: user_id })
+    drawerHelpers.closeDrawer()
+  }, [dispatch, user_id, navigation, drawerHelpers])
 
   const handlePressFollowers = useCallback(() => {
     dispatch(setFollowers(user_id))
-    navigation.navigate('Followers', { userId: user_id })
-  }, [dispatch, user_id, navigation])
+    navigation.push('Followers', { userId: user_id })
+    drawerHelpers.closeDrawer()
+  }, [dispatch, user_id, navigation, drawerHelpers])
 
   const handlePressSettings = useCallback(() => {
-    navigation.navigate('SettingsScreen')
-  }, [navigation])
+    navigation.push('SettingsScreen')
+    drawerHelpers.closeDrawer()
+  }, [navigation, drawerHelpers])
 
   return (
     <DrawerContentScrollView {...props}>
       <View style={styles.header}>
-        <Pressable style={styles.accountInfo} onPress={handlePressAccount}>
+        <TouchableOpacity
+          style={styles.accountInfo}
+          onPress={handlePressAccount}
+        >
           <ProfilePicture profile={accountUser} style={styles.accountImage} />
           <View style={styles.accountName}>
             <Text variant='h1' noGutter>
@@ -158,31 +174,54 @@ export const AccountDrawer = (props: AccountDrawerProps) => {
           <Text weight='medium' fontSize='medium'>
             @{handle}
           </Text>
-        </Pressable>
-        <Pressable style={styles.tokens} onPress={handlePressRewards}>
-          <IconAudioBadge tier={tier} showNoTier style={styles.tokenBadge} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.tokens} onPress={handlePressRewards}>
+          <IconAudioBadge
+            tier={tier}
+            showNoTier
+            style={styles.tokenBadge}
+            height={spacing(7)}
+            width={spacing(7)}
+          />
           <Text fontSize='large' weight='heavy'>
             {totalBalance ? formatWei(totalBalance) : 0}
           </Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
       <Divider style={styles.divider} />
       <View style={styles.accountStats}>
-        <Pressable style={styles.accountStat} onPress={handlePressAccount}>
-          <IconNote fill={neutralLight4} style={styles.accountStatIcon} />
+        <TouchableOpacity
+          style={styles.accountStat}
+          onPress={handlePressAccount}
+          hitSlop={accountStatHitSlop}
+        >
+          <IconNote
+            fill={neutralLight4}
+            style={[styles.accountStatIcon, { marginRight: 2 }]}
+            height={30}
+            width={30}
+          />
           <View>
             <Text fontSize='large' weight='heavy'>
               {formatCount(track_count)}
             </Text>
           </View>
-        </Pressable>
-        <Pressable style={styles.accountStat} onPress={handlePressFollowing}>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.accountStat}
+          onPress={handlePressFollowing}
+          hitSlop={accountStatHitSlop}
+        >
           <IconUserList fill={neutralLight4} style={styles.accountStatIcon} />
           <Text fontSize='large' weight='heavy'>
             {formatCount(followee_count)}
           </Text>
-        </Pressable>
-        <Pressable style={styles.accountStat} onPress={handlePressFollowers}>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.accountStat}
+          onPress={handlePressFollowers}
+          hitSlop={accountStatHitSlop}
+        >
           <IconUserFollowers
             fill={neutralLight4}
             style={styles.accountStatIcon}
@@ -190,9 +229,27 @@ export const AccountDrawer = (props: AccountDrawerProps) => {
           <Text fontSize='large' weight='heavy'>
             {formatCount(follower_count)}
           </Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
       <Divider style={styles.divider} />
+      <TouchableOpacity
+        style={styles.accountListItem}
+        onPress={handlePressAccount}
+      >
+        <IconUser
+          fill={neutral}
+          height={spacing(7)}
+          width={spacing(7)}
+          style={styles.accountListItemIcon}
+        />
+        <Text
+          fontSize='large'
+          weight='demiBold'
+          style={{ marginTop: spacing(1) }}
+        >
+          {messages.profile}
+        </Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={styles.accountListItem}
         onPress={handlePressRewards}

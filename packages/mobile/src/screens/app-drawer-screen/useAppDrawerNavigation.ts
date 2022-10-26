@@ -5,6 +5,8 @@ import { FeatureFlags } from '@audius/common'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
+import { AppTabNavigationContext } from '../app-screen'
+
 import { AppDrawerContext } from '.'
 
 /** Temporary navigation hook for notification components.
@@ -20,32 +22,23 @@ export const useNotificationNavigation = () => {
   const navigation = useNavigation()
 
   const notificationNavigation = useMemo(
-    () => ({
-      ...navigation,
-      ...drawerHelpers
-    }),
-    [drawerHelpers, navigation]
+    () =>
+      isNavOverhaulEnabled
+        ? navigation
+        : {
+            ...navigation,
+            ...drawerHelpers
+          },
+    [isNavOverhaulEnabled, drawerHelpers, navigation]
   )
 
   if (isNavOverhaulEnabled) {
     notificationNavigation.navigate = notificationNavigation.push as any
   }
-
   return notificationNavigation
 }
 
 export const useAppDrawerNavigation = () => {
-  const { drawerHelpers } = useContext(AppDrawerContext)
-
-  const navigation = useNavigation()
-
-  const drawerNavigation = useMemo(
-    () => ({
-      ...navigation,
-      ...drawerHelpers
-    }),
-    [drawerHelpers, navigation]
-  )
-
-  return drawerNavigation
+  const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
+  return useNavigation({ customNavigation: contextNavigation })
 }

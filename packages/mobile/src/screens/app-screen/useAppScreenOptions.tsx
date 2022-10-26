@@ -35,7 +35,7 @@ const { markAllAsViewed } = notificationsActions
 const { getNotificationUnviewedCount } = notificationsSelectors
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  headerLeft: { marginLeft: spacing(-2), width: 40 },
+  headerLeft: { marginLeft: spacing(-2) + 1, width: 40 },
   headerRight: {},
   title: {
     fontSize: 18,
