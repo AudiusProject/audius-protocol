@@ -46,6 +46,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import get_solana_tx_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
@@ -176,53 +177,18 @@ def process_transfer_instruction(
         )
         return
 
-    # Find the right pre/post balances using the account indexes
-    # for the sender/receiver accounts since they aren't necessarily given in order
-    pre_sender_balance_dict = next(
-        (
-            balance
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == sender_index
-        ),
-        None,
+    pre_sender_balance, post_sender_balance = get_solana_tx_balances(meta, sender_index)
+    pre_receiver_balance, post_receiver_balance = get_solana_tx_balances(
+        meta, receiver_index
     )
-    pre_receiver_balance_dict = next(
-        (
-            balance
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == receiver_index
-        ),
-        None,
-    )
-    post_sender_balance_dict = next(
-        (
-            balance
-            for balance in meta["postTokenBalances"]
-            if balance["accountIndex"] == sender_index
-        ),
-        None,
-    )
-    post_receiver_balance_dict = next(
-        (
-            balance
-            for balance in meta["postTokenBalances"]
-            if balance["accountIndex"] == receiver_index
-        ),
-        None,
-    )
-
     if (
-        pre_sender_balance_dict is None
-        or pre_receiver_balance_dict is None
-        or post_sender_balance_dict is None
-        or post_receiver_balance_dict is None
+        pre_sender_balance is None
+        or pre_receiver_balance is None
+        or post_sender_balance is None
+        or post_receiver_balance is None
     ):
         logger.error("index_user_bank.py | ERROR: Sender or Receiver balance missing!")
         return
-    pre_sender_balance = int(pre_sender_balance_dict["uiTokenAmount"]["amount"])
-    post_sender_balance = int(post_sender_balance_dict["uiTokenAmount"]["amount"])
-    pre_receiver_balance = int(pre_receiver_balance_dict["uiTokenAmount"]["amount"])
-    post_receiver_balance = int(post_receiver_balance_dict["uiTokenAmount"]["amount"])
     sent_amount = pre_sender_balance - post_sender_balance
     received_amount = post_receiver_balance - pre_receiver_balance
     if sent_amount != received_amount:
@@ -280,7 +246,7 @@ def process_transfer_instruction(
             transaction_created_at=timestamp,
             change=sent_amount,
             balance=post_sender_balance,
-            tx_metadata=receiver_user_id,
+            tx_metadata=str(receiver_user_id),
         )
         logger.debug(
             f"index_user_bank.py | Creating audio_tx_history send tx for tip {audio_tx_sent}"
@@ -295,7 +261,7 @@ def process_transfer_instruction(
             transaction_created_at=timestamp,
             change=received_amount,
             balance=post_receiver_balance,
-            tx_metadata=sender_user_id,
+            tx_metadata=str(sender_user_id),
         )
         session.add(audio_tx_received)
         logger.debug(

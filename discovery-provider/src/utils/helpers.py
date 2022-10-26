@@ -8,7 +8,7 @@ import re
 import time
 from functools import reduce
 from json.encoder import JSONEncoder
-from typing import Optional, cast
+from typing import Any, Optional, Tuple, cast
 
 import requests
 from flask import g, request
@@ -481,3 +481,28 @@ def get_tx_arg(tx, arg_name):
 def split_list(list, n):
     for i in range(0, len(list), n):
         yield list[i : i + n]
+
+
+# Extracts the pre and post balances for a given index from a solana transaction metadata
+def get_solana_tx_balances(meta: Any, idx: int) -> Tuple[int, int]:
+    pre_balance_dict = next(
+        (
+            balance
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    post_balance_dict = next(
+        (
+            balance
+            for balance in meta["postTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    if pre_balance_dict is None or post_balance_dict is None:
+        return (-1, -1)
+    pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
+    post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
+    return (pre_balance, post_balance)
