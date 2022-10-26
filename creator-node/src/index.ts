@@ -113,7 +113,7 @@ const startAppForPrimary = async () => {
   const startTime = Date.now()
   await DiskManager.emptyTmpTrackUploadArtifacts()
   logger.info(
-    `old tmp track artifacts deleted : ${(Date.now() - startTime) * 1000}sec`
+    `old tmp track artifacts deleted : ${(Date.now() - startTime) / 1000}sec`
   )
 
   // Don't await - run in background. Remove after v0.3.69
