@@ -1,4 +1,7 @@
-const retry = require('async-retry')
+import type Logger from 'bunyan'
+import type AsyncRetry from 'async-retry'
+
+import retry from 'async-retry'
 
 const { logger: genericLogger } = require('../logging')
 
@@ -21,12 +24,18 @@ const { logger: genericLogger } = require('../logging')
  * @param {string?} param.logLabel
  * @returns the fn response if success, or throws an error
  */
-module.exports = function asyncRetry({
+export function asyncRetry({
   asyncFn,
   options = {},
   logger = genericLogger,
   log = true,
   logLabel = null
+}: {
+  asyncFn: AsyncRetry.RetryFunction<any>
+  options?: AsyncRetry.Options
+  logger?: Logger
+  log?: boolean
+  logLabel?: string | null
 }) {
   options = {
     retries: 5,
@@ -36,7 +45,8 @@ module.exports = function asyncRetry({
     onRetry: (err, i) => {
       if (err && log) {
         const logPrefix =
-          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
+          (logLabel ? `[${logLabel}] ` : '') +
+          `[asyncRetry:${asyncFn.name}] [attempt #${i}]`
         logger.warn(`${logPrefix}: `, err.message || err)
       }
     },

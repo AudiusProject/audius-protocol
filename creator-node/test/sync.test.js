@@ -1281,6 +1281,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport)
 
+      nock('http://docker.for.mac.localhost:5000')
+        .get((uri) => uri.includes('/users/history'))
+        .reply(200, { data: [] })
+
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)

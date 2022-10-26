@@ -31,6 +31,14 @@ class DiskManager {
   }
 
   /**
+   * Empties the tmp track artifacts directory of any old artifacts
+   */
+  static async emptyTmpTrackUploadArtifacts() {
+    const dirPath = await this.getTmpTrackUploadArtifactsPath()
+    await fs.emptyDir(dirPath)
+  }
+
+  /**
    * Returns the folder that stores track artifacts uploaded by creators. The reason this is all stored together
    * is we should be able to delete the contents of this folder without scanning through other folders with the
    * naming scheme.
@@ -323,8 +331,6 @@ class DiskManager {
         )
       }
       return numFilesDeleted
-    } catch (e) {
-      throw e
     } finally {
       await redisClient.del(redisSetKey)
     }

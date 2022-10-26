@@ -45,7 +45,7 @@ export const validateMetadata = (req: Request, metadataJSON: MetadataJson) => {
     return false
   } else if (!validateAssociatedWallets(metadataJSON)) {
     const reqWithLogger = req as RequestWithLogger
-    reqWithLogger.logger.info('Associated Wallets do not match signatures')
+    reqWithLogger.logger.warn('Associated Wallets do not match signatures')
     return false
   }
 

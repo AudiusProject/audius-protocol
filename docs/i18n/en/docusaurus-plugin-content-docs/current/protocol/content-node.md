@@ -33,7 +33,7 @@ It stores all data in a postgresql database and all images and metadata objects 
 
 Pointers to all content and metadata stored on disk are persisted in the Postgres DB.
 
-*Postgres is managed in the codebase using the [Sequelize ORM](https://sequelize.org/master/) which includes migrations, models and validations*
+*Postgres is managed in the codebase using the [Sequelize ORM](https://sequelize.org/main/) which includes migrations, models and validations*
 
 **Redis**
 

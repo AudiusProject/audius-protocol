@@ -16,6 +16,7 @@ const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
 const { clusterUtils } = require('../../utils')
+const { clearSyncStatuses } = require('../sync/syncUtil')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -25,10 +26,17 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+    if (clusterUtils.isThisWorkerInit()) {
+      await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+      await clearSyncStatuses()
 
-    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
-    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
+      // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+      await updateContentNodeChainInfo(
+        baseLogger,
+        redis,
+        audiusLibs.ethContracts
+      )
+    }
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -143,7 +151,7 @@ class StateMachineManager {
    * @param {number} jobId the ID of the job that completed
    * @param {string} returnvalue the stringified JSON of the job's returnValue
    */
-  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, id) {
+  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, _id) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {

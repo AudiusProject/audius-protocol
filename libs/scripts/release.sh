@@ -33,27 +33,27 @@ function commit-message () {
 ${CHANGE_LOG}"
 }
 
-# Pull in master, ensure commit is on master, ensure clean build environment
+# Pull in main, ensure commit is on main, ensure clean build environment
 function git-reset () {
     (
         # Configure git client
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
 
-        # Make sure master is up to date
-        git checkout master -f
+        # Make sure main is up to date
+        git checkout main -f
         git pull
 
-        if [[ "${GIT_COMMIT}" == "master" ]]; then
-            echo "Commit cannot be 'master'."
+        if [[ "${GIT_COMMIT}" == "main" ]]; then
+            echo "Commit cannot be 'main'."
             exit 1
         fi
 
-        # only allow commits found on master or release branches to be deployed
-        echo "commit has to be on master or a release branch"
+        # only allow commits found on main or release branches to be deployed
+        echo "commit has to be on main or a release branch"
         git branch -a --contains ${GIT_COMMIT} \
             | tee /dev/tty \
-            | grep -Eq 'remotes/origin/master|remotes/origin/release' \
+            | grep -Eq 'remotes/origin/main|remotes/origin/release' \
             || exit 1
 
         # Ensure working directory clean
@@ -88,10 +88,10 @@ function bump-version () {
     )
 }
 
-# Merge the created branch into master, then delete the branch
+# Merge the created branch into main, then delete the branch
 function merge-bump () {
     (
-        git checkout master -f
+        git checkout main -f
 
         # pull in any additional commits that may have trickled in
         git pull
@@ -105,7 +105,7 @@ function merge-bump () {
         git push origin --tags || exit 1
 
         # if pushing fails, ensure we cleanup()
-        git push -u origin master || exit 1
+        git push -u origin main || exit 1
         git push origin :${STUB}-${VERSION}
     )
 }
@@ -118,7 +118,7 @@ function publish () {
 # informative links
 function info () {
     echo "Released to:
-      https://github.com/AudiusProject/audius-protocol/commits/master
+      https://github.com/AudiusProject/audius-protocol/commits/main
       https://github.com/AudiusProject/audius-protocol/tags
       https://www.npmjs.com/package/@audius/sdk?activeTab=versions"
 }
@@ -134,7 +134,7 @@ function cleanup () {
 STUB=sdk
 cd ${PROTOCOL_DIR}/libs
 
-# pull in master
+# pull in main
 git-reset
 
 # grab change log early, before the version bump
