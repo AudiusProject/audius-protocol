@@ -19,7 +19,7 @@ from src.utils.eth_contracts_helpers import (
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_cn_sp_id_key, get_json_cached_key
+from src.utils.redis_cache import get_cn_sp_id_key, get_json_cached_key, set_json_cached_key
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
