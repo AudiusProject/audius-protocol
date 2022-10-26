@@ -85,6 +85,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     senderAddress,
     gasLimit
   } = txProps
+  if (contractAddress === "0xF4d4E1bF6429f4B6ea2F36AB2d238EA7a6806293"){
+    throw new Error('Filter reconfig')
+  }
   const redis = req.app.get('redis')
 
   const existingTx = await models.Transaction.findOne({
