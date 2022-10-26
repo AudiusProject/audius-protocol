@@ -169,8 +169,7 @@ export async function getReplicaSetSpIdsByUserId({
    * If `blockNumber` provided, poll contract until it has indexed that blocknumber (for up to 200 seconds)
    */
   if (blockNumber) {
-    // In total, will try for 200 seconds
-    const MAX_RETRIES = 201
+    const MAX_RETRIES = 10
 
     let errorMsg = null
     await asyncRetry({
@@ -220,9 +219,7 @@ export async function getReplicaSetSpIdsByUserId({
      * Error if still mismatched after specified timeout
      */
 
-    // Will poll every second for 60 sec
-    const MAX_RETRIES = 61
-
+    const MAX_RETRIES = 10
     let errorMsg = null
     await asyncRetry({
       options: {
