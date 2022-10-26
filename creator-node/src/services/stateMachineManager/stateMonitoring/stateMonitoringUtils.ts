@@ -23,7 +23,7 @@ const {
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
   SYNC_MODES,
   FETCH_FILES_HASH_NUM_RETRIES,
-  FETCH_FILES_HASH_MAX_TIMEOUT
+  FETCH_FILES_HASH_MAX_TIMEOUT_MS
 } = require('../stateMachineConstants')
 
 /**
@@ -45,10 +45,7 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint: string) => {
           timeout: 10_000 // 10s
         })
       },
-      logger,
-      options: {
-        maxTimeout: 10_000 // 10s
-      }
+      logger
     })
     latestUserId = resp.data.data
   } catch (e: any) {
@@ -274,7 +271,7 @@ const computeSyncModeForUserAndReplica = async ({
           }),
         options: {
           retries: FETCH_FILES_HASH_NUM_RETRIES,
-          maxTimeout: FETCH_FILES_HASH_MAX_TIMEOUT
+          maxTimeout: FETCH_FILES_HASH_MAX_TIMEOUT_MS
         },
         logger,
         logLabel:
