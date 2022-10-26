@@ -20,6 +20,8 @@ const CID_DIRECTORY_REGEX =
 // Prefix for redis keys that store which files to delete for a user
 const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
+const DAYS_BEFORE_PRUNING_ORPHANED_CONTENT = 7
+
 // variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
 // it every time a track is uploaded
 let TMP_TRACK_ARTIFACTS_CREATED = false
@@ -368,7 +370,7 @@ class DiskManager {
     // find files older than 3 days in filesSubdirectory (eg /file_storage/files/AqN)
     try {
       const stdout = await this._execShellCommand(
-        `find ${filesSubdirectory} -mtime +3`
+        `find ${filesSubdirectory} -mtime +${DAYS_BEFORE_PRUNING_ORPHANED_CONTENT}`
       )
 
       for (const file of stdout.split('\n')) {
@@ -393,10 +395,11 @@ class DiskManager {
     if (!subdirectories) return
 
     for (let i = 0; i < subdirectories.length; i += 1) {
+      const subdirectory = subdirectories[i]
       genericLogger.info(
         `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
       )
-      const cids = await this.listNestedCIDsInFilePath(subdirectories[i])
+      const cids = await this.listNestedCIDsInFilePath(subdirectory)
 
       // TODO - parallelize into batches
       // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
@@ -425,13 +428,20 @@ class DiskManager {
           cidsToDelete.push(cid)
         } else cidsNotToDelete.push(cid)
       }
-      // TODO - actually delete files
+
       genericLogger.info(
         `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
       )
       genericLogger.info(
         `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
       )
+
+      // gate deleting files on disk with the same env var
+      if (config.get('syncForceWipeEnabled')) {
+        await this._execShellCommand(
+          `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+        )
+      }
     }
 
     // keep calling this function recursively without an await so the original function scope can close
