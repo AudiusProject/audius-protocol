@@ -105,5 +105,12 @@ module.exports = {
 
     'import/no-unresolved': 'error',
     'import/order': 'off'
-  }
+  },
+  "overrides": [{ // don't throw errors in *.test.js files embedded in src/ for using dev-dependencies
+    "files": "**/*.test.js",
+    "rules": {
+        "node/no-unpublished-require": 0,
+        "node/no-missing-require": 0
+    }
+  }]
 }

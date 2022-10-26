@@ -172,6 +172,9 @@ const startAppForPrimary = async () => {
       }
     }
   })
+
+  // do not await this, this should just run in background for now
+  DiskManager.sweepSubdirectoriesInFiles()
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
