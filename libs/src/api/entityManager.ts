@@ -1,23 +1,7 @@
 import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
+import { Action, EntityType } from '../services/dataContracts/EntityManagerClient'
 
-export enum Action {
-  CREATE = 'Create',
-  UPDATE = 'Update',
-  DELETE = 'Delete',
-  FOLLOW = 'Follow',
-  UNFOLLOW = 'Unfollow',
-  SAVE = 'Save',
-  UNSAVE = 'Unsave',
-  REPOST = 'Repost',
-  UNREPOST = 'Unrepost'
-}
-
-export enum EntityType {
-  TRACK = 'Track',
-  PLAYLIST = 'Playlist',
-  USER = 'User'
-}
 
 export type EntityManagerSuccessResponse = {
   blockHash: string
@@ -111,6 +95,8 @@ export class EntityManager extends Base {
   unsavePlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.UNSAVE)
   repostTrack = this.createSocialMethod(EntityType.TRACK, Action.REPOST)
   unrepostTrack = this.createSocialMethod(EntityType.TRACK, Action.UNREPOST)
+  repostPlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.REPOST)
+  unrepostPlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.UNREPOST)
 
   /** Playlist */
 
