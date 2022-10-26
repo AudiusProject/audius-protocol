@@ -176,7 +176,12 @@ const startAppForPrimary = async () => {
   })
 
   // do not await this, this should just run in background for now
-  DiskManager.sweepSubdirectoriesInFiles()
+  // wait one minute before starting this because it might cause init to degrade
+  if (config.get('diskPruneEnabled')) {
+    setTimeout(() => {
+      DiskManager.sweepSubdirectoriesInFiles()
+    }, 60_000)
+  }
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
