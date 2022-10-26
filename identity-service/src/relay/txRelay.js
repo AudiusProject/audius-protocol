@@ -102,6 +102,16 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
+  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
+  if (isReplicaSetTransaction) {
+    const isFirstReplicaSetConfig = decodedABI.params.find(
+      param => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+    if (!isFirstReplicaSetConfig) {
+      throw new Error("Is not first replica set config")
+    }
+  }
+
   // will be set later. necessary for code outside scope of try block
   let txReceipt
   let redisLogParams
