@@ -83,7 +83,11 @@ export function* followUser(
       | null) ?? false
   if (shouldAutoSubscribe) {
     yield* put(
-      setNotificationSubscription(action.userId, /* isSubscribed */ true)
+      setNotificationSubscription(
+        action.userId,
+        /* isSubscribed */ true,
+        /* update */ true
+      )
     )
   }
 }
@@ -196,7 +200,11 @@ export function* unfollowUser(
 
   yield* call(confirmUnfollowUser, action.userId, accountId)
   yield* put(
-    setNotificationSubscription(action.userId, /* isSubscribed */ false)
+    setNotificationSubscription(
+      action.userId,
+      /* isSubscribed */ false,
+      /* update */ true
+    )
   )
 }
 
