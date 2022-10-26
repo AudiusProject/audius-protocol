@@ -33,7 +33,8 @@ import { runShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
-export type { ValuesOf, RequestWithLogger } from './utils'
+export type { ValuesOf } from './utils'
+export type { CustomRequest } from '../apiHelpers'
 export {
   isFqdn,
   timeout,
