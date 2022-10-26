@@ -271,7 +271,12 @@ export enum Name {
   BUY_AUDIO_ON_RAMP_CANCELED = 'Buy Audio: On Ramp Canceled',
   BUY_AUDIO_ON_RAMP_SUCCESS = 'Buy Audio: On Ramp Success',
   BUY_AUDIO_SUCCESS = 'Buy Audio: Success',
-  BUY_AUDIO_FAILURE = 'Buy Audio: Failure'
+  BUY_AUDIO_FAILURE = 'Buy Audio: Failure',
+
+  // Buy Audio Recovery
+  BUY_AUDIO_RECOVERY_OPENED = 'Buy Audio Recovery: Opened',
+  BUY_AUDIO_RECOVERY_SUCCESS = 'Buy Audio Recovery: Success',
+  BUY_AUDIO_RECOVERY_FAILURE = 'Buy Audio Recovery: Failure'
 }
 
 type PageView = {
@@ -1299,6 +1304,24 @@ type BuyAudioFailure = {
   error: string
 }
 
+type BuyAudioRecoveryOpened = {
+  eventName: Name.BUY_AUDIO_RECOVERY_OPENED
+  provider: string
+}
+
+type BuyAudioRecoverySuccess = {
+  eventName: Name.BUY_AUDIO_RECOVERY_SUCCESS
+  provider: string
+  audioRecovered: number
+}
+
+type BuyAudioRecoveryFailure = {
+  eventName: Name.BUY_AUDIO_RECOVERY_FAILURE
+  provider: string
+  stage: string
+  error: string
+}
+
 type RewardsClaimStartCognitoFlow = {
   eventName: Name.REWARDS_CLAIM_START_COGNITO_FLOW
   handle: string | null
@@ -1485,5 +1508,8 @@ export type AllTrackingEvents =
   | BuyAudioOnRampCanceled
   | BuyAudioSuccess
   | BuyAudioFailure
+  | BuyAudioRecoveryOpened
+  | BuyAudioRecoverySuccess
+  | BuyAudioRecoveryFailure
   | RewardsClaimStartCognitoFlow
   | RewardsClaimFinishCognitoFlow
