@@ -395,51 +395,57 @@ class DiskManager {
     if (!subdirectories) return
 
     for (let i = 0; i < subdirectories.length; i += 1) {
-      const subdirectory = subdirectories[i]
-      genericLogger.info(
-        `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
-      )
-      const cids = await this.listNestedCIDsInFilePath(subdirectory)
+      try {
+        const subdirectory = subdirectories[i]
+        genericLogger.info(
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
+        )
+        const cids = await this.listNestedCIDsInFilePath(subdirectory)
 
-      // TODO - parallelize into batches
-      // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
-      // const cids = cidsArray.flat()
+        // TODO - parallelize into batches
+        // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
+        // const cids = cidsArray.flat()
 
-      const queryResults = await models.File.findAll({
-        attributes: ['multihash', 'storagePath'],
-        raw: true,
-        where: {
-          multihash: {
-            [models.Sequelize.Op.in]: cids
+        const queryResults = await models.File.findAll({
+          attributes: ['multihash', 'storagePath'],
+          raw: true,
+          where: {
+            multihash: {
+              [models.Sequelize.Op.in]: cids
+            }
           }
+        })
+
+        const cidToFileLookup = {}
+        for (const file of queryResults) {
+          cidToFileLookup[file.multihash] = file.storagePath
         }
-      })
 
-      const cidToFileLookup = {}
-      for (const file of queryResults) {
-        cidToFileLookup[file.multihash] = file.storagePath
-      }
+        const cidsToDelete = []
+        const cidsNotToDelete = []
+        for (const cid of cids) {
+          // if db doesn't contain file, log as okay to delete
+          if (!cidToFileLookup.hasOwnProperty(cid)) {
+            cidsToDelete.push(cid)
+          } else cidsNotToDelete.push(cid)
+        }
 
-      const cidsToDelete = []
-      const cidsNotToDelete = []
-      for (const cid of cids) {
-        // if db doesn't contain file, log as okay to delete
-        if (!cidToFileLookup.hasOwnProperty(cid)) {
-          cidsToDelete.push(cid)
-        } else cidsNotToDelete.push(cid)
-      }
+        genericLogger.info(
+          `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+        )
+        genericLogger.info(
+          `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+        )
 
-      genericLogger.info(
-        `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
-      )
-      genericLogger.info(
-        `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
-      )
-
-      // gate deleting files on disk with the same env var
-      if (config.get('syncForceWipeEnabled')) {
-        await this._execShellCommand(
-          `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+        // gate deleting files on disk with the same env var
+        if (config.get('syncForceWipeEnabled') && cidsToDelete.length > 0) {
+          await this._execShellCommand(
+            `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+          )
+        }
+      } catch (e) {
+        genericLogger.error(
+          `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
         )
       }
     }
