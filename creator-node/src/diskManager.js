@@ -355,7 +355,7 @@ class DiskManager {
     try {
       // returns list of directories like
       // `
-      // ./
+      // .
       // ./d8A
       // ./Pyx
       // ./BJg
@@ -365,9 +365,10 @@ class DiskManager {
         `cd ${fileStorageFilesDirPath}; find . -maxdepth 1`
       )
       // stdout is a string so split on newline and remove any empty strings
+      // clean any . and ./ results since find can include these to reference relative paths
       for (const dir of stdout.split('\n')) {
         const dirTrimmed = dir.replace('.', '').replace('/', '').trim()
-        // if dirTrimmed is a non-null string and is not just equal to base directory
+        // if dirTrimmed is a non-null string
         if (dirTrimmed) {
           subdirectories.push(`${fileStorageFilesDirPath}/${dirTrimmed}`)
         }
@@ -385,7 +386,7 @@ class DiskManager {
   // returns mapping of {cid: filePath, cid: filePath ...}
   static async listNestedCIDsInFilePath(filesSubdirectory) {
     const cidsToFilePathMap = {}
-    // find files older than 3 days in filesSubdirectory (eg /file_storage/files/AqN)
+    // find files older than DAYS_BEFORE_PRUNING_ORPHANED_CONTENT days in filesSubdirectory (eg /file_storage/files/AqN)
     try {
       const stdout = await this._execShellCommand(
         `find ${filesSubdirectory} -mtime +${DAYS_BEFORE_PRUNING_ORPHANED_CONTENT}`
