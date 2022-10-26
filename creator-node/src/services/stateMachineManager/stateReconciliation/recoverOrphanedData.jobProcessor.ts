@@ -295,7 +295,7 @@ const _getPrimaryForWallet = async (
   try {
     const resp = await asyncRetry({
       logLabel: "fetch user's primary endpoint",
-      options: { retries: 3 },
+      options: { retries: 3, maxTimeout: 5000 },
       asyncFn: async () => {
         return axios({
           method: 'get',

@@ -92,7 +92,10 @@ const WalletWriteLock = {
         acquired = !!response
       },
       logger: genericLogger,
-      log: false
+      log: false,
+      options: {
+        maxTimeout: 5000
+      }
     })
 
     if (!acquired) {
@@ -116,7 +119,10 @@ const WalletWriteLock = {
         await redisClient.del(key)
       },
       logger: genericLogger,
-      log: false
+      log: false,
+      options: {
+        maxTimeout: 5000
+      }
     })
   },
 

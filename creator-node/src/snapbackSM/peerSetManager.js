@@ -135,7 +135,7 @@ class PeerSetManager {
     // Will throw error on non-200 response
     let nodeUsers
     try {
-      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+      // Cancel the request if it hasn't succeeded/failed/timed out with timeout specified in config
       const cancelTokenSource = CancelToken.source()
       setTimeout(
         () =>

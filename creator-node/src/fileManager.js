@@ -195,8 +195,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
         logger,
         log: false,
         options: {
-          retries: numRetries,
-          minTimeout: 3000
+          retries: numRetries
         }
       })
 
