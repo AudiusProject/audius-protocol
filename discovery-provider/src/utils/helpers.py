@@ -8,7 +8,7 @@ import re
 import time
 from functools import reduce
 from json.encoder import JSONEncoder
-from typing import Any, Optional, Tuple, cast
+from typing import Optional, cast
 
 import requests
 from flask import g, request

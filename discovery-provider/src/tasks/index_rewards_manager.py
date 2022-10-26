@@ -248,7 +248,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 
         challenge_id, specifier = transfer_instruction
         receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
-        pre_balance, post_balance = get_solana_tx_balances(meta, receiver_index)
+        pre_balance, post_balance = get_solana_tx_token_balances(meta, receiver_index)
         if pre_balance == -1 or post_balance == -1:
             raise Exception("Reward recipient balance missing!")
         tx_metadata["transfer_instruction"] = {

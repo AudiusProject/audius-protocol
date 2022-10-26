@@ -9,7 +9,11 @@ from src.models.users.audio_transactions_history import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
-from src.tasks.index_spl_token import parse_sol_tx_batch, parse_spl_token_transaction
+from src.tasks.index_spl_token import (
+    parse_memo_instruction,
+    parse_sol_tx_batch,
+    parse_spl_token_transaction,
+)
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -97,12 +101,10 @@ def test_parse_spl_token_transaction_no_results():
     solana_client_manager_mock.get_sol_tx_info.return_value = (
         mock_create_account_tx_info
     )
-    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+    tx_info = parse_spl_token_transaction(
         solana_client_manager_mock, mock_confirmed_signature_for_address
     )
     assert tx_info == None
-    assert root_accounts == []
-    assert token_accounts == []
 
 
 mock_transfer_checked_meta = {
@@ -208,15 +210,15 @@ mock_transfer_tx_info = {
 def test_parse_spl_token_transaction():
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_transfer_tx_info
-    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+    tx_info = parse_spl_token_transaction(
         solana_client_manager_mock, mock_confirmed_signature_for_address
     )
     assert tx_info["user_bank"] == "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD"
-    assert root_accounts == [
+    assert tx_info["root_accounts"] == [
         "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
         "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4",
     ]
-    assert token_accounts == [
+    assert tx_info["token_accounts"] == [
         "7CyoHxibpPrTVc2AsmoSq7gRoDwnwN7LRnHDcR4yWVf9",
         "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD",
     ]
@@ -343,6 +345,11 @@ mock_purchase_tx_info = {
     "result": mock_purchase_meta,
     "id": 4,
 }
+
+
+def test_parse_memo_instruction():
+    tx_info = parse_memo_instruction(mock_purchase_meta)
+    assert tx_info["vendor"] == "Link by Stripe"
 
 
 def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disable=W0621
