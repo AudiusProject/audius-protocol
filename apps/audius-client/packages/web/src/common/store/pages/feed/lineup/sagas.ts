@@ -12,8 +12,7 @@ import {
   feedPageLineupActions as feedActions,
   feedPageSelectors,
   GetSocialFeedArgs,
-  CommonState,
-  waitForAccount
+  CommonState
 } from '@audius/common'
 import { select, all } from 'redux-saga/effects'
 
@@ -25,6 +24,7 @@ import {
   getFollowIds,
   getStartedSignOnProcess
 } from 'common/store/pages/signon/selectors'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { getFeedFilter } = feedPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -43,7 +43,7 @@ function* getTracks({
   offset: number
   limit: number
 }): Generator<any, FeedItem[], any> {
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUser = yield select(getAccountUser)
   const filterEnum: FeedFilter = yield select(getFeedFilter)
   const apiClient = yield* getContext('apiClient')

@@ -7,15 +7,14 @@ import {
   smartCollectionPageActions,
   collectionPageActions,
   getContext,
-  waitForAccount,
   User
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { requiresAccount } from 'common/utils/requiresAccount'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { EXPLORE_PAGE } from '../../../utils/route'
 
@@ -64,7 +63,7 @@ function* fetchHeavyRotation() {
 
 function* fetchBestNewReleases() {
   const explore = yield* getContext('explore')
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -115,7 +114,7 @@ function* fetchUnderTheRadar() {
 }
 
 function* fetchMostLoved() {
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -141,7 +140,7 @@ function* fetchMostLoved() {
 }
 
 function* fetchFeelingLucky() {
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
   const explore = yield* getContext('explore')
 
@@ -163,7 +162,7 @@ function* fetchFeelingLucky() {
 
 function* fetchRemixables() {
   const explore = yield* getContext('explore')
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -234,8 +233,7 @@ function* watchFetch() {
   yield takeEvery(
     fetchSmartCollection.type,
     function* (action: ReturnType<typeof fetchSmartCollection>) {
-      yield* call(waitForBackendSetup)
-      yield* waitForAccount()
+      yield* waitForBackendAndAccount()
 
       const { variant } = action.payload
 

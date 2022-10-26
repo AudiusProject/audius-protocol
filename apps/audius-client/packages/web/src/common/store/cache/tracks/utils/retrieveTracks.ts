@@ -10,12 +10,12 @@ import {
   getContext,
   cacheSelectors,
   cacheTracksActions as trackActions,
-  cacheTracksSelectors,
-  waitForAccount
+  cacheTracksSelectors
 } from '@audius/common'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import {
   fetchAndProcessRemixes,
@@ -65,8 +65,8 @@ export function* retrieveTrackByHandleAndSlug({
         return track
       },
       retrieveFromSource: function* (permalinks: string[]) {
+        yield* waitForBackendAndAccount()
         const apiClient = yield* getContext('apiClient')
-        yield* waitForAccount()
         const userId = yield* select(getUserId)
         const track = yield* call((args) => {
           const split = args[0].split('/')
@@ -153,7 +153,7 @@ export function* retrieveTracks({
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
 
   // In the case of unlisted tracks, trackIds contains metadata used to fetch tracks
@@ -217,6 +217,7 @@ export function* retrieveTracks({
       return selected
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
+      yield* waitForBackendAndAccount()
       const apiClient = yield* getContext('apiClient')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
       if (canBeUnlisted) {

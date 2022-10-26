@@ -17,8 +17,7 @@ import {
   modalsActions,
   getContext,
   newUserMetadata,
-  PhantomProvider,
-  waitForAccount
+  PhantomProvider
 } from '@audius/common'
 import {
   all,
@@ -46,6 +45,7 @@ import {
   loadWalletConnect,
   createSession
 } from 'services/web3-modal'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { setVisibility } = modalsActions
 const {
   send: walletSend,
@@ -133,8 +133,8 @@ function* confirmSendAsync() {
 }
 
 function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* waitForAccount()
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return null
   const users = yield* call(audiusBackendInstance.getCreators, [accountUserId])
@@ -255,11 +255,11 @@ function* connectSPLWallet(
   solana: PhantomProvider,
   disconnect: () => Promise<void>
 ) {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const walletClient = yield* getContext('walletClient')
   try {
-    yield* waitForAccount()
     const accountUserId = yield* select(getUserId)
 
     const currentAssociatedWallets = yield* select(getAssociatedWallets)
@@ -332,7 +332,7 @@ function* connectSPLWallet(
       return
     }
 
-    yield* waitForAccount()
+    yield* waitForBackendAndAccount()
     const userMetadata = yield* select(getAccountUser)
     let updatedMetadata = newUserMetadata({ ...userMetadata })
 
@@ -451,6 +451,7 @@ function* connectSPLWallet(
 }
 
 function* connectEthWallet(web3Instance: any) {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const walletClient = yield* getContext('walletClient')
@@ -458,7 +459,6 @@ function* connectEthWallet(web3Instance: any) {
     const accounts: string[] = yield* call(
       web3Instance.eth.getAccounts as () => Promise<string[]>
     )
-    yield* waitForAccount()
     const accountUserId = yield* select(getUserId)
     const connectingWallet = accounts[0]
 
@@ -632,11 +632,11 @@ function* connectEthWallet(web3Instance: any) {
 }
 
 function* removeWallet(action: ConfirmRemoveWalletAction) {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const removeWallet = action.payload.wallet
     const removeChain = action.payload.chain
-    yield* waitForAccount()
     const accountUserId = yield* select(getUserId)
     const userMetadata = yield* select(getAccountUser)
     const updatedMetadata = newUserMetadata({ ...userMetadata })

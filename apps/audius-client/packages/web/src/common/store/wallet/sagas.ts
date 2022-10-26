@@ -12,8 +12,7 @@ import {
   walletSelectors,
   InputSendDataAction,
   walletActions,
-  getContext,
-  waitForAccount
+  getContext
 } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
@@ -21,6 +20,7 @@ import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
@@ -64,9 +64,9 @@ function* getIsBalanceFrozen() {
 function* sendAsync({
   payload: { recipientWallet, amount: weiAudioAmount, chain }
 }: ReturnType<typeof send>) {
+  yield* waitForBackendAndAccount()
   const walletClient = yield* getContext('walletClient')
 
-  yield* waitForAccount()
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
@@ -171,10 +171,10 @@ function* getWalletBalanceAndWallets() {
 }
 
 function* fetchBalanceAsync() {
+  yield* waitForBackendAndAccount()
   const walletClient = yield* getContext('walletClient')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
-  yield* waitForAccount()
   const account = yield* select(getAccountUser)
   if (!account) return
 

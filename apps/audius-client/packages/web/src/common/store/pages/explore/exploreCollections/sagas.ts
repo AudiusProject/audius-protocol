@@ -2,15 +2,14 @@ import {
   Collection,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
-  getContext,
-  waitForAccount
+  getContext
 } from '@audius/common'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
 
 function* fetchLetThemDJ() {
@@ -50,8 +49,7 @@ const fetchMap = {
 
 function* watchFetch() {
   yield* takeEvery(fetch.type, function* (action: ReturnType<typeof fetch>) {
-    yield* call(waitForBackendSetup)
-    yield* waitForAccount()
+    yield* waitForBackendAndAccount()
 
     const { variant, moods } = action.payload
 

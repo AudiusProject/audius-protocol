@@ -9,7 +9,6 @@ import {
   accountSelectors,
   AccountCollection,
   cacheActions,
-  waitForAccount,
   waitForValue,
   playlistLibraryHelpers,
   playlistLibraryActions
@@ -24,9 +23,9 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 const { update } = playlistLibraryActions
 const {
@@ -73,9 +72,8 @@ function* watchUpdatePlaylistLibrary() {
   yield takeEvery(
     update.type,
     function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
+      yield* waitForBackendAndAccount()
       const { playlistLibrary } = action.payload
-      yield call(waitForBackendSetup)
-      yield* waitForAccount()
 
       const account: User = yield select(getAccountUser)
       account.playlist_library =
@@ -115,11 +113,11 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
   yield takeLatest(
     TEMP_PLAYLIST_UPDATE_HELPER,
     function* makeUpdate(action: ReturnType<typeof update>) {
+      yield* waitForBackendAndAccount()
       const { playlistLibrary: rawPlaylistLibrary } = action.payload
       const playlistLibrary =
         removePlaylistLibraryDuplicates(rawPlaylistLibrary)
 
-      yield* waitForAccount()
       const account: User = yield select(getAccountUser)
 
       // Map over playlist library contents and resolve each temp id playlist

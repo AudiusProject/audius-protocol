@@ -19,7 +19,6 @@ import {
   solanaSelectors,
   walletActions,
   modalsActions,
-  waitForAccount,
   waitForValue,
   Env,
   musicConfettiActions,
@@ -37,8 +36,8 @@ import {
   delay
 } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { AUDIO_PAGE } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
@@ -437,10 +436,8 @@ function* watchClaimChallengeReward() {
 }
 
 function* fetchUserChallengesAsync() {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
-  yield* call(waitForBackendSetup)
-
-  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 

@@ -16,7 +16,6 @@ import {
   notificationsActions as notificationActions,
   getContext,
   collectionsSocialActions as socialActions,
-  waitForAccount,
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common'
@@ -29,6 +28,7 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
 const { update: updatePlaylistLibrary } = playlistLibraryActions
@@ -47,8 +47,7 @@ export function* watchRepostCollection() {
 export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -154,8 +153,7 @@ export function* watchUndoRepostCollection() {
 export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -271,8 +269,7 @@ export function* watchSaveSmartCollection() {
 export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -304,8 +301,7 @@ export function* saveSmartCollection(
 export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())

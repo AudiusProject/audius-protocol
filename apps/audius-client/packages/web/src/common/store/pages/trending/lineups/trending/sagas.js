@@ -2,12 +2,12 @@ import {
   TimeRange,
   accountSelectors,
   trendingPageLineupActions,
-  trendingPageSelectors,
-  waitForAccount
+  trendingPageSelectors
 } from '@audius/common'
 import { select } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { retrieveTrending } from './retrieveTrending'
 const { getTrendingGenre } = trendingPageSelectors
@@ -23,8 +23,8 @@ const getUserId = accountSelectors.getUserId
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {
+    yield waitForBackendAndAccount()
     const genreAtStart = yield select(getTrendingGenre)
-    yield waitForAccount()
     const userId = yield select(getUserId)
     try {
       const tracks = yield retrieveTrending({

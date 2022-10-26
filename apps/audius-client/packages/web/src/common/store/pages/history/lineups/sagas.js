@@ -1,21 +1,22 @@
 import {
   Kind,
   accountSelectors,
-  historyPageTracksLineupActions as tracksActions,
-  waitForAccount
+  historyPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import { keyBy } from 'lodash'
 import { call, getContext, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { getUserId } = accountSelectors
 const { prefix: PREFIX } = tracksActions
 
 function* getHistoryTracks() {
+  yield waitForBackendAndAccount()
+
   const apiClient = yield getContext('apiClient')
   try {
-    yield waitForAccount()
     const currentUserId = yield select(getUserId)
     const activity = yield apiClient.getUserTrackHistory({
       currentUserId,

@@ -5,13 +5,14 @@ import {
   accountSelectors,
   getContext,
   AudiusAPIClient,
-  AudiusBackend,
-  waitForAccount
+  AudiusBackend
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
 const { getAccountUser, getUserId } = accountSelectors
 
 export type UserListProviderArgs<T, U = void> = {
@@ -72,6 +73,7 @@ export function createUserListProvider<T, U = void>({
     currentPage: number
     pageSize: number
   }) {
+    yield* waitForBackendAndAccount()
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const apiClient = yield* getContext('apiClient')
     const existingEntity: T | null = yield* select(getExistingEntity, { id })
@@ -80,7 +82,6 @@ export function createUserListProvider<T, U = void>({
     const subsetIds = extractUserIDSubsetFromEntity(existingEntity)
     const subsetIdSet = new Set(subsetIds)
 
-    yield* waitForAccount()
     const userId = yield* select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize

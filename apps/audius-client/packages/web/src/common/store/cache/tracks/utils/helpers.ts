@@ -5,13 +5,13 @@ import {
   makeUid,
   accountSelectors,
   cacheActions,
-  getContext,
-  waitForAccount
+  getContext
 } from '@audius/common'
 import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 
 import { reformat as reformatUser } from 'common/store/cache/users/utils'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const getAccountUser = accountSelectors.getAccountUser
 
 /**
@@ -22,8 +22,8 @@ const getAccountUser = accountSelectors.getAccountUser
 export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[]
 ) {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* waitForAccount()
   const accountUser = yield* select(getAccountUser)
   const currentUserId = accountUser?.user_id
   let users = metadataArray

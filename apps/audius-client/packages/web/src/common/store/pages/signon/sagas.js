@@ -12,7 +12,6 @@ import {
   collectionsSocialActions,
   solanaSelectors,
   usersSocialActions as socialActions,
-  waitForAccount,
   getContext,
   settingsPageActions,
   MAX_HANDLE_LENGTH,
@@ -47,6 +46,7 @@ import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
@@ -152,6 +152,7 @@ function* fetchFollowArtistGenre(followArtistCategory) {
 }
 
 function* fetchReferrer(action) {
+  yield waitForBackendAndAccount()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { handle } = action
   if (handle) {
@@ -163,7 +164,6 @@ function* fetchReferrer(action) {
       // Check if the user is already signed in
       // If so, apply retroactive referrals
 
-      yield waitForAccount()
       const currentUser = yield select(getAccountUser)
       if (
         currentUser &&

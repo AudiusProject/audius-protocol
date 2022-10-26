@@ -8,19 +8,18 @@ import {
   cacheUsersSelectors,
   getContext,
   usersSocialActions as socialActions,
-  waitForAccount,
   FeatureFlags,
   profilePageActions
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { profilePage } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 const { getUsers, getUser } = cacheUsersSelectors
@@ -36,8 +35,7 @@ export function* watchFollowUser() {
 export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const accountId = yield* select(getUserId)
@@ -158,8 +156,7 @@ export function* unfollowUser(
   action: ReturnType<typeof socialActions.unfollowUser>
 ) {
   /* Make Async Backend Call */
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const accountId = yield* select(getUserId)
   if (!accountId) {
     yield* put(signOnActions.openSignOn(false))

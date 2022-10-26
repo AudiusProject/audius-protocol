@@ -30,7 +30,6 @@ import {
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { reformat } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
@@ -44,6 +43,7 @@ import UploadType from 'pages/upload-page/components/uploadType'
 import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import * as uploadActions from './actions'
@@ -827,6 +827,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 }
 
 function* uploadSingleTrack(track) {
+  yield waitForBackendAndAccount()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
   // Need an object to hold phase error info that
@@ -882,7 +883,7 @@ function* uploadSingleTrack(track) {
           throw new Error(error)
         }
 
-        yield waitForAccount()
+        yield waitForBackendAndAccount()
         const userId = yield select(getUserId)
         const handle = yield select(getUserHandle)
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
@@ -1077,8 +1078,7 @@ function* uploadMultipleTracks(tracks) {
 }
 
 function* uploadTracksAsync(action) {
-  yield call(waitForBackendSetup)
-  yield waitForAccount()
+  yield waitForBackendAndAccount()
   const user = yield select(getAccountUser)
   yield put(
     uploadActions.uploadTracksRequested(

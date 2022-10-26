@@ -1,8 +1,9 @@
-import { Name, accountSelectors, waitForAccount } from '@audius/common'
+import { Name, accountSelectors } from '@audius/common'
 import { range } from 'lodash'
 import { all, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const getAccountUser = accountSelectors.getAccountUser
 
 export function* reportSuccessAndFailureEvents({
@@ -16,7 +17,7 @@ export function* reportSuccessAndFailureEvents({
   uploadType: 'single_track' | 'multi_track' | 'album' | 'playlist'
   errors: string[]
 }) {
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
   const primary = accountUser.creator_node_endpoint?.split(',')[0]
