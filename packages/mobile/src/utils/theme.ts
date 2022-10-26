@@ -1,3 +1,4 @@
+import type { SystemAppearance, Nullable } from '@audius/common'
 import { themeSelectors } from '@audius/common'
 import { StatusBar } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -11,29 +12,39 @@ export enum Theme {
   MATRIX = 'matrix'
 }
 
-export const handleThemeChange = (theme: Theme) => {
+/**
+ * Set status bar theme in a cross-platform way
+ */
+export const setStatusBarTheme = (theme: 'light' | 'dark') => {
+  if (theme === 'light') {
+    StatusBar.setBarStyle('dark-content')
+    StatusBar.setBackgroundColor(defaultTheme.white)
+  } else {
+    StatusBar.setBarStyle('light-content')
+    StatusBar.setBackgroundColor(darkTheme.white)
+  }
+}
+
+export const updateStatusBarTheme = (
+  theme: Nullable<Theme>,
+  systemAppearance: Nullable<SystemAppearance>
+) => {
   switch (theme) {
     case Theme.DEFAULT: {
-      StatusBar.setBarStyle('dark-content')
+      setStatusBarTheme('light')
       break
     }
     case Theme.DARK: {
-      StatusBar.setBarStyle('light-content')
+      setStatusBarTheme('dark')
       break
     }
     case Theme.AUTO: {
-      StatusBar.setBarStyle('default')
+      if (systemAppearance) {
+        setStatusBarTheme(systemAppearance)
+      }
       break
     }
   }
-
-  // Fade in status bar after we
-  // get our first update, after a
-  // slight delay to allow Splash Screen
-  // to animate out.
-  setTimeout(() => {
-    StatusBar.setHidden(false, 'fade')
-  }, 500)
 }
 
 export const defaultTheme = {
