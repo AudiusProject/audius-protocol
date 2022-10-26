@@ -81,6 +81,7 @@ export const recoverWallet = (
 /**
  * Returns boolean indicating if provided timestamp is older than maxTTL
  * @param {string | number} signatureTimestamp unix timestamp string when signature was generated
+ * @param {number} [maxTTL=MAX_SIGNATURE_AGE_MS] the max ttl for this signature before expiration
  */
 export const signatureHasExpired = (
   signatureTimestamp: string,
