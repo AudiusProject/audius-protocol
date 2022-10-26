@@ -1,6 +1,6 @@
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
-const Web3 = require('web3')
+import { Utils } from '@audius/sdk/src/utils'
+import Web3 from 'web3'
+
 const web3 = new Web3()
 
 /**
@@ -9,7 +9,7 @@ const web3 = new Web3()
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
-const generateSignature = (data: Object, privateKey: string) => {
+export const generateSignature = (data: Object, privateKey: string) => {
   // JSON stringify automatically removes white space given 1 param
   const toSignStr = JSON.stringify(sortKeys(data))
   const toSignHash = web3.utils.keccak256(toSignStr)
@@ -21,7 +21,10 @@ const generateSignature = (data: Object, privateKey: string) => {
 /**
  * Generate the timestamp and signature for api signing
  */
-const generateTimestampAndSignature = (data: Object, privateKey: string) => {
+export const generateTimestampAndSignature = (
+  data: Object,
+  privateKey: string
+) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
   const signature = generateSignature(toSignObj, privateKey)
@@ -38,7 +41,7 @@ let cachedListenSignature: { timestamp: string; signature: string } | null =
  * Generates a signature for `data` if only the previous signature
  * generated is invalid (expired). Otherwise returns an existing signature.
  */
-const generateListenTimestampAndSignature = (
+export const generateListenTimestampAndSignature = (
   privateKey: string
 ): { timestamp: string; signature: string } => {
   if (cachedListenSignature) {
@@ -64,7 +67,7 @@ const generateListenTimestampAndSignature = (
  * Recover the public wallet address
  */
 // eslint-disable-next-line no-unused-vars
-const recoverWallet = (
+export const recoverWallet = (
   data: { timestamp: string; [key: string]: any },
   signature: string
 ): string => {
@@ -79,7 +82,7 @@ const recoverWallet = (
  * Returns boolean indicating if provided timestamp is older than maxTTL
  * @param {string | number} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (
+export const signatureHasExpired = (
   signatureTimestamp: string,
   maxTTL = MAX_SIGNATURE_AGE_MS
 ): boolean => {
@@ -93,7 +96,7 @@ const signatureHasExpired = (
 /**
  * Recursively sorts keys of object or object array
  */
-const sortKeys: any = (x: any) => {
+export const sortKeys: any = (x: any) => {
   if (typeof x !== 'object' || !x) {
     return x
   }
@@ -105,7 +108,7 @@ const sortKeys: any = (x: any) => {
     .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
-const generateTimestampAndSignatureForSPVerification = (
+export const generateTimestampAndSignatureForSPVerification = (
   spID: string | number,
   privateKey: string
 ) => {
@@ -116,7 +119,7 @@ const generateTimestampAndSignatureForSPVerification = (
  * Wrapper fn to perform basic validation that the requester is a valid SP and that the request came
  * from the SP node itself. Uses the {spID, timestamp} as the input data to recover.
  */
-const verifyRequesterIsValidSP = async ({
+export const verifyRequesterIsValidSP = async ({
   audiusLibs,
   spID, // the spID of the node to verify
   reqTimestamp, // the timestamp from the request body
@@ -159,8 +162,8 @@ const verifyRequesterIsValidSP = async ({
    * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
    */
   if (
-    LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
-    LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+    Utils.isZeroAddress(ownerWalletFromSPFactory) ||
+    Utils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
     !nodeEndpointFromSPFactory
   ) {
     throw new Error(
@@ -210,16 +213,4 @@ function validateSPId(spID: string): number {
   }
 
   return spIDNumber
-}
-
-module.exports = {
-  generateTimestampAndSignature,
-  generateSignature,
-  generateListenTimestampAndSignature,
-  generateTimestampAndSignatureForSPVerification,
-  recoverWallet,
-  sortKeys,
-  MAX_SIGNATURE_AGE_MS,
-  signatureHasExpired,
-  verifyRequesterIsValidSP
 }
