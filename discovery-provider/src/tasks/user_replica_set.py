@@ -1,8 +1,8 @@
 import logging
-import redis
 from datetime import datetime
 from typing import Any, List, Set, Tuple
 
+import redis
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
@@ -13,13 +13,17 @@ from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.eth_contracts_helpers import (
+    cnode_info_redis_ttl_s,
     content_node_service_type,
     sp_factory_registry_key,
-    cnode_info_redis_ttl_s,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_cn_sp_id_key, get_json_cached_key, set_json_cached_key
+from src.utils.redis_cache import (
+    get_cn_sp_id_key,
+    get_json_cached_key,
+    set_json_cached_key,
+)
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
