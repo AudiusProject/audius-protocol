@@ -197,11 +197,6 @@ async function ensurePrimaryMiddleware(req, res, next) {
 
 /** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
 async function ensureStorageMiddleware(req, res, next) {
-  // Force wipe syncs will free up storage space so we want to perform them regardless of current usage
-  if (req.body?.forceWipe) {
-    return next()
-  }
-
   // Get storage data and max storage percentage allowed
   const [storagePathSize, storagePathUsed] = await getMonitors([
     MONITORS.STORAGE_PATH_SIZE,
