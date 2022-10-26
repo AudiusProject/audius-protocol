@@ -5,9 +5,9 @@ import { eventEmitter, initialMode } from 'react-native-dark-mode'
 import { put, call, spawn, takeEvery, select } from 'typed-redux-saga'
 
 import { localStorage } from 'app/services/local-storage'
-import { handleThemeChange } from 'app/utils/theme'
+import { updateStatusBarTheme, setStatusBarTheme } from 'app/utils/theme'
 const { setTheme, setSystemAppearance } = themeActions
-const { getSystemAppearance } = themeSelectors
+const { getTheme, getSystemAppearance } = themeSelectors
 
 const waitForSystemAppearanceChange = async () => {
   let listener
@@ -27,6 +27,7 @@ const waitForSystemAppearanceChange = async () => {
 function* watchSystemAppearanceChange() {
   while (true) {
     const systemAppearance = yield* select(getSystemAppearance)
+    const theme = yield* select(getTheme)
     if (!systemAppearance) {
       yield* put(
         setSystemAppearance({
@@ -35,14 +36,18 @@ function* watchSystemAppearanceChange() {
       )
     } else {
       const systemAppearance = yield* call(waitForSystemAppearanceChange)
+      if (theme === Theme.AUTO) {
+        setStatusBarTheme(systemAppearance)
+      }
       yield* put(setSystemAppearance({ systemAppearance }))
     }
   }
 }
 
 function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {
+  const systemAppearance = yield* select(getSystemAppearance)
   const { theme } = action.payload
-  handleThemeChange(theme)
+  updateStatusBarTheme(theme, systemAppearance)
 
   yield* call([localStorage, 'setItem'], 'theme', theme)
 }

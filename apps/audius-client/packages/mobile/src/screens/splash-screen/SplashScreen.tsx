@@ -1,11 +1,15 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 
-import { accountSelectors, Status } from '@audius/common'
+import { accountSelectors, themeSelectors, Status } from '@audius/common'
 import LottieView from 'lottie-react-native'
-import { StyleSheet, Animated } from 'react-native'
+import { StyleSheet, Animated, StatusBar, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
+
+import { updateStatusBarTheme } from 'app/utils/theme'
 
 const { getAccountStatus } = accountSelectors
+const { getTheme, getSystemAppearance } = themeSelectors
 
 const SCALE_TO = 1.2
 const ANIM_DURATION_MS = 2000
@@ -30,7 +34,22 @@ const styles = StyleSheet.create({
 export const SplashScreen = () => {
   const [animationFinished, setAnimationFinished] = useState(false)
   const accountStatus = useSelector(getAccountStatus)
+  const theme = useSelector(getTheme)
+  const systemAppearance = useSelector(getSystemAppearance)
   const backgroundOpacityAnim = useRef(new Animated.Value(1))
+
+  useEffectOnce(() => {
+    if (Platform.OS === 'ios') {
+      // Hide the StatusBar on ios
+      updateStatusBarTheme(theme, systemAppearance)
+      StatusBar.setHidden(true)
+    } else {
+      // Make the StatusBar translucent on android
+      // (hiding it on android causes the app to shift when it's unhidden)
+      StatusBar.setBackgroundColor('transparent')
+      StatusBar.setTranslucent(true)
+    }
+  })
 
   useEffect(() => {
     if (![Status.IDLE, Status.LOADING].includes(accountStatus)) {
@@ -66,8 +85,15 @@ export const SplashScreen = () => {
   }, [scaleAnim])
 
   const onAnimationFinish = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      // Unhide the StatusBar on ios
+      StatusBar.setHidden(false, 'fade')
+    } else {
+      // Make the StatusBar opaque on android
+      updateStatusBarTheme(theme, systemAppearance)
+    }
     setAnimationFinished(true)
-  }, [setAnimationFinished])
+  }, [setAnimationFinished, theme, systemAppearance])
 
   const animationRef = useRef<LottieView | null>(null)
 
