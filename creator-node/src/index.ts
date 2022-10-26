@@ -14,7 +14,6 @@ import { Keypair } from '@solana/web3.js'
 
 import { initializeApp } from './app'
 import config from './config'
-import DiskManager from './diskManager'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
 import DBManager from './dbManager'
