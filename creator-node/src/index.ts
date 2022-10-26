@@ -20,6 +20,7 @@ import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
+import DiskManager from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
 const redisClient = require('./redis')
@@ -108,6 +109,12 @@ const startAppForPrimary = async () => {
   logger.info(`Primary process with pid=${process.pid} is running`)
 
   await setupDbAndRedis()
+
+  const startTime = Date.now()
+  await DiskManager.emptyTmpTrackUploadArtifacts()
+  logger.info(
+    `old tmp track artifacts deleted : ${(Date.now() - startTime) / 1000}sec`
+  )
 
   // Don't await - run in background. Remove after v0.3.69
   // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
