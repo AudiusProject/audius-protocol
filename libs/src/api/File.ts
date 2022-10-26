@@ -6,7 +6,7 @@ import { raceRequests } from '../utils/network'
 import retry from 'async-retry'
 import type { Users } from './Users'
 import type { Nullable } from '../utils'
-import { ServiceProvider } from './ServiceProvider'
+import type { ServiceProvider } from './ServiceProvider'
 
 /**
  * Downloads a file using an element in the DOM
