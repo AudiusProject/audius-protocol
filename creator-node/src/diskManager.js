@@ -397,11 +397,8 @@ class DiskManager {
         // if fileTrimmed is a non-null string and is not just equal to base directory
         if (fileTrimmed && fileTrimmed !== filesSubdirectory) {
           const parts = fileTrimmed.split('/')
-          console.log(parts)
           // returns the last CID in the event of dirCID
           const leafCID = parts[parts.length - 1]
-          console.log(leafCID)
-          console.log(fileTrimmed)
           cidsToFilePathMap[leafCID] = fileTrimmed
         }
       }
@@ -425,21 +422,24 @@ class DiskManager {
         const cidsToFilePathMap = await this.listNestedCIDsInFilePath(
           subdirectory
         )
+        const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
 
         const queryResults = await models.File.findAll({
           attributes: ['multihash', 'storagePath'],
           raw: true,
           where: {
             multihash: {
-              [models.Sequelize.Op.in]: Object.keys(cidsToFilePathMap)
+              [models.Sequelize.Op.in]: cidsInSubdirectory
             }
           }
         })
 
-        genericLogger.info(
+        genericLogger.debug(
           `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
             subdirectories.length
-          }. got ${Object.keys(cidsToFilePathMap).length} files in folder and ${
+          }. subdirectory: ${subdirectory}. got ${
+            Object.keys(cidsToFilePathMap).length
+          } files in folder and ${
             queryResults.length
           } results from db. files: ${Object.keys(
             cidsToFilePathMap
@@ -453,8 +453,8 @@ class DiskManager {
 
         const cidsToDelete = []
         const cidsNotToDelete = []
-        for (const cid of cidsInDB) {
-          genericLogger.info(`diskManager#sweepSubdirectoriesInFiles - cidsInDB.has(cid): ${cidsInDB.has(cid)}`)
+        // iterate through all files on disk and check if db contains it
+        for (const cid of cidsInSubdirectory) {
           // if db doesn't contain file, log as okay to delete
           if (!cidsInDB.has(cid)) {
             cidsToDelete.push(cid)
@@ -496,7 +496,7 @@ class DiskManager {
     if (redoJob) return this.sweepSubdirectoriesInFiles()
   }
 
-  static async _execShellCommand(cmd, log = true) {
+  static async _execShellCommand(cmd, log = false) {
     if (log)
       genericLogger.info(
         `diskManager - about to call _execShellCommand: ${cmd}`
