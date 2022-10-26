@@ -152,7 +152,7 @@ export async function fetchExportFromNode({
     }
   }
 
-  logger.info('Export successful')
+  logger.debug('Export successful')
 
   return {
     fetchedCNodeUser

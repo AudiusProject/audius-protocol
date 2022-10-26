@@ -7,7 +7,6 @@ import { tracing } from './tracer'
 import config from './config'
 
 import {
-  requestNotExcludedFromLogging,
   getDuration,
   createChildLogger,
   logger as genericLogger
@@ -113,16 +112,12 @@ export const sendResponse = (
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(inputReq.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
-    if (inputReq && inputReq.body) {
-      logger.info(
+    if (req && req.body) {
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
@@ -131,7 +126,7 @@ export const sendResponse = (
         inputReq.query
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
   }
 
@@ -178,23 +173,19 @@ export const sendResponseWithHeartbeatTerminator = (
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(inputReq.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
-    if (inputReq && inputReq.body) {
-      logger.info(
+    if (req && req.body) {
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
         inputReq.body
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
 
     // Converts the error object into an object that JSON.stringify can parse

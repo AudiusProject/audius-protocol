@@ -233,7 +233,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
   app.set('trust proxy', true)
 
   const server = app.listen(port, () =>
-    logger.info(`Listening on port ${port}...`)
+    logger.debug(`Listening on port ${port}...`)
   )
 
   // Increase from 2min default to accommodate long-lived requests.
