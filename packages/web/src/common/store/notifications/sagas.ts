@@ -44,6 +44,7 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
 const { fetchReactionValues } = reactionsUIActions
@@ -190,6 +191,7 @@ export function* fetchNotifications(action: FetchNotifications) {
 export function* parseAndProcessNotifications(
   notifications: Notification[]
 ): Generator<any, Notification[], any> {
+  yield* waitForBackendAndAccount()
   /**
    * Parse through the notifications & collect user /track / collection IDs
    * that the notification references to fetch

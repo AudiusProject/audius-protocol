@@ -48,6 +48,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     fetchAccount: () => {},
+    fetchLocalAccount: () => {},
     fetchAccountRequested: (state) => {
       state.status = Status.LOADING
     },
@@ -149,6 +150,7 @@ const slice = createSlice({
 
 export const {
   fetchAccount,
+  fetchLocalAccount,
   fetchAccountRequested,
   fetchAccountSucceeded,
   fetchAccountFailed,

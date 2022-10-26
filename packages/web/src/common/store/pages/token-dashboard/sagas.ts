@@ -3,7 +3,6 @@ import {
   accountSelectors,
   tokenDashboardPageActions,
   getContext,
-  waitForAccount,
   CollectibleState
 } from '@audius/common'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
@@ -12,6 +11,7 @@ import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'common/store/profile/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { fetchAssociatedWallets, setAssociatedWallets } =
   tokenDashboardPageActions
 
@@ -62,8 +62,8 @@ function* fetchSplWalletInfo(wallets: string[]) {
 }
 
 function* fetchAccountAssociatedWallets() {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
-  yield* waitForAccount()
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
   const associatedWallets = yield* call(

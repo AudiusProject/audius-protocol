@@ -1,4 +1,4 @@
-import { accountSelectors, waitForAccount } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
@@ -8,6 +8,7 @@ import {
   moreByActions
 } from 'pages/deleted-page/store/lineups/more-by/actions'
 import { getLineup } from 'pages/deleted-page/store/selectors'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const getUserId = accountSelectors.getUserId
 
 function* getTracks({
@@ -19,7 +20,7 @@ function* getTracks({
 }) {
   const { handle } = payload
 
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const currentUserId = yield* select(getUserId)
   const processed = yield* call(retrieveUserTracks, {
     handle,

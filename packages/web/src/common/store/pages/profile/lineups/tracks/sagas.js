@@ -9,13 +9,13 @@ import {
   profilePageTracksLineupActions as tracksActions,
   profilePageTracksLineupActions as lineupActions,
   tracksSocialActions,
-  waitForValue,
-  waitForAccount
+  waitForValue
 } from '@audius/common'
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
 const { SET_ARTIST_PICK } = tracksSocialActions
@@ -27,7 +27,7 @@ const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload, handle }) {
-  yield waitForAccount()
+  yield waitForBackendAndAccount()
   const currentUserId = yield select(getUserId)
   const profileHandle = handle.toLowerCase()
 

@@ -1,13 +1,9 @@
-import {
-  Name,
-  accountSelectors,
-  getContext,
-  waitForAccount
-} from '@audius/common'
+import { Name, accountSelectors, getContext } from '@audius/common'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import * as searchActions from './actions'
 import { getSearch } from './selectors'
@@ -15,8 +11,9 @@ import { getSearch } from './selectors'
 const getUserId = accountSelectors.getUserId
 
 export function* getSearchResults(searchText: string) {
+  yield* waitForBackendAndAccount()
+
   const apiClient = yield* getContext('apiClient')
-  yield* waitForAccount()
   const userId = yield* select(getUserId)
 
   const results = yield* call([apiClient, 'getSearchAutocomplete'], {

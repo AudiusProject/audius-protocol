@@ -16,6 +16,7 @@ import { call, put, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { AppState } from 'store/types'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
 const { getTrendingEntries } = trendingPageLineupSelectors
@@ -36,6 +37,7 @@ export function* retrieveTrending({
   limit,
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

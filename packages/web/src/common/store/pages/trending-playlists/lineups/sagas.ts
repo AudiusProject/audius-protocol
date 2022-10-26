@@ -4,17 +4,18 @@ import {
   accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
-  getContext,
-  waitForAccount
+  getContext
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
 const getUserId = accountSelectors.getUserId
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -27,7 +28,6 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   )
 
   const time = 'week' as const
-  yield* waitForAccount()
 
   const currentUserId = yield* select(getUserId)
 

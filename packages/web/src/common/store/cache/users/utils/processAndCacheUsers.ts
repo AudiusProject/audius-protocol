@@ -1,9 +1,12 @@
 import { User, Kind, makeUid, getContext, cacheActions } from '@audius/common'
 import { put } from 'typed-redux-saga'
 
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
 import { reformat } from './reformat'
 
 export function* processAndCacheUsers(users: User[]) {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reformattedUser = users.map((user) => {
     return reformat(user, audiusBackendInstance)

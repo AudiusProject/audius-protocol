@@ -23,7 +23,6 @@ import {
   walletSelectors,
   walletActions,
   getContext,
-  waitForAccount,
   waitForValue,
   GetTipsArgs,
   GetSupportingArgs,
@@ -44,6 +43,7 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { updateTipsStorage } from './storageUtils'
 const { decreaseBalance } = walletActions
@@ -200,7 +200,7 @@ function* sendTipAsync() {
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   const isNativeMobile = yield* getContext('isNativeMobile')
   yield call(waitForRemoteConfig)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
 
   const device = isNativeMobile ? 'native' : 'web'
 
@@ -319,6 +319,7 @@ function* refreshSupportAsync({
   payload: RefreshSupportPayloadAction
   type: string
 }) {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
 
   const supportingParams: GetSupportingArgs = {
@@ -327,7 +328,6 @@ function* refreshSupportAsync({
   if (supportingLimit) {
     supportingParams.limit = supportingLimit
   } else {
-    yield* waitForAccount()
     const account = yield* select(getAccountUser)
     supportingParams.limit =
       account?.user_id === senderUserId
@@ -405,9 +405,9 @@ function* fetchSupportingForUserAsync({
   payload: { userId: ID }
   type: string
 }) {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
 
-  yield* waitForAccount()
   /**
    * If the user id is that of the logged in user, then
    * get all its supporting data so that when the logged in

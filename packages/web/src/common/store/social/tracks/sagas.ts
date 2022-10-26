@@ -14,8 +14,7 @@ import {
   audioRewardsPageActions,
   getContext,
   tracksSocialActions as socialActions,
-  waitForValue,
-  waitForAccount
+  waitForValue
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -25,6 +24,7 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 const { updateOptimisticListenStreak } = audioRewardsPageActions
@@ -41,8 +41,7 @@ export function* watchRepostTrack() {
 export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -197,8 +196,7 @@ export function* watchUndoRepostTrack() {
 export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -311,8 +309,7 @@ export function* watchSaveTrack() {
 export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -436,8 +433,7 @@ export function* watchUnsaveTrack() {
 export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
-  yield* call(waitForBackendSetup)
-  yield* waitForAccount()
+  yield* waitForBackendAndAccount()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -538,7 +534,7 @@ export function* watchSetArtistPick() {
   yield* takeEvery(
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
-      yield* waitForAccount()
+      yield* waitForBackendAndAccount()
       const userId = yield* select(getUserId)
       if (!userId) return
       yield* put(
@@ -569,7 +565,7 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
-    yield* waitForAccount()
+    yield* waitForBackendAndAccount()
     const userId = yield* select(getUserId)
     if (!userId) return
     yield* put(
@@ -602,7 +598,7 @@ export function* watchRecordListen() {
       if (isNativeMobile) return
       console.debug('Listen recorded for track', action.trackId)
 
-      yield* waitForAccount()
+      yield* waitForBackendAndAccount()
       const userId = yield* select(getUserId)
       const track = yield* select(getTrack, { id: action.trackId })
       if (!userId || !track) return

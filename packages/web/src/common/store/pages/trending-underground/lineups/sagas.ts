@@ -3,13 +3,13 @@ import {
   accountSelectors,
   trendingUndergroundPageLineupSelectors,
   trendingUndergroundPageLineupActions,
-  getContext,
-  waitForAccount
+  getContext
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 const { getLineup } = trendingUndergroundPageLineupSelectors
 const getUserId = accountSelectors.getUserId
@@ -21,6 +21,7 @@ function* getTrendingUnderground({
   limit: number
   offset: number
 }) {
+  yield* waitForBackendAndAccount()
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -32,7 +33,6 @@ function* getTrendingUnderground({
     remoteConfigInstance.getRemoteVar(StringKeys.UTF)?.split(',') ?? []
   )
 
-  yield* waitForAccount()
   const currentUserId = yield* select(getUserId)
 
   let tracks = yield* call((args) => apiClient.getTrendingUnderground(args), {

@@ -42,6 +42,7 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -377,12 +378,11 @@ function* watchUpdateProfile() {
 }
 
 export function* updateProfileAsync(action) {
+  yield waitForBackendAndAccount()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield call(waitForBackendSetup)
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
-  yield waitForAccount()
   const accountUserId = yield select(getUserId)
   yield put(
     cacheActions.update(Kind.USERS, [
@@ -453,6 +453,7 @@ export function* updateProfileAsync(action) {
 }
 
 function* confirmUpdateProfile(userId, metadata) {
+  yield waitForBackendAndAccount()
   const apiClient = yield getContext('apiClient')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const localStorage = yield getContext('localStorage')

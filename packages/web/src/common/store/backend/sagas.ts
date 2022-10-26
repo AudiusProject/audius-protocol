@@ -1,8 +1,8 @@
 import {
-  accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext
+  getContext,
+  accountActions
 } from '@audius/common'
 import {
   put,
@@ -56,6 +56,9 @@ function* awaitReachability() {
 }
 
 export function* setupBackend() {
+  // Optimistically fetch account, then do it again later when we're sure we're connected
+  // This ensures we always get the cached account when starting offline if available
+  yield* put(accountActions.fetchLocalAccount())
   const establishedReachability = yield* call(awaitReachability)
   // If we couldn't connect, show the error page
   // and just sit here waiting for reachability.

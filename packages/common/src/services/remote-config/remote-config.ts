@@ -74,7 +74,7 @@ export const remoteConfig = <
   let client: Client | undefined
 
   const emitter = new EventEmitter()
-  emitter.setMaxListeners(20)
+  emitter.setMaxListeners(100)
 
   async function init() {
     // Set sessionId for feature flag bucketing

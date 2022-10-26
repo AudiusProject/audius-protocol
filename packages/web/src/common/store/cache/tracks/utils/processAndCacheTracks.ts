@@ -8,6 +8,8 @@ import {
 } from '@audius/common'
 import { put, call } from 'typed-redux-saga'
 
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
 import { addUsersFromTracks } from './helpers'
 import { reformat } from './reformat'
 
@@ -18,6 +20,7 @@ import { reformat } from './reformat'
 export function* processAndCacheTracks<T extends TrackMetadata>(
   tracks: T[]
 ): Generator<any, Track[], any> {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // Add users
   yield* call(addUsersFromTracks, tracks)
