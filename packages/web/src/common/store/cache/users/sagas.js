@@ -407,7 +407,8 @@ export function* fetchUserSocials({ handle }) {
           tiktok_handle: socials.tikTokHandle || null,
           website: socials.website || null,
           donation: socials.donation || null,
-          _artist_pick: socials.pinnedTrackId || null
+          _artist_pick: socials.pinnedTrackId || null,
+          artist_pick_track_id: socials.pinnedTrackId || null
         }
       }
     ])

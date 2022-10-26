@@ -22,6 +22,7 @@ export type OpaqueID = string
 
 export type APIUser = {
   album_count: number
+  artist_pick_track_id: Nullable<number>
   blocknumber: number
   balance: string
   associated_wallets_balance: string

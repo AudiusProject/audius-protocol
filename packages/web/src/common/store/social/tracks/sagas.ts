@@ -540,15 +540,25 @@ export function* watchSetArtistPick() {
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* waitForAccount()
       const userId = yield* select(getUserId)
+      if (!userId) return
       yield* put(
         cacheActions.update(Kind.USERS, [
           {
             id: userId,
-            metadata: { _artist_pick: action.trackId }
+            metadata: {
+              artist_pick_track_id: action.trackId,
+              _artist_pick: action.trackId
+            }
           }
         ])
       )
-      yield* call(audiusBackendInstance.setArtistPick, action.trackId)
+      const user = yield* call(waitForValue, getUser, { id: userId })
+      yield* call(
+        audiusBackendInstance.setArtistPick,
+        user,
+        userId,
+        action.trackId
+      )
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -561,15 +571,20 @@ export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* waitForAccount()
     const userId = yield* select(getUserId)
+    if (!userId) return
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
           id: userId,
-          metadata: { _artist_pick: null }
+          metadata: {
+            artist_pick_track_id: null,
+            _artist_pick: null
+          }
         }
       ])
     )
-    yield* call(audiusBackendInstance.setArtistPick)
+    const user = yield* call(waitForValue, getUser, { id: userId })
+    yield* call(audiusBackendInstance.setArtistPick, user, userId)
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)

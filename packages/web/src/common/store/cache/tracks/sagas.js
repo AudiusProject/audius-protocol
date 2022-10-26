@@ -338,15 +338,19 @@ function* deleteTrackAsync(action) {
     handle
   )
   if (socials.pinnedTrackId === action.trackId) {
-    yield call(audiusBackendInstance.setArtistPick)
     yield put(
       cacheActions.update(Kind.USERS, [
         {
           id: userId,
-          metadata: { _artist_pick: null }
+          metadata: {
+            artist_pick_track_id: null,
+            _artist_pick: null
+          }
         }
       ])
     )
+    const user = yield call(waitForValue, getUser, { id: userId })
+    yield call(audiusBackendInstance.setArtistPick, user, userId)
   }
 
   const track = yield select(getTrack, { id: action.trackId })
