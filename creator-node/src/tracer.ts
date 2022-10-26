@@ -103,6 +103,8 @@ export const setupTracing = () => {
             provider.resource.attributes['service.name']
           record['resource.service.spid'] = SPID
           record['resource.service.endpoint'] = ENDPOINT
+
+          span.addEvent(record.msg, record)
         }
       })
     ]
