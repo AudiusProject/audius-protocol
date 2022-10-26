@@ -40,7 +40,6 @@ export class Track extends Base {
     this.getRemixTrackParents = this.getRemixTrackParents.bind(this)
     this.getSavedTracks = this.getSavedTracks.bind(this)
     this.getTrendingTracks = this.getTrendingTracks.bind(this)
-    this.getTrackListens = this.getTrackListens.bind(this)
     this.getSaversForTrack = this.getSaversForTrack.bind(this)
     this.getSaversForPlaylist = this.getSaversForPlaylist.bind(this)
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
@@ -254,28 +253,6 @@ export class Track extends Base {
       genre,
       time,
       idsArray,
-      limit,
-      offset
-    )
-  }
-
-  /**
-   * Gets listens for tracks bucketted by timeFrame.
-   */
-  async getTrackListens(
-    timeFrame = null,
-    idsArray = null,
-    startTime = null,
-    endTime = null,
-    limit = null,
-    offset = null
-  ) {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.getTrackListens(
-      timeFrame,
-      idsArray,
-      startTime,
-      endTime,
       limit,
       offset
     )

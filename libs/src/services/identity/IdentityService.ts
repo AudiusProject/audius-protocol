@@ -3,7 +3,6 @@ import { AuthHeaders } from '../../constants'
 import { uuid } from '../../utils/uuid'
 import type { Captcha, Nullable } from '../../utils'
 
-import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
 import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
@@ -346,36 +345,6 @@ export class IdentityService {
       method: 'get',
       params: queryParams
     })
-  }
-
-  /**
-   * Gets listens for tracks bucketted by timeFrame.
-   * @param timeFrame one of day, week, month, or year
-   * @param idsArray track ids
-   * @param startTime parseable by Date.parse
-   * @param endTime parseable by Date.parse
-   * @param limit
-   * @param offset
-   */
-  async getTrackListens(
-    timeFrame: TimeFrame | null = null,
-    idsArray: number[] | null = null,
-    startTime: string | null = null,
-    endTime: string | null = null,
-    limit: number | null = null,
-    offset: number | null = null
-  ): Promise<{
-    bucket: Array<{ trackId: number; date: string; listens: number }>
-  }> {
-    const req = getTrackListens(
-      timeFrame,
-      idsArray,
-      startTime,
-      endTime,
-      limit,
-      offset
-    )
-    return await this._makeRequest(req)
   }
 
   async createUserRecord(email: string, walletAddress: string) {
