@@ -462,12 +462,9 @@ class DiskManager {
         }
 
         if (cidsNotToDelete.length > 0) {
-          // print this log 5% of the time
-          if (Math.random() < 5 / 100) {
-            genericLogger.info(
-              `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
-            )
-          }
+          genericLogger.debug(
+            `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+          )
         }
 
         if (cidsToDelete.length > 0) {
@@ -480,8 +477,7 @@ class DiskManager {
             await this._execShellCommand(
               `rm ${cidsToDelete
                 .map((cid) => cidsToFilePathMap[cid])
-                .join(' ')}`,
-              true
+                .join(' ')}`
             )
           }
         }
