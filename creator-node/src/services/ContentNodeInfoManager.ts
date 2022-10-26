@@ -247,6 +247,7 @@ export async function getReplicaSetSpIdsByUserId({
             if (replicaSet.primaryId === selfSpId) return
           } else {
             errorMsg = 'User replica not found in discovery'
+            throw new Error(errorMsg)
           }
         } catch (e: any) {
           errorMsg = e.message
