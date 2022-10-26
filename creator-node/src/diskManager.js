@@ -450,9 +450,12 @@ class DiskManager {
         }
 
         if (cidsNotToDelete.length > 0) {
-          genericLogger.info(
-            `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
-          )
+          // print this log 5% of the time
+          if (Math.random() < 5 / 100) {
+            genericLogger.info(
+              `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+            )
+          }
         }
 
         if (cidsToDelete.length > 0) {
@@ -465,7 +468,8 @@ class DiskManager {
             await this._execShellCommand(
               `rm ${cidsToDelete
                 .map((cid) => cidsToFilePathMap[cid])
-                .join(' ')}`
+                .join(' ')}`,
+              true
             )
           }
         }
@@ -480,8 +484,11 @@ class DiskManager {
     if (redoJob) return this.sweepSubdirectoriesInFiles()
   }
 
-  static async _execShellCommand(cmd) {
-    genericLogger.info(`diskManager - about to call _execShellCommand: ${cmd}`)
+  static async _execShellCommand(cmd, log = false) {
+    if (log)
+      genericLogger.info(
+        `diskManager - about to call _execShellCommand: ${cmd}`
+      )
     const { stdout, stderr } = await exec(`${cmd}`, {
       maxBuffer: 1024 * 1024 * 5
     }) // 5mb buffer
