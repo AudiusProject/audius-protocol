@@ -113,7 +113,8 @@ const userMetadataSchema = {
   collectibles: null,
   playlist_library: null,
   events: null,
-  is_deactivated: false
+  is_deactivated: false,
+  artist_pick_track_id: null
 }
 
 export const newUserMetadata = (fields?: any, validate = false) => {
