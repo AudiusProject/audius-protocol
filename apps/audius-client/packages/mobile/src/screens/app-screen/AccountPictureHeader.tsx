@@ -18,16 +18,21 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     width: spacing(8) + 2,
     borderWidth: 1
   },
-  notificationBubble: {
+  notificationBubbleRoot: {
     height: spacing(4),
     width: spacing(4),
     borderColor: palette.white,
     borderWidth: 2,
-    borderRadius: spacing(2),
-    backgroundColor: palette.secondary,
+    borderRadius: 10,
     position: 'absolute',
     top: 0,
     right: 0
+  },
+  notificationBubble: {
+    flex: 1,
+    backgroundColor: palette.secondary,
+    overflow: 'hidden',
+    borderRadius: 10
   }
 }))
 
@@ -49,7 +54,11 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
         style={styles.root}
         firstOpacity={0}
       />
-      {hasClaimableRewards ? <View style={styles.notificationBubble} /> : null}
+      {hasClaimableRewards ? (
+        <View style={styles.notificationBubbleRoot}>
+          <View style={styles.notificationBubble} />
+        </View>
+      ) : null}
     </TouchableOpacity>
   )
 }

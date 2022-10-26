@@ -7,3 +7,13 @@ create_concatenated_package_lock:
     - run:
         name: Combine package-lock.json files to single file
         command: ls -d -- packages/*/*-lock.json | awk -F packages '{printf "\"packages%s\" ", $2}' | xargs cat > << parameters.filename >>
+
+create_concatenated_patch_file:
+  description: "Concatenate all patch-files recognized by lerna.js into single file. File is used as checksum source for part of caching key."
+  parameters:
+    filename:
+      type: string
+  steps:
+    - run:
+        name: Combine patch-files to single file
+        command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>

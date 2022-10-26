@@ -6,7 +6,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import IconUser from 'app/assets/images/iconUser.svg'
+import IconUserList from 'app/assets/images/iconUserList.svg'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
@@ -28,7 +28,7 @@ export const FollowingScreen = () => {
   }, [dispatch, userId])
 
   return (
-    <UserListScreen title={messages.title} titleIcon={IconUser}>
+    <UserListScreen title={messages.title} titleIcon={IconUserList}>
       <UserList
         userSelector={getUserList}
         tag='FOLLOWING'

@@ -7,11 +7,13 @@ import type {
   NotificationType,
   RepostType
 } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { ContextualParams } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
@@ -89,7 +91,7 @@ export type AppTabScreenParamList = {
   AccountVerificationScreen: undefined
   ChangePasswordScreen: undefined
   NotificationSettingsScreen: undefined
-  AudioScreen: Record<string, unknown>
+  AudioScreen: undefined
 }
 
 const forFade = ({ current }) => ({
@@ -119,6 +121,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
+  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
+    FeatureFlags.MOBILE_NAV_OVERHAUL
+  )
 
   useEffect(() => {
     drawerNavigation?.setOptions({ swipeEnabled: !isNowPlayingDrawerOpen })
@@ -133,6 +138,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           const isStackOpen = stackRoutes.length > 1
           if (isStackOpen) {
             const isFromNotifs =
+              !isNavOverhaulEnabled &&
               stackRoutes.length === 2 &&
               (stackRoutes[1].params as ContextualParams)?.fromNotifications
 
