@@ -443,7 +443,7 @@ class DiskManager {
             queryResults.length
           } results from db. files: ${Object.keys(
             cidsToFilePathMap
-          ).toString()}`
+          ).toString()}. db records: ${JSON.stringify(queryResults)}`
         )
 
         const cidsInDB = new Set()
@@ -454,6 +454,7 @@ class DiskManager {
         const cidsToDelete = []
         const cidsNotToDelete = []
         for (const cid of cidsInDB) {
+          genericLogger.info(`diskManager#sweepSubdirectoriesInFiles - cidsInDB.has(cid): ${cidsInDB.has(cid)}`)
           // if db doesn't contain file, log as okay to delete
           if (!cidsInDB.has(cid)) {
             cidsToDelete.push(cid)
@@ -495,7 +496,7 @@ class DiskManager {
     if (redoJob) return this.sweepSubdirectoriesInFiles()
   }
 
-  static async _execShellCommand(cmd, log = false) {
+  static async _execShellCommand(cmd, log = true) {
     if (log)
       genericLogger.info(
         `diskManager - about to call _execShellCommand: ${cmd}`
