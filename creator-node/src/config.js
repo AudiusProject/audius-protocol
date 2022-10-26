@@ -1,9 +1,9 @@
 const axios = require('axios')
 const convict = require('convict')
-const fs = require('fs')
-const process = require('process')
+const fs = require('fs-extra')
 const path = require('path')
 const os = require('os')
+const _ = require('lodash')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -131,6 +131,12 @@ const config = convict({
     format: 'nat',
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
+  },
+  sequelizeStatementTimeout: {
+    doc: 'Sequelize (postgres) statement timeout',
+    format: 'nat',
+    env: 'sequelizeStatementTimeout',
+    default: 60 * 60 * 1000 // 1hr
   },
   logLevel: {
     doc: 'Log level',
@@ -264,6 +270,18 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
+  expressAppConcurrency: {
+    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
+    format: 'nat',
+    env: 'expressAppConcurrency',
+    default: 0
+  },
+  clusterModeEnabled: {
+    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
+    format: Boolean,
+    env: 'clusterModeEnabled',
+    default: true
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -373,6 +391,12 @@ const config = convict({
     env: 'dataRegistryAddress',
     default: null
   },
+  entityManagerAddress: {
+    doc: 'entity manager registry address',
+    format: String,
+    env: 'entityManagerAddress',
+    default: '0x2F99338637F027CFB7494E46B49987457beCC6E3'
+  },
   dataProviderUrl: {
     doc: 'data contracts web3 provider url',
     format: String,
@@ -401,7 +425,7 @@ const config = convict({
     doc: 'Number of missed blocks after which a discovery node would be considered unhealthy',
     format: 'nat',
     env: 'discoveryNodeUnhealthyBlockDiff',
-    default: 500
+    default: 15
   },
   identityService: {
     doc: 'Identity service endpoint to record creator-node driven plays against',
@@ -419,7 +443,13 @@ const config = convict({
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
     env: 'snapbackHighestReconfigMode',
-    default: 'RECONFIG_DISABLED'
+    default: 'PRIMARY_AND_OR_SECONDARIES'
+  },
+  reconfigModePrimaryOnly: {
+    doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
+    format: Boolean,
+    env: 'reconfigModePrimaryOnly',
+    default: false
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -445,17 +475,41 @@ const config = convict({
     env: 'cidWhitelist',
     default: ''
   },
+  considerNodeUnhealthy: {
+    doc: 'Flag to mark the node as unhealthy (health_check will 200 but healthy: false in response). Wont be selected in replica sets, other nodes will roll this node off replica sets for their users',
+    format: Boolean,
+    env: 'considerNodeUnhealthy',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'whether or not to use entity manager to update the replica set',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
+  },
+  premiumContentEnabled: {
+    doc: 'whether or not to enable premium content',
+    format: Boolean,
+    env: 'premiumContentEnabled',
+    default: false
+  },
 
   /** sync / snapback configs */
 
+  syncForceWipeEnabled: {
+    doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeEnabled',
+    default: true
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
     env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
-    default: 3_600_000 // 1hr
+    default: 600_000 // 10m
   },
   stateMonitoringQueueRateLimitInterval: {
-    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitInterval',
     default: 60_000 // 1m
@@ -465,6 +519,30 @@ const config = convict({
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
     default: 3
+  },
+  recoverOrphanedDataQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  recoverOrphanedDataQueueRateLimitJobsPerInterval: {
+    doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
+    default: 1
+  },
+  recoverOrphanedDataNumUsersPerBatch: {
+    doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
+    format: 'nat',
+    env: 'recoverOrphanedDataNumUsersPerBatch',
+    default: 2
+  },
+  recoverOrphanedDataDelayMsBetweenBatches: {
+    doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
+    format: 'nat',
+    env: 'recoverOrphanedDataDelayMsBetweenBatches',
+    default: 60_000 // 1m
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -482,19 +560,19 @@ const config = convict({
     doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
-    default: 10
+    default: 5
   },
   syncQueueMaxConcurrency: {
     doc: 'Max concurrency of SyncQueue',
     format: 'nat',
     env: 'syncQueueMaxConcurrency',
-    default: 50
+    default: 30
   },
   issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
     format: 'nat',
     env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 60000 // 60000ms = 1m (prod default)
+    default: 45000 // 45 seconds (prod default)
   },
   enforceWriteQuorum: {
     doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
@@ -518,31 +596,31 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 2000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
     env: 'maxManualRequestSyncJobConcurrency',
-    default: 15
+    default: 30
   },
   maxRecurringRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 5
+    default: 20
+  },
+  maxUpdateReplicaSetJobConcurrency: {
+    doc: 'Max bull queue concurrency for update replica set jobs',
+    format: 'nat',
+    env: 'maxUpdateReplicaSetJobConcurrency',
+    default: 10
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
     format: 'nat',
     env: 'peerHealthCheckRequestTimeout',
     default: 2000
-  },
-  minimumStoragePathSize: {
-    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
-    format: 'nat',
-    env: 'minimumStoragePathSize',
-    default: 100000000000
   },
   minimumMemoryAvailable: {
     doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
@@ -588,11 +666,16 @@ const config = convict({
     default: 20
   },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
-    doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
+    doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    // 24 hours in seconds
-    default: 86400
+    default: 600 // 10min in s
+  },
+  maxNumberSecondsSecondaryRemainsUnhealthy: {
+    doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
+    format: 'nat',
+    env: 'maxNumberSecondsSecondaryRemainsUnhealthy',
+    default: 600 // 10min in s
   },
   secondaryUserSyncDailyFailureCountThreshold: {
     doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
@@ -601,16 +684,16 @@ const config = convict({
     default: 20
   },
   maxSyncMonitoringDurationInMs: {
-    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for non-manual syncs',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
   },
-  syncRequestMaxUserFailureCountBeforeSkip: {
-    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
+  maxManualSyncMonitoringDurationInMs: {
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion for manual syncs',
     format: 'nat',
-    env: 'syncRequestMaxUserFailureCountBeforeSkip',
-    default: 10
+    env: 'maxManualSyncMonitoringDurationInMs',
+    default: 45000 // 45 sec (prod default)
   },
   skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
@@ -625,7 +708,7 @@ const config = convict({
     default: 8760 // 1 year in hrs
   },
   contentCacheLayerEnabled: {
-    doc: 'Flag to enable or disable the nginx cache layer that caches content',
+    doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
     default: true
@@ -701,6 +784,31 @@ const config = convict({
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
     default: false
+  },
+  findCIDInNetworkEnabled: {
+    doc: 'enable findCIDInNetwork lookups',
+    format: Boolean,
+    env: 'findCIDInNetworkEnabled',
+    default: true
+  },
+  otelTracingEnabled: {
+    doc: 'enable OpenTelemetry tracing',
+    format: Boolean,
+    env: 'otelTracingEnabled',
+    default: true
+  },
+  otelCollectorUrl: {
+    doc: 'the url for the OpenTelemetry collector',
+    format: String,
+    env: 'otelCollectorUrl',
+    default: ''
+  },
+  reconfigSPIdBlacklistString: {
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
+    format: String,
+    env: 'reconfigSPIdBlacklistString',
+    default:
+      '1,4,7,12,13,14,15,16,19,28,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,63,64,65'
   }
   /**
    * unsupported options at the moment
@@ -753,6 +861,18 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
+
+// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
+config.set(
+  'reconfigSPIdBlacklist',
+  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
+    ? []
+    : config
+        .get('reconfigSPIdBlacklistString')
+        .split(',')
+        .filter((e) => e)
+        .map((e) => parseInt(e))
+)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

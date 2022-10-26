@@ -1,4 +1,4 @@
-const Web3 = require('../src/web3')
+const Web3 = require('../src/LibsWeb3')
 const path = require('path')
 
 const { setServiceVersion, addServiceType } = require('./helpers/version')

@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const mailgun = require('mailgun-js')
+const sgMail = require('@sendgrid/mail')
 const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
@@ -32,15 +32,13 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const { setupRewardsAttester } = require('./utils/configureAttester')
 const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
-const DOMAIN = 'mail.audius.co'
-
 class App {
-  constructor (port) {
+  constructor(port) {
     this.port = port
     this.express = express()
     this.redisClient = redisClient
     this.configureSentry()
-    this.configureMailgun()
+    this.configureSendGrid()
 
     this.optimizelyPromise = null
     this.optimizelyClientInstance = this.configureOptimizely()
@@ -65,7 +63,7 @@ class App {
     this.setErrorHandler()
   }
 
-  async init () {
+  async init() {
     let server
     await this.getAudiusAnnouncements()
 
@@ -83,7 +81,7 @@ class App {
       // this is a stupid solution to a timing bug, because migrations attempt to get run when
       // the db port is exposed, not when it's ready to accept incoming connections. the timeout
       // attempts to wait until the db is accepting connections
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
       await this.runMigrations()
 
       // clear POA & ETH relayer keys
@@ -95,7 +93,7 @@ class App {
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
         const audiusInstance = await this.configureAudiusInstance()
-        cluster.fork({ 'WORKER_TYPE': 'notifications' })
+        cluster.fork({ WORKER_TYPE: 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
         await this.configureDiscoveryNodeRegistration(audiusInstance)
@@ -105,16 +103,18 @@ class App {
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
         // use in memory wallet locks
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
-          cluster.fork({ 'WORKER_TYPE': 'web_server' })
+          cluster.fork({ WORKER_TYPE: 'web_server' })
         }
 
-        cluster.on('exit', (worker, code, signal) => {
-          logger.info(`Cluster: Worker ${worker.process.pid} died, forking another worker`)
+        cluster.on('exit', (worker) => {
+          logger.info(
+            `Cluster: Worker ${worker.process.pid} died, forking another worker`
+          )
           cluster.fork(worker.process.env)
         })
       } else {
         // if it's a test run only start the server
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           server = this.express.listen(this.port, resolve)
         })
         server.setTimeout(config.get('setTimeout'))
@@ -145,14 +145,14 @@ class App {
       const audiusInstance = await this.configureAudiusInstance()
       await this.configureReporter()
 
-      if (process.env['WORKER_TYPE'] === 'notifications') {
+      if (process.env.WORKER_TYPE === 'notifications') {
         await this.notificationProcessor.init(
           audiusInstance,
           this.express,
           this.redisClient
         )
       } else {
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           server = this.express.listen(this.port, resolve)
         })
         server.setTimeout(config.get('setTimeout'))
@@ -168,16 +168,15 @@ class App {
     }
   }
 
-  configureMailgun () {
-    // Configure mailgun instance
-    let mg = null
-    if (config.get('mailgunApiKey')) {
-      mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
+  configureSendGrid() {
+    // Configure sendgrid instance
+    if (config.get('sendgridApiKey')) {
+      sgMail.setApiKey(config.get('sendgridApiKey'))
     }
-    this.express.set('mailgun', mg)
+    this.express.set('sendgrid', config.get('sendgridApiKey') ? sgMail : null)
   }
 
-  configureSentry () {
+  configureSentry() {
     const dsn = config.get('sentryDSN')
     if (dsn) {
       Sentry.init({
@@ -186,7 +185,7 @@ class App {
     }
   }
 
-  configureOptimizely () {
+  configureOptimizely() {
     const sdkKey = config.get('optimizelySdkKey')
     const optimizelyClientInstance = optimizelySDK.createInstance({
       sdkKey,
@@ -196,7 +195,7 @@ class App {
       }
     })
 
-    this.optimizelyPromise = new Promise(resolve => {
+    this.optimizelyPromise = new Promise((resolve) => {
       optimizelyClientInstance.onReady().then(() => {
         this.express.set('optimizelyClient', optimizelyClientInstance)
 
@@ -206,7 +205,7 @@ class App {
     return optimizelyClientInstance
   }
 
-  configureReporter () {
+  configureReporter() {
     const slackWormholeErrorReporter = new SlackReporter({
       slackUrl: config.get('errorWormholeReporterSlackUrl'),
       childLogger: logger
@@ -214,35 +213,42 @@ class App {
     this.express.set('slackWormholeErrorReporter', slackWormholeErrorReporter)
   }
 
-  async configureDiscoveryNodeRegistration (libs) {
-    const childLogger = logger.child({ 'service': 'Discovery Node Registration' })
+  async configureDiscoveryNodeRegistration(libs) {
+    const childLogger = logger.child({ service: 'Discovery Node Registration' })
     await startRegistrationQueue(libs, childLogger)
   }
 
-  async configureAudiusInstance () {
+  async configureAudiusInstance() {
     await audiusLibsWrapper.init()
     const audiusInstance = audiusLibsWrapper.getAudiusLibs()
     this.express.set('audiusLibs', audiusInstance)
     return audiusInstance
   }
 
-  async configureRewardsAttester (libs) {
+  async configureRewardsAttester(libs) {
     // Await for optimizely config so we know
     // whether rewards attestation is enabled,
     // returning early if false
     await this.optimizelyPromise
-    const isEnabled = getFeatureFlag(this.optimizelyClientInstance, FEATURE_FLAGS.REWARDS_ATTESTATION_ENABLED)
+    const isEnabled = getFeatureFlag(
+      this.optimizelyClientInstance,
+      FEATURE_FLAGS.REWARDS_ATTESTATION_ENABLED
+    )
     if (!isEnabled) {
       logger.info('Attestation disabled!')
       return
     }
 
-    const attester = await setupRewardsAttester(libs, this.optimizelyClientInstance, this.redisClient)
+    const attester = await setupRewardsAttester(
+      libs,
+      this.optimizelyClientInstance,
+      this.redisClient
+    )
     this.express.set('rewardsAttester', attester)
     return attester
   }
 
-  async runMigrations () {
+  async runMigrations() {
     logger.info('Executing database migrations...')
     try {
       await runMigrations()
@@ -252,12 +258,12 @@ class App {
     }
   }
 
-  expressSettings () {
+  expressSettings() {
     // https://expressjs.com/en/guide/behind-proxies.html
     this.express.set('trust proxy', true)
   }
 
-  setMiddleware () {
+  setMiddleware() {
     this.express.use(loggingMiddleware)
     this.express.use(bodyParser.json({ limit: '1mb' }))
     this.express.use(cookieParser())
@@ -265,7 +271,7 @@ class App {
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
-  _createRateLimitsForListenCounts (interval, timeInSeconds) {
+  _createRateLimitsForListenCounts(interval, timeInSeconds) {
     const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
@@ -305,29 +311,54 @@ class App {
       }
     })
 
-    return [listenCountLimiter, listenCountIPTrackLimiter, listenCountIPRequestLimiter]
+    return [
+      listenCountLimiter,
+      listenCountIPTrackLimiter,
+      listenCountIPRequestLimiter
+    ]
   }
 
-  setRateLimiters () {
-    const requestRateLimiter = getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
+  setRateLimiters() {
+    const requestRateLimiter = getRateLimiter({
+      prefix: 'reqLimiter',
+      max: config.get('rateLimitingReqLimit')
+    })
     this.express.use(requestRateLimiter)
 
-    const authRequestRateLimiter = getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
+    const authRequestRateLimiter = getRateLimiter({
+      prefix: 'authLimiter',
+      max: config.get('rateLimitingAuthLimit')
+    })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
 
-    const twitterRequestRateLimiter = getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
+    const twitterRequestRateLimiter = getRateLimiter({
+      prefix: 'twitterLimiter',
+      max: config.get('rateLimitingTwitterLimit')
+    })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
 
-    const tikTokRequestRateLimiter = getRateLimiter({ prefix: 'tikTokLimiter', max: config.get('rateLimitingTikTokLimit') })
+    const tikTokRequestRateLimiter = getRateLimiter({
+      prefix: 'tikTokLimiter',
+      max: config.get('rateLimitingTikTokLimit')
+    })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
     const ONE_HOUR_IN_SECONDS = 60 * 60
-    const [listenCountHourlyLimiter, listenCountHourlyIPTrackLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
-    const [listenCountDailyLimiter, listenCountDailyIPTrackLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
-    const [listenCountWeeklyLimiter, listenCountWeeklyIPTrackLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
+    const [listenCountHourlyLimiter, listenCountHourlyIPTrackLimiter] =
+      this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+    const [
+      listenCountDailyLimiter,
+      listenCountDailyIPTrackLimiter,
+      listenCountDailyIPLimiter
+    ] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
+    const [listenCountWeeklyLimiter, listenCountWeeklyIPTrackLimiter] =
+      this._createRateLimitsForListenCounts(
+        'Week',
+        ONE_HOUR_IN_SECONDS * 24 * 7
+      )
 
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use(
@@ -371,13 +402,13 @@ class App {
     this.express.use(getRateLimiterMiddleware())
   }
 
-  setRoutes () {
+  setRoutes() {
     // import routes
     require('./routes')(this.express)
   }
 
-  setErrorHandler () {
-    function errorHandler (err, req, res, next) {
+  setErrorHandler() {
+    function errorHandler(err, req, res, next) {
       req.logger.error('Internal server error')
       req.logger.error(err.stack)
       Sentry.captureException(err)
@@ -386,14 +417,17 @@ class App {
     this.express.use(errorHandler)
   }
 
-  async getAudiusAnnouncements () {
+  async getAudiusAnnouncements() {
     try {
-      let { announcements, announcementMap } = await fetchAnnouncements()
+      const { announcements, announcementMap } = await fetchAnnouncements()
       this.express.set('announcements', announcements)
       this.express.set('announcementMap', announcementMap)
     } catch (err) {
       const audiusNotificationUrl = config.get('audiusNotificationUrl')
-      logger.error(`Error, unable to get audius announcements from ${audiusNotificationUrl} \n [Err]:`, err)
+      logger.error(
+        `Error, unable to get audius announcements from ${audiusNotificationUrl} \n [Err]:`,
+        err
+      )
     }
   }
 }

@@ -313,10 +313,16 @@ const config = convict({
     env: 'solMinimumBalance',
     default: 1000000000
   },
-  mailgunApiKey: {
-    doc: 'Mailgun API key used to send emails',
+  sendgridApiKey: {
+    doc: 'Sendgrid API key used to send emails',
     format: String,
-    env: 'mailgunApiKey',
+    env: 'sendgridApiKey',
+    default: ''
+  },
+  seonApiKey: {
+    doc: 'Seon API key used to validate emails',
+    format: String,
+    env: 'seonApiKey',
     default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
@@ -325,6 +331,12 @@ const config = convict({
     format: String,
     default: null,
     env: 'registryAddress'
+  },
+  entityManagerAddress: {
+    doc: 'EntityManager address deployed on web3Provider',
+    format: String,
+    default: '',
+    env: 'entityManagerAddress'
   },
   audiusNotificationUrl: {
     doc: 'Url of audius notifications',
@@ -479,15 +491,13 @@ const config = convict({
     env: 'pgConnectionPoolMax'
   },
   pgConnectionPoolAcquireTimeout: {
-    doc:
-      'The maximum time (ms) the pool will try to get the connection before throwing an error',
+    doc: 'The maximum time (ms) the pool will try to get the connection before throwing an error',
     format: 'nat',
     default: 60000,
     env: 'pgConnectionPoolAcquireTimeout'
   },
   pgConnectionPoolIdleTimeout: {
-    doc:
-      'The maximum time (ms) that a connection can be idle before being released',
+    doc: 'The maximum time (ms) that a connection can be idle before being released',
     format: 'nat',
     default: 10000,
     env: 'pgConnectionPoolIdleTimeout'
@@ -803,6 +813,24 @@ const config = convict({
     format: String,
     env: 'cognitoRetrySecret',
     default: ''
+  },
+  stripeSecretKey: {
+    doc: 'Secret key for Stripe Crypto On-Ramp Integration',
+    format: String,
+    env: 'stripeSecretKey',
+    default: ''
+  },
+  skipAbuseCheck: {
+    doc: 'Skip AAO abuse check on relay and notifs',
+    format: Boolean,
+    env: 'skipAbuseCheck',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'Enable replica set updates with Entity Manager',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: false
   }
 })
 
@@ -815,7 +843,10 @@ const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
 if (fs.existsSync('eth-contract-config.json')) {
-  let ethContractConfig = require('../eth-contract-config.json')
+  // eslint isn't smart enought to know this is a conditional require, so this fails
+  // on CI where the file doesn't exist.
+  // eslint-disable-next-line node/no-missing-require
+  const ethContractConfig = require('../eth-contract-config.json')
   config.load({
     ethTokenAddress: ethContractConfig.audiusTokenAddress,
     ethRegistryAddress: ethContractConfig.registryAddress,
@@ -825,27 +856,31 @@ if (fs.existsSync('eth-contract-config.json')) {
 }
 
 if (fs.existsSync('solana-program-config.json')) {
-  let solanaContractConfig = require('../solana-program-config.json')
+  // eslint-disable-next-line node/no-missing-require
+  const solanaContractConfig = require('../solana-program-config.json')
   config.load({
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
-    solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
+    solanaAudiusEthRegistryAddress:
+      solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 
     solanaMintAddress: solanaContractConfig.splToken,
-    solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
+    solanaClaimableTokenProgramAddress:
+      solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+    solanaRewardsManagerTokenPDA:
+      solanaContractConfig.rewardsManagerTokenAccount,
 
     solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
   })
 }
 
 if (fs.existsSync('aao-config.json')) {
-  let aaoConfig = require('../aao-config.json')
+  const aaoConfig = require('../aao-config.json')
   console.log('rewards: ' + JSON.stringify(aaoConfig))
   config.load({
     aaoAddress: aaoConfig[0]

@@ -8,7 +8,13 @@ const { logger: genericLogger } = require('../logging')
  *
  * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
  */
-module.exports = async (logger = genericLogger) => {
+module.exports = async ({
+  enableEthContracts = true,
+  enableContracts = true,
+  enableDiscovery = true,
+  enableIdentity = true,
+  logger = genericLogger
+}) => {
   /**
    * Define all config variables
    */
@@ -25,8 +31,10 @@ module.exports = async (logger = genericLogger) => {
   const ethRegistryAddress = config.get('ethRegistryAddress')
   const ethOwnerWallet = config.get('ethOwnerWallet')
   const dataRegistryAddress = config.get('dataRegistryAddress')
+  const entityManagerAddress = config.get('entityManagerAddress')
   const dataProviderUrl = config.get('dataProviderUrl')
   const delegatePrivateKey = config.get('delegatePrivateKey')
+
   const creatorNodeIsDebug = config.get('creatorNodeIsDebug')
 
   const discoveryProviderWhitelist = discoveryProviderWhitelistConfig
@@ -51,27 +59,37 @@ module.exports = async (logger = genericLogger) => {
    * Create AudiusLibs instance
    */
   const audiusLibs = new AudiusLibs({
-    ethWeb3Config: AudiusLibs.configEthWeb3(
-      ethTokenAddress,
-      ethRegistryAddress,
-      ethWeb3,
-      ethOwnerWallet
-    ),
-    web3Config: AudiusLibs.configInternalWeb3(
-      dataRegistryAddress,
-      // pass as array
-      [dataProviderUrl],
-      // TODO - formatting this private key here is not ideal
-      delegatePrivateKey.replace('0x', '')
-    ),
-    discoveryProviderConfig: {
-      whitelist: discoveryProviderWhitelist,
-      unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
-    },
+    ethWeb3Config: enableEthContracts
+      ? AudiusLibs.configEthWeb3(
+          ethTokenAddress,
+          ethRegistryAddress,
+          ethWeb3,
+          ethOwnerWallet
+        )
+      : null,
+    // AudiusContracts (enabled by enableContracts) needs web3Config
+    web3Config: enableContracts
+      ? AudiusLibs.configInternalWeb3(
+          dataRegistryAddress,
+          // pass as array
+          [dataProviderUrl],
+          // TODO - formatting this private key here is not ideal
+          delegatePrivateKey.replace('0x', ''),
+          entityManagerAddress
+        )
+      : null,
+    discoveryProviderConfig: enableDiscovery
+      ? {
+          whitelist: discoveryProviderWhitelist,
+          unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
+        }
+      : null,
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
-    identityServiceConfig: identityService
-      ? AudiusLibs.configIdentityService(identityService)
-      : undefined,
+    identityServiceConfig: enableIdentity
+      ? identityService
+        ? AudiusLibs.configIdentityService(identityService)
+        : undefined
+      : null,
     isDebug: creatorNodeIsDebug,
     isServer: true,
     preferHigherPatchForPrimary: true,

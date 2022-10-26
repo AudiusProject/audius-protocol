@@ -8,11 +8,12 @@ const chai = require('chai')
 const sinon = require('sinon')
 const proxyquire = require('proxyquire')
 
+const middlewares = require('../src/middlewares')
 const config = require('../src/config')
 const models = require('../src/models')
 const { getApp, getServiceRegistryMock } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const libsMock = getLibsMock()
+
 const {
   createStarterCNodeUser,
   testEthereumConstants,
@@ -24,7 +25,8 @@ const sessionManager = require('../src/sessionManager')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
-const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
+
+const { saveFileForMultihashToFS } = require('../src/fileManager')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -34,6 +36,11 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 const DUMMY_WALLET = testEthereumConstants.pubKey.toLowerCase()
 const DUMMY_CNODEUSER_BLOCKNUMBER = 10
+const MOCK_CN1 = 'http://mock-cn1.audius.co'
+const MOCK_CN2 = 'http://mock-cn2.audius.co'
+const MOCK_CN3 = 'http://mock-cn3.audius.co'
+const MOCK_CN4 = 'http://mock-cn4.audius.co'
+
 // Below files generated using above dummy data
 const sampleExportDummyCIDPath = path.resolve(
   __dirname,
@@ -44,7 +51,9 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
   'syncAssets/sampleExportDummyCIDFromClock2.json'
 )
 
-describe('test nodesync', async function () {
+const libsMock = getLibsMock()
+
+describe('Test secondarySyncFromPrimary()', async function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -65,11 +74,13 @@ describe('test nodesync', async function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
+    config.set('entityManagerReplicaSetEnabled', true)
     try {
       await destroyUsers()
     } catch (e) {
       // do nothing
     }
+
     await redisClient.flushdb()
   })
 
@@ -77,7 +88,9 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
-    sandbox.restore()
+    if (sandbox) {
+      sandbox.restore()
+    }
     await sinon.restore()
     await server.close()
   })
@@ -85,6 +98,7 @@ describe('test nodesync', async function () {
   describe('test /export route', async function () {
     let cnodeUserUUID,
       sessionToken,
+      sessionWalletPublicKey,
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
@@ -95,11 +109,17 @@ describe('test nodesync', async function () {
 
     const { pubKey } = testEthereumConstants
 
-    const createUserAndTrack = async function () {
+    // createUserAndTrack expected clock value
+    const expectedClockVal = 37
+
+    async function createUserAndTrack() {
       // Create user
-      ;({ cnodeUserUUID, sessionToken, userId } = await createStarterCNodeUser(
-        userId
-      ))
+      ;({
+        cnodeUserUUID,
+        sessionToken,
+        userId,
+        walletPublicKey: sessionWalletPublicKey
+      } = await createStarterCNodeUser(userId))
 
       // Upload user metadata
       const metadata = {
@@ -117,6 +137,19 @@ describe('test nodesync', async function () {
       metadataMultihash = userMetadataResp.body.data.metadataMultihash
       metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize current session wallet as the wallet for the session user ID
+      const blockchainUserId = 1
+      const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+        let wallet = 'no wallet'
+        if (blockchainUserIdArg === blockchainUserId) {
+          wallet = sessionWalletPublicKey
+        }
+        return {
+          wallet
+        }
+      })
+      libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
       // Associate user with with blockchain ID
       const associateRequest = {
         blockchainUserId: 1,
@@ -131,7 +164,6 @@ describe('test nodesync', async function () {
         .expect(200)
 
       /** Upload a track */
-
       const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
         cnodeUserUUID,
@@ -162,13 +194,33 @@ describe('test nodesync', async function () {
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
       trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize wallet as owner of track
+      const blockchainTrackId = 1
+      const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+        let trackOwnerId = -1
+        if (trackIds[0] === blockchainTrackId) {
+          trackOwnerId = userId
+        }
+        return {
+          latest_chain_block: 10,
+          latest_indexed_block: 10,
+          data: [
+            {
+              blocknumber: 99999,
+              owner_id: trackOwnerId
+            }
+          ]
+        }
+      })
+      libsMock.Track = { getTracksVerbose: getTrackStub }
+
       // associate track + track metadata with blockchain ID
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
         .set('User-Id', userId)
         .send({
-          blockchainTrackId: 1,
+          blockchainTrackId,
           blockNumber: 10,
           metadataFileUUID: trackMetadataFileUUID,
           transcodedTrackUUID
@@ -320,9 +372,7 @@ describe('test nodesync', async function () {
     })
 
     describe('Confirm export works for user with data exceeding maxExportClockValueRange', async function () {
-      /**
-       * override maxExportClockValueRange to smaller value for testing
-       */
+      /** Override maxExportClockValueRange to smaller value for testing */
       beforeEach(async function () {
         maxExportClockValueRange = 10
         process.env.maxExportClockValueRange = maxExportClockValueRange
@@ -337,6 +387,7 @@ describe('test nodesync', async function () {
        */
       afterEach(async function () {
         delete process.env.maxExportClockValueRange
+        maxExportClockValueRange = originalMaxExportClockValueRange
       })
 
       it('Export from clock = 0', async function () {
@@ -432,7 +483,7 @@ describe('test nodesync', async function () {
         const clockInfo = {
           requestedClockRangeMin,
           requestedClockRangeMax,
-          localClockMax: requestedClockRangeMax
+          localClockMax: expectedClockVal
         }
 
         // construct the expected response
@@ -556,7 +607,7 @@ describe('test nodesync', async function () {
         const clockInfo = {
           requestedClockRangeMin,
           requestedClockRangeMax,
-          localClockMax: requestedClockRangeMax
+          localClockMax: expectedClockVal
         }
 
         // construct the expected response
@@ -702,7 +753,7 @@ describe('test nodesync', async function () {
       })
     })
 
-    describe('Confirm export throws an error with inconsitent data', async function () {
+    describe('Confirm export throws an error with inconsistent data', async function () {
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
@@ -710,22 +761,25 @@ describe('test nodesync', async function () {
       it('Inconsistent clock values', async function () {
         // Mock findOne DB function for cnodeUsers and ClockRecords
         // Have them return inconsistent values
+        const clockRecordTableClock = 8
         const clockRecordsFindAllStub = sandbox.stub().resolves([
           {
-            clock: 8
+            cnodeUserUUID: '48523a08-2a11-4200-8aac-ae74b8a39dd0',
+            clock: clockRecordTableClock
           }
         ])
+        const cnodeUserTableClock = 7
         const cNodeUserFindAll = sandbox.stub().resolves([
           {
             // Random UUID
             cnodeUserUUID: '48523a08-2a11-4200-8aac-ae74b8a39dd0',
-            clock: 7
+            clock: cnodeUserTableClock
           }
         ])
 
         const modelsMock = {
-          ...require('../src/models'),
-          ClockRecords: {
+          ...models,
+          ClockRecord: {
             findAll: clockRecordsFindAllStub
           },
           CNodeUser: {
@@ -744,24 +798,24 @@ describe('test nodesync', async function () {
             walletPublicKeys: pubKey.toLowerCase(),
             requestedClockRangeMin: 0,
             requestedClockRangeMax: maxExportClockValueRange,
-            logger: console
+            logger: console,
+            forceExport: false
           })
         ).to.eventually.be.rejectedWith(
-          'Cannot export - exported data is not consistent. Exported max clock val = 7 and exported max ClockRecord val -Infinity'
+          `Cannot export - exported data is not consistent. Exported max clock val = ${cnodeUserTableClock} and exported max ClockRecord val ${clockRecordTableClock}. Fixing and trying again...`
         )
 
-        /**
-         *
-         * Verify
-         */
+        expect(clockRecordsFindAllStub).to.have.been.calledOnce
+        expect(cNodeUserFindAll).to.have.been.calledOnce
       })
     })
   })
 
   describe('Test secondarySyncFromPrimary function', async function () {
-    let serviceRegistryMock
+    let serviceRegistryMock, originalContentNodeEndpoint
 
-    const TEST_ENDPOINT = 'http://test-cn.co'
+    const TEST_ENDPOINT_PRIMARY = MOCK_CN1
+    const USER_REPLICA_SET = `${MOCK_CN1},${MOCK_CN2},${MOCK_CN3}`
     const { pubKey } = testEthereumConstants
     const userWallets = [pubKey.toLowerCase()]
 
@@ -785,6 +839,29 @@ describe('test nodesync', async function () {
 
       const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
+      // Make chain recognize current session wallet as the wallet for the session user ID
+      const blockchainUserId = 1
+      const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+        let wallet = 'no wallet'
+        if (blockchainUserIdArg === blockchainUserId) {
+          wallet = session.walletPublicKey
+        }
+        return {
+          wallet
+        }
+      })
+      libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
+      // Make chain return user's replica set
+      const getUsersStub = sinon.stub().resolves([
+        {
+          blocknumber: 1,
+          track_blocknumber: 1,
+          creator_node_endpoint: USER_REPLICA_SET
+        }
+      ])
+      libsMock.User = { ...libsMock.User, getUsers: getUsersStub }
+
       // Associate user with with blockchain ID
       const associateRequest = {
         blockchainUserId: 1,
@@ -801,8 +878,8 @@ describe('test nodesync', async function () {
       return session.cnodeUserUUID
     }
 
-    const unpackSampleExportData = (sampleExportFilePath) => {
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFilePath))
+    const unpackSampleExportData = async (sampleExportFilePath) => {
+      const sampleExport = JSON.parse(await fs.readFile(sampleExportFilePath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
       const { audiusUsers, tracks, files, clockRecords } = cnodeUser
 
@@ -816,35 +893,47 @@ describe('test nodesync', async function () {
       }
     }
 
-    const setupMocks = (sampleExport) => {
+    const setupMocks = (sampleExport, contentIsAvailable = true) => {
       // Mock /export route response
-      nock(TEST_ENDPOINT)
+      nock(TEST_ENDPOINT_PRIMARY)
         .persist()
         .get((uri) => uri.includes('/export'))
         .reply(200, sampleExport)
 
       // This text 'audius is cool' is mapped to the hash in the dummy json data
       // If changes are made to the response body, make the corresponding changes to the hash too
-      nock('http://mock-cn1.audius.co')
+      nock(MOCK_CN1)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
         )
-        .reply(200, 'audius is cool')
+        .reply(() => {
+          return contentIsAvailable
+            ? [200, 'audius is cool']
+            : [404, 'audius is less cool']
+        })
 
-      nock('http://mock-cn2.audius.co')
+      nock(MOCK_CN2)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
         )
-        .reply(200, 'audius is cool')
+        .reply(() => {
+          return contentIsAvailable
+            ? [200, 'audius is cool']
+            : [404, 'audius is less cool']
+        })
 
-      nock('http://mock-cn3.audius.co')
+      nock(MOCK_CN3)
         .persist()
         .get((uri) =>
           uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
         )
-        .reply(200, 'audius is cool')
+        .reply(() => {
+          return contentIsAvailable
+            ? [200, 'audius is cool']
+            : [404, 'audius is less cool']
+        })
     }
 
     const verifyLocalCNodeUserStateForUser = async (exportedCnodeUser) => {
@@ -980,10 +1069,15 @@ describe('test nodesync', async function () {
      * Setup deps + mocks + app
      */
     beforeEach(async function () {
-      nock.cleanAll()
+      // Clear storagePath
+      const storagePath = config.get('storagePath')
+      const absoluteStoragePath = path.resolve(storagePath)
+      await fs.emptyDir(path.resolve(absoluteStoragePath))
 
       maxExportClockValueRange = originalMaxExportClockValueRange
       process.env.maxExportClockValueRange = maxExportClockValueRange
+
+      originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
       const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
       server = appInfo.server
@@ -992,7 +1086,15 @@ describe('test nodesync', async function () {
       serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
     })
 
+    afterEach(function () {
+      config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+      nock.cleanAll()
+    })
+
     it('Syncs correctly from clean user state with mocked export object', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1000,7 +1102,7 @@ describe('test nodesync', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDPath)
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
 
       setupMocks(sampleExport)
 
@@ -1009,11 +1111,35 @@ describe('test nodesync', async function () {
       assert.strictEqual(initialCNodeUserCount, 0)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
@@ -1028,7 +1154,52 @@ describe('test nodesync', async function () {
       })
     })
 
+    it("Fails sync when this syncing from a node that's not the user's primary", async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
+      setupMocks(sampleExport)
+
+      // Call secondarySyncFromPrimary
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: MOCK_CN3
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'abort_current_node_is_not_user_primary'
+      })
+    })
+
     it('Syncs correctly when cnodeUser data already exists locally', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1036,7 +1207,7 @@ describe('test nodesync', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
+      } = await unpackSampleExportData(sampleExportDummyCIDFromClock2Path)
 
       setupMocks(sampleExport)
 
@@ -1054,11 +1225,35 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUserCount, 1)
 
       // Call secondarySyncFromPrimary
-      await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT
-      )
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
 
@@ -1071,7 +1266,10 @@ describe('test nodesync', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = true', async () => {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
       const {
         sampleExport,
         cnodeUser: exportedCnodeUser,
@@ -1079,7 +1277,65 @@ describe('test nodesync', async function () {
         tracks: exportedTracks,
         files: exportedFiles,
         clockRecords: exportedClockRecords
-      } = unpackSampleExportData(sampleExportDummyCIDPath)
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport)
+
+      nock('http://docker.for.mac.localhost:5000')
+        .get((uri) => uri.includes('/users/history'))
+        .reply(200, { data: [] })
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed local user state with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm local user state exists before sync
+      const localCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID }
+      })
+      assert.strictEqual(localCNodeUserCount, 1)
+
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
+      config.set('syncForceWipeEnabled', true)
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return true
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY,
+        blockNumber: null
+      })
+    })
+
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = false', async () => {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
+      const { sampleExport } = await unpackSampleExportData(
+        sampleExportDummyCIDPath
+      )
 
       setupMocks(sampleExport)
 
@@ -1096,24 +1352,166 @@ describe('test nodesync', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call secondarySyncFromPrimary with `forceResync` = true
-      await secondarySyncFromPrimary(
-        serviceRegistryMock,
-        userWallets,
-        TEST_ENDPOINT,
-        /* blockNumber */ null,
-        /* forceResync */ true
+      // Get local user for future comparison
+      const localCNodeUser = await models.CNodeUser.findOne({
+        where: { cnodeUserUUID },
+        raw: true
+      })
+
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
+      config.set('syncForceWipeEnabled', false)
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../config': config,
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return true
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY,
+        blockNumber: null
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'abort_force_wipe_disabled'
+      })
+
+      await verifyLocalCNodeUserStateForUser(
+        stringifiedDateFields(localCNodeUser) // NOT exportedCnodeUser
       )
+    })
+
+    it('Syncs correctly from clean user state, even when content is unavailable, by skipping files', async function () {
+      // Set this endpoint to the user's secondary
+      config.set('creatorNodeEndpoint', MOCK_CN2)
+
+      const {
+        sampleExport,
+        cnodeUser: exportedCnodeUser,
+        audiusUsers: exportedAudiusUsers,
+        tracks: exportedTracks,
+        files: exportedFiles,
+        clockRecords: exportedClockRecords
+      } = await unpackSampleExportData(sampleExportDummyCIDPath)
+
+      setupMocks(sampleExport, false)
+
+      nock(MOCK_CN1)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
+      nock(MOCK_CN3)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
+      nock(MOCK_CN4)
+        .persist()
+        .get(
+          (uri) =>
+            uri.includes('/file_lookup') &&
+            uri.includes('QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE')
+        )
+        .reply(404)
+
+      const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
+        proxyquire('../src/services/sync/secondarySyncFromPrimary', {
+          '../../middlewares': {
+            ...middlewares
+          },
+          './secondarySyncFromPrimaryUtils': {
+            getAndValidateOwnEndpoint: sinon.stub().resolves(MOCK_CN2),
+            shouldForceResync: async () => {
+              return false
+            }
+          },
+          '../../fileManager': {
+            saveFileForMultihashToFS: async function (
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage = null,
+              trackId = null
+            ) {
+              return saveFileForMultihashToFS(
+                libs,
+                logger,
+                multihash,
+                expectedStoragePath,
+                targetGateways,
+                fileNameForImage,
+                trackId,
+                // Disable retries for testing purposes
+                0 /* numRetries */
+              )
+            }
+          },
+          '../ContentNodeInfoManager': {
+            getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+              primary: TEST_ENDPOINT_PRIMARY,
+              secondary1: MOCK_CN2,
+              secondary2: MOCK_CN3
+            })
+          }
+        })
+
+      // Confirm local user state is empty before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // Ensure secondarySyncFromPrimary() succeeds after threshold reached
+      const result = await secondarySyncFromPrimaryMock({
+        serviceRegistry: serviceRegistryMock,
+        wallet: userWallets[0],
+        creatorNodeEndpoint: TEST_ENDPOINT_PRIMARY
+      })
+
+      assert.deepStrictEqual(result, {
+        result: 'success'
+      })
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
       )
 
+      // Update files with skipped = true
+      const skippedExportedFiles = exportedFiles.map((file) => ({
+        ...file,
+        skipped: true
+      }))
+
       await verifyLocalStateForUser({
         cnodeUserUUID: newCNodeUserUUID,
         exportedAudiusUsers,
         exportedClockRecords,
-        exportedFiles,
+        exportedFiles: skippedExportedFiles,
         exportedTracks
       })
     })
@@ -1121,7 +1519,11 @@ describe('test nodesync', async function () {
 })
 
 describe('Test primarySyncFromSecondary() with mocked export', async () => {
-  let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
+  let server,
+    app,
+    serviceRegistryMock,
+    primarySyncFromSecondaryStub,
+    originalContentNodeEndpoint
 
   const NODES = {
     CN1: 'http://mock-cn1.audius.co',
@@ -1139,8 +1541,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   const assetsDirPath = path.resolve(__dirname, 'sync/assets')
   const exportFilePath = path.resolve(assetsDirPath, 'realExport.json')
 
-  const unpackExportDataFromFile = (exportDataFilePath) => {
-    const exportObj = JSON.parse(fs.readFileSync(exportDataFilePath))
+  const unpackExportDataFromFile = async (exportDataFilePath) => {
+    const exportObj = JSON.parse(await fs.readFile(exportDataFilePath))
     const cnodeUserInfo = Object.values(exportObj.data.cnodeUsers)[0]
     const cnodeUser = _.omit(cnodeUserInfo, [
       'audiusUsers',
@@ -1183,16 +1585,20 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   /**
    * Sets `/ipfs` route responses for DUMMY_CID from all nodes to DUMMY_CID_DATA
    */
-  const setupIPFSRouteMocks = () => {
+  const setupIPFSRouteMocks = (contentIsAvailable = true) => {
     NODES_LIST.forEach((node) => {
       nock(node)
         .persist()
         .get((uri) => uri.includes('/ipfs'))
-        .reply(200, (uri, requestbody) => {
-          const CID = uri.split('/ipfs/')[1].slice(0, 46)
-          const CIDFilePath = computeFilePathForCID(CID)
-          const fileBuffer = fs.readFileSync(CIDFilePath)
-          return fileBuffer
+        .reply((uri, requestBody) => {
+          if (contentIsAvailable) {
+            const CID = uri.split('/ipfs/')[1].slice(0, 46)
+            const CIDFilePath = computeFilePathForCID(CID)
+            const fileBuffer = fs.readFileSync(CIDFilePath)
+            return [200, fileBuffer]
+          } else {
+            return [404, 'bad']
+          }
         })
     })
   }
@@ -1338,6 +1744,19 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
 
     const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
+    // Make chain recognize current session wallet as the wallet for the session user ID
+    const blockchainUserId = 1
+    const getUserStub = sinon.stub().callsFake((blockchainUserIdArg) => {
+      let wallet = 'no wallet'
+      if (blockchainUserIdArg === blockchainUserId) {
+        wallet = session.walletPublicKey
+      }
+      return {
+        wallet
+      }
+    })
+    libsMock.contracts.UserFactoryClient = { getUser: getUserStub }
+
     // Associate user with with blockchain ID
     const associateRequest = {
       blockchainUserId: userId,
@@ -1379,8 +1798,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
-    nock.cleanAll()
-
+    config.set('entityManagerReplicaSetEnabled', true)
     await destroyUsers()
 
     await redisClient.flushdb()
@@ -1395,6 +1813,9 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     server = appInfo.server
     app = appInfo.app
 
+    originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
+    config.set('creatorNodeEndpoint', NODES.CN1)
+
     // Define mocks
 
     serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
@@ -1403,7 +1824,15 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       '../src/services/sync/primarySyncFromSecondary',
       {
         '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
-        '../initAudiusLibs': async () => libsMock
+        '../initAudiusLibs': async () => libsMock,
+        './../../config': config,
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
+        }
       }
     )
   })
@@ -1411,6 +1840,8 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
   // close server
   afterEach(async function () {
     await server.close()
+    config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    nock.cleanAll()
   })
 
   it('Primary correctly syncs from secondary when primary has no state', async function () {
@@ -1421,7 +1852,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1432,11 +1863,12 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     )
     assert.deepStrictEqual(initialLocalCNodeUser, null)
 
-    await primarySyncFromSecondaryStub({
+    const error = await primarySyncFromSecondaryStub({
       secondary: SECONDARY,
       wallet: USER_1_WALLET,
       selfEndpoint: SELF
     })
+    assert.deepStrictEqual(error, undefined)
 
     /**
      * Verify DB state after sync
@@ -1459,7 +1891,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1514,12 +1946,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       comparisonOmittedFields
     )
 
-    await primarySyncFromSecondaryStub({
+    const error = await primarySyncFromSecondaryStub({
       serviceRegistry: serviceRegistryMock,
       secondary: SECONDARY,
       wallet: USER_1_WALLET,
       sourceEndpoint: SELF
     })
+    assert.deepStrictEqual(error, undefined)
 
     /**
      * Verify DB state after sync
@@ -1588,7 +2021,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1637,12 +2070,13 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Sync primary from secondary
      */
-    await primarySyncFromSecondaryStub({
+    const error = await primarySyncFromSecondaryStub({
       serviceRegistry: serviceRegistryMock,
       secondary: SECONDARY,
       wallet: USER_1_WALLET,
       sourceEndpoint: SELF
     })
+    assert.deepStrictEqual(error, undefined)
 
     /**
      * Verify DB state after sync
@@ -1665,7 +2099,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1710,11 +2144,12 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Sync primary from secondary
      */
-    await primarySyncFromSecondaryStub({
+    const error = await primarySyncFromSecondaryStub({
       serviceRegistry: serviceRegistryMock,
       secondary: SECONDARY,
       wallet: USER_1_WALLET
     })
+    assert.deepStrictEqual(error, undefined)
 
     /**
      * Verify DB state after sync
@@ -1737,7 +2172,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
       tracks: exportedTracks,
       files: exportedFiles,
       clockRecords: exportedClockRecords
-    } = unpackExportDataFromFile(exportFilePath)
+    } = await unpackExportDataFromFile(exportFilePath)
 
     setupExportMock(SECONDARY, exportObj)
     setupIPFSRouteMocks()
@@ -1807,11 +2242,12 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     /**
      * Sync primary from secondary
      */
-    await primarySyncFromSecondaryStub({
+    const error = await primarySyncFromSecondaryStub({
       serviceRegistry: serviceRegistryMock,
       secondary: SECONDARY,
       wallet: USER_1_WALLET
     })
+    assert.deepStrictEqual(error, undefined)
 
     /**
      * Verify DB state after sync is identical to DB state before sync !!!
@@ -1834,5 +2270,112 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
     assertTableEquality(localFinalFiles, localInitialFiles, [])
 
     assertTableEquality(localFinalClockRecords, localInitialClockRecords, [])
+  })
+
+  it('Primary correctly syncs from secondary when nodes have divergent state and content is unavailable in network', async function () {
+    const {
+      exportObj,
+      cnodeUser: exportedCnodeUser,
+      audiusUsers: exportedAudiusUsers,
+      tracks: exportedTracks,
+      files: exportedFiles,
+      clockRecords: exportedClockRecords
+    } = await unpackExportDataFromFile(exportFilePath)
+
+    setupExportMock(SECONDARY, exportObj)
+    setupIPFSRouteMocks(false)
+
+    // Confirm local user state is empty before sync
+    const { cnodeUser: initialLocalCNodeUser } = await fetchDBStateForWallet(
+      USER_1_WALLET
+    )
+    assert.deepStrictEqual(initialLocalCNodeUser, null)
+
+    // Mock that fetching any content via /file_lookup is unavailable
+    nock(MOCK_CN2)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
+    nock(MOCK_CN3)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
+    nock(MOCK_CN4)
+      .persist()
+      .get('/file_lookup')
+      .query(() => {
+        return true
+      })
+      .reply(404)
+
+    primarySyncFromSecondaryStub = proxyquire(
+      '../src/services/sync/primarySyncFromSecondary',
+      {
+        '../../serviceRegistry': { serviceRegistry: serviceRegistryMock },
+        '../initAudiusLibs': async () => libsMock,
+        './../../config': config,
+        '../../fileManager': {
+          saveFileForMultihashToFS: async function (
+            libs,
+            logger,
+            multihash,
+            expectedStoragePath,
+            targetGateways,
+            fileNameForImage = null,
+            trackId = null
+          ) {
+            return saveFileForMultihashToFS(
+              libs,
+              logger,
+              multihash,
+              expectedStoragePath,
+              targetGateways,
+              fileNameForImage,
+              trackId,
+              // Disable retries for testing purposes
+              0 /* numRetries */
+            )
+          }
+        },
+        '../ContentNodeInfoManager': {
+          getReplicaSetEndpointsByWallet: sinon.stub().resolves({
+            primary: NODES.CN1,
+            secondary1: NODES.CN2,
+            secondary2: NODES.CN3
+          })
+        }
+      }
+    )
+
+    const error = await primarySyncFromSecondaryStub({
+      secondary: SECONDARY,
+      wallet: USER_1_WALLET,
+      selfEndpoint: SELF
+    })
+    assert.deepStrictEqual(error, undefined)
+
+    /**
+     * Verify DB state after sync
+     */
+    const skippedExportedFiles = exportedFiles.map((file) => ({
+      ...file,
+      skipped: true
+    }))
+    const exportedUserData = {
+      exportedCnodeUser,
+      exportedAudiusUsers,
+      exportedTracks,
+      exportedFiles: skippedExportedFiles,
+      exportedClockRecords
+    }
+    await assertFullUserStateEquality(USER_1_WALLET, exportedUserData)
   })
 })

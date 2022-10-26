@@ -5,7 +5,7 @@ import re
 
 from alembic import context
 from alembic.ddl.base import AddColumn, DropColumn, visit_add_column, visit_drop_column
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
@@ -26,6 +26,25 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+kill_running_queries_sql = text(
+    """
+    BEGIN;
+        SELECT
+            pg_cancel_backend(pid),
+            pid,
+            state,
+            age(clock_timestamp(), query_start),
+            substring(trim(regexp_replace(query, '\s+', ' ', 'g')) from 1 for 200)
+        FROM pg_stat_activity
+        JOIN pg_user USING (usename)
+        WHERE state != 'idle'
+          AND query NOT ILIKE '%pg_stat_activity%'
+          AND usesuper = false
+        ORDER BY query_start DESC;
+    COMMIT;
+"""
+)
 
 
 def run_migrations_offline():
@@ -71,8 +90,9 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        connection.execute(kill_running_queries_sql)
 
+        context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
 

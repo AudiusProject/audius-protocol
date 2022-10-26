@@ -23,7 +23,7 @@ CLEAR_ITERATION='del(.iteration)'
 # CLEAR VERSION TO AVOID CONFLICTS
 # reset .versions to null
 CLEAR_VERSION='.version = null'
-CLEAR_DASHBOARD_ID='.id = null'
+: "${CLEAR_DASHBOARD_ID:=.id = null}"
 
 # CLEAR PROMETHEUS UID
 # clears prometheus uid since each deployment is unique
@@ -55,10 +55,53 @@ CLEAR_LIBRARY_PANEL_UPDATED='del(.panels[].libraryPanel.meta.updated)'
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
-path=grafana/dashboards/library.json
+# FOLDERS
+# ids have to be unique
+CLEAR_FOLDER_IDS='del(.[].id)'
+
+path=grafana/metadata/folders.json
+curl \
+    -s \
+    -H "Authorization: Bearer ${BEARER_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json' \
+    ${BASE_URL}/api/folders \
+        | jq "${CLEAR_FOLDER_IDS}" \
+        > "${path}"
+echo "Saved to: ${path}"
+
+path=grafana/metadata/library.json
 # save all library panels into a single file
-curl -s "${PASS_URL}/api/library-elements?perPage=100" \
+curl -s ${PASS_URL}/api/library-elements?perPage=100 \
     | jq .result.elements \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/metadata/contact-points.json
+# save all contact points into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/contact-points \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/metadata/policies.json
+# save all notification policies into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/policies \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/metadata/mute-timings.json
+# save all mute timings into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/mute-timings \
+    | jq . \
+    > ${path}
+echo "Saved to: ${path}"
+
+path=grafana/metadata/templates.json
+# save all alert templates into a single file
+curl -s ${PASS_URL}/api/v1/provisioning/templates \
+    | jq . \
     > ${path}
 echo "Saved to: ${path}"
 
@@ -78,7 +121,7 @@ do
     mkdir -p "${path}"
     path=${path}/${slug}.json
 
-    echo ${response} \
+    echo "${response}" \
         | jq "${CLEAR_METADATA}" \
         | jq "${CLEAR_ITERATION}" \
         | jq "${CLEAR_VERSION}" \

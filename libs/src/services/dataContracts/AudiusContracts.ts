@@ -1,3 +1,4 @@
+import type { AbiItem } from 'web3-utils'
 import { Utils, Logger } from '../../utils'
 
 // load classes wrapping contracts
@@ -9,29 +10,18 @@ import { PlaylistFactoryClient } from './PlaylistFactoryClient'
 import { UserLibraryFactoryClient } from './UserLibraryFactoryClient'
 import { IPLDBlacklistFactoryClient } from './IPLDBlacklistFactoryClient'
 import { UserReplicaSetManagerClient } from './UserReplicaSetManagerClient'
+import { EntityManagerClient } from './EntityManagerClient'
 import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
-
-// Make sure the json file exists before importing because it could silently fail
-// import data contract ABI's
-const RegistryABI = Utils.importDataContractABI('Registry.json').abi
-const UserFactoryABI = Utils.importDataContractABI('UserFactory.json').abi
-const TrackFactoryABI = Utils.importDataContractABI('TrackFactory.json').abi
-const SocialFeatureFactoryABI = Utils.importDataContractABI(
-  'SocialFeatureFactory.json'
-).abi
-const PlaylistFactoryABI = Utils.importDataContractABI(
-  'PlaylistFactory.json'
-).abi
-const UserLibraryFactoryABI = Utils.importDataContractABI(
-  'UserLibraryFactory.json'
-).abi
-const IPLDBlacklistFactoryABI = Utils.importDataContractABI(
-  'IPLDBlacklistFactory.json'
-).abi
-const UserReplicaSetManagerABI = Utils.importDataContractABI(
-  'UserReplicaSetManager.json'
-).abi
+import { abi as RegistryABI } from '../../data-contracts/ABIs/Registry.json'
+import { abi as UserFactoryABI } from '../../data-contracts/ABIs/UserFactory.json'
+import { abi as TrackFactoryABI } from '../../data-contracts/ABIs/TrackFactory.json'
+import { abi as SocialFeatureFactoryABI } from '../../data-contracts/ABIs/SocialFeatureFactory.json'
+import { abi as PlaylistFactoryABI } from '../../data-contracts/ABIs/PlaylistFactory.json'
+import { abi as UserLibraryFactoryABI } from '../../data-contracts/ABIs/UserLibraryFactory.json'
+import { abi as IPLDBlacklistFactoryABI } from '../../data-contracts/ABIs/IPLDBlacklistFactory.json'
+import { abi as UserReplicaSetManagerABI } from '../../data-contracts/ABIs/UserReplicaSetManager.json'
+import { abi as EntityManagerABI } from '../../data-contracts/ABIs/EntityManager.json'
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -45,6 +35,7 @@ const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 export class AudiusContracts {
   web3Manager: Web3Manager
   registryAddress: string
+  entityManagerAddress: string
   isServer: boolean
   logger: Logger
   RegistryClient: RegistryClient
@@ -54,6 +45,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
+  EntityManagerClient: EntityManagerClient | undefined
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -62,17 +54,19 @@ export class AudiusContracts {
   constructor(
     web3Manager: Web3Manager,
     registryAddress: string,
+    entityManagerAddress: string,
     isServer: boolean,
-    logger = console
+    logger: Logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
+    this.entityManagerAddress = entityManagerAddress
     this.isServer = isServer
     this.logger = logger
 
     this.RegistryClient = new RegistryClient(
       this.web3Manager,
-      RegistryABI,
+      RegistryABI as AbiItem[],
       this.registryAddress
     )
     this.getRegistryAddressForContract =
@@ -80,7 +74,7 @@ export class AudiusContracts {
 
     this.UserFactoryClient = new UserFactoryClient(
       this.web3Manager,
-      UserFactoryABI,
+      UserFactoryABI as AbiItem[],
       UserFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -88,7 +82,7 @@ export class AudiusContracts {
 
     this.TrackFactoryClient = new TrackFactoryClient(
       this.web3Manager,
-      TrackFactoryABI,
+      TrackFactoryABI as AbiItem[],
       TrackFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -96,7 +90,7 @@ export class AudiusContracts {
 
     this.SocialFeatureFactoryClient = new SocialFeatureFactoryClient(
       this.web3Manager,
-      SocialFeatureFactoryABI,
+      SocialFeatureFactoryABI as AbiItem[],
       SocialFeatureFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -104,7 +98,7 @@ export class AudiusContracts {
 
     this.PlaylistFactoryClient = new PlaylistFactoryClient(
       this.web3Manager,
-      PlaylistFactoryABI,
+      PlaylistFactoryABI as AbiItem[],
       PlaylistFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -112,7 +106,7 @@ export class AudiusContracts {
 
     this.UserLibraryFactoryClient = new UserLibraryFactoryClient(
       this.web3Manager,
-      UserLibraryFactoryABI,
+      UserLibraryFactoryABI as AbiItem[],
       UserLibraryFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -120,7 +114,7 @@ export class AudiusContracts {
 
     this.IPLDBlacklistFactoryClient = new IPLDBlacklistFactoryClient(
       this.web3Manager,
-      IPLDBlacklistFactoryABI,
+      IPLDBlacklistFactoryABI as AbiItem[],
       IPLDBlacklistFactoryRegistryKey,
       this.getRegistryAddressForContract,
       this.logger
@@ -134,6 +128,18 @@ export class AudiusContracts {
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient
     ]
+
+    if (this.entityManagerAddress) {
+      this.EntityManagerClient = new EntityManagerClient(
+        this.web3Manager,
+        EntityManagerABI,
+        'EntityManager',
+        this.getRegistryAddressForContract,
+        this.logger,
+        this.entityManagerAddress
+      )
+      this.contractClients.push(this.EntityManagerClient)
+    }
   }
 
   async init() {
@@ -160,7 +166,7 @@ export class AudiusContracts {
 
       this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
         this.web3Manager,
-        UserReplicaSetManagerABI,
+        UserReplicaSetManagerABI as AbiItem[],
         UserReplicaSetManagerRegistryKey,
         this.getRegistryAddressForContract,
         this.logger
@@ -201,7 +207,10 @@ export class AudiusContracts {
    */
   async getRegistryAddressForContract(contractName: string) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
-    this.contracts = this.contracts ?? { [this.registryAddress]: 'registry' }
+    this.contracts = this.contracts ?? {
+      [this.registryAddress]: 'registry',
+      [this.entityManagerAddress]: 'EntityManager'
+    }
     this.contractAddresses = this.contractAddresses ?? {
       registry: this.registryAddress
     }

@@ -4,13 +4,11 @@ const mockExpressApp = {
       case 'announcements': {
         return []
       }
-      case 'mailgun': {
+      case 'sendgrid': {
         return {
-          messages: () => ({
-            send: (_, cb) => {
-              cb(undefined, 'body')
-            }
-          })
+          send: async (_) => {
+            return 'body'
+          }
         }
       }
       default:

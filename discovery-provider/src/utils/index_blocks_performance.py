@@ -2,7 +2,7 @@ import math
 from datetime import datetime, timedelta
 
 INDEX_BLOCKS_SECONDS_REDIS_KEY = "index_blocks:ms"
-FETCH_IPFS_METADATA_SECONDS_REDIS_KEY = "fetch_ipfs_metadata:ms"
+FETCH_METADATA_SECONDS_REDIS_KEY = "fetch_metadata:ms"
 ADD_INDEXED_BLOCK_TO_DB_SECONDS_REDIS_KEY = "add_indexed_block_to_db:ms"
 
 
@@ -33,14 +33,14 @@ def record_index_blocks_ms(redis, index_blocks_duration_ms):
     )
 
 
-def record_fetch_ipfs_metadata_ms(redis, fetch_ipfs_metadata_duration_ms):
-    """Records that fetch_ipfs_metadata took some number of ms"""
+def record_fetch_metadata_ms(redis, fetch_metadata_duration_ms):
+    """Records that fetch_metadata took some number of ms"""
     now = round(datetime.now().timestamp())
     # Key as ms:date, value as date so that we can sort by range (on values)
     # Zset lets you only query by ranges of the value.
     redis.zadd(
-        FETCH_IPFS_METADATA_SECONDS_REDIS_KEY,
-        {f"{fetch_ipfs_metadata_duration_ms}:{now}": now},
+        FETCH_METADATA_SECONDS_REDIS_KEY,
+        {f"{fetch_metadata_duration_ms}:{now}": now},
     )
 
 
@@ -68,10 +68,10 @@ def get_index_blocks_ms_stats_since(redis, seconds_ago):
     }
 
 
-def get_fetch_ipfs_metadata_ms_stats_since(redis, seconds_ago):
-    """From seconds ago until now, get the average ms fetch_ipfs_metadata took"""
+def get_fetch_metadata_ms_stats_since(redis, seconds_ago):
+    """From seconds ago until now, get the average ms fetch_metadata took"""
     ago = round((datetime.now() - timedelta(seconds=seconds_ago)).timestamp())
-    res = redis.zrangebyscore(FETCH_IPFS_METADATA_SECONDS_REDIS_KEY, ago, "+inf")
+    res = redis.zrangebyscore(FETCH_METADATA_SECONDS_REDIS_KEY, ago, "+inf")
     ms_per_block = list(map(lambda x: int(x.decode("utf-8").split(":")[0]), res))
     return {
         "mean": mean(ms_per_block),
@@ -94,10 +94,10 @@ def get_add_indexed_block_to_db_ms_stats_since(redis, seconds_ago):
     }
 
 
-def get_average_fetch_ipfs_metadata_ms_since(redis, seconds_ago):
-    """From seconds ago until now, get the average ms fetch_ipfs_metadata took"""
+def get_average_fetch_metadata_ms_since(redis, seconds_ago):
+    """From seconds ago until now, get the average ms fetch_metadata took"""
     ago = round((datetime.now() - timedelta(seconds=seconds_ago)).timestamp())
-    res = redis.zrangebyscore(FETCH_IPFS_METADATA_SECONDS_REDIS_KEY, ago, "+inf")
+    res = redis.zrangebyscore(FETCH_METADATA_SECONDS_REDIS_KEY, ago, "+inf")
     ms_per_block = list(map(lambda x: int(x.decode("utf-8").split(":")[0]), res))
     if len(ms_per_block) > 0:
         return sum(ms_per_block) / len(ms_per_block)
@@ -120,10 +120,10 @@ def sweep_old_index_blocks_ms(redis, expire_after_days):
     redis.zremrangebyscore(INDEX_BLOCKS_SECONDS_REDIS_KEY, 0, timestamp)
 
 
-def sweep_old_fetch_ipfs_metadata_ms(redis, expire_after_days):
-    """Sweep old records for fetch ipfs metadata ms after `expire_after_days`"""
+def sweep_old_fetch_metadata_ms(redis, expire_after_days):
+    """Sweep old records for fetch metadata ms after `expire_after_days`"""
     timestamp = round((datetime.now() - timedelta(days=expire_after_days)).timestamp())
-    redis.zremrangebyscore(FETCH_IPFS_METADATA_SECONDS_REDIS_KEY, 0, timestamp)
+    redis.zremrangebyscore(FETCH_METADATA_SECONDS_REDIS_KEY, 0, timestamp)
 
 
 def sweep_old_add_indexed_block_to_db_ms(redis, expire_after_days):

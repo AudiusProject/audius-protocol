@@ -70,6 +70,19 @@ field_visibility = ns.model(
         "remixes": fields.Boolean,
     },
 )
+
+premium_conditions = ns.model(
+    "premium_conditions",
+    {
+        "nft_collection": fields.String,
+        "follow_user_id": fields.Integer,
+    },
+)
+premium_content_signature = ns.model(
+    "premium_content_signature",
+    {"data": fields.String, "signature": fields.String},
+)
+
 track = ns.model(
     "Track",
     {
@@ -92,6 +105,7 @@ track = ns.model(
         "downloadable": fields.Boolean,
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
+        "is_streamable": fields.Boolean,
     },
 )
 
@@ -124,6 +138,11 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
+        "is_premium": fields.Boolean,
+        "premium_conditions": fields.Nested(premium_conditions, allow_null=True),
+        "premium_content_signature": fields.Nested(
+            premium_content_signature, allow_null=True
+        ),
     },
 )
 

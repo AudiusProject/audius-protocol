@@ -1034,6 +1034,7 @@ class CONTRACT_TYPES(Enum):
     PLAYLIST_FACTORY = "playlist_factory"
     USER_LIBRARY_FACTORY = "user_library_factory"
     USER_REPLICA_SET_MANAGER = "user_replica_set_manager"
+    ENTITY_MANAGER = "entity_manager"
 
 
 CONTRACT_NAMES_ON_CHAIN = {
@@ -1043,4 +1044,5 @@ CONTRACT_NAMES_ON_CHAIN = {
     CONTRACT_TYPES.PLAYLIST_FACTORY: "PlaylistFactory",
     CONTRACT_TYPES.USER_LIBRARY_FACTORY: "UserLibraryFactory",
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER: "UserReplicaSetManager",
+    CONTRACT_TYPES.ENTITY_MANAGER: "EntityManager",
 }

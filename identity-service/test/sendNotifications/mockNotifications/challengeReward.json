@@ -62,5 +62,21 @@
     },
     "slot": 115118978,
     "type": "ChallengeReward"
+  },
+  {
+    "initiator": 14,
+    "metadata": {
+      "challenge_id": "send-first-tip"
+    },
+    "slot": 115118979,
+    "type": "ChallengeReward"
+  },
+  {
+    "initiator": 16,
+    "metadata": {
+      "challenge_id": "first-playlist"
+    },
+    "slot": 115118980,
+    "type": "ChallengeReward"
   }
 ]

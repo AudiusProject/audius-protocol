@@ -1,5 +1,5 @@
 import { ContractClient } from '../contracts/ContractClient'
-import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
+import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
 
 export class TrackFactoryClient extends ContractClient {

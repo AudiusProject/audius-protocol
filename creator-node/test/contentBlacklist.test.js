@@ -6,6 +6,9 @@ const _ = require('lodash')
 
 const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
+const {
+  StubPremiumContentAccessChecker
+} = require('../src/premiumContent/stubPremiumContentAccessChecker')
 const models = require('../src/models')
 const redis = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
@@ -15,7 +18,8 @@ const { getLibsMock } = require('./lib/libsMock')
 const {
   createStarterCNodeUser,
   getCNodeUser,
-  destroyUsers
+  destroyUsers,
+  testEthereumConstants
 } = require('./lib/dataSeeds')
 const { generateRandomCID } = require('./lib/utils')
 const { uploadTrack } = require('./lib/helpers')
@@ -36,7 +40,12 @@ const trustedNotifierConfig = {
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
-  let app, server, libsMock, mockServiceRegistry, userId
+  let app,
+    server,
+    libsMock,
+    mockServiceRegistry,
+    userId,
+    stubPremiumContentAccessChecker
 
   beforeEach(async () => {
     libsMock = setupLibsMock(libsMock)
@@ -52,6 +61,16 @@ describe('test ContentBlacklist', function () {
     app = appInfo.app
     server = appInfo.server
     mockServiceRegistry = appInfo.mockServiceRegistry
+
+    stubPremiumContentAccessChecker = new StubPremiumContentAccessChecker()
+    stubPremiumContentAccessChecker.accessCheckReturnsWith = {
+      doesUserHaveAccess: true,
+      trackId: null,
+      isPremium: false,
+      error: null
+    }
+    mockServiceRegistry.premiumContentAccessChecker =
+      stubPremiumContentAccessChecker
   })
 
   afterEach(async () => {
@@ -74,7 +93,7 @@ describe('test ContentBlacklist', function () {
     const expectedIds = [1, 2, 3, 4, 5, 6, 7]
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: expectedIds
       },
       DELEGATE_PRIVATE_KEY
@@ -83,7 +102,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': expectedIds,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -115,7 +134,7 @@ describe('test ContentBlacklist', function () {
     const ids = [43021]
     const addUserData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         values: ids
       },
       DELEGATE_PRIVATE_KEY
@@ -124,7 +143,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         'values[]': ids,
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
@@ -133,7 +152,7 @@ describe('test ContentBlacklist', function () {
 
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: ids
       },
       DELEGATE_PRIVATE_KEY
@@ -142,7 +161,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': ids,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -152,7 +171,7 @@ describe('test ContentBlacklist', function () {
     const cids = [generateRandomCID()]
     const addCIDData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         values: cids
       },
       DELEGATE_PRIVATE_KEY
@@ -161,7 +180,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         'values[]': cids,
         signature: addCIDData.signature,
         timestamp: addCIDData.timestamp
@@ -188,7 +207,7 @@ describe('test ContentBlacklist', function () {
     const ids = [43021]
     const addUserData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         values: ids
       },
       trustedNotifierConfig.privateKey
@@ -197,7 +216,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().user,
+        type: BlacklistManager._getTypes().user,
         'values[]': ids,
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
@@ -206,7 +225,7 @@ describe('test ContentBlacklist', function () {
 
     const addTrackData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         values: ids
       },
       trustedNotifierConfig.privateKey
@@ -215,7 +234,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().track,
+        type: BlacklistManager._getTypes().track,
         'values[]': ids,
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
@@ -225,7 +244,7 @@ describe('test ContentBlacklist', function () {
     const cids = [generateRandomCID()]
     const addCIDData = generateTimestampAndSignature(
       {
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         values: cids
       },
       trustedNotifierConfig.privateKey
@@ -234,7 +253,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({
-        type: BlacklistManager.getTypes().cid,
+        type: BlacklistManager._getTypes().cid,
         'values[]': cids,
         signature: addCIDData.signature,
         timestamp: addCIDData.timestamp
@@ -256,7 +275,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add user type and id to db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -284,7 +303,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add track type and id to db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -313,7 +332,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove user type and id from db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -346,7 +365,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove track type and id from db and redis', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -379,7 +398,7 @@ describe('test ContentBlacklist', function () {
 
   it('should return success when removing a user that does not exist', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -407,7 +426,7 @@ describe('test ContentBlacklist', function () {
 
   it('should return success when removing a track that does not exist', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -435,7 +454,7 @@ describe('test ContentBlacklist', function () {
 
   it('should ignore duplicate add for track', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -471,7 +490,7 @@ describe('test ContentBlacklist', function () {
 
   it('should ignore duplicate add for user', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -508,7 +527,7 @@ describe('test ContentBlacklist', function () {
   it('should only blacklist partial user ids list if only some ids are found', async () => {
     const ids = [Utils.getRandomInt(MAX_ID), Utils.getRandomInt(MAX_ID)]
     libsMock.User.getUsers.returns([{ user_id: ids[0] }]) // only user @ index 0 is found
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -540,7 +559,7 @@ describe('test ContentBlacklist', function () {
   it('should only blacklist partial track ids list if only some ids are found', async () => {
     const ids = [Utils.getRandomInt(MAX_ID), Utils.getRandomInt(MAX_ID)]
     libsMock.Track.getTracks.returns([{ track_id: ids[0] }]) // only user @ index 0 is found
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -571,7 +590,7 @@ describe('test ContentBlacklist', function () {
 
   it('should add cids to db and redis', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -596,7 +615,7 @@ describe('test ContentBlacklist', function () {
 
   it('should remove cids from db and redis', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -625,7 +644,7 @@ describe('test ContentBlacklist', function () {
 
   it("should throw an error if delegate private key does not match that of the creator node's", async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const BAD_KEY =
       '0xBADKEY4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
@@ -642,7 +661,7 @@ describe('test ContentBlacklist', function () {
 
   it('should throw an error if query params does not contain all necessary keys', async () => {
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
 
     await request(app)
       .post('/blacklist/add')
@@ -682,7 +701,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -712,7 +731,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -737,7 +756,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -780,7 +799,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -801,19 +820,20 @@ describe('test ContentBlacklist', function () {
     )
   })
 
-  // TODO: fix :(
   it('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
     // Create user and upload track
-    const track1 = await createUserAndUploadTrack()
-    const track2 = await createUserAndUploadTrack({
-      inputUserId: 2,
-      trackId: 2,
-      pubKey: '0x3f8f51ed837b15af580eb96cee740c723d340e7f'
-    })
-    const ids = [track1.track.blockchainId]
+    const data1 = await createUserAndUploadTrack()
 
-    // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    // Upload a second track for the user
+    const track2 = await uploadTrackForUser({
+      cnodeUserUUID: data1.cnodeUser.cnodeUserUUID,
+      userId,
+      sessionToken: data1.sessionToken
+    })
+
+    // Blacklist the first track only
+    const ids = [data1.track.blockchainId]
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -823,7 +843,7 @@ describe('test ContentBlacklist', function () {
       .query({ type, 'values[]': ids, signature, timestamp })
       .expect(200)
 
-    // Hit /ipfs/:CID route for all track CIDs and ensure no error response is returned
+    // Successfully stream the second track
     await Promise.all(
       track2.track.trackSegments.map((segment) =>
         request(app)
@@ -836,7 +856,7 @@ describe('test ContentBlacklist', function () {
 
   it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {
     const cids = [generateRandomCID()]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: cids },
       DELEGATE_PRIVATE_KEY
@@ -853,7 +873,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if user id does not exist', async () => {
     libsMock.User.getUsers.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -890,7 +910,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if track id does not exist', async () => {
     libsMock.Track.getTracks.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -927,7 +947,7 @@ describe('test ContentBlacklist', function () {
   it('should throw an error if disc prov is unable to lookup ids', async () => {
     libsMock.User.getUsers.returns([])
     const ids = [Utils.getRandomInt(MAX_ID)]
-    const type = BlacklistManager.getTypes().user
+    const type = BlacklistManager._getTypes().user
     const resp1 = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -968,9 +988,9 @@ describe('test ContentBlacklist', function () {
       Utils.getRandomInt(MAX_ID),
       '###%^&'
     ]
-    const type = BlacklistManager.getTypes().cid
+    const type = BlacklistManager._getTypes().cid
     const { timestamp, signature } = generateTimestampAndSignature(
-      { type: BlacklistManager.getTypes().cid, values: cids },
+      { type: BlacklistManager._getTypes().cid, values: cids },
       DELEGATE_PRIVATE_KEY
     )
 
@@ -992,7 +1012,7 @@ describe('test ContentBlacklist', function () {
     const ids = [trackId]
 
     // Blacklist trackId
-    const type = BlacklistManager.getTypes().track
+    const type = BlacklistManager._getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature(
       { type, values: ids },
       DELEGATE_PRIVATE_KEY
@@ -1010,7 +1030,98 @@ describe('test ContentBlacklist', function () {
     }
   })
 
-  /** Helper setup method to test ContentBlacklist.  */
+  // Uploads a track for a user at the specifeid pubKey input. Defaulted to
+  // the default wallet used in these tests
+  // NOTE: This assumes the user is already created. If the user is not created,
+  // use `createUserAndUploadTrack()`
+  async function uploadTrackForUser({
+    cnodeUserUUID,
+    userId,
+    sessionToken,
+    trackId = Utils.getRandomInt(MAX_ID)
+  }) {
+    // Upload a track
+    const trackUploadResponse = await uploadTrack(
+      testAudioFilePath,
+      cnodeUserUUID,
+      mockServiceRegistry.blacklistManager
+    )
+
+    const {
+      transcodedTrackUUID,
+      track_segments: trackSegments,
+      source_file: sourceFile
+    } = trackUploadResponse
+
+    // set track metadata
+    const trackMetadata = {
+      test: 'field1',
+      owner_id: userId,
+      track_segments: trackSegments
+    }
+    const {
+      body: {
+        data: { metadataFileUUID: trackMetadataFileUUID }
+      }
+    } = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .set('Enforce-Write-Quorum', false)
+      .send({ metadata: trackMetadata, source_file: sourceFile })
+      .expect(200)
+
+    // Make chain recognize wallet as owner of track
+    const getTracksStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === trackId) {
+        trackOwnerId = userId
+      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
+    })
+    const getTracksVerboseStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === trackId) {
+        trackOwnerId = userId
+      }
+      return {
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]
+      }
+    })
+    libsMock.Track = {
+      getTracks: getTracksStub,
+      getTracksVerbose: getTracksVerboseStub
+    }
+
+    // associate track metadata with track
+    await request(app)
+      .post('/tracks')
+      .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
+      .send({
+        blockchainTrackId: trackId,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataFileUUID,
+        transcodedTrackUUID
+      })
+      .expect(200)
+
+    return { track: { trackSegments, blockchainId: trackId } }
+  }
+
+  /** Helper setup method to test ContentBlacklist. */
   async function createUserAndUploadTrack(
     { inputUserId, trackId, pubKey } = {
       inputUserId: userId,
@@ -1048,6 +1159,7 @@ describe('test ContentBlacklist', function () {
       .set('User-Id', inputUserId)
       .set('Enforce-Write-Quorum', false)
       .send(metadata)
+      .expect(200)
 
     const associateRequest = {
       blockchainUserId: inputUserId,
@@ -1057,54 +1169,21 @@ describe('test ContentBlacklist', function () {
 
     // Associate user with metadata
     await request(app)
-      .post('/audius_users/')
+      .post('/audius_users')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', inputUserId)
       .send(associateRequest)
+      .expect(200)
 
     // Upload a track
-    const trackUploadResponse = await uploadTrack(
-      testAudioFilePath,
+    const trackUploadResp = await uploadTrackForUser({
       cnodeUserUUID,
-      mockServiceRegistry.blacklistManager
-    )
-
-    const {
-      transcodedTrackUUID,
-      track_segments: trackSegments,
-      source_file: sourceFile
-    } = trackUploadResponse
-
-    // set track metadata
-    const trackMetadata = {
-      test: 'field1',
-      owner_id: inputUserId,
-      track_segments: trackSegments
-    }
-    const {
-      body: {
-        data: { metadataFileUUID: trackMetadataFileUUID }
-      }
-    } = await request(app)
-      .post('/tracks/metadata')
-      .set('X-Session-ID', sessionToken)
-      .set('User-Id', inputUserId)
-      .set('Enforce-Write-Quorum', false)
-      .send({ metadata: trackMetadata, source_file: sourceFile })
-    // associate track metadata with track
-    await request(app)
-      .post('/tracks')
-      .set('X-Session-ID', sessionToken)
-      .set('User-Id', inputUserId)
-      .send({
-        blockchainTrackId: trackId,
-        blockNumber: 10,
-        metadataFileUUID: trackMetadataFileUUID,
-        transcodedTrackUUID
-      })
+      userId: inputUserId,
+      sessionToken
+    })
 
     // Return user and some track data
-    return { cnodeUser, track: { trackSegments, blockchainId: trackId } }
+    return { cnodeUser, ...trackUploadResp, trackId, sessionToken }
   }
 })
 
@@ -1129,7 +1208,7 @@ const setupLibsMock = (libsMock) => {
     return resp
   })
 
-  libsMock.Track = { getTracks: sinon.mock() }
+  libsMock.Track = { getTracks: sinon.mock(), getTracksVerbose: sinon.mock() }
   libsMock.Track.getTracks.callsFake((limit, offset, ids) => {
     return ids.map((id) => {
       return {
@@ -1138,5 +1217,12 @@ const setupLibsMock = (libsMock) => {
     })
   })
   libsMock.Track.getTracks.atLeast(0)
+
+  // Set the return wallet to the dummy wallet constant
+  libsMock.contracts.UserFactoryClient = {}
+  libsMock.contracts.UserFactoryClient.getUser = sinon
+    .mock()
+    .returns({ wallet: testEthereumConstants.pubKey })
+
   return libsMock
 }

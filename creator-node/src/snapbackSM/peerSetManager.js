@@ -2,18 +2,18 @@ const axios = require('axios')
 const { CancelToken } = axios
 
 const config = require('../config')
-const asyncRetry = require('../utils/asyncRetry')
+const { asyncRetry } = require('../utils/asyncRetry')
 const { logger } = require('../logging')
 const {
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE
 } = require('./StateMachineConstants')
+const { hasEnoughStorageSpace } = require('../fileManager')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
 )
-const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
 const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
 const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE =
   config.get('maxFileDescriptorsAllocatedPercentage') / 100
@@ -26,6 +26,7 @@ const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
+const MAX_STORAGE_USED_PERCENT = config.get('maxStorageUsedPercent')
 
 class PeerSetManager {
   constructor({
@@ -134,7 +135,7 @@ class PeerSetManager {
     // Will throw error on non-200 response
     let nodeUsers
     try {
-      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+      // Cancel the request if it hasn't succeeded/failed/timed out with timeout specified in config
       const cancelTokenSource = CancelToken.source()
       setTimeout(
         () =>
@@ -236,7 +237,12 @@ class PeerSetManager {
       baseURL: endpoint,
       url: '/health_check/verbose',
       method: 'get',
-      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS
+      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
+      headers: {
+        'User-Agent': `Axios - @audius/content-node - ${config.get(
+          'creatorNodeEndpoint'
+        )} - peerSetManager#queryVerboseHealthCheck`
+      }
     })
 
     return resp.data.data
@@ -254,12 +260,16 @@ class PeerSetManager {
     if (
       storagePathSize &&
       storagePathUsed &&
-      storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE
+      !hasEnoughStorageSpace({
+        storagePathSize,
+        storagePathUsed,
+        maxStorageUsedPercent: MAX_STORAGE_USED_PERCENT
+      })
     ) {
       throw new Error(
         `Almost out of storage=${
           storagePathSize - storagePathUsed
-        }bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`
+        }bytes remaining out of ${storagePathSize}. Requires less than ${MAX_STORAGE_USED_PERCENT}% used`
       )
     }
 

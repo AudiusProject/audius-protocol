@@ -67,6 +67,12 @@ import {
     UserSearch,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UserTrackListenCountsResponse,
+    UserTrackListenCountsResponseFromJSON,
+    UserTrackListenCountsResponseToJSON,
+    UsersByContentNode,
+    UsersByContentNodeFromJSON,
+    UsersByContentNodeToJSON,
     VerifyToken,
     VerifyTokenFromJSON,
     VerifyTokenToJSON,
@@ -300,9 +306,25 @@ export interface GetTracksByUserRequest {
      */
     userId?: string;
     /**
-     * Field to sort by
+     * [Deprecated] Field to sort by
      */
     sort?: GetTracksByUserSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetTracksByUserSortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetTracksByUserSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserFilterTracksEnum;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -323,9 +345,25 @@ export interface GetTracksByUserHandleRequest {
      */
     userId?: string;
     /**
-     * Field to sort by
+     * [Deprecated] Field to sort by
      */
     sort?: GetTracksByUserHandleSortEnum;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetTracksByUserHandleSortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetTracksByUserHandleSortDirectionEnum;
+    /**
+     * Filter by unlisted or public tracks
+     */
+    filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
 export interface GetUserRequest {
@@ -353,6 +391,28 @@ export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
 }
 
+export interface GetUserMonthlyTrackListensRequest {
+    /**
+     * A User ID
+     */
+    id: string;
+    /**
+     * Start time from which to start results for user listen count data (inclusive).
+     */
+    startTime: string;
+    /**
+     * End time until which to cut off results of listen count data (not inclusive).
+     */
+    endTime: string;
+}
+
+export interface GetUserReplicaSetRequest {
+    /**
+     * A User ID
+     */
+    id: string;
+}
+
 export interface GetUsersTrackHistoryRequest {
     /**
      * A User ID
@@ -370,6 +430,18 @@ export interface GetUsersTrackHistoryRequest {
      * The user ID of the user making the request
      */
     userId?: string;
+    /**
+     * The filter query
+     */
+    query?: string;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetUsersTrackHistorySortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetUsersTrackHistorySortDirectionEnum;
 }
 
 export interface SearchUsersRequest {
@@ -810,6 +882,22 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort'] = requestParameters.sort;
         }
 
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
@@ -844,6 +932,22 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.sort !== undefined) {
             queryParameters['sort'] = requestParameters.sort;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -925,6 +1029,62 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets the listen data for a user by month and track within a given time frame.
+     */
+    async getUserMonthlyTrackListens(requestParameters: GetUserMonthlyTrackListensRequest): Promise<NonNullable<UserTrackListenCountsResponse["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (requestParameters.startTime === null || requestParameters.startTime === undefined) {
+            throw new runtime.RequiredError('startTime','Required parameter requestParameters.startTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (requestParameters.endTime === null || requestParameters.endTime === undefined) {
+            throw new runtime.RequiredError('endTime','Required parameter requestParameters.endTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.startTime !== undefined) {
+            queryParameters['start_time'] = requestParameters.startTime;
+        }
+
+        if (requestParameters.endTime !== undefined) {
+            queryParameters['end_time'] = requestParameters.endTime;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/listen_counts_monthly`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UserTrackListenCountsResponse["data"]>>;
+    }
+
+    /**
+     * Gets the user\'s replica set
+     */
+    async getUserReplicaSet(requestParameters: GetUserReplicaSetRequest): Promise<NonNullable<UsersByContentNode["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserReplicaSet.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UsersByContentNode["data"]>>;
+    }
+
+    /**
      * Get the tracks the user recently listened to.
      */
     async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest): Promise<NonNullable<HistoryResponse["data"]>> {
@@ -944,6 +1104,18 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (requestParameters.userId !== undefined) {
             queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1018,7 +1190,94 @@ export enum GetTracksByUserSortEnum {
     * @export
     * @enum {string}
     */
+export enum GetTracksByUserSortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserSortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
+}
+/**
+    * @export
+    * @enum {string}
+    */
 export enum GetTracksByUserHandleSortEnum {
     Date = 'date',
     Plays = 'plays'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleSortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleSortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetTracksByUserHandleFilterTracksEnum {
+    All = 'all',
+    Public = 'public',
+    Unlisted = 'unlisted'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetUsersTrackHistorySortMethodEnum {
+    Title = 'title',
+    ArtistName = 'artist_name',
+    ReleaseDate = 'release_date',
+    LastListenDate = 'last_listen_date',
+    AddedDate = 'added_date',
+    Length = 'length',
+    Plays = 'plays',
+    Reposts = 'reposts',
+    Saves = 'saves'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetUsersTrackHistorySortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
 }

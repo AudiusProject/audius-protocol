@@ -121,7 +121,7 @@ const outputJsonConfigFile = async (outputFilePath) => {
 module.exports = async callback => {
   // output to Libs
   try {
-    const libsDirRoot = path.join(getDirectoryRoot(Libs), 'eth-contracts')
+    const libsDirRoot = path.join(getDirectoryRoot(Libs), 'src/eth-contracts')
     fs.removeSync(libsDirRoot)
   
     await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))

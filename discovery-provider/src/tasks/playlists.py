@@ -7,6 +7,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -26,7 +27,7 @@ def playlist_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    _ipfs_metadata,  # prefix unused args with underscore to prevent pylint
+    _metadata,  # prefix unused args with underscore to prevent pylint
 ) -> Tuple[int, Set]:
     """Return Tuple containing int representing number of Playlist model state changes found in transaction and set of processed playlist IDs."""
     blockhash = update_task.web3.toHex(block_hash)
@@ -63,7 +64,7 @@ def playlist_state_update(
                         )
 
                     # parse playlist event to add metadata to record
-                    playlist_record = parse_playlist_event(
+                    playlist_record: Playlist = parse_playlist_event(
                         self,
                         update_task,
                         entry,
@@ -72,6 +73,11 @@ def playlist_state_update(
                         block_timestamp,
                         session,
                     )
+                    if playlist_record.playlist_id >= PLAYLIST_ID_OFFSET:
+                        logger.info(
+                            f"index.py | playlists.py | Playlist {playlist_record.playlist_id} is above the playlist ID offset {PLAYLIST_ID_OFFSET}. Skipping transaction."
+                        )
+                        continue
 
                     # process playlist record
                     if playlist_record is not None:
@@ -317,7 +323,7 @@ def parse_playlist_event(
             event_args._playlistImageMultihashDigest
         )
 
-        # All incoming playlist images are set to ipfs dir in column playlist_image_sizes_multihash
+        # All incoming playlist images are set to the images dir in column playlist_image_sizes_multihash
         if playlist_record.playlist_image_multihash:
             logger.info(
                 f"index.py | playlists.py | Processing playlist image \

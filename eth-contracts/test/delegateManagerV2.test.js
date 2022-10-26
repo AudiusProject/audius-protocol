@@ -521,6 +521,13 @@ contract('DelegateManagerV2', async (accounts) => {
       assert.isTrue((info.deployerCut).eq(_lib.toBN(updatedCut)), 'Expect updated cut')
     })
 
+    it('Confirm DelegateManagerV2 fails reinitialization', async () => {
+      await _lib.assertRevert(
+        delegateManager.initialize(token.address, governance.address, UNDELEGATE_LOCKUP_DURATION),
+        'Contract instance has already been initialized'
+      )
+    })
+
     it('Initial state + claim', async () => {
       // Validate basic claim w/SP path
       let spStake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount)).deployerStake

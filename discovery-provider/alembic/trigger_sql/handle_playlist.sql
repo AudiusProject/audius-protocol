@@ -1,45 +1,77 @@
 create or replace function handle_playlist() returns trigger as $$
 declare
-  old_row playlists%rowtype;
-  delta int := 0;
+  track_owner_id int := 0;
+  track_item json;
 begin
 
+  insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
-  -- for extra safety ensure agg_user
-  -- this should just happen in handle_user
-  insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
-
-  select * into old_row from playlists where is_current = false and playlist_id = new.playlist_id order by blocknumber desc limit 1;
-
-  -- should decrement
-  if old_row.is_delete != new.is_delete or old_row.is_private != new.is_private then
-    delta := -1;
+  if new.is_album then
+    update aggregate_user 
+    set album_count = (
+      select count(*)
+      from playlists p
+      where p.is_album IS TRUE
+        AND p.is_current IS TRUE
+        AND p.is_delete IS FALSE
+        AND p.is_private IS FALSE
+        AND p.playlist_owner_id = new.playlist_owner_id
+    )
+    where user_id = new.playlist_owner_id;
+  else
+    update aggregate_user 
+    set playlist_count = (
+      select count(*)
+      from playlists p
+      where p.is_album IS FALSE
+        AND p.is_current IS TRUE
+        AND p.is_delete IS FALSE
+        AND p.is_private IS FALSE
+        AND p.playlist_owner_id = new.playlist_owner_id
+    )
+    where user_id = new.playlist_owner_id;
   end if;
 
-  if old_row is null and new.is_delete = false and new.is_private = false then
-    delta := 1;
-  end if;
-
-  if delta != 0 then
-    if new.is_album then
-      update aggregate_user 
-      set album_count = album_count + delta
-      where user_id = new.playlist_owner_id;
-    else
-      update aggregate_user 
-      set playlist_count = playlist_count + delta
-      where user_id = new.playlist_owner_id;
+  begin
+    if new.is_delete IS FALSE and new.is_private IS FALSE then
+      for track_item IN select jsonb_array_elements from jsonb_array_elements(new.playlist_contents -> 'track_ids')
+      loop
+        if (track_item->>'time')::double precision::int >= extract(epoch from new.updated_at)::int then
+          select owner_id into track_owner_id from tracks where is_current and track_id=(track_item->>'track')::int;
+          if track_owner_id != new.playlist_owner_id then
+            insert into notification
+              (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+              values
+              (
+                new.blocknumber,
+                ARRAY [track_owner_id],
+                new.updated_at,
+                'track_added_to_playlist',
+                track_owner_id,
+                'track_added_to_playlist:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
+                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id)
+              )
+            on conflict do nothing;
+          end if;
+        end if;
+      end loop;
     end if;
-  end if;
-
+   exception
+     when others then null;
+   end;
 
   return null;
 end;
 $$ language plpgsql;
 
 
-drop trigger if exists on_playlist on playlists;
-create trigger on_playlist
+do $$ begin
+  create trigger on_playlist
   after insert on playlists
   for each row execute procedure handle_playlist();
+exception
+  when others then null;
+end $$;
+
+

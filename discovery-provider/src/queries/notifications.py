@@ -849,7 +849,7 @@ def notifications():
         )
         playlist_track_added_results = playlist_track_added_query.all()
         # Loop over all playlist updates and determine if there were tracks added
-        # at the block that the playlist update is at
+        # within the notification block range
         track_added_to_playlist_notifications = []
         track_ids = []
         for entry in playlist_track_added_results:
@@ -873,7 +873,9 @@ def notifications():
                     track_added_to_playlist_notification = {
                         const.notification_type: const.notification_type_add_track_to_playlist,
                         const.notification_blocknumber: entry.blocknumber,
-                        const.notification_timestamp: entry.created_at,
+                        const.notification_timestamp: datetime.fromtimestamp(
+                            track_timestamp
+                        ),
                         const.notification_initiator: entry.playlist_owner_id,
                     }
                     metadata = {

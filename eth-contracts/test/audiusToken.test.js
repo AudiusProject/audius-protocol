@@ -96,7 +96,7 @@ contract('AudiusToken', async (accounts) => {
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - amount)
     assert.equal(await token.balanceOf(account), amount)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
-    
+
     // Decrease total supply by burning from account
     await token.approve(tokenOwnerAddress, amount, { from: account })
     await token.burnFrom(account, amount, { from: tokenOwnerAddress })
@@ -228,6 +228,13 @@ contract('AudiusToken', async (accounts) => {
     await _lib.assertRevert(
       token.pause({ from: newPauser }),
       "PauserRole: caller does not have the Pauser role"
+    )
+  })
+
+  it('Confirm token reinitialization fails', async () => {
+    await _lib.assertRevert(
+      token.initialize(proxyDeployerAddress, accounts[13]),
+      'Contract instance has already been initialized'
     )
   })
 

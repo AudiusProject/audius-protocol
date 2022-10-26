@@ -1,5 +1,5 @@
 import { Utils } from './utils'
-import { ecsign, toBuffer } from 'ethereumjs-util'
+import { BN, ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
 
@@ -33,7 +33,7 @@ const getTransferTokensTypeHash = () => {
 export interface ApproveTokens {
   owner: string
   spender: string
-  value: string
+  value: BN
 }
 
 // Returns the EIP712 hash which should be signed by the user
@@ -42,10 +42,10 @@ export function getPermitDigest(
   web3: Web3,
   name: string,
   address: string,
-  chainId: string,
+  chainId: number,
   approve: ApproveTokens,
-  nonce: boolean,
-  deadline: string
+  nonce: number,
+  deadline: number
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
 
@@ -69,10 +69,10 @@ export function getPermitDigest(
 
 export interface TransferTokens {
   from: string
-  amount: string
-  recipientChain: string
-  recipient: string
-  arbiterFee: string
+  amount: BN
+  recipientChain: number
+  recipient: Buffer
+  arbiterFee: BN
 }
 
 // Returns the EIP712 hash which should be signed by the user
@@ -81,10 +81,10 @@ export function getTransferTokensDigest(
   web3: Web3,
   name: string,
   address: string,
-  chainId: string,
+  chainId: number,
   transferTokens: TransferTokens,
-  nonce: boolean,
-  deadline: string
+  nonce: number,
+  deadline: number
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
   const innerEncoded = web3.eth.abi.encodeParameters(
@@ -121,7 +121,7 @@ function getDomainSeparator(
   web3: Web3,
   name: string,
   contractAddress: string,
-  chainId: string
+  chainId: number
 ) {
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],

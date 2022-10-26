@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ "$PROTOCOL_DIR" != "" ]]; then
+	cd $PROTOCOL_DIR
+fi
+
+# modify :file args to path inside the container
+tmpfiles=()
+updated_args=()
+for arg in "$@"; do
+	if [[ "$arg" == :* ]]; then
+		filename="${arg:1}"
+		tmpfile="/tmp/$RANDOM.${filename#*.}"
+		tmpfiles+=("$tmpfile")
+		updated_args+=(":$tmpfile")
+		docker compose cp "${arg:1}" audius-cmd:$tmpfile
+	else
+		updated_args+=("$arg")
+	fi
+done
+
+docker compose exec audius-cmd node src/index.mjs "${updated_args[@]}" || true
+
+for tmpfile in "${tmpfiles[@]}"; do
+	docker compose exec audius-cmd rm $tmpfile
+done

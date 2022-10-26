@@ -9,8 +9,7 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
 const {
-  QUEUE_NAMES,
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 
 chai.use(require('sinon-chai'))
@@ -61,17 +60,21 @@ describe('test findReplicaSetUpdates job processor', function () {
     }
   ]
 
-  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = {
-    [primary]: primarySpID,
-    [secondary1]: secondary1SpID,
-    [secondary2]: secondary2SpID
-  }
+  const DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP = new Map(
+    Object.entries({
+      [primary]: primarySpID,
+      [secondary1]: secondary1SpID,
+      [secondary2]: secondary2SpID
+    })
+  )
 
-  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = {
-    [primary]: primarySpID,
-    [secondary1]: secondary1SpID + 100,
-    [secondary2]: secondary2SpID
-  }
+  const CNODE_ENDOINT_TO_SP_ID_MAP_WHERE_SECONDARY1_MISMATCHES = new Map(
+    Object.entries({
+      [primary]: primarySpID,
+      [secondary1]: secondary1SpID + 100,
+      [secondary2]: secondary2SpID
+    })
+  )
 
   const DEFAULT_REPLICA_TO_USER_INFO_MAP = {
     [primary]: {
@@ -95,18 +98,20 @@ describe('test findReplicaSetUpdates job processor', function () {
   }
 
   function getJobProcessorStub(
-    isPrimaryHealthyStub,
+    isNodeHealthyOrInGracePeriodStub,
     getCNodeEndpointToSpIdMapStub
   ) {
     return proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.js',
+      '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
         '../../../config': config,
         '../CNodeHealthManager': {
-          isPrimaryHealthy: isPrimaryHealthyStub
+          CNodeHealthManager: {
+            isNodeHealthyOrInGracePeriod: isNodeHealthyOrInGracePeriodStub
+          }
         },
-        '../CNodeToSpIdMapManager': {
-          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        '../../ContentNodeInfoManager': {
+          getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
         }
       }
     )
@@ -116,17 +121,17 @@ describe('test findReplicaSetUpdates job processor', function () {
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
     userSecondarySyncMetricsMap = {},
     unhealthyPeers = [],
-    isPrimaryHealthyInExtraHealthCheck = true
+    isPrimaryHealthyInExtraHealthCheck = false
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
-      .returns(cNodeEndpointToSpIdMap)
-    const isPrimaryHealthyStub = sandbox
+      .resolves(cNodeEndpointToSpIdMap)
+    const isNodeHealthyOrInGracePeriodStub = sandbox
       .stub()
       .resolves(isPrimaryHealthyInExtraHealthCheck)
 
     const findReplicaSetUpdatesJobProcessor = getJobProcessorStub(
-      isPrimaryHealthyStub,
+      isNodeHealthyOrInGracePeriodStub,
       getCNodeEndpointToSpIdMapStub
     )
 
@@ -135,7 +140,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       logger,
       users,
       unhealthyPeers,
-      replicaToUserInfoMap: DEFAULT_REPLICA_TO_USER_INFO_MAP,
+      replicaToAllUserInfoMaps: DEFAULT_REPLICA_TO_USER_INFO_MAP,
       userSecondarySyncMetricsMap
     })
   }
@@ -144,32 +149,38 @@ describe('test findReplicaSetUpdates job processor', function () {
     expectedUnhealthyReplicas = [],
     jobProcessorArgs = {}
   }) {
-    return expect(
-      runJobProcessor(jobProcessorArgs)
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      cNodeEndpointToSpIdMap:
-        jobProcessorArgs?.cNodeEndpointToSpIdMap ||
-        DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
-      jobsToEnqueue: expectedUnhealthyReplicas?.length
-        ? {
-            [QUEUE_NAMES.STATE_RECONCILIATION]: [
-              {
-                jobName: JOB_NAMES.UPDATE_REPLICA_SET,
-                jobData: {
-                  wallet,
-                  userId: user_id,
-                  primary,
-                  secondary1,
-                  secondary2,
-                  unhealthyReplicas: expectedUnhealthyReplicas,
-                  replicaToUserInfoMap:
-                  REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
-                }
-              }
-            ]
-          }
-        : {}
-    })
+    const jobOutput = await runJobProcessor(jobProcessorArgs)
+
+    expect(jobOutput.cNodeEndpointToSpIdMap).to.deep.equal(
+      JSON.stringify(
+        Array.from(
+          (
+            jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+            DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
+          ).entries()
+        )
+      )
+    )
+
+    if (expectedUnhealthyReplicas?.length) {
+      expect(
+        jobOutput.jobsToEnqueue[QUEUE_NAMES.UPDATE_REPLICA_SET].length
+      ).to.equal(1)
+
+      const { parentSpanContext, ...rest } =
+        jobOutput.jobsToEnqueue[QUEUE_NAMES.UPDATE_REPLICA_SET][0]
+      expect(rest).to.deep.equal({
+        wallet,
+        userId: user_id,
+        primary,
+        secondary1,
+        secondary2,
+        nodesToReconfigOffOf: expectedUnhealthyReplicas,
+        replicaToUserInfoMap: REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
+      })
+    } else {
+      expect(jobOutput.jobsToEnqueue).to.not.exist
+    }
   }
 
   it('issues update for mismatched spIds when this node is primary', async function () {

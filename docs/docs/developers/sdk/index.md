@@ -54,7 +54,7 @@ import Web3 from 'web3'
 import { sdk } from '@audius/sdk'
 
 // If running in a browser, set window.Web3
-window.Web3 = Web3
+window.Web3 = Web3;
 
 const audiusSdk = sdk({ appName: 'Name of your app goes here' })
 

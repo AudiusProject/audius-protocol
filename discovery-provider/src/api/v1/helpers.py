@@ -4,28 +4,27 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
+from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
-from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
-
-from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
+    return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
     raw_endpoint = user["creator_node_endpoint"]
     if not raw_endpoint:
-        return shared_config["discprov"]["user_metadata_service_url"]
+        return ""
     return raw_endpoint.split(",")[0]
 
 
@@ -67,7 +66,11 @@ def add_playlist_added_timestamps(playlist):
     added_timestamps = []
     for track in playlist["playlist_contents"]["track_ids"]:
         added_timestamps.append(
-            {"track_id": encode_int_id(track["track"]), "timestamp": track["time"]}
+            {
+                "track_id": encode_int_id(track["track"]),
+                "timestamp": track["time"],
+                "metadata_timestamp": track.get("metadata_time"),
+            }
         )
     return added_timestamps
 
@@ -205,6 +208,10 @@ def extend_track(track):
 
     if "save_count" in track:
         track["favorite_count"] = track["save_count"]
+
+    track["is_streamable"] = (
+        not track["is_delete"] and not track["user"]["is_deactivated"]
+    )
 
     duration = 0.0
     for segment in track["track_segments"]:
@@ -487,6 +494,93 @@ pagination_with_current_user_parser.add_argument(
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
 
+track_history_parser = pagination_with_current_user_parser.copy()
+track_history_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+track_history_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+track_history_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
+user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
+user_favorited_tracks_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_favorited_tracks_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
+user_track_listen_count_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+user_track_listen_count_route_parser.add_argument(
+    "start_time",
+    required=True,
+    description="Start time from which to start results for user listen count data (inclusive).",
+)
+user_track_listen_count_route_parser.add_argument(
+    "end_time",
+    required=True,
+    description="End time until which to cut off results of listen count data (not inclusive).",
+)
+
+user_tracks_route_parser = pagination_with_current_user_parser.copy()
+user_tracks_route_parser.add_argument(
+    "sort",
+    required=False,
+    type=str,
+    default="date",
+    choices=("date", "plays"),
+    description="[Deprecated] Field to sort by",
+)
+user_tracks_route_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+user_tracks_route_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=SortMethod._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "filter_tracks",
+    required=False,
+    description="Filter by unlisted or public tracks",
+    type=str,
+    default="all",
+    choices=("all", "public", "unlisted"),
+)
+
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=True, description="The search query")
 full_search_parser.add_argument(
@@ -552,9 +646,48 @@ def format_offset(args, max_offset=MAX_LIMIT):
     return max(min(int(offset), max_offset), MIN_OFFSET)
 
 
+def format_query(args):
+    return args.get("query", None)
+
+
+def format_sort_method(args):
+    return args.get("sort_method", None)
+
+
+def format_sort_direction(args):
+    return args.get("sort_direction", None)
+
+
 def get_default_max(value, default, max=None):
     if not isinstance(value, int):
         return default
     if max is None:
         return value
     return min(value, max)
+
+
+def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[]):
+    formatted_response_data = {}
+    for aggregate_monthly_play in aggregate_monthly_plays_for_user:
+        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%S Z")
+        if month not in formatted_response_data:
+            formatted_response_data[month] = {}
+            formatted_response_by_month = formatted_response_data[month]
+            formatted_response_by_month["totalListens"] = 0
+            formatted_response_by_month["trackIds"] = []
+            formatted_response_by_month["listenCounts"] = []
+
+        formatted_response_by_month = formatted_response_data[month]
+        formatted_response_by_month["listenCounts"].append(
+            {
+                "trackId": aggregate_monthly_play["play_item_id"],
+                "date": month,
+                "listens": aggregate_monthly_play["count"],
+            }
+        )
+        formatted_response_by_month["trackIds"].append(
+            aggregate_monthly_play["play_item_id"]
+        )
+        formatted_response_by_month["totalListens"] += aggregate_monthly_play["count"]
+
+    return formatted_response_data

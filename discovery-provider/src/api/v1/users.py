@@ -17,8 +17,12 @@ from src.api.v1.helpers import (
     extend_supporting,
     extend_track,
     extend_user,
+    format_aggregate_monthly_plays_for_user,
     format_limit,
     format_offset,
+    format_query,
+    format_sort_direction,
+    format_sort_method,
     get_current_user_id,
     get_default_max,
     make_full_response,
@@ -27,8 +31,13 @@ from src.api.v1.helpers import (
     pagination_with_current_user_parser,
     search_parser,
     success_response,
+    track_history_parser,
+    user_favorited_tracks_parser,
+    user_track_listen_count_route_parser,
+    user_tracks_route_parser,
     verify_token_parser,
 )
+from src.api.v1.models.activities import activity_model, activity_model_full
 from src.api.v1.models.common import favorite
 from src.api.v1.models.support import (
     supporter_response,
@@ -36,6 +45,7 @@ from src.api.v1.models.support import (
     supporting_response,
     supporting_response_full,
 )
+from src.api.v1.models.tracks import track, track_full
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
@@ -55,7 +65,7 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from src.queries.get_save_tracks import get_save_tracks
+from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
@@ -64,11 +74,13 @@ from src.queries.get_support_for_user import (
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
-from src.queries.get_tracks import get_tracks
+from src.queries.get_tracks import GetTrackArgs, get_tracks
+from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
@@ -80,9 +92,6 @@ from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-
-from .models.activities import activity_model, activity_model_full
-from .models.tracks import track, track_full
 
 logger = logging.getLogger(__name__)
 
@@ -191,19 +200,87 @@ class UserHandle(FullUserHandle):
 
 
 USER_TRACKS_ROUTE = "/<string:id>/tracks"
-user_tracks_route_parser = pagination_with_current_user_parser.copy()
-user_tracks_route_parser.add_argument(
-    "sort",
-    required=False,
-    type=str,
-    default="date",
-    choices=("date", "plays"),
-    description="Field to sort by",
-)
 
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
 )
+
+listen_count = ns.model(
+    "listen_count",
+    {
+        "trackId": fields.Integer,
+        "date": fields.String,
+        "listens": fields.Integer,
+    },
+)
+
+monthly_aggregate_play = ns.model(
+    "monthly_aggregate_play",
+    {
+        "totalListens": fields.Integer,
+        "trackIds": fields.List(fields.Integer),
+        "listenCounts": fields.List(fields.Nested(listen_count)),
+    },
+)
+
+wild_month = fields.Wildcard(fields.Nested(monthly_aggregate_play, required=True))
+
+wild_month_model = ns.model("wild_month_model", {"*": wild_month})
+user_track_listen_counts_response = make_response(
+    "user_track_listen_counts_response",
+    ns,
+    fields.Nested(
+        wild_month_model,
+        example={
+            "2021-10-01T00:00:00.000Z": {
+                "totalListens": 7,
+                "trackIds": [484436],
+                "listenCounts": [
+                    {
+                        "trackId": 484436,
+                        "date": "2021-10-01T00:00:00.000Z",
+                        "listens": 7,
+                    }
+                ],
+            }
+        },
+    ),
+)
+
+
+@ns.route("/<string:id>/listen_counts_monthly")
+class UserTrackListenCountsMonthly(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Monthly Track Listens""",
+        description="""Gets the listen data for a user by month and track within a given time frame.""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_track_listen_count_route_parser)
+    @ns.marshal_with(user_track_listen_counts_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_track_listen_count_route_parser.parse_args()
+        start_time = args.get("start_time")
+        end_time = args.get("end_time")
+
+        user_listen_counts = get_user_listen_counts_monthly(
+            {
+                "user_id": decoded_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            }
+        )
+
+        formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
+            user_listen_counts
+        )
+
+        return success_response(formatted_user_listen_counts)
 
 
 @ns.route(USER_TRACKS_ROUTE)
@@ -227,20 +304,33 @@ class TrackList(Resource):
 
         current_user_id = get_current_user_id(args)
 
-        sort = args.get("sort", None)
+        sort = args.get("sort", None)  # Deprecated
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
 
-        args = {
-            "user_id": decoded_id,
-            "authed_user_id": authed_user_id,
-            "current_user_id": current_user_id,
-            "with_users": True,
-            "filter_deleted": True,
-            "sort": sort,
-            "limit": limit,
-            "offset": offset,
-        }
+        args = GetTrackArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            exclude_premium=True,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+            # Unused
+            handle=None,
+            id=None,
+            min_block_number=None,
+            routes=None,
+            filter_tracks=filter_tracks,
+        )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
@@ -272,20 +362,36 @@ class FullTrackList(Resource):
 
         current_user_id = get_current_user_id(args)
 
-        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
-        args = {
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "authed_user_id": authed_user_id,
-            "with_users": True,
-            "filter_deleted": True,
-            "sort": sort,
-            "limit": limit,
-            "offset": offset,
-        }
+        sort = args.get("sort", None)  # Deprecated
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
+        if sort_method:
+            sort = None
+
+        args = GetTrackArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            exclude_premium=False,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+            # Unused
+            handle=None,
+            id=None,
+            min_block_number=None,
+            routes=None,
+            filter_tracks=filter_tracks,
+        )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
@@ -306,6 +412,7 @@ class HandleFullTrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
         args = {
             "handle": handle,
@@ -316,6 +423,7 @@ class HandleFullTrackList(Resource):
             "sort": sort,
             "limit": limit,
             "offset": offset,
+            "filter_tracks": filter_tracks,
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -565,20 +673,25 @@ class UserFavoritedTracksFull(Resource):
     @cache(ttl_sec=5)
     def _get(self, id):
         """Fetch favorited tracks for a user."""
-        args = pagination_with_current_user_parser.parse_args()
+        args = user_favorited_tracks_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
         limit = format_limit(args)
-        get_tracks_args = {
-            "filter_deleted": False,
-            "user_id": decoded_id,
-            "current_user_id": current_user_id,
-            "limit": limit,
-            "offset": offset,
-            "with_users": True,
-        }
+        query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
+        get_tracks_args = GetSaveTracksArgs(
+            filter_deleted=False,
+            user_id=decoded_id,
+            current_user_id=current_user_id,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
         track_saves = get_save_tracks(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
         return success_response(tracks)
@@ -589,7 +702,7 @@ class UserFavoritedTracksFull(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(user_favorited_tracks_parser)
     @full_ns.marshal_with(favorites_full_response)
     def get(self, id):
         return self._get(id)
@@ -610,16 +723,22 @@ class TrackHistoryFull(Resource):
     @record_metrics
     @cache(ttl_sec=5)
     def _get(self, id):
-        args = pagination_with_current_user_parser.parse_args()
+        args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
+        query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
         get_tracks_args = GetUserListeningHistoryArgs(
             user_id=decoded_id,
             current_user_id=current_user_id,
             limit=limit,
             offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
         )
         track_history = get_user_listening_history(get_tracks_args)
         tracks = list(map(extend_activity, track_history))
@@ -631,7 +750,7 @@ class TrackHistoryFull(Resource):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.expect(track_history_parser)
     @full_ns.marshal_with(history_response_full)
     def get(self, id):
         return self._get(id)
@@ -645,7 +764,7 @@ class TrackHistory(TrackHistoryFull):
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.expect(pagination_with_current_user_parser)
+    @ns.expect(track_history_parser)
     @ns.marshal_with(history_response)
     def get(self, id):
         return super()._get(id)
@@ -680,6 +799,7 @@ class UserSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
+            "exclude_premium": True,
         }
         response = search(search_args)
         return success_response(response["users"])
@@ -1437,3 +1557,49 @@ class GetTokenVerification(Resource):
 
         # 5. Send back the decoded payload
         return success_response(payload)
+
+
+GET_REPLICA_SET = "/<string:id>/replica_set"
+user_replica_set_full_response = make_full_response(
+    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
+)
+user_replica_set_response = make_response(
+    "users_by_content_node", ns, fields.Nested(user_replica_set)
+)
+
+
+@full_ns.route(GET_REPLICA_SET)
+class FullGetReplicaSet(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id: str):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = {"user_id": decoded_id}
+        replica_set = get_user_replica_set(args)
+        return success_response(replica_set)
+
+    @full_ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(user_replica_set_full_response)
+    def get(self, id: str):
+        return self._get(id)
+
+
+@ns.route(GET_REPLICA_SET)
+class GetReplicaSet(FullGetReplicaSet):
+    @ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @ns.marshal_with(user_replica_set_response)
+    def get(self, id: str):
+        return super()._get(id)

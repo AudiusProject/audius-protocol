@@ -9,18 +9,24 @@ const web3 = new Web3()
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
+const generateSignature = (data: Object, privateKey: string) => {
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(data))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return signedResponse.signature
+}
+
 /**
  * Generate the timestamp and signature for api signing
  */
 const generateTimestampAndSignature = (data: Object, privateKey: string) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
-  // JSON stringify automatically removes white space given 1 param
-  const toSignStr = JSON.stringify(sortKeys(toSignObj))
-  const toSignHash = web3.utils.keccak256(toSignStr)
-  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+  const signature = generateSignature(toSignObj, privateKey)
 
-  return { timestamp, signature: signedResponse.signature }
+  return { timestamp, signature }
 }
 
 // Keeps track of a cached listen signature
@@ -70,15 +76,18 @@ const recoverWallet = (
 }
 
 /**
- * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
- * @param {string} signatureTimestamp unix timestamp string when signature was generated
+ * Returns boolean indicating if provided timestamp is older than maxTTL
+ * @param {string | number} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (signatureTimestamp: string): boolean => {
+const signatureHasExpired = (
+  signatureTimestamp: string,
+  maxTTL = MAX_SIGNATURE_AGE_MS
+): boolean => {
   const signatureTimestampDate = new Date(signatureTimestamp).getTime()
   const currentTimestampDate = new Date().getTime()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
-  return signatureAge >= MAX_SIGNATURE_AGE_MS
+  return signatureAge >= maxTTL
 }
 
 /**
@@ -205,6 +214,7 @@ function validateSPId(spID: string): number {
 
 module.exports = {
   generateTimestampAndSignature,
+  generateSignature,
   generateListenTimestampAndSignature,
   generateTimestampAndSignatureForSPVerification,
   recoverWallet,

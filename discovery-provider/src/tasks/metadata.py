@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-# Required format for track metadata retrieved from IPFS
+# Required format for track metadata retrieved from the content system
 
 track_metadata_format: Dict[str, Any] = {
     "owner_id": None,
@@ -26,9 +26,11 @@ track_metadata_format: Dict[str, Any] = {
     "is_unlisted": False,
     "field_visibility": None,
     "stem_of": None,
+    "is_premium": False,
+    "premium_conditions": None,
 }
 
-# Required format for user metadata retrieved from IPFS
+# Required format for user metadata retrieved from the content system
 user_metadata_format = {
     "profile_picture": None,
     "profile_picture_sizes": None,
@@ -44,4 +46,15 @@ user_metadata_format = {
     "playlist_library": None,
     "events": None,
     "is_deactivated": None,
+    "artist_pick_track_id": None,
+}
+
+playlist_metadata_format = {
+    "playlist_id": None,
+    "playlist_contents": None,
+    "playlist_name": None,
+    "playlist_image_sizes_multihash": None,
+    "description": None,
+    "is_album": None,
+    "is_private": None,
 }

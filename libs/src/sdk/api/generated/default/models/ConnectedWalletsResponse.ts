@@ -25,12 +25,14 @@ import {
  * @export
  * @interface ConnectedWalletsResponse
  */
-export interface ConnectedWalletsResponse {
-    /**
-     * 
-     * @type {ConnectedWallets}
-     * @memberof ConnectedWalletsResponse
-     */
-    data?: ConnectedWallets;
-}
+export interface ConnectedWalletsResponse 
+    {
+        /**
+        * 
+        * @type {ConnectedWallets}
+        * @memberof ConnectedWalletsResponse
+        */
+        data?: ConnectedWallets;
+    }
+
 

@@ -39,7 +39,8 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   poa-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -60,7 +61,8 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   # eth-contracts
 
@@ -71,8 +73,10 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
+      - ./dev-tools:/tmp/dev-tools
     ports:
       - "8546:8545"
     logging: *default-logging
@@ -90,7 +94,8 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   eth-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -111,7 +116,8 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: global
+      mode: replicas
+      replicas: "${BLOCK_EXPLORER_ENABLED}"
 
   # solana-programs
 
@@ -163,6 +169,40 @@ services:
     deploy:
       mode: global
 
+  # audius-cmd
+
+  audius-cmd:
+    build: dev-tools/commands
+    command: sleep infinity
+    environment:
+      ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
+      ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
+      ETH_PROVIDER_URL: "http://eth-ganache:8545"
+      ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
+
+      POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
+      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
+      POA_PROVIDER_URL: "http://poa-ganache:8545"
+
+      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
+      SOLANA_OWNER_SECRET_KEY: "${SOLANA_OWNER_SECRET_KEY}"
+      SOLANA_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
+      SOLANA_FEEPAYER_SECRET_KEY: "${SOLANA_FEEPAYER_SECRET_KEY}"
+
+      IDENTITY_SERVICE_URL: "http://identity-service:7000"
+      FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
+    volumes:
+      - audius-libs:/usr/src/app/node_modules/@audius/sdk
+      - ./dev-tools/commands/src:/usr/src/app/src
+    depends_on:
+      build-audius-libs:
+        condition: service_started
+    logging: *default-logging
+
   # identity-service
 
   identity-service-db:
@@ -198,15 +238,15 @@ services:
       minimumRelayerBalance: 1
       minimumFunderBalance: 1
 
-      blacklisterPrivateKey: "87e08695a0c368b9fcbf7420183d266514a1b70791fd0b4254b3cbb8373803c7"
-      blacklisterPublicKey: "0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae"
-      relayerPrivateKey: "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"
-      relayerPublicKey: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
-      relayerWallets: '[{"publicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b", "privateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"}, {"publicKey": "0xBE718F98a5B5a473186eB6E30888F26E72be0b66", "privateKey": "d3426cd10c4e75207bdc4802c551d21faa89a287546c2c6b3d9a0476f34934d2"}]'
+      relayerPrivateKey: "${POA_RELAYER_WALLET_1_PRIVATE_KEY}"
+      relayerPublicKey: "${POA_RELAYER_WALLET_1_ADDRESS}"
+      relayerWallets: "${POA_RELAYER_WALLETS}"
+
       ethFunderAddress: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
+      ethRelayerWallets: "${ETH_RELAYER_WALLETS}"
+
       userVerifierPrivateKey: "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e"
       userVerifierPublicKey: "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0'"
-      ethRelayerWallets: '[{"publicKey": "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b", "privateKey": "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"}, {"publicKey": "0xBE718F98a5B5a473186eB6E30888F26E72be0b66", "privateKey": "d3426cd10c4e75207bdc4802c551d21faa89a287546c2c6b3d9a0476f34934d2"}, {"publicKey": "0xE75dEe171b6472cE30358ede946CcDFfCA70b562", "privateKey": "8a7c63d4aea87647f480e4771ea279f90f8e912fcfe907525bc931f531e564ce"}, {"publicKey": "0x58908c329D3be43261a3768aA2BBF413b36C935C", "privateKey": "712f210f132d2983e1e2d233f38b80aa12b9d5638ef4eeb78792c61622baf3d5"}, {"publicKey": "0xA0614b332312C5d81BE5b1877169E09041e5769F", "privateKey": "fc0ebb16ccb2fc42afb80336a358f17732cb9a47a96d0af1f474798726f92141"}]'
 
       dbUrl: "postgres://postgres:postgres@identity-service-db:5432/postgres"
 
@@ -216,6 +256,7 @@ services:
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
       registryAddress: "${POA_REGISTRY_ADDRESS}"
+      entityManagerAddress: "${ENTITY_MANAGER_ADDRESS}"
       ownerWallet: "${POA_OWNER_WALLET}"
 
       ethProviderUrl: "http://eth-ganache:8545"
@@ -231,7 +272,7 @@ services:
       solanaSignerPrivateKey: "${ETH_VALID_SIGNER_PRIVATE_KEY}"
       solanaMintAddress: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
       solanaClaimableTokenProgramAddress: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
-      solanaRewardsManagerAddress: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      solanaRewardsManagerProgramId: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
       solanaRewardsManagerProgramPDA: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
       solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
@@ -257,6 +298,26 @@ services:
 
   # discovery-provider
 
+  discovery-provider-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    logging: *default-logging
+    deploy:
+      mode: replicated
+      replicas: "${ELASTICSEARCH_REPLICAS}"
+
   discovery-provider:
     build: discovery-provider
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
@@ -268,6 +329,7 @@ services:
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 
@@ -283,7 +345,9 @@ services:
 
       audius_discprov_dev_mode: "true"
     volumes:
-      - ./discovery-provider:/audius-discovery-provider
+      - ./discovery-provider/alembic:/audius-discovery-provider/alembic
+      - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
+      - ./discovery-provider/src:/audius-discovery-provider/src
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
@@ -295,9 +359,12 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
+      discovery-provider-elasticsearch:
+        condition: "${ELASTICSEARCH_CONDITION}"
     logging: *default-logging
     deploy:
       mode: replicated
+      replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
 
   # creator-node
 
@@ -319,6 +386,8 @@ services:
       rateLimitingBatchCidsExistLimit: 1
       maxAudioFileSizeBytes: 250000000
       maxMemoryFileSizeBytes: 50000000
+
+      identityService: "http://identity-service:7000"
 
       ethProviderUrl: "http://eth-ganache:8545"
       ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
@@ -343,10 +412,13 @@ services:
     logging: *default-logging
     deploy:
       mode: replicated
+      replicas: "${CREATOR_NODE_REPLICAS}"
 
-  proxy:
+  # port forwarder
+
+  port-forwarder:
     image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/proxy.sh
+    command: sh /tmp/dev-tools/startup/port-forwarder.sh
     ports:
       - "4000-4010:4000-4010"
       - "5000-5010:5000-5010"
@@ -356,20 +428,18 @@ services:
     deploy:
       mode: global
 
-  # SOCKS5 proxy for use with client
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
 
-  socks5-proxy:
-    image: serjs/go-socks5-proxy:v0.0.3
+  sshuttle-server:
+    image: linuxserver/openssh-server:latest # don't pin
+    command: bash -c "apk add python3 && sleep inf"
+    environment:
+      PASSWORD_ACCESS: "true"
+      USER_NAME: "sshuttle"
+      USER_PASSWORD: "sshuttle"
     ports:
-      - "1080:1080"
-
-  socks5-proxy-pac:
-    image: python:3.10.5
-    command: sh -c "head -n-1 /etc/hosts > /etc/hosts && python /tmp/dev-tools/startup/socks5-proxy-pac.py"
-    ports:
-      - "8080:80"
-    volumes:
-      - ./dev-tools:/tmp/dev-tools
+      - "2222:2222"
 
 volumes:
   poa-contracts-abis:

@@ -1,9 +1,18 @@
 const _ = require('lodash')
 const axios = require('axios')
+
+const redisClient = require('../../../redis')
 const { logger } = require('../../../logging')
 const Utils = require('../../../utils')
-const { SyncType, JOB_NAMES, SYNC_MODES } = require('../stateMachineConstants')
+const {
+  SyncType,
+  SYNC_MODES,
+  HEALTHY_SERVICES_TTL_SEC
+} = require('../stateMachineConstants')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
+const { instrumentTracing, tracing } = require('../../../tracer')
+
+const HEALTHY_NODES_CACHE_KEY = 'stateMachineHealthyContentNodes'
 
 /**
  * Returns a job can be enqueued to add a sync request for the given user to the given secondary,
@@ -13,7 +22,7 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
  *   syncReqToEnqueue
  * }
  */
-const getNewOrExistingSyncReq = ({
+const getNewOrExistingSyncReq = async ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
@@ -36,18 +45,23 @@ const getNewOrExistingSyncReq = ({
    * If duplicate sync already exists, do not add and instead return existing sync job info
    * Ignore syncMode when checking for duplicates, since it doesn't matter
    */
-  const duplicateSyncJobInfo = SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
-    syncType,
-    userWallet,
-    secondaryEndpoint
-  )
-  if (duplicateSyncJobInfo && syncType !== SyncType.Manual) {
-    logger.info(
+  const duplicateSyncJobInfo =
+    await SyncRequestDeDuplicator.getDuplicateSyncJobInfo(
+      syncType,
+      userWallet,
+      secondaryEndpoint,
+      immediate
+    )
+  if (duplicateSyncJobInfo) {
+    logger.error(
       `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
 
     return {
-      duplicateSyncReq: duplicateSyncJobInfo
+      duplicateSyncReq: {
+        ...duplicateSyncJobInfo,
+        parentSpanContext: tracing.currentSpanContext()
+      }
     }
   }
 
@@ -67,36 +81,41 @@ const getNewOrExistingSyncReq = ({
   }
 
   // Add job to issue manual or recurring sync request based on `syncType` param
-  const jobName =
-    syncType === SyncType.Manual
-      ? JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST
-      : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
-  const jobData = {
+  const syncReqToEnqueue = {
     syncType,
     syncMode,
-    syncRequestParameters
-  }
-  const syncReqToEnqueue = {
-    jobName,
-    jobData
+    syncRequestParameters,
+    parentSpanContext: tracing.currentSpanContext()
   }
 
-  // Record sync in syncDeDuplicator
-  SyncRequestDeDuplicator.recordSync(
+  // eslint-disable-next-line node/no-sync
+  await SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
-    jobData
+    syncReqToEnqueue,
+    immediate
   )
 
+  tracing.info(JSON.stringify(syncReqToEnqueue))
   return { syncReqToEnqueue }
+}
+
+const getSyncStatusByUuid = async (targetUrl, syncUuid) => {
+  const resp = await axios({
+    baseURL: targetUrl,
+    url: `/sync_status/uuid/${syncUuid}`,
+    method: 'get',
+    timeout: 30_000
+  })
+  return resp?.data?.data?.syncStatus
 }
 
 /**
  * Issues syncRequest for user against secondary, and polls for replication up to primary
  * If secondary fails to sync within specified timeoutMs, will error
  */
-const issueSyncRequestsUntilSynced = async (
+const _issueSyncRequestsUntilSynced = async (
   primaryUrl,
   secondaryUrl,
   wallet,
@@ -105,7 +124,7 @@ const issueSyncRequestsUntilSynced = async (
   queue
 ) => {
   // Issue syncRequest before polling secondary for replication
-  const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+  const { duplicateSyncReq, syncReqToEnqueue } = await getNewOrExistingSyncReq({
     userWallet: wallet,
     secondaryEndpoint: secondaryUrl,
     primaryEndpoint: primaryUrl,
@@ -118,8 +137,10 @@ const issueSyncRequestsUntilSynced = async (
     logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
-    const { jobName, jobData } = syncReqToEnqueue
-    await queue.add(jobName, jobData)
+    await queue.add('manual-sync', {
+      enqueuedBy: 'issueSyncRequestsUntilSynced',
+      ...syncReqToEnqueue
+    })
   } else {
     // Log error that the sync request couldn't be created and return
     logger.error(`Failed to create manual sync request`)
@@ -138,39 +159,15 @@ const issueSyncRequestsUntilSynced = async (
         responseType: 'json',
         timeout: 1000 // 1000ms = 1s
       })
-      const { clockValue: secondaryClockVal, syncInProgress } =
+      const { clockValue: secondaryClockVal } =
         secondaryClockStatusResp.data.data
 
       // If secondary is synced, return successfully
       if (secondaryClockVal >= primaryClockVal) {
         return
-
-        // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
-      } else if (!syncInProgress) {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          secondaryEndpoint: secondaryUrl,
-          primaryEndpoint: primaryUrl,
-          syncType: SyncType.Manual,
-          syncMode: SYNC_MODES.SyncSecondaryFromPrimary
-        })
-        if (!_.isEmpty(duplicateSyncReq)) {
-          // Log duplicate and return
-          logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
-          return
-        } else if (!_.isEmpty(syncReqToEnqueue)) {
-          const { jobName, jobData } = syncReqToEnqueue
-          await queue.add(jobName, jobData)
-        } else {
-          // Log error that the sync request couldn't be created and return
-          logger.error(
-            `Failed to create manual sync request: ${duplicateSyncReq}`
-          )
-          return
-        }
       }
 
-      // Give secondary some time to process ongoing or newly enqueued sync
+      // Give secondary some time to process ongoing sync
       // NOTE - we might want to make this timeout longer
       await Utils.timeout(500)
     } catch (e) {
@@ -184,7 +181,37 @@ const issueSyncRequestsUntilSynced = async (
   )
 }
 
+const issueSyncRequestsUntilSynced = instrumentTracing({
+  fn: _issueSyncRequestsUntilSynced,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
+  }
+})
+
+const getCachedHealthyNodes = async () => {
+  const healthyNodes = await redisClient.lrange(HEALTHY_NODES_CACHE_KEY, 0, -1)
+  return healthyNodes
+}
+
+const cacheHealthyNodes = async (healthyNodes) => {
+  const pipeline = redisClient.pipeline()
+  await pipeline
+    .del(HEALTHY_NODES_CACHE_KEY)
+    .rpush(HEALTHY_NODES_CACHE_KEY, ...(healthyNodes || []))
+    .expire(HEALTHY_NODES_CACHE_KEY, HEALTHY_SERVICES_TTL_SEC)
+    .exec()
+}
+
 module.exports = {
-  getNewOrExistingSyncReq,
-  issueSyncRequestsUntilSynced
+  getNewOrExistingSyncReq: instrumentTracing({
+    fn: getNewOrExistingSyncReq
+  }),
+  issueSyncRequestsUntilSynced: instrumentTracing({
+    fn: issueSyncRequestsUntilSynced
+  }),
+  getCachedHealthyNodes: instrumentTracing({ fn: getCachedHealthyNodes }),
+  cacheHealthyNodes: instrumentTracing({ fn: cacheHealthyNodes }),
+  getSyncStatusByUuid: instrumentTracing({ fn: getSyncStatusByUuid })
 }

@@ -3,7 +3,7 @@ const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
-const utils = require('../../utils.js')
+const utils = require('../../utils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -47,6 +47,7 @@ const healthCheck = async (
   const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
+  const syncForceWipeEnabled = config.get('syncForceWipeEnabled')
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
@@ -130,9 +131,11 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const healthy = !config.get('considerNodeUnhealthy')
+
   const response = {
     ...versionInfo,
-    healthy: true,
+    healthy,
     git: process.env.GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
@@ -168,11 +171,18 @@ const healthCheck = async (
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
+    syncForceWipeEnabled,
     stateMonitoringQueueRateLimitInterval: config.get(
       'stateMonitoringQueueRateLimitInterval'
     ),
     stateMonitoringQueueRateLimitJobsPerInterval: config.get(
       'stateMonitoringQueueRateLimitJobsPerInterval'
+    ),
+    recoverOrphanedDataQueueRateLimitInterval: config.get(
+      'recoverOrphanedDataQueueRateLimitInterval'
+    ),
+    recoverOrphanedDataQueueRateLimitJobsPerInterval: config.get(
+      'recoverOrphanedDataQueueRateLimitJobsPerInterval'
     ),
     transcodeActive,
     transcodeWaiting,
@@ -199,8 +209,8 @@ const healthCheck = async (
       )
     },
     trustedNotifier: {
-      ...trustedNotifierManager.getTrustedNotifierData(),
-      id: trustedNotifierManager.trustedNotifierID
+      ...trustedNotifierManager?.getTrustedNotifierData(),
+      id: trustedNotifierManager?.trustedNotifierID
     }
   }
 

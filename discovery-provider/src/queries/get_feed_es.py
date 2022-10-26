@@ -1,6 +1,5 @@
-from collections import defaultdict
-
-from src.queries.query_helpers import get_users_ids
+from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_REPOSTS,
@@ -19,6 +18,9 @@ def get_feed_es(args, limit=10):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
+    exclude_premium = args.get("exclude_premium", False)
+
+    explicit_ids = args.get("followee_user_ids", [])
 
     mdsl = []
 
@@ -30,7 +32,9 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup(current_user_id, "user_id"),
+                                following_ids_terms_lookup(
+                                    current_user_id, "user_id", explicit_ids
+                                ),
                                 {"term": {"is_delete": False}},
                                 {"range": {"created_at": {"gte": "now-30d"}}},
                             ]
@@ -59,7 +63,9 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup(current_user_id, "owner_id"),
+                                following_ids_terms_lookup(
+                                    current_user_id, "owner_id", explicit_ids
+                                ),
                                 {"term": {"is_unlisted": False}},
                                 {"term": {"is_delete": False}},
                             ],
@@ -75,7 +81,7 @@ def get_feed_es(args, limit=10):
                         "bool": {
                             "must": [
                                 following_ids_terms_lookup(
-                                    current_user_id, "playlist_owner_id"
+                                    current_user_id, "playlist_owner_id", explicit_ids
                                 ),
                                 {"term": {"is_private": False}},
                                 {"term": {"is_delete": False}},
@@ -115,12 +121,18 @@ def get_feed_es(args, limit=10):
         #    instead of doing it dynamically here?
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
-        # Q: should we add playlist tracks to seen?
-        #    get_feed will "debounce" tracks in playlist
         unsorted_feed.append(playlist)
+
+        # add playlist track_ids to seen
+        # if a user uploads an orig playlist or album
+        # surpress individual tracks from said album appearing in feed
+        for track in playlist["tracks"]:
+            seen.add(item_key(track))
 
     for track in tracks:
         track["item_key"] = item_key(track)
+        if track["item_key"] in seen:
+            continue
         seen.add(track["item_key"])
         unsorted_feed.append(track)
 
@@ -196,13 +208,13 @@ def get_feed_es(args, limit=10):
             sorted_feed.append(item)
 
     # attach users
-    user_id_list = [str(id) for id in get_users_ids(sorted_feed)]
-    user_id_list.append(current_user_id)
-    user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
+    user_id_set = set([str(id) for id in get_users_ids(sorted_feed)])
+    user_id_set.add(current_user_id)
+    user_list = esclient.mget(index=ES_USERS, ids=list(user_id_set))
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
     # populate_user_metadata_es:
-    current_user = user_by_id.pop(str(current_user_id))
+    current_user = user_by_id.get(str(current_user_id))
     for id, user in user_by_id.items():
         user_by_id[id] = populate_user_metadata_es(user, current_user)
 
@@ -211,19 +223,35 @@ def get_feed_es(args, limit=10):
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = user_by_id[uid]
 
-    # add context: followee_reposts, followee_saves
-    # currently this over-fetches because there is no per-item grouping
-    # really it should use an aggregation with top hits
-    # to bucket ~3 saves / reposts per item
-    item_keys = [i["item_key"] for i in sorted_feed]
-
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys, limit * 20
+        current_user, sorted_feed
     )
 
     for item in sorted_feed:
         item["followee_reposts"] = follow_reposts[item["item_key"]]
         item["followee_saves"] = follow_saves[item["item_key"]]
+
+        # save_count was renamed to favorite_count when working on search...
+        # but /feed still expects save_count
+        if "favorite_count" in item:
+            item["save_count"] = item["favorite_count"]
+
+    if exclude_premium:
+        # filter out premium tracks from the feed before populating metadata
+        sorted_feed = list(
+            filter(
+                lambda item: "track_id" not in item or not item["is_premium"],
+                sorted_feed,
+            )
+        )
+    else:
+        # batch populate premium track metadata
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
+            _populate_premium_track_metadata(
+                session, track_items, current_user["user_id"]
+            )
 
     # populate metadata + remove extra fields from items
     sorted_feed = [
@@ -234,59 +262,74 @@ def get_feed_es(args, limit=10):
     return sorted_feed[0:limit]
 
 
-def following_ids_terms_lookup(current_user_id, field):
+def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
     """
     does a "terms lookup" to query a field
     with the user_ids that the current user follows
     """
+    if not explicit_ids:
+        explicit_ids = []
     return {
-        "terms": {
-            field: {
-                "index": ES_USERS,
-                "id": str(current_user_id),
-                "path": "following_ids",
-            },
+        "bool": {
+            "should": [
+                {
+                    "terms": {
+                        field: {
+                            "index": ES_USERS,
+                            "id": str(current_user_id),
+                            "path": "following_ids",
+                        },
+                    }
+                },
+                {"terms": {field: explicit_ids}},
+            ]
         }
     }
 
 
-def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
-    save_repost_query = {
-        "query": {
-            "bool": {
-                "must": [
-                    following_ids_terms_lookup(current_user_id, "user_id"),
-                    {"terms": {"item_key": item_keys}},
-                    {"term": {"is_delete": False}},
-                ]
-            }
-        },
-        "size": limit * 20,  # how much to overfetch?
-        "sort": {"created_at": "desc"},
-    }
-    mdsl = [
-        {"index": ES_REPOSTS},
-        save_repost_query,
-        {"index": ES_SAVES},
-        save_repost_query,
-    ]
+def fetch_followed_saves_and_reposts(current_user, items):
+    item_keys = [item_key(i) for i in items]
+    follow_reposts = {k: [] for k in item_keys}
+    follow_saves = {k: [] for k in item_keys}
 
-    founds = esclient.msearch(searches=mdsl)
-    (reposts, saves) = [pluck_hits(r) for r in founds["responses"]]
+    if not current_user or not item_keys:
+        return (follow_saves, follow_reposts)
 
-    follow_reposts = defaultdict(list)
-    follow_saves = defaultdict(list)
+    mget_social_activity = []
+    my_friends = set(current_user.get("following_ids", []))
 
-    for r in reposts:
-        follow_reposts[r["item_key"]].append(r)
-    for s in saves:
-        follow_saves[s["item_key"]].append(s)
+    for item in items:
+        key = item_key(item)
+        saved_by = item.get("saved_by", [])
+        reposted_by = item.get("reposted_by", [])
+
+        save_friends = [f"{uid}:{key}" for uid in saved_by if uid in my_friends]
+        for id in save_friends[0:5]:
+            mget_social_activity.append({"_index": ES_SAVES, "_id": id})
+
+        repost_friends = [f"{uid}:{key}" for uid in reposted_by if uid in my_friends]
+        for id in repost_friends[0:5]:
+            mget_social_activity.append({"_index": ES_REPOSTS, "_id": id})
+
+    if mget_social_activity:
+        social_activity = esclient.mget(docs=mget_social_activity)
+        for doc in social_activity["docs"]:
+            if not doc["found"]:
+                print("elasticsearch not found", doc)
+                continue
+            s = doc["_source"]
+            if "repost_type" in s:
+                follow_reposts[s["item_key"]].append(s)
+            else:
+                follow_saves[s["item_key"]].append(s)
 
     return (follow_saves, follow_reposts)
 
 
 def item_key(item):
-    if "track_id" in item:
+    if "item_key" in item:
+        return item["item_key"]
+    elif "track_id" in item:
         return "track:" + str(item["track_id"])
     elif "playlist_id" in item:
         if item["is_album"]:

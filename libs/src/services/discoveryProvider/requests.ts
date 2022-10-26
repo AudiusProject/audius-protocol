@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
+import type { Nullable } from '../../utils'
+
 export const getUsers = (
   limit = 100,
   offset = 0,
-  idsArray?: string[],
-  walletAddress?: string,
-  handle?: string,
-  minBlockNumber?: number
+  idsArray: Nullable<number[]>,
+  walletAddress?: Nullable<string>,
+  handle?: Nullable<string>,
+  minBlockNumber?: Nullable<number>
 ) => {
   type QueryParams = {
     limit: number
@@ -31,7 +33,7 @@ export const getUsers = (
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected integer array of user ids')
     }
-    queryParams.id = idsArray
+    queryParams.id = idsArray as unknown as string[]
   }
 
   const req = { endpoint: 'users', queryParams }
@@ -42,11 +44,11 @@ export const getUsers = (
 export const getTracks = (
   limit = 100,
   offset = 0,
-  idsArray?: string[],
-  targetUserId?: string,
-  sort?: boolean,
-  minBlockNumber?: number,
-  filterDeleted?: boolean,
+  idsArray: Nullable<string[]>,
+  targetUserId: Nullable<string>,
+  sort: Nullable<boolean>,
+  minBlockNumber: Nullable<number>,
+  filterDeleted: Nullable<boolean>,
   withUsers = false
 ) => {
   type QueryParams = {
@@ -218,8 +220,8 @@ export const getTrendingTracks = (
 export const getPlaylists = (
   limit = 100,
   offset = 0,
-  idsArray = null,
-  targetUserId = null,
+  idsArray: Nullable<number[]> = null,
+  targetUserId: Nullable<number> = null,
   withUsers = false
 ) => {
   if (idsArray != null) {
@@ -235,6 +237,19 @@ export const getPlaylists = (
       ...(idsArray != null ? { playlist_id: idsArray } : {}),
       ...(targetUserId ? { user_id: targetUserId } : {}),
       ...(withUsers ? { with_users: true } : {})
+    }
+  }
+}
+
+export const getFullPlaylist = (
+  encodedPlaylistId: string,
+  encodedUserId: string
+) => {
+  return {
+    endpoint: 'v1/full/playlists',
+    urlParams: '/' + encodedPlaylistId,
+    queryParams: {
+      user_id: encodedUserId
     }
   }
 }
@@ -318,7 +333,7 @@ export const getPlaylistRepostIntersectionUsers = (
 export const getFollowersForUser = (
   limit = 100,
   offset = 0,
-  followeeUserId: number
+  followeeUserId: string
 ) => {
   return {
     endpoint: 'users',
@@ -330,7 +345,7 @@ export const getFollowersForUser = (
 export const getFolloweesForUser = (
   limit = 100,
   offset = 0,
-  followerUserId: number
+  followerUserId: string
 ) => {
   return {
     endpoint: 'users',
@@ -561,6 +576,21 @@ export const getMostLovedTracks = (
   }
 }
 
+export const getFeelingLuckyTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/feeling_lucky`,
+    queryParams: {
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
 export const getTopFolloweeSaves = (
   type: string,
   limit: string,
@@ -684,6 +714,28 @@ export const verifyToken = (token: string) => {
     endpoint: '/v1/users/verify_token',
     queryParams: {
       token: token
+    }
+  }
+}
+
+export const getUserReplicaSet = (encodedUserId: string) => {
+  return {
+    endpoint: `/v1/full/users/${encodedUserId}/replica_set`,
+    timeout: 5000
+  }
+}
+
+export const getUserListenCountsMonthly = (
+  encodedUserId: string,
+  startTime: string,
+  endTime: string
+) => {
+  return {
+    endpoint: `/v1/users/${encodedUserId}/listen_counts_monthly`,
+    timeout: 10000,
+    queryParams: {
+      start_time: startTime,
+      end_time: endTime
     }
   }
 }

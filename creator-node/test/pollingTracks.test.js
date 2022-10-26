@@ -1,5 +1,5 @@
 const request = require('supertest')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
@@ -9,8 +9,6 @@ const _ = require('lodash')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { libs } = require('@audius/sdk')
-const Utils = libs
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -114,12 +112,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         '../../fileManager': {
           copyMultihashToFs: sinon
             .stub(FileManager, 'copyMultihashToFs')
-            .returns(
-              new Promise((resolve) => {
-                const dstPath = DiskManager.computeFilePath(mockCid)
-                return resolve(dstPath)
-              })
-            ),
+            .returns(await DiskManager.computeFilePath(mockCid)),
           '@global': true
         }
       }
@@ -133,7 +126,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
   // Testing middleware -- leave as /track_content_async
   it('fails to upload when format is not accepted', async function () {
-    const file = fs.readFileSync(testAudioFileWrongFormatPath)
+    const file = await fs.readFile(testAudioFileWrongFormatPath)
 
     await request(app)
       .post(TRACK_CONTENT_POLLING_ROUTE)
@@ -158,7 +151,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     session = await createStarterCNodeUser(userId)
 
     // Confirm max audio file size is respected by multer
-    const file = fs.readFileSync(testAudioFilePath)
+    const file = await fs.readFile(testAudioFilePath)
     await request(app)
       .post(TRACK_CONTENT_POLLING_ROUTE)
       .attach('file', file, { filename: 'fname.mp3' })
@@ -183,7 +176,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     session = await createStarterCNodeUser(userId)
 
     // Confirm max audio file size is respected by multer
-    const file = fs.readFileSync(testAudioFileWrongFormatPath)
+    const file = await fs.readFile(testAudioFileWrongFormatPath)
     await request(app)
       .post('/image_upload')
       .attach('file', file, { filename: 'fname.jpg' })
@@ -197,7 +190,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 
   it('uploads /track_content_async', async function () {
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -228,7 +221,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track */
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     let resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -413,7 +406,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     /** Upload track for user 1 */
     const { fileUUID: fileUUID1, fileDir: fileDir1 } =
-      saveFileToStorage(testAudioFilePath)
+      await saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID1, fileDir1, session)
@@ -431,7 +424,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     /** Upload track for user 2 */
     const { fileUUID: fileUUID2, fileDir: fileDir2 } =
-      saveFileToStorage(testAudioFilePath)
+      await saveFileToStorage(testAudioFilePath)
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session2)
@@ -520,7 +513,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('creates Audius track using application logic for /track_content_async', async function () {
     libsMock.User.getUsers.exactly(2)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -559,7 +552,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('fails to create Audius track when segments not provided', async function () {
     libsMock.User.getUsers.exactly(2)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -593,7 +586,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
     libsMock.User.getUsers.exactly(2)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -627,7 +620,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('fails to create Audius track when owner_id is not provided', async function () {
     libsMock.User.getUsers.exactly(2)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -658,7 +651,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('completes Audius track creation', async function () {
     libsMock.User.getUsers.exactly(4)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
       track_segments: trackSegments,
       source_file: sourceFile,
@@ -687,12 +680,32 @@ describe('test Polling Tracks with mocked IPFS', function () {
       'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
     )
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return {
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+      ]
+    }
+    })
+    libsMock.Track = { getTracksVerbose: getTrackStub }
+
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
         transcodedTrackUUID
@@ -700,11 +713,71 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(200)
   })
 
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
+  it('fails Audius track creation when passing track ID that mismatches on-chain track ID', async function () {
+    libsMock.User.getUsers.exactly(4)
+
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
+    const {
+      track_segments: trackSegments,
+      source_file: sourceFile,
+      transcodedTrackUUID
+    } = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session)
+    )
+
+    const metadata = {
+      test: 'field1',
+      track_segments: trackSegments,
+      owner_id: 1
+    }
+
+    const trackMetadataResp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
+      .send({ metadata, sourceFile })
+      .expect(200)
+
+    assert.deepStrictEqual(
+      trackMetadataResp.body.data.metadataMultihash,
+      'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+    )
+
+    // Make chain NOT recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().resolves(({
+      latest_indexed_block: 10,
+      latest_chain_block: 10,
+      data: [
+        {
+          blocknumber: 0,
+          owner_id: -1
+        }
+      ] 
+    }))
+    libsMock.Track = { getTracksVerbose: getTrackStub }
+
+    await request(app)
+      .post('/tracks')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({
+        blockchainTrackId,
+        blockNumber: 10,
+        metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
+        transcodedTrackUUID
+      })
+      .expect(500)
+  })
+
   // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
     libsMock.User.getUsers.exactly(2)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -746,7 +819,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   it('creates a downloadable track', async function () {
     libsMock.User.getUsers.exactly(4)
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
       track_segments: trackSegments,
       source_file: sourceFile,
@@ -788,12 +861,32 @@ describe('test Polling Tracks with mocked IPFS', function () {
       'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49'
     )
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return ({
+        latest_indexed_block: 10,
+        latest_chain_block: 10,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]}
+      )
+    })
+    libsMock.Track = { getTracksVerbose: getTrackStub }
+
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID,
         transcodedTrackUUID
@@ -843,7 +936,7 @@ describe('test Polling Tracks with real files', function () {
       }
     )
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
       await handleTrackContentRoute(
         logContext,
@@ -868,7 +961,7 @@ describe('test Polling Tracks with real files', function () {
       }
     )
 
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
       await handleTrackContentRoute(
         logContext,
@@ -881,7 +974,7 @@ describe('test Polling Tracks with real files', function () {
   })
 
   it('should successfully upload track + transcode and prune upload artifacts when TranscodingQueue is available', async function () {
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session)
@@ -894,9 +987,9 @@ describe('test Polling Tracks with real files', function () {
       __dirname,
       'testTranscoded320Track.mp3'
     )
-    const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = DiskManager.computeFilePath(transcodedTrackCID)
-    const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
+    const transcodedTrackAssetBuf = await fs.readFile(transcodedTrackAssetPath)
+    const transcodedTrackPath = await DiskManager.computeFilePath(transcodedTrackCID)
+    const transcodedTrackTestBuf = await fs.readFile(transcodedTrackPath)
     assert.deepStrictEqual(
       transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
       0
@@ -907,16 +1000,16 @@ describe('test Polling Tracks with real files', function () {
     // Note - The exact output of track segmentation is deterministic only for a given environment/ffmpeg version
     //    This test may break in the future but at that point we should re-generate the reference segment files.
     assert.deepStrictEqual(trackSegments.length, TestAudiusTrackFileNumSegments)
-    trackSegments.map(function (cid, index) {
-      const cidPath = DiskManager.computeFilePath(cid.multihash)
+    trackSegments.map(async function (cid, index) {
+      const cidPath = await DiskManager.computeFilePath(cid.multihash)
 
       // Ensure file exists
-      assert.ok(fs.existsSync(cidPath))
+      assert.ok(await fs.pathExists(cidPath))
 
       // Ensure file is identical to expected segment file
       const expectedSegmentFilePath = _getTestSegmentFilePathAtIndex(index)
-      const expectedSegmentFileBuf = fs.readFileSync(expectedSegmentFilePath)
-      const returnedSegmentFileBuf = fs.readFileSync(cidPath)
+      const expectedSegmentFileBuf = await fs.readFile(expectedSegmentFilePath)
+      const returnedSegmentFileBuf = await fs.readFile(cidPath)
       assert.deepStrictEqual(
         expectedSegmentFileBuf.compare(returnedSegmentFileBuf),
         0
@@ -983,13 +1076,13 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePath(
       resp.body.data.metadataMultihash
     )
-    assert.ok(fs.existsSync(metadataPath))
+    assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
-    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    let metadataFileData = await fs.readFile(metadataPath, 'utf-8')
     metadataFileData = sortKeys(JSON.parse(metadataFileData))
     assert.deepStrictEqual(metadataFileData, metadata)
 
@@ -1007,7 +1100,7 @@ describe('test Polling Tracks with real files', function () {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('POST /tracks tests', async function () {
     // Upload track content
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
       track_segments: trackSegments,
       transcodedTrackUUID,
@@ -1034,13 +1127,29 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
     const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
+    // Make chain recognize wallet as owner of track
+    const blockchainTrackId = 1
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (trackIds[0] === blockchainTrackId) {
+        trackOwnerId = userId
+      }
+      return [
+        {
+          blocknumber: 99999,
+          owner_id: trackOwnerId
+        }
+      ]
+    })
+    libsMock.Track = { getTracksVerbose: getTrackStub }
+
     // Complete track creation
     await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
@@ -1049,7 +1158,7 @@ describe('test Polling Tracks with real files', function () {
 
   it('parallel track upload', async function () {
     // Upload track content
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
       track_segments: trackSegments,
       transcodedTrackUUID,
@@ -1061,7 +1170,7 @@ describe('test Polling Tracks with real files', function () {
 
     // Upload same track content again
     const { fileUUID: fileUUID2, fileDir: fileDir2 } =
-      saveFileToStorage(testAudioFilePath)
+      await saveFileToStorage(testAudioFilePath)
     const {
       track_segments: track2Segments,
       transcodedTrackUUID: transcodedTrack2UUID,
@@ -1105,13 +1214,37 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
     const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
 
+    // Make chain recognize wallet as owner of track
+    const track1BlockchainId = 1
+    const track2BlockchainId = 2
+    const getTrackStub = sinon.stub().callsFake((_, __, trackIds) => {
+      let trackOwnerId = -1
+      if (
+        trackIds[0] === track1BlockchainId ||
+        trackIds[0] === track2BlockchainId
+      ) {
+        trackOwnerId = userId
+      }
+      return ({
+        latest_chain_block: 20,
+        latest_indexed_block: 20,
+        data: [
+          {
+            blocknumber: 99999,
+            owner_id: trackOwnerId
+          }
+        ]}
+      )
+    })
+    libsMock.Track = { getTracksVerbose: getTrackStub }
+
     // Complete track1 creation
     await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId: track1BlockchainId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
@@ -1124,7 +1257,7 @@ describe('test Polling Tracks with real files', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 2,
+        blockchainTrackId: track2BlockchainId,
         blockNumber: 20,
         metadataFileUUID: track2MetadataFileUUID,
         transcodedTrackUUID: transcodedTrack2UUID

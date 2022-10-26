@@ -51,7 +51,9 @@ function install_pip() {
 function install_requirements() {
     sudo apt-get install -y \
         htop \
-        jq
+        jq \
+        logrotate \
+        moreutils
     pip3 install -r ~/load-test-tools/requirements.txt
     exit
 }

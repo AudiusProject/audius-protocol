@@ -17,7 +17,9 @@ const {
 
 // Base milestone list shared across all types
 // Each type can be configured as needed
-const baseMilestoneList = [10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000]
+const baseMilestoneList = [
+  10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000
+]
 const followerMilestoneList = baseMilestoneList
 // Repost milestone list shared across tracks/albums/playlists
 const repostMilestoneList = baseMilestoneList
@@ -26,19 +28,46 @@ const favoriteMilestoneList = baseMilestoneList
 // Track listen milestone list
 const trackListenMilestoneList = baseMilestoneList
 
-async function indexMilestones (milestones, owners, metadata, listenCounts, audiusLibs, tx) {
+async function indexMilestones(
+  milestones,
+  owners,
+  metadata,
+  listenCounts,
+  audiusLibs,
+  tx
+) {
   // Index follower milestones into notifications table
-  let timestamp = new Date()
-  let blocknumber = metadata.max_block_number
+  const timestamp = new Date()
+  const blocknumber = metadata.max_block_number
 
   // Index follower milestones
-  await updateFollowerMilestones(milestones.follower_counts, blocknumber, timestamp, audiusLibs, tx)
+  await updateFollowerMilestones(
+    milestones.follower_counts,
+    blocknumber,
+    timestamp,
+    audiusLibs,
+    tx
+  )
 
   // Index repost milestones
-  await updateRepostMilestones(milestones.repost_counts, owners, blocknumber, timestamp, audiusLibs, tx)
+  await updateRepostMilestones(
+    milestones.repost_counts,
+    owners,
+    blocknumber,
+    timestamp,
+    audiusLibs,
+    tx
+  )
 
   // Index favorite milestones
-  await updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp, audiusLibs, tx)
+  await updateFavoriteMilestones(
+    milestones.favorite_counts,
+    owners,
+    blocknumber,
+    timestamp,
+    audiusLibs,
+    tx
+  )
 }
 
 /**
@@ -46,16 +75,22 @@ async function indexMilestones (milestones, owners, metadata, listenCounts, audi
  * Follower Milestones
  *
  */
-async function updateFollowerMilestones (followerCounts, blocknumber, timestamp, audiusLibs, tx) {
-  let followersAddedDictionary = followerCounts
-  let usersWithNewFollowers = Object.keys(followersAddedDictionary)
+async function updateFollowerMilestones(
+  followerCounts,
+  blocknumber,
+  timestamp,
+  audiusLibs,
+  tx
+) {
+  const followersAddedDictionary = followerCounts
+  const usersWithNewFollowers = Object.keys(followersAddedDictionary)
   const followerMilestoneNotificationType = notificationTypes.MilestoneFollow
   // Parse follower milestones
-  for (var targetUser of usersWithNewFollowers) {
+  for (const targetUser of usersWithNewFollowers) {
     if (followersAddedDictionary.hasOwnProperty(targetUser)) {
-      let currentFollowerCount = followersAddedDictionary[targetUser]
-      for (var i = followerMilestoneList.length; i >= 0; i--) {
-        let milestoneValue = followerMilestoneList[i]
+      const currentFollowerCount = followersAddedDictionary[targetUser]
+      for (let i = followerMilestoneList.length; i >= 0; i--) {
+        const milestoneValue = followerMilestoneList[i]
         if (currentFollowerCount === milestoneValue) {
           // MilestoneFollow
           // userId=user achieving milestone
@@ -71,7 +106,8 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
             blocknumber,
             timestamp,
             audiusLibs,
-            tx)
+            tx
+          )
           break
         }
       }
@@ -84,17 +120,24 @@ async function updateFollowerMilestones (followerCounts, blocknumber, timestamp,
  * Repost Milestones
  *
  */
-async function updateRepostMilestones (repostCounts, owners, blocknumber, timestamp, audiusLibs, tx) {
-  let tracksReposted = Object.keys(repostCounts.tracks)
-  let albumsReposted = Object.keys(repostCounts.albums)
-  let playlistsReposted = Object.keys(repostCounts.playlists)
+async function updateRepostMilestones(
+  repostCounts,
+  owners,
+  blocknumber,
+  timestamp,
+  audiusLibs,
+  tx
+) {
+  const tracksReposted = Object.keys(repostCounts.tracks)
+  const albumsReposted = Object.keys(repostCounts.albums)
+  const playlistsReposted = Object.keys(repostCounts.playlists)
   const repostMilestoneNotificationType = notificationTypes.MilestoneRepost
 
-  for (var repostedTrackId of tracksReposted) {
-    let trackOwnerId = owners.tracks[repostedTrackId]
-    let trackRepostCount = repostCounts.tracks[repostedTrackId]
-    for (var i = repostMilestoneList.length; i >= 0; i--) {
-      let milestoneValue = repostMilestoneList[i]
+  for (const repostedTrackId of tracksReposted) {
+    const trackOwnerId = owners.tracks[repostedTrackId]
+    const trackRepostCount = repostCounts.tracks[repostedTrackId]
+    for (let i = repostMilestoneList.length; i >= 0; i--) {
+      const milestoneValue = repostMilestoneList[i]
       if (trackRepostCount === milestoneValue) {
         await _processMilestone(
           repostMilestoneNotificationType,
@@ -112,11 +155,11 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
     }
   }
 
-  for (var repostedAlbumId of albumsReposted) {
-    let albumOwnerId = owners.albums[repostedAlbumId]
-    let albumRepostCount = repostCounts.albums[repostedAlbumId]
-    for (var j = repostMilestoneList.length; j >= 0; j--) {
-      let milestoneValue = repostMilestoneList[j]
+  for (const repostedAlbumId of albumsReposted) {
+    const albumOwnerId = owners.albums[repostedAlbumId]
+    const albumRepostCount = repostCounts.albums[repostedAlbumId]
+    for (let j = repostMilestoneList.length; j >= 0; j--) {
+      const milestoneValue = repostMilestoneList[j]
       if (albumRepostCount === milestoneValue) {
         await _processMilestone(
           repostMilestoneNotificationType,
@@ -134,11 +177,11 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
     }
   }
 
-  for (var repostedPlaylistId of playlistsReposted) {
-    let playlistOwnerId = owners.playlists[repostedPlaylistId]
-    let playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
-    for (var k = repostMilestoneList.length; k >= 0; k--) {
-      let milestoneValue = repostMilestoneList[k]
+  for (const repostedPlaylistId of playlistsReposted) {
+    const playlistOwnerId = owners.playlists[repostedPlaylistId]
+    const playlistRepostCount = repostCounts.playlists[repostedPlaylistId]
+    for (let k = repostMilestoneList.length; k >= 0; k--) {
+      const milestoneValue = repostMilestoneList[k]
       if (playlistRepostCount === milestoneValue) {
         await _processMilestone(
           repostMilestoneNotificationType,
@@ -162,17 +205,24 @@ async function updateRepostMilestones (repostCounts, owners, blocknumber, timest
  * Favorites Milestones
  *
  */
-async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, timestamp, audiusLibs, tx) {
-  let tracksFavorited = Object.keys(favoriteCounts.tracks)
-  let albumsFavorited = Object.keys(favoriteCounts.albums)
-  let playlistsFavorited = Object.keys(favoriteCounts.playlists)
+async function updateFavoriteMilestones(
+  favoriteCounts,
+  owners,
+  blocknumber,
+  timestamp,
+  audiusLibs,
+  tx
+) {
+  const tracksFavorited = Object.keys(favoriteCounts.tracks)
+  const albumsFavorited = Object.keys(favoriteCounts.albums)
+  const playlistsFavorited = Object.keys(favoriteCounts.playlists)
   const favoriteMilestoneNotificationType = notificationTypes.MilestoneFavorite
 
-  for (var favoritedTrackId of tracksFavorited) {
-    let trackOwnerId = owners.tracks[favoritedTrackId]
-    let trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
-    for (var i = favoriteMilestoneList.length; i >= 0; i--) {
-      let milestoneValue = favoriteMilestoneList[i]
+  for (const favoritedTrackId of tracksFavorited) {
+    const trackOwnerId = owners.tracks[favoritedTrackId]
+    const trackFavoriteCount = favoriteCounts.tracks[favoritedTrackId]
+    for (let i = favoriteMilestoneList.length; i >= 0; i--) {
+      const milestoneValue = favoriteMilestoneList[i]
       if (trackFavoriteCount === milestoneValue) {
         await _processMilestone(
           favoriteMilestoneNotificationType,
@@ -190,11 +240,11 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
     }
   }
 
-  for (var favoritedAlbumId of albumsFavorited) {
-    let albumOwnerId = owners.albums[favoritedAlbumId]
-    let albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
-    for (var j = favoriteMilestoneList.length; j >= 0; j--) {
-      let milestoneValue = favoriteMilestoneList[j]
+  for (const favoritedAlbumId of albumsFavorited) {
+    const albumOwnerId = owners.albums[favoritedAlbumId]
+    const albumFavoriteCount = favoriteCounts.albums[favoritedAlbumId]
+    for (let j = favoriteMilestoneList.length; j >= 0; j--) {
+      const milestoneValue = favoriteMilestoneList[j]
       if (albumFavoriteCount === milestoneValue) {
         await _processMilestone(
           favoriteMilestoneNotificationType,
@@ -212,11 +262,11 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
     }
   }
 
-  for (var favoritedPlaylistId of playlistsFavorited) {
-    let playlistOwnerId = owners.playlists[favoritedPlaylistId]
-    let playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
-    for (var k = favoriteMilestoneList.length; k >= 0; k--) {
-      let milestoneValue = favoriteMilestoneList[k]
+  for (const favoritedPlaylistId of playlistsFavorited) {
+    const playlistOwnerId = owners.playlists[favoritedPlaylistId]
+    const playlistFavoriteCount = favoriteCounts.playlists[favoritedPlaylistId]
+    for (let k = favoriteMilestoneList.length; k >= 0; k--) {
+      const milestoneValue = favoriteMilestoneList[k]
       if (playlistFavoriteCount === milestoneValue) {
         await _processMilestone(
           favoriteMilestoneNotificationType,
@@ -240,16 +290,27 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
  * Listens Milestones
  *
  */
-async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) { // eslint-disable-line no-unused-vars
+async function updateTrackListenMilestones(
+  listenCounts,
+  blocknumber,
+  timestamp,
+  audiusLibs,
+  tx
+) {
+  // eslint-disable-line no-unused-vars
   const listensMilestoneNotificationType = notificationTypes.MilestoneListen
 
-  for (var entry of listenCounts) {
-    let trackListenCount = Number.parseInt(entry.listenCount)
-    for (var i = trackListenMilestoneList.length; i >= 0; i--) {
-      let milestoneValue = trackListenMilestoneList[i]
-      if (trackListenCount === milestoneValue || (trackListenCount >= milestoneValue && trackListenCount <= milestoneValue * 1.1)) {
-        let trackId = entry.trackId
-        let ownerId = entry.owner
+  for (const entry of listenCounts) {
+    const trackListenCount = Number.parseInt(entry.listenCount)
+    for (let i = trackListenMilestoneList.length; i >= 0; i--) {
+      const milestoneValue = trackListenMilestoneList[i]
+      if (
+        trackListenCount === milestoneValue ||
+        (trackListenCount >= milestoneValue &&
+          trackListenCount <= milestoneValue * 1.1)
+      ) {
+        const trackId = entry.trackId
+        const ownerId = entry.owner
         await _processMilestone(
           listensMilestoneNotificationType,
           ownerId,
@@ -267,25 +328,40 @@ async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp
   }
 }
 
-async function _processMilestone (milestoneType, userId, entityId, entityType, milestoneValue, blocknumber, timestamp, audiusLibs, tx) {
+async function _processMilestone(
+  milestoneType,
+  userId,
+  entityId,
+  entityType,
+  milestoneValue,
+  blocknumber,
+  timestamp,
+  audiusLibs,
+  tx
+) {
   // Skip notification based on user configuration
-  const { notifyMobile, notifyBrowserPush } = await shouldNotifyUser(userId, 'milestonesAndAchievements')
+  const { notifyMobile, notifyBrowserPush } = await shouldNotifyUser(
+    userId,
+    'milestonesAndAchievements'
+  )
 
   let newMilestone = false
-  let existingMilestoneQuery = await models.Notification.findAll({
+  const existingMilestoneQuery = await models.Notification.findAll({
     where: {
       userId: userId,
       type: milestoneType,
       entityId: entityId
     },
-    include: [{
-      model: models.NotificationAction,
-      as: 'actions',
-      where: {
-        actionEntityType: entityType,
-        actionEntityId: milestoneValue
+    include: [
+      {
+        model: models.NotificationAction,
+        as: 'actions',
+        where: {
+          actionEntityType: entityType,
+          actionEntityId: milestoneValue
+        }
       }
-    }],
+    ],
     transaction: tx
   })
 
@@ -296,14 +372,17 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     // entityId=Entity reaching milestone, one of track/collection
     // actionEntityType=Entity achieving milestone, can be track/collection
     // actionEntityId=Milestone achieved
-    let createMilestoneTx = await models.Notification.create({
-      userId: userId,
-      type: milestoneType,
-      entityId: entityId,
-      blocknumber,
-      timestamp
-    }, { transaction: tx })
-    let notificationId = createMilestoneTx.id
+    const createMilestoneTx = await models.Notification.create(
+      {
+        userId: userId,
+        type: milestoneType,
+        entityId: entityId,
+        blocknumber,
+        timestamp
+      },
+      { transaction: tx }
+    )
+    const notificationId = createMilestoneTx.id
     await models.NotificationAction.findOrCreate({
       where: {
         notificationId,
@@ -313,30 +392,34 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       },
       transaction: tx
     })
-    logger.info(`processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`)
+    logger.info(
+      `processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`
+    )
 
     // Destroy any unread milestone notifications of this type + entity
-    let milestonesToBeDeleted = await models.Notification.findAll({
+    const milestonesToBeDeleted = await models.Notification.findAll({
       where: {
         userId: userId,
         type: milestoneType,
         entityId: entityId,
         isRead: false
       },
-      include: [{
-        model: models.NotificationAction,
-        as: 'actions',
-        where: {
-          actionEntityType: entityType,
-          actionEntityId: {
-            [models.Sequelize.Op.not]: milestoneValue
+      include: [
+        {
+          model: models.NotificationAction,
+          as: 'actions',
+          where: {
+            actionEntityType: entityType,
+            actionEntityId: {
+              [models.Sequelize.Op.not]: milestoneValue
+            }
           }
         }
-      }]
+      ]
     })
 
     if (milestonesToBeDeleted) {
-      for (var milestoneToDelete of milestonesToBeDeleted) {
+      for (const milestoneToDelete of milestonesToBeDeleted) {
         logger.info(`Deleting milestone: ${milestoneToDelete.id}`)
         let destroyTx = await models.NotificationAction.destroy({
           where: {
@@ -364,31 +447,46 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       entityId: entityId,
       blocknumber,
       timestamp,
-      actions: [{
-        actionEntityType: entityType,
-        actionEntityId: milestoneValue,
-        blocknumber
-      }]
+      actions: [
+        {
+          actionEntityType: entityType,
+          actionEntityId: milestoneValue,
+          blocknumber
+        }
+      ]
     }
 
-    const metadata = await fetchNotificationMetadata(audiusLibs, [milestoneValue], [notifStub])
+    const metadata = await fetchNotificationMetadata(
+      audiusLibs,
+      [milestoneValue],
+      [notifStub]
+    )
     const mapNotification = notificationResponseMap[milestoneType]
     try {
-      let msgGenNotif = {
+      const msgGenNotif = {
         ...notifStub,
-        ...(mapNotification(notifStub, metadata))
+        ...mapNotification(notifStub, metadata)
       }
-      logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
-      const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
+      logger.debug(
+        'processMilestone - About to generate message for milestones push notification',
+        msgGenNotif,
+        metadata
+      )
+      const msg =
+        pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
       logger.debug(`processMilestone - message: ${msg}`)
       const title = notificationResponseTitleMap[notificationTypes.Milestone]()
-      let types = []
+      const types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)
       await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing
-      logger.info(`Error adding push notification to buffer: ${e}. notifStub ${JSON.stringify(notifStub)}`)
+      logger.info(
+        `Error adding push notification to buffer: ${e}. notifStub ${JSON.stringify(
+          notifStub
+        )}`
+      )
     }
   }
 }

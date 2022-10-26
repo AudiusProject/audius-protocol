@@ -56,6 +56,10 @@
                 "is_deactivated": {
                     "type": "boolean",
                     "default": false
+                },
+                "artist_pick_track_id": {
+                    "type": ["integer", "null"],
+                    "default": null
                 }
             },
             "required": [
@@ -65,7 +69,8 @@
                 "location",
                 "name",
                 "profile_picture",
-                "profile_picture_sizes"
+                "profile_picture_sizes",
+                "artist_pick_track_id"
             ],
             "title": "User"
         },

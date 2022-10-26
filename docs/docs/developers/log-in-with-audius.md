@@ -19,7 +19,7 @@ Log In with Audius lets you retrieve and verify a user's Audius profile informat
 import Web3 from "web3";
 import { sdk } from "@audius/sdk";
 
-window.Web3 = Web3
+window.Web3 = Web3;
 
 const audiusSdk = sdk({ appName: "Name of your app goes here" });
 
@@ -76,7 +76,7 @@ audiusSdk.oauth.init(
     /**
      `res` will contain the following user information:
       {
-        userId: number; // unique Audius user identifier
+        userId: string; // unique Audius user identifier
         email: string;
         name: string; // user's display name
         handle: string;

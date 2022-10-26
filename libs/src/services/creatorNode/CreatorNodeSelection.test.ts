@@ -148,6 +148,41 @@ describe('test CreatorNodeSelection', () => {
     assert(returnedHealthyServices.size === 0)
   })
 
+  it('Does not select healthy: false node even if status code is 200', async function () {
+    const healthy = 'https://healthy.audius.co'
+    nock(healthy)
+      .get('/health_check/verbose')
+      .reply(200, { data: defaultHealthCheckData })
+
+    const healthyButSlow = 'https://healthybutslow.audius.co'
+    nock(healthyButSlow)
+      .get('/health_check/verbose')
+      .delay(100)
+      .reply(200, { data: defaultHealthCheckData })
+
+    const notHealthyButReturns200 = 'https://notHealthyButReturns200.audius.co'
+    nock(notHealthyButReturns200)
+      .get('/health_check/verbose')
+      .delay(200)
+      .reply(200, { data: { ...defaultHealthCheckData, healthy: false } })
+
+    const cns = new CreatorNodeSelection({
+      creatorNode: mockCreatorNode,
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [healthy, healthyButSlow, notHealthyButReturns200],
+        '1.2.3'
+      ),
+      blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+    console.log('services', services)
+    assert.deepStrictEqual(primary, healthy)
+    assert.deepStrictEqual(secondaries.length, 1)
+    assert.deepStrictEqual(secondaries[0], healthyButSlow)
+  })
+
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)

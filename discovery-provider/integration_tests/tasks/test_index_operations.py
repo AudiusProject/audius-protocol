@@ -2,7 +2,6 @@ import json
 import secrets
 from contextlib import contextmanager
 
-import ipfshttpclient
 import pytest
 import src.utils.multihash
 from chance import chance
@@ -27,10 +26,6 @@ track_metadata_json_file = "integration_tests/res/test_track_metadata.json"
 def seed_contract_data(task, contracts, web3):
     user_factory_contract = contracts["user_factory_contract"]
     track_factory_contract = contracts["track_factory_contract"]
-
-    ipfs_peer_host = task.shared_config["ipfs"]["host"]
-    ipfs_peer_port = task.shared_config["ipfs"]["port"]
-    ipfs = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
 
     # Retrieve web3 instance from fixture
     chain_id = web3.net.version
@@ -79,9 +74,7 @@ def seed_contract_data(task, contracts, web3):
     new_user_args = tx_new_user_info[0].args
     user_id_from_event = int(new_user_args._userId)
 
-    # Add audio file to ipfs node
-    res = ipfs.add(test_file)
-    test_audio_file_hash = res["Hash"]
+    test_audio_file_hash = "Qmb372yhT7bKWxm5VzRpySgFPAhjnQuC6FNStTZww6ULVD"
     test_track_segments = [{"multihash": test_audio_file_hash, "duration": 28060}]
 
     # Create track metadata object
@@ -105,15 +98,15 @@ def seed_contract_data(task, contracts, web3):
         "release_date": str(chance.date()),
         "file_type": "mp3",
         "track_segments": test_track_segments,
+        "is_premium": False,
+        "premium_conditions": None,
     }
 
     # dump metadata to file
     with open(track_metadata_json_file, "w") as f:
         json.dump(track_metadata, f)
 
-    # add track metadata to ipfs
-    metadata_res = ipfs.add(track_metadata_json_file)
-    metadata_hash = metadata_res["Hash"]
+    metadata_hash = "QmQgUzCB38dc1Qb1waQcW75PgBB2fXr4gw2m9JBvGYUdka"
 
     # get track metadata multihash
     metadata_decoded = src.utils.multihash.from_b58_string(metadata_hash)
@@ -251,13 +244,13 @@ def test_index_operations_metadata_fetch_error(
     celery_app, celery_app_contracts, mocker
 ):
     """
-    Confirm indexer throws IndexingError when ipfs metadata fetch throws an error
+    Confirm indexer throws IndexingError when metadata fetch throws an error
     """
     task = celery_app.celery.tasks["update_discovery_provider"]
     db = task.db
     web3 = celery_app_contracts["web3"]
 
-    # patch ipfs metadata event to raise an exception
+    # patch metadata event to raise an exception
     def fetch_metadata_stub(*_, should_fetch_from_replica_set):
         raise Exception("Broken fetch")
 

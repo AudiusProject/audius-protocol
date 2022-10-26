@@ -94,7 +94,7 @@ npm install web3
 
 ```js
 import Web3 from 'web3'
-window.Web3 = Web3
+window.Web3 = Web3;
 ```
 
 #### 3. Initialize the SDK
@@ -118,7 +118,7 @@ console.log(tracks, 'Tracks fetched!')
 import Web3 from 'web3'
 import { sdk } from '@audius/sdk'
 
-window.Web3 = Web3
+window.Web3 = Web3;
 const audiusSdk = sdk({ appName: 'My Example App' })
 const tracks = await audiusSdk.discoveryNode.getTracks()
 console.log(tracks, 'Tracks fetched!')

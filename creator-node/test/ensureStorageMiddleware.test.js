@@ -1,7 +1,7 @@
 const request = require('supertest')
 const assert = require('assert')
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 
 const BlacklistManager = require('../src/blacklistManager')
 const { getApp } = require('./lib/app')
@@ -54,7 +54,7 @@ describe('test ensureStorageMiddleware', () => {
     assert(storagePathUsed === '100')
 
     const testPicture = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
-    let file = fs.readFileSync(testPicture)
+    let file = await fs.readFile(testPicture)
     const resp = await request(app)
       .post('/image_upload')
       .attach('file', file, { filename: 'abel.jpg' })
@@ -91,7 +91,7 @@ describe('test ensureStorageMiddleware', () => {
     assert(storagePathUsed === '100')
 
     const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
-    const file = fs.readFileSync(testAudioFilePath)
+    const file = await fs.readFile(testAudioFilePath)
     const resp = await request(app)
       .post('/track_content_async')
       .attach('file', file, { filename: 'STARBOY.mp3' })

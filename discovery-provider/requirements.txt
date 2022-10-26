@@ -23,7 +23,6 @@ redis==3.2.0
 pytest==6.2.5
 SQLAlchemy-Utils==0.37.6
 chance==0.110
-ipfshttpclient==0.8.0a2
 pytest-cov==2.6.0
 pytest-dotenv==0.5.2
 elasticsearch==8.1.2
@@ -40,8 +39,17 @@ psutil==5.8.0
 pytz==2021.1
 prometheus-client==0.13.1
 click==8.0.4
-numpy==1.21.4
+numpy==1.20.3
 datasketch==1.5.7
+opentelemetry-api==1.12.0
+opentelemetry-instrumentation==0.33b0
+opentelemetry-instrumentation-flask==0.33b0
+opentelemetry-instrumentation-requests==0.33b0
+opentelemetry-instrumentation-logging==0.33b0
+opentelemetry-sdk==1.12.0
+opentelemetry-semantic-conventions==0.33b0
+opentelemetry-util-http==0.33b0
+lxml==4.9.1
 
 # Solana support
 base58==2.1.0
@@ -54,7 +62,6 @@ pycparser==2.20
 PyNaCl==1.4.0
 requests==2.25.1
 aiohttp==3.8.1
-six==1.16.0
 solana==0.23.1
 typing-extensions==3.10.0.0
 urllib3==1.26.3

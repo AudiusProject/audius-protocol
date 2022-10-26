@@ -3,14 +3,22 @@ const sinon = require('sinon')
 
 const uuid = require('uuid')
 
-const AsyncProcessingQueue = require('../src/AsyncProcessingQueue')
+const { getServiceRegistryMock } = require('./lib/app')
+const {
+  AsyncProcessingQueue,
+  ProcessNames
+} = require('../src/AsyncProcessingQueue')
 
 describe('test AsyncProcessingQueue', function () {
   let apq, libsMock, doneMock
+  const serviceRegistryMock = getServiceRegistryMock()
   before(function () {
     libsMock = {}
     doneMock = () => {}
-    apq = new AsyncProcessingQueue(libsMock)
+    apq = new AsyncProcessingQueue(
+      libsMock,
+      serviceRegistryMock.prometheusRegistry
+    )
   })
 
   afterEach(function () {
@@ -22,7 +30,7 @@ describe('test AsyncProcessingQueue', function () {
       .stub(apq, 'monitorProgress')
       .callsFake(async (taskName, taskFn, data) => {
         switch (taskName) {
-          case apq.PROCESS_NAMES.transcodeHandOff: {
+          case ProcessNames.transcodeHandOff: {
             return {}
           }
         }
@@ -36,7 +44,7 @@ describe('test AsyncProcessingQueue', function () {
     await apq.processTask(
       {
         data: {
-          task: apq.PROCESS_NAMES.transcodeHandOff,
+          task: ProcessNames.transcodeHandOff,
           logContext: {
             test: 'test AsyncProcessingQueue',
             requestID: uuid.v4()
@@ -54,7 +62,7 @@ describe('test AsyncProcessingQueue', function () {
       .stub(apq, 'monitorProgress')
       .callsFake(async (taskName, taskFn, data) => {
         switch (taskName) {
-          case apq.PROCESS_NAMES.transcodeHandOff: {
+          case ProcessNames.transcodeHandOff: {
             return {
               transcodeFilePath: 'some/path',
               segmentFileNames: ['name1', 'name2']
@@ -71,7 +79,7 @@ describe('test AsyncProcessingQueue', function () {
     await apq.processTask(
       {
         data: {
-          task: apq.PROCESS_NAMES.transcodeHandOff,
+          task: ProcessNames.transcodeHandOff,
           logContext: {
             test: 'test AsyncProcessingQueue',
             requestID: uuid.v4()

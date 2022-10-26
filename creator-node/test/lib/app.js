@@ -1,18 +1,22 @@
+import { initializeApp } from '../../src/app'
+import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
-const SyncQueue = require('../../src/services/sync/syncQueue')
-const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
+const { SyncQueue } = require('../../src/services/sync/syncQueue')
+const {
+  TrustedNotifierManager
+} = require('../../src/services/TrustedNotifierManager')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
 
-async function getApp(
+export async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
-  spId = null
+  spId = 1
 ) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
@@ -25,16 +29,19 @@ async function getApp(
 
   if (spId) nodeConfig.set('spID', spId)
 
+  const prometheusRegistry = new PrometheusRegistry()
+  const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
   const mockServiceRegistry = {
     libs: libsClient,
     blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    asyncProcessingQueue: new AsyncProcessingQueueMock(),
+    asyncProcessingQueue: apq,
+    imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
-    prometheusRegistry: new PrometheusRegistry()
+    prometheusRegistry
   }
 
   // Update the import to be the mocked ServiceRegistry instance
@@ -45,12 +52,12 @@ async function getApp(
   // If one needs to set mock settings, pass in a callback to set it before initializing app
   if (setMockFn) setMockFn()
 
-  const appInfo = require('../../src/app')(8000, mockServiceRegistry)
+  const appInfo = initializeApp(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry
   return appInfo
 }
 
-function getServiceRegistryMock(libsClient, blacklistManager) {
+export function getServiceRegistryMock(libsClient, blacklistManager) {
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
@@ -58,11 +65,12 @@ function getServiceRegistryMock(libsClient, blacklistManager) {
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     nodeConfig,
-    initLibs: async function () {}
+    initLibs: async function () {},
+    prometheusRegistry: new PrometheusRegistry()
   }
 }
 
-function clearRequireCache() {
+export function clearRequireCache() {
   console.log('DELETING CACHE')
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool

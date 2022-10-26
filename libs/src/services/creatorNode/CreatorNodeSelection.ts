@@ -14,7 +14,7 @@ import {
   Logger
 } from '../../utils'
 import { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } from './constants'
-import type { MonitoringCallbacks } from './CreatorNode'
+import type { MonitoringCallbacks } from '../types'
 
 type Timeout = number | null
 
@@ -364,7 +364,11 @@ export class CreatorNodeSelection extends ServiceSelection {
       sortByVersion: false,
       currentVersion: this.currentVersion,
       timeout: this.timeout,
-      equivalencyDelta: this.equivalencyDelta
+      equivalencyDelta: this.equivalencyDelta,
+      headers: {
+        'User-Agent':
+          'Axios - @audius/sdk - CreatorNodeSelection.ts#_performHealthChecks'
+      }
     })
 
     const healthyServices = healthCheckedServices.filter((resp) => {
@@ -383,6 +387,9 @@ export class CreatorNodeSelection extends ServiceSelection {
           this.currentVersion as string,
           resp.response.data.data.version
         )
+
+        const { healthy: isHealthyStatus } = resp.response.data.data
+
         const { storagePathSize, storagePathUsed, maxStorageUsedPercent } =
           resp.response.data.data
         if (maxStorageUsedPercent) {
@@ -396,7 +403,8 @@ export class CreatorNodeSelection extends ServiceSelection {
           storagePathSize,
           storagePathUsed
         )
-        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
+        isHealthy =
+          isUp && versionIsUpToDate && hasEnoughStorage && isHealthyStatus
       }
 
       if (!isHealthy) {
@@ -428,8 +436,7 @@ export class CreatorNodeSelection extends ServiceSelection {
           const url = new URL(check.request.url)
           const data = check.response.data.data
           try {
-            // @ts-expect-error we make a check that it exists above, not sure why this isn't caught
-            this.creatorNode.monitoringCallbacks.healthCheck({
+            this.creatorNode.monitoringCallbacks.healthCheck?.({
               endpoint: url.origin,
               pathname: url.pathname,
               searchParams: url.searchParams,

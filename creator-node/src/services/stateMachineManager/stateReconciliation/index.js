@@ -1,23 +1,27 @@
 const config = require('../../../config')
-const {
-  QUEUE_HISTORY,
-  QUEUE_NAMES,
-  JOB_NAMES,
-  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
-  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
-} = require('../stateMachineConstants')
-const { makeQueue, registerQueueEvents } = require('../stateMachineUtils')
+const { QUEUE_HISTORY, QUEUE_NAMES } = require('../stateMachineConstants')
+const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
+const { clusterUtils } = require('../../../utils')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
+const {
+  default: recoverOrphanedDataJobProcessor
+} = require('./recoverOrphanedData.jobProcessor')
 
-const reconciliationLogger = createChildLogger(baseLogger, {
-  queue: QUEUE_NAMES.STATE_RECONCILIATION
+const recurringSyncLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.RECURRING_SYNC
 })
-
 const manualSyncLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.MANUAL_SYNC
+})
+const updateReplicaSetLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.UPDATE_REPLICA_SET
+})
+
+const recoverOrphanedDataLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.RECOVER_ORPHANED_DATA
 })
 
 /**
@@ -27,132 +31,126 @@ const manualSyncLogger = createChildLogger(baseLogger, {
  */
 class StateReconciliationManager {
   async init(prometheusRegistry) {
-    const stateReconciliationQueue = makeQueue({
-      redisHost: config.get('redisHost'),
-      redisPort: config.get('redisPort'),
-      name: QUEUE_NAMES.STATE_RECONCILIATION,
-      removeOnComplete: QUEUE_HISTORY.STATE_RECONCILIATION,
-      removeOnFail: QUEUE_HISTORY.STATE_RECONCILIATION,
-      lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
-    })
-
-    const manualSyncQueue = makeQueue({
-      redisHost: config.get('redisHost'),
-      redisPort: config.get('redisPort'),
+    const { queue: manualSyncQueue } = makeQueue({
       name: QUEUE_NAMES.MANUAL_SYNC,
+      processor: this.makeProcessJob(
+        handleSyncRequestJobProcessor,
+        manualSyncLogger,
+        prometheusRegistry
+      ).bind(this),
+      logger: manualSyncLogger,
+      globalConcurrency: config.get('maxManualRequestSyncJobConcurrency'),
       removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
       removeOnFail: QUEUE_HISTORY.MANUAL_SYNC,
-      lockDuration: MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
+      prometheusRegistry
     })
 
-    this.registerQueueEventHandlersAndJobProcessors({
-      stateReconciliationQueue,
-      manualSyncQueue,
-      processManualSync:
-        this.makeProcessManualSyncJob(prometheusRegistry).bind(this),
-      processRecurringSync:
-        this.makeProcessRecurringSyncJob(prometheusRegistry).bind(this),
-      processUpdateReplicaSet:
-        this.makeProcessUpdateReplicaSetJob(prometheusRegistry).bind(this)
+    const { queue: recurringSyncQueue } = makeQueue({
+      name: QUEUE_NAMES.RECURRING_SYNC,
+      processor: this.makeProcessJob(
+        handleSyncRequestJobProcessor,
+        recurringSyncLogger,
+        prometheusRegistry
+      ).bind(this),
+      logger: recurringSyncLogger,
+      globalConcurrency: config.get('maxRecurringRequestSyncJobConcurrency'),
+      removeOnComplete: QUEUE_HISTORY.RECURRING_SYNC,
+      removeOnFail: QUEUE_HISTORY.RECURRING_SYNC,
+      prometheusRegistry
+    })
+
+    if (config.get('maxRecurringRequestSyncJobConcurrency') === 0) {
+      await recurringSyncQueue.pause()
+    }
+
+    const { queue: updateReplicaSetQueue } = makeQueue({
+      name: QUEUE_NAMES.UPDATE_REPLICA_SET,
+      processor: this.makeProcessJob(
+        updateReplicaSetJobProcessor,
+        updateReplicaSetLogger,
+        prometheusRegistry
+      ).bind(this),
+      logger: updateReplicaSetLogger,
+      globalConcurrency: config.get('maxUpdateReplicaSetJobConcurrency'),
+      removeOnComplete: QUEUE_HISTORY.UPDATE_REPLICA_SET,
+      removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
+      prometheusRegistry
+    })
+
+    if (config.get('maxUpdateReplicaSetJobConcurrency') === 0) {
+      await updateReplicaSetQueue.pause()
+    }
+
+    const { queue: recoverOrphanedDataQueue } = makeQueue({
+      name: QUEUE_NAMES.RECOVER_ORPHANED_DATA,
+      processor: this.makeProcessJob(
+        recoverOrphanedDataJobProcessor,
+        recoverOrphanedDataLogger,
+        prometheusRegistry
+      ).bind(this),
+      logger: recoverOrphanedDataLogger,
+      removeOnComplete: QUEUE_HISTORY.RECOVER_ORPHANED_DATA,
+      removeOnFail: QUEUE_HISTORY.RECOVER_ORPHANED_DATA,
+      prometheusRegistry,
+      limiter: {
+        // Bull doesn't allow either of these to be set to 0, so we'll pause the queue later if the jobs per interval is 0
+        max:
+          config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
+        duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
+      },
+      onFailCallback: (job, error, _prev) => {
+        const logger = createChildLogger(recoverOrphanedDataLogger, {
+          jobId: job?.id || 'unknown'
+        })
+        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
+        // This is a recurring job that re-enqueues itself on success, so we want to also re-enqueue on failure
+        const {
+          data: { discoveryNodeEndpoint }
+        } = job
+        recoverOrphanedDataQueue.add('retry-after-fail', {
+          discoveryNodeEndpoint
+        })
+      }
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await stateReconciliationQueue.clean({ force: true })
-    await manualSyncQueue.clean({ force: true })
+    if (clusterUtils.isThisWorkerInit()) {
+      await manualSyncQueue.obliterate({ force: true })
+      await recurringSyncQueue.obliterate({ force: true })
+      await updateReplicaSetQueue.obliterate({ force: true })
+      await recoverOrphanedDataQueue.obliterate({ force: true })
+    }
 
     return {
-      stateReconciliationQueue,
-      manualSyncQueue
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
     }
   }
 
   /**
-   * Registers event handlers for logging and job success/failure.
-   * @param {Object} params.queue the queue to register events for
-   * @param {Object} params.stateReconciliationQueue the state reconciliation queue
-   * @param {Object} params.manualSyncQueue the manual sync queue
-   * @param {Function<job>} params.processManualSync the function to call when processing a manual sync job from the queue
-   * @param {Function<job>} params.processRecurringSync the function to call when processing a recurring sync job from the queue
-   * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
+   * Adds a job that will find+reconcile data on nodes outside of a user's replica set.
+   * Future jobs are added to the queue as a result of this initial job succeeding or failing to complete.
+   * @param {BullQueue} queue the queue that processes jobs to recover orphaned data
+   * @param {string} discoveryNodeEndpoint the IP address or URL of a Discovery Node
    */
-  registerQueueEventHandlersAndJobProcessors({
-    stateReconciliationQueue,
-    manualSyncQueue,
-    processManualSync,
-    processRecurringSync,
-    processUpdateReplicaSet
-  }) {
-    // Add handlers for logging
-    registerQueueEvents(stateReconciliationQueue, reconciliationLogger)
-    registerQueueEvents(manualSyncQueue, manualSyncLogger)
+  async startRecoverOrphanedDataQueue(queue, discoveryNodeEndpoint) {
+    // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
+    // pausing the queue and not enqueuing the first job
+    if (config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') === 0) {
+      await queue.pause()
+      return
+    }
 
-    // Log when a job fails to complete
-    stateReconciliationQueue.on('failed', (job, err) => {
-      const logger = createChildLogger(reconciliationLogger, {
-        jobId: job?.id || 'unknown'
-      })
-      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
-    })
-    manualSyncQueue.on('failed', (job, err) => {
-      const logger = createChildLogger(manualSyncLogger, {
-        jobId: job?.id || 'unknown'
-      })
-      logger.error(`Job failed to complete. ID=${job?.id}. Error=${err}`)
-    })
-
-    // Register the logic that gets executed to process each new job from the queue
-    manualSyncQueue.process(
-      JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
-      config.get('maxManualRequestSyncJobConcurrency'),
-      processManualSync
-    )
-    stateReconciliationQueue.process(
-      JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
-      config.get('maxRecurringRequestSyncJobConcurrency'),
-      processRecurringSync
-    )
-    stateReconciliationQueue.process(
-      JOB_NAMES.UPDATE_REPLICA_SET,
-      1 /** concurrency */,
-      processUpdateReplicaSet
-    )
+    // Enqueue first recoverOrphanedData job after a delay. This job requeues itself upon completion or failure
+    if (clusterUtils.isThisWorkerInit()) {
+      await queue.add('first-job', { discoveryNodeEndpoint })
+    }
   }
 
-  /*
-   * Job processor boilerplate
-   */
-
-  makeProcessManualSyncJob(prometheusRegistry) {
-    return async (job) =>
-      processJob(
-        JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
-        job,
-        handleSyncRequestJobProcessor,
-        manualSyncLogger,
-        prometheusRegistry
-      )
-  }
-
-  makeProcessRecurringSyncJob(prometheusRegistry) {
-    return async (job) =>
-      processJob(
-        JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
-        job,
-        handleSyncRequestJobProcessor,
-        reconciliationLogger,
-        prometheusRegistry
-      )
-  }
-
-  makeProcessUpdateReplicaSetJob(prometheusRegistry) {
-    return async (job) =>
-      processJob(
-        JOB_NAMES.UPDATE_REPLICA_SET,
-        job,
-        updateReplicaSetJobProcessor,
-        reconciliationLogger,
-        prometheusRegistry
-      )
+  makeProcessJob(processor, logger, prometheusRegistry) {
+    return async (job) => processJob(job, processor, logger, prometheusRegistry)
   }
 }
 

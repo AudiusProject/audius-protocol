@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+import enum
 import logging
 from typing import Tuple
 
@@ -9,7 +10,6 @@ from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
-from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -19,9 +19,13 @@ from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
+from src.premium_content.signature import get_premium_content_signature
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
-from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
 
@@ -103,6 +107,23 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
         order_bys.append(attr)
 
     return base_query.order_by(*order_bys)
+
+
+class SortMethod(str, enum.Enum):
+    title = "title"  # type: ignore
+    artist_name = "artist_name"
+    release_date = "release_date"
+    last_listen_date = "last_listen_date"
+    added_date = "added_date"
+    length = "length"
+    plays = "plays"
+    reposts = "reposts"
+    saves = "saves"
+
+
+class SortDirection(str, enum.Enum):
+    asc = "asc"
+    desc = "desc"
 
 
 # given list of user ids and corresponding users, populates each user object with:
@@ -318,29 +339,33 @@ def get_track_play_count_dict(session, track_ids):
 #   repost_count, save_count
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
-def populate_track_metadata(session, track_ids, tracks, current_user_id):
-    # build dict of track id --> repost count
-    counts = (
-        session.query(
-            AggregateTrack.track_id,
-            AggregateTrack.repost_count,
-            AggregateTrack.save_count,
+#   if current_user_id available and track is premium and user has access, populates premium_content_signature
+def populate_track_metadata(
+    session, track_ids, tracks, current_user_id, track_has_aggregates=False
+):
+    if not track_has_aggregates:
+        # build dict of track id --> repost count
+        counts = (
+            session.query(
+                AggregateTrack.track_id,
+                AggregateTrack.repost_count,
+                AggregateTrack.save_count,
+            )
+            .filter(
+                AggregateTrack.track_id.in_(track_ids),
+            )
+            .all()
         )
-        .filter(
-            AggregateTrack.track_id.in_(track_ids),
-        )
-        .all()
-    )
 
-    count_dict = {
-        track_id: {
-            response_name_constants.repost_count: repost_count,
-            response_name_constants.save_count: save_count,
+        count_dict = {
+            track_id: {
+                response_name_constants.repost_count: repost_count,
+                response_name_constants.save_count: save_count,
+            }
+            for (track_id, repost_count, save_count) in counts
         }
-        for (track_id, repost_count, save_count) in counts
-    }
 
-    play_count_dict = get_track_play_count_dict(session, track_ids)
+        play_count_dict = get_track_play_count_dict(session, track_ids)
 
     remixes = get_track_remix_metadata(session, tracks, current_user_id)
 
@@ -414,15 +439,33 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
+        # has current user unlocked premium tracks
+        # if so, also populate corresponding signatures
+        _populate_premium_track_metadata(session, tracks, current_user_id)
+
     for track in tracks:
         track_id = track["track_id"]
-        track[response_name_constants.repost_count] = count_dict.get(track_id, {}).get(
-            response_name_constants.repost_count, 0
-        )
-        track[response_name_constants.save_count] = count_dict.get(track_id, {}).get(
-            response_name_constants.save_count, 0
-        )
-        track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
+
+        if track_has_aggregates:
+            aggregate_track = track.get("aggregate_track")
+            track[response_name_constants.repost_count] = (
+                aggregate_track[0].get("repost_count", 0) if aggregate_track else 0
+            )
+            track[response_name_constants.save_count] = (
+                aggregate_track[0].get("save_count", 0) if aggregate_track else 0
+            )
+            aggregate_play = track.get("aggregate_play")
+            track[response_name_constants.play_count] = (
+                aggregate_play[0].get("count", 0) if aggregate_play else 0
+            )
+        else:
+            track[response_name_constants.repost_count] = count_dict.get(
+                track_id, {}
+            ).get(response_name_constants.repost_count, 0)
+            track[response_name_constants.save_count] = count_dict.get(
+                track_id, {}
+            ).get(response_name_constants.save_count, 0)
+            track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
         track[
             response_name_constants.followee_reposts
@@ -453,6 +496,60 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
             track[response_name_constants.remix_of] = None
 
     return tracks
+
+
+def _populate_premium_track_metadata(session, tracks, current_user_id):
+    premium_tracks = list(filter(lambda track: track["is_premium"], tracks))
+    if not premium_tracks:
+        return
+
+    current_user_wallet = (
+        session.query(User.wallet)
+        .filter(
+            User.user_id == current_user_id,
+            User.is_current == True,
+        )
+        .one_or_none()
+    )
+    if not current_user_wallet:
+        logger.warn(
+            f"query_helpers.py | _populate_premium_track_metadata | no wallet for current_user_id {current_user_id}"
+        )
+        return
+
+    premium_content_access_args = []
+    for track in premium_tracks:
+        premium_content_access_args.append(
+            {
+                "user_id": current_user_id,
+                "premium_content_id": track["track_id"],
+                "premium_content_type": "track",
+            }
+        )
+
+    premium_content_access = premium_content_access_checker.check_access_for_batch(
+        session, premium_content_access_args
+    )
+
+    for track in premium_tracks:
+        track_id = track["track_id"]
+        does_user_have_track_access = (
+            current_user_id in premium_content_access["track"]
+            and track_id in premium_content_access["track"][current_user_id]
+            and premium_content_access["track"][current_user_id][track_id][
+                "does_user_have_access"
+            ]
+        )
+        if does_user_have_track_access:
+            track[
+                response_name_constants.premium_content_signature
+            ] = get_premium_content_signature(
+                {
+                    "id": track_id,
+                    "type": "track",
+                    "user_wallet": current_user_wallet[0],
+                }
+            )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):
@@ -974,49 +1071,6 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
     return follower_count_dict
 
 
-def get_track_play_counts(db, track_ids):
-    """Gets the track play counts for the given track_ids
-    Args:
-        db: sqlalchemy db session instance
-        track_ids: list of track ids
-
-    Returns:
-        dict of track id keys to track play count values
-    """
-
-    track_listen_counts = {}
-
-    if not track_ids:
-        return track_listen_counts
-
-    track_plays = (
-        db.query(AggregatePlay).filter(AggregatePlay.play_item_id.in_(track_ids)).all()
-    )
-
-    for track_play in track_plays:
-        track_listen_counts[track_play.play_item_id] = track_play.count
-
-    for track_id in track_ids:
-        if track_id not in track_listen_counts:
-            track_listen_counts[track_id] = 0
-
-    return track_listen_counts
-
-
-def get_sum_aggregate_plays(db):
-    """Gets the sum of all aggregate plays
-    Args:
-        db: sqlalchemy db session instance
-
-    Returns:
-        int of total play count
-    """
-
-    plays = db.query(func.sum(AggregatePlay.count)).scalar()
-
-    return int(plays)
-
-
 def get_pagination_vars():
     limit = min(
         max(request.args.get("limit", default=defaultLimit, type=int), minLimit),
@@ -1212,17 +1266,11 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
     Side Effects:
         Modifies the track dictionaries to add a nested owner user
 
-    Returns: None
+    Returns: Tracks with users attached
     """
-    user_ids = get_users_ids(tracks)
-    users = []
-    if tracks and len(tracks) > 0 and tracks[0].get("user"):
-        users = list(map(lambda t: t["user"][0], tracks))
-    else:
-        # This shouldn't happen - all tracks should come preloaded with their owners per the relationship
-        users = get_unpopulated_users(session, user_ids)
-        logger.warning("add_users_to_tracks() called but tracks have no users")
-    set_users_in_cache(users)
+    users = [t.get("user")[0] for t in tracks]
+    user_ids = [u.get("user_id") for u in users]
+
     # bundle peripheral info into user results
     populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
     user_map = {}
@@ -1233,3 +1281,5 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
         user = user_map[track["owner_id"]]
         if user:
             track["user"] = user
+
+    return tracks

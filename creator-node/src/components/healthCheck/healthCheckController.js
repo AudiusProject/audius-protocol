@@ -3,9 +3,7 @@ const express = require('express')
 const {
   handleResponse,
   successResponse,
-  errorResponseBadRequest,
   handleResponseWithHeartbeat,
-  sendResponse,
   errorResponseServerError
 } = require('../../apiHelpers')
 const {
@@ -25,8 +23,6 @@ const config = require('../../config')
 
 const router = express.Router()
 
-// 5 minutes in ms is the maximum age of a timestamp sent to /health_check/duration
-const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 const numberOfCPUs = os.cpus().length
 
 const MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
@@ -64,6 +60,13 @@ const healthCheckController = async (req) => {
     numberOfCPUs,
     randomBytesToSign
   )
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const storagePathSizeMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.STORAGE_PATH_SIZE_BYTES
+  )
+  storagePathSizeMetric.set({ type: 'total' }, response.storagePathSize)
+  storagePathSizeMetric.set({ type: 'used' }, response.storagePathUsed)
 
   if (enforceStateMachineQueueHealth) {
     const { stateMachineJobs } = response
@@ -157,7 +160,7 @@ const syncHealthCheckController = async (req) => {
  * Controller for health_check/duration route
  * Calls healthCheckComponentService
  */
-const healthCheckDurationController = async (req) => {
+const healthCheckDurationController = async (_req) => {
   const response = await healthCheckDuration()
   return successResponse(response)
 }

@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
@@ -16,15 +15,19 @@ const {
 const utils = require('./utils')
 const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
-const SyncQueue = require('./services/sync/syncQueue')
+const { SyncQueue } = require('./services/sync/syncQueue')
+const SyncImmediateQueue = require('./services/sync/syncImmediateQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
-const SessionExpirationQueue = require('./services/SessionExpirationQueue')
-const AsyncProcessingQueue = require('./AsyncProcessingQueue')
-const TrustedNotifierManager = require('./services/TrustedNotifierManager')
-const ImageProcessingQueue = require('./ImageProcessingQueue')
+const { AsyncProcessingQueue } = require('./AsyncProcessingQueue')
+const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
+const { TrustedNotifierManager } = require('./services/TrustedNotifierManager')
+const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
+const {
+  PremiumContentAccessChecker
+} = require('./premiumContent/premiumContentAccessChecker')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -46,21 +49,25 @@ class ServiceRegistry {
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
+    this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
-    this.imageProcessingQueue = ImageProcessingQueue // Resizes all images on Audius
+    this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
+    this.syncImmediateQueue = null // Handles syncing manual immediate jobs
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
-    this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.monitorStateQueue = null // Handles jobs for slicing batches of users and gathering data about them
+    this.findSyncRequestsQueue = null // Handles jobs for finding sync requests
+    this.findReplicaSetUpdatesQueue = null // Handles jobs for finding replica set updates
     this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
-    this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
-    this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
-    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
-    this.recurringSyncQueue = null // DEPRECATED -- Handles syncs that occur on a cadence, e.g. every hour
+    this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
+    this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
+    this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
+    this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -74,16 +81,44 @@ class ServiceRegistry {
   async initServices() {
     const start = getStartTime()
 
-    this.libs = await initAudiusLibs()
+    this.libs = await initAudiusLibs({})
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
-    this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
+    this.asyncProcessingQueue = new AsyncProcessingQueue(
+      this.libs,
+      this.prometheusRegistry
+    )
 
     this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
 
     await this.trustedNotifierManager.init()
 
     this.synchronousServicesInitialized = true
+
+    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    // Retries indefinitely
+    await this._recoverNodeL1Identity()
+
+    // Init StateMachineManager
+    this.stateMachineManager = new StateMachineManager()
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue,
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
+    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
 
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
@@ -99,11 +134,12 @@ class ServiceRegistry {
 
     // If error occurs in initializing these services, do not continue with app start up.
     try {
-      await this.blacklistManager.init()
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
+      await this.blacklistManager.init()
     } catch (e) {
       this.logError(e.message)
+      // eslint-disable-next-line no-process-exit
       process.exit(1)
     }
 
@@ -131,6 +167,7 @@ class ServiceRegistry {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const { queue: syncProcessingQueue } = this.syncQueue
+    const { queue: syncImmediateProcessingQueue } = this.syncImmediateQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
     const { queue: transcodingQueue } = this.transcodingQueue
@@ -138,27 +175,37 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
-    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
-    const stateMonitoringAdapter = new BullAdapter(this.stateMonitoringQueue, {
-      readOnlyMode: true
-    })
-    const stateReconciliationAdapter = new BullAdapter(
-      this.stateReconciliationQueue,
-      { readOnlyMode: true }
-    )
-
     // These queues have very large inputs and outputs, so we truncate job
     // data and results that are nested >=5 levels or contain strings >=10,000 characters
-    stateMonitoringAdapter.setFormatter('data', this._truncateBull.bind(this))
-    stateMonitoringAdapter.setFormatter(
+    const monitorStateAdapter = new BullAdapter(this.monitorStateQueue, {
+      readOnlyMode: true
+    })
+    const findSyncRequestsAdapter = new BullAdapter(
+      this.findSyncRequestsQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    const findReplicaSetUpdatesAdapter = new BullAdapter(
+      this.findReplicaSetUpdatesQueue,
+      {
+        readOnlyMode: true
+      }
+    )
+    monitorStateAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findSyncRequestsAdapter.setFormatter('data', this._truncateBull.bind(this))
+    findSyncRequestsAdapter.setFormatter(
+      'returnValue',
+      this._truncateBull.bind(this)
+    )
+    findReplicaSetUpdatesAdapter.setFormatter(
       'data',
       this._truncateBull.bind(this)
     )
-    stateReconciliationAdapter.setFormatter(
+    findReplicaSetUpdatesAdapter.setFormatter(
       'returnValue',
       this._truncateBull.bind(this)
     )
@@ -167,17 +214,20 @@ class ServiceRegistry {
     const serverAdapter = new ExpressAdapter()
     createBullBoard({
       queues: [
-        stateMonitoringAdapter,
-        stateReconciliationAdapter,
-        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
+        monitorStateAdapter,
+        findSyncRequestsAdapter,
+        findReplicaSetUpdatesAdapter,
         new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
           readOnlyMode: true
         }),
-        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
+        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
-        new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
-        new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
+        new BullAdapter(this.recoverOrphanedDataQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(syncImmediateProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(transcodingQueue, { readOnlyMode: true }),
         new BullAdapter(monitoringQueue, { readOnlyMode: true }),
         new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
@@ -265,8 +315,6 @@ class ServiceRegistry {
   /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
-   *  - recover node L1 identity (requires node health check from server to return success)
-   *  - initialize SnapbackSM service (requires node L1 identity)
    *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
@@ -275,30 +323,10 @@ class ServiceRegistry {
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
-    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
-    // Retries indefinitely
-    await this._recoverNodeL1Identity()
-
-    // SnapbackSM init (requires L1 identity)
-    // Retries indefinitely
-    await this._initSnapbackSM()
-
-    // Init StateMachineManager
-    this.stateMachineManager = new StateMachineManager()
-    const {
-      stateMonitoringQueue,
-      cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue,
-      manualSyncQueue
-    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.stateMonitoringQueue = stateMonitoringQueue
-    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.stateReconciliationQueue = stateReconciliationQueue
-
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(config, this.redis, this)
-    this.manualSyncQueue = manualSyncQueue
+    this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis, this)
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
@@ -314,14 +342,6 @@ class ServiceRegistry {
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
-      )
-    }
-
-    try {
-      await this._setupRouteDurationTracking(app)
-    } catch (e) {
-      this.logError(
-        `DurationTracking || Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
       )
     }
 
@@ -374,95 +394,6 @@ class ServiceRegistry {
         'spID'
       )}`
     )
-  }
-
-  /**
-   * Gets the regexes for routes with route params. Used for mapping paths in metrics to track route durations
-   *
-   * Structure:
-   *  {regex: <some regex>, path: <path that a matched path will route to in the normalize fn in prometheus middleware>}
-   *
-   * Example of the regex added to PrometheusRegistry:
-   *
-   *  /ipfs/:CID and /content/:CID -> map to /ipfs/#CID
-   *
-   * {
-   *    regex: /(?:^\/ipfs\/(?:([^/]+?))\/?$|^\/content\/(?:([^/]+?))\/?$)/i,
-   *    path: '/ipfs/#CID'
-   * }
-   * @param {Object} app
-   */
-  async _setupRouteDurationTracking(app) {
-    // Get all the routes initialized in the app
-    const routes = app._router.stack.filter(
-      (element) =>
-        (element.route && element.route.path) ||
-        (element.handle && element.handle.stack)
-    )
-
-    // Iterate through the paths and add the regexes if the route
-    // has route params
-
-    // Express routing is... unpredictable. Use a set to manage seen paths
-    const seenPaths = new Set()
-    const parsedRoutes = []
-    routes.forEach((element) => {
-      if (element.name === 'router') {
-        // Iterate through routes initialized with the express router
-        element.handle.stack.forEach((e) => {
-          const path = e.route.path
-          const method = Object.keys(e.route.methods)[0]
-          const regex = e.regexp
-          addToParsedRoutes(path, method, regex)
-        })
-      } else {
-        // Iterate through all the other routes initalized with the app
-        const path = element.route.path
-        const method = Object.keys(element.route.methods)[0]
-        const regex = element.regexp
-        addToParsedRoutes(path, method, regex)
-      }
-    })
-
-    // Only keep track of the routes with route params, e.g. the route with ':'
-    // in the route to indicate a route param
-    function addToParsedRoutes(path, method, regex) {
-      // Routes may come in the form of an array (e.g. ['/ipfs/:CID', '/content/:CID'])
-      if (Array.isArray(path)) {
-        path.forEach((p) => {
-          if (!seenPaths.has(p + method)) {
-            if (p.includes(':')) {
-              seenPaths.add(p + method)
-              parsedRoutes.push({
-                path: p,
-                method,
-                regex
-              })
-            }
-          }
-        })
-      } else {
-        if (!seenPaths.has(path + method)) {
-          if (path.includes(':')) {
-            seenPaths.add(path + method)
-            parsedRoutes.push({
-              path,
-              method,
-              regex
-            })
-          }
-        }
-      }
-    }
-
-    const regexes = parsedRoutes
-      .filter(({ path }) => path.includes(':'))
-      .map(({ path, regex }) => ({
-        regex,
-        path: path.replace(/:/g, '#')
-      }))
-
-    this.prometheusRegistry.initRouteParamRegexes(regexes)
   }
 
   /**
@@ -527,41 +458,6 @@ class ServiceRegistry {
     }
 
     this.logInfo('URSM Registration completed')
-  }
-
-  /**
-   * Initialize SnapbackSM
-   * Requires L1 identity
-   */
-  async _initSnapbackSM() {
-    this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue, recurringSyncQueue } = this.snapbackSM
-    this.stateMachineQueue = stateMachineQueue
-    this.recurringSyncQueue = recurringSyncQueue
-
-    let isInitialized = false
-    const retryTimeoutMs = 10000 // ms
-    while (!isInitialized) {
-      try {
-        this.logInfo(
-          `Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`
-        )
-
-        await this.snapbackSM.init()
-
-        isInitialized = true
-        // Short circuit earlier instead of waiting for another timeout and loop iteration
-        break
-
-        // Swallow all init errors
-      } catch (e) {
-        this.logError(`_initSnapbackSM Error ${e}`)
-      }
-
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    this.logInfo(`SnapbackSM Init completed`)
   }
 
   logInfo(msg) {

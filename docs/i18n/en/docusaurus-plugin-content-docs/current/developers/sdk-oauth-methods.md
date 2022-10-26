@@ -13,7 +13,7 @@ enables the Log In with Audius functionality.
   ```typescript
   // type UserProfile =
   {
-    userId: number; // unique Audius user identifier
+    userId: string; // unique Audius user identifier
     email: string;
     name: string; // user's display name
     handle: string;

@@ -114,6 +114,15 @@
                     "type": ["object", "null"],
                     "$ref": "#/definitions/RemixOf",
                     "default": null
+                },
+                "is_premium": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "premium_conditions": {
+                    "type": ["object", "null"],
+                    "$ref": "#/definitions/PremiumConditions",
+                    "default": null
                 }
             },
             "required": [
@@ -137,7 +146,9 @@
                 "stem_of",
                 "tags",
                 "title",
-                "track_segments"
+                "track_segments",
+                "is_premium",
+                "premium_conditions"
             ],
             "title": "Track"
         },
@@ -262,6 +273,20 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "PremiumConditions": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+                "nft_collection": {
+                    "type": "string"
+                },
+                "follow_user_id": {
+                    "type": "number"
+                }
+            },
+            "required": [],
+            "title": "PremiumConditions"
         }
     }
 }

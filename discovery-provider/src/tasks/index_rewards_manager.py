@@ -268,6 +268,7 @@ def process_batch_sol_reward_manager_txs(
                     created_at=datetime.datetime.utcfromtimestamp(tx["timestamp"]),
                 )
             )
+            session.flush()
             # No instruction found
             if tx["transfer_instruction"] is None:
                 logger.warning(

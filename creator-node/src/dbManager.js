@@ -1,6 +1,10 @@
+const path = require('path')
+const { isEmpty } = require('lodash')
+
 const { logger } = require('./logging')
 const models = require('./models')
 const sequelize = models.sequelize
+const { QueryTypes } = models.Sequelize
 
 class DBManager {
   /**
@@ -59,14 +63,12 @@ class DBManager {
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
    * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
-   * @param {?Transaction} externalTransaction sequelize transaction object
    */
-  static async deleteAllCNodeUserDataFromDB(
-    { lookupCNodeUserUUID, lookupWallet },
-    externalTransaction = null
-  ) {
-    const transaction =
-      externalTransaction || (await models.sequelize.transaction())
+  static async deleteAllCNodeUserDataFromDB({
+    lookupCNodeUserUUID,
+    lookupWallet
+  }) {
+    const transaction = await models.sequelize.transaction()
     const log = (msg) =>
       logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
@@ -154,7 +156,7 @@ class DBManager {
       if (error) {
         await transaction.rollback()
         log(`rolling back transaction due to error ${error}`)
-      } else if (!externalTransaction) {
+      } else {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
         log(`commited internal transaction`)
@@ -162,13 +164,92 @@ class DBManager {
 
       log(`completed in ${Date.now() - start}ms`)
     }
+
+    return error
+  }
+
+  /**
+   * Gets a user's files that only they have (Files table storagePath column), with pagination.
+   * Ignores any file that has 1 or more entries from another user.
+   * @param {string} cnodeUserUUID the UUID of the user to fetch file paths for
+   * @param {string} prevStoragePath pagination token (where storagePath > prevStoragePath)
+   * @param {number} batchSize the pagination size (number of file paths to return)
+   * @returns {string[]} user's storagePaths from db
+   */
+  static async getCNodeUserFilesFromDb(
+    cnodeUserUUID,
+    prevStoragePath,
+    batchSize
+  ) {
+    // TODO: Remove after v0.3.69 is on all nodes
+    // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
+    if (await DBManager.isStoragePathIndexBeingCreated())
+      throw new Error(
+        "Can't get files to delete while Files_storagePath_idx is being created"
+      )
+
+    // Get a batch of file that this user needs
+    const userFiles = []
+    const userFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        cnodeUserUUID,
+        storagePath: {
+          [sequelize.Op.gte]: prevStoragePath
+        }
+      },
+      distinct: true,
+      order: [['storagePath', 'ASC']],
+      limit: batchSize
+    })
+    logger.debug(
+      `userFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        userFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(userFilesQueryResult)) return []
+    for (const file of userFilesQueryResult) {
+      userFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Get all files that: 1. could match a file in the above batch; and 2. are only needed by 1 user
+    const allUniqueFiles = []
+    const allUniqueFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        storagePath: {
+          [sequelize.Op.between]: [
+            userFiles[0],
+            userFiles[userFiles.length - 1]
+          ]
+        }
+      },
+      group: 'storagePath',
+      having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`)
+    })
+    logger.debug(
+      `allUniqueFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        allUniqueFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(allUniqueFilesQueryResult)) return []
+    for (const file of allUniqueFilesQueryResult) {
+      allUniqueFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Return files that only this user needs (files that aren't associated with anyone else)
+    const userUniqueFiles = allUniqueFiles.filter((file) =>
+      userFiles.includes(file)
+    )
+    logger.debug(`userUniqueFiles for ${cnodeUserUUID}: ${userUniqueFiles}`)
+    return userUniqueFiles
   }
 
   /**
    * Deletes all session tokens matching an Array of SessionTokens.
    *
    * @param {Array} sessionTokens from the SessionTokens table
-   * @param {Transaction} externalTransaction
+   * @param {Transaction=} externalTransaction
    */
   static async deleteSessionTokensFromDB(sessionTokens, externalTransaction) {
     const transaction =
@@ -307,6 +388,50 @@ class DBManager {
     } catch (e) {
       throw new Error(`[fetchFilesHashesFromDB] ${e.message}`)
     }
+  }
+
+  /**
+   * Given a user's UUID, this function will set their clock value equal to the max clock value
+   * found in the ClockRecords table for that same user
+   *
+   * @param cnodeUserUUID the UUID for the user whose clock needs to be made consistent
+   */
+  static async fixInconsistentUser(cnodeUserUUID) {
+    const [, metadata] = await sequelize.query(
+      `
+    UPDATE "CNodeUsers" as cnodeusers
+    SET clock = subquery.max_clock
+    FROM (
+        SELECT "cnodeUserUUID", MAX(clock) AS max_clock
+        FROM "ClockRecords"
+        WHERE "cnodeUserUUID" = :cnodeUserUUID
+        GROUP BY "cnodeUserUUID"
+    ) AS subquery
+    WHERE cnodeusers."cnodeUserUUID" = subquery."cnodeUserUUID"
+    `,
+      {
+        replacements: { cnodeUserUUID }
+      }
+    )
+
+    const numRowsUpdated = metadata?.rowCount || 0
+    return numRowsUpdated
+  }
+
+  static async createStoragePathIndexOnFilesTable() {
+    return sequelize.query(
+      `CREATE INDEX CONCURRENTLY IF NOT EXISTS "Files_storagePath_idx" ON "Files" USING btree ("storagePath")`
+    )
+  }
+
+  static async isStoragePathIndexBeingCreated() {
+    const runningIndexCreations = await sequelize.query(
+      `SELECT relname FROM pg_class, pg_index WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid`,
+      { type: QueryTypes.SELECT }
+    )
+    return runningIndexCreations?.filter(
+      (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
+    )?.length
   }
 }
 

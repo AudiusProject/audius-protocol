@@ -13,6 +13,9 @@ from src.models.social.save import SaveType
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
@@ -61,6 +64,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
+        "is_premium": boolean
     }
     """
 
@@ -105,6 +109,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregatePlay.count,
             Track.created_at,
             follower_query.c.is_verified,
+            Track.is_premium,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
@@ -136,6 +141,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
+            "is_premium": record[6],
         }
         for record in base_query
     }
@@ -189,6 +195,14 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
+
+        # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
+        # belonging to premium tracks before applying the limit.
+        if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
+            track_scoring_data = list(
+                filter(lambda item: not item["is_premium"], track_scoring_data)
+            )
+
         scored_tracks = [
             strategy.get_track_score("week", track) for track in track_scoring_data
         ]
@@ -197,7 +211,12 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
 
         # Get unpopulated metadata
         track_ids = [track["track_id"] for track in sorted_tracks]
-        tracks = get_unpopulated_tracks(session, track_ids)
+        tracks = get_unpopulated_tracks(
+            session,
+            track_ids,
+            exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+        )
+
         return (tracks, track_ids)
 
     return wrapped

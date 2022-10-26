@@ -19,6 +19,7 @@ models/FullGetSupporter.ts
 models/FullGetSupporters.ts
 models/FullGetSupporting.ts
 models/FullPlaylistResponse.ts
+models/FullPlaylistTracksResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
 models/FullReposts.ts
@@ -36,6 +37,8 @@ models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistLibrary.ts
+models/PremiumConditions.ts
+models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/RelatedArtistResponseFull.ts
 models/RemixesResponse.ts
@@ -60,6 +63,8 @@ models/TrackSegment.ts
 models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
 models/UserFull.ts
+models/UserReplicaSet.ts
+models/UsersByContentNode.ts
 models/VersionMetadata.ts
 models/index.ts
 runtime.ts

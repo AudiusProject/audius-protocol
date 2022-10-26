@@ -34,7 +34,7 @@ def track_state_update(
     block_number,
     block_timestamp,
     block_hash,
-    ipfs_metadata,
+    metadata,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
@@ -91,7 +91,7 @@ def track_state_update(
                             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                         )
                         cid = multihash.to_b58_string(buf)
-                        track_metadata = ipfs_metadata[cid]
+                        track_metadata = metadata[cid]
 
                     parsed_track = parse_track_event(
                         self,
@@ -530,6 +530,7 @@ def parse_track_event(
         track_record.is_delete = True
         track_record.stem_of = null()
         track_record.remix_of = null()
+        track_record.premium_conditions = null()
         logger.info(f"index.py | tracks.py | Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
@@ -558,7 +559,7 @@ def is_valid_json_field(metadata, field):
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]
-    track_record.length = track_metadata["length"] or 0
+    track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]
@@ -576,6 +577,13 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+
+    track_record.is_premium = track_metadata["is_premium"]
+    if is_valid_json_field(track_metadata, "premium_conditions"):
+        track_record.premium_conditions = track_metadata["premium_conditions"]
+    else:
+        track_record.premium_conditions = null()
+
     if is_valid_json_field(track_metadata, "stem_of"):
         track_record.stem_of = track_metadata["stem_of"]
     else:

@@ -3,7 +3,7 @@ const redis = require('../redis')
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
 const {
-  JOB_NAMES
+  QUEUE_NAMES
 } = require('../services/stateMachineManager/stateMachineConstants')
 
 /**
@@ -71,27 +71,27 @@ const getLatestSyncFailTimestamp = async () => {
 }
 
 const getLatestMonitorStateJobStart = async () => {
-  return redis.get(`latestJobStart_${JOB_NAMES.MONITOR_STATE}`)
+  return redis.get(`latestJobStart_${QUEUE_NAMES.MONITOR_STATE}`)
 }
 
 const getLatestMonitorStateJobSuccess = async () => {
-  return redis.get(`latestJobSuccess_${JOB_NAMES.MONITOR_STATE}`)
+  return redis.get(`latestJobSuccess_${QUEUE_NAMES.MONITOR_STATE}`)
 }
 
 const getLatestFindSyncRequestsJobStart = async () => {
-  return redis.get(`latestJobStart_${JOB_NAMES.FIND_SYNC_REQUESTS}`)
+  return redis.get(`latestJobStart_${QUEUE_NAMES.FIND_SYNC_REQUESTS}`)
 }
 
 const getLatestFindSyncRequestsJobSuccess = async () => {
-  return redis.get(`latestJobSuccess_${JOB_NAMES.FIND_SYNC_REQUESTS}`)
+  return redis.get(`latestJobSuccess_${QUEUE_NAMES.FIND_SYNC_REQUESTS}`)
 }
 
 const getLatestFindReplicaSetUpdatesJobStart = async () => {
-  return redis.get(`latestJobStart_${JOB_NAMES.FIND_REPLICA_SET_UPDATES}`)
+  return redis.get(`latestJobStart_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`)
 }
 
 const getLatestFindReplicaSetUpdatesJobSuccess = async () => {
-  return redis.get(`latestJobSuccess_${JOB_NAMES.FIND_REPLICA_SET_UPDATES}`)
+  return redis.get(`latestJobSuccess_${QUEUE_NAMES.FIND_REPLICA_SET_UPDATES}`)
 }
 
 module.exports = {

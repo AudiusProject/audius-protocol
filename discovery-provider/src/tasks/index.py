@@ -31,6 +31,8 @@ from src.queries.get_skipped_transactions import (
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
+from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -42,10 +44,10 @@ from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
-    record_fetch_ipfs_metadata_ms,
+    record_fetch_metadata_ms,
     record_index_blocks_ms,
     sweep_old_add_indexed_block_to_db_ms,
-    sweep_old_fetch_ipfs_metadata_ms,
+    sweep_old_fetch_metadata_ms,
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
@@ -54,11 +56,6 @@ from src.utils.prometheus_metric import (
     PrometheusMetricNames,
     save_duration_metric,
 )
-from src.utils.redis_cache import (
-    remove_cached_playlist_ids,
-    remove_cached_track_ids,
-    remove_cached_user_ids,
-)
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
     latest_block_redis_key,
@@ -66,6 +63,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
+from src.utils.user_event_constants import entity_manager_event_types_arr
 
 USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
 TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
@@ -73,6 +71,7 @@ SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
 PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
 USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
+ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
 USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
 TRACK_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.TRACK_FACTORY]
@@ -88,6 +87,7 @@ USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
 USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
 ]
+ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_FACTORY: user_state_update,
@@ -96,6 +96,7 @@ TX_TYPE_TO_HANDLER_MAP = {
     PLAYLIST_FACTORY: playlist_state_update,
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
+    ENTITY_MANAGER: entity_manager_update,
 }
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
@@ -262,14 +263,11 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_cid_metadata(
-    db,
-    user_factory_txs,
-    track_factory_txs,
-):
+def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_txs):
     start_time = datetime.now()
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
+    entity_manager_contract = update_task.entity_manager_contract
 
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
@@ -314,6 +312,32 @@ def fetch_cid_metadata(
                     cids_txhash_set.add((cid, txhash))
                     cid_type[cid] = "track"
                     cid_to_user_id[cid] = track_owner_id
+
+        for tx_receipt in entity_manager_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            for event_type in entity_manager_event_types_arr:
+                entity_manager_events_tx = getattr(
+                    entity_manager_contract.events, event_type
+                )().processReceipt(tx_receipt)
+                for entry in entity_manager_events_tx:
+                    event_args = entry["args"]
+                    user_id = event_args._userId
+                    cid = event_args._metadata
+                    event_type = event_args._entityType
+                    action = event_args._action
+                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                        continue
+                    if action == Action.CREATE and event_type == EntityType.USER:
+                        continue
+
+                    cids_txhash_set.add((cid, txhash))
+                    cid_to_user_id[cid] = user_id
+                    if event_type == EntityType.PLAYLIST:
+                        cid_type[cid] = "playlist_data"
+                    elif event_type == EntityType.TRACK:
+                        cid_type[cid] = "track"
+                    elif event_type == EntityType.USER:
+                        cid_type[cid] = "user"
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
         user_to_replica_set = dict(
@@ -438,6 +462,10 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
+
+    logger.info(
+        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
+    )
     return contract_type
 
 
@@ -476,13 +504,6 @@ def process_state_changes(
         "number", "hash", "timestamp"
     )(block)
 
-    changed_entity_ids_map = {
-        USER_FACTORY: [],
-        TRACK_FACTORY: [],
-        PLAYLIST_FACTORY: [],
-        USER_REPLICA_SET_MANAGER: [],
-    }
-
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
 
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -499,34 +520,13 @@ def process_state_changes(
 
         (
             total_changes_for_tx_type,
-            changed_entity_ids,
+            _,
         ) = bulk_processor(*tx_processing_args)
-
-        if tx_type in changed_entity_ids_map.keys():
-            changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
-
-    return changed_entity_ids_map
-
-
-def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids_map):
-    CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS = {
-        USER_FACTORY: remove_cached_user_ids,
-        USER_REPLICA_SET_MANAGER: remove_cached_user_ids,
-        TRACK_FACTORY: remove_cached_track_ids,
-        PLAYLIST_FACTORY: remove_cached_playlist_ids,
-    }
-    for (
-        contract_type,
-        clear_cache_handler,
-    ) in CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS.items():
-        changed_entity_ids = changed_entity_type_to_updated_ids_map[contract_type]
-        if changed_entity_ids:
-            clear_cache_handler(redis, changed_entity_ids)
 
 
 def create_and_raise_indexing_error(err, redis):
@@ -554,7 +554,6 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
-    changed_entity_ids_map = {}
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
@@ -587,6 +586,7 @@ def index_blocks(self, db, blocks_list):
                     PLAYLIST_FACTORY: [],
                     USER_LIBRARY_FACTORY: [],
                     USER_REPLICA_SET_MANAGER: [],
+                    ENTITY_MANAGER: [],
                 }
                 try:
                     """
@@ -645,28 +645,29 @@ def index_blocks(self, db, blocks_list):
                     """
                     Fetch JSON metadata
                     """
-                    fetch_ipfs_metadata_start_time = time.time()
+                    fetch_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
                     cid_metadata = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
+                        txs_grouped_by_type[ENTITY_MANAGER],
                     )
                     logger.info(
-                        f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
+                        f"index.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(
-                        (time.time() - fetch_ipfs_metadata_start_time) * 1000
+                        (time.time() - fetch_metadata_start_time) * 1000
                     )
-                    record_fetch_ipfs_metadata_ms(redis, duration_ms)
+                    record_fetch_metadata_ms(redis, duration_ms)
                     metric.save_time(
-                        {"scope": "fetch_ipfs_metadata"},
-                        start_time=fetch_ipfs_metadata_start_time,
+                        {"scope": "fetch_metadata"},
+                        start_time=fetch_metadata_start_time,
                     )
                     logger.info(
-                        f"index.py | index_blocks - fetch_ipfs_metadata in {duration_ms}ms"
+                        f"index.py | index_blocks - fetch_metadata in {duration_ms}ms"
                     )
 
                     """
@@ -694,7 +695,7 @@ def index_blocks(self, db, blocks_list):
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
-                    changed_entity_ids_map = process_state_changes(
+                    process_state_changes(
                         self,
                         session,
                         cid_metadata,
@@ -751,13 +752,6 @@ def index_blocks(self, db, blocks_list):
             if skip_tx_hash:
                 clear_indexing_error(redis)
 
-        if changed_entity_ids_map:
-            remove_updated_entities_from_cache(redis, changed_entity_ids_map)
-
-        logger.info(
-            f"index.py | redis cache clean operations complete for block=${block_number}"
-        )
-
         add_indexed_block_to_redis(block, redis)
         logger.info(
             f"index.py | update most recently processed block complete for block=${block_number}"
@@ -771,7 +765,7 @@ def index_blocks(self, db, blocks_list):
         # Sweep records older than 30 days every day
         if block_number % BLOCKS_PER_DAY == 0:
             sweep_old_index_blocks_ms(redis, 30)
-            sweep_old_fetch_ipfs_metadata_ms(redis, 30)
+            sweep_old_fetch_metadata_ms(redis, 30)
             sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
@@ -787,13 +781,13 @@ def revert_blocks(self, db, revert_blocks_list):
 
     logger.info(f"index.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
 
-    if num_revert_blocks > 10000:
-        raise Exception("Unexpected revert, >10,0000 blocks")
+    if num_revert_blocks > 100:
+        raise Exception("Unexpected revert, >100 blocks")
 
-    if num_revert_blocks > 500:
-        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500")
+    if num_revert_blocks > 50:
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 50")
         logger.error(revert_blocks_list)
-        revert_blocks_list = revert_blocks_list[:500]
+        revert_blocks_list = revert_blocks_list[:50]
         logger.error(
             f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
@@ -1108,12 +1102,21 @@ def update_task(self):
         abi=user_replica_set_manager_abi,
     )
 
+    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
+        "abi"
+    ]
+    entity_manager_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[ENTITY_MANAGER],
+        abi=entity_manager_contract_abi,
+    )
+
     update_task.track_contract = track_contract
     update_task.user_contract = user_contract
     update_task.playlist_contract = playlist_contract
     update_task.social_feature_contract = social_feature_contract
     update_task.user_library_contract = user_library_contract
     update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
+    update_task.entity_manager_contract = entity_manager_contract
 
     # Update redis cache for health check queries
     update_latest_block_redis()

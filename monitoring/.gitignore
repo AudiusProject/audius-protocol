@@ -1,2 +1,3 @@
 grafana/bearer*.env
 data/
+grafana/alerts/*-debug.json

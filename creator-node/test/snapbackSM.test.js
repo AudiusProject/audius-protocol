@@ -18,7 +18,7 @@ const SecondarySyncHealthTracker = require('../src/snapbackSM/secondarySyncHealt
 const { expect } = chai
 chai.use(sinonChai)
 
-describe('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mode', function () {
+describe.skip('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mode', function () {
   const constants = {
     primaryEndpoint: 'http://test_cn_primary.co',
     secondary1Endpoint: 'http://test_cn_secondary1.co',
@@ -433,7 +433,7 @@ describe('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mo
   })
 })
 
-describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
+describe.skip('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
   const constants = {
     primaryEndpoint: 'http://test_cn_primary.co',
     secondary1Endpoint: 'http://test_cn_secondary1.co',
@@ -527,7 +527,7 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
   })
 })
 
-describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () {
+describe.skip('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () {
   let server
 
   beforeEach(async function () {
@@ -892,7 +892,7 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
   })
 })
 
-describe('test SnapbackSM -- selectRandomReplicaSetNodes', function () {
+describe.skip('test SnapbackSM -- selectRandomReplicaSetNodes', function () {
   let server
 
   beforeEach(async function () {
@@ -1032,7 +1032,7 @@ describe('test SnapbackSM -- selectRandomReplicaSetNodes', function () {
   })
 })
 
-describe('test SnapbackSM -- retrieveClockStatusesForUsersAcrossReplicaSet', function () {
+describe.skip('test SnapbackSM -- retrieveClockStatusesForUsersAcrossReplicaSet', function () {
   let server
 
   beforeEach(async function () {
@@ -1109,7 +1109,7 @@ describe('test SnapbackSM -- retrieveClockStatusesForUsersAcrossReplicaSet', fun
   })
 })
 
-describe('test SnapbackSM -- issueSyncRequestsToSecondaries', function () {
+describe.skip('test SnapbackSM -- issueSyncRequestsToSecondaries', function () {
   let server
 
   beforeEach(async function () {
@@ -1384,7 +1384,7 @@ describe('test SnapbackSM -- issueSyncRequestsToSecondaries', function () {
   })
 })
 
-describe('test SnapbackSM -- processStateMachineOperation', function () {
+describe.skip('test SnapbackSM -- processStateMachineOperation', function () {
   let server
 
   beforeEach(async function () {
@@ -1457,7 +1457,7 @@ describe('test SnapbackSM -- processStateMachineOperation', function () {
   })
 })
 
-describe('test SnapbackSM -- additionalSyncIsRequired', function () {
+describe.skip('test SnapbackSM -- additionalSyncIsRequired', function () {
   let server
 
   beforeEach(async function () {
@@ -1573,7 +1573,7 @@ describe('test SnapbackSM -- additionalSyncIsRequired', function () {
   })
 })
 
-describe('test SnapbackSM -- computeUserSecondarySyncSuccessRatesMap', function () {
+describe.skip('test SnapbackSM -- computeUserSecondarySyncSuccessRatesMap', function () {
   let server
 
   beforeEach(async function () {

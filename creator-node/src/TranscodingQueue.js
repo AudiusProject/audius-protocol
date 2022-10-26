@@ -1,9 +1,10 @@
-const Bull = require('bull')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 const os = require('os')
 
 const config = require('./config')
 const ffmpeg = require('./ffmpeg')
 const { logger: genericLogger } = require('./logging')
+const { clusterUtils } = require('./utils')
 
 const TRANSCODING_MAX_CONCURRENCY = config.get('transcodingMaxConcurrency')
 const MAX_ACTIVE_JOBS = config.get('maximumTranscodingActiveJobs')
@@ -25,85 +26,93 @@ const TRANSCODING_QUEUE_HISTORY = 500
 
 class TranscodingQueue {
   constructor() {
-    this.queue = new Bull('transcoding-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('transcoding-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: TRANSCODING_QUEUE_HISTORY,
         removeOnFail: TRANSCODING_QUEUE_HISTORY
       }
     })
+    this.queueEvents = new QueueEvents('transcoding-queue', {
+      connection
+    })
     this.logStatus('Initialized TranscodingQueue')
 
-    // NOTE: Specifying max concurrency here dictates the max concurrency for
-    // *any* process fn below
-    // See https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueprocess
-    this.queue.process(
-      PROCESS_NAMES.segment,
-      MAX_CONCURRENCY,
-      async (job, done) => {
-        const start = Date.now()
-        const { fileDir, fileName, logContext } = job.data
+    // disabling because `new Worker()` has side effects
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const worker = new Worker(
+      'transcoding-queue',
+      async (job) => {
+        switch (job.name) {
+          case PROCESS_NAMES.segment: {
+            const start = Date.now()
+            const { fileDir, fileName, logContext } = job.data
 
-        try {
-          this.logStatus(`Segmenting ${fileDir} ${fileName}`, logContext)
+            try {
+              await this.logStatus(
+                `Segmenting ${fileDir} ${fileName}`,
+                logContext
+              )
 
-          const response = await ffmpeg.segmentFile(fileDir, fileName, {
-            logContext
-          })
-          this.logStatus(
-            `Successfully completed segment job ${fileDir} ${fileName} in duration ${
-              Date.now() - start
-            }ms`,
-            logContext
-          )
-          done(null, response)
-        } catch (e) {
-          this.logStatus(
-            `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
-            logContext
-          )
-          done(e)
-        }
-      }
-    )
-
-    this.queue.process(
-      PROCESS_NAMES.transcode320,
-      /* inherited */ 0,
-      async (job, done) => {
-        const start = Date.now()
-        const { fileDir, fileName, logContext } = job.data
-
-        try {
-          this.logStatus(
-            `transcoding to 320kbps ${fileDir} ${fileName}`,
-            logContext
-          )
-
-          const transcodeFilePath = await ffmpeg.transcodeFileTo320(
-            fileDir,
-            fileName,
-            {
-              logContext
+              const response = await ffmpeg.segmentFile(fileDir, fileName, {
+                logContext
+              })
+              await this.logStatus(
+                `Successfully completed segment job ${fileDir} ${fileName} in duration ${
+                  Date.now() - start
+                }ms`,
+                logContext
+              )
+              return response
+            } catch (e) {
+              await this.logStatus(
+                `Segment Job Error ${e} in duration ${Date.now() - start}ms`,
+                logContext
+              )
+              return e
             }
-          )
-          this.logStatus(
-            `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${
-              Date.now() - start
-            }ms`,
-            logContext
-          )
-          done(null, { transcodeFilePath })
-        } catch (e) {
-          this.logStatus(
-            `Transcode320 Job Error ${e} in duration ${Date.now() - start}`,
-            logContext
-          )
-          done(e)
+          }
+          case PROCESS_NAMES.transcode320: {
+            const start = Date.now()
+            const { fileDir, fileName, logContext } = job.data
+
+            try {
+              this.logStatus(
+                `transcoding to 320kbps ${fileDir} ${fileName}`,
+                logContext
+              )
+
+              const transcodeFilePath = await ffmpeg.transcodeFileTo320(
+                fileDir,
+                fileName,
+                {
+                  logContext
+                }
+              )
+              this.logStatus(
+                `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${
+                  Date.now() - start
+                }ms`,
+                logContext
+              )
+              return { transcodeFilePath }
+            } catch (e) {
+              this.logStatus(
+                `Transcode320 Job Error ${e} in duration ${Date.now() - start}`,
+                logContext
+              )
+              return e
+            }
+          }
         }
+      },
+      {
+        connection,
+        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
       }
     )
 
@@ -172,7 +181,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.finished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     this.logStatus(
       `Segment job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext
@@ -202,7 +211,7 @@ class TranscodingQueue {
       logContext
     )
 
-    const result = await job.finished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     this.logStatus(
       `Transcode320 job successful, fileDir=${fileDir}, fileName=${fileName}`,
       logContext

@@ -1,19 +1,17 @@
-/* eslint-disable no-unused-expressions */
+const _ = require('lodash')
+const { CancelToken } = require('axios').default
+const { asyncRetry } = require('../src/utils/asyncRetry')
+
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const assert = require('assert')
 const { expect } = chai
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
-const proxyquire = require('proxyquire')
-const _ = require('lodash')
-const { CancelToken } = require('axios').default
-const assert = require('assert')
 
 const DBManager = require('../src/dbManager')
-const config = require('../src/config')
-const { getApp } = require('./lib/app')
-const { getLibsMock } = require('./lib/libsMock')
 const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
@@ -25,7 +23,10 @@ const {
   SyncType,
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
-const SecondarySyncHealthTracker = require('../src/snapbackSM/secondarySyncHealthTracker')
+const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
+
+const { getApp } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test getLatestUserIdFromDiscovery()', function () {
   const DISCOVERY_NODE_ENDPOINT = 'https://discovery_endpoint.audius.co'
@@ -50,6 +51,21 @@ describe('test getLatestUserIdFromDiscovery()', function () {
   })
 
   it('throws when the axios request fails', async function () {
+    const { getLatestUserIdFromDiscovery } = proxyquire(
+      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.ts',
+      {
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
+        }
+      }
+    )
+
     nock(DISCOVERY_NODE_ENDPOINT)
       .get('/latest/user')
       .times(5) // asyncRetry retries 5 times
@@ -90,7 +106,7 @@ describe('test getNodeUsers()', function () {
     GET_NODE_USERS_CANCEL_TOKEN_MS = DEFAULT_GET_NODE_USERS_CANCEL_TOKEN_MS
   }) {
     const { getNodeUsers } = proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.js',
+      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.ts',
       {
         axios,
         '../stateMachineConstants': {
@@ -98,6 +114,15 @@ describe('test getNodeUsers()', function () {
           GET_NODE_USERS_CANCEL_TOKEN_MS,
           GET_NODE_USERS_DEFAULT_PAGE_SIZE:
             DEFAULT_GET_NODE_USERS_DEFAULT_PAGE_SIZE
+        },
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
         }
       }
     )
@@ -444,443 +469,6 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   })
 })
 
-describe('test aggregateReconfigAndPotentialSyncOps()', function () {
-  let server
-
-  beforeEach(async function () {
-    const appInfo = await getApp(getLibsMock())
-    server = appInfo.server
-    const app = appInfo.app
-    await app.get('redisClient').flushdb()
-    config.set('spID', 1)
-  })
-
-  afterEach(async function () {
-    await server.close()
-  })
-
-  function getAggregateReconfigAndPotentialSyncOps(config) {
-    const { aggregateReconfigAndPotentialSyncOps } = proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.js',
-      {
-        '../../../config': config
-      }
-    )
-    return aggregateReconfigAndPotentialSyncOps
-  }
-
-  it('if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
-    // Mock that one of the nodes got reregistered from spId 3 to spId 4
-    const endpointToSPIdMap = {
-      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4,
-      'http://cnWithSpId2.co': 2,
-      'http://cnWithSpId3.co': 3
-    }
-    const thisContentNodeEndpoint = 'http://cnWithSpId2.co'
-
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://cnWithSpId3.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.keys(['http://cnOriginallySpId3ReregisteredAsSpId4.co'])
-    expect(potentialSyncRequests).to.have.lengthOf(0)
-  })
-
-  it('if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
-    // Mock that one of the nodes got reregistered from spId 3 to spId 4
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 1,
-      'http://cnWithSpId2.co': 2,
-      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
-    }
-
-    const thisContentNodeEndpoint = 'http://some_healthy_primary.co'
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.keys(['http://cnOriginallySpId3ReregisteredAsSpId4.co'])
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[0]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId2.co')
-  })
-
-  it('if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
-    // Mock that one of the nodes got reregistered from spId 3 to spId 4
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 4,
-      'http://cnWithSpId2.co': 2,
-      'http://cnWithSpId3.co': 3
-    }
-
-    const thisContentNodeEndpoint = 'http://some_healthy_primary.co'
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://cnWithSpId3.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    expect(requiredUpdateReplicaSetOps).to.have.lengthOf(0)
-    expect(potentialSyncRequests).to.have.lengthOf(2)
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[0]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId2.co')
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[1]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId3.co')
-  })
-
-  it('if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
-    // Mock that one of the nodes got reregistered from spId 3 to spId 4
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 1,
-      'http://cnWithSpId2.co': 2,
-      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
-    }
-
-    const thisContentNodeEndpoint =
-      'http://cnOriginallySpId3ReregisteredAsSpId4.co'
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    expect(requiredUpdateReplicaSetOps).to.have.lengthOf(0)
-    expect(potentialSyncRequests).to.have.lengthOf(0)
-  })
-
-  it('if any replica set node is not in the map, issue reconfig', async function () {
-    // Mock the deregistered node to not have any spId
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 1,
-      'http://cnWithSpId2.co': 2
-    }
-
-    const thisContentNodeEndpoint = 'http://some_healthy_primary.co'
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://deregisteredCN.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://deregisteredCN.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.keys(['http://deregisteredCN.co'])
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[0]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId2.co')
-  })
-
-  it('if the self node (primary) and 1 secondary are healthy but not the other secondary, issue reconfig for the unhealthy secondary', async function () {
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 1,
-      'http://cnWithSpId2.co': 2,
-      'http://unhealthyCnWithSpId3.co': 3
-    }
-
-    const thisContentNodeEndpoint = 'http://some_healthy_primary.co'
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://unhealthyCnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-    const unhealthyPeers = new Set(['http://unhealthyCnWithSpId3.co'])
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        'http://unhealthyCnWithSpId3.co': {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    // Make sure that the unhealthy secondary put into `requiredUpdateReplicaSetOps`
-    expect(requiredUpdateReplicaSetOps).to.have.lengthOf(1)
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.property('size', 1)
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.keys(['http://unhealthyCnWithSpId3.co'])
-    expect(potentialSyncRequests).to.have.lengthOf(1)
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[0]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId2.co')
-  })
-
-  it('if the self node (primary) and and secondaries are healthy but sync success rate is low, issue reconfig', async function () {
-    config.set('minimumFailedSyncRequestsBeforeReconfig', 5)
-    config.set('minimumSecondaryUserSyncSuccessPercent', 25)
-    const endpointToSPIdMap = {
-      'http://some_healthy_primary.co': 1,
-      'http://cnWithSpId2.co': 2,
-      'http://cnWithSpId3.co': 3
-    }
-
-    const thisContentNodeEndpoint = 'http://some_healthy_primary.co'
-
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://some_healthy_primary.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-
-    const unhealthyPeers = new Set()
-    const userSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        'http://cnWithSpId2.co': {
-          successRate: 1,
-          successCount: 1,
-          failureCount: 0
-        },
-        'http://cnWithSpId3.co': {
-          successRate: 0.1,
-          successCount: 1,
-          failureCount: 9
-        }
-      }
-    }
-    const aggregateReconfigAndPotentialSyncOps =
-      getAggregateReconfigAndPotentialSyncOps(config)
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        endpointToSPIdMap,
-        thisContentNodeEndpoint
-      )
-
-    // Make sure that the CN with low sync success put into `requiredUpdateReplicaSetOps`
-    expect(requiredUpdateReplicaSetOps).to.have.lengthOf(1)
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.property('size', 1)
-    expect(requiredUpdateReplicaSetOps)
-      .to.have.nested.property('[0]')
-      .that.has.property('unhealthyReplicas')
-      .that.has.keys(['http://cnWithSpId3.co'])
-    expect(potentialSyncRequests).to.have.lengthOf(1)
-    expect(potentialSyncRequests)
-      .to.have.nested.property('[0]')
-      .that.has.property('endpoint')
-      .that.equals('http://cnWithSpId2.co')
-  })
-})
-
 describe('Test computeSyncModeForUserAndReplica()', function () {
   let primaryClock,
     secondaryClock,
@@ -993,9 +581,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return secondaryFilesHash
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -1020,9 +611,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return primaryFilesHashMock
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -1050,9 +644,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         throw new Error(errorMsg)
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       try {
         await computeSyncModeForUserAndReplica({

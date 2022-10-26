@@ -4,6 +4,7 @@ import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { AudiusTokenClient } from './AudiusTokenClient'
 import type { Contract } from 'web3-eth-contract'
 import type BN from 'bn.js'
+import type { ECDSASignature } from 'ethereumjs-util'
 
 export class WormholeClient {
   ethWeb3Manager: EthWeb3Manager
@@ -67,10 +68,10 @@ export class WormholeClient {
     fromAcct: string,
     amount: BN,
     chainId: number,
-    solanaAccount: string,
-    arbiterFee: string,
-    deadline: string,
-    signedDigest: { v: string; r: string; s: string },
+    solanaAccount: Buffer,
+    arbiterFee: BN,
+    deadline: number,
+    signedDigest: ECDSASignature,
     relayer: string
   ) {
     const method = this.WormholeContract.methods.transferTokens(
