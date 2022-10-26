@@ -1083,7 +1083,6 @@ def update_task(self):
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
                 while traverse_block.blockhash != intersect_block_hash:
-                    break
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash
