@@ -35,11 +35,24 @@ class DiskManager {
   }
 
   /**
+   *
+   * @param {string} path the path to get the size for
+   * @returns the string output of stdout
+   */
+  static async getDirSize(path) {
+    const stdout = await this._execShellCommand(`du -sh ${path}`)
+    return stdout
+  }
+
+  /**
    * Empties the tmp track artifacts directory of any old artifacts
    */
   static async emptyTmpTrackUploadArtifacts() {
     const dirPath = await this.getTmpTrackUploadArtifactsPath()
+    const dirSize = await this.getDirSize(dirPath)
     await fs.emptyDir(dirPath)
+
+    return dirSize
   }
 
   /**
