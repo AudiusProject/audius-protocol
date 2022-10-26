@@ -239,11 +239,15 @@ const mergePrimaryAndSecondaryController = async (req, _res) => {
     }
   }
 
-  await recurringSyncQueue.add('recurring-sync', {
-    syncType,
-    syncMode,
-    syncRequestParameters
-  })
+  await recurringSyncQueue.add(
+    'recurring-sync',
+    {
+      syncType,
+      syncMode,
+      syncRequestParameters
+    },
+    { lifo: !!forceWipe }
+  )
 
   return successResponse()
 }

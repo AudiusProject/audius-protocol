@@ -1,5 +1,5 @@
 import type Logger from 'bunyan'
-import type { Queue } from 'bullmq'
+import type { Queue, BulkJobOptions } from 'bullmq'
 import type {
   AnyJobParams,
   QueueNameToQueueMap,
@@ -7,7 +7,7 @@ import type {
   ParamsForJobsToEnqueue
 } from './types'
 import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
-import type { TQUEUE_NAMES } from './stateMachineConstants'
+import { TQUEUE_NAMES, SYNC_MODES } from './stateMachineConstants'
 
 import { instrumentTracing, tracing } from '../../tracer'
 
@@ -164,13 +164,22 @@ const enqueueJobs = async (
   try {
     const bulkAddResult = await queueToAddTo.addBulk(
       jobs.map((job) => {
-        return {
+        const jobInfo: { name: any; data: any; opts?: BulkJobOptions } = {
           name: 'defaultName',
           data: {
             enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
             ...job
           }
         }
+
+        if (
+          (job as any)?.syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
+          (job as any)?.syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
+        ) {
+          jobInfo.opts = { ...jobInfo.opts, lifo: true }
+        }
+
+        return jobInfo
       })
     )
     logger.info(
