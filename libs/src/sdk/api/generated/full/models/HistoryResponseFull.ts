@@ -31,54 +31,56 @@ import {
  * @export
  * @interface HistoryResponseFull
  */
-export interface HistoryResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof HistoryResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof HistoryResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof HistoryResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof HistoryResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<ActivityFull>}
-     * @memberof HistoryResponseFull
-     */
-    data?: Array<ActivityFull>;
-}
+export interface HistoryResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof HistoryResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof HistoryResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof HistoryResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof HistoryResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<ActivityFull>}
+        * @memberof HistoryResponseFull
+        */
+        data?: Array<ActivityFull>;
+    }
+
 

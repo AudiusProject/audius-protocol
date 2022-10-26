@@ -594,6 +594,8 @@ def cli(
             if environment == "prod":
                 # check healthcheck post-deploy
                 wait_time = time.time() + (30 * 60)
+                if len(release_summary["upgradeable"]) == 1:
+                    wait_time = time.time() + (1 * 60)
                 while time.time() < wait_time:
                     # throttle the amount of logs and request load during startup
                     time.sleep(30)

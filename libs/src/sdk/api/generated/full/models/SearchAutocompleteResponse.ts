@@ -31,54 +31,56 @@ import {
  * @export
  * @interface SearchAutocompleteResponse
  */
-export interface SearchAutocompleteResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchAutocompleteResponse
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchAutocompleteResponse
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchAutocompleteResponse
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SearchAutocompleteResponse
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchAutocompleteResponse
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchAutocompleteResponse
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof SearchAutocompleteResponse
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {SearchModel}
-     * @memberof SearchAutocompleteResponse
-     */
-    data?: SearchModel;
-}
+export interface SearchAutocompleteResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchAutocompleteResponse
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchAutocompleteResponse
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchAutocompleteResponse
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof SearchAutocompleteResponse
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof SearchAutocompleteResponse
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof SearchAutocompleteResponse
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof SearchAutocompleteResponse
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {SearchModel}
+        * @memberof SearchAutocompleteResponse
+        */
+        data?: SearchModel;
+    }
+
 

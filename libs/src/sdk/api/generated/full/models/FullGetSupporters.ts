@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullGetSupporters
  */
-export interface FullGetSupporters {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporters
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporters
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporters
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporters
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporters
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporters
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullGetSupporters
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<FullSupporter>}
-     * @memberof FullGetSupporters
-     */
-    data?: Array<FullSupporter>;
-}
+export interface FullGetSupporters 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporters
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporters
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporters
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporters
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporters
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporters
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullGetSupporters
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<FullSupporter>}
+        * @memberof FullGetSupporters
+        */
+        data?: Array<FullSupporter>;
+    }
+
 

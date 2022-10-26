@@ -238,13 +238,7 @@ async function _handleIssueSyncRequest({
       return { result: 'success_mode_disabled', syncReqsToEnqueue }
     }
 
-    const libs = await initAudiusLibs({
-      enableEthContracts: true,
-      enableContracts: false,
-      enableDiscovery: true,
-      enableIdentity: false,
-      logger
-    })
+    const libs = await initAudiusLibs({ logger })
     const userReplicaSet: ReplicaSetEndpoints =
       await getReplicaSetEndpointsByWallet({
         libs,
@@ -361,7 +355,9 @@ async function _handleIssueSyncRequest({
 
     return {
       result: 'failure_issue_sync_request',
-      error: `${logMsgString} || Error issuing sync request: ${e.message} - ${e.response?.data}`,
+      error: `${logMsgString} || Error issuing sync request: ${
+        e.message
+      } - ${JSON.stringify(e.response?.data)}`,
       syncReqsToEnqueue,
       additionalSync
     }

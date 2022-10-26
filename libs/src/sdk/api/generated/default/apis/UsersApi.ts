@@ -67,6 +67,9 @@ import {
     UserSearch,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UserTrackListenCountsResponse,
+    UserTrackListenCountsResponseFromJSON,
+    UserTrackListenCountsResponseToJSON,
     UsersByContentNode,
     UsersByContentNodeFromJSON,
     UsersByContentNodeToJSON,
@@ -386,6 +389,21 @@ export interface GetUserIDFromWalletRequest {
      * Wallet address
      */
     associatedWallet: string;
+}
+
+export interface GetUserMonthlyTrackListensRequest {
+    /**
+     * A User ID
+     */
+    id: string;
+    /**
+     * Start time from which to start results for user listen count data (inclusive).
+     */
+    startTime: string;
+    /**
+     * End time until which to cut off results of listen count data (not inclusive).
+     */
+    endTime: string;
 }
 
 export interface GetUserReplicaSetRequest {
@@ -1008,6 +1026,42 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
+    }
+
+    /**
+     * Gets the listen data for a user by month and track within a given time frame.
+     */
+    async getUserMonthlyTrackListens(requestParameters: GetUserMonthlyTrackListensRequest): Promise<NonNullable<UserTrackListenCountsResponse["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (requestParameters.startTime === null || requestParameters.startTime === undefined) {
+            throw new runtime.RequiredError('startTime','Required parameter requestParameters.startTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (requestParameters.endTime === null || requestParameters.endTime === undefined) {
+            throw new runtime.RequiredError('endTime','Required parameter requestParameters.endTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.startTime !== undefined) {
+            queryParameters['start_time'] = requestParameters.startTime;
+        }
+
+        if (requestParameters.endTime !== undefined) {
+            queryParameters['end_time'] = requestParameters.endTime;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/listen_counts_monthly`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<UserTrackListenCountsResponse["data"]>>;
     }
 
     /**

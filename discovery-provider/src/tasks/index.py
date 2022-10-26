@@ -864,7 +864,7 @@ def update_task(self):
 
             # Exit DB scope, revert/index functions will manage their own sessions
             # Perform revert operations
-            # revert_blocks(self, db, revert_blocks_list)
+            revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)

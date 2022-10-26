@@ -7,12 +7,12 @@ import type { WalletsToSecondariesMapping } from '../types'
 
 // eslint-disable-next-line import/no-unresolved
 import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { asyncRetry } from '../../../utils/asyncRetry'
 
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
 
-const asyncRetry = require('../../../utils/asyncRetry')
 const { logger } = require('../../../logging')
 
 const DBManager = require('../../../dbManager')
