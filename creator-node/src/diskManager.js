@@ -430,18 +430,23 @@ class DiskManager {
           } else cidsNotToDelete.push(cid)
         }
 
-        genericLogger.info(
-          `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
-        )
-        genericLogger.info(
-          `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
-        )
-
-        // gate deleting files on disk with the same env var
-        if (config.get('syncForceWipeEnabled') && cidsToDelete.length > 0) {
-          await this._execShellCommand(
-            `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+        if (cidsNotToDelete.length > 0) {
+          genericLogger.info(
+            `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
           )
+        }
+
+        if (cidsToDelete.length > 0) {
+          genericLogger.info(
+            `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+          )
+
+          // gate deleting files on disk with the same env var
+          if (config.get('syncForceWipeEnabled')) {
+            await this._execShellCommand(
+              `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+            )
+          }
         }
       } catch (e) {
         genericLogger.error(
