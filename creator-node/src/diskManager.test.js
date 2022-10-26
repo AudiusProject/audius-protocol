@@ -171,7 +171,7 @@ describe('Test DiskManager', function () {
 
   it('should list subdirectories in /file_storage/files', async function () {
     sandbox.stub(DiskManager, '_execShellCommand').resolves(`
-    ./
+    .
     ./d8A
     ./Pyx
     ./BJg
@@ -214,8 +214,6 @@ describe('Test DiskManager', function () {
     const cidsToFilePathMap = await DiskManager.listNestedCIDsInFilePath(
       `${DiskManager.getConfigStoragePath()}/files/b8p`
     )
-
-    console.log(cidsToFilePathMap)
 
     const cidsToFilePathMapExpectedValues = {
       QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp`,

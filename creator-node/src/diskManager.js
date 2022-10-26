@@ -358,7 +358,7 @@ class DiskManager {
       )
       // stdout is a string so split on newline and remove any empty strings
       for (const dir of stdout.split('\n')) {
-        const dirTrimmed = dir.replace('./', '').trim()
+        const dirTrimmed = dir.replace('.', '').replace('/', '').trim()
         // if dirTrimmed is a non-null string and is not just equal to base directory
         if (dirTrimmed) {
           subdirectories.push(`${fileStorageFilesDirPath}/${dirTrimmed}`)
