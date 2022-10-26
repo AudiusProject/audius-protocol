@@ -286,8 +286,10 @@ def process_batch_sol_reward_manager_txs(
             .filter(User.wallet.in_(eth_recipients), User.is_current == True)
             .all()
         )
-        users_map = {user[0]: user[1] for user in users}
-        user_bank_map = {user[0]: user[2] for user in users}
+
+        users_map = {
+            user[0]: {"user_id": user[1], "user_bank": user[2]} for user in users
+        }
 
         specifiers = [
             tx["transfer_instruction"]["specifier"]
@@ -329,7 +331,7 @@ def process_batch_sol_reward_manager_txs(
                     f"index_rewards_manager.py | Challenge specifier {specifier} not found"
                     "while processing disbursement"
                 )
-            if eth_recipient not in users_map or eth_recipient not in user_bank_map:
+            if eth_recipient not in users_map:
                 logger.error(
                     f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
                 )
@@ -343,10 +345,10 @@ def process_batch_sol_reward_manager_txs(
                 )
                 # Set this user's id and user bank to 0 instead of blocking indexing
                 # This state can be rectified asynchronously
-                users_map[eth_recipient] = 0
-                user_bank_map[eth_recipient] = 0
+                users_map[eth_recipient]["user_id"] = 0
+                users_map[eth_recipient]["user_bank"] = 0
 
-            user_id = users_map[eth_recipient]
+            user_id = users_map[eth_recipient]["user_id"]
             challenge_id = transfer_instr["challenge_id"]
             logger.info(
                 f"index_rewards_manager.py | found successful disbursement for user_id: [{user_id}]"
@@ -368,7 +370,7 @@ def process_batch_sol_reward_manager_txs(
             balance_change = postbalance - prebalance
             audio_tx_histories.append(
                 AudioTransactionsHistory(
-                    user_bank=user_bank_map[eth_recipient],
+                    user_bank=users_map[eth_recipient]["user_bank"],
                     slot=tx["slot"],
                     signature=tx["tx_sig"],
                     transaction_type=challenge_type_map[challenge_id],
