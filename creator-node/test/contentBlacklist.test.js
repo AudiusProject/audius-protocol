@@ -1183,7 +1183,7 @@ describe('test ContentBlacklist', function () {
     })
 
     // Return user and some track data
-    return { cnodeUser, ...trackUploadResp, sessionToken }
+    return { cnodeUser, ...trackUploadResp, trackId, sessionToken }
   }
 })
 
