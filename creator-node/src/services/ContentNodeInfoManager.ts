@@ -173,6 +173,7 @@ export async function getReplicaSetSpIdsByUserId({
 
     let errorMsg = null
     await asyncRetry({
+      logLabel: 'getReplicaSetSpIdsByUserId',
       options: {
         retries: MAX_RETRIES
       },
@@ -203,7 +204,8 @@ export async function getReplicaSetSpIdsByUserId({
           }
         } catch (e: any) {
           errorMsg = e.message
-        } // Ignore all errors until MAX_RETRIES exceeded
+          throw e
+        }
       }
     })
 
@@ -222,6 +224,7 @@ export async function getReplicaSetSpIdsByUserId({
     const MAX_RETRIES = 10
     let errorMsg = null
     await asyncRetry({
+      logLabel: 'getReplicaSetSpIdsByUserId',
       options: {
         retries: MAX_RETRIES
       },
@@ -244,10 +247,12 @@ export async function getReplicaSetSpIdsByUserId({
             if (replicaSet.primaryId === selfSpId) return
           } else {
             errorMsg = 'User replica not found in discovery'
+            throw new Error(errorMsg)
           }
         } catch (e: any) {
           errorMsg = e.message
-        } // Ignore all errors until MAX_RETRIES exceeded
+          throw e
+        }
       }
     })
 

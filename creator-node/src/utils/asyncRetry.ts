@@ -45,9 +45,8 @@ export function asyncRetry({
     onRetry: (err: any, i: number) => {
       if (err && log) {
         const logPrefix =
-          (logLabel ? `[${logLabel}] ` : '') +
-          `[asyncRetry:${asyncFn.name}] [attempt #${i}]`
-        logger.warn(`${logPrefix}: `, err.message || err)
+          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
+        logger.debug(`${logPrefix}: `, err.message || err)
       }
     },
     ...options
