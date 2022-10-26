@@ -1,6 +1,6 @@
 import { WidthSizes } from '@audius/common'
 import { BlurView } from '@react-native-community/blur'
-import { Animated, StyleSheet } from 'react-native'
+import { Animated, Platform, StyleSheet } from 'react-native'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { DynamicImage } from 'app/components/core'
@@ -67,16 +67,24 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
         styles={{ root: styles.imageRoot, image: styles.image }}
         resizeMode={isDefaultImage ? 'repeat' : undefined}
       >
-        <AnimatedBlurView
-          blurType={'dark'}
-          blurAmount={100}
-          style={[
-            { ...StyleSheet.absoluteFillObject, zIndex: 2 },
-            scrollY
-              ? { opacity: interpolateBlurViewOpacity(scrollY) }
-              : undefined
-          ]}
-        />
+        {/*
+          Disable blur on android because it causes a crash.
+          See https://github.com/software-mansion/react-native-screens/pull/1406
+          Updating to react-native-screens 3.16.0 did not seem to fix (for certain images)
+          Still seems to be an outstanding issue: https://github.com/Kureev/react-native-blur/issues/461
+        */}
+        {Platform.OS === 'ios' ? (
+          <AnimatedBlurView
+            blurType={'dark'}
+            blurAmount={100}
+            style={[
+              { ...StyleSheet.absoluteFillObject, zIndex: 2 },
+              scrollY
+                ? { opacity: interpolateBlurViewOpacity(scrollY) }
+                : undefined
+            ]}
+          />
+        ) : null}
       </DynamicImage>
       {isArtist ? (
         <Animated.View
