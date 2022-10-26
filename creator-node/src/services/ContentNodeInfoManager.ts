@@ -175,8 +175,7 @@ export async function getReplicaSetSpIdsByUserId({
     await asyncRetry({
       logLabel: 'getReplicaSetSpIdsByUserId',
       options: {
-        retries: MAX_RETRIES,
-        factor: 4
+        retries: MAX_RETRIES
       },
       asyncFn: async () => {
         try {
@@ -227,8 +226,7 @@ export async function getReplicaSetSpIdsByUserId({
     await asyncRetry({
       logLabel: 'getReplicaSetSpIdsByUserId',
       options: {
-        retries: MAX_RETRIES,
-        factor: 4
+        retries: MAX_RETRIES
       },
       asyncFn: async () => {
         try {
@@ -253,7 +251,7 @@ export async function getReplicaSetSpIdsByUserId({
         } catch (e: any) {
           errorMsg = e.message
           throw e
-        } 
+        }
       }
     })
 
