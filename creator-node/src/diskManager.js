@@ -397,8 +397,11 @@ class DiskManager {
         // if fileTrimmed is a non-null string and is not just equal to base directory
         if (fileTrimmed && fileTrimmed !== filesSubdirectory) {
           const parts = fileTrimmed.split('/')
+          console.log(parts)
           // returns the last CID in the event of dirCID
           const leafCID = parts[parts.length - 1]
+          console.log(leafCID)
+          console.log(fileTrimmed)
           cidsToFilePathMap[leafCID] = fileTrimmed
         }
       }
@@ -418,9 +421,7 @@ class DiskManager {
     for (let i = 0; i < subdirectories.length; i += 1) {
       try {
         const subdirectory = subdirectories[i]
-        genericLogger.info(
-          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
-        )
+
         const cidsToFilePathMap = await this.listNestedCIDsInFilePath(
           subdirectory
         )
@@ -434,6 +435,16 @@ class DiskManager {
             }
           }
         })
+
+        genericLogger.info(
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
+            subdirectories.length
+          }. got ${Object.keys(cidsToFilePathMap).length} files in folder and ${
+            queryResults.length
+          } results from db. files: ${Object.keys(
+            cidsToFilePathMap
+          ).toString()}`
+        )
 
         const cidsInDB = new Set()
         for (const file of queryResults) {
