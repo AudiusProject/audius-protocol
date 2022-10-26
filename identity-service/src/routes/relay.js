@@ -84,6 +84,24 @@ module.exports = function (app) {
         body.senderAddress &&
         body.encodedABI
       ) {
+        // fire and forget update handle if necessary for early anti-abuse measures
+        ;(async () => {
+          try {
+            const useProvisionalHandle = !user.handle && !user.blockchainUserId
+            if (body.handle && useProvisionalHandle) {
+              user.handle = body.handle
+              req.logger.info(
+                `Setting provisional handle for user ${body.handle}, wallet ${user.walletAddress}`
+              )
+              await user.save()
+            }
+          } catch (e) {
+            req.logger.error(
+              `Error setting provisional handle for user ${user.wallet}: ${e.message}`
+            )
+          }
+        })()
+
         // send tx
         let receipt
         const reqBodySHA = crypto
