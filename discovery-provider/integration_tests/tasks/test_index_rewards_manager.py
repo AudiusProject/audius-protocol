@@ -4,6 +4,11 @@ from integration_tests.utils import populate_mock_db
 from sqlalchemy import desc
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_rewards_manager import (
     fetch_and_parse_sol_rewards_transfer_instruction,
@@ -163,6 +168,16 @@ mock_tx_info = {
             ],
             "preTokenBalances": [
                 {
+                    "accountIndex": 1,
+                    "mint": "Hid8t4E7R6b6JCVHdiGcwYYq2s7gB9nfVjRZYr9YUTPp",
+                    "uiTokenAmount": {
+                        "amount": "9000000000",
+                        "decimals": 9,
+                        "uiAmount": 9000000000.0,
+                        "uiAmountString": "9000000000",
+                    },
+                },
+                {
                     "accountIndex": 3,
                     "mint": "Hid8t4E7R6b6JCVHdiGcwYYq2s7gB9nfVjRZYr9YUTPp",
                     "uiTokenAmount": {
@@ -171,7 +186,7 @@ mock_tx_info = {
                         "uiAmount": 1010000.0,
                         "uiAmountString": "1010000",
                     },
-                }
+                },
             ],
             "rewards": [],
             "status": {"Ok": None},
@@ -258,11 +273,20 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
                 "handle": "piazza",
                 "wallet": "0x0403be3560116a12b467855cb29a393174a59876",
             },
-        ]
+        ],
+        "user_bank_accounts": [
+            {
+                "ethereum_address": "0x0403be3560116a12b467855cb29a393174a59876",
+                "bank_account": "6ws9TtJrsRhCfMkhZqT1zULFxhasyPgGpKER4GfDhN9R",
+            }
+        ],
     }
 
     with db.scoped_session() as session:
-        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
+        challenge_type_map = {}
+        process_batch_sol_reward_manager_txs(
+            session, [parsed_tx], redis, challenge_type_map
+        )
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursement = disbursments[0]
@@ -274,6 +298,14 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
             .all()
         )
         assert len(reward_manager_tx_1) == 1
+        audio_tx_history_tx_1 = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == first_tx_sig)
+            .all()
+        )
+        assert len(audio_tx_history_tx_1) == 1
+        # Assert that this invalid user's bank account was set 0
+        assert audio_tx_history_tx_1[0].user_bank == "0"
 
     populate_mock_db(db, test_user_entries)
     parsed_tx["tx_sig"] = second_tx_sig
@@ -281,7 +313,9 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     parsed_tx["slot"] = next_slot
     parsed_tx["transfer_instruction"]["challenge_id"] = "tt"
     with db.scoped_session() as session:
-        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
+        process_batch_sol_reward_manager_txs(
+            session, [parsed_tx], redis, challenge_type_map
+        )
         disbursments = (
             session.query(ChallengeDisbursement)
             .order_by(desc(ChallengeDisbursement.slot))
@@ -306,3 +340,19 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
             .all()
         )
         assert len(reward_manager_tx_2) == 1
+        audio_tx_history_tx_2 = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == second_tx_sig)
+            .all()
+        )
+        assert len(audio_tx_history_tx_2) == 1
+        audio_tx_history = audio_tx_history_tx_2[0]
+        assert (
+            audio_tx_history.user_bank == "6ws9TtJrsRhCfMkhZqT1zULFxhasyPgGpKER4GfDhN9R"
+        )
+        assert audio_tx_history.transaction_type == TransactionType.trending_reward
+        assert audio_tx_history.method == TransactionMethod.receive
+        assert audio_tx_history.tx_metadata == "tt"
+        assert audio_tx_history.balance == 10000000000
+        assert audio_tx_history.change == 1000000000
+        assert audio_tx_history.slot == next_slot
