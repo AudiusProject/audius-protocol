@@ -169,7 +169,7 @@ export class File extends Base {
         minTimeout: 500,
         maxTimeout: 4000,
         factor: 3,
-        retries: 5,
+        retries: 3,
         onRetry: (err: any, i) => {
           // eslint-disable-next-line no-console
           console.log(`FetchCID attempt ${i} error: ${err}`)
