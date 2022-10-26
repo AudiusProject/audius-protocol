@@ -50,9 +50,14 @@ export function useNavigation<
       if (!isEqual(lastNavAction.current, config)) {
         ;(navigation as NativeStackNavigationProp<any>).push(...config)
         lastNavAction.current = config
-        setTimeout(() => {
+
+        // Reset lastNavAction when the transition ends
+        const unsubscribe = (
+          navigation as NativeStackNavigationProp<any>
+        ).addListener('transitionEnd', (e) => {
           lastNavAction.current = undefined
-        }, 500)
+          unsubscribe()
+        })
       }
     },
     [navigation, lastNavAction]
