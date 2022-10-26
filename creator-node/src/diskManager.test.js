@@ -171,11 +171,11 @@ describe('Test DiskManager', function () {
 
   it('should list subdirectories in /file_storage/files', async function () {
     sandbox.stub(DiskManager, '_execShellCommand').resolves(`
-    ${DiskManager.getConfigStoragePath()}/files
-    ${DiskManager.getConfigStoragePath()}/files/d8A
-    ${DiskManager.getConfigStoragePath()}/files/Pyx
-    ${DiskManager.getConfigStoragePath()}/files/BJg
-    ${DiskManager.getConfigStoragePath()}/files/nVU    
+    ./
+    ./d8A
+    ./Pyx
+    ./BJg
+    ./nVU    
     `)
 
     const subdirectories = await DiskManager.listSubdirectoriesInFiles()
@@ -202,6 +202,7 @@ describe('Test DiskManager', function () {
   it('should list subdirectories in /file_storage/files', async function () {
     sandbox.stub(DiskManager, '_execShellCommand').resolves(`
     ${DiskManager.getConfigStoragePath()}/files/b8p
+    ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp
     ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg
     ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ
     ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j
@@ -210,34 +211,53 @@ describe('Test DiskManager', function () {
     ${DiskManager.getConfigStoragePath()}/files/b8p/Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1    
     `)
 
-    const cids = await DiskManager.listNestedCIDsInFilePath(
+    const cidsToFilePathMap = await DiskManager.listNestedCIDsInFilePath(
       `${DiskManager.getConfigStoragePath()}/files/b8p`
     )
 
-    assert.deepStrictEqual(cids.length, 6)
+    console.log(cidsToFilePathMap)
+
+    const cidsToFilePathMapExpectedValues = {
+      QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp`,
+      QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg`,
+      QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ`,
+      QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j`,
+      QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa: `${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa`,
+      QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt: `${DiskManager.getConfigStoragePath()}/files/b8p/QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt`,
+      Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1: `${DiskManager.getConfigStoragePath()}/files/b8p/Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1`
+    }
+
     assert.deepStrictEqual(
-      cids[0],
-      `QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg`
+      Object.keys(cidsToFilePathMapExpectedValues).length,
+      7
     )
     assert.deepStrictEqual(
-      cids[1],
-      `QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ`
+      cidsToFilePathMap.QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp,
+      cidsToFilePathMapExpectedValues.QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp
     )
     assert.deepStrictEqual(
-      cids[2],
-      `QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j`
+      cidsToFilePathMap.QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg,
+      cidsToFilePathMapExpectedValues.QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg
     )
     assert.deepStrictEqual(
-      cids[3],
-      `QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa`
+      cidsToFilePathMap.QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ,
+      cidsToFilePathMapExpectedValues.QmbZbLbULdY43unyshauqt4tQTCQDagQsvRV177Zf1nwZQ
     )
     assert.deepStrictEqual(
-      cids[4],
-      `QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt`
+      cidsToFilePathMap.QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j,
+      cidsToFilePathMapExpectedValues.QmZANxdPEmNiE7Hvu7DnmYcGEWD44DXvt3d4ZrcZuJd32j
     )
     assert.deepStrictEqual(
-      cids[5],
-      `Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1`
+      cidsToFilePathMap.QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa,
+      cidsToFilePathMapExpectedValues.QmbfxoKEvpHTyEtn48bokMJmLxyjrAsJr9j8nmEYrRw2sa
+    )
+    assert.deepStrictEqual(
+      cidsToFilePathMap.QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt,
+      cidsToFilePathMapExpectedValues.QmZc3gcxU6LDakrkRfJpKQqo9dhHKPqS1z6HcQR1g5b8pt
+    )
+    assert.deepStrictEqual(
+      cidsToFilePathMap.Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1,
+      cidsToFilePathMapExpectedValues.Qme5FtyLtu3gKMmzZD6XnTSpMq1NCx3vQmm9ErQwsVb8p1
     )
   })
 })

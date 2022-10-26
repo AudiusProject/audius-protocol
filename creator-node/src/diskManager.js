@@ -340,19 +340,28 @@ class DiskManager {
   // lists all the folders in /file_storage/files/
   static async listSubdirectoriesInFiles() {
     const subdirectories = []
+    const fileStorageFilesDirPath = path.join(
+      this.getConfigStoragePath(),
+      'files'
+    ) // /file_storage/files
     try {
+      // returns list of directories like
+      // `
+      // ./
+      // ./d8A
+      // ./Pyx
+      // ./BJg
+      // ./nVU
+      // `
       const stdout = await this._execShellCommand(
-        `find ${path.join(this.getConfigStoragePath(), 'files')} -maxdepth 1`
+        `cd ${fileStorageFilesDirPath}; find . -maxdepth 1`
       )
       // stdout is a string so split on newline and remove any empty strings
       for (const dir of stdout.split('\n')) {
-        const dirTrimmed = dir.trim()
+        const dirTrimmed = dir.replace('./', '').trim()
         // if dirTrimmed is a non-null string and is not just equal to base directory
-        if (
-          dirTrimmed &&
-          dirTrimmed !== path.join(this.getConfigStoragePath(), 'files')
-        ) {
-          subdirectories.push(dirTrimmed)
+        if (dirTrimmed) {
+          subdirectories.push(`${fileStorageFilesDirPath}/${dirTrimmed}`)
         }
       }
 
@@ -365,8 +374,9 @@ class DiskManager {
   }
 
   // list all the CIDs in /file_storage/files/AqN
+  // returns mapping of {cid: filePath, cid: filePath ...}
   static async listNestedCIDsInFilePath(filesSubdirectory) {
-    const cids = []
+    const cidsToFilePathMap = {}
     // find files older than 3 days in filesSubdirectory (eg /file_storage/files/AqN)
     try {
       const stdout = await this._execShellCommand(
@@ -378,11 +388,13 @@ class DiskManager {
         // if fileTrimmed is a non-null string and is not just equal to base directory
         if (fileTrimmed && fileTrimmed !== filesSubdirectory) {
           const parts = fileTrimmed.split('/')
-          cids.push(parts[parts.length - 1])
+          // returns the last CID in the event of dirCID
+          const leafCID = parts[parts.length - 1]
+          cidsToFilePathMap[leafCID] = fileTrimmed
         }
       }
 
-      return cids
+      return cidsToFilePathMap
     } catch (e) {
       genericLogger.error(
         `Error in diskManager - listNestedCIDsInFilePath: ${e}`
@@ -390,7 +402,7 @@ class DiskManager {
     }
   }
 
-  static async sweepSubdirectoriesInFiles() {
+  static async sweepSubdirectoriesInFiles(redoJob = true) {
     const subdirectories = await this.listSubdirectoriesInFiles()
     if (!subdirectories) return
 
@@ -400,32 +412,30 @@ class DiskManager {
         genericLogger.info(
           `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
         )
-        const cids = await this.listNestedCIDsInFilePath(subdirectory)
-
-        // TODO - parallelize into batches
-        // const cidsArray = await Promise.all(subdirectories.slice(i, i+5).map(s => listNestedCIDsInFilePath(s)))
-        // const cids = cidsArray.flat()
+        const cidsToFilePathMap = await this.listNestedCIDsInFilePath(
+          subdirectory
+        )
 
         const queryResults = await models.File.findAll({
           attributes: ['multihash', 'storagePath'],
           raw: true,
           where: {
             multihash: {
-              [models.Sequelize.Op.in]: cids
+              [models.Sequelize.Op.in]: Object.keys(cidsToFilePathMap)
             }
           }
         })
 
-        const cidToFileLookup = {}
+        const cidsInDB = new Set()
         for (const file of queryResults) {
-          cidToFileLookup[file.multihash] = file.storagePath
+          cidsInDB.add(file.multihash)
         }
 
         const cidsToDelete = []
         const cidsNotToDelete = []
-        for (const cid of cids) {
+        for (const cid of cidsInDB) {
           // if db doesn't contain file, log as okay to delete
-          if (!cidToFileLookup.hasOwnProperty(cid)) {
+          if (!cidsInDB.has(cid)) {
             cidsToDelete.push(cid)
           } else cidsNotToDelete.push(cid)
         }
@@ -444,7 +454,9 @@ class DiskManager {
           // gate deleting files on disk with the same env var
           if (config.get('syncForceWipeEnabled')) {
             await this._execShellCommand(
-              `cd ${subdirectory}; rm ${cidsToDelete.join(' ')}`
+              `rm ${cidsToDelete
+                .map((cid) => cidsToFilePathMap[cid])
+                .join(' ')}`
             )
           }
         }
@@ -456,10 +468,11 @@ class DiskManager {
     }
 
     // keep calling this function recursively without an await so the original function scope can close
-    return this.sweepSubdirectoriesInFiles()
+    if (redoJob) return this.sweepSubdirectoriesInFiles()
   }
 
   static async _execShellCommand(cmd) {
+    genericLogger.info(`diskManager - about to call _execShellCommand: ${cmd}`)
     const { stdout, stderr } = await exec(`${cmd}`, {
       maxBuffer: 1024 * 1024 * 5
     }) // 5mb buffer
