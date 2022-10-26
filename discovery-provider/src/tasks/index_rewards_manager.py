@@ -113,28 +113,28 @@ def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
     cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
 
 
-CHALLENGE_TYPE_MAP: Dict[str, TransactionType] = {}
+challenge_type_map_global: Dict[str, TransactionType] = {}
 
 
 def get_challenge_type_map(
     session: Session,
 ):
     # pylint: disable=W0603
-    global CHALLENGE_TYPE_MAP
-    if not bool(CHALLENGE_TYPE_MAP):
+    global challenge_type_map_global
+    if not bool(challenge_type_map_global):
         challenges = (
             session.query(Challenge.id, Challenge.type)
             .filter(bool(Challenge.active))
             .all()
         )
-        CHALLENGE_TYPE_MAP = {
+        challenge_type_map_global = {
             challenge[0]: TransactionType.trending_reward
             if challenge[1] == ChallengeType.trending
             else TransactionType.user_reward
             for challenge in challenges
         }
 
-    return CHALLENGE_TYPE_MAP
+    return challenge_type_map_global
 
 
 def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
