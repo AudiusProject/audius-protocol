@@ -110,7 +110,11 @@ const startAppForPrimary = async () => {
 
   await setupDbAndRedis()
 
+  const startTime = Date.now()
   await DiskManager.emptyTmpTrackUploadArtifacts()
+  logger.info(
+    `old tmp track artifacts deleted : ${(Date.now() - startTime) * 1000}sec`
+  )
 
   // Don't await - run in background. Remove after v0.3.69
   // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
