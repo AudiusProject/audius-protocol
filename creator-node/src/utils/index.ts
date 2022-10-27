@@ -34,7 +34,6 @@ import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
 export type { ValuesOf } from './utils'
-export type { CustomRequest } from '../apiHelpers'
 export {
   isFqdn,
   timeout,
