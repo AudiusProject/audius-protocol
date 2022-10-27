@@ -21,8 +21,6 @@ export type ReplicaToAllUserInfoMaps = {
   }
 }
 export type UserSecondarySyncMetrics = {
-  successRate: number
-  successCount: number
   failureCount: number
 }
 export type UserSecondarySyncMetricsMap = {

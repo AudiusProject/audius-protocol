@@ -43,13 +43,13 @@ export async function computeUsersSecondarySyncSuccessRatesForToday(
   // Initialize sync success and failure counts for every secondary to 0
   const secondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
   const wallets = Object.keys(walletsToSecondariesMapping)
+
   for (const wallet of wallets) {
+    // why do we do the value || {} if it's gonna be overridden anyway
     const secondarySyncMetrics = secondarySyncMetricsMap[wallet] || {}
     for (const secondary of walletsToSecondariesMapping[wallet]) {
       secondarySyncMetrics[secondary] = {
-        successCount: 0,
-        failureCount: 0,
-        successRate: 1
+        failureCount: 0
       }
       secondarySyncMetricsMap[wallet] = secondarySyncMetrics
     }
@@ -70,34 +70,14 @@ export async function computeUsersSecondarySyncSuccessRatesForToday(
       continue
     }
 
-    if (outcome === Outcomes.SUCCESS) {
-      secondarySyncMetrics[secondary].successCount += count
-    } else if (outcome === Outcomes.FAILURE) {
+    if (outcome === Outcomes.FAILURE) {
       secondarySyncMetrics[secondary].failureCount += count
     }
     secondarySyncMetricsMap[wallet] = secondarySyncMetrics
-    // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
-  }
-
-  // For each secondary, compute and store successRate
-  for (const wallet of wallets) {
-    Object.keys(secondarySyncMetricsMap[wallet]).forEach((secondary) => {
-      const { successCount, failureCount } =
-        secondarySyncMetricsMap[wallet][secondary]
-      secondarySyncMetricsMap[wallet][secondary].successRate =
-        failureCount === 0 ? 1 : successCount / (successCount + failureCount)
-    })
+    // All keys should contain 'Failure' - ignore any keys that don't
   }
 
   return secondarySyncMetricsMap
-}
-
-export async function recordSuccess(
-  secondary: string,
-  wallet: string,
-  syncType: string
-) {
-  await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
 }
 
 export async function recordFailure(
@@ -292,7 +272,6 @@ async function _batchGetSyncRequestOutcomeMetricsForToday(wallets: string[]) {
 
 module.exports = {
   Outcomes,
-  recordSuccess,
   recordFailure,
   computeUsersSecondarySyncSuccessRatesForToday,
   getSyncRequestOutcomeMetrics,

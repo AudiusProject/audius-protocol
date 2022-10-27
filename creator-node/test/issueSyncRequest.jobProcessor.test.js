@@ -27,7 +27,6 @@ describe('test issueSyncRequest job processor', function () {
     sandbox,
     originalContentNodeEndpoint,
     logger,
-    recordSuccessStub,
     recordFailureStub,
     syncType,
     syncMode,
@@ -66,7 +65,6 @@ describe('test issueSyncRequest job processor', function () {
       warn: sandbox.stub(),
       error: sandbox.stub()
     }
-    recordSuccessStub = sandbox.stub().resolves()
     recordFailureStub = sandbox.stub().resolves()
     nock.disableNetConnect()
   })
@@ -100,7 +98,6 @@ describe('test issueSyncRequest job processor', function () {
       './SecondarySyncHealthTracker': {
         getSecondaryUserSyncFailureCountForToday:
           getSecondaryUserSyncFailureCountForTodayStub,
-        recordSuccess: recordSuccessStub,
         recordFailure: recordFailureStub
       },
       '../stateMachineUtils': {
@@ -302,7 +299,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result).to.have.deep.property('error', undefined)
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
-        const { parentSpanContext, ...rest } = job
+        const { ...rest } = job
         return rest
       }
     )
@@ -325,11 +322,6 @@ describe('test issueSyncRequest job processor', function () {
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
-    expect(recordSuccessStub).to.have.been.calledOnceWithExactly(
-      secondary,
-      wallet,
-      syncType
-    )
     expect(recordFailureStub).to.have.not.been.called
   })
 
@@ -383,7 +375,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result).to.have.deep.property('error', undefined)
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
-        const { parentSpanContext, ...rest } = job
+        const { ...rest } = job
         return rest
       }
     )
@@ -411,7 +403,6 @@ describe('test issueSyncRequest job processor', function () {
       wallet,
       syncType
     )
-    expect(recordSuccessStub).to.have.not.been.called
   })
 
   it('requires additional sync when secondary returns failure for syncUuid', async function () {
@@ -459,7 +450,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result).to.have.deep.property('error', undefined)
     const jobsToEnqueueRest = result.jobsToEnqueue[QUEUE_NAMES.MANUAL_SYNC].map(
       (job) => {
-        const { parentSpanContext, ...rest } = job
+        const { ...rest } = job
         return rest
       }
     )
@@ -484,7 +475,6 @@ describe('test issueSyncRequest job processor', function () {
       wallet,
       syncType
     )
-    expect(recordSuccessStub).to.have.not.been.called
   })
 
   it('does not require additional sync when secondary returns success for syncUuid', async function () {
@@ -529,11 +519,6 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(recordSuccessStub).to.have.been.calledOnceWithExactly(
-      secondary,
-      wallet,
-      syncType
-    )
     expect(recordFailureStub).to.have.not.been.called
   })
 

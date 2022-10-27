@@ -180,6 +180,7 @@ const computeUserSecondarySyncSuccessRatesMap = async (
   // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
   const walletsToSecondariesMapping: WalletsToSecondariesMapping = {}
   for (const user of users) {
+    // TODO: first of all.. these should be to spIDs not the endpoints
     const { wallet, secondary1, secondary2 } = user
     const secondaries = [secondary1, secondary2].filter(Boolean)
     walletsToSecondariesMapping[wallet] = secondaries
