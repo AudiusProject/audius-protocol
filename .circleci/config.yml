@@ -1049,6 +1049,13 @@ jobs:
                   echo "Branch << pipeline.git.branch  >>"
                   echo "Environment << parameters.environment >>"
                   echo "Service << parameters.service >>"
+            - run:
+                name: Install diff.sh
+                command: |
+                  curl -s \
+                    https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/diff.sh \
+                    --output diff.sh
+                  chmod +x diff.sh
             - diff-if-necessary:
                 service: << parameters.service >>
       # - when:
