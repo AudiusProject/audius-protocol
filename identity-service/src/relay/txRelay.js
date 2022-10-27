@@ -21,9 +21,6 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
-const WEB3_PROVIDER_URL = config.get('web3Provider')
-
-const accounts = new Accounts(WEB3_PROVIDER_URL)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -93,7 +90,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const redis = req.app.get('redis')
 
   // SEND to either POA or Nethermind here...
-  const sendToNethermind =  config.get('environment') === 'staging' ? true : false
+  const sendToNethermind = config.get('environment') === 'staging'
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -129,7 +126,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
     if (sendToNethermind) {
       // fire and forget
-      const ok = await wipRelayToNethermind(web3, contractAddress, encodedABI)
+      const ok = await wipRelayToNethermind(web3, encodedABI)
       txParams = ok.txParams
       txReceipt = ok.receipt
     } else {
@@ -343,13 +340,15 @@ const createAndSendTransaction = async (
 
 let inFlight = 0
 
-async function wipRelayToNethermind(web3, contractAddress, encodedABI) {
+async function wipRelayToNethermind(web3, encodedABI) {
   // staging EM address on nethermind NOT POA
 
   // any ol random private key
+  const accounts = new Accounts(config.get('web3Provider'))
+
   const wallet = accounts.create()
   const privateKey = wallet.privateKey.substring(2)
-  var start = new Date().getTime()
+  const start = new Date().getTime()
 
   try {
     const transaction = {
@@ -374,8 +373,8 @@ async function wipRelayToNethermind(web3, contractAddress, encodedABI) {
     )
     receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
 
-    var end = new Date().getTime()
-    var time = end - start
+    const end = new Date().getTime()
+    const time = end - start
     inFlight--
     console.log('wipRelayToNethermind ok', nnn, JSON.stringify(receipt))
     console.log('wipRelayToNethermind took', nnn, time, inFlight)
