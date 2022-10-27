@@ -17,21 +17,17 @@ down_revision = 'a8752810936c'
 branch_labels = None
 depends_on = None
 
-def load_data(file_name):
-    path = Path(__file__).parent.joinpath(f"../csvs/{file_name}")
-    with open(path, 'r') as f:
-        return f.readlines()
-
 def build_sql(up):
-    data = load_data("test_user_pinned_track_ids.csv")
     inner_sql = []
-    for entry in data:
-        handle, pinned_track_id = entry.split(",")
-        if up:
-            sql = f"UPDATE users SET artist_pick_track_id = {pinned_track_id} where is_current = True and handle = '{handle}';"
-        else:
-            sql = f"UPDATE users SET artist_pick_track_id = null where is_current = True and handle = '{handle}';"
-        inner_sql.append(sql)
+    path = Path(__file__).parent.joinpath("../csvs/test_user_pinned_track_ids.csv")
+    with open(path, 'r') as f:
+        for entry in f:
+            handle, pinned_track_id = entry.split(",")
+            if up:
+                sql = f"UPDATE users SET artist_pick_track_id = {pinned_track_id} where is_current = True and handle = '{handle}';"
+            else:
+                sql = f"UPDATE users SET artist_pick_track_id = null where is_current = True and handle = '{handle}';"
+            inner_sql.append(sql)
     return sa.text("begin; \n\n " + "\n".join(inner_sql) + " \n\n commit;")
 
 def upgrade():
