@@ -9,7 +9,9 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
-const StateMonitoringManager = require('../src/services/stateMachineManager/stateMonitoring')
+const {
+  StateMonitoringManager
+} = require('../src/services/stateMachineManager/stateMonitoring')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
