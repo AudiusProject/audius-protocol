@@ -493,12 +493,6 @@ const config = convict({
     env: 'premiumContentEnabled',
     default: false
   },
-  diskPruneEnabled: {
-    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
-    format: Boolean,
-    env: 'diskPruneEnabled',
-    default: false
-  },
 
   /** sync / snapback configs */
 
@@ -514,10 +508,16 @@ const config = convict({
     env: 'syncForceWipeDiskEnabled',
     default: false
   },
-  backgroundDiskCleanupEnabled: {
-    doc: 'whether or not this node can cleanup content on disk that is not available on DB in the background',
+  backgroundDiskCleanupCheckEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
     format: Boolean,
-    env: 'backgroundDiskCleanupEnabled',
+    env: 'backgroundDiskCleanupCheckEnabled',
+    default: false
+  },
+  backgroundDiskCleanupDeleteEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
+    format: Boolean,
+    env: 'backgroundDiskCleanupDeleteEnabled',
     default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {

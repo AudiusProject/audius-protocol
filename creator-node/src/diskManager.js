@@ -485,7 +485,7 @@ class DiskManager {
             `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
           )
 
-          if (config.get('backgroundDiskCleanupEnabled')) {
+          if (config.get('backgroundDiskCleanupDeleteEnabled')) {
             await this._execShellCommand(
               `rm ${cidsToDelete
                 .map((cid) => cidsToFilePathMap[cid])
