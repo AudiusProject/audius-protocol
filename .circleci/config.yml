@@ -1390,31 +1390,43 @@ workflows:
           job-regex: '.*reserving-stage-discovery.*'
           consider-branch: false
           dont-quit: true
+          context:
+            - circle-ci-api
       - queue/block_workflow:
           name: stage-creator-lock
           job-regex: '.*reserving-stage-(creator|user-metadata).*'
           consider-branch: false
           dont-quit: true
+          context:
+            - circle-ci-api
       - queue/block_workflow:
           name: stage-identity-lock
           job-regex: '.*reserving-stage-identity'
           consider-branch: false
           dont-quit: true
+          context:
+            - circle-ci-api
       - queue/block_workflow:
           name: prod-discovery-lock
           job-regex: 'releasing-discovery-foundation'
           consider-branch: false
           dont-quit: false
+          context:
+            - circle-ci-api
       - queue/block_workflow:
           name: prod-creator-lock
           job-regex: 'releasing-prod-(creator|user-metadata).*'
           consider-branch: false
           dont-quit: false
+          context:
+            - circle-ci-api
       - queue/block_workflow:
           name: prod-identity-lock
           job-regex: 'releasing-identity-foundation'
           consider-branch: false
           dont-quit: false
+          context:
+            - circle-ci-api
 
       # Auto-deploy `master` to staging
       - deploy:
