@@ -45,7 +45,7 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
       where: { walletAddress: emailUsersWalletAddress }
     })
 
-    logger.info(
+    logger.debug(
       `processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`
     )
 

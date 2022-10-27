@@ -13,15 +13,15 @@ import type {
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { CNodeHealthManager } from '../CNodeHealthManager'
+import config from '../../../config'
+import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
 
-const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
-const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -109,7 +109,10 @@ async function monitorState({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
+      unhealthyPeers = await CNodeHealthManager.getUnhealthyPeers(
+        users,
+        config.get('creatorNodeEndpoint')
+      )
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
@@ -142,7 +145,7 @@ async function monitorState({
 
     // Retrieve user info for all users and their current replica sets
     try {
-      const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
+      const retrieveUserInfoResp: any = await retrieveUserInfoFromReplicaSet(
         replicaSetNodesToUserWalletsMap
       )
       replicaToAllUserInfoMaps = retrieveUserInfoResp.replicaToAllUserInfoMaps

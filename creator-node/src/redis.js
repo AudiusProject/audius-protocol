@@ -6,7 +6,7 @@ const Redis = require('ioredis')
 
 const config = require('./config.js')
 const { logger: genericLogger } = require('./logging')
-const asyncRetry = require('./utils/asyncRetry')
+const { asyncRetry } = require('./utils/asyncRetry')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
@@ -92,7 +92,10 @@ const WalletWriteLock = {
         acquired = !!response
       },
       logger: genericLogger,
-      log: false
+      log: false,
+      options: {
+        maxTimeout: 5000
+      }
     })
 
     if (!acquired) {
@@ -116,7 +119,10 @@ const WalletWriteLock = {
         await redisClient.del(key)
       },
       logger: genericLogger,
-      log: false
+      log: false,
+      options: {
+        maxTimeout: 5000
+      }
     })
   },
 

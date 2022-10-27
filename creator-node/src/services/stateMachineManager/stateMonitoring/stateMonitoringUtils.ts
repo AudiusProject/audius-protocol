@@ -7,12 +7,12 @@ import type { WalletsToSecondariesMapping } from '../types'
 
 // eslint-disable-next-line import/no-unresolved
 import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { asyncRetry } from '../../../utils/asyncRetry'
 
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
 
-const asyncRetry = require('../../../utils/asyncRetry')
 const { logger } = require('../../../logging')
 
 const DBManager = require('../../../dbManager')
@@ -22,7 +22,8 @@ export const {
   GET_NODE_USERS_CANCEL_TOKEN_MS,
   GET_NODE_USERS_DEFAULT_PAGE_SIZE,
   SYNC_MODES,
-  FETCH_FILES_HASH_NUM_RETRIES
+  FETCH_FILES_HASH_NUM_RETRIES,
+  FETCH_FILES_HASH_MAX_TIMEOUT_MS
 } = require('../stateMachineConstants')
 
 /**
@@ -79,7 +80,7 @@ export const getNodeUsers = async (
   // Will throw error on non-200 response
   let nodeUsers
   try {
-    // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+    // Cancel the request if it hasn't succeeded/failed/timed out with timeout specified in config
     const cancelTokenSource = CancelToken.source()
     setTimeout(
       () =>
@@ -106,7 +107,10 @@ export const getNodeUsers = async (
           cancelToken: cancelTokenSource.token
         })
       },
-      logger
+      logger,
+      options: {
+        maxTimeout: GET_NODE_USERS_TIMEOUT_MS
+      }
     })
     nodeUsers = resp.data.data
   } catch (e: any) {
@@ -267,7 +271,10 @@ export const computeSyncModeForUserAndReplica = async ({
             clockMin: 0,
             clockMax: secondaryClock + 1
           }),
-        options: { retries: FETCH_FILES_HASH_NUM_RETRIES },
+        options: {
+          retries: FETCH_FILES_HASH_NUM_RETRIES,
+          maxTimeout: FETCH_FILES_HASH_MAX_TIMEOUT_MS
+        },
         logger,
         logLabel:
           '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'

@@ -6,8 +6,6 @@ import type {
   AnyJobParams
 } from './types'
 
-const _ = require('lodash')
-
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
 

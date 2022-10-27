@@ -58,7 +58,7 @@ export class StateMonitoringManager {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
       },
-      onFailCallback: (job: Job, error: any, prev: any) => {
+      onFailCallback: (job: Job, error: any, _prev: any) => {
         cNodeEndpointToSpIdMapQueueLogger.error(
           `Queue Job Failed - ID ${job?.id} - Error ${error}`
         )

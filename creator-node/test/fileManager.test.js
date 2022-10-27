@@ -119,7 +119,6 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
@@ -182,7 +181,6 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
@@ -258,7 +256,6 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
@@ -335,7 +332,6 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
@@ -401,7 +397,6 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
@@ -463,7 +458,6 @@ describe('test fileManager', () => {
       })
       try {
         await fetchFileFromNetworkAndWriteToDisk({
-          libs: libsMock,
           gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),

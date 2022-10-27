@@ -49,9 +49,9 @@ class MonitoringQueue {
       this.seedInitialValues()
     }
     if (clusterUtils.isThisWorkerSpecial()) {
-      const worker = new Worker(
+      const _worker = new Worker(
         'monitoring-queue',
-        async (job) => {
+        async (_job) => {
           try {
             await this.logStatus('Starting')
 

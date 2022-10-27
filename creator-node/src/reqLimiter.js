@@ -179,7 +179,7 @@ const batchCidsExistReqLimiter = rateLimit({
   }
 })
 
-const onLimitReached = (req, res, options) => {
+const onLimitReached = (req, _res, _options) => {
   req.logger.warn(req.rateLimit, `Rate Limit Hit`)
 }
 

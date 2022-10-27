@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "1.0.14",
+  "version": "1.0.19",
   "audius": {
-    "releaseSHA": "d810251114926eaed00c466b67b83f2093d35445"
+    "releaseSHA": "0a307f67af9a7dc7a6128b181bce45d92d9492df"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -133,7 +133,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/master/libs"
+    "url": "git+https://github.com/AudiusProject/audius-protocol/tree/main/libs"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -143,5 +143,5 @@
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
-  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/master/libs"
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/libs"
 }

@@ -43,6 +43,7 @@ describe('test updateReplicaSet job processor', function () {
     await server.close()
     sandbox.restore()
     config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
+    config.set('reconfigModePrimaryOnly', false)
     logger = null
     nock.cleanAll()
     nock.enableNetConnect()
@@ -74,7 +75,8 @@ describe('test updateReplicaSet job processor', function () {
     getNewOrExistingSyncReqStub,
     retrieveClockValueForUserFromReplicaStub,
     maxSelectNewReplicaSetAttempts = 100,
-    cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP
+    cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
+    customConfig = config
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
@@ -129,7 +131,7 @@ describe('test updateReplicaSet job processor', function () {
     const updateReplicaSet = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
-        '../../../config': config,
+        '../../../config': customConfig,
         '../../initAudiusLibs': sandbox.stub().resolves(audiusLibsStub),
         './stateReconciliationUtils': {
           getNewOrExistingSyncReq: getNewOrExistingSyncReqStub
@@ -189,7 +191,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
     })
@@ -272,7 +274,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
@@ -321,6 +323,423 @@ describe('test updateReplicaSet job processor', function () {
       expect(jobs[i].syncMode).to.equal(SYNC_MODES.SyncSecondaryFromPrimary)
       expect(jobs[i].userWallet).to.equal(wallet)
     }
+  })
+
+  it('reconfigs primary when primary is unhealthy and all reconfigs are enabled', async function () {
+    // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      return { syncReqToEnqueue: args }
+    })
+
+    // Stub audiusLibs to return all nodes as healthy except primary
+    const healthyNodes = {
+      [secondary1]: '',
+      [secondary2]: '',
+      [fourthHealthyNode]: '',
+      [fifthHealthyNode]: ''
+    }
+
+    // Mark primary as unhealthy and fourthHealthyNode+fifthHealthyNode as not having any user state
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
+    const unhealthyReplicas = [primary]
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 },
+      [fifthHealthyNode]: { clock: -1 }
+    }
+
+    const updateReplicaSetJobProcessor = getJobProcessorStub({
+      healthyNodes,
+      getNewOrExistingSyncReqStub,
+      retrieveClockValueForUserFromReplicaStub
+    })
+
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      nodesToReconfigOffOf: unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key]
+    })
+    const { metricsToRecord, newReplicaSet, jobsToEnqueue } = output
+
+    // Verify metrics record a successful reconfig
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
+    // Verify job outputs the correct results: replace primary with one of secondaries and elect new secondary
+    expect(output.errorMsg).to.equal('')
+    expect(output.issuedReconfig).to.be.true
+    expect(newReplicaSet.newPrimary).to.be.oneOf([secondary1, secondary2])
+    // Replacement nodes are randomly so we can't enforce order of secondaries
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([
+      secondary1,
+      secondary2
+    ])
+    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    expect(newReplicaSet.issueReconfig).to.be.true
+    expect(newReplicaSet.reconfigType).to.equal(
+      RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+    expect(output.healthyNodes).to.eql([
+      secondary1,
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
+    const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
+    expect(jobs).to.have.lengthOf(2)
+    // Verify sync from primary to new secondary1 and new secondary2
+    for (let i = 0; i < 1; i++) {
+      expect(jobs[i].primaryEndpoint).to.equal(newReplicaSet.newPrimary)
+      expect(jobs[i].secondaryEndpoint).to.equal(newSecondaries[i])
+      expect(jobs[i].syncType).to.equal(SyncType.Recurring)
+      expect(jobs[i].syncMode).to.equal(SYNC_MODES.SyncSecondaryFromPrimary)
+      expect(jobs[i].userWallet).to.equal(wallet)
+    }
+  })
+
+  it('Reconfigs primary and 1 secondary when primary and 1 secondary are unhealthy and reconfigs are enabled', async function () {
+    // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      return { syncReqToEnqueue: args }
+    })
+
+    // Stub audiusLibs to return all nodes as healthy except primary and secondary2
+    const healthyNodes = {
+      [secondary1]: '',
+      [fourthHealthyNode]: '',
+      [fifthHealthyNode]: ''
+    }
+
+    // Mark primary and secondary2 as unhealthy and fourthHealthyNode+fifthHealthyNode as not having any user state
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
+    const unhealthyReplicas = [primary, secondary2]
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 },
+      [fifthHealthyNode]: { clock: -1 }
+    }
+
+    const updateReplicaSetJobProcessor = getJobProcessorStub({
+      healthyNodes,
+      getNewOrExistingSyncReqStub,
+      retrieveClockValueForUserFromReplicaStub
+    })
+
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      nodesToReconfigOffOf: unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key]
+    })
+    const { metricsToRecord, newReplicaSet, jobsToEnqueue } = output
+
+    // Verify metrics record a successful reconfig
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
+    // Verify job outputs the correct results: replace primary with one of secondaries and elect new secondary
+    expect(output.errorMsg).to.equal('')
+    expect(output.issuedReconfig).to.be.true
+    expect(newReplicaSet.newPrimary).to.equal(secondary1)
+    // Replacement nodes are randomly so we can't enforce order of secondaries
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+      fourthHealthyNode,
+      fifthHealthyNode
+    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.issueReconfig).to.be.true
+    expect(newReplicaSet.reconfigType).to.equal(
+      RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+    expect(output.healthyNodes).to.eql([
+      secondary1,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
+    const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
+    expect(jobs).to.have.lengthOf(2)
+    // Verify sync from primary to new secondary1 and new secondary2
+    for (let i = 0; i < 1; i++) {
+      expect(jobs[i].primaryEndpoint).to.equal(newReplicaSet.newPrimary)
+      expect(jobs[i].secondaryEndpoint).to.equal(newSecondaries[i])
+      expect(jobs[i].syncType).to.equal(SyncType.Recurring)
+      expect(jobs[i].syncMode).to.equal(SYNC_MODES.SyncSecondaryFromPrimary)
+      expect(jobs[i].userWallet).to.equal(wallet)
+    }
+  })
+
+  it('Does not issue any reconfig when primary and 1 secondary are unhealthy and only secondary mode is enabled', async function () {
+    // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      return { syncReqToEnqueue: args }
+    })
+
+    // Stub audiusLibs to return all nodes as healthy except primary and secondary1
+    const healthyNodes = {
+      [secondary2]: '',
+      [fourthHealthyNode]: '',
+      [fifthHealthyNode]: ''
+    }
+
+    // Mark primary and secondary1 as unhealthy and fourthHealthyNode+fifthHealthyNode as not having any user state
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
+    const unhealthyReplicas = [primary, secondary1]
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 },
+      [fifthHealthyNode]: { clock: -1 }
+    }
+
+    const updateReplicaSetJobProcessor = getJobProcessorStub({
+      healthyNodes,
+      getNewOrExistingSyncReqStub,
+      retrieveClockValueForUserFromReplicaStub
+    })
+
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      nodesToReconfigOffOf: unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
+    })
+    const { metricsToRecord, errorMsg, issuedReconfig, newReplicaSet, jobsToEnqueue } = output
+
+    // Verify metrics record a successful reconfig
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success_issue_reconfig_disabled')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
+    // Verify job outputs the correct results: find update from primary to secondary1 and 2 new nodes selected, but not issued
+    expect(errorMsg).to.equal('')
+    expect(issuedReconfig).to.be.false
+    expect(newReplicaSet.newPrimary).to.equal(secondary2)
+    // Replacement nodes are randomly so we can't enforce order of secondaries
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([fourthHealthyNode, fifthHealthyNode])
+    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+      fourthHealthyNode,
+      fifthHealthyNode
+    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.issueReconfig).to.be.false
+    expect(newReplicaSet.reconfigType).to.equal(
+      RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+    expect(output.healthyNodes).to.eql([
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    expect(jobsToEnqueue).to.equal(undefined)
+  })
+
+  it('Reconfigs primary when primary is unhealthy, primary only override is enabled, and all reconfig modes are enabled', async function () {
+    // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      return { syncReqToEnqueue: args }
+    })
+
+    // Stub audiusLibs to return all nodes as healthy except primary and secondary2
+    const healthyNodes = {
+      [secondary1]: '',
+      [secondary2]: '',
+      [fourthHealthyNode]: '',
+      [fifthHealthyNode]: ''
+    }
+
+    // Mark primary and secondary2 as unhealthy and fourthHealthyNode+fifthHealthyNode as not having any user state
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
+    const unhealthyReplicas = [primary]
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 },
+      [fifthHealthyNode]: { clock: -1 }
+    }
+
+    const customConfig = config
+    customConfig.set('reconfigModePrimaryOnly', true)
+    const updateReplicaSetJobProcessor = getJobProcessorStub({
+      healthyNodes,
+      getNewOrExistingSyncReqStub,
+      retrieveClockValueForUserFromReplicaStub,
+      customConfig
+    })
+
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      nodesToReconfigOffOf: unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key]
+    })
+    const { metricsToRecord, newReplicaSet, jobsToEnqueue } = output
+
+    // Verify metrics record a successful reconfig
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
+    // Verify job outputs the correct results: replace primary with one of secondaries and elect new secondary
+    expect(output.errorMsg).to.equal('')
+    expect(output.issuedReconfig).to.be.true
+    expect(newReplicaSet.newPrimary).to.be.oneOf([secondary1, secondary2])
+    // Replacement nodes are randomly so we can't enforce order of secondaries
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([
+      secondary1,
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ]).and.not.equal(newReplicaSet.primary)
+    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.issueReconfig).to.be.true
+    expect(newReplicaSet.reconfigType).to.equal(
+      RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+    expect(output.healthyNodes).to.eql([
+      secondary1,
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
+    const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
+    expect(jobs).to.have.lengthOf(2)
+    // Verify sync from primary to new secondary1 and new secondary2
+    for (let i = 0; i < 1; i++) {
+      expect(jobs[i].primaryEndpoint).to.equal(newReplicaSet.newPrimary)
+      expect(jobs[i].secondaryEndpoint).to.equal(newSecondaries[i])
+      expect(jobs[i].syncType).to.equal(SyncType.Recurring)
+      expect(jobs[i].syncMode).to.equal(SYNC_MODES.SyncSecondaryFromPrimary)
+      expect(jobs[i].userWallet).to.equal(wallet)
+    }
+  })
+
+  it('Does not issue reconfig when secondary is unhealthy, primary only override is enabled, and all reconfig modes are enabled', async function () {
+    // A sync will be needed to this node, so stub returning a successful new sync and no duplicate sync
+    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
+      return { syncReqToEnqueue: args }
+    })
+
+    // Stub audiusLibs to return all nodes as healthy except secondary1
+    const healthyNodes = {
+      [primary]: '',
+      [secondary2]: '',
+      [fourthHealthyNode]: '',
+      [fifthHealthyNode]: ''
+    }
+
+    // Mark secondary1 as unhealthy and fourthHealthyNode+fifthHealthyNode as not having any user state
+    const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
+    const unhealthyReplicas = [secondary1]
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 },
+      [fifthHealthyNode]: { clock: -1 }
+    }
+
+    const customConfig = config
+    customConfig.set('reconfigModePrimaryOnly', true)
+    const updateReplicaSetJobProcessor = getJobProcessorStub({
+      healthyNodes,
+      getNewOrExistingSyncReqStub,
+      retrieveClockValueForUserFromReplicaStub,
+      customConfig
+    })
+
+    const output = await updateReplicaSetJobProcessor({
+      logger,
+      wallet,
+      userId,
+      primary,
+      secondary1,
+      secondary2,
+      nodesToReconfigOffOf: unhealthyReplicas,
+      replicaToUserInfoMap,
+      enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
+    })
+    const { metricsToRecord, errorMsg, issuedReconfig, newReplicaSet, jobsToEnqueue } = output
+
+    // Verify metrics record a successful reconfig
+    expect(metricsToRecord[0].metricLabels.result).to.equal('success_issue_reconfig_disabled')
+    expect(metricsToRecord[0].metricName).to.equal(
+      'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
+    )
+    expect(metricsToRecord[0].metricType).to.equal('HISTOGRAM_OBSERVE')
+
+    // Verify job outputs the correct results: find update from primary to secondary1 and 2 new nodes selected, but not issued
+    expect(errorMsg).to.equal('')
+    expect(issuedReconfig).to.be.false
+    expect(newReplicaSet.newPrimary).to.equal(primary)
+    // Replacement nodes are randomly so we can't enforce order of secondaries
+    expect(newReplicaSet.newSecondary1).to.equal(secondary2)
+    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+      fourthHealthyNode,
+      fifthHealthyNode
+    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.issueReconfig).to.be.false
+    expect(newReplicaSet.reconfigType).to.equal(
+      RECONFIG_MODES.ONE_SECONDARY.key
+    )
+    expect(output.healthyNodes).to.eql([
+      primary,
+      secondary2,
+      fourthHealthyNode,
+      fifthHealthyNode
+    ])
+    expect(jobsToEnqueue).to.equal(undefined)
   })
 
   it('reconfigs 2 secondaries when 1 secondaries is unhealthy, the other secondary was deregistered, and reconfigs are enabled', async function () {
@@ -364,7 +783,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2: '', // Make secondary2 be unhealthy empty because it was deregistered (this is what happens in prod)
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
@@ -415,7 +834,7 @@ describe('test updateReplicaSet job processor', function () {
     }
   })
 
-  it('reconfigs 1 secondary when one secondary is unhealthy but reconfigs are disabled', async function () {
+  it('Does not issue any reconfigs when one secondary is unhealthy but reconfigs are disabled', async function () {
     // It should short-circuit before trying to sync -- no sync will be needed
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error('This was not supposed to be called')
@@ -451,7 +870,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
     })
@@ -518,7 +937,7 @@ describe('test updateReplicaSet job processor', function () {
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicas,
+      nodesToReconfigOffOf: unhealthyReplicas,
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
     })
@@ -535,7 +954,7 @@ describe('test updateReplicaSet job processor', function () {
 
     // Verify job outputs the correct results: entire replica set is falsy because we can't sync if all nodes in the RS are unhealthy
     expect(rest).to.be.deep.equal({
-      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfUnhealthyReplicas=3 numberOfEmptyReplicas=0 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
+      errorMsg: `Error: [_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[] numberOfNodesToReconfigOffOf=3 numberOfEmptyReplicas=0 healthyNodes=${primary},${secondary2},${fourthHealthyNode} || Not enough healthy nodes found to issue new replica set after 100 attempts`,
       issuedReconfig: false,
       newReplicaSet: {
         newPrimary: null,

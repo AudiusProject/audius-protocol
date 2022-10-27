@@ -308,14 +308,14 @@ const makeQueue = ({
     limiter
   })
   if (limiter) {
-    const scheduler = new QueueScheduler(name, { connection })
+    const _scheduler = new QueueScheduler(name, { connection })
   }
 
   _registerQueueEvents(worker, logger)
   queue.on(
     'failed',
     onFailCallback ||
-      ((job, error, prev) => {
+      ((job, error, _prev) => {
         const loggerWithId = createChildLogger(logger, {
           jobId: job?.id || 'unknown'
         })
@@ -333,16 +333,16 @@ const makeQueue = ({
 }
 
 const _registerQueueEvents = (worker, queueLogger) => {
-  worker.on('active', (job, prev) => {
+  worker.on('active', (job, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId: job.id })
-    logger.info('Job active')
+    logger.debug('Job active')
   })
   worker.on('error', (error) => {
     queueLogger.error(`Job error - ${error}`)
   })
-  worker.on('stalled', (jobId, prev) => {
+  worker.on('stalled', (jobId, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId })
-    logger.info('Job stalled')
+    logger.debug('Job stalled')
   })
 }
 
