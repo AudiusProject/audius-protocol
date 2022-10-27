@@ -521,6 +521,11 @@ const _deprecatedAdditionalSyncIsRequired = async (
   let additionalSyncIsRequired
   let outcome
   if (secondaryCaughtUpToPrimary) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      secondaryUrl,
+      userWallet,
+      syncType
+    )
     outcome = 'success_secondary_caught_up'
     additionalSyncIsRequired = false
     logger.info(
@@ -530,6 +535,11 @@ const _deprecatedAdditionalSyncIsRequired = async (
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
   } else if (finalSecondaryClock > initialSecondaryClock) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      secondaryUrl,
+      userWallet,
+      syncType
+    )
     additionalSyncIsRequired = true
     outcome = 'success_secondary_partially_caught_up'
     logger.info(
@@ -613,7 +623,13 @@ const _additionalSyncIsRequired = async (
     }
   }
 
-  if (!syncStatus.startsWith('success')) {
+  if (syncStatus.startsWith('success')) {
+    await SecondarySyncHealthTracker.recordSuccess(
+      targetNode,
+      userWallet,
+      syncType
+    )
+  } else {
     await SecondarySyncHealthTracker.recordFailure(
       targetNode,
       userWallet,

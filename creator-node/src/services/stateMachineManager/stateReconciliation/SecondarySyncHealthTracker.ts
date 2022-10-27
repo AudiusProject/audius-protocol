@@ -92,6 +92,14 @@ export async function computeUsersSecondarySyncSuccessRatesForToday(
   return secondarySyncMetricsMap
 }
 
+export async function recordSuccess(
+  secondary: string,
+  wallet: string,
+  syncType: string
+) {
+  await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
+}
+
 export async function recordFailure(
   secondary: string,
   wallet: string,
@@ -284,6 +292,7 @@ async function _batchGetSyncRequestOutcomeMetricsForToday(wallets: string[]) {
 
 module.exports = {
   Outcomes,
+  recordSuccess,
   recordFailure,
   computeUsersSecondarySyncSuccessRatesForToday,
   getSyncRequestOutcomeMetrics,
