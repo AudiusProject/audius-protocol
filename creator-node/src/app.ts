@@ -55,8 +55,13 @@ function _setupRouteDurationTracking(routers: IRoute[]) {
   let layers = routers.map((route: IRoute) => route.stack)
   layers = _.flatten(layers)
 
-  const routesWithoutParams = []
-  const routesWithParams = []
+  const allRoutes = []
+  const routesWithoutParams: {
+    [key: string]: { method: string; regex: RegExp }
+  } = {}
+
+  const routesWithParams: { method: string; regex: RegExp; path: string }[] = []
+
   for (const layer of layers) {
     const path = layer.route.path
     const method = Object.keys(layer.route.methods)[0]
@@ -64,6 +69,8 @@ function _setupRouteDurationTracking(routers: IRoute[]) {
 
     if (Array.isArray(path)) {
       path.forEach((p) => {
+        allRoutes.push({ path: p, method, regex })
+
         if (p.includes(':')) {
           routesWithParams.push({
             path: p,
@@ -71,14 +78,12 @@ function _setupRouteDurationTracking(routers: IRoute[]) {
             regex
           })
         } else {
-          routesWithoutParams.push({
-            path: p,
-            method,
-            regex
-          })
+          routesWithoutParams[p] = { method, regex }
         }
       })
     } else {
+      allRoutes.push({ path, method, regex })
+
       if (path.includes(':')) {
         routesWithParams.push({
           path,
@@ -86,11 +91,7 @@ function _setupRouteDurationTracking(routers: IRoute[]) {
           regex
         })
       } else {
-        routesWithoutParams.push({
-          path,
-          method,
-          regex
-        })
+        routesWithoutParams[path] = { method, regex }
       }
     }
   }
@@ -98,7 +99,7 @@ function _setupRouteDurationTracking(routers: IRoute[]) {
   return {
     routesWithoutParams,
     routesWithParams,
-    routes: [...routesWithParams, ...routesWithoutParams]
+    routes: allRoutes
   }
 }
 
@@ -137,7 +138,8 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
     replicaSetRoutes
   ]
 
-  const { routesWithParams, routes } = _setupRouteDurationTracking(routers)
+  const { routesWithParams, routes, routesWithoutParams } =
+    _setupRouteDurationTracking(routers)
 
   const prometheusRegistry = serviceRegistry.prometheusRegistry
 
@@ -160,6 +162,43 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
       buckets: [0.2, 0.5, ...(exponentialBucketsRange(1, 60, 4) as number[])],
       // Do not register the default /metrics route, since we have the /prometheus_metrics_worker
       autoregister: false,
+      // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
+      bypass: function (inputReq) {
+        const req = inputReq as CustomRequest
+        const path = prometheusMiddleware.normalizePath(
+          req,
+          {} /* empty option */
+        )
+        try {
+          for (const { regex, path: normalizedPath } of routes) {
+            const match = path.match(regex)
+            if (match) {
+              req.normalizedPath = normalizedPath
+              return false
+            }
+          }
+        } catch (e: any) {
+          req.logger.warn(
+            {
+              middleware: 'PrometheusMiddleware',
+              function: 'bypass',
+              requestRoute: path
+            },
+            `Could not match on regex: ${e.message}`
+          )
+        }
+
+        // This so that routes like `/ipfs/<cid>/but/other/stuff/too` don't get tracked
+
+        // If this request is for a route with no params, do not bypass
+        if (routesWithoutParams[path]) {
+          req.normalizedPath = path
+          return false
+        }
+
+        // If reached here, is an unrecognizable path. Do not track
+        return true
+      },
       // Normalizes the path to be tracked in this middleware. For routes with route params,
       // this fn maps those routes to generic paths. e.g. /ipfs/QmSomeCid -> /ipfs/#CID
       normalizePath: function (inputReq, opts) {
@@ -179,34 +218,6 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
           )
         }
         return path
-      },
-      // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
-      // Technically, this function is redundant because we specify the routes to match on in the first
-      // param of app.use([paths,]). This fn is used for specific metric tracking
-      bypass: function (inputReq) {
-        const req = inputReq as CustomRequest
-        const path = prometheusMiddleware.normalizePath(
-          req,
-          {} /* empty option */
-        )
-        try {
-          for (const { regex, path: normalizedPath } of routes) {
-            const match = path.match(regex)
-            if (match) {
-              req.normalizedPath = normalizedPath
-              return false
-            }
-          }
-        } catch (e: any) {
-          req.logger.warn(
-            { middleware: 'PrometheusMiddleware', function: 'bypass' },
-            `Could not match on regex: ${e.message}`
-          )
-        }
-
-        // Should not reach here, but in case it does, always track metrics on
-        // an explicitly defined route
-        return false
       }
     })
   )
