@@ -177,7 +177,7 @@ const startAppForPrimary = async () => {
 
   // do not await this, this should just run in background for now
   // wait one minute before starting this because it might cause init to degrade
-  if (config.get('diskPruneEnabled')) {
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
     setTimeout(() => {
       DiskManager.sweepSubdirectoriesInFiles()
     }, 60_000)
