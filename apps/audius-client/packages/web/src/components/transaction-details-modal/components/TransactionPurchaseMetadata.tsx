@@ -30,46 +30,62 @@ export const TransactionPurchaseMetadata = ({
       <Block header={messages.cost}>
         <IconUSD />
         <span className={styles.amount}>
-          {formatNumberString(metadata.usd, { minDecimals: 2, maxDecimals: 2 })}
+          {metadata.usd
+            ? formatNumberString(metadata.usd, {
+                minDecimals: 2,
+                maxDecimals: 2
+              })
+            : '?'}
         </span>
         <span className={styles.label}>{messages.usd}</span>
       </Block>
       <Block
         header={
-          <a
-            className={styles.link}
-            href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
-            target='_blank'
-            title={messages.viewOnExplorer}
-            rel='noreferrer'
-          >
-            {messages.purchased} <IconExternalLink />
-          </a>
+          metadata.purchaseTransactionId ? (
+            <a
+              className={styles.link}
+              href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
+              target='_blank'
+              title={messages.viewOnExplorer}
+              rel='noreferrer'
+            >
+              {messages.purchased} <IconExternalLink />
+            </a>
+          ) : (
+            messages.purchased
+          )
         }
       >
         <IconSOL />
-
         <span className={styles.amount}>
-          {formatNumberString(metadata.sol, { maxDecimals: 2 })}
+          {metadata.sol
+            ? formatNumberString(metadata.sol, { maxDecimals: 2 })
+            : '?'}
         </span>
         <span className={styles.label}>{messages.sol}</span>
       </Block>
       <Block
         header={
-          <a
-            className={styles.link}
-            href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
-            target='_blank'
-            title={messages.viewOnExplorer}
-            rel='noreferrer'
-          >
-            {messages.convertedTo} <IconExternalLink />
-          </a>
+          metadata.swapTransactionId ? (
+            <a
+              className={styles.link}
+              href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
+              target='_blank'
+              title={messages.viewOnExplorer}
+              rel='noreferrer'
+            >
+              {messages.convertedTo} <IconExternalLink />
+            </a>
+          ) : (
+            messages.convertedTo
+          )
         }
       >
         <IconAUDIO />
         <span className={styles.amount}>
-          {formatNumberString(metadata.audio, { maxDecimals: 2 })}
+          {metadata.audio
+            ? formatNumberString(metadata.audio, { maxDecimals: 2 })
+            : '?'}
         </span>
         <span className={styles.label}>{messages.audio}</span>
       </Block>

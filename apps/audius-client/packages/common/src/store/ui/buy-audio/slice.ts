@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from '../../../models/Status'
 
@@ -35,6 +35,13 @@ type PurchaseInfoError =
 type CalculateAudioPurchaseInfoPayload = { audioAmount: number }
 type CalculateAudioPurchaseInfoSucceededPayload = Omit<PurchaseInfo, 'isError'>
 type CalculateAudioPurchaseInfoFailedPayload = PurchaseInfoError
+type StripeSessionStatus =
+  | 'initialized'
+  | 'rejected'
+  | 'requires_payment'
+  | 'fulfillment_processing'
+  | 'fulfillment_complete'
+
 type BuyAudioState = {
   stage: BuyAudioStage
   error?: boolean
@@ -45,6 +52,8 @@ type BuyAudioState = {
     transactionFees: number
   }
   provider: OnRampProvider
+  onSuccessAction?: Action
+  stripeSessionStatus?: StripeSessionStatus
 }
 
 const initialState: BuyAudioState = {
@@ -105,11 +114,15 @@ const slice = createSlice({
     },
     startBuyAudioFlow: (
       state,
-      action: PayloadAction<{ provider: OnRampProvider }>
+      action: PayloadAction<{
+        provider: OnRampProvider
+        onSuccessAction?: Action
+      }>
     ) => {
       state.stage = BuyAudioStage.START
       state.error = undefined
       state.provider = action.payload.provider
+      state.onSuccessAction = action.payload.onSuccessAction
     },
     onRampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
@@ -139,6 +152,12 @@ const slice = createSlice({
     },
     startRecoveryIfNecessary: () => {
       // Triggers saga
+    },
+    stripeSessionStatusChanged: (
+      state,
+      action: PayloadAction<{ status: StripeSessionStatus }>
+    ) => {
+      state.stripeSessionStatus = action.payload.status
     }
   }
 })
@@ -158,7 +177,8 @@ export const {
   swapCompleted,
   transferStarted,
   transferCompleted,
-  startRecoveryIfNecessary
+  startRecoveryIfNecessary,
+  stripeSessionStatusChanged
 } = slice.actions
 
 export default slice.reducer
