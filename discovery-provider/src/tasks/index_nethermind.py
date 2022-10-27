@@ -174,7 +174,7 @@ def get_latest_block(db: SessionManager):
             update_task.web3.eth.get_block(target_latest_block_number, True)
         )
         latest_block["number"] += NETHERMIND_BLOCK_OFFSET
-        latest_block = AttributeDict(latest_block)
+        latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
 
