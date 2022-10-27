@@ -153,21 +153,24 @@ const handleSyncFromPrimary = async ({
         }
       }
 
-      // Store this user's file paths in redis to delete later (after wiping db)
+      const shouldDeleteDisk = config.get('syncForceWipeDeleteDiskEnabled')
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
-      } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (shouldDeleteDisk) {
+        // Store this user's file paths in redis to delete later (after wiping db)
+        try {
+          numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
+            wallet,
+            logger
+          )
+        } catch (error) {
+          await DiskManager.clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
@@ -196,24 +199,28 @@ const handleSyncFromPrimary = async ({
         throw error
       }
 
-      // Wipe disk - delete files whose paths we stored in redis earlier
-      try {
-        const numFilesDeleted =
-          await DiskManager.deleteAllCNodeUserDataFromDisk(
-            wallet,
-            numFilesToDelete,
-            logger
+      if (shouldDeleteDisk) {
+        // Wipe disk - delete files whose paths we stored in redis earlier
+        try {
+          const numFilesDeleted =
+            await DiskManager.deleteAllCNodeUserDataFromDisk(
+              wallet,
+              numFilesToDelete,
+              logger
+            )
+          logger.info(
+            `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
           )
-        logger.info(
-          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
-        )
-      } catch (error) {
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+          await DiskManager.clearFilePathsToDelete(wallet)
+        } catch (error) {
+          await DiskManager.clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       if (forceWipe) {

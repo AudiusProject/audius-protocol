@@ -508,6 +508,12 @@ const config = convict({
     env: 'syncForceWipeEnabled',
     default: true
   },
+  syncForceWipeDeleteDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDeleteDiskEnabled',
+    default: true
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',
