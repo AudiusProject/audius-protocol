@@ -1417,6 +1417,9 @@ workflows:
           dont-quit: false
           context:
             - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
       - queue/block_workflow:
           name: prod-creator-lock
           job-regex: 'releasing-prod-(creator|user-metadata).*'
@@ -1424,6 +1427,9 @@ workflows:
           dont-quit: false
           context:
             - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v.*-patch-.*$)/
       - queue/block_workflow:
           name: prod-identity-lock
           job-regex: 'releasing-identity-foundation'
@@ -1431,6 +1437,9 @@ workflows:
           dont-quit: false
           context:
             - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
 
       # Auto-deploy `main` to staging
       - deploy:
