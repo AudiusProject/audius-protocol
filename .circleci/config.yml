@@ -1396,6 +1396,9 @@ workflows:
           dont-quit: true
           context:
             - circle-ci-api
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
       - queue/block_workflow:
           name: stage-creator-lock
           job-regex: '.*reserving-stage-(creator|user-metadata).*'
@@ -1403,6 +1406,9 @@ workflows:
           dont-quit: true
           context:
             - circle-ci-api
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
       - queue/block_workflow:
           name: stage-identity-lock
           job-regex: '.*reserving-stage-identity'
@@ -1410,6 +1416,9 @@ workflows:
           dont-quit: true
           context:
             - circle-ci-api
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
       - queue/block_workflow:
           name: prod-discovery-lock
           job-regex: 'releasing-discovery-foundation'
@@ -1485,12 +1494,12 @@ workflows:
       - noop:
           name: unreserve-stage-<< matrix.service >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-<< matrix.service >>
       - deploy:
@@ -1503,6 +1512,9 @@ workflows:
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - stage-<< matrix.service >>-lock
             - unreserve-stage-<< matrix.service >>
@@ -1510,12 +1522,12 @@ workflows:
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-discovery
       - deploy:
@@ -1528,6 +1540,9 @@ workflows:
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - stage-discovery-lock
             - unreserve-<< matrix.host >>
@@ -1535,12 +1550,12 @@ workflows:
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-creator
       - deploy:
@@ -1561,12 +1576,12 @@ workflows:
       - noop:
           name: reserve-stage-<< matrix.service >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - << matrix.service >>-deploy-hold
       - deploy:
@@ -1580,6 +1595,9 @@ workflows:
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - stage-<< matrix.service >>-lock
             - reserve-stage-<< matrix.service >>
@@ -1587,12 +1605,12 @@ workflows:
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - discovery-deploy-hold
       - deploy:
@@ -1603,12 +1621,12 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^main$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - stage-discovery-lock
             - reserve-<< matrix.host >>
@@ -1616,12 +1634,12 @@ workflows:
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - creator-deploy-hold
       - deploy:
@@ -1632,12 +1650,12 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^main$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - stage-creator-lock
             - reserve-<< matrix.host >>
@@ -1673,6 +1691,9 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - prod-discovery-lock
             - release-discovery-foundation
@@ -1695,6 +1716,9 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - prod-identity-lock
             - release-identity-foundation
@@ -1720,6 +1744,9 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+          filters:
+            branches:
+              only: /(^release-v.*-patch-.*$)/
           matrix:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
