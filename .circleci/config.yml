@@ -1028,7 +1028,6 @@ jobs:
       - queue/until_front_of_line:
           consider-branch: false
           dont-quit: true
-      # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
             and:
@@ -1039,6 +1038,7 @@ jobs:
           steps:
             - diff-if-necessary:
                 service: << parameters.service >>
+      # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
             or:
