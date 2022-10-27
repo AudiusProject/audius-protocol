@@ -1266,7 +1266,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = true', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeDBEnabled` = true', async () => {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1281,6 +1281,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport)
 
+      nock('http://docker.for.mac.localhost:5000')
+        .get((uri) => uri.includes('/users/history'))
+        .reply(200, { data: [] })
+
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
@@ -1294,8 +1298,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
-      config.set('syncForceWipeEnabled', true)
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeDBEnabled` = true
+      config.set('syncForceWipeDBEnabled', true)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
@@ -1325,7 +1329,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = false', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeDBEnabled` = false', async () => {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1354,8 +1358,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
         raw: true
       })
 
-      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
-      config.set('syncForceWipeEnabled', false)
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeDBEnabled` = false
+      config.set('syncForceWipeDBEnabled', false)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,

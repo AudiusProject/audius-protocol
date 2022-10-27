@@ -50,6 +50,7 @@ def extract_alerts(template, dashboard, env):
             mentions = ""
             team = ""
             alert_on = []
+            envs = []
             if "mappings" in panel["fieldConfig"]["defaults"]:
                 for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
                     for key, mapping in mapping["options"].items():
@@ -60,6 +61,9 @@ def extract_alerts(template, dashboard, env):
                         elif key == "alert_on":
                             for ref_id in mapping["text"].split(","):
                                 alert_on.append(ref_id.strip())
+                        elif key == "envs":
+                            for env_split in mapping["text"].split(","):
+                                envs.append(env_split.strip())
 
             if "links" in panel["fieldConfig"]["defaults"]:
                 links = []
@@ -125,6 +129,11 @@ def extract_alerts(template, dashboard, env):
                     # when the alert_on key appears within Value Mappings,
                     # only create alerts for the listed refIds
                     if alert_on and target["refId"] not in alert_on:
+                        continue
+
+                    # when the envs key appears within Value Mappings,
+                    # only create alerts for the listed envs
+                    if envs and env not in envs:
                         continue
 
                     # assume all metrics missing $env are Prod-only metrics

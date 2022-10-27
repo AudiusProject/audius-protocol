@@ -6,7 +6,7 @@ from pprint import pprint
 
 import click
 import requests
-from triggers import ensure_commit_on_master
+from triggers import ensure_commit_on_main
 
 
 @click.command()
@@ -28,12 +28,12 @@ from triggers import ensure_commit_on_master
 )
 def cli(git_commit, circle_api_key, slack_mentions_user):
     # only allow merged commits to be deployed
-    ensure_commit_on_master(git_commit)
+    ensure_commit_on_main(git_commit)
 
     # trigger a circleci job
     project = "audius-protocol"
     data = {
-        "branch": "master",
+        "branch": "main",
         "parameters": {
             "sdk_release_commit": git_commit,
             "slack_mentions_user": slack_mentions_user,

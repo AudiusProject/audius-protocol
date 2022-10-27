@@ -928,6 +928,51 @@ export class DiscoveryProvider {
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
   }
 
+  /**
+   * Retrieves listen counts for all tracks of a given artist grouped by month.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.startTime start time of query
+   * @param params.endTime end time of query
+   * @return object containing listen counts for an artist's tracks grouped by month
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ): Promise<Object | null | undefined> {
+    const req = Requests.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
+    )
+
+    return await this._makeRequest<Object | null>(req)
+  }
+
+  /**
+   * Retrieves the user's replica set
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
+   * @return object containing the user replica set
+   */
+  async getUserReplicaSet({
+    encodedUserId,
+    blockNumber
+  }: {
+    encodedUserId: string
+    blockNumber?: number
+  }): Promise<Object | null | undefined> {
+    const req = Requests.getUserReplicaSet(encodedUserId)
+
+    return await this._makeRequest<Object | null>(
+      req,
+      true,
+      0,
+      false,
+      blockNumber
+    )
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
@@ -1264,30 +1309,6 @@ export class DiscoveryProvider {
 
     // Everything looks good, return the data!
     return parsedResponse
-  }
-
-  /**
-   * Retrieves the user's replica se
-   * @param params.encodedUserId string of the encoded user id
-   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
-   * @return object containing the user replica set
-   */
-  async getUserReplicaSet({
-    encodedUserId,
-    blockNumber
-  }: {
-    encodedUserId: string
-    blockNumber?: number
-  }): Promise<Object | null | undefined> {
-    const req = Requests.getUserReplicaSet(encodedUserId)
-
-    return await this._makeRequest<Object | null>(
-      req,
-      true,
-      0,
-      false,
-      blockNumber
-    )
   }
 
   /**

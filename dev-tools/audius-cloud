@@ -119,7 +119,7 @@ def create_raw(name, gcloud_args):
             "ssh",
             f"audius@{name}",
             "--",
-            "curl 'https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/dev-tools/setup.sh' | bash",
+            "curl 'https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-tools/setup.sh' | bash",
         ],
         check=True,
     )

@@ -532,6 +532,20 @@ user_favorited_tracks_parser.add_argument(
     choices=SortDirection._member_names_,
 )
 
+user_track_listen_count_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+user_track_listen_count_route_parser.add_argument(
+    "start_time",
+    required=True,
+    description="Start time from which to start results for user listen count data (inclusive).",
+)
+user_track_listen_count_route_parser.add_argument(
+    "end_time",
+    required=True,
+    description="End time until which to cut off results of listen count data (not inclusive).",
+)
+
 user_tracks_route_parser = pagination_with_current_user_parser.copy()
 user_tracks_route_parser.add_argument(
     "sort",
@@ -650,3 +664,30 @@ def get_default_max(value, default, max=None):
     if max is None:
         return value
     return min(value, max)
+
+
+def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[]):
+    formatted_response_data = {}
+    for aggregate_monthly_play in aggregate_monthly_plays_for_user:
+        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%S Z")
+        if month not in formatted_response_data:
+            formatted_response_data[month] = {}
+            formatted_response_by_month = formatted_response_data[month]
+            formatted_response_by_month["totalListens"] = 0
+            formatted_response_by_month["trackIds"] = []
+            formatted_response_by_month["listenCounts"] = []
+
+        formatted_response_by_month = formatted_response_data[month]
+        formatted_response_by_month["listenCounts"].append(
+            {
+                "trackId": aggregate_monthly_play["play_item_id"],
+                "date": month,
+                "listens": aggregate_monthly_play["count"],
+            }
+        )
+        formatted_response_by_month["trackIds"].append(
+            aggregate_monthly_play["play_item_id"]
+        )
+        formatted_response_by_month["totalListens"] += aggregate_monthly_play["count"]
+
+    return formatted_response_data

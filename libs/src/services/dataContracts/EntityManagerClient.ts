@@ -10,7 +10,13 @@ export enum Action {
   CREATE = 'Create',
   UPDATE = 'Update',
   DELETE = 'Delete',
-  VERIFY = 'Verify'
+  VERIFY = 'Verify',
+  FOLLOW = 'Follow',
+  UNFOLLOW = 'Unfollow',
+  SAVE = 'Save',
+  UNSAVE = 'Unsave',
+  REPOST = 'Repost',
+  UNREPOST = 'Unrepost'
 }
 
 export enum EntityType {
