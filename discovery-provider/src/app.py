@@ -6,7 +6,6 @@ import logging
 import time
 from collections import defaultdict
 from typing import Any, Dict
-from web3.middleware import geth_poa_middleware
 
 import redis
 from celery.schedules import crontab, timedelta
@@ -48,6 +47,7 @@ from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
+from web3.middleware import geth_poa_middleware
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # these global vars will be set in create_celery function
@@ -69,6 +69,9 @@ user_replica_set_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
+entity_manager_nethermind = None
+contract_addresses_nethermind: Dict[str, Any] = defaultdict()
+
 logger = logging.getLogger(__name__)
 
 
@@ -81,19 +84,100 @@ def get_eth_abi_values():
 
 
 def init_contracts():
+    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
+    registry_instance = web3.eth.contract(
+        address=registry_address, abi=abi_values["Registry"]["abi"]
+    )
+
+    user_factory_address = registry_instance.functions.getContract(
+        bytes("UserFactory", "utf-8")
+    ).call()
+    user_factory_instance = web3.eth.contract(
+        address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
+    )
+    track_factory_address = registry_instance.functions.getContract(
+        bytes("TrackFactory", "utf-8")
+    ).call()
+    track_factory_instance = web3.eth.contract(
+        address=track_factory_address, abi=abi_values["TrackFactory"]["abi"]
+    )
+
+    social_feature_factory_address = registry_instance.functions.getContract(
+        bytes("SocialFeatureFactory", "utf-8")
+    ).call()
+    social_feature_factory_inst = web3.eth.contract(
+        address=social_feature_factory_address,
+        abi=abi_values["SocialFeatureFactory"]["abi"],
+    )
+
+    playlist_factory_address = registry_instance.functions.getContract(
+        bytes("PlaylistFactory", "utf-8")
+    ).call()
+    playlist_factory_inst = web3.eth.contract(
+        address=playlist_factory_address, abi=abi_values["PlaylistFactory"]["abi"]
+    )
+
+    user_library_factory_address = registry_instance.functions.getContract(
+        bytes("UserLibraryFactory", "utf-8")
+    ).call()
+    user_library_factory_inst = web3.eth.contract(
+        address=user_library_factory_address,
+        abi=abi_values["UserLibraryFactory"]["abi"],
+    )
+
+    user_replica_set_manager_address = registry_instance.functions.getContract(
+        bytes("UserReplicaSetManager", "utf-8")
+    ).call()
+    user_replica_set_manager_inst = web3.eth.contract(
+        address=user_replica_set_manager_address,
+        abi=abi_values["UserReplicaSetManager"]["abi"],
+    )
 
     entity_manager_address = None
     entity_manager_inst = None
     if shared_config["contracts"]["entity_manager_address"]:
-        entity_manager_address = web3.toChecksumAddress("0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64")
+        entity_manager_address = web3.toChecksumAddress(
+            shared_config["contracts"]["entity_manager_address"]
+        )
         entity_manager_inst = web3.eth.contract(
             address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
         )
 
     contract_address_dict = {
+        "registry": registry_address,
+        "user_factory": user_factory_address,
+        "track_factory": track_factory_address,
+        "social_feature_factory": social_feature_factory_address,
+        "playlist_factory": playlist_factory_address,
+        "user_library_factory": user_library_factory_address,
+        "user_replica_set_manager": user_replica_set_manager_address,
         "entity_manager": entity_manager_address,
     }
 
+    return (
+        registry_instance,
+        user_factory_instance,
+        track_factory_instance,
+        social_feature_factory_inst,
+        playlist_factory_inst,
+        user_library_factory_inst,
+        user_replica_set_manager_inst,
+        entity_manager_inst,
+        contract_address_dict,
+    )
+
+
+def init_entity_manager():
+    entity_manager_address = None
+    entity_manager_inst = None
+    if shared_config["contracts"]["entity_manager_address"]:
+        entity_manager_address = web3.toChecksumAddress(shared_config["contracts"]["entity_manager_address"])
+        entity_manager_inst = web3.eth.contract(
+            address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
+        )
+    contract_address_dict = {
+        "entity_manager": entity_manager_address,
+    }
     return (
         entity_manager_inst,
         contract_address_dict,
@@ -110,10 +194,11 @@ def create_celery(test_config=None):
     global solana_client_manager
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
-    web3 = Web3(HTTPProvider("http://54.187.10.247:8545"))
-
+    web3 = Web3(HTTPProvider(web3endpoint))
     # required middleware for POA
-    web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+    if shared_config["discprov"]["stage"]:
+        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
@@ -136,10 +221,23 @@ def create_celery(test_config=None):
     global contract_addresses
     # pylint: enable=W0603
 
-    (
-        entity_manager,
-        contract_addresses,
-    ) = init_contracts()
+    if shared_config["discprov"]["stage"]:
+        (
+            entity_manager,
+            contract_addresses,
+        ) = init_entity_manager()
+    else:
+        (
+            registry,
+            user_factory,
+            track_factory,
+            social_feature_factory,
+            playlist_factory,
+            user_library_factory,
+            user_replica_set_manager,
+            entity_manager,
+            contract_addresses,
+        ) = init_contracts()
 
     return create(test_config, mode="celery")
 
@@ -310,6 +408,7 @@ def configure_celery(celery, test_config=None):
     celery.conf.update(
         imports=[
             "src.tasks.index",
+            "src.tasks.index_nethermind",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
@@ -338,6 +437,10 @@ def configure_celery(celery, test_config=None):
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
+                "schedule": timedelta(seconds=indexing_interval_sec),
+            },
+            "update_discovery_provider_nethermind": {
+                "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),
             },
             "update_metrics": {

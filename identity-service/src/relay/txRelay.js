@@ -1,4 +1,3 @@
-const Web3 = require('web3')
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 
@@ -128,9 +127,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       encodedABI
     )
     txReceipt = receipt
-
-    // WIP: nethermind fire and forget
-    await wipRelayToNethermind(contractAddress, encodedABI)
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -320,61 +316,6 @@ const createAndSendTransaction = async (
   )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
   return { receipt, txParams }
-}
-
-//
-// WIP relay txn to staging nethermind "fire and forget" style
-//
-
-// TODO: shared nethermind web3 instance
-const web3 = new Web3('http://34.136.137.33:8545')
-
-async function wipRelayToNethermind(contractAddress, encodedABI) {
-  // staging EM address
-  // TODO: config
-  const entityManagerAddress = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
-
-  // if (contractAddress !== entityManagerAddress) {
-  //   console.log(
-  //     'wipRelayToNethermind skipping: contractAddress != entityManagerAddress',
-  //     contractAddress,
-  //     entityManagerAddress
-  //   )
-  //   return
-  // }
-
-  // any ol random private key
-  const privateKey =
-    '7d25e249080b581280a0c0bbecfdba52d73e45486f9ba4ed4676e93c176a5fbc'
-
-  try {
-    const fromAddress = web3.eth.accounts.privateKeyToAccount(privateKey)
-    const nonce = await web3.eth.getTransactionCount(fromAddress.address)
-
-    const transaction = {
-      to: entityManagerAddress,
-      value: 0,
-      gas: 10485760,
-      gasPrice: 0,
-      nonce,
-      data: encodedABI
-    }
-
-    const signedTx = await web3.eth.accounts.signTransaction(
-      transaction,
-      privateKey
-    )
-    console.log('wipRelayToNethermind sending', JSON.stringify(signedTx))
-
-    const receipt = await web3.eth.sendSignedTransaction(
-      signedTx.rawTransaction
-    )
-
-    console.log('wipRelayToNethermind ok', JSON.stringify(receipt))
-    return receipt
-  } catch (err) {
-    console.log('wipRelayToNethermind error', err.toString())
-  }
 }
 
 const getRelayerFunds = async (walletPublicKey) => {
