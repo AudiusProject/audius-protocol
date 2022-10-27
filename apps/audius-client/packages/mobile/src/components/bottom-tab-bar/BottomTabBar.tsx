@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
@@ -9,7 +8,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import PushNotifications from 'app/notifications'
 import { makeStyles } from 'app/styles'
 
