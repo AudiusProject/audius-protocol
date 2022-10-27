@@ -1025,6 +1025,30 @@ jobs:
         type: boolean
         default: false
     steps:
+      - queue/until_front_of_line:
+          job-regex: '.*reserving-stage-discovery.*'
+          consider-branch: false
+          dont-quit: true
+      - queue/until_front_of_line:
+          job-regex: '.*reserving-stage-(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: true
+      - queue/until_front_of_line:
+          job-regex: '.*reserving-stage-identity'
+          consider-branch: false
+          dont-quit: true
+      - queue/until_front_of_line:
+          job-regex: 'releasing-discovery-foundation'
+          consider-branch: false
+          dont-quit: false
+      - queue/until_front_of_line:
+          job-regex: 'releasing-prod-(creator|user-metadata).*'
+          consider-branch: false
+          dont-quit: false
+      - queue/until_front_of_line:
+          job-regex: 'releasing-identity-foundation'
+          consider-branch: false
+          dont-quit: false
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
@@ -1389,67 +1413,6 @@ workflows:
             - test-mad-dog-e2e
             - test-sdk
 
-      - queue/block_workflow:
-          name: stage-discovery-lock
-          job-regex: '.*reserving-stage-discovery.*'
-          consider-branch: false
-          dont-quit: true
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
-      - queue/block_workflow:
-          name: stage-creator-lock
-          job-regex: '.*reserving-stage-(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: true
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
-      - queue/block_workflow:
-          name: stage-identity-lock
-          job-regex: '.*reserving-stage-identity'
-          consider-branch: false
-          dont-quit: true
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
-      - queue/block_workflow:
-          name: prod-discovery-lock
-          job-regex: 'releasing-discovery-foundation'
-          consider-branch: false
-          dont-quit: false
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-      - queue/block_workflow:
-          name: prod-creator-lock
-          job-regex: 'releasing-prod-(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: false
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              only: /(^release-v.*-patch-.*$)/
-      - queue/block_workflow:
-          name: prod-identity-lock
-          job-regex: 'releasing-identity-foundation'
-          consider-branch: false
-          dont-quit: false
-          context:
-            - circle-ci-api
-          filters:
-            branches:
-              only: /(^release-v\d*.\d*.\d*$)/
-
       # Auto-deploy `main` to staging
       - deploy:
           name: autodeploy-stage-discovery
@@ -1458,6 +1421,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1471,6 +1435,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1484,6 +1449,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1509,6 +1475,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1537,6 +1504,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1565,6 +1533,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1595,6 +1564,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1624,6 +1594,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1653,6 +1624,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1694,6 +1666,7 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1719,6 +1692,7 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
           filters:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
@@ -1747,6 +1721,7 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
           filters:
             branches:
               only: /(^release-v.*-patch-.*$)/
@@ -1862,6 +1837,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1894,6 +1870,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
 
   reservations-cron:
     jobs:
@@ -1905,6 +1882,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
     triggers:
       - schedule:
           cron: '0 15 * * 1,2,3,4,5'
