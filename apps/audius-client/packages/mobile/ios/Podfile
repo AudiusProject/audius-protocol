@@ -48,9 +48,12 @@ target 'AudiusReactNative' do
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
   pod 'boost', :podspec => '../node_modules/react-native/third-party-podspecs/boost.podspec'
 
-  use_native_modules!
-  use_flipper!({ "Flipper-DoubleConversion" => "1.1.7" })
-
+  config = use_native_modules!
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # Do NOT commit local changes (including corresponding Podfile.lock changes) to this value!:
+    :hermes_enabled => false
+  )
 
 
   post_install do |installer|
