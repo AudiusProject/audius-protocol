@@ -5,8 +5,7 @@ import type {
 } from './types'
 import type { WalletsToSecondariesMapping } from '../types'
 
-// eslint-disable-next-line import/no-unresolved
-import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { computeUsersSecondarySyncSuccessRatesForToday } from '../stateReconciliation/SecondarySyncHealthTracker'
 import { asyncRetry } from '../../../utils/asyncRetry'
 
 const _ = require('lodash')
@@ -187,7 +186,7 @@ const computeUserSecondarySyncSuccessRatesMap = async (
   }
 
   const userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap =
-    await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
+    await computeUsersSecondarySyncSuccessRatesForToday(
       walletsToSecondariesMapping
     )
 
