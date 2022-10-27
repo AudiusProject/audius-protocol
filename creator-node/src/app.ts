@@ -6,7 +6,7 @@ import cors from 'cors'
 import prometheusMiddleware from 'express-prom-bundle'
 import _ from 'lodash'
 
-import DiskManager from './diskManager'
+import { getConfigStoragePath } from './diskManager'
 import { sendResponse, errorResponseServerError } from './apiHelpers'
 import { logger, loggingMiddleware } from './logging'
 import { readOnlyMiddleware } from './middlewares/readOnly/readOnlyMiddleware'
@@ -189,7 +189,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
 
   app.use(errorHandler as any)
 
-  const storagePath = DiskManager.getConfigStoragePath()
+  const storagePath = getConfigStoragePath()
 
   // TODO: Can remove these when all routes consume serviceRegistry
   app.set('storagePath', storagePath)

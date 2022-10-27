@@ -10,7 +10,11 @@ import {
   logInfoWithDuration
 } from '../../logging'
 import { saveFileForMultihashToFS } from '../../fileManager'
-import DiskManager from '../../diskManager'
+import {
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete,
+  deleteAllCNodeUserDataFromDisk
+} from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
@@ -156,12 +160,9 @@ const handleSyncFromPrimary = async ({
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
       try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
+        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
       } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         errorResponse = {
           error,
           result: 'failure_delete_disk_data'
@@ -186,7 +187,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -198,12 +199,11 @@ const handleSyncFromPrimary = async ({
 
       // Wipe disk - delete files whose paths we stored in redis earlier
       try {
-        const numFilesDeleted =
-          await DiskManager.deleteAllCNodeUserDataFromDisk(
-            wallet,
-            numFilesToDelete,
-            logger
-          )
+        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
+          wallet,
+          numFilesToDelete,
+          logger
+        )
         logger.info(
           `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
         )
