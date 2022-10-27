@@ -149,10 +149,6 @@ const Utils = {
 }
 
 const Setters = {
-  async recordSuccess(secondary: string, wallet: string, syncType: string) {
-    await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, true)
-  },
-
   async recordFailure(secondary: string, wallet: string, syncType: string) {
     await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, false)
   }
@@ -290,7 +286,6 @@ const SecondarySyncHealthTracker = {
   Outcomes,
 
   // Setters
-  recordSuccess: Setters.recordSuccess,
   recordFailure: Setters.recordFailure,
 
   // Getters
