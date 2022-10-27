@@ -140,9 +140,9 @@ const handleSyncFromPrimary = async ({
       }
 
       // Short circuit if wiping is disabled via env var
-      if (!config.get('syncForceWipeEnabled')) {
+      if (!config.get('syncForceWipeDBEnabled')) {
         return {
-          abort: 'Stopping sync early because syncForceWipeEnabled=false',
+          abort: 'Stopping sync early because syncForceWipeDBEnabled=false',
           result: 'abort_force_wipe_disabled'
         }
       }
@@ -198,22 +198,25 @@ const handleSyncFromPrimary = async ({
       }
 
       // Wipe disk - delete files whose paths we stored in redis earlier
-      try {
-        const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
-          wallet,
-          numFilesToDelete,
-          logger
-        )
-        logger.info(
-          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
-        )
-      } catch (error) {
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
+            wallet,
+            numFilesToDelete,
+            logger
+          )
+          logger.info(
+            `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
+          )
+        } catch (error) {
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       if (forceWipe) {

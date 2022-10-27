@@ -25,6 +25,10 @@ const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
 const DAYS_BEFORE_PRUNING_ORPHANED_CONTENT = 7
 
+const DB_QUERY_SUCCESS_CHECK_STR = `sweep_db_query_success_${Math.floor(
+  Math.random() * 10000
+)}`
+
 // variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
 // it every time a track is uploaded
 let TMP_TRACK_ARTIFACTS_CREATED = false
@@ -439,15 +443,22 @@ export async function sweepSubdirectoriesInFiles(
       const cidsToFilePathMap = await listNestedCIDsInFilePath(subdirectory)
       const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
 
-      const queryResults = await models.File.findAll({
-        attributes: ['multihash', 'storagePath'],
-        raw: true,
-        where: {
-          multihash: {
-            [models.Sequelize.Op.in]: cidsInSubdirectory
-          }
-        }
-      })
+      if (cidsInSubdirectory.length === 0) {
+        continue
+      }
+
+      const queryResults =
+        // add a `query_success` row to the result so we know the query ran successfully
+        // shouldn't need this because sequelize should throw an error, but when deleting
+        // from disk paranoia is probably justified
+        (
+          await models.sequelize.query(
+            `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
+            UNION
+            (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
+            { replacements: { cidsInSubdirectory } }
+          )
+        )[0]
 
       genericLogger.debug(
         `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
@@ -462,9 +473,15 @@ export async function sweepSubdirectoriesInFiles(
       )
 
       const cidsInDB = new Set()
+      let foundSuccessRow = false
       for (const file of queryResults) {
-        cidsInDB.add(file.multihash)
+        if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
+          foundSuccessRow = true
+        else cidsInDB.add(file.multihash)
       }
+
+      if (!foundSuccessRow)
+        throw new Error(`DB did not return expected success row`)
 
       const cidsToDelete = []
       const cidsNotToDelete = []
