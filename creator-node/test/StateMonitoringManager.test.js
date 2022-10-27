@@ -56,7 +56,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 1)
     config.set('stateMonitoringQueueRateLimitInterval', 60_000)
     const MockStateMonitoringManager = proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/index.js',
+      '../src/services/stateMachineManager/stateMonitoring/index',
       {
         '../../../utils': {
           clusterUtils: {
@@ -95,7 +95,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 0)
     config.set('stateMonitoringQueueRateLimitInterval', 60_000)
     const MockStateMonitoringManager = proxyquire(
-      '../src/services/stateMachineManager/stateMonitoring/index.js',
+      '../src/services/stateMachineManager/stateMonitoring/index',
       {
         '../../../config': config
       }
