@@ -1,8 +1,9 @@
 import type { User } from '@audius/common'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
+import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 type ArtistLinkProps = {
@@ -10,16 +11,38 @@ type ArtistLinkProps = {
   onPress: GestureResponderHandler
 }
 
+const useStyles = makeStyles(() => ({
+  artistInfo: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  artist: {
+    marginBottom: 0,
+    marginTop: 0
+  },
+  badges: {
+    top: 1
+  }
+}))
+
 export const ArtistLink = (props: ArtistLinkProps) => {
+  const styles = useStyles()
   const { artist, onPress } = props
   const { name } = artist
 
   return (
-    <TouchableOpacity style={{ flexDirection: 'row' }} onPress={onPress}>
-      <Text color='secondary' variant='h3'>
-        {name}
-      </Text>
-      <UserBadges user={artist} hideName badgeSize={8} />
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.artistInfo}>
+        <Text color='secondary' variant='h3' style={styles.artist}>
+          {name}
+        </Text>
+        <UserBadges
+          style={styles.badges}
+          user={artist}
+          hideName
+          badgeSize={8}
+        />
+      </View>
     </TouchableOpacity>
   )
 }
