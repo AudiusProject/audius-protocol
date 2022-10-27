@@ -505,7 +505,7 @@ export async function sweepSubdirectoriesInFiles(
         )
 
         // gate deleting files on disk with the same env var
-        if (config.get('syncForceWipeEnabled')) {
+        if (config.get('backgroundDiskCleanupDeleteEnabled')) {
           await execShellCommand(
             `rm ${cidsToDelete.map((cid) => cidsToFilePathMap[cid]).join(' ')}`
           )
