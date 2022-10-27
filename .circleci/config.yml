@@ -1568,6 +1568,9 @@ workflows:
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - stage-creator-lock
             - unreserve-<< matrix.host >>
