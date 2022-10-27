@@ -1,6 +1,5 @@
 import type Logger from 'bunyan'
 
-import util from 'util'
 import path from 'path'
 import fs from 'fs-extra'
 import CID from 'cids'
@@ -11,9 +10,9 @@ import redisClient from './redis'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { tracing } from './tracer'
+import { execShellCommand } from './utils'
 
 const models = require('./models')
-const exec = util.promisify(require('child_process').exec)
 
 // regex to check if a directory or just a regular file
 // if directory - will have both outer and inner properties in match.groups
@@ -43,7 +42,7 @@ export function getConfigStoragePath() {
  * @returns the string output of stdout
  */
 export async function getDirSize(path: string) {
-  const stdout = await _execShellCommand(`du -sh ${path}`)
+  const stdout = await execShellCommand(`du -sh ${path}`)
   return stdout
 }
 
@@ -376,7 +375,7 @@ export async function listSubdirectoriesInFiles() {
     // ./BJg
     // ./nVU
     // `
-    const stdout = await _execShellCommand(
+    const stdout = await execShellCommand(
       `cd ${fileStorageFilesDirPath}; find . -maxdepth 1`
     )
     // stdout is a string so split on newline and remove any empty strings
@@ -405,7 +404,7 @@ export async function listNestedCIDsInFilePath(
   const cidsToFilePathMap: Record<string, string> = {}
   // find files older than DAYS_BEFORE_PRUNING_ORPHANED_CONTENT days in filesSubdirectory (eg /file_storage/files/AqN)
   try {
-    const stdout = await _execShellCommand(
+    const stdout = await execShellCommand(
       `find ${filesSubdirectory} -mtime +${DAYS_BEFORE_PRUNING_ORPHANED_CONTENT}`
     )
 
@@ -490,7 +489,7 @@ export async function sweepSubdirectoriesInFiles(
 
         // gate deleting files on disk with the same env var
         if (config.get('syncForceWipeEnabled')) {
-          await _execShellCommand(
+          await execShellCommand(
             `rm ${cidsToDelete.map((cid) => cidsToFilePathMap[cid]).join(' ')}`
           )
         }
@@ -505,15 +504,4 @@ export async function sweepSubdirectoriesInFiles(
 
   // keep calling this function recursively without an await so the original function scope can close
   if (redoJob) return sweepSubdirectoriesInFiles()
-}
-
-export async function _execShellCommand(cmd: string, log = false) {
-  if (log)
-    genericLogger.info(`diskManager - about to call _execShellCommand: ${cmd}`)
-  const { stdout, stderr } = await exec(`${cmd}`, {
-    maxBuffer: 1024 * 1024 * 5
-  }) // 5mb buffer
-  if (stderr) throw stderr
-
-  return stdout
 }
