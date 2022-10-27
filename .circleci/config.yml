@@ -1045,6 +1045,13 @@ jobs:
               - equal: [ jc-inf-298, << parameters.branch >> ]
               - equal: [ staging, << parameters.environment >> ]
           steps:
+            - run:
+                name: Deployment Info (conditional)
+                command: |
+                  echo "Branch ${CIRCLE_BRANCH}"
+                  echo "Branch << parameters.branch >>"
+                  echo "Environment << parameters.environment >>"
+                  echo "Service << parameters.service >>"
             - diff-if-necessary:
                 service: << parameters.service >>
       # - when:
