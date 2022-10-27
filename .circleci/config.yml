@@ -1024,9 +1024,6 @@ jobs:
         description: Send Slack notification with reservation text
         type: boolean
         default: false
-      branch:
-        default: ${CIRCLE_BRANCH}
-        type: string
     steps:
       - queue/until_front_of_line:
           consider-branch: false
@@ -1036,20 +1033,20 @@ jobs:
           name: Deployment Info
           command: |
             echo "Branch ${CIRCLE_BRANCH}"
-            echo "Branch << parameters.branch >>"
+            echo "Branch << pipeline.git.branch  >>"
             echo "Environment << parameters.environment >>"
             echo "Service << parameters.service >>"
       - when:
           condition:
             and:
-              - equal: [ "jc-inf-298", "<< parameters.branch >>" ]
+              - equal: [jc-inf-298, << pipeline.git.branch >>]
               - equal: [ staging, << parameters.environment >> ]
           steps:
             - run:
                 name: Deployment Info (conditional)
                 command: |
                   echo "Branch ${CIRCLE_BRANCH}"
-                  echo "Branch << parameters.branch >>"
+                  echo "Branch << pipeline.git.branch  >>"
                   echo "Environment << parameters.environment >>"
                   echo "Service << parameters.service >>"
             - diff-if-necessary:
