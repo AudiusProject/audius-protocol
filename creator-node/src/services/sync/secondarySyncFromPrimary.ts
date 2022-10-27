@@ -197,6 +197,7 @@ const handleSyncFromPrimary = async ({
       }
 
       // Wipe disk - delete files whose paths we stored in redis earlier
+      // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
       if (config.get('syncForceWipeDiskEnabled')) {
         try {
           const numFilesDeleted =
