@@ -18,6 +18,7 @@ import initAudiusLibs from './initAudiusLibs'
 import { createChildLogger } from '../logging'
 import defaultRedisClient from '../redis'
 import { timeout } from '../utils'
+import { asyncRetry } from '../utils/asyncRetry'
 import config from '../config'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
@@ -168,50 +169,50 @@ export async function getReplicaSetSpIdsByUserId({
    * If `blockNumber` provided, poll contract until it has indexed that blocknumber (for up to 200 seconds)
    */
   if (blockNumber) {
-    // In total, will try for 200 seconds
-    const MAX_RETRIES = 201
-    const RETRY_TIMEOUT_MS = 1000 // 1 seconds
+    const MAX_RETRIES = 7
 
     let errorMsg = null
-    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
-      logger.info(
-        `retry #${retry}/${MAX_RETRIES} || time from start: ${
-          Date.now() - start
-        }. Polling until blockNumber ${blockNumber}.`
-      )
+    await asyncRetry({
+      logLabel: 'getReplicaSetSpIdsByUserId',
+      options: {
+        retries: MAX_RETRIES
+      },
+      asyncFn: async () => {
+        try {
+          // Sill throw error if blocknumber not found
+          const encodedUserId = libs.Utils.encodeHashId(userId)
+          const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+            encodedUserId,
+            blockNumber
+          })
 
-      try {
-        // Sill throw error if blocknumber not found
-        const encodedUserId = libs.Utils.encodeHashId(userId)
-        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
-          encodedUserId,
-          blockNumber
-        })
-
-        if (!spResponse) continue
-        if (spResponse.primarySpID) {
-          replicaSet = {
-            primaryId: spResponse.primarySpID,
-            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          if (!spResponse) throw new Error('no spResponse')
+          if (spResponse.primarySpID) {
+            replicaSet = {
+              primaryId: spResponse.primarySpID,
+              secondaryIds: [
+                spResponse.secondary1SpID,
+                spResponse.secondary2SpID
+              ]
+            }
+            errorMsg = null
+            return
+          } else {
+            // The blocknumber was indexed by discovery, but there's still no user replica set returned
+            errorMsg = 'User replica not found in discovery'
+            return
           }
-          errorMsg = null
-          break
-        } else {
-          // The blocknumber was indexed by discovery, but there's still no user replica set returned
-          errorMsg = 'User replica not found in discovery'
-          break
+        } catch (e: any) {
+          errorMsg = e.message
+          throw e
         }
-      } catch (e: any) {
-        errorMsg = e.message
-      } // Ignore all errors until MAX_RETRIES exceeded
-
-      await timeout(RETRY_TIMEOUT_MS)
-    }
+      }
+    })
 
     // Error if indexed blockNumber but didn't find any replicaSet for user
     if (!replicaSet.primaryId) {
       throw new Error(
-        `ERROR || Failed to retrieve user from EntityManager after ${MAX_RETRIES} retries. Aborting. Error: ${errorMsg}`
+        `ERROR || Failed to retrieve user from EntityManager. Aborting. Error: ${errorMsg}`
       )
     }
   } else if (ensurePrimary && selfSpId) {
@@ -220,52 +221,52 @@ export async function getReplicaSetSpIdsByUserId({
      * Error if still mismatched after specified timeout
      */
 
-    // Will poll every second for 60 sec
-    const MAX_RETRIES = 61
-    const RETRY_TIMEOUT_MS = 1000 // 1 sec
-
+    const MAX_RETRIES = 7
     let errorMsg = null
-    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
-      logger.info(
-        `retry #${retry}/${MAX_RETRIES} || time from start: ${
-          Date.now() - start
-        }. Polling until primaryEnsured.`
-      )
+    await asyncRetry({
+      logLabel: 'getReplicaSetSpIdsByUserId',
+      options: {
+        retries: MAX_RETRIES
+      },
+      asyncFn: async () => {
+        try {
+          const encodedUserId = libs.Utils.encodeHashId(userId)
+          const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+            encodedUserId
+          })
 
-      try {
-        const encodedUserId = libs.Utils.encodeHashId(userId)
-        const spResponse = await libs.discoveryProvider.getUserReplicaSet({
-          encodedUserId
-        })
-
-        if (spResponse?.primarySpID) {
-          replicaSet = {
-            primaryId: spResponse.primarySpID,
-            secondaryIds: [spResponse.secondary1SpID, spResponse.secondary2SpID]
+          if (spResponse?.primarySpID) {
+            replicaSet = {
+              primaryId: spResponse.primarySpID,
+              secondaryIds: [
+                spResponse.secondary1SpID,
+                spResponse.secondary2SpID
+              ]
+            }
+            errorMsg = null
+            if (replicaSet.primaryId === selfSpId) return
+          } else {
+            errorMsg = 'User replica not found in discovery'
+            throw new Error(errorMsg)
           }
-          errorMsg = null
-          if (replicaSet.primaryId === selfSpId) break
-        } else {
-          errorMsg = 'User replica not found in discovery'
+        } catch (e: any) {
+          errorMsg = e.message
+          throw e
         }
-      } catch (e: any) {
-        errorMsg = e.message
-      } // Ignore all errors until MAX_RETRIES exceeded
-
-      await timeout(RETRY_TIMEOUT_MS)
-    }
+      }
+    })
 
     // Error if failed to retrieve replicaSet
     if (!replicaSet.primaryId) {
       throw new Error(
-        `ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`
+        `ERROR || Failed to retrieve user from UserReplicaSetManager. Aborting. Error ${errorMsg}`
       )
     }
 
     // Error if returned primary spID does not match self spID
     if (replicaSet.primaryId !== selfSpId) {
       throw new Error(
-        `ERROR || After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`
+        `ERROR || Found different primary (${replicaSet.primaryId}) for user. Aborting.`
       )
     }
   } else {
