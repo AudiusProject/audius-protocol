@@ -1,3 +1,5 @@
+import { Action } from '@reduxjs/toolkit'
+
 import { StringAudio, Status } from '../../../models'
 
 export enum TransactionType {
@@ -67,7 +69,9 @@ export type TransactionDetails =
       metadata: InAppAudioPurchaseMetadata | undefined
     }
 
-export type TransactionDetailsState =
+export type TransactionDetailsState = {
+  onModalCloseAction?: Action
+} & (
   | { status: Status.IDLE }
   | { status: Status.LOADING; transactionId: string }
   | {
@@ -75,3 +79,4 @@ export type TransactionDetailsState =
       transactionDetails: TransactionDetails
     }
   | { status: Status.ERROR }
+)

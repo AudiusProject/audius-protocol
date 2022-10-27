@@ -90,7 +90,7 @@ const { getBuyAudioFlowStage, getFeesCache, getBuyAudioProvider } =
 const { increaseBalance } = walletActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
-const SLIPPAGE = 3 // The slippage amount to allow for exchanges
+const DEFAULT_SLIPPAGE = 3 // The default slippage amount to allow for exchanges, overridden in optimizely
 const BUY_AUDIO_LOCAL_STORAGE_KEY = 'buy-audio-transaction-details'
 
 const MEMO_MESSAGES = {
@@ -292,7 +292,7 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
   }
 }
 
-function* getAudioPurchaseBounds() {
+function* getBuyAudioRemoteConfig() {
   const DEFAULT_MIN_AUDIO_PURCHASE_AMOUNT = 5
   const DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT = 999
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
@@ -303,7 +303,23 @@ function* getAudioPurchaseBounds() {
   const maxAudioAmount =
     remoteConfigInstance.getRemoteVar(IntKeys.MAX_AUDIO_PURCHASE_AMOUNT) ??
     DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT
-  return { minAudioAmount, maxAudioAmount }
+  const slippage =
+    remoteConfigInstance.getRemoteVar(IntKeys.BUY_AUDIO_SLIPPAGE) ??
+    DEFAULT_SLIPPAGE
+  const retryDelayMs =
+    remoteConfigInstance.getRemoteVar(IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS) ??
+    undefined
+  const maxRetryCount =
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES
+    ) ?? undefined
+  return {
+    minAudioAmount,
+    maxAudioAmount,
+    slippage,
+    maxRetryCount,
+    retryDelayMs
+  }
 }
 
 function* getAudioPurchaseInfo({
@@ -311,8 +327,8 @@ function* getAudioPurchaseInfo({
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
   try {
     // Fail early if audioAmount is too small/large
-    const { minAudioAmount, maxAudioAmount } = yield* call(
-      getAudioPurchaseBounds
+    const { minAudioAmount, maxAudioAmount, slippage } = yield* call(
+      getBuyAudioRemoteConfig
     )
     if (audioAmount > maxAudioAmount) {
       yield* put(
@@ -340,8 +356,6 @@ function* getAudioPurchaseInfo({
     // Setup
     const connection = yield* call(getSolanaConnection)
     const rootAccount = yield* call(getRootSolanaAccount)
-
-    const slippage = SLIPPAGE
 
     // Get AUDIO => SOL quote
     const reverseQuote = yield* call(JupiterSingleton.getQuote, {
@@ -629,19 +643,20 @@ function* swapStep({
   retryDelayMs,
   maxRetryCount
 }: SwapStepParams) {
+  const { slippage } = yield* call(getBuyAudioRemoteConfig)
   // Get quote adjusted for fees
   const quote = yield* call(JupiterSingleton.getQuote, {
     inputTokenSymbol: 'SOL',
     outputTokenSymbol: 'AUDIO',
     inputAmount: exchangeAmount.toNumber() / LAMPORTS_PER_SOL,
-    slippage: SLIPPAGE
+    slippage
   })
 
   // Check that we get the desired AUDIO from the quote
   const audioAdjusted = convertJSBIToAmountObject(
     JSBI.BigInt(
       Math.floor(
-        (JSBI.toNumber(quote.route.outAmount) * (100 - SLIPPAGE)) / 100.0
+        (JSBI.toNumber(quote.route.outAmount) * (100 - slippage)) / 100.0
       )
     ),
     TOKEN_LISTING_MAP.AUDIO.decimals
@@ -829,16 +844,9 @@ function* doBuyAudio({
     userRootWallet = rootAccount.publicKey.toString()
 
     // Get config
-    const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-    yield* call(remoteConfigInstance.waitForRemoteConfig)
-    const retryDelayMs =
-      remoteConfigInstance.getRemoteVar(
-        IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS
-      ) ?? undefined
-    const maxRetryCount =
-      remoteConfigInstance.getRemoteVar(
-        IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES
-      ) ?? undefined
+    const { retryDelayMs, maxRetryCount, slippage } = yield* call(
+      getBuyAudioRemoteConfig
+    )
 
     // Ensure userbank is created
     yield* fork(function* () {
@@ -867,7 +875,7 @@ function* doBuyAudio({
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: newBalance / LAMPORTS_PER_SOL,
-      slippage: SLIPPAGE
+      slippage
     })
     const { totalFees } = yield* call(getSwapFees, { route: quote.route })
     const exchangeAmount = new BN(newBalance).sub(totalFees)
@@ -987,16 +995,9 @@ function* recoverPurchaseIfNecessary() {
     provider = localStorageState.provider
 
     // Get config
-    const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-    yield* call(remoteConfigInstance.waitForRemoteConfig)
-    const retryDelayMs =
-      remoteConfigInstance.getRemoteVar(
-        IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS
-      ) ?? undefined
-    const maxRetryCount =
-      remoteConfigInstance.getRemoteVar(
-        IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES
-      ) ?? undefined
+    const { slippage, maxRetryCount, retryDelayMs } = yield* call(
+      getBuyAudioRemoteConfig
+    )
 
     // Get existing SOL balance
     const existingBalance = yield* call(
@@ -1010,7 +1011,7 @@ function* recoverPurchaseIfNecessary() {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: existingBalance / LAMPORTS_PER_SOL,
-      slippage: SLIPPAGE
+      slippage
     })
     const { totalFees } = yield* call(getSwapFees, { route: quote.route })
 

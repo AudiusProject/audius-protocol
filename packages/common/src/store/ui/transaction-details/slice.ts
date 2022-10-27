@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from '../../../models'
 
@@ -13,16 +13,17 @@ const slice = createSlice({
   initialState: initialState as TransactionDetailsState,
   reducers: {
     fetchTransactionDetails: (
-      _,
+      state,
       action: PayloadAction<{ transactionId: string }>
     ) => {
       return {
         status: Status.LOADING,
-        transactionId: action.payload.transactionId
+        transactionId: action.payload.transactionId,
+        onModalCloseAction: state.onModalCloseAction
       }
     },
     fetchTransactionDetailsSucceeded: (
-      _,
+      state,
       action: PayloadAction<{
         transactionId: string
         transactionDetails: TransactionDetails
@@ -31,11 +32,21 @@ const slice = createSlice({
       return {
         status: Status.SUCCESS,
         transactionId: action.payload.transactionId,
-        transactionDetails: action.payload.transactionDetails
+        transactionDetails: action.payload.transactionDetails,
+        onModalCloseAction: state.onModalCloseAction
       }
     },
-    fetchTransactionDetailsFailed: (_) => {
-      return { status: Status.ERROR }
+    fetchTransactionDetailsFailed: (state) => {
+      return {
+        status: Status.ERROR,
+        onModalCloseAction: state.onModalCloseAction
+      }
+    },
+    setModalClosedAction: (
+      state,
+      action: PayloadAction<Action | undefined>
+    ) => {
+      return { ...state, onModalCloseAction: action.payload }
     }
   }
 })
@@ -43,7 +54,8 @@ const slice = createSlice({
 export const {
   fetchTransactionDetails,
   fetchTransactionDetailsSucceeded,
-  fetchTransactionDetailsFailed
+  fetchTransactionDetailsFailed,
+  setModalClosedAction
 } = slice.actions
 export default slice.reducer
 export const actions = slice.actions

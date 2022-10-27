@@ -55,9 +55,13 @@ const messages = {
   hideAdvanced: 'Hide Advanced',
   advancedOptions: 'Advanced Options',
   stripeRegionNotSupported:
-    'Stripe payments are not yet supported in your region',
+    'Link by Stripe is not yet supported in your region',
   coinbasePayRegionNotSupported:
     'Coinbase Pay is not yet supported in your region',
+  stripeStateNotSupported: (state: string) =>
+    `Link by Stripe is not supported in the state of ${state}`,
+  coinbaseStateNotSupported: (state: string) =>
+    `Coinbase Pay is not supported in the state of ${state}`,
   goldAudioToken: 'Gold $AUDIO token'
 }
 
@@ -208,6 +212,11 @@ export const WalletManagementTile = () => {
       }),
     [value, stripeAllowedCountries, stripeDeniedRegions]
   )
+  // Assume USA is supported, so if in USA but still not supported, it's a state ban
+  const isBannedStripeState =
+    value && value.country_code_iso3 === 'USA' && !isStripeAllowed
+  const isBannedCoinbaseState =
+    value && value.country_code_iso3 === 'USA' && !isCoinbaseAllowed
 
   const onClickOpen = useCallback(() => {
     setOpen(true)
@@ -273,7 +282,11 @@ export const WalletManagementTile = () => {
                 <Tooltip
                   disabled={isStripeAllowed}
                   className={styles.tooltip}
-                  text={messages.stripeRegionNotSupported}
+                  text={
+                    isBannedStripeState
+                      ? messages.stripeStateNotSupported(value.region_code)
+                      : messages.stripeRegionNotSupported
+                  }
                   color={'--secondary'}
                   shouldWrapContent={false}
                 >
@@ -292,7 +305,11 @@ export const WalletManagementTile = () => {
                 <Tooltip
                   disabled={isCoinbaseAllowed}
                   className={styles.tooltip}
-                  text={messages.coinbasePayRegionNotSupported}
+                  text={
+                    isBannedCoinbaseState
+                      ? messages.stripeStateNotSupported(value.region_code)
+                      : messages.coinbasePayRegionNotSupported
+                  }
                   color={'--secondary'}
                   shouldWrapContent={false}
                 >

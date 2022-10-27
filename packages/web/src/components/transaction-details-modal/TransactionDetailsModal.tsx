@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { Status, transactionDetailsSelectors } from '@audius/common'
+import {
+  Status,
+  transactionDetailsActions,
+  transactionDetailsSelectors
+} from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -10,6 +14,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconTransaction } from 'assets/img/iconTransaction.svg'
 import { useModalState } from 'common/hooks/useModalState'
@@ -20,6 +25,7 @@ import styles from './TransactionDetailsModal.module.css'
 import { TransactionDetailsContent } from './components/TransactionDetailsContent'
 
 const { getTransactionDetails } = transactionDetailsSelectors
+const { setModalClosedAction } = transactionDetailsActions
 
 const messages = {
   transactionDetails: 'Transaction Details',
@@ -28,10 +34,17 @@ const messages = {
 }
 
 export const TransactionDetailsModal = () => {
+  const dispatch = useDispatch()
   const [isOpen, setIsOpen] = useModalState('TransactionDetails')
   const transactionDetails = useSelector(getTransactionDetails)
 
-  const handleClose = useCallback(() => setIsOpen(false), [setIsOpen])
+  const handleClose = useCallback(() => {
+    if (transactionDetails.onModalCloseAction) {
+      dispatch(transactionDetails.onModalCloseAction)
+      dispatch(setModalClosedAction())
+    }
+    setIsOpen(false)
+  }, [dispatch, setIsOpen, transactionDetails])
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} bodyClassName={styles.root}>

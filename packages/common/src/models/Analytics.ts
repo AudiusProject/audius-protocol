@@ -1307,6 +1307,8 @@ type BuyAudioFailure = {
 type BuyAudioRecoveryOpened = {
   eventName: Name.BUY_AUDIO_RECOVERY_OPENED
   provider: string
+  trigger: string
+  balance: string
 }
 
 type BuyAudioRecoverySuccess = {
