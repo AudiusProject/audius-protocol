@@ -133,7 +133,7 @@ describe('test issueSyncRequest job processor', function () {
         primarySyncFromSecondaryStub
     }
 
-    const { issueSyncRequest } = proxyquire(
+    const issueSyncRequest = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor.ts',
       stubs
     )
