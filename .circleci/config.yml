@@ -1483,7 +1483,6 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - stage-<< matrix.service >>-lock
             - unreserve-stage-<< matrix.service >>
       # Force deploy `main` to staging (by host) - discovery
       - noop:
@@ -1512,7 +1511,6 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - stage-discovery-lock
             - unreserve-<< matrix.host >>
       # Force deploy `main` to staging (by host) - creator
       - noop:
@@ -1541,7 +1539,6 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - stage-creator-lock
             - unreserve-<< matrix.host >>
 
       # Deploy branch to staging (by service)
@@ -1572,7 +1569,6 @@ workflows:
             branches:
               ignore: /(^main|release-.*$)/
           requires:
-            - stage-<< matrix.service >>-lock
             - reserve-stage-<< matrix.service >>
       # Deploy branch to staging (by host) - discovery
       - noop:
@@ -1602,7 +1598,6 @@ workflows:
             branches:
               ignore: /(^main|release-.*$)/
           requires:
-            - stage-discovery-lock
             - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
@@ -1632,7 +1627,6 @@ workflows:
             branches:
               ignore: /(^main|release-.*$)/
           requires:
-            - stage-creator-lock
             - reserve-<< matrix.host >>
 
       # Bump Tags (for release branch hot-fixes)
@@ -1671,7 +1665,6 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - prod-discovery-lock
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
       - noop:
@@ -1697,7 +1690,6 @@ workflows:
             branches:
               only: /(^release-v\d*.\d*.\d*$)/
           requires:
-            - prod-identity-lock
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
       - noop:
@@ -1729,7 +1721,6 @@ workflows:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
           requires:
-            - prod-creator-lock
             - release-<< matrix.host >>
 
       - test-libs:
