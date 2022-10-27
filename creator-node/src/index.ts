@@ -111,9 +111,11 @@ const startAppForPrimary = async () => {
   await setupDbAndRedis()
 
   const startTime = Date.now()
-  await DiskManager.emptyTmpTrackUploadArtifacts()
+  const size = await DiskManager.emptyTmpTrackUploadArtifacts()
   logger.info(
-    `old tmp track artifacts deleted : ${(Date.now() - startTime) / 1000}sec`
+    `old tmp track artifacts deleted : ${size} : ${
+      (Date.now() - startTime) / 1000
+    }sec`
   )
 
   // Don't await - run in background. Remove after v0.3.69
@@ -174,7 +176,12 @@ const startAppForPrimary = async () => {
   })
 
   // do not await this, this should just run in background for now
-  DiskManager.sweepSubdirectoriesInFiles()
+  // wait one minute before starting this because it might cause init to degrade
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
+    setTimeout(() => {
+      DiskManager.sweepSubdirectoriesInFiles()
+    }, 60_000)
+  }
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry

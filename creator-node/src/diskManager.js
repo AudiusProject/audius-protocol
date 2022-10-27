@@ -22,6 +22,10 @@ const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
 const DAYS_BEFORE_PRUNING_ORPHANED_CONTENT = 7
 
+const DB_QUERY_SUCCESS_CHECK_STR = `sweep_db_query_success_${Math.floor(
+  Math.random() * 10000
+)}`
+
 // variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
 // it every time a track is uploaded
 let TMP_TRACK_ARTIFACTS_CREATED = false
@@ -35,11 +39,24 @@ class DiskManager {
   }
 
   /**
+   *
+   * @param {string} path the path to get the size for
+   * @returns the string output of stdout
+   */
+  static async getDirSize(path) {
+    const stdout = await this._execShellCommand(`du -sh ${path}`)
+    return stdout
+  }
+
+  /**
    * Empties the tmp track artifacts directory of any old artifacts
    */
   static async emptyTmpTrackUploadArtifacts() {
     const dirPath = await this.getTmpTrackUploadArtifactsPath()
+    const dirSize = await this.getDirSize(dirPath)
     await fs.emptyDir(dirPath)
+
+    return dirSize
   }
 
   /**
@@ -418,31 +435,56 @@ class DiskManager {
     for (let i = 0; i < subdirectories.length; i += 1) {
       try {
         const subdirectory = subdirectories[i]
-        genericLogger.info(
-          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length}`
-        )
+
         const cidsToFilePathMap = await this.listNestedCIDsInFilePath(
           subdirectory
         )
+        const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
 
-        const queryResults = await models.File.findAll({
-          attributes: ['multihash', 'storagePath'],
-          raw: true,
-          where: {
-            multihash: {
-              [models.Sequelize.Op.in]: Object.keys(cidsToFilePathMap)
-            }
-          }
-        })
+        if (cidsInSubdirectory.length === 0) {
+          continue
+        }
+
+        const queryResults =
+          // add a `query_success` row to the result so we know the query ran successfully
+          // shouldn't need this because sequelize should throw an error, but when deleting
+          // from disk paranoia is probably justified
+          (
+            await models.sequelize.query(
+              `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
+              UNION
+              (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
+              { replacements: { cidsInSubdirectory } }
+            )
+          )[0]
+
+        genericLogger.debug(
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
+            subdirectories.length
+          }. subdirectory: ${subdirectory}. got ${
+            Object.keys(cidsToFilePathMap).length
+          } files in folder and ${
+            queryResults.length
+          } results from db. files: ${Object.keys(
+            cidsToFilePathMap
+          ).toString()}. db records: ${JSON.stringify(queryResults)}`
+        )
 
         const cidsInDB = new Set()
+        let foundSuccessRow = false
         for (const file of queryResults) {
-          cidsInDB.add(file.multihash)
+          if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
+            foundSuccessRow = true
+          else cidsInDB.add(file.multihash)
         }
+
+        if (!foundSuccessRow)
+          throw new Error(`DB did not return expected success row`)
 
         const cidsToDelete = []
         const cidsNotToDelete = []
-        for (const cid of cidsInDB) {
+        // iterate through all files on disk and check if db contains it
+        for (const cid of cidsInSubdirectory) {
           // if db doesn't contain file, log as okay to delete
           if (!cidsInDB.has(cid)) {
             cidsToDelete.push(cid)
@@ -450,7 +492,7 @@ class DiskManager {
         }
 
         if (cidsNotToDelete.length > 0) {
-          genericLogger.info(
+          genericLogger.debug(
             `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
           )
         }
@@ -460,8 +502,7 @@ class DiskManager {
             `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
           )
 
-          // gate deleting files on disk with the same env var
-          if (config.get('syncForceWipeEnabled')) {
+          if (config.get('backgroundDiskCleanupDeleteEnabled')) {
             await this._execShellCommand(
               `rm ${cidsToDelete
                 .map((cid) => cidsToFilePathMap[cid])
@@ -480,8 +521,11 @@ class DiskManager {
     if (redoJob) return this.sweepSubdirectoriesInFiles()
   }
 
-  static async _execShellCommand(cmd) {
-    genericLogger.info(`diskManager - about to call _execShellCommand: ${cmd}`)
+  static async _execShellCommand(cmd, log = false) {
+    if (log)
+      genericLogger.info(
+        `diskManager - about to call _execShellCommand: ${cmd}`
+      )
     const { stdout, stderr } = await exec(`${cmd}`, {
       maxBuffer: 1024 * 1024 * 5
     }) // 5mb buffer

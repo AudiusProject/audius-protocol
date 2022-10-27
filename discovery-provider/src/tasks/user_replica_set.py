@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Set, Tuple
+from typing import Any, List, Set, Tuple
 
+from redis import Redis
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
@@ -12,12 +13,17 @@ from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.eth_contracts_helpers import (
+    cnode_info_redis_ttl_s,
     content_node_service_type,
     sp_factory_registry_key,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.redis_cache import get_cn_sp_id_key, get_json_cached_key
+from src.utils.redis_cache import (
+    get_cn_sp_id_key,
+    get_json_cached_key,
+    set_json_cached_key,
+)
 from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_arr,
     user_replica_set_manager_event_types_lookup,
@@ -207,7 +213,9 @@ def get_user_replica_set_mgr_tx(update_task, event_type, tx_receipt):
 # creator_node_endpoint
 # If this discrepancy occurs, a client replica set health check sweep will
 # result in a client-initiated failover operation to a valid set of replicas
-def get_endpoint_string_from_sp_ids(redis, primary, secondaries):
+def get_endpoint_string_from_sp_ids(
+    redis: Redis, primary: int, secondaries: List[int]
+) -> str:
     sp_factory_inst = None
     endpoint_string = None
     primary_endpoint = None
@@ -260,7 +268,7 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
 
 # Initializes sp_factory if necessary and retrieves spID
 # Returns initialized instance of contract and endpoint
-def get_endpoint_from_id(redis, sp_factory_inst, sp_id):
+def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any, str]:
     endpoint = None
     # Get sp_id cache key
     cache_key = get_cn_sp_id_key(sp_id)
@@ -286,6 +294,7 @@ def get_endpoint_from_id(redis, sp_factory_inst, sp_id):
         logger.info(
             f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}"
         )
+        set_json_cached_key(redis, cache_key, cn_endpoint_info, cnode_info_redis_ttl_s)
         endpoint = cn_endpoint_info[1]
 
     return sp_factory_inst, endpoint
