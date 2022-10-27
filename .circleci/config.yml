@@ -1040,8 +1040,6 @@ jobs:
             and:
               - equal: [ jc-inf-298, "${CIRCLE_BRANCH}" ]
               - equal: [ staging, << parameters.environment >> ]
-              - not:
-                  equal: [ all, << parameters.service >> ]
           steps:
             - diff-if-necessary:
                 service: << parameters.service >>
