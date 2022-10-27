@@ -1,5 +1,7 @@
+const Web3 = require('web3')
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const Accounts = require('web3-eth-accounts')
 
 const models = require('../models')
 const config = require('../config')
@@ -8,10 +10,10 @@ const { Lock } = require('../redis')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
-
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
+const NETHERMIND_BLOCK_OFFSET = 30000000
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
 
 const ENVIRONMENT = config.get('environment')
@@ -19,6 +21,9 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const WEB3_PROVIDER_URL = config.get('web3Provider')
+
+const accounts = new Accounts(WEB3_PROVIDER_URL)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -87,6 +92,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   } = txProps
   const redis = req.app.get('redis')
 
+  // SEND to either POA or Nethermind here...
+  const sendToNethermind =  config.get('environment') === 'staging' ? true : false
+
   const existingTx = await models.Transaction.findOne({
     where: {
       encodedABI: encodedABI // this should always be unique because of the nonce / sig
@@ -104,11 +112,12 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
+  let txParams
   let redisLogParams
   let wallet = await selectWallet()
 
   // If all wallets are currently in use, keep iterating until a wallet is freed up
-  while (!wallet) {
+  while (!sendToNethermind && !wallet) {
     await delay(200)
     wallet = await selectWallet()
   }
@@ -117,16 +126,26 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     req.logger.info(
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
     )
-    const { receipt, txParams } = await createAndSendTransaction(
-      wallet,
-      contractAddress,
-      '0x00',
-      web3,
-      req.logger,
-      gasLimit,
-      encodedABI
-    )
-    txReceipt = receipt
+
+    if (sendToNethermind) {
+      // fire and forget
+      const ok = await wipRelayToNethermind(web3, contractAddress, encodedABI)
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    } else {
+      // use POA receipt as main receipt
+      const ok = await createAndSendTransaction(
+        wallet,
+        contractAddress,
+        '0x00',
+        web3,
+        req.logger,
+        gasLimit,
+        encodedABI
+      )
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    }
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -156,7 +175,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
     await redis.hset(
       'txHashToSenderAddress',
-      receipt.transactionHash,
+      txReceipt.transactionHash,
       senderAddress
     )
   } catch (e) {
@@ -316,6 +335,58 @@ const createAndSendTransaction = async (
   )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
   return { receipt, txParams }
+}
+
+//
+// WIP relay txn to staging nethermind "fire and forget" style
+//
+
+let inFlight = 0
+
+async function wipRelayToNethermind(web3, contractAddress, encodedABI) {
+  // staging EM address on nethermind NOT POA
+
+  // any ol random private key
+  const wallet = accounts.create()
+  const privateKey = wallet.privateKey.substring(2)
+  var start = new Date().getTime()
+
+  try {
+    const transaction = {
+      to: config.get('entityManagerAddress'),
+      value: 0,
+      gas: '100880',
+      gasPrice: 0,
+      data: encodedABI
+    }
+
+    const signedTx = await web3.eth.accounts.signTransaction(
+      transaction,
+      privateKey
+    )
+
+    inFlight++
+    const nnn = inFlight
+
+    console.log('wipRelayToNethermind sending', nnn, JSON.stringify(signedTx))
+    const receipt = await web3.eth.sendSignedTransaction(
+      signedTx.rawTransaction
+    )
+    receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
+
+    var end = new Date().getTime()
+    var time = end - start
+    inFlight--
+    console.log('wipRelayToNethermind ok', nnn, JSON.stringify(receipt))
+    console.log('wipRelayToNethermind took', nnn, time, inFlight)
+    return {
+      txParams: transaction,
+      receipt
+    }
+  } catch (err) {
+    console.log('wipRelayToNethermind error', err.toString())
+    throw err
+  }
 }
 
 const getRelayerFunds = async (walletPublicKey) => {
