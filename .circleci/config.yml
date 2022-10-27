@@ -1026,29 +1026,34 @@ jobs:
         default: false
     steps:
       - queue/until_front_of_line:
-          job-regex: '.*reserving-stage-discovery.*'
           consider-branch: false
           dont-quit: true
-      - queue/until_front_of_line:
-          job-regex: '.*reserving-stage-(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: true
-      - queue/until_front_of_line:
-          job-regex: '.*reserving-stage-identity'
-          consider-branch: false
-          dont-quit: true
-      - queue/until_front_of_line:
-          job-regex: 'releasing-discovery-foundation'
-          consider-branch: false
-          dont-quit: false
-      - queue/until_front_of_line:
-          job-regex: 'releasing-prod-(creator|user-metadata).*'
-          consider-branch: false
-          dont-quit: false
-      - queue/until_front_of_line:
-          job-regex: 'releasing-identity-foundation'
-          consider-branch: false
-          dont-quit: false
+      # can't enable these due to:
+      # > Error: Your compiled config is too large to be processed. Please contact support.
+      # - queue/until_front_of_line:
+      #     job-regex: '.*reserving-stage-discovery.*'
+      #     consider-branch: false
+      #     dont-quit: true
+      # - queue/until_front_of_line:
+      #     job-regex: '.*reserving-stage-(creator|user-metadata).*'
+      #     consider-branch: false
+      #     dont-quit: true
+      # - queue/until_front_of_line:
+      #     job-regex: '.*reserving-stage-identity'
+      #     consider-branch: false
+      #     dont-quit: true
+      # - queue/until_front_of_line:
+      #     job-regex: 'releasing-discovery-foundation'
+      #     consider-branch: false
+      #     dont-quit: false
+      # - queue/until_front_of_line:
+      #     job-regex: 'releasing-prod-(creator|user-metadata).*'
+      #     consider-branch: false
+      #     dont-quit: false
+      # - queue/until_front_of_line:
+      #     job-regex: 'releasing-identity-foundation'
+      #     consider-branch: false
+      #     dont-quit: false
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
