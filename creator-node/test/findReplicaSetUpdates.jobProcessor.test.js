@@ -101,7 +101,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     isNodeHealthyOrInGracePeriodStub,
     getCNodeEndpointToSpIdMapStub
   ) {
-    return proxyquire(
+    const { findReplicaSetUpdatesJobProcessor } = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/findReplicaSetUpdates.jobProcessor.ts',
       {
         '../../../config': config,
@@ -115,6 +115,8 @@ describe('test findReplicaSetUpdates job processor', function () {
         }
       }
     )
+
+    return findReplicaSetUpdatesJobProcessor
   }
 
   async function runJobProcessor({
