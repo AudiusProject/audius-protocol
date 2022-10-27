@@ -9,7 +9,12 @@ from src.models.users.audio_transactions_history import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
-from src.tasks.index_spl_token import parse_sol_tx_batch, parse_spl_token_transaction
+from src.tasks.index_spl_token import (
+    decode_memo_and_extract_vendor,
+    parse_memo_instruction,
+    parse_sol_tx_batch,
+    parse_spl_token_transaction,
+)
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -97,12 +102,10 @@ def test_parse_spl_token_transaction_no_results():
     solana_client_manager_mock.get_sol_tx_info.return_value = (
         mock_create_account_tx_info
     )
-    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+    tx_info = parse_spl_token_transaction(
         solana_client_manager_mock, mock_confirmed_signature_for_address
     )
     assert tx_info == None
-    assert root_accounts == []
-    assert token_accounts == []
 
 
 mock_transfer_checked_meta = {
@@ -208,15 +211,15 @@ mock_transfer_tx_info = {
 def test_parse_spl_token_transaction():
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_transfer_tx_info
-    (tx_info, root_accounts, token_accounts) = parse_spl_token_transaction(
+    tx_info = parse_spl_token_transaction(
         solana_client_manager_mock, mock_confirmed_signature_for_address
     )
     assert tx_info["user_bank"] == "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD"
-    assert root_accounts == [
+    assert tx_info["root_accounts"] == [
         "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx",
         "iVsXfN4oZnARo6AYwm8FFXBnDQYnwhkPxJiuPHDzfJ4",
     ]
-    assert token_accounts == [
+    assert tx_info["token_accounts"] == [
         "7CyoHxibpPrTVc2AsmoSq7gRoDwnwN7LRnHDcR4yWVf9",
         "9f79QvW5XQ1XCXGLeCCHjBZkPet51yAPxtU7fcaY6UxD",
     ]
@@ -345,6 +348,15 @@ mock_purchase_tx_info = {
 }
 
 
+def test_parse_memo_instruction():
+    memo = parse_memo_instruction(mock_transfer_checked_meta)
+    assert memo == None
+    memo = parse_memo_instruction(mock_purchase_meta)
+    assert memo == "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz"
+    vendor = decode_memo_and_extract_vendor(memo)
+    assert vendor == "Link by Stripe"
+
+
 def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disable=W0621
     with app.app_context():
         db = get_db()
@@ -380,7 +392,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
             {
                 "signature": "hellothere",
                 "ethereum_address": "0x7d12457bd24ce79b62e66e915dbc0a469a6b59ba",
-                "bank_account": "AoY7fgjKanf2bmrjLgK21xdAVpfVjBc4poT92nexxi8K",
+                "bank_account": "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556",
             },
         ],
         "associated_wallets": [
@@ -460,3 +472,24 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         assert audio_tx.change == 5123032749
         assert audio_tx.transaction_type == TransactionType.purchase_stripe
         assert audio_tx.method == TransactionMethod.receive
+
+    # Verify that a non-userbank tx won't get indexed.
+    mock_purchase_meta["transaction"]["message"]["accountKeys"][1] = "somegarbage"
+    mock_confirmed_signature_for_address["signature"] = "somegarbage"
+    parse_sol_tx_batch(
+        db,
+        solana_client_manager_mock,
+        redis,
+        [mock_confirmed_signature_for_address],
+        solana_logger,
+    )
+
+    with db.scoped_session() as session:
+        audio_tx = (
+            session.query(
+                AudioTransactionsHistory.user_bank,
+            )
+            .filter(AudioTransactionsHistory.signature == "somegarbage")
+            .first()
+        )
+        assert not audio_tx

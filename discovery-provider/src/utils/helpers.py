@@ -508,7 +508,7 @@ def get_solana_tx_balances(meta: Any, idx: int) -> Tuple[int, int]:
     return (pre_balance, post_balance)
 
 
-def get_solana_tx_root_account(meta, idx) -> str:
+def get_solana_tx_owner(meta, idx) -> str:
     return next(
         (
             balance["owner"]
