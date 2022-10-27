@@ -112,10 +112,8 @@ fi
 
 # start es-indexer
 if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
-    # npm run catchup creates triggers + populate indexes - this blocks server / celery start
-    # npm start gets backgrounded and goes into listen mode
     (
-        cd es-indexer && npm run catchup && npm start &
+        cd es-indexer && npm start &
     )
 fi
 
