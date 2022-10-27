@@ -4,8 +4,9 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, marshal_with
+from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_path_param,
     abort_bad_request_param,
     abort_not_found,
@@ -33,6 +34,9 @@ from src.api.v1.helpers import (
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
 from src.queries.get_max_id import get_max_id
+from src.queries.get_premium_track_signatures import (
+    get_nft_gated_premium_track_signatures,
+)
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -63,6 +67,7 @@ from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
+from .models.tracks import premium_content_signature
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
 
@@ -1193,6 +1198,54 @@ class FeelingLucky(Resource):
         tracks = get_random_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
+
+
+track_signatures_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+track_signatures_parser.add_argument(
+    "track_ids", description="The premium track ids and user's respective nft token ids"
+)
+track_signatures = make_response(
+    "track_signatures", full_ns, fields.List(fields.Nested(premium_content_signature))
+)
+
+
+@full_ns.route("/<string:user_id>/signatures")
+class NFTGatedPremiumTrackSignatures(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Premium Track Signatures""",
+        description="""Gets premium track signatures for passed in premium track ids""",
+        params={
+            "track_ids": """A string representation of track ids and corresponding nft token ids from user for that track's nft collection.
+            For tracks gated with the ERC1155 nft token standard, we also need the nft token ids claimed to be owned by the user.
+            Example: '1-1.2_2_3-1' represents track ids 1, 2, and 3 (separated by '_').
+            Track id and its token ids are separarted by a dash '-'.
+            In the above example, the user claims to own token ids 1 and 2 (separated by '.') for track id 1.
+            Similarly, the user claims to own token id 1 for track id 3.""",
+        },
+    )
+    @full_ns.expect(track_signatures_parser)
+    @full_ns.marshal_with(track_signatures)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_user_id = decode_with_abort(user_id, full_ns)
+        request_args = track_signatures_parser.parse_args()
+        track_id_str = request_args.get("track_ids")
+        if not track_id_str:
+            full_ns.abort(400, "NFT-gated premium track signatures require track ids.")
+
+        track_token_id_map = {}
+        track_token_ids = list(filter(lambda item: item, track_id_str.split("_")))
+        for item in track_token_ids:
+            parts = item.split("-")
+            track_id = int(parts[0])
+            token_ids = parts[1].split(".") if len(parts) > 1 else []
+            track_token_id_map[track_id] = token_ids
+
+        premium_track_signatures = get_nft_gated_premium_track_signatures(
+            decoded_user_id, track_token_id_map
+        )
+        return success_response(premium_track_signatures)
 
 
 @ns.route("/latest", doc=False)
