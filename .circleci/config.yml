@@ -6,6 +6,7 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   slack: circleci/slack@4.9.3
+  queue: eddiewebb/queue@1.7.0
 
 commands:
   slack-basic:
@@ -1024,7 +1025,9 @@ jobs:
         type: boolean
         default: false
     steps:
-      # only send Starting slack message when prod, --force, or custom args are used
+      - queue/until_front_of_line:
+          consider-branch: false
+          dont-quit: true
       - when:
           condition:
             and:
@@ -1035,6 +1038,7 @@ jobs:
           steps:
             - diff-if-necessary:
                 service: << parameters.service >>
+      # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
             or:
@@ -1396,6 +1400,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1409,6 +1414,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1422,6 +1428,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1432,12 +1439,12 @@ workflows:
       - noop:
           name: unreserve-stage-<< matrix.service >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-<< matrix.service >>
       - deploy:
@@ -1447,21 +1454,25 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - unreserve-stage-<< matrix.service >>
       # Force deploy `main` to staging (by host) - discovery
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-discovery
       - deploy:
@@ -1471,21 +1482,25 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - unreserve-<< matrix.host >>
       # Force deploy `main` to staging (by host) - creator
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-creator
       - deploy:
@@ -1495,9 +1510,13 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - unreserve-<< matrix.host >>
 
@@ -1505,12 +1524,12 @@ workflows:
       - noop:
           name: reserve-stage-<< matrix.service >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - << matrix.service >>-deploy-hold
       - deploy:
@@ -1521,21 +1540,25 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - reserve-stage-<< matrix.service >>
       # Deploy branch to staging (by host) - discovery
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - discovery-deploy-hold
       - deploy:
@@ -1546,24 +1569,25 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^main$)/
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - creator-deploy-hold
       - deploy:
@@ -1574,12 +1598,13 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^main$)/
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - reserve-<< matrix.host >>
 
@@ -1614,6 +1639,10 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
@@ -1635,6 +1664,10 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
@@ -1659,6 +1692,10 @@ workflows:
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v.*-patch-.*$)/
           matrix:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
@@ -1770,6 +1807,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
               only: /(^main$)/
@@ -1802,6 +1840,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
 
   reservations-cron:
     jobs:
@@ -1813,6 +1852,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
     triggers:
       - schedule:
           cron: '0 15 * * 1,2,3,4,5'
