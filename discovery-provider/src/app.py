@@ -348,14 +348,6 @@ def configure_flask(test_config, app, mode="app"):
     return app
 
 
-def delete_last_scanned_eth_block_redis(redis_inst):
-    logger.info("index_eth.py | deleting existing redis scanned block on start")
-    redis_inst.delete(eth_indexing_last_scanned_block_key)
-    logger.info(
-        "index_eth.py | successfully deleted existing redis scanned block on start"
-    )
-
-
 def configure_celery(celery, test_config=None):
     database_url = shared_config["db"]["url"]
     database_url_read_replica = shared_config["db"]["url_read_replica"]
@@ -537,9 +529,6 @@ def configure_celery(celery, test_config=None):
         eth_abi_values,
     )
 
-    # Clear last scanned redis block on startup
-    delete_last_scanned_eth_block_redis(redis_inst)
-
     # Initialize Anchor Indexer
     anchor_program_indexer = AnchorProgramIndexer(
         shared_config["solana"]["anchor_data_program_id"],
@@ -558,6 +547,7 @@ def configure_celery(celery, test_config=None):
     eth_manager.init_contracts()
 
     # Clear existing locks used in tasks if present
+    redis_inst.delete(eth_indexing_last_scanned_block_key)
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")

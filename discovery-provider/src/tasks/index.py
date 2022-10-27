@@ -463,9 +463,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             break
 
-    logger.info(
-        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
-    )
     return contract_type
 
 
@@ -653,9 +650,6 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
                         txs_grouped_by_type[ENTITY_MANAGER],
-                    )
-                    logger.info(
-                        f"index.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(

@@ -68,7 +68,6 @@ TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
 def parse_eth_address_from_msg(msg: str):
-    logger.info(f"index_user_bank.py {msg}")
     res = re.findall(r"\[.*?\]", msg)
     # Remove brackets
     inner_res = res[0][1:-1]
@@ -102,7 +101,6 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
         session.query(UserBankTx).filter(UserBankTx.signature == tx_sig)
     ).count()
     exists = tx_sig_db_count > 0
-    # logger.info(f"index_user_bank.py | {tx_sig} exists={exists}")
     return exists
 
 
@@ -376,7 +374,7 @@ def parse_user_bank_transaction(
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
 
-    logger.info(
+    logger.debug(
         f"index_user_bank.py | parse_user_bank_transaction |\
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
@@ -439,7 +437,7 @@ def process_user_bank_txs():
                 for tx_info in transactions_array:
                     tx_sig = tx_info["signature"]
                     tx_slot = tx_info["slot"]
-                    logger.info(
+                    logger.debug(
                         f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
                     if tx_info["slot"] > latest_processed_slot:

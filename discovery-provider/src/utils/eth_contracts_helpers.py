@@ -21,9 +21,6 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     sp_id_key = get_cn_sp_id_key(sp_id)
     sp_info_cached = get_json_cached_key(redis, sp_id_key)
     if sp_info_cached:
-        logger.info(
-            f"eth_contract_helpers.py | Found cached value for spID={sp_id} - {sp_info_cached}"
-        )
         return sp_info_cached
 
     cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
@@ -31,7 +28,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     ).call()
     set_json_cached_key(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl_s)
     logger.info(
-        f"eth_contract_helpers.py | Configured redis {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl_s}"
+        f"eth_contract_helpers.py | set cache valud for sp_id: {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl_s}"
     )
     return cn_endpoint_info
 

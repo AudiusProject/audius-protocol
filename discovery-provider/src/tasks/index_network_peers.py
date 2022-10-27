@@ -43,12 +43,7 @@ def update_network_peers(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             # An object returned from web3 chain queries
-            peers_from_ethereum = retrieve_peers_from_eth_contracts(self)
-            logger.info(
-                f"index_network_peers.py | Peers from eth-contracts: {peers_from_ethereum}"
-            )
-            # Combine the set of known peers from ethereum and within local database
-            all_peers = peers_from_ethereum
+            all_peers = retrieve_peers_from_eth_contracts(self)
 
             logger.info(f"index_network_peers.py | All known peers {all_peers}")
             peers_list = list(all_peers)
