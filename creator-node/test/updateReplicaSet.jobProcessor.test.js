@@ -126,7 +126,7 @@ describe('test updateReplicaSet job processor', function () {
         })
       }
     }
-    const { updateReplicaSet } = proxyquire(
+    const updateReplicaSet = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.ts',
       {
         '../../../config': config,
