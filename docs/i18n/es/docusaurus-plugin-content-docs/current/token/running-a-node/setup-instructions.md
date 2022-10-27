@@ -26,7 +26,7 @@ También se incluye un script de conveniencia para hacer una configuración de n
 yes | sh setup.sh
 ```
 
-Sin embargo, si la configuración del nodo no es exitosa y kubectl no está disponible, se aconseja seguir los pasos de instalación manual [aquí](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/cluster-setup.md).
+Sin embargo, si la configuración del nodo no es exitosa y kubectl no está disponible, se aconseja seguir los pasos de instalación manual [aquí](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/cluster-setup.md).
 
 ## 2. Audius CLI Setup
 
@@ -264,7 +264,7 @@ Primero, obtenga los secretos del proveedor de servicios de su contacto en Audiu
 kubectl aplicar -f <secret_from_audius>.yaml
 ```
 
-A continuación, actualice las etiquetas logger en el daemonset fluentd con su nombre, para que podamos identificarle a usted y a su servicio de forma única aquí: [https://github. om/AudiusProject/audio k8s-manifests/blob/master/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/audius/logger/logger.yaml#L207). Esto permite que nuestro servicio de registro filtre los registros por el proveedor de servicios y por el proveedor de servicios y el servicio. `SP_NAME` se refiere al nombre de su organización y `SP_NAME_TYPE_ID` se refiere al nombre de su organización más el tipo de servicio que está ejecutando, más un id para distinguir varios servicios del mismo tipo.
+A continuación, actualice las etiquetas logger en el daemonset fluentd con su nombre, para que podamos identificarle a usted y a su servicio de forma única aquí: [https://github. om/AudiusProject/audio k8s-manifests/blob/main/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/audius/logger/logger.yaml#L207). Esto permite que nuestro servicio de registro filtre los registros por el proveedor de servicios y por el proveedor de servicios y el servicio. `SP_NAME` se refiere al nombre de su organización y `SP_NAME_TYPE_ID` se refiere al nombre de su organización más el tipo de servicio que está ejecutando, más un id para distinguir varios servicios del mismo tipo.
 
 Por ejemplo, si tu nombre es `Awesome Operator` y estás ejecutando un nodo de contenido, establece las etiquetas como:
 
@@ -340,7 +340,7 @@ Antes de registrar un servicio en el tablero, necesitamos asegurarnos de que el 
 
 La carpeta `sp-actions/` contiene scripts que prueban el estado de los servicios. Ejecute las comprobaciones correspondientes para su tipo de servicio a continuación para verificar que su servicio está correctamente instalado. Asegúrate de ejecutar `npm install` en `sp-actions/` para instalar todas las depdencies.
 
-Para más información sobre `sp-actions/` vea el README en la carpeta [sp-actions/](https://github.com/AudiusProject/audius-k8s-manifests/tree/master/sp-utilities)
+Para más información sobre `sp-actions/` vea el README en la carpeta [sp-actions/](https://github.com/AudiusProject/audius-k8s-manifests/tree/main/sp-utilities)
 
 **Nodo Creador**
 

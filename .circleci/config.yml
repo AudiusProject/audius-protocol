@@ -138,7 +138,7 @@ commands:
       - unless:
           condition:
             or:
-              - equal: [master, << pipeline.git.branch >>]
+              - equal: [main, << pipeline.git.branch >>]
               - matches:
                   pattern: '^release.*$'
                   value: << pipeline.git.branch >>
@@ -159,10 +159,10 @@ commands:
             echo "Continue on odd week? << parameters.odd_week >>"
             if [ $(($week % 2)) == 0 ]; then
                 echo "Even week"
-                << parameters.odd_week >> && circleci-agent step halt
+                << parameters.odd_week >> && exit 1
             else
                 echo "Odd week"
-                << parameters.odd_week >> || circleci-agent step halt
+                << parameters.odd_week >> || exit 1
             fi
 
   run-on-gcp:
@@ -264,6 +264,9 @@ parameters:
   slack_mentions_user:
     type: string
     default: ""
+  sp_release:
+    type: string
+    default: ""
   full_ci:
     type: boolean
     default: false
@@ -286,7 +289,6 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - bi-weekly:
-          # really want true
           odd_week: false
 
   bake-gcp-dev-image:
@@ -333,7 +335,7 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
       - slack-fail:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: "@dheeraj"
 
   publish-sdk:
@@ -360,7 +362,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
       - slack-basic:
           event: always
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
       - run:
           name: Bump and Publish Libs
@@ -368,10 +370,10 @@ jobs:
             export PROTOCOL_DIR=/home/circleci/project
             libs/scripts/release.sh << parameters.sdk_release_commit >>
       - slack-fail:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
       - slack-success:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
 
   test-mad-dog-e2e:
@@ -989,7 +991,7 @@ jobs:
       image: ubuntu-2004:202201-02
     parameters:
       git_tag:
-        description: Git_tag to deploy. Latest commit on `master` otherwise.
+        description: Git_tag to deploy. Latest commit on `main` otherwise.
         type: string
         default: ""
       environment:
@@ -1027,7 +1029,7 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ master, "${CIRCLE_BRANCH}" ]
+              - equal: [ main, "${CIRCLE_BRANCH}" ]
               - equal: [ staging, << parameters.environment >> ]
               - not:
                   equal: [ all, << parameters.service >> ]
@@ -1287,8 +1289,9 @@ jobs:
                 detail: ":vote: New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             - run: |
+                VERSION=$(curl -s "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/discovery-provider/.version.json" | jq -r '.version')
                 curl -d '{
-                  "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
+                  "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
                   "embeds": null,
                   "attachments": []
                 }' \
@@ -1326,6 +1329,7 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.slash_address >>
+         - not: << pipeline.parameters.sp_release >>
     jobs:
       - noop:
           name: tests
@@ -1341,7 +1345,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-creator
             - test-creator
@@ -1350,7 +1354,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-discovery
             - test-discovery
@@ -1359,7 +1363,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-identity
             - test-identity
@@ -1428,7 +1432,7 @@ workflows:
           context:
             - circle-ci-api
 
-      # Auto-deploy `master` to staging
+      # Auto-deploy `main` to staging
       - deploy:
           name: autodeploy-stage-discovery
           service: discovery
@@ -1438,7 +1442,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-discovery
             - test-discovery
@@ -1451,7 +1455,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-creator
             - test-creator
@@ -1464,17 +1468,17 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-identity
             - test-identity
-      # Force deploy `master` to staging (by service)
+      # Force deploy `main` to staging (by service)
       - noop:
           name: unreserve-stage-<< matrix.service >>
           type: approval
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1493,13 +1497,13 @@ workflows:
           requires:
             - stage-<< matrix.service >>-lock
             - unreserve-stage-<< matrix.service >>
-      # Force deploy `master` to staging (by host) - discovery
+      # Force deploy `main` to staging (by host) - discovery
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1518,13 +1522,13 @@ workflows:
           requires:
             - stage-discovery-lock
             - unreserve-<< matrix.host >>
-      # Force deploy `master` to staging (by host) - creator
+      # Force deploy `main` to staging (by host) - creator
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1550,7 +1554,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
@@ -1576,7 +1580,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1592,7 +1596,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^main$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
@@ -1605,7 +1609,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1621,7 +1625,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              ignore: /(^master$)/
+              ignore: /(^main$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
@@ -1787,7 +1791,7 @@ workflows:
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to the `master` branch
+  # 2. go to the `main` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string parameter "sdk_release_commit" and set to a valid git commit
   sdk-release:
@@ -1802,11 +1806,11 @@ workflows:
             - slack-secrets
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to the `master` branch
+  # 2. go to the `main` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string parameter "deploy_args" to be passed to deploy-ci.py
   deploy-args:
@@ -1821,7 +1825,7 @@ workflows:
             - open-vpn
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
@@ -1867,9 +1871,14 @@ workflows:
           cron: '0 15 * * 1,2,3,4,5'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
-  release-to-service-providers-cron:
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. click "Trigger Pipeline"
+  # 3. Add string parameter "sp_release" with any non-null value
+  release-to-service-providers:
+    when: << pipeline.parameters.sp_release >>
     jobs:
       - release-week
       - release-scripts:
@@ -1880,12 +1889,31 @@ workflows:
             - gh-tokens.releases
             - discord
             - governance
-    triggers:
-      - schedule:
-          cron: '0 15 * * 1'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
+          requires:
+            - release-week
+
+  # release-to-service-providers-cron:
+  #   jobs:
+  #     - release-week
+  #     - release-scripts:
+  #         name: release-to-service-providers
+  #         target: release-to-service-providers
+  #         context:
+  #           - slack-secrets
+  #           - gh-tokens.releases
+  #           - discord
+  #           - governance
+  #         requires:
+  #           - release-week
+  #   triggers:
+  #     - schedule:
+  #         cron: '0 15 * * 1'
+  #         filters:
+  #           branches:
+  #             only: /(^main$)/
 
   evaluate-proposal-cron:
     jobs:
@@ -1896,12 +1924,14 @@ workflows:
           context:
             - slack-secrets
             - governance
+          requires:
+            - release-week
     triggers:
       - schedule:
           cron: '0 19 * * 5'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   cut-release-cron:
     jobs:
@@ -1912,13 +1942,17 @@ workflows:
           context:
             - slack-secrets
             - gh-tokens.releases
-      - generate-release-checklist
+          requires:
+            - release-week
+      - generate-release-checklist:
+          requires:
+            - cut-release
     triggers:
       - schedule:
           cron: '0 7 * * 6'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
@@ -1954,7 +1988,7 @@ workflows:
           requires:
             - hold-bake-gcp-dev-image
 
-  # test master at midnight daily
+  # test main at midnight daily
   test-nightly:
     jobs:
       - test-libs:
@@ -1995,4 +2029,4 @@ workflows:
           cron: '0 5 * * *'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/

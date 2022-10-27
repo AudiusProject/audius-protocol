@@ -68,7 +68,7 @@ CANARIES = (
     "prod-discovery-4",  # prod-canary
 )
 
-MASTER = "master"
+MAIN = "main"
 MISSING = "missing"
 RELEASE = "release"
 FAILED_TO_SSH = "failed_to_ssh"
@@ -169,8 +169,8 @@ def standardize_branch_name(branches):
     """Helper to sanatize branch names into enums, when possible"""
 
     for branch in branches:
-        if "origin/master" in branch or "origin/HEAD" in branch:
-            return MASTER
+        if "origin/main" in branch or "origin/HEAD" in branch:
+            return MAIN
         if "origin/release" in branch:
             return RELEASE
     return branch
@@ -182,7 +182,7 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
 
     A release tag can either be:
 
-    * in the `master` branch
+    * in the `main` branch
     * in a `release` branch
     * in a feature/PR branch
         * In which case, we'll collect author and commit_data metadata.
@@ -229,7 +229,7 @@ def get_release_tag_by_host(snapshot, host, github_user, github_token):
     )
 
     # grab author and commit date from git tree for deployed feature-branches
-    if branch not in (MASTER, RELEASE, MISSING):
+    if branch not in (MAIN, RELEASE, MISSING):
         author, commit_date = run_cmd(f"git log --format='%an|%ci' {tag}^!").split("|")
         snapshot.update(
             {
@@ -322,7 +322,7 @@ def update_release_summary(
 
     When in PRE_DEPLOY mode, mark nodes as:
 
-    * `upgradeable`, when a node is currently using a githash found in `master` or a `release` branch.
+    * `upgradeable`, when a node is currently using a githash found in `main` or a `release` branch.
     * `skipped`, when a node has been manually deployed to.
     """
 
@@ -335,7 +335,7 @@ def update_release_summary(
         release_summary["skipped"] = {}
         release_summary[FAILED_TO_SSH] = []
         for host, metadata in release_summary[release_step].items():
-            if metadata["branch"] in (MASTER, RELEASE) or force:
+            if metadata["branch"] in (MAIN, RELEASE) or force:
                 release_summary["upgradeable"].append(host)
             elif metadata["branch"] == FAILED_TO_SSH:
                 release_summary[FAILED_TO_SSH].append(host)
@@ -442,7 +442,7 @@ def format_artifacts(
                     fg = "reset"
                 else:
                     owner = host["branch"]
-                    if owner == MASTER:
+                    if owner == MAIN:
                         fg = "green"
                     elif owner == FAILED_TO_SSH:
                         fg = "red"
@@ -511,13 +511,13 @@ def cli(
     list_reservations,
 ):
     """
-    Deploy a git_tag (defaults to latest `master` commit when unspecified)
+    Deploy a git_tag (defaults to latest `main` commit when unspecified)
     across a combination of: environments, services, and hosts.
     """
 
     if not git_tag:
-        # use the tip of `master`
-        git_tag = run_cmd("git log -n 1 --pretty=format:%H master")
+        # use the tip of `main`
+        git_tag = run_cmd("git log -n 1 --pretty=format:%H main")
 
     # gather and display current release state, pre-deploy
     release_summary = {
@@ -594,6 +594,8 @@ def cli(
             if environment == "prod":
                 # check healthcheck post-deploy
                 wait_time = time.time() + (30 * 60)
+                if len(release_summary["upgradeable"]) == 1:
+                    wait_time = time.time() + (1 * 60)
                 while time.time() < wait_time:
                     # throttle the amount of logs and request load during startup
                     time.sleep(30)
@@ -640,7 +642,7 @@ def cli(
         "Failed postcheck (unhealthy)", release_summary["failed_post_check"]
     )
     format_artifacts(
-        f"Upgraded to `{git_tag if git_tag else 'master'}`",
+        f"Upgraded to `{git_tag if git_tag else 'main'}`",
         release_summary["upgraded"],
     )
     format_artifacts("Failed to Deploy", release_summary["failed"])

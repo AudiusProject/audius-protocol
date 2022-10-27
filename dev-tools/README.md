@@ -2,7 +2,7 @@
 
 ```
 # initial setup
-curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/dev-tools/setup.sh" | bash
+curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-tools/setup.sh" | bash
 
 # refresh terminal for docker
 exit

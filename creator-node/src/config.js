@@ -445,6 +445,12 @@ const config = convict({
     env: 'snapbackHighestReconfigMode',
     default: 'PRIMARY_AND_OR_SECONDARIES'
   },
+  reconfigModePrimaryOnly: {
+    doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
+    format: Boolean,
+    env: 'reconfigModePrimaryOnly',
+    default: false
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
@@ -490,11 +496,29 @@ const config = convict({
 
   /** sync / snapback configs */
 
-  syncForceWipeEnabled: {
+  syncForceWipeDBEnabled: {
     doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
     format: Boolean,
-    env: 'syncForceWipeEnabled',
+    env: 'syncForceWipeDBEnabled',
     default: true
+  },
+  syncForceWipeDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk after DB deletion during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDiskEnabled',
+    default: false
+  },
+  backgroundDiskCleanupCheckEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
+    format: Boolean,
+    env: 'backgroundDiskCleanupCheckEnabled',
+    default: true
+  },
+  backgroundDiskCleanupDeleteEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
+    format: Boolean,
+    env: 'backgroundDiskCleanupDeleteEnabled',
+    default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -554,7 +578,7 @@ const config = convict({
     doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
-    default: 10
+    default: 5
   },
   syncQueueMaxConcurrency: {
     doc: 'Max concurrency of SyncQueue',
@@ -660,11 +684,16 @@ const config = convict({
     default: 20
   },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
-    doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
+    doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    // 24 hours in seconds
-    default: 86400
+    default: 600 // 10min in s
+  },
+  maxNumberSecondsSecondaryRemainsUnhealthy: {
+    doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
+    format: 'nat',
+    env: 'maxNumberSecondsSecondaryRemainsUnhealthy',
+    default: 600 // 10min in s
   },
   secondaryUserSyncDailyFailureCountThreshold: {
     doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
@@ -700,7 +729,7 @@ const config = convict({
     doc: 'Flag to enable or disable the nginx cache layer that caches content. DO NOT SET THIS HERE, set in the Dockerfile because it needs to be set above the application layer',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
-    default: false
+    default: true
   },
   reconfigNodeWhitelist: {
     doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
@@ -772,7 +801,7 @@ const config = convict({
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
-    default: false
+    default: true
   },
   findCIDInNetworkEnabled: {
     doc: 'enable findCIDInNetwork lookups',
@@ -793,10 +822,11 @@ const config = convict({
     default: ''
   },
   reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes.',
+    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: '1,2,3,4,27'
+    default:
+      '1,4,7,12,13,14,15,16,19,28,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,63,64,65'
   }
   /**
    * unsupported options at the moment

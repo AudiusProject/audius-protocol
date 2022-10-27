@@ -1,5 +1,4 @@
-import type { Request, Response, NextFunction, IRoute } from 'express'
-import type Logger from 'bunyan'
+import type { Response, NextFunction, IRoute } from 'express'
 
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -32,7 +31,7 @@ function errorHandler(
   err: any,
   req: RequestWithLogger,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
   req.logger.error('Internal server error')
   req.logger.error(err.stack)
@@ -206,7 +205,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
   app.set('trust proxy', true)
 
   const server = app.listen(port, () =>
-    logger.info(`Listening on port ${port}...`)
+    logger.debug(`Listening on port ${port}...`)
   )
 
   // Increase from 2min default to accommodate long-lived requests.

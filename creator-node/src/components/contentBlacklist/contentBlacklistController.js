@@ -40,7 +40,7 @@ const getTracksController = async (req) => {
   return successResponse({ values: trackIds })
 }
 
-const contentBlacklistGetAllController = async (req) => {
+const contentBlacklistGetAllController = async (_req) => {
   const blacklistedContent = await getAllContentBlacklist()
   return successResponse(blacklistedContent)
 }

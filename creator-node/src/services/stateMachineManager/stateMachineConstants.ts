@@ -50,13 +50,13 @@ export const QUEUE_HISTORY = Object.freeze({
   // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
   FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
   // Max number of completed/failed jobs to keep in redis for the manual sync queue
-  MANUAL_SYNC: 100_000,
+  MANUAL_SYNC: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recurring sync queue
-  RECURRING_SYNC: 100_000,
+  RECURRING_SYNC: 1_000,
   // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-  UPDATE_REPLICA_SET: 100_000,
+  UPDATE_REPLICA_SET: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
-  RECOVER_ORPHANED_DATA: 100_000
+  RECOVER_ORPHANED_DATA: 1_000
 })
 
 export const QUEUE_NAMES = {
@@ -158,6 +158,7 @@ export const SYNC_MODES = Object.freeze({
 })
 
 export const FETCH_FILES_HASH_NUM_RETRIES = 3
+export const FETCH_FILES_HASH_MAX_TIMEOUT_MS = 10_000
 
 // Seconds to hold the cache of healthy content nodes for update-replica-set jobs
 export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */

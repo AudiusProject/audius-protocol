@@ -5,7 +5,7 @@ const _ = require('lodash')
 
 const config = require('../../config.js')
 const Utils = require('../../utils')
-const asyncRetry = require('../../utils/asyncRetry')
+const { asyncRetry } = require('../../utils/asyncRetry')
 const { logger: genericLogger } = require('../../logging')
 const {
   generateTimestampAndSignatureForSPVerification
@@ -23,6 +23,7 @@ const FETCH_STREAM_TIMEOUT_MS = 15000
 const FETCH_PROCESSING_STATUS_TIMEOUT_MS = 5000
 const FETCH_HEALTH_CHECK_TIMEOUT_MS = 5000
 const SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS = 5000
+const ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS = 5000
 const HAND_OFF_STATES = Object.freeze({
   INITIALIZED: 'INITIALIZED',
   SELECTING_RANDOM_SPS: 'SELECTING_RANDOM_SPS',
@@ -367,7 +368,10 @@ class TrackTranscodeHandoffManager {
           timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
         })
       },
-      logLabel: 'transcode and segment'
+      logLabel: 'transcode and segment',
+      options: {
+        maxTimeout: ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS
+      }
     })
 
     return resp.data.data.uuid
@@ -425,7 +429,10 @@ class TrackTranscodeHandoffManager {
             timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
           })
         },
-        logLabel: 'fetch track content processing status'
+        logLabel: 'fetch track content processing status',
+        options: {
+          maxTimeout: ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS
+        }
       })
 
     return body.data
@@ -461,7 +468,10 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      logLabel: 'fetch segment'
+      logLabel: 'fetch segment',
+      options: {
+        maxTimeout: ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS
+      }
     })
   }
 
@@ -495,7 +505,10 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      logLabel: 'fetch transcode'
+      logLabel: 'fetch transcode',
+      options: {
+        maxTimeout: ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS
+      }
     })
   }
 
@@ -529,7 +542,10 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      logLabel: 'fetch m3u8'
+      logLabel: 'fetch m3u8',
+      options: {
+        maxTimeout: ASYNC_RETRY_NOT_ON_404_MAX_TIMEOUT_MS
+      }
     })
   }
 
