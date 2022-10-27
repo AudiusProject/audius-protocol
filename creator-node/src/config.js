@@ -502,11 +502,23 @@ const config = convict({
 
   /** sync / snapback configs */
 
-  syncForceWipeEnabled: {
+  syncForceWipeDBEnabled: {
     doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
     format: Boolean,
-    env: 'syncForceWipeEnabled',
+    env: 'syncForceWipeDBEnabled',
     default: true
+  },
+  syncForceWipeDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk after DB deletion during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDiskEnabled',
+    default: false
+  },
+  backgroundDiskCleanupEnabled: {
+    doc: 'whether or not this node can cleanup content on disk that is not available on DB in the background',
+    format: Boolean,
+    env: 'backgroundDiskCleanupEnabled',
+    default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -789,7 +801,7 @@ const config = convict({
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
-    default: false
+    default: true
   },
   findCIDInNetworkEnabled: {
     doc: 'enable findCIDInNetwork lookups',
