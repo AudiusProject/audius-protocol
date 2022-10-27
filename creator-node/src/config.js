@@ -512,7 +512,7 @@ const config = convict({
     doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
     format: Boolean,
     env: 'backgroundDiskCleanupCheckEnabled',
-    default: false
+    default: true
   },
   backgroundDiskCleanupDeleteEnabled: {
     doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
