@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, List, Set, Tuple
 
-import redis
+from redis import Redis
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
@@ -214,7 +214,7 @@ def get_user_replica_set_mgr_tx(update_task, event_type, tx_receipt):
 # If this discrepancy occurs, a client replica set health check sweep will
 # result in a client-initiated failover operation to a valid set of replicas
 def get_endpoint_string_from_sp_ids(
-    redis: redis, primary: int, secondaries: List[int]
+    redis: Redis, primary: int, secondaries: List[int]
 ) -> str:
     sp_factory_inst = None
     endpoint_string = None
@@ -268,7 +268,7 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
 
 # Initializes sp_factory if necessary and retrieves spID
 # Returns initialized instance of contract and endpoint
-def get_endpoint_from_id(redis: redis, sp_factory_inst, sp_id: int) -> Tuple[Any, str]:
+def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any, str]:
     endpoint = None
     # Get sp_id cache key
     cache_key = get_cn_sp_id_key(sp_id)
