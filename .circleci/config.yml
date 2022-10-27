@@ -1025,8 +1025,8 @@ jobs:
         type: boolean
         default: false
       branch:
-        default: CIRCLE_BRANCH
-        type: env_var_name
+        default: ${CIRCLE_BRANCH}
+        type: string
     steps:
       - queue/until_front_of_line:
           consider-branch: false
