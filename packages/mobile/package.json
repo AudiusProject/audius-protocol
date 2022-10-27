@@ -11,6 +11,7 @@
     "ios:dev": "react-native run-ios --scheme 'Dev' --simulator \"iPhone 14 Pro\"",
     "ios:stage": "react-native run-ios --scheme 'Bounce' --simulator \"iPhone 14 Pro\"",
     "ios:prod": "react-native run-ios --simulator \"iPhone 14 Pro\"",
+    "ios:release": "react-native run-ios --simulator \"iPhone 14 Pro\" --configuration Release",
     "ios:device:dev": "react-native run-ios --scheme 'Dev' --device",
     "ios:device:stage": "react-native run-ios --scheme 'Bounce' --configuration Release --device",
     "ios:device:prod": "react-native run-ios --device",
@@ -30,6 +31,8 @@
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
     "typecheck:trace": "tsc --generateTrace tsc_trace",
+    "enable-hermes:ios": "node enableHermesiOS.js",
+    "disable-hermes:ios": "node disableHermesiOS.js",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -62,6 +65,7 @@
     "array.prototype.flat": "1.2.5",
     "audius-client": "1.3.10",
     "babel-plugin-transform-remove-console": "6.9.4",
+    "@babel/runtime": "7.15.4",
     "bn.js": "5.2.0",
     "color": "3.2.1",
     "expo-crypto": "9.2.0",
@@ -135,7 +139,6 @@
   "devDependencies": {
     "@babel/core": "7.15.5",
     "@babel/plugin-transform-react-jsx": "7.16.7",
-    "@babel/runtime": "7.15.4",
     "@react-native-community/eslint-config": "0.0.5",
     "@svgr/plugin-svgo": "5.5.0",
     "@types/array.prototype.flat": "1.2.1",
@@ -162,6 +165,7 @@
     "react-devtools-core": "4.14.0",
     "react-test-renderer": "16.9.0",
     "redux-devtools-extension": "2.13.9",
+    "replace-in-file": "6.3.5",
     "typescript": "4.8.4"
   },
   "jest": {
