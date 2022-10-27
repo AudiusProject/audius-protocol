@@ -41,7 +41,7 @@
   z-index: 5;
   position: absolute;
   right: 0;
-  bottom: 40px;
+  top: 32px;
 }
 
 .hide {
