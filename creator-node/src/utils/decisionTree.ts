@@ -19,6 +19,7 @@ type RecordStageParams = {
   name: string
   data: object | null
   log: boolean
+  logLevel?: 'error' | 'warn' | 'info' | 'debug'
 }
 
 /**
@@ -36,7 +37,12 @@ module.exports = class DecisionTree {
     this.name = name
   }
 
-  recordStage = ({ name, data = null, log = false }: RecordStageParams) => {
+  recordStage = ({
+    name,
+    data = null,
+    log = false,
+    logLevel = 'info'
+  }: RecordStageParams) => {
     const timestamp = Date.now()
 
     let stage: Stage
@@ -63,29 +69,54 @@ module.exports = class DecisionTree {
     this.tree.push(stage)
 
     if (log) {
-      this.printLastStage()
+      this._printLastStage({ logLevel })
     }
   }
 
-  printTree() {
-    this._logInfo(`DecisionTree Full - ${JSON.stringify(this.tree, null, 2)}`)
+  printTree({ logLevel = 'info' } = {}) {
+    this._log({
+      msg: `DecisionTree Full - ${JSON.stringify(this.tree, null, 2)}`,
+      logLevel
+    })
   }
 
-  printLastStage() {
+  private _printLastStage({ logLevel = 'info' } = {}) {
     if (this.tree.length > 0) {
-      this._logInfo(
-        `DecisionTree Last Stage - ${JSON.stringify(
+      this._log({
+        msg: `DecisionTree Last Stage - ${JSON.stringify(
           this.tree[this.tree.length - 1],
           null,
           2
-        )}`
-      )
+        )}`,
+        logLevel
+      })
     } else {
-      this._logInfo('DecisionTree Last Stage - empty')
+      this._log({
+        msg: 'DecisionTree Last Stage - empty',
+        logLevel
+      })
     }
   }
 
-  private _logInfo(msg: string) {
-    this.logger.info(`${this.name} - ${msg}`)
+  private _log({ msg = '', logLevel = 'info' } = {}) {
+    let logFn
+    switch (logLevel) {
+      case 'error':
+        logFn = this.logger.error
+        break
+      case 'warn':
+        logFn = this.logger.warn
+        break
+      case 'info':
+        logFn = this.logger.info
+        break
+      case 'debug':
+        logFn = this.logger.debug
+        break
+      default:
+        logFn = this.logger.debug
+    }
+
+    logFn(`${this.name} - ${msg}`)
   }
 }
