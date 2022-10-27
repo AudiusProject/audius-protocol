@@ -13,7 +13,12 @@ import {
 } from './logging'
 import { generateTimestampAndSignature } from './apiSigning'
 
-type RequestWithLogger = Request & { logger: Logger }
+// Content node app adds additional fields to the Express request object. This typing
+// is a type that adds additional fields to the request object.
+export type CustomRequest = Request & {
+  logger: Logger
+  normalizedPath?: string
+}
 
 type ApiResponse = {
   statusCode: number
@@ -98,7 +103,7 @@ export const sendResponse = (
   res: Response,
   resp: ApiResponse
 ) => {
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   const duration = getDuration(req as any)
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
@@ -136,7 +141,7 @@ export const sendResponseWithHeartbeatTerminator = (
   resp: ApiResponse
 ) => {
   const duration = getDuration(req as any)
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
