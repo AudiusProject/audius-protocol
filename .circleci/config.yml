@@ -1038,22 +1038,21 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ main, "${CIRCLE_BRANCH}" ]
+              - equal: [ jc-inf-298, "${CIRCLE_BRANCH}" ]
               - equal: [ staging, << parameters.environment >> ]
               - not:
                   equal: [ all, << parameters.service >> ]
           steps:
             - diff-if-necessary:
                 service: << parameters.service >>
-      # only send Starting slack message when prod, --force, or custom args are used
-      - when:
-          condition:
-            or:
-              - equal: [ prod, << parameters.environment >> ]
-              - << parameters.params >>
-              - << parameters.deploy_args >>
-          steps:
-            - slack-basic
+      # - when:
+      #     condition:
+      #       or:
+      #         - equal: [ prod, << parameters.environment >> ]
+      #         - << parameters.params >>
+      #         - << parameters.deploy_args >>
+      #     steps:
+      #       - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1224,15 +1223,15 @@ jobs:
       - slack-fail:
           detail: ${SLACK_DETAIL}
       # only send Success slack message when prod, --force, or custom args are used
-      - when:
-          condition:
-            or:
-              - equal: [ prod, << parameters.environment >> ]
-              - << parameters.params >>
-              - << parameters.deploy_args >>
-          steps:
-            - slack-success:
-                detail: ${SLACK_DETAIL}
+      # - when:
+      #     condition:
+      #       or:
+      #         - equal: [ prod, << parameters.environment >> ]
+      #         - << parameters.params >>
+      #         - << parameters.deploy_args >>
+      #     steps:
+      #       - slack-success:
+      #           detail: ${SLACK_DETAIL}
       - when:
           condition:
             and:
