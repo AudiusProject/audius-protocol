@@ -212,10 +212,11 @@ const TracksTableContainer = ({
         text: messages.unlistedTracksTabTitle,
         icon: <IconHidden />,
         label: messages.unlistedTracksTabTitle,
-        disabled: !unlistedDataSource.length
+        disabled: !unlistedDataSource.length,
+        disabledTooltipText: 'You have no hidden tracks'
       }
     ],
-    [unlistedDataSource.length]
+    [unlistedDataSource]
   )
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
