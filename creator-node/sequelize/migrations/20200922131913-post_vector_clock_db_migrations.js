@@ -66,7 +66,7 @@ module.exports = {
   },
 
   /** TODO */
-  down: async (queryInterface, Sequelize) => {
+  down: async (_queryInterface, _Sequelize) => {
     // this is a breaking migration, restoring a previous db dump is the best option to revert
   }
 }
