@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
 import {
   accountSelectors,
   cacheUsersSelectors,
-  hlsUtils,
+  encodeHashId,
   Genre,
   playerSelectors,
   playerActions,
@@ -19,7 +19,7 @@ import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrack'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { apiClient } from 'app/services/audius-api-client'
 
 import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
@@ -332,27 +332,20 @@ export const Audio = () => {
     ]
   )
   const offlineTrackUri = useOfflineTrackUri(track)
+  const streamingUri = useMemo(() => {
+    return track
+      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
+      : null
+  }, [track])
 
   if (!track || track.is_delete) return null
-
-  const gateways = trackOwner
-    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-        trackOwner.creator_node_endpoint
-      )
-    : []
-
-  const m3u8 = hlsUtils.generateM3U8Variants({
-    segments: track.track_segments,
-    gateways
-  })
 
   let source
   if (offlineTrackUri) {
     source = { uri: offlineTrackUri }
-  } else if (m3u8) {
+  } else if (streamingUri) {
     source = {
-      uri: m3u8,
-      type: 'm3u8'
+      uri: streamingUri
     }
   }
 
@@ -360,7 +353,6 @@ export const Audio = () => {
     <View style={styles.backgroundVideo}>
       {source && (
         <Video
-          // @ts-ignore: type: m3u8 is actually a valid prop override
           source={source}
           ref={videoRef}
           playInBackground
