@@ -677,7 +677,6 @@ async function filterOutAlreadyPresentDBEntries({
     }
     decisionTree.recordStage({
       name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
-      data: { numFetchedEntriesAdded },
       log: true
     })
 
