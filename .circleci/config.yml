@@ -1573,8 +1573,8 @@ workflows:
           filters:
             branches:
               ignore: /(^main|release-.*$)/
-          requires:
-            - discovery-deploy-hold
+          # requires:
+          #   - discovery-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
           service: discovery
