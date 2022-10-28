@@ -116,7 +116,7 @@ export function* fetchUsers(
   })
 }
 
-function* retrieveUserByHandle(handle) {
+function* retrieveUserByHandle(handle, retry) {
   yield waitForBackendAndAccount()
   const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
@@ -125,7 +125,8 @@ function* retrieveUserByHandle(handle) {
   }
   const user = yield apiClient.getUserByHandle({
     handle,
-    currentUserId: userId
+    currentUserId: userId,
+    retry
   })
   return user
 }
@@ -135,9 +136,11 @@ export function* fetchUserByHandle(
   requiredFields,
   forceRetrieveFromSource = false,
   shouldSetLoading = true,
-  deleteExistingEntry = false
+  deleteExistingEntry = false,
+  retry = true
 ) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const retrieveFromSource = (handle) => retrieveUserByHandle(handle, retry)
   const { entries: users } = yield call(retrieve, {
     ids: [handle],
     selectFromCache: function* (handles) {
@@ -146,7 +149,7 @@ export function* fetchUserByHandle(
     getEntriesTimestamp: function* (handles) {
       return yield select(getUserTimestamps, { handles })
     },
-    retrieveFromSource: retrieveUserByHandle,
+    retrieveFromSource,
     onBeforeAddToCache: function (users) {
       return users.map((user) => reformat(user, audiusBackendInstance))
     },
