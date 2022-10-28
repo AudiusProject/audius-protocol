@@ -406,6 +406,14 @@ class ServiceRegistry {
       ? 10000 /** 10sec */
       : 600000 /* 10min */
 
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      config.set('isRegisteredOnURSM', true)
+      this.logInfo(
+        `When EntityManager is enabled, skip register node on l2 ursm`
+      )
+      return
+    }
+
     let isInitialized = false
     while (!isInitialized) {
       this.logInfo(
