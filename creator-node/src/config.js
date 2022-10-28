@@ -554,7 +554,7 @@ const config = convict({
     doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
     format: 'nat',
     env: 'recoverOrphanedDataNumUsersPerBatch',
-    default: 2
+    default: 5
   },
   recoverOrphanedDataDelayMsBetweenBatches: {
     doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
