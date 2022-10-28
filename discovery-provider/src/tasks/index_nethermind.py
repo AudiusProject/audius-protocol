@@ -75,7 +75,7 @@ logger = logging.getLogger(__name__)
 # HELPER FUNCTIONS
 
 default_padded_start_hash = (
-    "0x7ef3e7395b68247c807e301774a94df3decdd4e17b7527524b57b58c694252b2"
+    "0x46cb872dea28e51e7b429ea1aefa4565d2b61cd8b75b3f558acdecf6d62ae04e"
 )
 default_config_start_hash = "0x0"
 
@@ -954,7 +954,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 
 # CELERY TASKS
-@celery.task(name="update_discovery_provider", bind=True)
+@celery.task(name="update_discovery_provider_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
 

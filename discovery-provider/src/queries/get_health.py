@@ -642,7 +642,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     if latest_block_num is None or latest_block_hash is None:
         try:
             latest_block = web3.eth.get_block("latest", True)
-            # if stage
+            latest_block_num = latest_block.number
             latest_block_hash = latest_block.hash.hex()
 
             # if we had attempted to use redis cache and the values weren't there, set the values now

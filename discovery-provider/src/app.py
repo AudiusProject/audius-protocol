@@ -199,7 +199,7 @@ def create_celery(test_config=None):
     web3 = Web3(HTTPProvider(web3endpoint))
     # required middleware for POA
 
-    if shared_config["discprov"]["stage"]:
+    if shared_config["discprov"]["env"] == "stage":
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     abi_values = helpers.load_abi_values()
@@ -223,7 +223,7 @@ def create_celery(test_config=None):
     global contract_addresses
     # pylint: enable=W0603
 
-    if shared_config["discprov"]["stage"]:
+    if shared_config["discprov"]["env"] == "stage":
         (
             entity_manager,
             contract_addresses,
