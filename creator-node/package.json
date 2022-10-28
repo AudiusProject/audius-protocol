@@ -18,7 +18,8 @@
     "lint:fix": "eslint --format table --fix --ext=js,ts src",
     "lint": "eslint --format table --ext=js,ts src",
     "build": "./node_modules/.bin/tsc --project tsconfig.build.json",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "typecheck": "./node_modules/.bin/tsc --project tsconfig.build.json --noEmit"
   },
   "keywords": [],
   "author": "",
