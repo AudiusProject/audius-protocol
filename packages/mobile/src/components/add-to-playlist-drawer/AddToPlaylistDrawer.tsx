@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import type { User } from '@audius/common'
 import {
   CreatePlaylistSource,
   accountSelectors,
@@ -19,7 +20,7 @@ import { ToastContext } from 'app/components/toast/ToastContext'
 import { makeStyles, shadow } from 'app/styles'
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
-const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
+const { getAccountWithOwnPlaylists } = accountSelectors
 
 const messages = {
   title: 'Add To Playlist',
@@ -102,7 +103,7 @@ export const AddToPlaylistDrawer = () => {
                 dispatch(addTrackToPlaylist(trackId!, item.playlist_id))
                 onClose()
               }}
-              user={user}
+              user={user as unknown as User}
             />
           )}
         />

@@ -28,7 +28,8 @@ export enum FeatureFlags {
   BUY_AUDIO_STRIPE_ENABLED = 'buy_audio_stripe_enabled',
   OFFLINE_MODE_ENABLED = 'offline_mode_enabled',
   AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow',
-  MOBILE_NAV_OVERHAUL = 'mobile_nav_overhaul'
+  MOBILE_NAV_OVERHAUL = 'mobile_nav_overhaul',
+  MOBILE_UPLOAD = 'mobile_upload'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -74,5 +75,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.BUY_AUDIO_STRIPE_ENABLED]: false,
   [FeatureFlags.OFFLINE_MODE_ENABLED]: false,
   [FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW]: false,
-  [FeatureFlags.MOBILE_NAV_OVERHAUL]: false
+  [FeatureFlags.MOBILE_NAV_OVERHAUL]: false,
+  [FeatureFlags.MOBILE_UPLOAD]: false
 }
