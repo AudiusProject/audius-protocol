@@ -1443,7 +1443,7 @@ workflows:
             - test-identity
       # Force deploy `main` to staging (by service)
       - noop:
-          name: unreserve-stage-<< matrix.service >>
+          name: unreserve-stage-<< matrix.service >>-all
           type: approval
           matrix:
             parameters:
@@ -1454,7 +1454,7 @@ workflows:
           requires:
             - autodeploy-stage-<< matrix.service >>
       - deploy:
-          name: unreserving-stage-<< matrix.service >>
+          name: unreserving-stage-<< matrix.service >>-all
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1469,7 +1469,7 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - unreserve-stage-<< matrix.service >>
+            - unreserve-stage-<< matrix.service >>-all
       # Force deploy `main` to staging (by host) - discovery
       - noop:
           name: unreserve-<< matrix.host >>
@@ -1533,7 +1533,7 @@ workflows:
 
       # Deploy branch to staging (by service)
       - noop:
-          name: reserve-stage-<< matrix.service >>
+          name: reserve-stage-<< matrix.service >>-all
           type: approval
           matrix:
             parameters:
@@ -1544,7 +1544,7 @@ workflows:
           requires:
             - << matrix.service >>-deploy-hold
       - deploy:
-          name: reserving-stage-<< matrix.service >>
+          name: reserving-stage-<< matrix.service >>-all
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1559,7 +1559,7 @@ workflows:
             branches:
               ignore: /(^main|release-.*$)/
           requires:
-            - reserve-stage-<< matrix.service >>
+            - reserve-stage-<< matrix.service >>-all
       # Deploy branch to staging (by host) - discovery
       - noop:
           name: reserve-<< matrix.host >>
