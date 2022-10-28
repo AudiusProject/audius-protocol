@@ -182,7 +182,7 @@ const enqueueJobs = async (
         return jobInfo
       })
     )
-    logger.info(
+    logger.debug(
       `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
     )
   } catch (e: any) {

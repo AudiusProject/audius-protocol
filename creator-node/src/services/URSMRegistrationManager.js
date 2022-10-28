@@ -46,6 +46,10 @@ class URSMRegistrationManager {
     }
   }
 
+  logDebug(msg) {
+    logger.debug(`URSMRegistrationManager || ${msg}`)
+  }
+
   logInfo(msg) {
     logger.info(`URSMRegistrationManager || ${msg}`)
   }
@@ -73,12 +77,12 @@ class URSMRegistrationManager {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
-      this.logInfo(`When EntityManager is enabled, URSM is not applicable`)
+      this.logDebug(`When EntityManager is enabled, URSM is not applicable`)
 
       return
     }
 
-    this.logInfo('Beginning URSM registration process')
+    this.logDebug('Beginning URSM registration process')
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
@@ -143,7 +147,7 @@ class URSMRegistrationManager {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
-      this.logInfo(
+      this.logDebug(
         `Node already registered on URSM with same delegateOwnerWallet`
       )
       return
@@ -178,7 +182,7 @@ class URSMRegistrationManager {
               node.endpoint,
               spID
             )
-            this.logInfo(
+            this.logDebug(
               `Successfully received signature from ${node.endpoint}`
             )
             return resp
@@ -228,7 +232,7 @@ class URSMRegistrationManager {
       // Update config
       this.nodeConfig.set('isRegisteredOnURSM', true)
 
-      this.logInfo('Successfully registered self on URSM')
+      this.logDebug('Successfully registered self on URSM')
     } catch (e) {
       throw new Error(`URSMRegistration contract call failed ${e}`)
     }

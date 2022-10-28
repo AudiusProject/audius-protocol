@@ -168,7 +168,7 @@ export class AsyncProcessingQueue {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } =
       await this.queue.getJobCounts()
-    logger.info(
+    logger.debug(
       `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
     )
     tracing.info(
