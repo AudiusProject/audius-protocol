@@ -167,6 +167,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
+                        logger.info(f"entity_manager.py | updating user ======================== metadata {params.metadata}, blockhash {params.event_blockhash}")
                         update_user(params)
                     elif (
                         params.action == Action.VERIFY

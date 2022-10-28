@@ -87,6 +87,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if not track_id_exists:
             # Invalid artist pick. Should not continue to save
+            logger.info("entity_manager/user.py | Invalid artist pick track id")
             return
 
     return user_record
@@ -174,6 +175,7 @@ def update_user(params: ManageEntityParameters):
         params.web3,
         params.challenge_bus,
     )
+    logger.info(f"entity_manager/user.py | updated user record: {user_record}")
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
