@@ -1042,16 +1042,11 @@ jobs:
               - equal: [ jc-inf-298, << pipeline.git.branch >> ]
               - equal: [ staging, << parameters.environment >> ]
           steps:
-            - run:
-                name: Deployment Info (conditional)
-                command: |
-                  echo "Branch ${CIRCLE_BRANCH}"
-                  echo "Branch << pipeline.git.branch  >>"
-                  echo "Environment << parameters.environment >>"
-                  echo "Service << parameters.service >>"
             - checkout
-            - diff-if-necessary:
-                service: << parameters.service >>
+            - run:
+                name: Check for Changes
+                command: |
+                  [[ $(git diff main --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
       # - when:
       #     condition:
       #       or:
