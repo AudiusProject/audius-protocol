@@ -29,6 +29,7 @@ type TabHeader = {
   text: string
   label: string
   disabled?: boolean
+  disabledTooltipText?: string
 }
 
 type TabProps = {
@@ -233,10 +234,11 @@ const TabBar = memo(
         />
         {tabs.map((e, i) => {
           const isActive = activeIndex === i
-          const tooltipActive = !!disabledTabTooltipText && e.disabled
+          const tooltipActive =
+            (!!disabledTabTooltipText || !!e.disabledTooltipText) && e.disabled
           return (
             <Tooltip
-              text={disabledTabTooltipText}
+              text={e.disabledTooltipText || disabledTabTooltipText}
               placement='bottom'
               disabled={!tooltipActive}
               key={i}
