@@ -124,7 +124,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
 
     if (sendToNethermind) {
-      const ok = await relayToNethermind(web3, encodedABI)
+      const ok = await relayToNethermind(encodedABI)
       txParams = ok.txParams
       txReceipt = ok.receipt
     } else {
