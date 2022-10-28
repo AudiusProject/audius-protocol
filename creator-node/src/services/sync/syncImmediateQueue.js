@@ -88,6 +88,16 @@ class SyncImmediateQueue {
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.deleteOldActiveJobs()
+  }
+
+  async deleteOldActiveJobs() {
+    const oldActiveJobs = await this.queue.getJobs(['active'])
+    for (const job of oldActiveJobs) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      job.remove()
+    }
   }
 
   async processTask(job) {
