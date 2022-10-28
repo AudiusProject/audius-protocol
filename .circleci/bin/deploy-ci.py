@@ -432,7 +432,7 @@ def format_artifacts(
         # display reservation list
         click.clear()
         with open("/tmp/summary.md", "a") as f:
-            f.write("Reservation List:\n```\n")
+            f.write("test Reservation List:\n```\n")
             for h in hosts:
                 host = release_summary[PRE_DEPLOY][h]
                 tag = host["tag"][:7]
