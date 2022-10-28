@@ -1028,7 +1028,6 @@ jobs:
       - queue/until_front_of_line:
           consider-branch: false
           dont-quit: true
-      # only send Starting slack message when prod, --force, or custom args are used
       - run:
           name: Deployment Info
           command: |
@@ -1039,26 +1038,25 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ jc-inf-298, << pipeline.git.branch >> ]
+              - equal: [ main, << pipeline.git.branch >> ]
               - equal: [ staging, << parameters.environment >> ]
+              - not:
+                  equal: [ all, << parameters.service >> ]
           steps:
             - checkout
             - run:
                 name: Check for Changes
                 command: |
                   [[ $(git diff main --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
-            - run:
-                name: Sleep
-                command: |
-                  sleep 9000
-      # - when:
-      #     condition:
-      #       or:
-      #         - equal: [ prod, << parameters.environment >> ]
-      #         - << parameters.params >>
-      #         - << parameters.deploy_args >>
-      #     steps:
-      #       - slack-basic
+      # only send Starting slack message when prod, --force, or custom args are used
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+              - << parameters.deploy_args >>
+          steps:
+            - slack-basic
       - add_ssh_keys:
           fingerprints:
             # ~/.ssh/audius_infrastructure
@@ -1229,15 +1227,15 @@ jobs:
       - slack-fail:
           detail: ${SLACK_DETAIL}
       # only send Success slack message when prod, --force, or custom args are used
-      # - when:
-      #     condition:
-      #       or:
-      #         - equal: [ prod, << parameters.environment >> ]
-      #         - << parameters.params >>
-      #         - << parameters.deploy_args >>
-      #     steps:
-      #       - slack-success:
-      #           detail: ${SLACK_DETAIL}
+      - when:
+          condition:
+            or:
+              - equal: [ prod, << parameters.environment >> ]
+              - << parameters.params >>
+              - << parameters.deploy_args >>
+          steps:
+            - slack-success:
+                detail: ${SLACK_DETAIL}
       - when:
           condition:
             and:
@@ -1573,8 +1571,8 @@ workflows:
           filters:
             branches:
               ignore: /(^main|release-.*$)/
-          # requires:
-          #   - discovery-deploy-hold
+          requires:
+            - discovery-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
           service: discovery
