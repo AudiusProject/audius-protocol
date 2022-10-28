@@ -449,7 +449,7 @@ module.exports = function (app) {
             country: locationResponse.country_name
           }
         } catch (e) {
-          req.logger.info(
+          req.logger.error(
             `TrackListen location fetch failed: ${e}, trackId=${trackId} userId=${userId}, ${JSON.stringify(
               trackingRedisKeys
             )}`
