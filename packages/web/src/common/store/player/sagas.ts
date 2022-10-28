@@ -1,6 +1,5 @@
 import {
   Kind,
-  StringKeys,
   encodeHashId,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -51,27 +50,11 @@ const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
 const RECORD_LISTEN_INTERVAL = 1000
 
-// Set of track ids that should be forceably streamed as mp3 rather than hls because
-// their hls maybe corrupt.
-let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
-
 export function* watchPlay() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload ?? {}
-
-    if (!FORCE_MP3_STREAM_TRACK_IDS) {
-      FORCE_MP3_STREAM_TRACK_IDS = new Set(
-        (
-          remoteConfigInstance.getRemoteVar(
-            StringKeys.FORCE_MP3_STREAM_TRACK_IDS
-          ) || ''
-        ).split(',')
-      )
-    }
-
     const audioPlayer = yield* getContext('audioPlayer')
 
     if (trackId) {
@@ -90,11 +73,7 @@ export function* watchPlay() {
           )
         : []
       const encodedTrackId = encodeHashId(trackId)
-      const forceStreamMp3 =
-        encodedTrackId && FORCE_MP3_STREAM_TRACK_IDS.has(encodedTrackId)
-      const forceStreamMp3Url = forceStreamMp3
-        ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
-        : null
+      const streamMp3Url = apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
 
       const libs = yield* call(audiusBackendInstance.getAudiusLibs)
       const web3Manager = libs.web3Manager
@@ -106,7 +85,7 @@ export function* watchPlay() {
 
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
-          track.track_segments,
+          streamMp3Url,
           () => {
             if (onEnd) {
               emitter(onEnd({}))
@@ -121,8 +100,7 @@ export function* watchPlay() {
             artist: owner?.name,
             artwork: '',
             premiumContentHeaders
-          },
-          forceStreamMp3Url
+          }
         )
         return () => {}
       })
@@ -147,7 +125,7 @@ export function* watchCollectiblePlay() {
       const audioPlayer = yield* getContext('audioPlayer')
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
-          [],
+          '',
           () => {
             if (onEnd) {
               emitter(onEnd({}))
