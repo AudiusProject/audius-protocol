@@ -1,4 +1,3 @@
-const Web3 = require('web3')
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 const Accounts = require('web3-eth-accounts')

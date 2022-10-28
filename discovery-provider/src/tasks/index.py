@@ -1058,7 +1058,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-    if update_task.shared_config["discprov"]["env"] != "stage":
+    if update_task.shared_config["discprov"]["env"] == "stage":
         return
 
     # Cache custom task class properties
