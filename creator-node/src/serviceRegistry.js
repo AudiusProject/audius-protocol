@@ -335,7 +335,6 @@ class ServiceRegistry {
       this.logInfo(
         `When EntityManager is enabled, skip register node on l2 ursm`
       )
-      return
     } else {
       // L2URSMRegistration (requires L1 identity)
       // Retries indefinitely
