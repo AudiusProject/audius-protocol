@@ -1028,13 +1028,6 @@ jobs:
       - queue/until_front_of_line:
           consider-branch: false
           dont-quit: true
-      - run:
-          name: Deployment Info
-          command: |
-            echo "Branch ${CIRCLE_BRANCH}"
-            echo "Branch << pipeline.git.branch  >>"
-            echo "Environment << parameters.environment >>"
-            echo "Service << parameters.service >>"
       - when:
           condition:
             and:
