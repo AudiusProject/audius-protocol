@@ -355,7 +355,7 @@ async function relayToNethermind(encodedABI) {
       data: encodedABI
     }
 
-    const signedTx = await web3.eth.accounts.signTransaction(
+    const signedTx = await primaryWeb3.eth.accounts.signTransaction(
       transaction,
       privateKey
     )
@@ -367,7 +367,7 @@ async function relayToNethermind(encodedABI) {
       `relayToNethermind sending txhash: ${signedTx.transactionHash} num: ${myDepth}`
     )
 
-    const receipt = await web3.eth.sendSignedTransaction(
+    const receipt = await primaryWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
     receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
