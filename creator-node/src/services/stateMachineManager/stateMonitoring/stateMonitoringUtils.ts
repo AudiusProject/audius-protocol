@@ -118,7 +118,7 @@ const getNodeUsers = async (
       `getNodeUsers() Error: ${e.toString()} - connected discovery node [${discoveryNodeEndpoint}]`
     )
   } finally {
-    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
+    logger.debug(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
   }
 
   // Ensure every object in response array contains all required fields

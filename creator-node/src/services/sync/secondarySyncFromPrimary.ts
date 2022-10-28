@@ -626,7 +626,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all ClockRecord entries to DB')
+      logger.debug('Saved all ClockRecord entries to DB')
 
       await models.File.bulkCreate(
         nonTrackFiles.map((file: any) => {
@@ -641,7 +641,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all non-track File entries to DB')
+      logger.debug('Saved all non-track File entries to DB')
 
       await models.Track.bulkCreate(
         fetchedCNodeUser.tracks.map((track: any) => ({
@@ -650,7 +650,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all Track entries to DB')
+      logger.debug('Saved all Track entries to DB')
 
       await models.File.bulkCreate(
         trackFiles.map((trackFile: any) => {
@@ -664,7 +664,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all track File entries to DB')
+      logger.debug('Saved all track File entries to DB')
 
       await models.AudiusUser.bulkCreate(
         fetchedCNodeUser.audiusUsers.map((audiusUser: any) => ({
@@ -673,11 +673,11 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all AudiusUser entries to DB')
+      logger.debug('Saved all AudiusUser entries to DB')
 
       await transaction.commit()
 
-      logger.info(
+      logger.debug(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
