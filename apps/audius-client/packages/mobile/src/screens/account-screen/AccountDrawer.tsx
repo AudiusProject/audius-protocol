@@ -196,7 +196,7 @@ export const AccountDrawer = (props: AccountDrawerProps) => {
             width={spacing(7)}
           />
           <Text fontSize='large' weight='heavy'>
-            {totalBalance ? formatWei(totalBalance) : 0}
+            {totalBalance ? formatWei(totalBalance, true) : 0}
           </Text>
         </TouchableOpacity>
       </View>
