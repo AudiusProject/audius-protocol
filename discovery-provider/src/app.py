@@ -197,9 +197,10 @@ def create_celery(test_config=None):
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
-    # required middleware for POA
 
     if shared_config["discprov"]["env"] == "stage":
+        # required middleware for POA
+        # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     abi_values = helpers.load_abi_values()
