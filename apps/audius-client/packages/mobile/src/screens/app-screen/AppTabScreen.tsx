@@ -49,6 +49,8 @@ import {
 } from '../settings-screen'
 import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
+import type { UploadParamList } from '../upload-screen'
+import { uploadScreens } from '../upload-screen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -92,7 +94,7 @@ export type AppTabScreenParamList = {
   ChangePasswordScreen: undefined
   NotificationSettingsScreen: undefined
   AudioScreen: undefined
-}
+} & UploadParamList
 
 const forFade = ({ current }) => ({
   cardStyle: {
@@ -278,6 +280,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           component={ChangePasswordScreen}
         />
       </Stack.Group>
+      {uploadScreens(Stack)}
     </Stack.Navigator>
   )
 }
