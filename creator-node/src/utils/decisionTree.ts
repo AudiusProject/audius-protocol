@@ -117,6 +117,6 @@ module.exports = class DecisionTree {
         logFn = this.logger.debug
     }
 
-    logFn(`${this.name} - ${msg}`)
+    logFn.bind(this.logger)(`${this.name} - ${msg}`)
   }
 }
