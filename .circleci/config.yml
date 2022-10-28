@@ -1268,7 +1268,7 @@ jobs:
           docker_layer_caching: true
       - run: |
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
+          git clone git@github.com:AudiusProject/audius-tooling.git
           cd audius-tooling
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
