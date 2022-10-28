@@ -1490,6 +1490,7 @@ workflows:
             - autodeploy-stage-discovery
       - deploy:
           name: unreserving-<< matrix.host >>
+          service: discovery
           params: --force
           context:
             - slack-secrets
@@ -1518,6 +1519,7 @@ workflows:
             - autodeploy-stage-creator
       - deploy:
           name: unreserving-<< matrix.host >>
+          service: creator
           params: --force
           context:
             - slack-secrets
@@ -1576,6 +1578,7 @@ workflows:
             - discovery-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
+          service: discovery
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1605,6 +1608,7 @@ workflows:
             - creator-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
+          service: creator
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
@@ -1644,9 +1648,9 @@ workflows:
             - bump-hotfix
       - deploy:
           name: releasing-discovery-foundation
+          service: discovery
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: discovery
           context:
             - slack-secrets
             - gh-tokens
@@ -1669,9 +1673,9 @@ workflows:
             - bump-hotfix
       - deploy:
           name: releasing-identity-foundation
+          service: identity
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: identity
           context:
             - slack-secrets
             - gh-tokens
@@ -1697,9 +1701,9 @@ workflows:
             - built
       - deploy:
           name: releasing-<< matrix.host >>
+          service: creator
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: creator
           context:
             - slack-secrets
             - gh-tokens
