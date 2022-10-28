@@ -225,6 +225,7 @@ type GetUserArgs = {
 type GetUserByHandleArgs = {
   handle: string
   currentUserId: Nullable<ID>
+  retry?: boolean
 }
 
 type GetUserTracksByHandleArgs = {
@@ -966,7 +967,11 @@ export class AudiusAPIClient {
     return adapted
   }
 
-  async getUserByHandle({ handle, currentUserId }: GetUserByHandleArgs) {
+  async getUserByHandle({
+    handle,
+    currentUserId,
+    retry = true
+  }: GetUserByHandleArgs) {
     const encodedCurrentUserId = encodeHashId(currentUserId)
     this._assertInitialized()
     const params = {
@@ -975,7 +980,8 @@ export class AudiusAPIClient {
 
     const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
       FULL_ENDPOINT_MAP.userByHandle(handle),
-      params
+      params,
+      retry
     )
 
     if (!response) return []
