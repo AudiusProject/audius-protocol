@@ -1445,6 +1445,9 @@ workflows:
       - noop:
           name: unreserve-stage-<< matrix.service >>-hold
           type: approval
+          matrix:
+            parameters:
+              service: [discovery, creator, identity]
           filters:
             branches:
               only: /(^main$)/
