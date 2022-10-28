@@ -84,9 +84,9 @@ const verifyConfigAndDb = async () => {
   }
 
   try {
-    logger.debug('Verifying DB connection...')
+    logger.info('Verifying DB connection...')
     await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
-    logger.debug('DB connected successfully!')
+    logger.info('DB connected successfully!')
   } catch (connectionError) {
     exitWithError('Error connecting to DB:', connectionError)
   }
@@ -109,7 +109,7 @@ const getPort = () => {
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {
-  logger.debug(`Primary process with pid=${process.pid} is running`)
+  logger.info(`Primary process with pid=${process.pid} is running`)
 
   await setupDbAndRedis()
 
@@ -127,7 +127,7 @@ const startAppForPrimary = async () => {
   DBManager.createStoragePathIndexOnFilesTable()
 
   const numWorkers = clusterUtils.getNumWorkers()
-  logger.debug(`Spawning ${numWorkers} processes to run the Express app...`)
+  logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
   const firstWorker = cluster.fork()
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
@@ -161,7 +161,7 @@ const startAppForPrimary = async () => {
   // Respawn workers and update each worker's knowledge of who the special worker is.
   // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
   cluster.on('exit', (worker, code, signal) => {
-    logger.debug(
+    logger.info(
       `Worker process with pid=${worker.process.pid} died because ${
         signal || code
       }. Respawning...`
@@ -189,7 +189,7 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
-  logger.debug(
+  logger.info(
     `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
   )
   await verifyConfigAndDb()
@@ -216,7 +216,7 @@ const startAppForWorker = async () => {
 }
 
 const startAppWithoutCluster = async () => {
-  logger.debug(`Starting app with cluster mode disabled`)
+  logger.info(`Starting app with cluster mode disabled`)
   await setupDbAndRedis()
   await startApp()
 }
@@ -225,9 +225,9 @@ const setupDbAndRedis = async () => {
   await verifyConfigAndDb()
   await clearRunningQueries()
   try {
-    logger.debug('Executing database migrations...')
+    logger.info('Executing database migrations...')
     await runMigrations()
-    logger.debug('Migrations completed successfully')
+    logger.info('Migrations completed successfully')
   } catch (migrationError) {
     exitWithError('Error in migrations:', migrationError)
   }
@@ -246,7 +246,7 @@ const startApp = async () => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
-    logger.debug('Shutting down db and express app...', signal, error)
+    logger.info('Shutting down db and express app...', signal, error)
     sequelize.close()
     if (appInfo) {
       appInfo.server.close()
@@ -255,12 +255,12 @@ const startApp = async () => {
 
   await serviceRegistry.initServices()
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-  logger.debug(`Initialized services (Node running in ${nodeMode})`)
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   serviceRegistry.initServicesAsynchronously()
   const appInfo = initializeApp(getPort(), serviceRegistry)
-  logger.debug('Initialized app and server')
+  logger.info('Initialized app and server')
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
 
