@@ -339,7 +339,7 @@ jobs:
 
   bake-gcp-dev-image-2:
     docker:
-      - image: ubuntu-2004:2022.10.1
+      - image: audius/circleci-gcloud-bake:latest
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
