@@ -232,7 +232,7 @@ commands:
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
 
             # Run interactive command on remotebox
-            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -t ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               << parameters.interactive-command >>
               exit;
             EOF
@@ -318,6 +318,61 @@ jobs:
             git checkout -f;
           post-gcp-command: |
             BAKE_IMAGE_NAME=ci-image-bake-latest
+
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
+            # Stop GCP box, can't take an image from a running VM
+            gcloud compute instances stop $GCLOUD_VM_NAME
+
+            # Delete image with the same name (if exists)
+            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+
+            # Create the new CI bake image
+            gcloud compute images create "$BAKE_IMAGE_NAME" \
+              --project="$GOOGLE_PROJECT_ID" \
+              --source-disk="$GCLOUD_VM_NAME" \
+              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
+              --storage-location=us
+      - slack-fail:
+          branch_pattern: main
+          slack_mentions_user: "@dheeraj"
+
+  bake-gcp-dev-image-2:
+    docker:
+      - image: audius/circleci-gcloud-bake-2:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      - run-on-gcp:
+          command-name: Bake GCP Dev Image 2
+          fast: false
+          interactive-command: |
+            # fail on error
+            set -e;
+
+            # on error, run this function
+            exit_ssh() {
+              exit $?
+            }
+            trap exit_ssh EXIT
+
+            # commands to prime the VM for the bake
+            curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-tools/setup.sh" | bash
+          command: |
+            # fail on error
+            set -e;
+
+            # on error, run this function
+            exit_ssh() {
+              exit $?
+            }
+            trap exit_ssh EXIT
+
+            # commands to prime the VM for the bake
+            audius-compose build
+          post-gcp-command: |
+            BAKE_IMAGE_NAME=ci-image-bake-2-latest
 
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
@@ -1733,6 +1788,8 @@ workflows:
             - GCP2
           requires:
             - tests
+
+      - bake-gcp-dev-image-2
 
 
   # in order to trigger this job
