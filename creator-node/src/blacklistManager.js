@@ -28,7 +28,7 @@ class BlacklistManager {
 
   static async init() {
     try {
-      this._logDebug('Initializing BlacklistManager...')
+      this._log('Initializing BlacklistManager...')
 
       // Adding to redis only needs to be done once, but multiple workers all run the app with their own BlacklistManager instance
       if (clusterUtils.isThisWorkerInit()) {
@@ -43,7 +43,7 @@ class BlacklistManager {
 
       this.initialized = true
 
-      this._logDebug('Initialized BlacklistManager')
+      this._log('Initialized BlacklistManager')
     } catch (e) {
       throw new Error(`Could not init BlacklistManager: ${e.message}`)
     }
