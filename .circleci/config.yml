@@ -1047,6 +1047,10 @@ jobs:
                 name: Check for Changes
                 command: |
                   [[ $(git diff main --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
+            - run:
+                name: Sleep
+                command: |
+                  sleep 9000
       # - when:
       #     condition:
       #       or:
