@@ -124,8 +124,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
 
     if (sendToNethermind) {
-      // fire and forget
-      const ok = await wipRelayToNethermind(web3, encodedABI)
+      const ok = await relayToNethermind(web3, encodedABI)
       txParams = ok.txParams
       txReceipt = ok.receipt
     } else {
@@ -334,15 +333,13 @@ const createAndSendTransaction = async (
 }
 
 //
-// WIP relay txn to staging nethermind "fire and forget" style
+// Relay txn to nethermind
 //
 
 let inFlight = 0
 
-async function wipRelayToNethermind(web3, encodedABI) {
-  // staging EM address on nethermind NOT POA
-
-  // any ol random private key
+async function relayToNethermind(encodedABI) {
+  // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('web3Provider'))
 
   const wallet = accounts.create()
@@ -364,25 +361,29 @@ async function wipRelayToNethermind(web3, encodedABI) {
     )
 
     inFlight++
-    const nnn = inFlight
+    const myDepth = inFlight
 
-    console.log('wipRelayToNethermind sending', nnn, JSON.stringify(signedTx))
+    logger.info(
+      `relayToNethermind sending txhash: ${signedTx.transactionHash} num: ${myDepth}`
+    )
+
     const receipt = await web3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
     receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
 
     const end = new Date().getTime()
-    const time = end - start
+    const took = end - start
     inFlight--
-    console.log('wipRelayToNethermind ok', nnn, JSON.stringify(receipt))
-    console.log('wipRelayToNethermind took', nnn, time, inFlight)
+    logger.info(
+      `relayToNethermind ok txhash: ${signedTx.transactionHash} num: ${myDepth} took: ${took} pending: ${inFlight}`
+    )
     return {
       txParams: transaction,
       receipt
     }
   } catch (err) {
-    console.log('wipRelayToNethermind error', err.toString())
+    console.log('relayToNethermind error:', err.toString())
     throw err
   }
 }
