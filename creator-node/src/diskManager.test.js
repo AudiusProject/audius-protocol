@@ -3,11 +3,15 @@ const assert = require('assert')
 const config = require('./config')
 const path = require('path')
 const sinon = require('sinon')
+const fs = require('fs-extra')
+const utils = require('./utils')
 
 describe('Test DiskManager', function () {
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
+    // stub out this function which ensures the directory path exists to return true
+    sandbox.stub(fs, 'mkdir').returns(true)
     config.set('storagePath', '/test_file_storage')
   })
 
@@ -170,7 +174,7 @@ describe('Test DiskManager', function () {
   })
 
   it('should list subdirectories in /file_storage/files', async function () {
-    sandbox.stub(DiskManager, '_execShellCommand').resolves(`
+    sandbox.stub(utils, 'execShellCommand').resolves(`
     .
     ./d8A
     ./Pyx
@@ -200,7 +204,7 @@ describe('Test DiskManager', function () {
   })
 
   it('should list subdirectories in /file_storage/files', async function () {
-    sandbox.stub(DiskManager, '_execShellCommand').resolves(`
+    sandbox.stub(utils, 'execShellCommand').resolves(`
     ${DiskManager.getConfigStoragePath()}/files/b8p
     ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp
     ${DiskManager.getConfigStoragePath()}/files/b8p/QmWdtzxDfYad29vNcPTnZCacLTEry3QTUw5fjmyQuDb8pp/QmTDBbpR8CAjGWwyxYgNfsX8erUKXeySr5NCSG4eUgQMPg
