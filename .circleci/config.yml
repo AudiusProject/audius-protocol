@@ -1443,6 +1443,14 @@ workflows:
             - test-identity
       # Force deploy `main` to staging (by service)
       - noop:
+          name: unreserve-stage-<< matrix.service >>-hold
+          type: approval
+          filters:
+            branches:
+              only: /(^main$)/
+          requires:
+            - autodeploy-stage-<< matrix.service >>
+      - noop:
           name: unreserve-stage-<< matrix.service >>-all
           type: approval
           matrix:
@@ -1452,7 +1460,7 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - autodeploy-stage-<< matrix.service >>
+            - unreserve-stage-<< matrix.service >>-hold
       - deploy:
           name: unreserving-stage-<< matrix.service >>-all
           git_tag: ${CIRCLE_SHA1}
@@ -1481,7 +1489,7 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - autodeploy-stage-discovery
+            - unreserve-stage-discovery-hold
       - deploy:
           name: unreserving-<< matrix.host >>
           service: discovery
@@ -1511,7 +1519,7 @@ workflows:
             branches:
               only: /(^main$)/
           requires:
-            - autodeploy-stage-creator
+            - unreserve-stage-creator-hold
       - deploy:
           name: unreserving-<< matrix.host >>
           service: creator
