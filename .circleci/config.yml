@@ -1040,7 +1040,7 @@ jobs:
             - run:
                 name: Check for Changes
                 command: |
-                  [[ $(git diff main --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
+                  [[ $(git diff $(git rev-parse HEAD)~1 --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
@@ -1399,6 +1399,7 @@ workflows:
       - deploy:
           name: autodeploy-stage-discovery
           service: discovery
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
@@ -1413,6 +1414,7 @@ workflows:
       - deploy:
           name: autodeploy-stage-creator
           service: creator
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
@@ -1427,6 +1429,7 @@ workflows:
       - deploy:
           name: autodeploy-stage-identity
           service: identity
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
@@ -1452,6 +1455,7 @@ workflows:
             - autodeploy-stage-<< matrix.service >>
       - deploy:
           name: unreserving-stage-<< matrix.service >>
+          git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
@@ -1481,6 +1485,7 @@ workflows:
       - deploy:
           name: unreserving-<< matrix.host >>
           service: discovery
+          git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
@@ -1510,6 +1515,7 @@ workflows:
       - deploy:
           name: unreserving-<< matrix.host >>
           service: creator
+          git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
