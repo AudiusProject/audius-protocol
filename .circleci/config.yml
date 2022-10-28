@@ -1031,7 +1031,7 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [ main, << pipeline.git.branch >> ]
+              - equal: [ jc-inf-298, << pipeline.git.branch >> ]
               - equal: [ staging, << parameters.environment >> ]
               - not:
                   equal: [ all, << parameters.service >> ]
