@@ -328,9 +328,19 @@ class ServiceRegistry {
     this.syncQueue = new SyncQueue(config, this.redis, this)
     this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis, this)
 
-    // L2URSMRegistration (requires L1 identity)
-    // Retries indefinitely
-    await this._registerNodeOnL2URSM()
+    // If entity manager is enabled, there's no need to register on L2 because
+    // discovery node will use L1 to validate
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      config.set('isRegisteredOnURSM', true)
+      this.logInfo(
+        `When EntityManager is enabled, skip register node on l2 ursm`
+      )
+      return
+    } else {
+      // L2URSMRegistration (requires L1 identity)
+      // Retries indefinitely
+      await this._registerNodeOnL2URSM()
+    }
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
