@@ -108,6 +108,9 @@ export class SyncQueue {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
 
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.deleteOldActiveJobs()
   }
