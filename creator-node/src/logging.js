@@ -37,7 +37,6 @@ const logger = bunyan.createLogger({
     }
   ]
 })
-logger.info('Loglevel set to:', logLevel)
 
 /**
  * TODO make this more readable

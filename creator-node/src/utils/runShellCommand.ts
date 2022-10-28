@@ -26,7 +26,7 @@ export async function runShellCommand(
 
     proc.on('close', (code: number) => {
       if (code === 0) {
-        logger.info(
+        logger.debug(
           `Successfully executed command ${command} ${args} with output: \n${stdout}`
         )
         resolve()
@@ -41,7 +41,7 @@ export async function runShellCommand(
 }
 
 export async function execShellCommand(cmd: string, log = false) {
-  if (log) logger.info(`calling execShellCommand: ${cmd}`)
+  if (log) logger.debug(`calling execShellCommand: ${cmd}`)
   const { stdout, stderr } = await execute(`${cmd}`, {
     maxBuffer: 1024 * 1024 * 5
   }) // 5mb buffer

@@ -80,8 +80,7 @@ export class ImageProcessingQueue {
   async logStatus(logContext: Object, message: string) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.info(`Image Processing Queue: ${message}`)
-    logger.info(`Image Processing Queue: count: ${count}`)
+    logger.info(`Image Processing Queue (count ${count}): ${message}`)
   }
 
   /**

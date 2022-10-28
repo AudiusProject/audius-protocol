@@ -583,7 +583,7 @@ const trackDiskStorage = multer.diskStorage({
       req.fileNameNoExtension = fileName
       req.fileName = fileName + fileExtension
 
-      req.logger.info(
+      req.logger.debug(
         `Created track disk storage: ${req.fileDir}, ${req.fileName}`
       )
       cb(null, fileDir)
@@ -647,7 +647,7 @@ function checkFileType(logger, { fileName, fileMimeType }) {
     ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) &&
     AUDIO_MIME_TYPE_REGEX.test(fileMimeType)
   ) {
-    logger.info(
+    logger.debug(
       `fileManager#checkFileType - FileName: ${fileName}, Filetype: ${fileExtension}, Mimetype: ${fileMimeType}`
     )
   } else {

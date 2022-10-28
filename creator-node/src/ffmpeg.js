@@ -54,7 +54,7 @@ function segmentFile(fileDir, fileName, { logContext }) {
       '-vn', // skip inclusion of video, process only the audio file without "video"
       m3u8FilePath
     ]
-    logger.info(`Spawning: ffmpeg ${args}`)
+    logger.debug(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output
@@ -125,7 +125,7 @@ async function transcodeFileTo320(fileDir, fileName, { logContext }) {
       '-vn', // skip inclusion of video, process only the audio file without "video"
       targetPath
     ]
-    logger.info(`Spawning: ffmpeg ${args}`)
+    logger.debug(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output

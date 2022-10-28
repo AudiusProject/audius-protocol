@@ -260,7 +260,7 @@ async function _recordSyncRequestOutcome(
     // Set key expiration time (sec) in case it hasn't already been set (prob not most efficient)
     await redisClient.expire(redisKey, DailyRedisKeyExpirationSec)
 
-    logger.info(
+    logger.debug(
       `SecondarySyncHealthTracker:_recordSyncRequestOutcome || Recorded ${redisKey}`
     )
 
