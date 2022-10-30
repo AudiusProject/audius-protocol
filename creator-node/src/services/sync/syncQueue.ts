@@ -61,6 +61,12 @@ export class SyncQueue {
       }
     })
 
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.deleteOldActiveJobs()
+
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
      *    main thread if provided an in-line job processor function; it will distribute across child processes
@@ -107,12 +113,6 @@ export class SyncQueue {
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
-
-    // any leftover active jobs need to be deleted when a new queue
-    // is created since they'll never get processed
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.deleteOldActiveJobs()
   }
 
   private async deleteOldActiveJobs() {
