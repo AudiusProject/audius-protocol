@@ -98,7 +98,7 @@ class SyncImmediateQueue {
 
   async deleteOldActiveJobs() {
     const oldActiveJobs = await this.queue.getJobs(['active'])
-    logger.debug(
+    logger.info(
       `[sync-immediate-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
     )
     for (const job of oldActiveJobs) {
