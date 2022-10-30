@@ -117,6 +117,9 @@ export class SyncQueue {
 
   private async deleteOldActiveJobs() {
     const oldActiveJobs = await this.queue.getJobs(['active'])
+    logger.debug(
+      `[sync-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
+    )
     for (const job of oldActiveJobs) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       job.remove()
