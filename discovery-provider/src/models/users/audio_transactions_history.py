@@ -12,7 +12,7 @@ class TransactionType(str, enum.Enum):
     transfer = "TRANSFER"
     purchase_stripe = "PURCHASE_STRIPE"
     purchase_coinbase = "PURCHASE_COINBASE"
-    purchase_unknown = "UNKNOWN"
+    purchase_unknown = "PURCHASE UNKNOWN"
 
 
 class TransactionMethod(str, enum.Enum):
