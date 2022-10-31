@@ -283,10 +283,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     }
 
     with db.scoped_session() as session:
-        challenge_type_map = {}
-        process_batch_sol_reward_manager_txs(
-            session, [parsed_tx], redis, challenge_type_map
-        )
+        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursement = disbursments[0]
@@ -313,9 +310,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     parsed_tx["slot"] = next_slot
     parsed_tx["transfer_instruction"]["challenge_id"] = "tt"
     with db.scoped_session() as session:
-        process_batch_sol_reward_manager_txs(
-            session, [parsed_tx], redis, challenge_type_map
-        )
+        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = (
             session.query(ChallengeDisbursement)
             .order_by(desc(ChallengeDisbursement.slot))

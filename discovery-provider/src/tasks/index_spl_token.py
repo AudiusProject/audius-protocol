@@ -72,7 +72,7 @@ SENDER_ACCOUNT_INDEX = 2
 purchase_vendor_map = {
     "Link by Stripe": TransactionType.purchase_stripe,
     "Coinbase Pay": TransactionType.purchase_coinbase,
-    "Unknown": TransactionType.unknown,
+    "Unknown": TransactionType.purchase_unknown,
 }
 
 logger = logging.getLogger(__name__)
