@@ -57,9 +57,7 @@ class GetTrackArgs(TypedDict):
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
-    base_query = base_query.filter(
-        TrackWithAggregates.is_current == True,
-    )
+    base_query = base_query.filter(TrackWithAggregates.is_current == True)
 
     # NOTE: the stem_of filter is added for content node to validate the track's owner id
     # This is a temporary fix and should be replaced with a new endpoint to fetch a track's owner id
