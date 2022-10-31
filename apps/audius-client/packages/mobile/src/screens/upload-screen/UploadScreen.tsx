@@ -39,14 +39,14 @@ export const UploadScreen = () => {
   const navigation = useNavigation()
 
   const [{ value }, handlePickTrack] = useAsyncFn(async () => {
-    return DocumentPicker.pick({ allowMultiSelection: false, type: '.mp3' })
+    return DocumentPicker.pick({ type: DocumentPicker.types.audio })
   }, [])
 
   useEffect(() => {
     if (value) {
-      navigation.push('CompleteTrack', value)
+      navigation.push('CompleteTrack', value[0])
     }
-  })
+  }, [value, navigation])
 
   return (
     <Screen title={messages.title} icon={IconUpload} variant='secondary'>
