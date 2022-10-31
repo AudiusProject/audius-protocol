@@ -10,7 +10,7 @@ const messages = {
   placeholder: 'Enter an amount'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
     paddingVertical: spacing(5),
     paddingHorizontal: spacing(4),
@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     backgroundColor: palette.neutralLight9
   },
   input: {
-    fontSize: 20
+    fontSize: typography.fontSize.xl
   }
 }))
 

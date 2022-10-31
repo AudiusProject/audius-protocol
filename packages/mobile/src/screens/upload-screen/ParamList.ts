@@ -1,6 +1,6 @@
-import type { DocumentPickerResponse } from 'react-native-document-picker'
+import type { CompleteTrackParams } from './CompleteTrackScreen'
 
 export type UploadParamList = {
   Upload: undefined
-  CompleteTrack: DocumentPickerResponse[]
+  CompleteTrack: CompleteTrackParams
 }
