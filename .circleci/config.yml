@@ -309,7 +309,7 @@ commands:
             # A setup ... || true is necessary because exit code returns 141 by default
             yes | gcloud compute instances create \
                 --machine-type=n2-custom-6-24576 \
-                --boot-disk-size=64G \
+                --boot-disk-size=256G \
                 --boot-disk-type=pd-ssd \
                 --image-project=ci-audius-infra \
                 --image=ci-image-bake-2-latest \
