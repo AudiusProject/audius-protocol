@@ -45,7 +45,7 @@ def upgrade():
             ),
             sa.Column("change", sa.Numeric(), nullable=False),
             sa.Column("balance", sa.Numeric(), nullable=False),
-            sa.Column("tx_metadata", sa.String(), nullable=False),
+            sa.Column("tx_metadata", sa.String(), nullable=True),
             sa.PrimaryKeyConstraint("user_bank", "signature"),
         )
         op.create_index(
