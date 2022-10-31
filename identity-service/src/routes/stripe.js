@@ -37,7 +37,7 @@ module.exports = function (app) {
         'transaction_details[destination_network]': 'solana',
         'transaction_details[destination_currency]': 'sol',
         'transaction_details[destination_exchange_amount]': amount,
-        'customer_ip_address': getIP(req)
+        customer_ip_address: getIP(req)
       })
 
       try {
