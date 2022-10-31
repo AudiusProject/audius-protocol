@@ -3,6 +3,7 @@ import datetime
 import logging
 import re
 import time
+from decimal import Decimal
 from typing import List, Optional, TypedDict
 
 import base58
@@ -211,8 +212,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.transfer,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=sent_amount,
-            balance=post_sender_balance,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
             tx_metadata=receiver_account,
         )
         logger.debug(
@@ -248,8 +249,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.tip,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=sent_amount,
-            balance=post_sender_balance,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
             tx_metadata=str(receiver_user_id),
         )
         logger.debug(
@@ -263,8 +264,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.tip,
             method=TransactionMethod.receive,
             transaction_created_at=timestamp,
-            change=received_amount,
-            balance=post_receiver_balance,
+            change=Decimal(received_amount),
+            balance=Decimal(post_receiver_balance),
             tx_metadata=str(sender_user_id),
         )
         session.add(audio_tx_received)

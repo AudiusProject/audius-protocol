@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.utils.helpers import get_solana_tx_root_account, get_solana_tx_token_balances
+from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balances
 
 RECEIVER_ACCOUNT_INDEX = 1
 SENDER_ACCOUNT_INDEX = 2
@@ -96,8 +96,8 @@ def test_get_solana_tx_token_balances():
     assert postbalance == 5623032749
 
 
-def test_get_solana_tx_root_account():
-    root_account = get_solana_tx_root_account(mock_meta["meta"], RECEIVER_ACCOUNT_INDEX)
+def test_get_solana_tx_owner():
+    root_account = get_solana_tx_owner(mock_meta["meta"], RECEIVER_ACCOUNT_INDEX)
     assert root_account == "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx"
-    root_account = get_solana_tx_root_account(mock_meta["meta"], SENDER_ACCOUNT_INDEX)
+    root_account = get_solana_tx_owner(mock_meta["meta"], SENDER_ACCOUNT_INDEX)
     assert root_account == "GNkt1SGkdzvfaCYVpSKs7yjLxeyLJFKZv32cVYJ3GyHX"
