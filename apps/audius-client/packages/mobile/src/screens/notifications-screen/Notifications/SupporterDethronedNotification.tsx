@@ -1,19 +1,15 @@
 import { useCallback } from 'react'
 
-import {
-  cacheUsersSelectors,
-  notificationsSelectors,
-  tippingActions
-} from '@audius/common'
+import { cacheUsersSelectors, notificationsSelectors } from '@audius/common'
 import type {
   Nullable,
   SupporterDethronedNotification as SupporterDethroned
 } from '@audius/common'
 import { Platform } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import IconCrownSource from 'app/assets/images/crown2x.png'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -30,7 +26,6 @@ import {
 
 const { getUser } = cacheUsersSelectors
 const { getNotificationUser } = notificationsSelectors
-const { beginTip } = tippingActions
 
 type SupporterDethronedNotificationProps = {
   notification: SupporterDethroned
@@ -51,8 +46,7 @@ export const SupporterDethronedNotification = (
 ) => {
   const { notification } = props
   const { supportedUserId } = notification
-  const dispatch = useDispatch()
-  const navigation = useNavigation()
+  const navigation = useNotificationNavigation()
   const usurpingUser = useSelector((state) =>
     getNotificationUser(state, notification)
   )
@@ -62,9 +56,8 @@ export const SupporterDethronedNotification = (
   )
 
   const handlePress = useCallback(() => {
-    dispatch(beginTip({ user: supportedUser, source: 'dethroned' }))
-    navigation.navigate('TipArtist')
-  }, [dispatch, supportedUser, navigation])
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const handleShare = useCallback(
     (usurpingHandle: string, supportingHandle?: Nullable<string>) => {

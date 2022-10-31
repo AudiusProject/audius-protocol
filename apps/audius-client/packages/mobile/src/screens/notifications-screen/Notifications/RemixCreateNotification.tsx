@@ -9,11 +9,11 @@ import { useProxySelector, notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -61,12 +61,9 @@ export const RemixCreateNotification = (
 
   const handlePress = useCallback(() => {
     if (childTrack) {
-      navigation.navigate('Track', {
-        id: childTrack.track_id,
-        fromNotifications: true
-      })
+      navigation.navigate(notification)
     }
-  }, [childTrack, navigation])
+  }, [childTrack, navigation, notification])
 
   const handleTwitterShareData = useCallback(
     (handle: string | undefined) => {

@@ -60,7 +60,7 @@ export const useIsProfileLoaded = () => {
   const { params } = useRoute<'Profile'>()
   const { handle } = params
   const profileStatus = useSelector((state) =>
-    getProfileStatus(state, handle.toLowerCase())
+    getProfileStatus(state, handle?.toLowerCase())
   )
 
   return handle === 'accountUser' || profileStatus === Status.SUCCESS

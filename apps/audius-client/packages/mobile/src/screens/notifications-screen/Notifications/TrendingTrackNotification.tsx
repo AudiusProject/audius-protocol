@@ -9,8 +9,8 @@ import { notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
-import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   EntityLink,
   NotificationHeader,
@@ -51,9 +51,9 @@ export const TrendingTrackNotification = (
 
   const handlePress = useCallback(() => {
     if (track) {
-      navigation.navigate('Track', { id: track.track_id })
+      navigation.navigate(notification)
     }
-  }, [navigation, track])
+  }, [navigation, notification, track])
 
   if (!track) return null
 

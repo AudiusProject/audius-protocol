@@ -60,16 +60,15 @@ export const ProfileScreen = () => {
   usePopToTopOnDrawerOpen()
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
+  const { handle: userHandle, id } = params
   const profile = useSelectProfileRoot([
     'user_id',
     'handle',
     'does_current_user_follow'
   ])
   const handle =
-    params.handle && params.handle !== 'accountUser'
-      ? params.handle
-      : profile?.handle
-  const handleLower = handle?.toLowerCase()
+    userHandle && userHandle !== 'accountUser' ? userHandle : profile?.handle
+  const handleLower = handle?.toLowerCase() ?? ''
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
   const status = useSelector((state) => getProfileStatus(state, handleLower))
@@ -83,8 +82,10 @@ export const ProfileScreen = () => {
   )
 
   const fetchProfile = useCallback(() => {
-    dispatch(fetchProfileAction(handleLower, null, true, true, false))
-  }, [dispatch, handleLower])
+    dispatch(
+      fetchProfileAction(handleLower ?? null, id ?? null, true, true, false)
+    )
+  }, [dispatch, handleLower, id])
 
   useEffect(() => {
     fetchProfile()

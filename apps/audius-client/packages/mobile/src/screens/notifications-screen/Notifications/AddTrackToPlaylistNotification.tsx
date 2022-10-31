@@ -5,8 +5,8 @@ import { useProxySelector, notificationsSelectors } from '@audius/common'
 import { View } from 'react-native'
 
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
-import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   NotificationHeader,
   NotificationText,
@@ -16,7 +16,6 @@ import {
   UserNameLink,
   ProfilePicture
 } from '../Notification'
-import { getEntityScreen } from '../Notification/utils'
 const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
@@ -32,6 +31,7 @@ export const AddTrackToPlaylistNotification = (
   props: AddTrackToPlaylistNotificationProps
 ) => {
   const { notification } = props
+  const navigation = useNotificationNavigation()
   const entities = useProxySelector(
     (state) => getNotificationEntities(state, notification),
     [notification]
@@ -39,14 +39,11 @@ export const AddTrackToPlaylistNotification = (
   const { track, playlist } = entities
   const playlistOwner = playlist.user
 
-  const navigation = useNotificationNavigation()
-
   const handlePress = useCallback(() => {
     if (playlist) {
-      const [screen, params] = getEntityScreen(playlist)
-      navigation.navigate(screen, params)
+      navigation.navigate(notification)
     }
-  }, [playlist, navigation])
+  }, [playlist, navigation, notification])
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>

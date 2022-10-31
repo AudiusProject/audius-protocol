@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type { RepostNotification as RepostNotificationType } from '@audius/common'
 import {
   useProxySelector,
@@ -6,6 +8,7 @@ import {
 } from '@audius/common'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
   NotificationHeader,
@@ -17,7 +20,6 @@ import {
   EntityLink
 } from '../Notification'
 
-import { useSocialActionHandler } from './useSocialActionHandler'
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
@@ -33,6 +35,8 @@ type RepostNotificationProps = {
 export const RepostNotification = (props: RepostNotificationProps) => {
   const { notification } = props
   const { userIds, entityType } = notification
+  const navigation = useNotificationNavigation()
+
   const users = useProxySelector(
     (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     [notification]
@@ -45,7 +49,9 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     [notification]
   )
 
-  const handlePress = useSocialActionHandler(notification, users)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   if (!users || !firstUser || !entity) return null
 

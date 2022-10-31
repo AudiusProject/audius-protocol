@@ -63,7 +63,7 @@ export type AppTabScreenParamList = {
     slug?: string
   }
   TrackRemixes: { id: ID }
-  Profile: { handle: string }
+  Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
     id?: ID
     collectionName?: string

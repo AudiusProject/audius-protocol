@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -27,7 +28,6 @@ import {
 } from '../Notification'
 import { reactionMap } from '../Reaction'
 
-import { useGoToProfile } from './useGoToProfile'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -79,12 +79,15 @@ export const TipReactionNotification = (
     reactedToEntity: { amount }
   } = notification
 
+  const navigation = useNotificationNavigation()
   const uiAmount = useUIAudio(amount)
   const styles = useStyles()
 
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const handlePress = useGoToProfile(user)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const handleTwitterShare = useCallback((handle: string) => {
     const shareText = messages.twitterShare(handle, Platform.OS === 'ios')

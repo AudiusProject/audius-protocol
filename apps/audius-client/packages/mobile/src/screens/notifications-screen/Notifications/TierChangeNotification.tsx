@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type { TierChangeNotification as TierChangeNotificationType } from '@audius/common'
 import { cacheUsersSelectors } from '@audius/common'
 import { fullProfilePage } from 'audius-client/src/utils/route'
@@ -7,6 +9,7 @@ import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
 import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
   NotificationTile,
@@ -65,13 +68,18 @@ type TierChangeNotificationProps = {
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
+  const navigation = useNotificationNavigation()
   const user = useSelector((state) => getUser(state, { id: userId }))
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
+
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   if (!user) return null
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={icon}>
         <NotificationTitle style={{ textTransform: 'uppercase' }}>
           {label} {messages.unlocked}
