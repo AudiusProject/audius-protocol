@@ -100,14 +100,20 @@ class StateMachineManager {
             port: config.get('redisPort')
           }
         })
-        queueEvents.on(
-          'completed',
-          makeOnCompleteCallback(
-            queueName,
-            queueNameToQueueMap,
-            prometheusRegistry
-          ).bind(this)
-        )
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        queueEvents.on('completed', async ({ jobId, returnvalue }, id) => {
+          try {
+            await makeOnCompleteCallback(
+              queueName,
+              queueNameToQueueMap,
+              prometheusRegistry
+            ).bind(this)({ jobId, returnvalue }, id)
+          } catch (e) {
+            baseLogger.error(
+              'Fatal: onComplete errored. Cron queues may be broken.'
+            )
+          }
+        })
 
         // Update the mapping in this StateMachineManager whenever a job successfully fetches it
         if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
@@ -115,6 +121,45 @@ class StateMachineManager {
             'completed',
             this.updateMapOnMapFetchJobComplete.bind(this)
           )
+          queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
+          })
+          queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            cNodeEndpointToSpIdMapQueue.add('retry-after-error', {})
+          })
+        }
+
+        // Recurring queues need to re-enqueue jobs when they fail/error
+        else if (queueName === QUEUE_NAMES.MONITOR_STATE) {
+          queueEvents.on('failed', (_args, _id) => {
+            stateMonitoringManager.recoverFromJobFailure(
+              monitorStateQueue,
+              audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            )
+          })
+          queueEvents.on('error', (_args) => {
+            stateMonitoringManager.recoverFromJobFailure(
+              monitorStateQueue,
+              audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            )
+          })
+        } else if (queueName === QUEUE_NAMES.RECOVER_ORPHANED_DATA) {
+          queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            recoverOrphanedDataQueue.add('retry-after-fail', {
+              discoveryNodeEndpoint:
+                audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            })
+          })
+          queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            recoverOrphanedDataQueue.add('retry-after-error', {
+              discoveryNodeEndpoint:
+                audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            })
+          })
         }
       }
 
