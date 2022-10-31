@@ -12,7 +12,9 @@ const PACKET_LOSS_PERCENT = 20
 
 let didPause = false
 
-const makeCreatorNodeName = num => `audius-protocol-creator-node-${num}`
+const makeCreatorNodeName = (num) => process.env.OLD_FLOW
+  ? `cn${num}_creator-node_1`
+  : `audius-protocol-creator-node-${num}`
 
 // For now, this only takes down a single node
 // per test.
