@@ -687,7 +687,7 @@ const config = convict({
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    default: 600 // 10min in s
+    default: 3600 // 1 hour in s
   },
   maxNumberSecondsSecondaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
@@ -826,7 +826,7 @@ const config = convict({
     format: String,
     env: 'reconfigSPIdBlacklistString',
     default:
-      '1,4,7,12,13,14,15,16,19,28,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,63,64,65'
+      '33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   }
   /**
    * unsupported options at the moment
