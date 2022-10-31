@@ -833,7 +833,7 @@ const config = convict({
   recordSyncResults: {
     doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
     format: Boolean,
-    env: 'processSyncResults',
+    env: 'recordSyncResults',
     default: false
   },
   processSyncResults: {
