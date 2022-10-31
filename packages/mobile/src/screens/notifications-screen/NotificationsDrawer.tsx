@@ -1,9 +1,5 @@
-import { useEffect } from 'react'
-
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { useNavigation } from '@react-navigation/native'
-
-import PushNotifications from 'app/notifications'
 
 import { AppDrawerContextProvider } from '../app-drawer-screen'
 
@@ -24,10 +20,6 @@ export const NotificationsDrawer = (props: NotificationDrawerContentsProps) => {
     setDisableGestures
   } = props
   const drawerNavigation = useNavigation()
-
-  useEffect(() => {
-    PushNotifications.setDrawerHelpers(drawerHelpers)
-  }, [drawerHelpers])
 
   return (
     <AppDrawerContextProvider

@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react'
-import { useMemo, createContext, useState } from 'react'
+import { useEffect, useMemo, createContext, useState } from 'react'
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import PushNotifications from 'app/notifications'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 
@@ -36,6 +39,7 @@ export const AppTabNavigationProvider = (
 ) => {
   const { children } = props
   const [navigation, setNavigation] = useState({} as AppTabNavigation)
+  const notifNavigation = useNotificationNavigation()
 
   const navigationContext = useMemo(
     () => ({ navigation, setNavigation }),
@@ -46,6 +50,10 @@ export const AppTabNavigationProvider = (
     () => ({ setNavigation }),
     [setNavigation]
   )
+
+  useEffect(() => {
+    PushNotifications.setNavigation(notifNavigation)
+  }, [notifNavigation])
 
   return (
     <AppTabNavigationContext.Provider value={navigationContext}>

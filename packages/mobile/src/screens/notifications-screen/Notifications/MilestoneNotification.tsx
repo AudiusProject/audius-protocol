@@ -15,11 +15,11 @@ import { fullProfilePage } from 'audius-client/src/utils/route'
 import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
 
-import { useNotificationNavigation } from '../../app-drawer-screen'
 import {
   EntityLink,
   NotificationHeader,
@@ -28,7 +28,7 @@ import {
   NotificationTitle,
   NotificationTwitterButton
 } from '../Notification'
-import { getEntityRoute, getEntityScreen } from '../Notification/utils'
+import { getEntityRoute } from '../Notification/utils'
 const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -104,20 +104,8 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
-    if (achievement === Achievement.Followers) {
-      if (user) {
-        navigation.navigate('Profile', {
-          handle: user.handle,
-          fromNotifications: true
-        })
-      }
-    } else {
-      if (entity) {
-        const [screen, params] = getEntityScreen(entity)
-        navigation.navigate(screen, params)
-      }
-    }
-  }, [achievement, user, navigation, entity])
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const renderBody = () => {
     const { achievement, value } = notification

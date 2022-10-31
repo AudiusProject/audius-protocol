@@ -5,13 +5,13 @@ import { notificationsSelectors } from '@audius/common'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { NotificationTile, NotificationTwitterButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
-import { useGoToProfile } from './useGoToProfile'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -34,10 +34,13 @@ export const TopSupporterNotification = (
 ) => {
   const { notification } = props
   const { rank } = notification
+  const navigation = useNotificationNavigation()
 
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const handlePress = useGoToProfile(user)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const handleTwitterShare = useCallback(
     (handle: string) => {

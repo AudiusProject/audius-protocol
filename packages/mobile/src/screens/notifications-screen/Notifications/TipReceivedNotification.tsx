@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -34,7 +35,6 @@ import {
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
-import { useGoToProfile } from './useGoToProfile'
 const { writeReactionValue } = reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
 const { getNotificationUser } = notificationsSelectors
@@ -78,6 +78,7 @@ export const TipReceivedNotification = (
   const { notification, isVisible } = props
   const { amount, tipTxSignature } = notification
   const uiAmount = useUIAudio(amount)
+  const navigation = useNotificationNavigation()
 
   const user = useSelector((state) => getNotificationUser(state, notification))
 
@@ -85,7 +86,9 @@ export const TipReceivedNotification = (
 
   const setReactionValue = useSetReaction(tipTxSignature)
 
-  const handlePress = useGoToProfile(user)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const handleTwitterShare = useCallback(
     (senderHandle: string) => {

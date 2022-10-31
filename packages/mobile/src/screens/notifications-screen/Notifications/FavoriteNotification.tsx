@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type { FavoriteNotification as FavoriteNotificationType } from '@audius/common'
 import {
   formatCount,
@@ -6,6 +8,7 @@ import {
 } from '@audius/common'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
   NotificationHeader,
@@ -17,7 +20,6 @@ import {
   EntityLink
 } from '../Notification'
 
-import { useSocialActionHandler } from './useSocialActionHandler'
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
@@ -33,6 +35,7 @@ type FavoriteNotificationProps = {
 export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { notification } = props
   const { userIds, entityType } = notification
+  const navigation = useNotificationNavigation()
 
   const users = useProxySelector(
     (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
@@ -47,7 +50,9 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
     [notification]
   )
 
-  const handlePress = useSocialActionHandler(notification, users)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   if (!users || !firstUser || !entity) return null
 

@@ -6,6 +6,7 @@ import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -20,7 +21,6 @@ import {
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
 
-import { useGoToProfile } from './useGoToProfile'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -48,10 +48,13 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
 
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
+  const navigation = useNotificationNavigation()
 
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const handlePress = useGoToProfile(user)
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
 
   const handleTwitterShare = useCallback(
     (senderHandle: string) => {

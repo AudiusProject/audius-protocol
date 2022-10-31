@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type {
   ChallengeRewardID,
   ChallengeRewardNotification as ChallengeRewardNotificationType
@@ -5,6 +7,7 @@ import type {
 import { Platform } from 'react-native'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
+import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
   NotificationTile,
@@ -83,10 +86,17 @@ export const ChallengeRewardNotification = (
   const { notification } = props
   const { challengeId } = notification
   const info = challengeInfoMap[challengeId]
+  const navigation = useNotificationNavigation()
+
+  const handlePress = useCallback(() => {
+    navigation.navigate(notification)
+  }, [navigation, notification])
+
   if (!info) return null
   const { title, amount, iosTitle } = info
+
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconAudius}>
         <NotificationTitle>
           {Platform.OS === 'ios' && iosTitle != null ? iosTitle : title}
