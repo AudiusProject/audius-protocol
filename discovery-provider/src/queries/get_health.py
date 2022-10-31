@@ -264,6 +264,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         ]
     )
 
+    url = shared_config["discprov"]["url"]
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -293,6 +294,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "spl_audio_info": spl_audio_info,
         "reactions": reactions_health_info,
         "infra_setup": infra_setup,
+        "url": url,
+        # Temp
+        "latest_block_num": latest_block_num,
+        "latest_indexed_block_num": latest_indexed_block_num,
     }
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
