@@ -1176,7 +1176,7 @@ type RewardsClaimUnknown = {
   error: string
 }
 
-export type TipSource = 'profile' | 'feed' | 'dethroned'
+export type TipSource = 'profile' | 'feed' | 'dethroned' | 'buyAudio'
 
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
