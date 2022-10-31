@@ -3,6 +3,7 @@ import datetime
 import logging
 import re
 import time
+from decimal import Decimal
 from typing import List, Optional, TypedDict
 
 import base58
@@ -46,7 +47,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_balances
+from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
@@ -177,8 +178,10 @@ def process_transfer_instruction(
         )
         return
 
-    pre_sender_balance, post_sender_balance = get_solana_tx_balances(meta, sender_index)
-    pre_receiver_balance, post_receiver_balance = get_solana_tx_balances(
+    pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
+        meta, sender_index
+    )
+    pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
         meta, receiver_index
     )
     if (
@@ -207,8 +210,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.transfer,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=sent_amount,
-            balance=post_sender_balance,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
             tx_metadata=receiver_account,
         )
         logger.debug(
@@ -244,8 +247,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.tip,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=sent_amount,
-            balance=post_sender_balance,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
             tx_metadata=str(receiver_user_id),
         )
         logger.debug(
@@ -259,8 +262,8 @@ def process_transfer_instruction(
             transaction_type=TransactionType.tip,
             method=TransactionMethod.receive,
             transaction_created_at=timestamp,
-            change=received_amount,
-            balance=post_receiver_balance,
+            change=Decimal(received_amount),
+            balance=Decimal(post_receiver_balance),
             tx_metadata=str(sender_user_id),
         )
         session.add(audio_tx_received)
