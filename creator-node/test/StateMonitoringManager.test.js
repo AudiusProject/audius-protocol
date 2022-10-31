@@ -55,7 +55,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     nock(discoveryNodeEndpoint).get('/latest/user').reply(200, { data: 0 })
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 1)
     config.set('stateMonitoringQueueRateLimitInterval', 60_000)
-    const { MockStateMonitoringManager } = proxyquire(
+    const { StateMonitoringManager: MockStateMonitoringManager } = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/index',
       {
         '../../../utils': {
@@ -94,7 +94,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     nock('discoveryNodeEndpoint').get('/latest/user').reply(200, { data: 0 })
     config.set('stateMonitoringQueueRateLimitJobsPerInterval', 0)
     config.set('stateMonitoringQueueRateLimitInterval', 60_000)
-    const { MockStateMonitoringManager } = proxyquire(
+    const { StateMonitoringManager: MockStateMonitoringManager } = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/index',
       {
         '../../../config': config
