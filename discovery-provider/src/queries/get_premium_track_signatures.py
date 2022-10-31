@@ -33,6 +33,7 @@ def _get_user_wallet(user_id: int, session: Session):
     return user_wallet[0] if user_wallet else None
 
 
+# Returns premium tracks from given track ids with an nft collection as the premium conditions.
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     premium_tracks = (
         session.query(Track)
@@ -61,6 +62,8 @@ def _get_eth_nft_gated_track_signatures(
     user_eth_wallets = list(
         map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
     )
+
+    ### Handle premium tracks gated by ERC721 nft collections
     erc721_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]
@@ -68,13 +71,17 @@ def _get_eth_nft_gated_track_signatures(
             tracks,
         )
     )
+    # Build a map of ERC721 collection address -> track ids
+    # so that only one chain call will be made for premium tracks
+    # that share the same nft collection gate.
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
         contract_address = Web3.toChecksumAddress(
             track.premium_conditions["nft_collection"]["address"]
         )
         erc721_collection_track_map[contract_address].append(track.track_id)
-
+    # Check ownership of nfts from collections from given contract addresses,
+    # using all user eth wallets, and generate signatures for corresponding tracks.
     for contract_address, track_ids in erc721_collection_track_map.items():
         for wallet in user_eth_wallets:
             try:
@@ -97,6 +104,7 @@ def _get_eth_nft_gated_track_signatures(
                     f"Could not get nft balance for erc721 nft collection {contract_address} and user wallet {wallet}."
                 )
 
+    ### Handle premium tracks gated by ERC1155 nft collections
     erc1155_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]
@@ -104,6 +112,12 @@ def _get_eth_nft_gated_track_signatures(
             tracks,
         )
     )
+    # Build a map of ERC1155 collection address -> track ids
+    # so that only one chain call will be made for premium tracks
+    # that share the same nft collection gate.
+    # Also build a map of ERC1155 collection address -> nft token ids
+    # so that the balanceOf contract function can be used to check
+    # batch ownership of ERC1155 nfts for a given collection.
     erc1155_collection_track_map = defaultdict(list)
     contract_address_token_id_map: Dict[str, Set[int]] = defaultdict(set)
     for track in erc1155_gated_tracks:
@@ -115,7 +129,8 @@ def _get_eth_nft_gated_track_signatures(
         contract_address_token_id_map[contract_address] = contract_address_token_id_map[
             contract_address
         ].union(track_token_id_set)
-
+    # Check ownership of nfts from collections from given contract addresses,
+    # using all user eth wallets, and generate signatures for corresponding tracks.
     for contract_address, track_ids in erc1155_collection_track_map.items():
         for wallet in user_eth_wallets:
             try:
@@ -147,6 +162,7 @@ def _get_eth_nft_gated_track_signatures(
     return track_signature_map
 
 
+# todo: this will be implemented later
 def _get_sol_nft_gated_track_signatures(
     user_wallet: str,
     sol_associated_wallets: List[str],
@@ -155,8 +171,8 @@ def _get_sol_nft_gated_track_signatures(
     return {}
 
 
-# Generates a premium content signature for each of the nft-gated tracks
-# in the map that the given user should have access to.
+# Generates a premium content signature for each of the nft-gated tracks.
+# Return a map of premium track id -> premium content signature.
 def get_nft_gated_premium_track_signatures(
     user_id: int, track_token_id_map: Dict[int, List[str]]
 ):
@@ -206,8 +222,8 @@ def get_nft_gated_premium_track_signatures(
         return result
 
 
-# Generates a premium content signature for each of the tracks
-# in the map that the given user should have access to.
+# Generates a premium content signature for each of the premium tracks.
+# Return a map of premium track id -> premium content signature.
 def get_premium_track_signatures(user_id: int, track_ids: List[int]):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
