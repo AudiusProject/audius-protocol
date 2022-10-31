@@ -3,13 +3,15 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import {
   accountSelectors,
   cacheUsersSelectors,
-  encodeHashId,
+  hlsUtils,
   Genre,
   playerSelectors,
   playerActions,
   queueActions,
   queueSelectors,
-  RepeatMode
+  RepeatMode,
+  FeatureFlags,
+  encodeHashId
 } from '@audius/common'
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
@@ -19,7 +21,9 @@ import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrack'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
@@ -59,6 +63,9 @@ const styles = StyleSheet.create({
 })
 
 export const Audio = () => {
+  const { isEnabled: isStreamMp3Enabled } = useFeatureFlag(
+    FeatureFlags.STREAM_MP3
+  )
   const track = useSelector(getCurrentTrack)
   const index = useSelector(getIndex)
   const queueLength = useSelector(getLength)
@@ -340,12 +347,29 @@ export const Audio = () => {
 
   if (!track || track.is_delete) return null
 
+  const gateways = trackOwner
+    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+        trackOwner.creator_node_endpoint
+      )
+    : []
+
+  const m3u8 = hlsUtils.generateM3U8Variants({
+    segments: track.track_segments,
+    gateways
+  })
+
   let source
   if (offlineTrackUri) {
     source = { uri: offlineTrackUri }
-  } else if (streamingUri) {
+    // TODO: remove feature flag - https://github.com/AudiusProject/audius-client/pull/2147
+  } else if (isStreamMp3Enabled && streamingUri) {
     source = {
       uri: streamingUri
+    }
+  } else if (m3u8) {
+    source = {
+      uri: m3u8,
+      type: 'm3u8'
     }
   }
 
@@ -353,6 +377,7 @@ export const Audio = () => {
     <View style={styles.backgroundVideo}>
       {source && (
         <Video
+          // @ts-ignore: type: m3u8 is actually a valid prop override
           source={source}
           ref={videoRef}
           playInBackground

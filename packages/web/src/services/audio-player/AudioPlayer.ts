@@ -1,3 +1,10 @@
+import { TrackSegment, decodeHashId, hlsUtils } from '@audius/common'
+import Hls from 'hls.js'
+
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+
+const { generateM3U8, generateM3U8Variants } = hlsUtils
+
 declare global {
   interface Window {
     audio: HTMLAudioElement
@@ -14,11 +21,60 @@ const BUFFERING_DELAY_MILLISECONDS = 500
 // by nudging the playhead this many seconds ahead.
 const ON_ERROR_NUDGE_SECONDS = 0.2
 
+// This calculation comes from chrome's audio SourceBuffer max of
+// 12MB. Each segment is ~260KB, so we can only fit ~ 47 segments in memory.
+// Read more: https://github.com/w3c/media-source/issues/172
+const MAX_SEGMENTS = 47
+const AVERAGE_SEGMENT_DURATION = 6 /* seconds */
+const MAX_BUFFER_LENGTH = MAX_SEGMENTS * AVERAGE_SEGMENT_DURATION
+
+const PUBLIC_IPFS_GATEWAY = `http://cloudflare-ipfs.com/ipfs/`
+
 const IS_CHROME_LIKE =
   /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
 
 export enum AudioError {
-  AUDIO = 'AUDIO'
+  AUDIO = 'AUDIO',
+  HLS = 'HLS'
+}
+
+// Custom fragment loader for HLS that utilizes the audius CID resolver.
+// eslint-disable-next-line
+class fLoader extends Hls.DefaultConfig.loader {
+  getFallbacks = () => []
+  getTrackId = () => ''
+  getPremiumContentHeaders = () => ({})
+
+  constructor(config: Hls.LoaderConfig) {
+    super(config)
+    const load = this.load.bind(this)
+    this.load = function (context, config, callbacks) {
+      // @ts-ignore: relurl is indeed on Fragment
+      const segmentUrl = context.frag.relurl
+      if (!segmentUrl.startsWith('blob')) {
+        audiusBackendInstance
+          .fetchCID(
+            segmentUrl,
+            this.getFallbacks(),
+            /* cache */ false,
+            /* asUrl */ true,
+            decodeHashId(this.getTrackId()) ?? undefined,
+            this.getPremiumContentHeaders() ?? undefined
+          )
+          .then((resolved) => {
+            const updatedContext = { ...context, url: resolved }
+            load(updatedContext, config, callbacks)
+          })
+      } else {
+        load(context, config, callbacks)
+      }
+    }
+  }
+}
+
+const HlsConfig = {
+  maxBufferLength: MAX_BUFFER_LENGTH,
+  fLoader
 }
 
 export class AudioPlayer {
@@ -138,7 +194,7 @@ export class AudioPlayer {
   }
 
   load = (
-    streamMp3Url: string,
+    segments: TrackSegment[],
     onEnd: () => void,
     prefetchedSegments: string[] = [],
     gateways: string[] = [],
@@ -151,18 +207,102 @@ export class AudioPlayer {
     },
     forceStreamSrc: string | null = null
   ) => {
-    // TODO: Test to make sure that this doesn't break anything
-    this.stop()
-    const prevVolume = this.audio.volume
-    this.audio = new Audio()
-    this.gainNode = null
-    this.source = null
-    this.audioCtx = null
-    this._initContext(/* shouldSkipAudioContext */ true)
-    this.audio.setAttribute('preload', 'none')
-    this.audio.setAttribute('src', streamMp3Url)
-    this.audio.volume = prevVolume
-    this.audio.onloadedmetadata = () => (this.duration = this.audio.duration)
+    if (forceStreamSrc) {
+      // TODO: Test to make sure that this doesn't break anything
+      this.stop()
+      const prevVolume = this.audio.volume
+      this.audio = new Audio()
+      this.gainNode = null
+      this.source = null
+      this.audioCtx = null
+      this._initContext(/* shouldSkipAudioContext */ true)
+      this.audio.setAttribute('preload', 'none')
+      this.audio.setAttribute('src', forceStreamSrc)
+      this.audio.volume = prevVolume
+      this.audio.onloadedmetadata = () => (this.duration = this.audio.duration)
+    } else {
+      this._initContext()
+      if (Hls.isSupported()) {
+        // Clean up any existing hls.
+        if (this.hls) {
+          this.hls.destroy()
+        }
+        // Hls.js via MediaExtensions
+        const m3u8 = generateM3U8({ segments, prefetchedSegments })
+        // eslint-disable-next-line
+        class creatorFLoader extends fLoader {
+          getFallbacks = () => gateways as never[]
+          getTrackId = () => info.id
+          getPremiumContentHeaders = () => info.premiumContentHeaders
+        }
+        const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
+        this.hls = new Hls(hlsConfig)
+
+        // On load of HLS, reset error rate limiter
+        this.errorRateLimiter = new Set()
+
+        this.hls.on(Hls.Events.ERROR, (event, data) => {
+          // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
+          if (data.fatal) {
+            // Buffer stall errors occur but are rarely fatal even if they claim to be.
+            // This occurs when you play a track, pause it, and then wait a few seconds.
+            // It appears as if we see this despite being able to play through the track.
+            if (data.details === 'bufferStalledError') {
+              return
+            }
+
+            // Only emit an error if we haven't errored on an error with the same "details"
+            if (!this.errorRateLimiter.has(data.details)) {
+              // typecasting here just to prevent having to put HLS types in common
+              this.onError(AudioError.HLS, data as unknown as Event)
+            }
+
+            // Only one "details" of error are allowed per HLS load
+            this.errorRateLimiter.add(data.details)
+
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                // Try to recover network error
+                this.hls!.startLoad()
+                break
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                // Try to recover fatal media errors
+                this.hls!.recoverMediaError()
+                break
+              default:
+                break
+            }
+          }
+        })
+        const m3u8Blob = new Blob([m3u8], {
+          type: 'application/vnd.apple.mpegURL'
+        })
+        const url = URL.createObjectURL(m3u8Blob)
+        this.url = url
+        this.hls.loadSource(this.url)
+        this.hls.attachMedia(this.audio)
+      } else {
+        // Native HLS (ios Safari)
+        const m3u8Gateways =
+          gateways.length > 0 ? [gateways[0]] : [PUBLIC_IPFS_GATEWAY]
+        const m3u8 = generateM3U8Variants({
+          segments,
+          prefetchedSegments,
+          gateways: m3u8Gateways
+        })
+
+        this.audio.src = m3u8
+        this.audio.title =
+          info.title && info.artist
+            ? `${info.title} by ${info.artist}`
+            : 'Audius'
+      }
+    }
+
+    this.duration = segments.reduce(
+      (duration, segment) => duration + parseFloat(segment.duration),
+      0
+    )
 
     // Set audio listeners.
     if (this.endedListener) {
