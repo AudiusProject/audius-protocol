@@ -260,7 +260,7 @@ class UserTrackListenCountsMonthly(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_track_listen_count_route_parser)
-    @ns.marshal_with(user_track_listen_counts_response)
+    # @ns.marshal_with(user_track_listen_counts_response)
     @cache(ttl_sec=5)
     def get(self, id):
         decoded_id = decode_with_abort(id, ns)
