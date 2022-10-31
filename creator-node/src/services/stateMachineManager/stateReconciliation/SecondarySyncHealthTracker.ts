@@ -17,6 +17,7 @@ const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
 const DailyRedisKeyExpirationSec =
   90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
+const RECORD_SYNC_RESULTS = config.get('recordSyncResults')
 const PROCESS_SYNC_RESULTS = config.get('processSyncResults')
 
 export const Outcomes = Object.freeze({
@@ -120,7 +121,9 @@ export async function recordSuccess(
   wallet: string,
   syncType: string
 ) {
-  await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
+  if (RECORD_SYNC_RESULTS) {
+    await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
+  }
 }
 
 export async function recordFailure(
@@ -128,7 +131,9 @@ export async function recordFailure(
   wallet: string,
   syncType: string
 ) {
-  await _recordSyncRequestOutcome(secondary, wallet, syncType, false)
+  if (RECORD_SYNC_RESULTS) {
+    await _recordSyncRequestOutcome(secondary, wallet, syncType, false)
+  }
 }
 
 /**
@@ -140,6 +145,10 @@ export async function getSecondaryUserSyncFailureCountForToday(
   wallet: string,
   syncType: string
 ) {
+  if (!PROCESS_SYNC_RESULTS) {
+    return 0
+  }
+
   const resp = await getSyncRequestOutcomeMetrics({
     secondary,
     wallet,
