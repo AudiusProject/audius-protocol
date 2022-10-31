@@ -63,9 +63,10 @@ export class SyncQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.deleteOldActiveJobs()
+    if (clusterUtils.isThisWorkerInit()) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.deleteOldActiveJobs()
+    }
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
