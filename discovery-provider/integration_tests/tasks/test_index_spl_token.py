@@ -350,7 +350,7 @@ mock_purchase_tx_info = {
 
 def test_parse_memo_instruction():
     memo = parse_memo_instruction(mock_transfer_checked_meta)
-    assert memo == None
+    assert not memo
     memo = parse_memo_instruction(mock_purchase_meta)
     assert memo == "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz"
     vendor = decode_memo_and_extract_vendor(memo)

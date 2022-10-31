@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from decimal import Decimal
-from typing import List, Optional, Set, TypedDict
+from typing import Any, List, Optional, Set, TypedDict
 
 import base58
 from redis import Redis
@@ -97,7 +97,7 @@ def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
     cache_latest_sol_db_tx(redis, latest_sol_spl_token_db_key, latest_tx)
 
 
-def parse_memo_instruction(result):
+def parse_memo_instruction(result: Any) -> str:
     try:
         txs = result["transaction"]
         memo_instruction = next(
@@ -109,26 +109,26 @@ def parse_memo_instruction(result):
             None,
         )
         if not memo_instruction:
-            return None
+            return ""
 
         memo_account = txs["message"]["accountKeys"][MEMO_INSTRUCTION_INDEX]
         if not memo_account or memo_account != PURCHASE_AUDIO_MEMO_PROGRAM:
-            return None
+            return ""
         return memo_instruction["data"]
     except Exception as e:
         logger.error(f"index_spl_token.py | Error parsing memo, {e}", exc_info=True)
         raise e
 
 
-def decode_memo_and_extract_vendor(memo_encoded):
+def decode_memo_and_extract_vendor(memo_encoded: str) -> str:
     try:
         memo = str(base58.b58decode(memo_encoded))
         if not memo or "In-App $AUDIO Purchase:" not in memo:
-            return None
+            return ""
 
         vendor = memo[1:-1].split(":")[1][1:]
         if vendor not in purchase_vendor_map:
-            return None
+            return ""
         return vendor
     except Exception as e:
         logger.error(f"index_spl_token.py | Error decoding memo, {e}", exc_info=True)
