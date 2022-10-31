@@ -461,7 +461,7 @@ const config = convict({
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
     env: 'maxStorageUsedPercent',
-    default: 95
+    default: 97
   },
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
