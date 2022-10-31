@@ -245,6 +245,91 @@ commands:
 
             << parameters.post-gcp-command >>
 
+  run-on-gcp-2:
+    parameters:
+      command:
+        description: The command to run on the gcp instance
+        type: string
+      instance-name: 
+        description: The name of the gcp instance
+        type: string
+        default: ci-job
+      command-name:
+        description: The name of the step to display
+        default: Spin up gcp instance and run command
+        type: string
+      interactive-command:
+        description: The command to run initially on the gcp instance that requires an interactive terminal
+        type: string
+        default: ""
+      post-gcp-command:
+        description: The command to run after exiting the gcp ssh session
+        type: string
+        default: ""
+      fast:
+        description: If A setup will be run with the --fast flag
+        type: boolean
+        default: true
+    steps:
+      - run:
+          name: << parameters.command-name >>
+          # This has to be one large run block because CircleCI doesn't preserve state across run steps
+          command: |
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
+
+            set -x
+
+            # authenticate into gcloud
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+
+            GCLOUD_VM_NAME=<< parameters.instance-name >>-$(date +%s)
+
+            export PROTOCOL_DIR=/home/circleci/project
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
+            npm install --unsafe-perm
+
+            # add IP to firewall
+            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+            gcloud compute firewall-rules create $GCLOUD_VM_NAME --source-ranges "$CIRCLECI_IP" --action allow --rules all
+
+            # run A setup on remote dev box to clone protocol and install the prerequisites for A
+            # A setup ... || true is necessary because exit code returns 141 by default
+            yes | gcloud compute instances create \
+                --machine-type=n2-custom-6-24576 \
+                --boot-disk-size=64G \
+                --boot-disk-type=pd-ssd \
+                --image-project=ci-audius-infra \
+                --image=ci-image-bake-2-latest \
+                $GCLOUD_VM_NAME
+
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+
+            # Run interactive command on remotebox
+            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              << parameters.interactive-command >>
+              exit;
+            EOF
+
+            # Run command on remote box
+            ssh -o "StrictHostKeyChecking no" -o IdentitiesOnly=yes -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              << parameters.command >>
+              exit;
+            EOF
+
+            << parameters.post-gcp-command >>
 
 # global parameters
 parameters:
@@ -442,7 +527,7 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
-      - run-on-gcp:
+      - run-on-gcp-2:
           command-name: Test mad-dog on GCP
           instance-name: mad-dog-test
           command: |
