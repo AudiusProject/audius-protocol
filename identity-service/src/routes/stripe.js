@@ -8,6 +8,7 @@ const config = require('../config')
 const axios = require('axios')
 const axiosHttpAdapter = require('axios/lib/adapters/http')
 const { logger } = require('../logging')
+const { getIP } = require('../utils/antiAbuse')
 
 const createAuthHeader = () => {
   const secretKey = config.get('stripeSecretKey')
@@ -35,7 +36,8 @@ module.exports = function (app) {
         'transaction_details[supported_destination_currencies][]': 'sol',
         'transaction_details[destination_network]': 'solana',
         'transaction_details[destination_currency]': 'sol',
-        'transaction_details[destination_exchange_amount]': amount
+        'transaction_details[destination_exchange_amount]': amount,
+        'customer_ip_address': getIP(req)
       })
 
       try {
