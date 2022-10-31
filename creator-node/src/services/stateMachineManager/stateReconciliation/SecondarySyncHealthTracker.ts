@@ -8,6 +8,7 @@ import type { WalletsToSecondariesMapping } from '../types'
 // eslint-disable-next-line import/no-unresolved
 import { UserSecondarySyncMetricsMap } from '../stateMonitoring/types'
 
+const config = require('../../../config')
 const redisClient = require('../../../redis')
 const { logger } = require('../../../logging')
 
@@ -15,6 +16,8 @@ const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
 
 const DailyRedisKeyExpirationSec =
   90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
+
+const PROCESS_SYNC_RESULTS = config.get('processSyncResults')
 
 export const Outcomes = Object.freeze({
   SUCCESS: 'Success',
@@ -56,30 +59,30 @@ export async function computeUsersSecondarySyncSuccessRatesForToday(
   }
 
   // Retrieve map of all SyncRequestOutcome keys and daily counts for wallets from all secondaries
-  const userSecondarySyncHealthOutcomes =
-    await _batchGetSyncRequestOutcomeMetricsForToday(wallets)
+  if (PROCESS_SYNC_RESULTS) {
+    const userSecondarySyncHealthOutcomes =
+      await _batchGetSyncRequestOutcomeMetricsForToday(wallets)
 
-  // Aggregate all daily SyncRequest outcome counts by secondary
-  for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
-    count = parseInt(count)
-    const { wallet, secondary, outcome } = _parseRedisKeyIntoComponents(key)
-    const secondarySyncMetrics = secondarySyncMetricsMap[wallet]
+    // Aggregate all daily SyncRequest outcome counts by secondary
+    _aggregateSyncSuccessAndFailureCountBySecondaryPerWallet(
+      userSecondarySyncHealthOutcomes,
+      secondarySyncMetricsMap
+    )
 
-    if (!(secondary in secondarySyncMetrics)) {
-      // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
-      continue
-    }
-
-    if (outcome === Outcomes.SUCCESS) {
-      secondarySyncMetrics[secondary].successCount += count
-    } else if (outcome === Outcomes.FAILURE) {
-      secondarySyncMetrics[secondary].failureCount += count
-    }
-    secondarySyncMetricsMap[wallet] = secondarySyncMetrics
-    // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
+    // For each secondary, compute and store successRate
+    _aggregateSyncSuccessRateBySecondaryPerWallet(
+      wallets,
+      secondarySyncMetricsMap
+    )
   }
 
-  // For each secondary, compute and store successRate
+  return secondarySyncMetricsMap
+}
+
+function _aggregateSyncSuccessRateBySecondaryPerWallet(
+  wallets: string[],
+  secondarySyncMetricsMap: UserSecondarySyncMetricsMap
+) {
   for (const wallet of wallets) {
     Object.keys(secondarySyncMetricsMap[wallet]).forEach((secondary) => {
       const { successCount, failureCount } =
@@ -88,8 +91,28 @@ export async function computeUsersSecondarySyncSuccessRatesForToday(
         failureCount === 0 ? 1 : successCount / (successCount + failureCount)
     })
   }
+}
 
-  return secondarySyncMetricsMap
+function _aggregateSyncSuccessAndFailureCountBySecondaryPerWallet(
+  userSecondarySyncHealthOutcomes: { [key: string]: any },
+  secondarySyncMetricsMap: UserSecondarySyncMetricsMap
+) {
+  for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
+    count = parseInt(count)
+    const { wallet, secondary, outcome } = _parseRedisKeyIntoComponents(key)
+    const secondarySyncMetrics = secondarySyncMetricsMap[wallet]
+    if (!(secondary in secondarySyncMetrics)) {
+      // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
+      continue
+    }
+    if (outcome === Outcomes.SUCCESS) {
+      secondarySyncMetrics[secondary].successCount += count
+    } else if (outcome === Outcomes.FAILURE) {
+      secondarySyncMetrics[secondary].failureCount += count
+    }
+    secondarySyncMetricsMap[wallet] = secondarySyncMetrics
+    // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
+  }
 }
 
 export async function recordSuccess(
