@@ -826,7 +826,7 @@ const config = convict({
     format: String,
     env: 'reconfigSPIdBlacklistString',
     default:
-      '33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
+      '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   }
   /**
    * unsupported options at the moment
