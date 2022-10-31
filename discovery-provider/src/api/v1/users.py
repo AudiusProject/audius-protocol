@@ -275,11 +275,18 @@ class UserTrackListenCountsMonthly(Resource):
                 "end_time": end_time,
             }
         )
+        print("\n\n\n")
+        print("user listen counts")
+        print(user_listen_counts)
+        print("\n\n\n")
 
         formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
             user_listen_counts
         )
-
+        print("\n\n\n")
+        print("formatted user listen counts")
+        print(formatted_user_listen_counts)
+        print("\n\n\n")
         return success_response(formatted_user_listen_counts)
 
 
