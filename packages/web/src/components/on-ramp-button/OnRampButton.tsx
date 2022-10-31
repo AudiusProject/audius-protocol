@@ -13,12 +13,22 @@ const messages = {
 }
 
 export const OnRampButton = (
-  props: Omit<ButtonProps, 'text'> & { provider: OnRampProvider }
+  props: Omit<ButtonProps, 'text'> & {
+    provider: OnRampProvider
+    buttonPrefix?: string
+  }
 ) => {
-  const { className, textClassName, provider, ...otherProps } = props
+  const {
+    buttonPrefix: buttonPrefixProp,
+    className,
+    textClassName,
+    provider,
+    ...otherProps
+  } = props
   const isStripe = provider === OnRampProvider.STRIPE
   const isCoinbase = provider === OnRampProvider.COINBASE
-  const buttonPrefix = isStripe ? messages.buyUsing : messages.buyWith
+  const buttonPrefix =
+    buttonPrefixProp || (isStripe ? messages.buyUsing : messages.buyWith)
 
   return (
     <Button
@@ -27,9 +37,17 @@ export const OnRampButton = (
         <>
           <span>{buttonPrefix}</span>
           {isStripe ? (
-            <LogoStripeLink className={styles.logo} width={145} height={32} />
+            <LogoStripeLink
+              className={styles.logo}
+              width={'6em'}
+              height={'1.33em'}
+            />
           ) : (
-            <CoinbaseLogo className={styles.logo} width={97} height={18} />
+            <CoinbaseLogo
+              className={styles.logo}
+              width={'4em'}
+              height={'0.75em'}
+            />
           )}
         </>
       }

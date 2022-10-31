@@ -25,10 +25,13 @@
 }
 
 /** Hover **/
-.button:hover:enabled {
-  transform: none;
+.button:hover:enabled,
+.button:active:enabled {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
     var(--brandColor) !important;
+}
+.button.button:active:enabled {
+  transform: scale3d(0.99, 0.99, 0.99);
 }
 .button:hover:enabled .textClassName {
   color: var(--static-white);
