@@ -120,6 +120,8 @@ class StateMonitoringManager {
 
   /**
    * Enqueues a job that starts at a random user.
+   * Bull's onError doesn't pass in the previous job's info so there's no way to know where it left off.
+   * Otherwise this should start where the failed job left off
    * @param monitoringQueue the queue to re-add the job to
    */
   async recoverFromJobFailure(monitoringQueue, discoveryNodeEndpoint) {

@@ -134,12 +134,14 @@ class StateMachineManager {
         // Recurring queues need to re-enqueue jobs when they fail/error
         else if (queueName === QUEUE_NAMES.MONITOR_STATE) {
           queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             stateMonitoringManager.recoverFromJobFailure(
               monitorStateQueue,
               audiusLibs.discoveryProvider.discoveryProviderEndpoint
             )
           })
           queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             stateMonitoringManager.recoverFromJobFailure(
               monitorStateQueue,
               audiusLibs.discoveryProvider.discoveryProviderEndpoint
