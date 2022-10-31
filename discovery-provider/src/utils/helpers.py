@@ -16,7 +16,8 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
-
+from src.utils import redis_connection
+from src.utils.redis_constants import final_poa_block_redis_key
 from . import multihash
 
 
@@ -519,3 +520,28 @@ def get_solana_tx_owner(meta, idx) -> str:
         ),
         "",
     )
+
+def get_final_poa_block(shared_config):
+    # get final poa block from identity and cache result
+    redis = redis_connection.get_redis()
+    cached_final_poa_block = redis_get_or_restore(redis, final_poa_block_redis_key)
+
+    if cached_final_poa_block:
+        return cached_final_poa_block
+
+    identity_endpoint = (
+        f"{shared_config['discprov']['identity_service_url']}/health_check/relay"
+    )
+    response = requests.get(identity_endpoint, timeout=1)
+    response.raise_for_status()
+    response_json = response.json()
+    
+    if "error" in response_json:
+        response_json = response_json["error"]
+
+    final_poa_block = response_json["blockchain"].get("finalPOABlock", None)
+    redis_set_and_dump(
+        redis, final_poa_block_redis_key, final_poa_block
+    )
+
+    return final_poa_block

@@ -58,6 +58,7 @@ from src.utils.redis_constants import (
 from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
 from web3.datastructures import AttributeDict
+from src.utils import helpers, web3_provider
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -958,9 +959,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
 
-    if update_task.shared_config["discprov"]["env"] != "stage":
-        return
-
     # ask identity did you switch relay
     # start indexing from the start block we've configured (stage/prod may be different)
 
@@ -968,15 +966,23 @@ def update_task(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    web3 = update_task.web3
+    web3 = web3_provider.get_web3()
     redis = update_task.redis
 
+    latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
+    final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    if latest_indexed_block < final_poa_block:
+        # not ready for aud chain
+        return
+
     # Initialize contracts and attach to the task singleton
-    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
-        "abi"
-    ]
+    entity_manager_address = web3.toChecksumAddress(
+        update_task.shared_config["contracts"]["nethermind_entity_manager_address"]
+    )
+
+    entity_manager_contract_abi = helpers.load_abi_values()["EntityManager"]["abi"]
     entity_manager_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[ENTITY_MANAGER],
+        address=entity_manager_address,
         abi=entity_manager_contract_abi,
     )
 

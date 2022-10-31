@@ -184,7 +184,8 @@ module.exports = function (app) {
           numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
           failedTransactionHashes: failureTxs,
           startBlock: startBlockNumber,
-          endBlock: endBlockNumber
+          endBlock: endBlockNumber,
+          finalPOABlock: config.get('finalPOABlock')
         },
         redis: {
           attemptedTxsCount: attemptedTxsInRedis.length,
