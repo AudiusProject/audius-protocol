@@ -4,7 +4,8 @@ const {
   handleResponse,
   successResponse,
   handleResponseWithHeartbeat,
-  errorResponseServerError
+  errorResponseServerError,
+  errorResponseBadRequest
 } = require('../../apiHelpers')
 const {
   healthCheck,
@@ -197,6 +198,24 @@ const healthCheckVerboseController = async (req) => {
   })
 }
 
+/**
+ * Controller for `health_check/network` route
+ *
+ * Call a discovery node to make sure network egress and ingress is correct
+ */
+const healthCheckNetworkController = async (req) => {
+  const { libs } = serviceRegistry
+  const userId = parseInt(req.query.userId, 10)
+
+  if (!userId) return errorResponseBadRequest('Please pass in valid userId')
+
+  const user = (await libs.User.getUsers(1, 0, [userId]))[0]
+
+  return successResponse({
+    user
+  })
+}
+
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
@@ -214,5 +233,10 @@ router.get(
 router.get(
   '/health_check/verbose',
   handleResponse(healthCheckVerboseController)
+)
+
+router.get(
+  '/health_check/network',
+  handleResponse(healthCheckNetworkController)
 )
 module.exports = router
