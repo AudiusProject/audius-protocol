@@ -1,3 +1,4 @@
+import { TrackSegment } from '../models'
 import { Nullable } from '../utils'
 
 export type AudioInfo = {
@@ -16,7 +17,7 @@ export enum AudioError {
 export type AudioPlayer = {
   audio: HTMLAudioElement
   load: (
-    streamMp3Url: string,
+    segments: TrackSegment[],
     onEnd: () => void,
     prefetchedSegments: string[],
     gateways: string[],
