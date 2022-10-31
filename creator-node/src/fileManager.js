@@ -130,8 +130,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 }) {
   // First try to fetch from other cnode gateways if user has non-empty replica set.
   decisionTree.recordStage({
-    name: 'About to fetch content via gateways',
-    data: { gatewayContentRoutes }
+    name: 'About to fetch content via gateways'
   })
 
   // Note - Requests are intentionally not parallel to minimize additional load on gateways
@@ -195,8 +194,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
         logger,
         log: false,
         options: {
-          retries: numRetries,
-          minTimeout: 3000
+          retries: numRetries
         }
       })
 
@@ -371,12 +369,11 @@ async function saveFileForMultihashToFS(
       name: 'About to start running saveFileForMultihashToFS()',
       data: {
         multihash,
-        targetGateways,
-        gatewayContentRoutes,
         expectedStoragePath,
         parsedStoragePath
       },
-      log: true
+      log: true,
+      logLevel: 'debug'
     })
 
     // Create dir at expected storage path in which to store retrieved data
@@ -419,8 +416,7 @@ async function saveFileForMultihashToFS(
           }/${fileNameForImage}`
       )
       decisionTree.recordStage({
-        name: 'Updated gatewayUrlsMapped',
-        data: { gatewayContentRoutes }
+        name: 'Updated gatewayUrlsMapped'
       })
     }
 
@@ -458,7 +454,7 @@ async function saveFileForMultihashToFS(
 
     return e
   } finally {
-    decisionTree.printTree()
+    decisionTree.printTree({ logLevel: 'debug' })
   }
 
   // If no error, return nothing
@@ -587,7 +583,7 @@ const trackDiskStorage = multer.diskStorage({
       req.fileNameNoExtension = fileName
       req.fileName = fileName + fileExtension
 
-      req.logger.info(
+      req.logger.debug(
         `Created track disk storage: ${req.fileDir}, ${req.fileName}`
       )
       cb(null, fileDir)
@@ -651,7 +647,7 @@ function checkFileType(logger, { fileName, fileMimeType }) {
     ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) &&
     AUDIO_MIME_TYPE_REGEX.test(fileMimeType)
   ) {
-    logger.info(
+    logger.debug(
       `fileManager#checkFileType - FileName: ${fileName}, Filetype: ${fileExtension}, Mimetype: ${fileMimeType}`
     )
   } else {

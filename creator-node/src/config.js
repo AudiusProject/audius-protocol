@@ -496,11 +496,29 @@ const config = convict({
 
   /** sync / snapback configs */
 
-  syncForceWipeEnabled: {
+  syncForceWipeDBEnabled: {
     doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
     format: Boolean,
-    env: 'syncForceWipeEnabled',
+    env: 'syncForceWipeDBEnabled',
     default: true
+  },
+  syncForceWipeDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk after DB deletion during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDiskEnabled',
+    default: false
+  },
+  backgroundDiskCleanupCheckEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
+    format: Boolean,
+    env: 'backgroundDiskCleanupCheckEnabled',
+    default: true
+  },
+  backgroundDiskCleanupDeleteEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
+    format: Boolean,
+    env: 'backgroundDiskCleanupDeleteEnabled',
+    default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -536,7 +554,7 @@ const config = convict({
     doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
     format: 'nat',
     env: 'recoverOrphanedDataNumUsersPerBatch',
-    default: 2
+    default: 5
   },
   recoverOrphanedDataDelayMsBetweenBatches: {
     doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
@@ -783,7 +801,7 @@ const config = convict({
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
-    default: false
+    default: true
   },
   findCIDInNetworkEnabled: {
     doc: 'enable findCIDInNetwork lookups',

@@ -138,8 +138,6 @@ def get_latest_slot(db):
             latest_slot = highest_slot_query[0]
 
     # Return None if not yet cached
-
-    logger.info(f"index_spl_token.py | returning {latest_slot} for highest slot")
     return latest_slot
 
 
@@ -353,7 +351,7 @@ def process_spl_token_tx(
         else:
             # handle initial case where no there is no stored latest processed slot and start from current
             if latest_processed_slot is None:
-                logger.info("index_spl_token.py | setting from none")
+                logger.debug("index_spl_token.py | setting from none")
                 transaction_signature_batch = transactions_array
                 intersection_found = True
             else:
@@ -394,7 +392,6 @@ def process_spl_token_tx(
         page_count = page_count + 1
 
     transaction_signatures.reverse()
-    logger.info("index_spl_token.py | intersection found")
     totals = {"user_ids": 0, "root_accts": 0, "token_accts": 0}
     solana_logger.end_time("fetch_batches")
     solana_logger.start_time("parse_batches")
@@ -448,8 +445,6 @@ def index_spl_token(self):
         if have_lock:
             logger.info("index_spl_token.py | Acquired lock")
             process_spl_token_tx(solana_client_manager, db, redis)
-        # else:
-        #     logger.info("index_spl_token.py | Failed to acquire lock")
     except Exception as e:
         logger.error("index_spl_token.py | Fatal error in main loop", exc_info=True)
         raise e

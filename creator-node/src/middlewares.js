@@ -187,7 +187,7 @@ async function ensurePrimaryMiddleware(req, res, next) {
     replicaSetIdsToEndpointsMapping.secondary2
   ]
 
-  req.logger.info(
+  req.logger.debug(
     `${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${
       req.session.creatorNodeEndpoints
     }. nodeIsPrimary: ${req.session.nodeIsPrimary}`

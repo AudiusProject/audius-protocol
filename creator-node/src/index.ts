@@ -20,7 +20,10 @@ import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
-import DiskManager from './diskManager'
+import {
+  emptyTmpTrackUploadArtifacts,
+  sweepSubdirectoriesInFiles
+} from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
 const redisClient = require('./redis')
@@ -111,9 +114,11 @@ const startAppForPrimary = async () => {
   await setupDbAndRedis()
 
   const startTime = Date.now()
-  await DiskManager.emptyTmpTrackUploadArtifacts()
+  const size = await emptyTmpTrackUploadArtifacts()
   logger.info(
-    `old tmp track artifacts deleted : ${(Date.now() - startTime) / 1000}sec`
+    `old tmp track artifacts deleted : ${size} : ${
+      (Date.now() - startTime) / 1000
+    }sec`
   )
 
   // Don't await - run in background. Remove after v0.3.69
@@ -172,6 +177,14 @@ const startAppForPrimary = async () => {
       }
     }
   })
+
+  // do not await this, this should just run in background for now
+  // wait one minute before starting this because it might cause init to degrade
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
+    setTimeout(() => {
+      sweepSubdirectoriesInFiles()
+    }, 60_000)
+  }
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry

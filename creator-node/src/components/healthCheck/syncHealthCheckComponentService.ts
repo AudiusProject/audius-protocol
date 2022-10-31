@@ -1,14 +1,16 @@
-const getJobInfo = (job) => ({
+import type { Job } from 'bullmq'
+
+const getJobInfo = (job: Job) => ({
   id: job.id,
   secondary: job.data.syncRequestParameters.baseURL,
   wallet: job.data.syncRequestParameters.data.wallet[0]
 })
 
 const makeResponse = (
-  manualWaitingJobs,
-  manualActiveJobs,
-  recurringWaitingJobs,
-  recurringActiveJobs
+  manualWaitingJobs: Job[],
+  manualActiveJobs: Job[],
+  recurringWaitingJobs: Job[],
+  recurringActiveJobs: Job[]
 ) => ({
   manualWaiting: manualWaitingJobs.map(getJobInfo),
   manualActive: manualActiveJobs.map(getJobInfo),
@@ -29,7 +31,7 @@ const makeResponse = (
  *  recurringWaitingCount: number
  * }
  */
-const syncHealthCheck = async ({ snapbackSM }) => {
+export const syncHealthCheck = async ({ snapbackSM }: { snapbackSM: any }) => {
   const jobs = await snapbackSM.getSyncQueueJobs()
   return makeResponse(
     jobs.manualWaiting,
@@ -38,5 +40,3 @@ const syncHealthCheck = async ({ snapbackSM }) => {
     jobs.recurringActive
   )
 }
-
-module.exports = { syncHealthCheck }

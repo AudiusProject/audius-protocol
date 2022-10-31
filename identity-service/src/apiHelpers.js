@@ -26,13 +26,13 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   })
   if (resp.statusCode === 200) {
     if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
+      logger.debug('Success')
     }
   } else {
     logger = logger.child({
       errorMessage: resp.object.error
     })
-    logger.info('Error processing request:', resp.object.error)
+    logger.error('Error processing request:', resp.object.error)
   }
   res.status(resp.statusCode).send(resp.object)
 })

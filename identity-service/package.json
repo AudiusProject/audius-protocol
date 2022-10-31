@@ -86,7 +86,8 @@
     "umzug": "^2.2.0",
     "uuid": "^3.3.2",
     "web-push": "^3.4.3",
-    "web3": "^1.2.7"
+    "web3": "^1.2.7",
+    "web3-eth-accounts": "^1.2.7"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.0",

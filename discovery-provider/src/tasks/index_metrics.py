@@ -171,7 +171,7 @@ def get_metrics(endpoint, start_time):
         route_metrics_endpoint = (
             f"{endpoint}/v1/metrics/routes/cached?start_time={start_time}"
         )
-        logger.info(f"route metrics request to: {route_metrics_endpoint}")
+        logger.debug(f"route metrics request to: {route_metrics_endpoint}")
         route_metrics_response = requests.get(route_metrics_endpoint, timeout=10)
         if route_metrics_response.status_code != 200:
             raise Exception(
@@ -182,7 +182,7 @@ def get_metrics(endpoint, start_time):
         app_metrics_endpoint = (
             f"{endpoint}/v1/metrics/apps/cached?start_time={start_time}"
         )
-        logger.info(f"app metrics request to: {app_metrics_endpoint}")
+        logger.debug(f"app metrics request to: {app_metrics_endpoint}")
         app_metrics_response = requests.get(app_metrics_endpoint, timeout=10)
         if app_metrics_response.status_code != 200:
             raise Exception(
@@ -266,7 +266,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         start_time = int(start_time_obj.timestamp())
         new_route_metrics, new_app_metrics = get_metrics(node, start_time)
 
-        logger.info(
+        logger.debug(
             f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})"
         )
 
@@ -293,13 +293,13 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         db, end_time, summed_unique_daily_count, summed_unique_monthly_count
     )
 
-    logger.info(f"visited node timestamps: {visited_node_timestamps}")
+    logger.debug(f"visited node timestamps: {visited_node_timestamps}")
 
 
 def get_historical_metrics(node):
     try:
         endpoint = f"{node}/v1/metrics/aggregates/historical"
-        logger.info(f"historical metrics request to: {endpoint}")
+        logger.debug(f"historical metrics request to: {endpoint}")
         response = requests.get(endpoint, timeout=10)
         if response.status_code != 200:
             raise Exception(
@@ -368,7 +368,7 @@ def synchronize_all_node_metrics(self, db):
     all_other_nodes = get_all_other_nodes()[0]
     for node in all_other_nodes:
         historical_metrics = get_historical_metrics(node)
-        logger.info(f"got historical metrics from {node}: {historical_metrics}")
+        logger.debug(f"got historical metrics from {node}: {historical_metrics}")
         if historical_metrics:
             update_route_metrics_count(
                 daily_route_metrics, historical_metrics["routes"]["daily"]

@@ -37,6 +37,10 @@ class SkippedCIDsRetryQueue {
     })
   }
 
+  logDebug(msg) {
+    logger.debug(`${LogPrefix} ${msg}`)
+  }
+
   logInfo(msg) {
     logger.info(`${LogPrefix} ${msg}`)
   }
@@ -81,7 +85,7 @@ class SkippedCIDsRetryQueue {
 
       // Add first job to queue
       await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
-      this.logInfo(`Successfully initialized and enqueued initial job.`)
+      this.logDebug(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
       this.logError(`Failed to start`)
     }

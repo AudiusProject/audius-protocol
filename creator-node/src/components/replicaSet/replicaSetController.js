@@ -239,11 +239,15 @@ const mergePrimaryAndSecondaryController = async (req, _res) => {
     }
   }
 
-  await recurringSyncQueue.add('recurring-sync', {
-    syncType,
-    syncMode,
-    syncRequestParameters
-  })
+  await recurringSyncQueue.add(
+    'recurring-sync',
+    {
+      syncType,
+      syncMode,
+      syncRequestParameters
+    },
+    { lifo: !!forceWipe }
+  )
 
   return successResponse()
 }
@@ -316,7 +320,13 @@ router.get(
 )
 router.post(
   '/sync',
-  ensureStorageMiddleware,
+  // Force wipe syncs will free up storage space so we want to perform them regardless of current usage
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  async (req, res, next) => {
+    return req.body?.forceWipe
+      ? next()
+      : ensureStorageMiddleware(req, res, next)
+  },
   handleResponse(syncRouteController)
 )
 router.post(

@@ -184,30 +184,6 @@ def get_dn_sp_id_key(id):
     return f"sp:dn:id:{id}"
 
 
-def remove_cached_user_ids(redis, user_ids):
-    try:
-        user_keys = list(map(get_user_id_cache_key, user_ids))
-        redis.delete(*user_keys)
-    except Exception as e:
-        logger.error("Unable to remove cached users: %s", e, exc_info=True)
-
-
-def remove_cached_track_ids(redis, track_ids):
-    try:
-        track_keys = list(map(get_track_id_cache_key, track_ids))
-        redis.delete(*track_keys)
-    except Exception as e:
-        logger.error("Unable to remove cached tracks: %s", e, exc_info=True)
-
-
-def remove_cached_playlist_ids(redis, playlist_ids):
-    try:
-        playlist_keys = list(map(get_playlist_id_cache_key, playlist_ids))
-        redis.delete(*playlist_keys)
-    except Exception as e:
-        logger.error("Unable to remove cached playlists: %s", e, exc_info=True)
-
-
 def get_trending_cache_key(request_items, request_path):
     request_items.pop("limit", None)
     request_items.pop("offset", None)

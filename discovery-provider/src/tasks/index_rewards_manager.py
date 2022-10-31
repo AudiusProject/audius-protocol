@@ -230,7 +230,7 @@ def process_batch_sol_reward_manager_txs(
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
-        logger.error(f"index_reward_manager | {reward_manager_txs}")
+        logger.info(f"index_reward_manager | {reward_manager_txs}")
         eth_recipients = [
             tx["transfer_instruction"]["eth_recipient"]
             for tx in reward_manager_txs
@@ -399,7 +399,7 @@ def get_transaction_signatures(
                 for tx_info in transactions_array:
                     tx_sig = tx_info["signature"]
                     tx_slot = tx_info["slot"]
-                    logger.info(
+                    logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
                     if tx_info["slot"] > latest_processed_slot:
