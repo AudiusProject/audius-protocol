@@ -11,6 +11,7 @@ from src.premium_content.premium_content_access_checker import (
 from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.utils import db_session, web3_provider
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,6 @@ def _get_nft_gated_tracks(track_ids: List[int], session: Session):
 
 
 def _get_eth_nft_gated_track_signatures(
-    user_id: int,
     user_wallet: str,
     eth_associated_wallets: List[str],
     tracks: List[Track],
@@ -58,7 +58,9 @@ def _get_eth_nft_gated_track_signatures(
 ):
     track_signature_map = {}
 
-    user_eth_wallets = eth_associated_wallets + [user_wallet]
+    user_eth_wallets = list(
+        map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
+    )
     erc721_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]
@@ -68,7 +70,9 @@ def _get_eth_nft_gated_track_signatures(
     )
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
-        contract_address = track.premium_conditions["nft_collection"]["address"]
+        contract_address = Web3.toChecksumAddress(
+            track.premium_conditions["nft_collection"]["address"]
+        )
         erc721_collection_track_map[contract_address].append(track.track_id)
 
     for contract_address, track_ids in erc721_collection_track_map.items():
@@ -101,16 +105,16 @@ def _get_eth_nft_gated_track_signatures(
         )
     )
     erc1155_collection_track_map = defaultdict(list)
-    contract_address_token_id_map: Dict[str, Set[str]] = {}
+    contract_address_token_id_map: Dict[str, Set[int]] = defaultdict(set)
     for track in erc1155_gated_tracks:
-        contract_address = track.premium_conditions["nft_collection"]["address"]
+        contract_address = Web3.toChecksumAddress(
+            track.premium_conditions["nft_collection"]["address"]
+        )
         erc1155_collection_track_map[contract_address].append(track.track_id)
+        track_token_id_set = set(map(int, track_token_id_map[track.track_id]))
         contract_address_token_id_map[contract_address] = contract_address_token_id_map[
             contract_address
-        ].union(set(track_token_id_map[track.track_id]))
-
-    for track_id, token_ids in track_token_id_map.items():
-        pass
+        ].union(track_token_id_set)
 
     for contract_address, track_ids in erc1155_collection_track_map.items():
         for wallet in user_eth_wallets:
@@ -126,7 +130,7 @@ def _get_eth_nft_gated_track_signatures(
                     filter(lambda nft_balance: int(nft_balance), nft_balances)
                 )
                 if positive_nft_balances:
-                    for track_id in erc721_collection_track_map[contract_address]:
+                    for track_id in erc1155_collection_track_map[contract_address]:
                         track_signature_map[track_id] = get_premium_content_signature(
                             {
                                 "id": track_id,
@@ -144,7 +148,6 @@ def _get_eth_nft_gated_track_signatures(
 
 
 def _get_sol_nft_gated_track_signatures(
-    user_id: int,
     user_wallet: str,
     sol_associated_wallets: List[str],
     tracks: List[Track],
@@ -183,14 +186,12 @@ def get_nft_gated_premium_track_signatures(
             )
         )
         eth_nft_gated_track_signatures = _get_eth_nft_gated_track_signatures(
-            user_id=user_id,
             user_wallet=user_wallet,
             eth_associated_wallets=associated_wallets["eth"],
             tracks=eth_nft_gated_tracks,
             track_token_id_map=track_token_id_map,
         )
         sol_nft_gated_track_signatures = _get_sol_nft_gated_track_signatures(
-            user_id=user_id,
             user_wallet=user_wallet,
             sol_associated_wallets=associated_wallets["sol"],
             tracks=sol_nft_gated_tracks,

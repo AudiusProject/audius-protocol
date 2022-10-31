@@ -67,7 +67,6 @@ from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
-from .models.tracks import premium_content_signature
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
 
@@ -1204,9 +1203,6 @@ track_signatures_parser = reqparse.RequestParser(argument_class=DescriptiveArgum
 track_signatures_parser.add_argument(
     "track_ids", description="The premium track ids and user's respective nft token ids"
 )
-track_signatures = make_response(
-    "track_signatures", full_ns, fields.List(fields.Nested(premium_content_signature))
-)
 
 
 @full_ns.route("/<string:user_id>/signatures")
@@ -1225,7 +1221,6 @@ class NFTGatedPremiumTrackSignatures(Resource):
         },
     )
     @full_ns.expect(track_signatures_parser)
-    @full_ns.marshal_with(track_signatures)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
