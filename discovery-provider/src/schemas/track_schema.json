@@ -341,18 +341,89 @@
             "title": "CID"
         },
         "PremiumConditions": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/PremiumConditionsNFTCollection"
+                },
+                {
+                    "$ref": "#/definitions/PremiumConditionsFollowUserId"
+                }
+            ],
+            "title": "PremiumConditions"
+        },
+        "PremiumConditionsNFTCollection": {
+            "type": "object",
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/PremiumConditionsEthNFTCollection"
+                },
+                {
+                    "$ref": "#/definitions/PremiumConditionsSolNFTCollection"
+                }
+            ],
+            "title": "PremiumConditionsNFTCollection"
+        },
+        "PremiumConditionsEthNFTCollection": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "nft_collection": {
+                "chain": {
+                    "type": "string",
+                    "const": "eth"
+                },
+                "address": {
                     "type": "string"
                 },
+                "standard": {
+                    "enum": [
+                        "ERC721",
+                        "ERC1155"
+                    ]
+                }
+            },
+            "required": [
+                "chain",
+                "address",
+                "standard"
+            ],
+            "title": "PremiumConditionsEthNFTCollection"
+        },
+        "PremiumConditionsSolNFTCollection": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "chain": {
+                    "type": "string",
+                    "const": "sol"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "chain",
+                "name"
+            ],
+            "title": "PremiumConditionsSolNFTCollection"
+        },
+        "PremiumConditionsFollowUserId": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
                 "follow_user_id": {
                     "type": "number"
                 }
             },
-            "required": [],
-            "title": "PremiumConditions"
+            "required": [
+                "follow_user_id"
+            ],
+            "title": "PremiumConditionsFollowUserId"
         }
     }
 }
