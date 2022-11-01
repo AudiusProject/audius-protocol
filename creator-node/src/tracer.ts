@@ -104,7 +104,10 @@ export const setupTracing = () => {
           record['resource.service.spid'] = SPID
           record['resource.service.endpoint'] = ENDPOINT
 
-          span.addEvent(record.msg, record)
+          const logLevel = record.logLevel || 'debug'
+          if (logLevel !== 'debug') {
+            span.addEvent(record.msg, record)
+          }
         }
       })
     ]
