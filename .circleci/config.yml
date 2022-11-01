@@ -159,10 +159,10 @@ commands:
             echo "Continue on odd week? << parameters.odd_week >>"
             if [ $(($week % 2)) == 0 ]; then
                 echo "Even week"
-                << parameters.odd_week >> && exit 1
+                $(<< parameters.odd_week >>) && exit 1
             else
                 echo "Odd week"
-                << parameters.odd_week >> || exit 1
+                $(<< parameters.odd_week >>) || exit 1
             fi
 
   run-on-gcp:
