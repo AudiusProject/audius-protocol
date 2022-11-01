@@ -61,7 +61,7 @@ export async function getApp(
 
 export async function getServiceRegistryMock(libsClient, blacklistManager) {
   const syncQueue = new SyncQueue()
-  await syncQueue.init()
+  await syncQueue.init(nodeConfig, redisClient)
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
