@@ -27,24 +27,24 @@ const messages = {
 const { getTransactionDetails } = transactionDetailsSelectors
 const { setModalClosedAction: setOnTransactionDetailsModalClosedAction } =
   transactionDetailsActions
-const { getOnSuccessAction } = buyAudioSelectors
+const { getOnSuccess } = buyAudioSelectors
 const { setVisibility } = modalsActions
 
 export const SuccessPage = () => {
   const dispatch = useDispatch()
   const transactionDetails = useSelector(getTransactionDetails)
-  const onSuccessAction = useSelector(getOnSuccessAction)
+  const onSuccess = useSelector(getOnSuccess)
   const [, setModalVisibility] = useModalState('BuyAudio')
   const [, setTransactionDetailsModalVisibility] =
     useModalState('TransactionDetails')
 
   const handleDoneClicked = useCallback(() => {
-    if (onSuccessAction) {
-      dispatch(onSuccessAction)
+    if (onSuccess?.action) {
+      dispatch(onSuccess.action)
       dispatch(setOnTransactionDetailsModalClosedAction())
     }
     setModalVisibility(false)
-  }, [dispatch, setModalVisibility, onSuccessAction])
+  }, [dispatch, setModalVisibility, onSuccess])
 
   const handleReviewTransactionClicked = useCallback(() => {
     dispatch(
@@ -84,7 +84,7 @@ export const SuccessPage = () => {
         </div>
       </div>
       <Button
-        text={messages.done}
+        text={onSuccess?.message ?? messages.done}
         type={ButtonType.PRIMARY_ALT}
         onClick={handleDoneClicked}
       />

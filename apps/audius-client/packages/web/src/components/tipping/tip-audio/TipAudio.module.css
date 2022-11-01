@@ -76,7 +76,7 @@
   padding: 0 8px;
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
-  color: var(--white);
+  color: var(--static-white);
   background: linear-gradient(
     315deg,
     var(--page-header-gradient-color-1) 0%,
