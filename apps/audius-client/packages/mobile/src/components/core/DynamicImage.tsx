@@ -157,7 +157,7 @@ export const DynamicImage = memo(function DynamicImage({
 
   return (
     <Animated.View
-      pointerEvents='none'
+      pointerEvents={children ? undefined : 'none'}
       style={[
         stylesProp?.root,
         style,

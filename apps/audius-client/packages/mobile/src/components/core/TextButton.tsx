@@ -62,7 +62,7 @@ export const TextButton = (props: TextButtonProps) => {
     title,
     variant,
     icon: Icon,
-    iconPosition,
+    iconPosition = 'left',
     style,
     disabled,
     showDisabled = true,

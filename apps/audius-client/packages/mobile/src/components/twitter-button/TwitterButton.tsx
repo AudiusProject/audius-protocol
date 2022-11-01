@@ -14,6 +14,7 @@ import { Button, useOnOpenLink } from 'app/components/core'
 import type { make } from 'app/services/analytics'
 import { track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { getTwitterLink } from 'app/utils/twitter'
 const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
@@ -51,7 +52,8 @@ export type TwitterButtonProps = Partial<ButtonProps> &
   (StaticTwitterProps | DynamicTwitterProps)
 
 export const TwitterButton = (props: TwitterButtonProps) => {
-  const { url = null, style, ...other } = props
+  const { url = null, style, IconProps, ...other } = props
+  const { size } = other
   const styles = useStyles()
   const openLink = useOnOpenLink()
   const dispatch = useDispatch()
@@ -119,6 +121,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
           : undefined
       }
       onPress={handlePress}
+      IconProps={{
+        ...(size === 'large'
+          ? { height: spacing(6), width: spacing(6) }
+          : null),
+        ...IconProps
+      }}
       {...other}
     />
   )
