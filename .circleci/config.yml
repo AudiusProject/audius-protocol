@@ -160,12 +160,12 @@ commands:
             if [ $(($week % 2)) == 0 ]; then
                 echo "Even week"
                 if [ "<< parameters.odd_week >>" = true ] ; then
-                  circleci-agent step halt
+                  exit 1
                 fi
             else
                 echo "Odd week"
                 if [ "<< parameters.odd_week >>" = false ] ; then
-                  circleci-agent step halt
+                  exit 1
                 fi
             fi
 
