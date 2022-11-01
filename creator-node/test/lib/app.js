@@ -31,6 +31,8 @@ export async function getApp(
 
   const prometheusRegistry = new PrometheusRegistry()
   const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
+  const syncQueue = new SyncQueue()
+  syncQueue.init(nodeConfig, redisClient)
   const mockServiceRegistry = {
     libs: libsClient,
     blacklistManager,
@@ -39,7 +41,7 @@ export async function getApp(
     asyncProcessingQueue: apq,
     imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: syncQueue,
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
     prometheusRegistry
   }
@@ -57,13 +59,15 @@ export async function getApp(
   return appInfo
 }
 
-export function getServiceRegistryMock(libsClient, blacklistManager) {
+export async function getServiceRegistryMock(libsClient, blacklistManager) {
+  const syncQueue = new SyncQueue()
+  await syncQueue.init()
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: syncQueue,
     nodeConfig,
     initLibs: async function () {},
     prometheusRegistry: new PrometheusRegistry()
