@@ -33,15 +33,15 @@ type EnqueueSyncArgs = {
  */
 export class SyncQueue {
   nodeConfig: any
-  redis: Redis
+  redis?: Redis
   serviceRegistry: any
-  queue: Queue
+  queue?: Queue
   /**
    * Construct bull queue and define job processor
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig: any, redis: Redis, serviceRegistry: any) {
+  async init(nodeConfig: any, redis: Redis, serviceRegistry: any) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
@@ -65,7 +65,7 @@ export class SyncQueue {
     // is created since they'll never get processed
     if (clusterUtils.isThisWorkerInit()) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.deleteOldActiveJobs()
+      await this.deleteOldActiveJobs()
     }
 
     /**
@@ -117,14 +117,13 @@ export class SyncQueue {
   }
 
   private async deleteOldActiveJobs() {
-    const oldActiveJobs = await this.queue.getJobs(['active'])
+    // safe null check assuming `init()` is called after constructor
+    // (which it should be)
+    const oldActiveJobs = await this.queue!.getJobs(['active'])
     logger.info(
       `[sync-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
     )
-    for (const job of oldActiveJobs) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      job.remove()
-    }
+    await Promise.all(oldActiveJobs.map((job) => job.remove()))
   }
 
   private async processTask(job: Job) {
@@ -178,7 +177,9 @@ export class SyncQueue {
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
   }: EnqueueSyncArgs) {
-    const job = await this.queue.add(
+    // safe null check assuming `init()` is called after constructor
+    // (which it should be)
+    const job = await this.queue!.add(
       'process-sync',
       {
         wallet,

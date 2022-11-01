@@ -24,7 +24,7 @@ class SyncImmediateQueue {
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig, redis, serviceRegistry) {
+  async init(nodeConfig, redis, serviceRegistry) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
@@ -48,7 +48,7 @@ class SyncImmediateQueue {
     // is created since they'll never get processed
     if (clusterUtils.isThisWorkerInit()) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.deleteOldActiveJobs()
+      await this.deleteOldActiveJobs()
     }
 
     const worker = new Worker(
@@ -91,6 +91,7 @@ class SyncImmediateQueue {
         )
       }
     )
+
     const prometheusRegistry = serviceRegistry?.prometheusRegistry
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
@@ -102,10 +103,7 @@ class SyncImmediateQueue {
     logger.info(
       `[sync-immediate-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
     )
-    for (const job of oldActiveJobs) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      job.remove()
-    }
+    await Promise.all(oldActiveJobs.map((job) => job.remove()))
   }
 
   async processTask(job) {
