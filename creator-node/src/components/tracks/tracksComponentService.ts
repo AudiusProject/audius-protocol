@@ -1,11 +1,11 @@
-const {
-  logger: genericLogger,
+import {
+  logger as genericLogger,
   logInfoWithDuration,
   getStartTime
-} = require('../../logging')
+} from '../../logging'
 
-const TrackTranscodeHandoffManager = require('./TrackTranscodeHandoffManager')
-const TrackContentUploadManager = require('./trackContentUploadManager')
+import TrackTranscodeHandoffManager from './TrackTranscodeHandoffManager'
+import TrackContentUploadManager from './trackContentUploadManager'
 
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
@@ -20,7 +20,15 @@ const TrackContentUploadManager = require('./trackContentUploadManager')
  * upload track segment files and make avail - will later be associated with Audius track
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, requestProps) => {
+export const handleTrackContentRoute = async (
+  { logContext }: { logContext: { requestId: string } },
+  requestProps: {
+    fileName: string
+    fileDir: string
+    fileDestination: string
+    cnodeUserUUID: string
+  }
+) => {
   const logger = genericLogger.child(logContext)
   const { fileName, fileDir, fileDestination, cnodeUserUUID } = requestProps
 
@@ -57,9 +65,15 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   return resp
 }
 
-async function handleTranscodeAndSegment(
-  { logContext },
-  { fileName, fileDir }
+export async function handleTranscodeAndSegment(
+  { logContext }: { logContext: { requestId: string } },
+  {
+    fileName,
+    fileDir
+  }: {
+    fileName: string
+    fileDir: string
+  }
 ) {
   return TrackContentUploadManager.transcodeAndSegment(
     { logContext },
@@ -67,8 +81,8 @@ async function handleTranscodeAndSegment(
   )
 }
 
-async function handleTranscodeHandOff(
-  { logContext },
+export async function handleTranscodeHandOff(
+  { logContext }: { logContext: { requestId: string } },
   {
     libs,
     fileName,
@@ -77,6 +91,14 @@ async function handleTranscodeHandOff(
     fileDestination,
     session,
     headers
+  }: {
+    libs: any
+    fileName: string
+    fileDir: string
+    fileNameNoExtension: string
+    fileDestination: string
+    session: any
+    headers: Record<string, string>
   }
 ) {
   return TrackTranscodeHandoffManager.handOff(
@@ -91,10 +113,4 @@ async function handleTranscodeHandOff(
       headers
     }
   )
-}
-
-module.exports = {
-  handleTrackContentRoute,
-  handleTranscodeAndSegment,
-  handleTranscodeHandOff
 }
