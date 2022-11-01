@@ -370,7 +370,7 @@ describe('test buildReplicaSetNodesToUserWalletsMap()', function () {
   })
 })
 
-describe.only('test computeUserSecondarySyncSuccessRatesMap()', function () {
+describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   let server
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
