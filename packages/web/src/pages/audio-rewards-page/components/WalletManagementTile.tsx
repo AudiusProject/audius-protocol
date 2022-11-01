@@ -31,6 +31,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation, Location } from 'services/Location'
 import { isMobile } from 'utils/clientUtil'
+import { pushUniqueRoute, TRENDING_PAGE } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
@@ -62,7 +63,8 @@ const messages = {
     `Link by Stripe is not supported in the state of ${state}`,
   coinbaseStateNotSupported: (state: string) =>
     `Coinbase Pay is not supported in the state of ${state}`,
-  goldAudioToken: 'Gold $AUDIO token'
+  goldAudioToken: 'Gold $AUDIO token',
+  findArtists: 'Find Artists to Support on Trending'
 }
 
 const AdvancedWalletActions = () => {
@@ -223,11 +225,27 @@ export const WalletManagementTile = () => {
   }, [setOpen])
 
   const onBuyWithCoinbaseClicked = useCallback(() => {
-    dispatch(startBuyAudioFlow({ provider: OnRampProvider.COINBASE }))
+    dispatch(
+      startBuyAudioFlow({
+        provider: OnRampProvider.COINBASE,
+        onSuccess: {
+          action: pushUniqueRoute(TRENDING_PAGE),
+          message: messages.findArtists
+        }
+      })
+    )
   }, [dispatch])
 
   const onBuyWithStripeClicked = useCallback(() => {
-    dispatch(startBuyAudioFlow({ provider: OnRampProvider.STRIPE }))
+    dispatch(
+      startBuyAudioFlow({
+        provider: OnRampProvider.STRIPE,
+        onSuccess: {
+          action: pushUniqueRoute(TRENDING_PAGE),
+          message: messages.findArtists
+        }
+      })
+    )
   }, [dispatch])
 
   return (

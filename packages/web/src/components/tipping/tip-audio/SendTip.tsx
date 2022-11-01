@@ -145,7 +145,9 @@ export const SendTip = () => {
     dispatch(
       startBuyAudioFlow({
         provider: OnRampProvider.STRIPE,
-        onSuccessAction: beginTip({ user: receiver, source: 'buyAudio' })
+        onSuccess: {
+          action: beginTip({ user: receiver, source: 'buyAudio' })
+        }
       })
     )
     dispatch(resetSend())

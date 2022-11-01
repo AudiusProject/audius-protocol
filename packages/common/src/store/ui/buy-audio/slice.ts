@@ -42,6 +42,11 @@ type StripeSessionStatus =
   | 'fulfillment_processing'
   | 'fulfillment_complete'
 
+type OnSuccess = {
+  action?: Action
+  message?: string
+}
+
 type BuyAudioState = {
   stage: BuyAudioStage
   error?: boolean
@@ -52,7 +57,7 @@ type BuyAudioState = {
     transactionFees: number
   }
   provider: OnRampProvider
-  onSuccessAction?: Action
+  onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
 }
 
@@ -116,13 +121,13 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         provider: OnRampProvider
-        onSuccessAction?: Action
+        onSuccess?: OnSuccess
       }>
     ) => {
       state.stage = BuyAudioStage.START
       state.error = undefined
       state.provider = action.payload.provider
-      state.onSuccessAction = action.payload.onSuccessAction
+      state.onSuccess = action.payload.onSuccess
     },
     onRampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
