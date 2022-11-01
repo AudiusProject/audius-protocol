@@ -8,7 +8,7 @@ from typing import List, Optional, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.session import Session
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
@@ -48,6 +48,7 @@ from src.utils.redis_constants import (
     latest_sol_user_bank_backfill_db_tx_key,
     latest_sol_user_bank_backfill_program_tx_key,
     latest_sol_user_bank_backfill_slot_key,
+    latest_sol_user_bank_backfill_stop_sig_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -425,6 +426,9 @@ def process_user_bank_txs(stop_sig: str):
                     logger.debug(
                         f"index_user_bank_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
+                    logger.info(
+                        f"index_user_bank_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
+                    )
                     if tx_info["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif (
@@ -528,9 +532,7 @@ def process_user_bank_txs(stop_sig: str):
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_user_bank_backfill", bind=True)
 @save_duration_metric(metric_group="celery_task")
-def index_user_bank_backfill(self, stop_sig=None):
-    if not stop_sig:
-        return
+def index_user_bank_backfill(self):
 
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -540,6 +542,34 @@ def index_user_bank_backfill(self, stop_sig=None):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("user_bank_backfill_lock", timeout=10 * 60)
+
+    stop_sig = redis.get(latest_sol_user_bank_backfill_stop_sig_key)
+    if not stop_sig:
+        db = index_user_bank_backfill.db
+        with db.scoped_session() as session:
+            stop_sig_list = (
+                session.query(AudioTransactionsHistory.signature)
+                .filter(
+                    or_(
+                        AudioTransactionsHistory.transaction_type
+                        == TransactionType.tip,
+                        and_(
+                            AudioTransactionsHistory.transaction_type
+                            == TransactionType.transfer,
+                            AudioTransactionsHistory.method == TransactionMethod.send,
+                        ),
+                    )
+                )
+                .order_by(desc(AudioTransactionsHistory.slot))
+            ).first()
+
+            if not stop_sig_list:
+                return
+
+            stop_sig = stop_sig_list[0]
+            redis.set(latest_sol_user_bank_backfill_stop_sig_key, stop_sig)
+    else:
+        stop_sig = stop_sig.decode()
 
     try:
         # Cache latest tx outside of lock

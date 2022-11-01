@@ -9,6 +9,7 @@ from typing import Any, List, Optional, Set, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
+from sqlalchemy import and_, desc, or_
 from src.models.indexing.spl_token_backfill_transaction import (
     SPLTokenBackfillTransaction,
 )
@@ -30,18 +31,10 @@ from src.solana.solana_transaction_types import (
     ConfirmedTransaction,
 )
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    CachedProgramTxInfo,
-    cache_latest_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_constants import (
-    latest_sol_spl_token_backfill_db_key,
-    latest_sol_spl_token_backfill_program_tx_key,
-)
+from src.utils.redis_constants import latest_sol_spl_token_backfill_stop_sig_key
 from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
@@ -88,12 +81,6 @@ class SplTokenTransactionInfo(TypedDict):
     sender_wallet: str
     root_accounts: List[str]
     token_accounts: List[str]
-
-
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
-    cache_latest_sol_db_tx(redis, latest_sol_spl_token_backfill_db_key, latest_tx)
 
 
 def parse_memo_instruction(result: Any) -> str:
@@ -260,7 +247,6 @@ def get_latest_slot(db):
 def parse_sol_tx_batch(
     db: SessionManager,
     solana_client_manager: SolanaClientManager,
-    redis: Redis,
     tx_sig_batch_records: List[ConfirmedSignatureForAddressResult],
     solana_logger: SolanaIndexingLogger,
 ):
@@ -325,14 +311,6 @@ def parse_sol_tx_batch(
             last_scanned_signature = last_tx["signature"]
             solana_logger.add_log(
                 f"Updating last_scanned_slot to {last_scanned_slot} and signature to {last_scanned_signature}"
-            )
-            cache_latest_spl_audio_db_tx(
-                redis,
-                {
-                    "signature": last_scanned_signature,
-                    "slot": last_scanned_slot,
-                    "timestamp": last_tx["blockTime"],
-                },
             )
 
             record = session.query(SPLTokenBackfillTransaction).first()
@@ -499,7 +477,7 @@ def process_spl_token_tx(
             tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
         ):
             token_accounts = parse_sol_tx_batch(
-                db, solana_client_manager, redis, tx_sig_batch_records, solana_logger
+                db, solana_client_manager, tx_sig_batch_records, solana_logger
             )
             totals["token_accts"] += len(token_accounts)
 
@@ -510,20 +488,23 @@ def process_spl_token_tx(
 
 
 index_spl_token_backfill_lock = "spl_token_backfill_lock"
+purchase_types = [
+    TransactionType.purchase_coinbase,
+    TransactionType.purchase_stripe,
+    TransactionType.purchase_unknown,
+]
 
 
 @celery.task(name="index_spl_token_backfill", bind=True)
 @save_duration_metric(metric_group="celery_task")
-def index_spl_token(self, stop_sig=None):
-    if not stop_sig:
-        return
+def index_spl_token_backfill(self):
 
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
-    redis = index_spl_token.redis
-    solana_client_manager = index_spl_token.solana_client_manager
-    db = index_spl_token.db
+    redis = index_spl_token_backfill.redis
+    solana_client_manager = index_spl_token_backfill.solana_client_manager
+    db = index_spl_token_backfill.db
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -532,14 +513,34 @@ def index_spl_token(self, stop_sig=None):
         index_spl_token_backfill_lock, blocking_timeout=25, timeout=14400
     )
 
+    stop_sig = redis.get(latest_sol_spl_token_backfill_stop_sig_key)
+    if not stop_sig:
+        with db.scoped_session() as session:
+            stop_sig_list = (
+                session.query(AudioTransactionsHistory.signature)
+                .filter(
+                    or_(
+                        AudioTransactionsHistory.transaction_type.in_(purchase_types),
+                        and_(
+                            AudioTransactionsHistory.transaction_type
+                            == TransactionType.transfer,
+                            AudioTransactionsHistory.method
+                            == TransactionMethod.receive,
+                        ),
+                    )
+                )
+                .order_by(desc(AudioTransactionsHistory.slot))
+            ).first()
+
+            if not stop_sig_list:
+                return
+
+            stop_sig = stop_sig_list[0]
+            redis.set(latest_sol_spl_token_backfill_stop_sig_key, stop_sig)
+    else:
+        stop_sig = stop_sig.decode()
+
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            SPL_TOKEN_PROGRAM,
-            latest_sol_spl_token_backfill_program_tx_key,
-        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

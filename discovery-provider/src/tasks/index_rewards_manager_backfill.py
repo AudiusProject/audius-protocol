@@ -7,7 +7,7 @@ from typing import Callable, Dict, List, Optional, TypedDict
 
 import base58
 from redis import Redis
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 from sqlalchemy.orm.session import Session
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.rewards_manager_backfill import (
@@ -50,6 +50,7 @@ from src.utils.redis_constants import (
     latest_sol_rewards_manager_backfill_db_tx_key,
     latest_sol_rewards_manager_backfill_program_tx_key,
     latest_sol_rewards_manager_backfill_slot_key,
+    latest_sol_rewards_manager_backfill_stop_sig_key,
 )
 from src.utils.session_manager import SessionManager
 
@@ -608,15 +609,40 @@ def process_solana_rewards_manager(
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_rewards_manager_backfill", bind=True)
 @save_duration_metric(metric_group="celery_task")
-def index_rewards_manager(self, stop_sig=None):
-    redis = index_rewards_manager.redis
-    solana_client_manager = index_rewards_manager.solana_client_manager
-    db = index_rewards_manager.db
+def index_rewards_manager_backfill(self):
+    redis = index_rewards_manager_backfill.redis
+    solana_client_manager = index_rewards_manager_backfill.solana_client_manager
+    db = index_rewards_manager_backfill.db
 
     # Define lock acquired boolean
     have_lock = False
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_rewards_manager_backfill_lock", timeout=14400)
+
+    stop_sig = redis.get(latest_sol_rewards_manager_backfill_stop_sig_key)
+    if not stop_sig:
+        db = index_rewards_manager_backfill.db
+        with db.scoped_session() as session:
+            stop_sig_list = (
+                session.query(AudioTransactionsHistory.signature)
+                .filter(
+                    or_(
+                        AudioTransactionsHistory.transaction_type
+                        == TransactionType.user_reward,
+                        AudioTransactionsHistory.transaction_type
+                        == TransactionType.trending_reward,
+                    )
+                )
+                .order_by(desc(AudioTransactionsHistory.slot))
+            ).first()
+
+            if not stop_sig_list:
+                return
+
+            stop_sig = stop_sig_list[0]
+            redis.set(latest_sol_rewards_manager_backfill_stop_sig_key, stop_sig)
+    else:
+        stop_sig = stop_sig.decode()
 
     if not stop_sig:
         return

@@ -400,7 +400,6 @@ def configure_celery(celery, test_config=None):
     indexing_interval_sec = int(
         shared_config["discprov"]["block_processing_interval_sec"]
     )
-    backfill_stop_sig = shared_config["discprov"]["backfill_stop_sig"]
 
     # Update celery configuration
     celery.conf.update(
@@ -495,7 +494,6 @@ def configure_celery(celery, test_config=None):
             "index_user_bank_backfill": {
                 "task": "index_user_bank_backfill",
                 "schedule": timedelta(seconds=5),
-                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_challenges": {
                 "task": "index_challenges",
@@ -516,7 +514,6 @@ def configure_celery(celery, test_config=None):
             "index_rewards_manager_backfill": {
                 "task": "index_rewards_manager_backfill",
                 "schedule": timedelta(seconds=5),
-                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_related_artists": {
                 "task": "index_related_artists",
@@ -544,7 +541,6 @@ def configure_celery(celery, test_config=None):
             "index_spl_token_backfill": {
                 "task": "index_spl_token_backfill",
                 "schedule": timedelta(seconds=5),
-                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",
@@ -629,6 +625,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete("spl_token_backfill_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
