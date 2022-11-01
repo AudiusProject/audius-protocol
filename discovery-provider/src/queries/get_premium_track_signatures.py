@@ -46,7 +46,7 @@ def _does_user_own_erc721_nft_collection(
                 return True
         except Exception as e:
             logger.error(
-                f"Could not get nft balance for erc721 nft collection {contract_address} and user wallet {wallet}."
+                f"Could not get nft balance for erc721 nft collection {contract_address} and user wallet {wallet}. Error: {e}"
             )
     return False
 
@@ -67,7 +67,7 @@ def _does_user_own_erc1155_nft_collection(
                 return True
         except Exception as e:
             logger.error(
-                f"Could not get nft balance for erc1155 nft collection {contract_address} and user wallet {wallet}."
+                f"Could not get nft balance for erc1155 nft collection {contract_address} and user wallet {wallet}. Error: {e}"
             )
     return False
 
@@ -102,7 +102,7 @@ def _get_eth_nft_gated_track_signatures(
         map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
     )
 
-    ### Handle premium tracks gated by ERC721 nft collections
+    # Handle premium tracks gated by ERC721 nft collections
     erc721_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]
@@ -144,12 +144,12 @@ def _get_eth_nft_gated_track_signatures(
                                 "user_wallet": user_wallet,
                             }
                         )
-            except Exception as exc:
+            except Exception as e:
                 logger.error(
-                    f"Could not future result for erc721 contract_address {contract_address}. Error: {exc}"
+                    f"Could not future result for erc721 contract_address {contract_address}. Error: {e}"
                 )
 
-    ### Handle premium tracks gated by ERC1155 nft collections
+    # Handle premium tracks gated by ERC1155 nft collections
     erc1155_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]
@@ -202,9 +202,9 @@ def _get_eth_nft_gated_track_signatures(
                                 "user_wallet": user_wallet,
                             }
                         )
-            except Exception as exc:
+            except Exception as e:
                 logger.error(
-                    f"Could not future result for erc1155 contract_address {contract_address}. Error: {exc}"
+                    f"Could not future result for erc1155 contract_address {contract_address}. Error: {e}"
                 )
 
     return track_signature_map
