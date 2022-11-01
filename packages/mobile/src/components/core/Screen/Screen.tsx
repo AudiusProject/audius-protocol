@@ -18,17 +18,21 @@ import { SecondaryScreenTitle } from './SecondaryScreenTitle'
 const removeUndefined = (object: Record<string, unknown>) =>
   pickBy(object, negate(isUndefined))
 
-const useStyles = makeStyles(({ palette }, { variant }) => ({
-  root: {
-    flex: 1,
-    backgroundColor:
-      variant === 'primary'
-        ? palette.background
-        : variant === 'secondary'
-        ? palette.backgroundSecondary
-        : palette.white
-  }
-}))
+const useStyles = makeStyles(
+  ({ palette }, { variant, isNavOverhaulEnabled }) => ({
+    root: {
+      flex: 1,
+      backgroundColor:
+        variant === 'primary'
+          ? palette.background
+          : variant === 'secondary' && !isNavOverhaulEnabled
+          ? palette.backgroundSecondary
+          : variant === 'secondary' && isNavOverhaulEnabled
+          ? palette.background
+          : palette.white
+    }
+  })
+)
 
 export type ScreenProps = {
   children: ReactNode
@@ -59,13 +63,16 @@ export const Screen = (props: ScreenProps) => {
     variant = 'primary',
     style
   } = props
-  const stylesConfig = useMemo(() => ({ variant }), [variant])
-  const styles = useStyles(stylesConfig)
-  const navigation = useNavigation()
-  const isSecondary = variant === 'secondary' || variant === 'white'
   const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
     FeatureFlags.MOBILE_NAV_OVERHAUL
   )
+  const stylesConfig = useMemo(
+    () => ({ variant, isNavOverhaulEnabled }),
+    [variant, isNavOverhaulEnabled]
+  )
+  const styles = useStyles(stylesConfig)
+  const navigation = useNavigation()
+  const isSecondary = variant === 'secondary' || variant === 'white'
 
   // Record screen view
   useEffect(() => {
