@@ -85,7 +85,7 @@ async function findSyncRequests({
       [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
       ...userSecondarySyncMetricsMap[wallet]
     }
-    logger.info(
+    logger.debug(
       `Finding sync requests for user ${JSON.stringify(
         user
       )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`

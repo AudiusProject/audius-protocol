@@ -10,7 +10,11 @@ import {
   logInfoWithDuration
 } from '../../logging'
 import { saveFileForMultihashToFS } from '../../fileManager'
-import DiskManager from '../../diskManager'
+import {
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete,
+  deleteAllCNodeUserDataFromDisk
+} from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
@@ -136,9 +140,9 @@ const handleSyncFromPrimary = async ({
       }
 
       // Short circuit if wiping is disabled via env var
-      if (!config.get('syncForceWipeEnabled')) {
+      if (!config.get('syncForceWipeDBEnabled')) {
         return {
-          abort: 'Stopping sync early because syncForceWipeEnabled=false',
+          abort: 'Stopping sync early because syncForceWipeDBEnabled=false',
           result: 'abort_force_wipe_disabled'
         }
       }
@@ -156,12 +160,9 @@ const handleSyncFromPrimary = async ({
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
       try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
+        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
       } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         errorResponse = {
           error,
           result: 'failure_delete_disk_data'
@@ -186,7 +187,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -197,23 +198,25 @@ const handleSyncFromPrimary = async ({
       }
 
       // Wipe disk - delete files whose paths we stored in redis earlier
-      try {
-        const numFilesDeleted =
-          await DiskManager.deleteAllCNodeUserDataFromDisk(
+      // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
             wallet,
             numFilesToDelete,
             logger
           )
-        logger.info(
-          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
-        )
-      } catch (error) {
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+          logger.info(
+            `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
+          )
+        } catch (error) {
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       if (forceWipe) {
@@ -623,7 +626,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all ClockRecord entries to DB')
+      logger.debug('Saved all ClockRecord entries to DB')
 
       await models.File.bulkCreate(
         nonTrackFiles.map((file: any) => {
@@ -638,7 +641,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all non-track File entries to DB')
+      logger.debug('Saved all non-track File entries to DB')
 
       await models.Track.bulkCreate(
         fetchedCNodeUser.tracks.map((track: any) => ({
@@ -647,7 +650,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all Track entries to DB')
+      logger.debug('Saved all Track entries to DB')
 
       await models.File.bulkCreate(
         trackFiles.map((trackFile: any) => {
@@ -661,7 +664,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all track File entries to DB')
+      logger.debug('Saved all track File entries to DB')
 
       await models.AudiusUser.bulkCreate(
         fetchedCNodeUser.audiusUsers.map((audiusUser: any) => ({
@@ -670,11 +673,11 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all AudiusUser entries to DB')
+      logger.debug('Saved all AudiusUser entries to DB')
 
       await transaction.commit()
 
-      logger.info(
+      logger.debug(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 

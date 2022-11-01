@@ -461,7 +461,7 @@ const config = convict({
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
     env: 'maxStorageUsedPercent',
-    default: 95
+    default: 97
   },
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
@@ -493,20 +493,32 @@ const config = convict({
     env: 'premiumContentEnabled',
     default: false
   },
-  diskPruneEnabled: {
-    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
-    format: Boolean,
-    env: 'diskPruneEnabled',
-    default: false
-  },
 
   /** sync / snapback configs */
 
-  syncForceWipeEnabled: {
+  syncForceWipeDBEnabled: {
     doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
     format: Boolean,
-    env: 'syncForceWipeEnabled',
+    env: 'syncForceWipeDBEnabled',
     default: true
+  },
+  syncForceWipeDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk after DB deletion during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDiskEnabled',
+    default: false
+  },
+  backgroundDiskCleanupCheckEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
+    format: Boolean,
+    env: 'backgroundDiskCleanupCheckEnabled',
+    default: true
+  },
+  backgroundDiskCleanupDeleteEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
+    format: Boolean,
+    env: 'backgroundDiskCleanupDeleteEnabled',
+    default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -542,7 +554,7 @@ const config = convict({
     doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
     format: 'nat',
     env: 'recoverOrphanedDataNumUsersPerBatch',
-    default: 2
+    default: 5
   },
   recoverOrphanedDataDelayMsBetweenBatches: {
     doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
@@ -675,7 +687,7 @@ const config = convict({
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    default: 600 // 10min in s
+    default: 3600 // 1 hour in s
   },
   maxNumberSecondsSecondaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
@@ -789,7 +801,7 @@ const config = convict({
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
-    default: false
+    default: true
   },
   findCIDInNetworkEnabled: {
     doc: 'enable findCIDInNetwork lookups',
@@ -813,8 +825,7 @@ const config = convict({
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default:
-      '1,4,7,12,13,14,15,16,19,28,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,63,64,65'
+    default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   }
   /**
    * unsupported options at the moment

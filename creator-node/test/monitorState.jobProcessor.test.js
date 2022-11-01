@@ -150,6 +150,7 @@ describe('test monitorState job processor', function () {
     config.set('snapbackUsersPerJob', numUsersToProcess)
     const jobFunc = makeProcessStateMonitoringJob({ ...steps })
     logger = {
+      debug: sandbox.stub(),
       info: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()

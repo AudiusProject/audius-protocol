@@ -57,12 +57,6 @@ export class StateMonitoringManager {
       limiter: {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
-      },
-      onFailCallback: (job: Job, error: any, _prev: any) => {
-        cNodeEndpointToSpIdMapQueueLogger.error(
-          `Queue Job Failed - ID ${job?.id} - Error ${error}`
-        )
-        cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
       }
     })
 
@@ -82,13 +76,6 @@ export class StateMonitoringManager {
         // Bull doesn't allow either of these to be set to 0, so we'll pause the queue later if the jobs per interval is 0
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
-      },
-      onFailCallback: (job: Job, error: any, _prev: any) => {
-        const logger = createChildLogger(monitorStateLogger, {
-          jobId: job?.id || 'unknown'
-        }) as Logger
-        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
-        this.enqueueMonitorStateJobAfterFailure(monitorStateQueue, job)
       }
     })
 
@@ -137,16 +124,21 @@ export class StateMonitoringManager {
   }
 
   /**
-   * Enqueues a job that picks up where the previous failed job left off.
+   * Enqueues a job that starts at a random user.
+   * Bull's onError doesn't pass in the previous job's info so there's no way to know where it left off.
+   * Otherwise this should start where the failed job left off
    * @param monitoringQueue the queue to re-add the job to
-   * @param failedJob the jobData for the previous job that failed
    */
-  enqueueMonitorStateJobAfterFailure(monitoringQueue: Queue, failedJob: Job) {
-    const {
-      data: { lastProcessedUserId, discoveryNodeEndpoint }
-    } = failedJob
+  async recoverFromJobFailure(
+    monitoringQueue: Queue,
+    discoveryNodeEndpoint: string
+  ) {
+    const latestUserId = await getLatestUserIdFromDiscovery(
+      discoveryNodeEndpoint
+    )
+    const lastProcessedUserId = _.random(0, latestUserId)
 
-    monitoringQueue.add('retry-after-fail', {
+    await monitoringQueue.add('retry-after-fail', {
       lastProcessedUserId,
       discoveryNodeEndpoint
     })

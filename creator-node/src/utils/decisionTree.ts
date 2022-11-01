@@ -73,14 +73,14 @@ module.exports = class DecisionTree {
     }
   }
 
-  printTree({ logLevel = 'info' } = {}) {
+  printTree({ logLevel = 'debug' } = {}) {
     this._log({
       msg: `DecisionTree Full - ${JSON.stringify(this.tree, null, 2)}`,
       logLevel
     })
   }
 
-  private _printLastStage({ logLevel = 'info' } = {}) {
+  private _printLastStage({ logLevel = 'debug' } = {}) {
     if (this.tree.length > 0) {
       this._log({
         msg: `DecisionTree Last Stage - ${JSON.stringify(
@@ -98,7 +98,7 @@ module.exports = class DecisionTree {
     }
   }
 
-  private _log({ msg = '', logLevel = 'info' } = {}) {
+  private _log({ msg = '', logLevel = 'debug' } = {}) {
     let logFn
     switch (logLevel) {
       case 'error':
@@ -117,6 +117,6 @@ module.exports = class DecisionTree {
         logFn = this.logger.debug
     }
 
-    logFn(`${this.name} - ${msg}`)
+    logFn.bind(this.logger)(`${this.name} - ${msg}`)
   }
 }

@@ -29,6 +29,7 @@ describe('test findSyncRequests job processor', function () {
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
     logger = {
+      debug: sandbox.stub(),
       info: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()

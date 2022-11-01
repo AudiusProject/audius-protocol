@@ -26,17 +26,17 @@ async function resizeImage(image, maxWidth, square, logger) {
   // eslint-disable-next-line
   let exif
   let time = Date.now()
-  logger.info(`resize image ${maxWidth} - start`)
+  logger.debug(`resize image ${maxWidth} - start`)
   try {
     exif = ExifParser.create(img).parse()
-    logger.info(`resize image ${maxWidth} - create time ${Date.now() - time}`)
+    logger.debug(`resize image ${maxWidth} - create time ${Date.now() - time}`)
     time = Date.now()
   } catch (error) {
     logger.error(error)
     exif = null
   }
 
-  logger.info(`resize image ${maxWidth} - read time ${Date.now() - time}`)
+  logger.debug(`resize image ${maxWidth} - read time ${Date.now() - time}`)
 
   img = _exifRotate(img, exif)
   img.background(COLOR_WHITE)

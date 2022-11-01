@@ -20,7 +20,10 @@ import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
-import DiskManager from './diskManager'
+import {
+  emptyTmpTrackUploadArtifacts,
+  sweepSubdirectoriesInFiles
+} from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
 const redisClient = require('./redis')
@@ -111,7 +114,7 @@ const startAppForPrimary = async () => {
   await setupDbAndRedis()
 
   const startTime = Date.now()
-  const size = await DiskManager.emptyTmpTrackUploadArtifacts()
+  const size = await emptyTmpTrackUploadArtifacts()
   logger.info(
     `old tmp track artifacts deleted : ${size} : ${
       (Date.now() - startTime) / 1000
@@ -177,9 +180,9 @@ const startAppForPrimary = async () => {
 
   // do not await this, this should just run in background for now
   // wait one minute before starting this because it might cause init to degrade
-  if (config.get('diskPruneEnabled')) {
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
     setTimeout(() => {
-      DiskManager.sweepSubdirectoriesInFiles()
+      sweepSubdirectoriesInFiles()
     }, 60_000)
   }
 }

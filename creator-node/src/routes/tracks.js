@@ -106,7 +106,7 @@ router.post(
   ensureValidSPMiddleware,
   handleResponse(async (req, _res) => {
     const fileDir = req.body.fileDir
-    req.logger.info('Clearing filesystem fileDir', fileDir)
+    req.logger.debug('Clearing filesystem fileDir', fileDir)
     if (!fileDir.includes('tmp_track_artifacts')) {
       return errorResponseBadRequest(
         'Cannot remove track folder outside temporary track artifacts'
@@ -644,7 +644,7 @@ router.post(
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
         throw new Error('Issue in retrieving udpatedCnodeUser')
       }
-      req.logger.info(
+      req.logger.debug(
         `cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
         current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || \
         given blockNumber ${blockNumber}`
