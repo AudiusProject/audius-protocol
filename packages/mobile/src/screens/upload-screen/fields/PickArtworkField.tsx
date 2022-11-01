@@ -81,9 +81,12 @@ export const PickArtworkField = () => {
   }, [secondary, setValue])
 
   return (
-    <>
-      <View style={styles.root}>
-        <DynamicImage uri={uri} onLoad={() => setIsLoading(false)} />
+    <View>
+      <DynamicImage
+        uri={uri}
+        onLoad={() => setIsLoading(false)}
+        style={styles.root}
+      >
         <View style={styles.iconPicture}>
           {isLoading ? (
             <LoadingSpinner style={styles.loading} />
@@ -101,12 +104,12 @@ export const PickArtworkField = () => {
             onPress={handlePress}
           />
         </View>
-      </View>
+      </DynamicImage>
       {error && touched ? (
         <InputErrorMessage
           message={`${capitalize(name)} ${(error as unknown as Error).url}`}
         />
       ) : null}
-    </>
+    </View>
   )
 }

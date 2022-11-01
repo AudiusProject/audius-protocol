@@ -10,7 +10,7 @@ import {
   shareSoundToTiktokModalActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Linking, StyleSheet, View } from 'react-native'
+import { Linking, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconLink from 'app/assets/images/iconLink.svg'
@@ -20,8 +20,7 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Text from 'app/components/text'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
@@ -36,45 +35,44 @@ const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    shareToTwitterAction: {
-      color: themeColors.staticTwitterBlue
-    },
-    shareToTikTokAction: {
-      color: 'black'
-    },
-    shareToTikTokActionDark: {
-      color: themeColors.staticWhite
-    },
-    copyLinkAction: {
-      color: themeColors.secondary
-    },
-    title: {
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingTop: 8,
-      paddingBottom: 16
-    },
-    titleText: {
-      fontSize: 18
-    },
-    titleIcon: {
-      marginRight: 8
-    },
-    row: {
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 24
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  shareToTwitterAction: {
+    color: palette.staticTwitterBlue
+  },
+  shareToTikTokAction: {
+    color: 'black'
+  },
+  shareToTikTokActionDark: {
+    color: palette.staticWhite
+  },
+  copyLinkAction: {
+    color: palette.secondary
+  },
+  title: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 16
+  },
+  titleText: {
+    fontSize: 18
+  },
+  titleIcon: {
+    marginRight: 8
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24
+  }
+}))
 
 export const ShareDrawer = () => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const { isEnabled: isShareToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )

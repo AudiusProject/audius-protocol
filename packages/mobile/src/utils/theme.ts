@@ -95,7 +95,8 @@ export const defaultTheme = {
   actionSheetText: '#7E1BCC',
   skeleton: '#F7F7F9',
   skeletonHighlight: '#F2F2F4',
-  statTileText: '#C675FF'
+  statTileText: '#C675FF',
+  progressBackground: '#D9D9D9'
 }
 
 export const darkTheme = {
@@ -146,7 +147,8 @@ export const darkTheme = {
   actionSheetText: '#9147CC',
   skeleton: '#393A54',
   skeletonHighlight: '#3F415B',
-  statTileText: '#C675FF'
+  statTileText: '#C675FF',
+  progressBackground: '#D9D9D9'
 }
 
 export const matrixTheme = {
@@ -190,7 +192,8 @@ export const matrixTheme = {
   accentOrange: '#EFA947',
   skeleton: '#1B3714',
   skeletonHighlight: '#1C5610',
-  statTileText: '#184F17'
+  statTileText: '#184F17',
+  progressBackground: '#D9D9D9'
 }
 
 export type ThemeColors = {
@@ -242,6 +245,7 @@ export type ThemeColors = {
   skeleton: string
   skeletonHighlight: string
   statTileText: string
+  progressBackground: string
 }
 
 const themeColorsByThemeVariant: Record<

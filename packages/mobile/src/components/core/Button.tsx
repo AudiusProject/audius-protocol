@@ -152,10 +152,10 @@ const useStyles = makeStyles(
           width: spacing(8)
         },
         iconLeft: {
-          marginRight: spacing(1)
+          marginRight: spacing(2)
         },
         iconRight: {
-          marginLeft: spacing(1)
+          marginLeft: spacing(2)
         }
       }
     }
