@@ -122,7 +122,7 @@ export class SyncQueue {
     logger.info(
       `[sync-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
     )
-    await Promise.all(oldActiveJobs.map((job) => job.remove()))
+    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
   }
 
   private async processTask(job: Job) {

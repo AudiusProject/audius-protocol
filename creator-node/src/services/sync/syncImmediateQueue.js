@@ -102,7 +102,7 @@ class SyncImmediateQueue {
     logger.info(
       `[sync-immediate-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
     )
-    await Promise.all(oldActiveJobs.map((job) => job.remove()))
+    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
   }
 
   async processTask(job) {
