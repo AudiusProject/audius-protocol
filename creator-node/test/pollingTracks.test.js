@@ -93,7 +93,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
     const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '@audius/sdk': {
           libs: {
@@ -925,7 +925,7 @@ describe('test Polling Tracks with real files', function () {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
     const { handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           segment: sinon
@@ -950,7 +950,7 @@ describe('test Polling Tracks with real files', function () {
 
   it('sends server error response if transcoding fails', async function () {
     const { handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           transcode320: sinon
