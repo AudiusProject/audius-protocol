@@ -1,26 +1,32 @@
-const path = require('path')
+import path from 'path'
 
-const {
+import {
   getStartTime,
   logInfoWithDuration,
-  logger: genericLogger
-} = require('../../logging')
-const { getSegmentsDuration } = require('../../segmentDuration')
+  logger as genericLogger
+} from '../../logging'
+import { getSegmentsDuration } from '../../segmentDuration'
 
-const models = require('../../models')
-const { libs } = require('@audius/sdk')
+import DBManager from '../../dbManager'
+import TranscodingQueue from '../../TranscodingQueue'
+import FileManager from '../../fileManager'
+import { libs } from '@audius/sdk'
+import { tracing } from '../../tracer'
 const Utils = libs.Utils
-const DBManager = require('../../dbManager')
-const TranscodingQueue = require('../../TranscodingQueue')
-const FileManager = require('../../fileManager')
+const models = require('../../models')
 
 const SEGMENT_FILE_BATCH_SIZE = 10
+
+type Segment = {
+  multihash: string
+  srcPath: string
+  dstPath: string
+}
 
 /**
  * Manages track content upload in the DB and file system
  */
-class TrackContentUploadManager {
-  /**
+/**
    * Create track transcode and segments, and save all to disk. Removes temp file dir of track data if failed to
    * segment or transcode.
    * @param {Object} logContext
@@ -36,126 +42,133 @@ class TrackContentUploadManager {
       fileName {string}: the original upload track file name
     } 
    */
-  static async transcodeAndSegment({ logContext }, { fileName, fileDir }) {
-    let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8FilePath
-    try {
-      const response = await Promise.all([
-        TranscodingQueue.segment(fileDir, fileName, { logContext }),
-        TranscodingQueue.transcode320(fileDir, fileName, { logContext })
-      ])
+export async function transcodeAndSegment(
+  { logContext }: { logContext: { requestId: string } },
+  { fileName, fileDir }: { fileName: string; fileDir: string }
+) {
+  let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8FilePath
+  try {
+    const response = await Promise.all([
+      TranscodingQueue.segment(fileDir, fileName, { logContext }),
+      TranscodingQueue.transcode320(fileDir, fileName, { logContext })
+    ])
 
-      segmentFileNames = response[0].segments.fileNames
-      segmentFilePaths = response[0].segments.filePaths
-      m3u8FilePath = response[0].m3u8FilePath
-      transcodeFilePath = response[1].transcodeFilePath
-    } catch (err) {
-      // Prune upload artifacts
-      FileManager.removeTrackFolder({ logContext }, fileDir)
+    segmentFileNames = response[0].segments.fileNames
+    segmentFilePaths = response[0].segments.filePaths
+    m3u8FilePath = response[0].m3u8FilePath
+    transcodeFilePath = response[1].transcodeFilePath
+  } catch (err: any) {
+    tracing.recordException(err)
+    // Prune upload artifacts
+    FileManager.removeTrackFolder({ logContext }, fileDir)
 
-      throw new Error(err.toString())
-    }
-
-    return {
-      transcodeFilePath,
-      segmentFileNames,
-      segmentFilePaths,
-      m3u8FilePath,
-      fileName,
-      fileDir
-    }
+    throw new Error(err.toString())
   }
 
-  // Helper methods for TrackContentUploadManager
+  return {
+    transcodeFilePath,
+    segmentFileNames,
+    segmentFilePaths,
+    m3u8FilePath,
+    fileName,
+    fileDir
+  }
+}
 
-  /**
-   * 1. Batch saves the transcode and segments to local dir
-   * 2. Fetches segment duration to build a map of <segment CID: duration>
-   * 3. Adds transcode and segments to DB in Files table
-   * 4. Removes the upload artifacts after successful processing
-   * @param {Object} logContext
-   * @param {Object} param
-   * @param {Object} param.cnodeUserUUID the current user's cnodeUserUUID
-   * @param {string} param.fileName the filename of the uploaded artifact
-   * @param {string} param.fileDir the directory of where the filename is uploaded
-   * @param {string} param.fileDestination the folder to which the uploaded file has been saved	to
-   * @param {string} param.transcodeFilePath the path of where the transcode exists
-   * @param {string[]} param.segmentFileNames a list of segment file names from the segmenting job
-   * @returns {Object}
-   *  returns
-   *  {
-   *    trancodedTrackCID {string} : the transcoded track's CID representation,
-   *    transcodedTrackUUID {string} : the transcoded track's UUID in the Files table,
-   *    track_segments {string[]} : the list of segments CIDs,
-   *    source_file {string} : the filename of the uploaded artifact
-   *  }
-   */
-  static async processTranscodeAndSegments(
-    { logContext },
+// Helper methods for TrackContentUploadManager
+
+/**
+ * 1. Batch saves the transcode and segments to local dir
+ * 2. Fetches segment duration to build a map of <segment CID: duration>
+ * 3. Adds transcode and segments to DB in Files table
+ * 4. Removes the upload artifacts after successful processing
+ * @param {Object} logContext
+ * @param {Object} param
+ * @param {Object} param.cnodeUserUUID the current user's cnodeUserUUID
+ * @param {string} param.fileName the filename of the uploaded artifact
+ * @param {string} param.fileDir the directory of where the filename is uploaded
+ * @param {string} param.fileDestination the folder to which the uploaded file has been saved	to
+ * @param {string} param.transcodeFilePath the path of where the transcode exists
+ * @param {string[]} param.segmentFileNames a list of segment file names from the segmenting job
+ * @returns {Object}
+ *  returns
+ *  {
+ *    trancodedTrackCID {string} : the transcoded track's CID representation,
+ *    transcodedTrackUUID {string} : the transcoded track's UUID in the Files table,
+ *    track_segments {string[]} : the list of segments CIDs,
+ *    source_file {string} : the filename of the uploaded artifact
+ *  }
+ */
+export async function processTranscodeAndSegments(
+  { logContext }: { logContext: { requestId: string } },
+  {
+    cnodeUserUUID,
+    fileName,
+    fileDir,
+    fileDestination,
+    transcodeFilePath,
+    segmentFileNames
+  }: {
+    cnodeUserUUID: string
+    fileName: string
+    fileDir: string
+    fileDestination: string
+    transcodeFilePath: string
+    segmentFileNames: string[]
+  }
+) {
+  const logger = genericLogger.child(logContext)
+
+  let codeBlockTimeStart = getStartTime()
+  const { segmentFileResult, transcodeFileResult } = await batchSaveFilesToDisk(
     {
-      cnodeUserUUID,
-      fileName,
       fileDir,
-      fileDestination,
+      logContext,
       transcodeFilePath,
       segmentFileNames
     }
-  ) {
-    const logger = genericLogger.child(logContext)
+  )
+  logInfoWithDuration(
+    { logger, startTime: codeBlockTimeStart },
+    `Successfully saved transcode and segment files to local file storage for file=${fileName}`
+  )
 
-    let codeBlockTimeStart = getStartTime()
-    const { segmentFileResult, transcodeFileResult } =
-      await batchSaveFilesToDisk({
-        fileDir,
-        logContext,
-        transcodeFilePath,
-        segmentFileNames
-      })
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Successfully saved transcode and segment files to local file storage for file=${fileName}`
-    )
+  // Retrieve all segment durations as map(segment srcFilePath => segment duration)
+  codeBlockTimeStart = getStartTime()
+  const segmentDurations = await getSegmentsDuration(fileName, fileDestination)
+  logInfoWithDuration(
+    { logger, startTime: codeBlockTimeStart },
+    `Successfully retrieved segment duration for file=${fileName}`
+  )
 
-    // Retrieve all segment durations as map(segment srcFilePath => segment duration)
-    codeBlockTimeStart = getStartTime()
-    const segmentDurations = await getSegmentsDuration(
-      fileName,
-      fileDestination
-    )
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Successfully retrieved segment duration for file=${fileName}`
-    )
+  const trackSegments = createSegmentToDurationMap({
+    segmentFileResult,
+    segmentDurations,
+    logContext,
+    fileDir
+  })
 
-    const trackSegments = createSegmentToDurationMap({
-      segmentFileResult,
-      segmentDurations,
-      logContext,
-      fileDir
-    })
+  codeBlockTimeStart = getStartTime()
+  const transcodeFileUUID = await addFilesToDb({
+    transcodeFileResult,
+    fileName,
+    fileDir,
+    cnodeUserUUID,
+    segmentFileResult,
+    logContext
+  })
+  logInfoWithDuration(
+    { logger, startTime: codeBlockTimeStart },
+    `Successfully updated DB for file=${fileName}`
+  )
 
-    codeBlockTimeStart = getStartTime()
-    const transcodeFileUUID = await addFilesToDb({
-      transcodeFileResult,
-      fileName,
-      fileDir,
-      cnodeUserUUID,
-      segmentFileResult,
-      logContext,
-      logger
-    })
-    logInfoWithDuration(
-      { logger, startTime: codeBlockTimeStart },
-      `Successfully updated DB for file=${fileName}`
-    )
+  FileManager.removeTrackFolder({ logContext }, fileDir)
 
-    FileManager.removeTrackFolder({ logContext }, fileDir)
-
-    return {
-      transcodedTrackCID: transcodeFileResult.multihash,
-      transcodedTrackUUID: transcodeFileUUID,
-      track_segments: trackSegments,
-      source_file: fileName
-    }
+  return {
+    transcodedTrackCID: transcodeFileResult.multihash,
+    transcodedTrackUUID: transcodeFileUUID,
+    track_segments: trackSegments,
+    source_file: fileName
   }
 }
 
@@ -177,6 +190,13 @@ async function addFilesToDb({
   cnodeUserUUID,
   segmentFileResult,
   logContext
+}: {
+  transcodeFileResult: { multihash: string; dstPath: string }
+  fileName: string
+  fileDir: string
+  cnodeUserUUID: string
+  segmentFileResult: Segment[]
+  logContext: { requestId: string }
 }) {
   const transaction = await models.sequelize.transaction()
   let transcodeFileUUID
@@ -214,8 +234,10 @@ async function addFilesToDb({
     }
 
     await transaction.commit()
-  } catch (e) {
+  } catch (e: any) {
     await transaction.rollback()
+
+    tracing.recordException(e)
 
     // Prune upload artifacts
     FileManager.removeTrackFolder({ logContext }, fileDir)
@@ -240,8 +262,13 @@ function createSegmentToDurationMap({
   segmentDurations,
   fileDir,
   logContext
+}: {
+  segmentFileResult: Segment[]
+  segmentDurations: Record<string, number>
+  fileDir: string
+  logContext: { requestId: string }
 }) {
-  let trackSegments = segmentFileResult.map((segmentFile) => {
+  let trackSegments = segmentFileResult.map((segmentFile: Segment) => {
     return {
       multihash: segmentFile.multihash,
       duration: segmentDurations[segmentFile.srcPath]
@@ -249,7 +276,10 @@ function createSegmentToDurationMap({
   })
 
   // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
-  trackSegments = trackSegments.filter((trackSegment) => trackSegment.duration)
+  trackSegments = trackSegments.filter(
+    (trackSegment: { multihash: string; duration: number }) =>
+      trackSegment.duration
+  )
 
   // error if there are no track segments
   if (!trackSegments || !trackSegments.length) {
@@ -276,7 +306,13 @@ async function batchSaveFilesToDisk({
   logContext,
   transcodeFilePath,
   segmentFileNames
+}: {
+  fileDir: string
+  logContext: { requestId: string }
+  transcodeFilePath: string
+  segmentFileNames: string[]
 }) {
+  // @ts-ignore
   const cid = await Utils.fileHasher.generateNonImageCid(
     transcodeFilePath,
     genericLogger.child({ logContext })
@@ -288,7 +324,7 @@ async function batchSaveFilesToDisk({
   )
   const transcodeFileResult = { multihash: cid, dstPath }
 
-  let segmentFileResult = []
+  let segmentFileResult: Segment[] = []
   for (let i = 0; i < segmentFileNames.length; i += SEGMENT_FILE_BATCH_SIZE) {
     const segmentFileNameSlice = segmentFileNames.slice(
       i,
@@ -302,6 +338,8 @@ async function batchSaveFilesToDisk({
           'segments',
           segmentFileName
         )
+
+        // @ts-ignore
         const multihash = await Utils.fileHasher.generateNonImageCid(
           segmentAbsolutePath,
           genericLogger.child({ logContext })
@@ -320,5 +358,3 @@ async function batchSaveFilesToDisk({
 
   return { segmentFileResult, transcodeFileResult }
 }
-
-module.exports = TrackContentUploadManager
