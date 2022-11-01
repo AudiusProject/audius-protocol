@@ -25,7 +25,8 @@ const useStyles = makeStyles(
       backgroundColor:
         variant === 'primary'
           ? palette.background
-          : variant === 'secondary' && !isNavOverhaulEnabled
+          : (variant === 'secondary' && !isNavOverhaulEnabled) ||
+            variant === 'secondaryAlt'
           ? palette.backgroundSecondary
           : variant === 'secondary' && isNavOverhaulEnabled
           ? palette.background
@@ -42,11 +43,12 @@ export type ScreenProps = {
   topbarRightStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
   title?: Nullable<ReactNode>
   icon?: ComponentType<SvgProps>
+  IconProps?: SvgProps
   headerTitle?: ReactNode
   style?: StyleProp<ViewStyle>
   // url used for screen view analytics
   url?: string
-  variant?: 'primary' | 'secondary' | 'white'
+  variant?: 'primary' | 'secondary' | 'secondaryAlt' | 'white'
 }
 
 export const Screen = (props: ScreenProps) => {
@@ -56,6 +58,7 @@ export const Screen = (props: ScreenProps) => {
     topbarRight,
     title: titleProp = null,
     icon,
+    IconProps,
     headerTitle: headerTitleProp,
     topbarRightStyle,
     topbarLeftStyle,
@@ -93,7 +96,13 @@ export const Screen = (props: ScreenProps) => {
             : topbarRight,
           title: isSecondary ? undefined : titleProp,
           headerTitle: isSecondary
-            ? () => <SecondaryScreenTitle icon={icon!} title={titleProp} />
+            ? () => (
+                <SecondaryScreenTitle
+                  icon={icon!}
+                  title={titleProp}
+                  IconProps={IconProps}
+                />
+              )
             : headerTitleProp
         })
       )
@@ -122,7 +131,8 @@ export const Screen = (props: ScreenProps) => {
     titleProp,
     isSecondary,
     headerTitleProp,
-    icon
+    icon,
+    IconProps
   ])
 
   return <View style={[styles.root, style]}>{children}</View>

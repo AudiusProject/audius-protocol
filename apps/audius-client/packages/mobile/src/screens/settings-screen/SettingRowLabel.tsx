@@ -14,7 +14,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   icon: {
     height: spacing(4),
     width: spacing(4),
-    marginRight: spacing(1)
+    marginRight: spacing(2)
   }
 }))
 
