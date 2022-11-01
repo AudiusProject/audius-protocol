@@ -34,6 +34,7 @@ from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.sort_block_transactions import sort_block_transactions
+from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -58,7 +59,6 @@ from src.utils.redis_constants import (
 from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
 from web3.datastructures import AttributeDict
-from src.utils import helpers, web3_provider
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -82,8 +82,6 @@ default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
-
-NETHERMIND_BLOCK_OFFSET = 30000000
 
 
 def get_contract_info_if_exists(self, address):
@@ -174,7 +172,7 @@ def get_latest_block(db: SessionManager):
         latest_block = dict(
             update_task.web3.eth.get_block(target_latest_block_number, True)
         )
-        latest_block["number"] += NETHERMIND_BLOCK_OFFSET
+        latest_block["number"] += web3_provider.NETHERMIND_BLOCK_OFFSET
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -224,7 +222,9 @@ def fetch_tx_receipts(self, block):
                 tx_hash = tx_receipt_info["tx_hash"]
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
-                logger.error(f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}")
+                logger.error(
+                    f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}"
+                )
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
     logger.info(
@@ -679,20 +679,26 @@ def revert_blocks(self, db, revert_blocks_list):
     if num_revert_blocks == 0:
         return
 
-    logger.info(f"index_nethermind.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
+    logger.info(
+        f"index_nethermind.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}"
+    )
 
     if num_revert_blocks > 100:
         raise Exception("Unexpected revert, >100 blocks")
 
     if num_revert_blocks > 50:
-        logger.error(f"index_nethermind.py | {self.request.id} | Revert blocks list > 50")
+        logger.error(
+            f"index_nethermind.py | {self.request.id} | Revert blocks list > 50"
+        )
         logger.error(revert_blocks_list)
         revert_blocks_list = revert_blocks_list[:50]
         logger.error(
             f"index_nethermind.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
 
-    logger.info(f"index_nethermind.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.info(
+        f"index_nethermind.py | {self.request.id} | Reverting {num_revert_blocks} blocks"
+    )
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
@@ -971,7 +977,7 @@ def update_task(self):
 
     latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
-    logger.info(f"index_nethermind.py | final_poa_block {final_poa_block}")
+
     if latest_indexed_block < final_poa_block:
         # not ready for aud chain
         return
@@ -1064,7 +1070,7 @@ def update_task(self):
                         intersect_block_hash = default_config_start_hash
                     else:
                         latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += NETHERMIND_BLOCK_OFFSET
+                        latest_block["number"] += web3_provider.NETHERMIND_BLOCK_OFFSET
                         latest_block = AttributeDict(latest_block)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 

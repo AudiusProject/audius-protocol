@@ -18,6 +18,7 @@ from sqlalchemy import inspect
 from src import exceptions
 from src.utils import redis_connection
 from src.utils.redis_constants import final_poa_block_redis_key
+
 from . import multihash
 
 
@@ -523,27 +524,23 @@ def get_solana_tx_owner(meta, idx) -> str:
 
 
 def get_final_poa_block(shared_config):
-    logger = logging.getLogger(__name__)
-
     # get final poa block from identity and cache result
+    # marks the transition to nethermind
+    # returns None if still on POA
     redis = redis_connection.get_redis()
     cached_final_poa_block = redis_get_or_restore(redis, final_poa_block_redis_key)
-    logger.info(f"asdf cached_final_poa_block {cached_final_poa_block}")
     if cached_final_poa_block:
         return cached_final_poa_block
 
     identity_endpoint = (
         f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
     )
-    logger.info(f"asdf identity_endpoint {identity_endpoint}")
 
     response = requests.get(identity_endpoint, timeout=1)
     response.raise_for_status()
     response_json = response.json()
-    logger.info(f"asdf response_json {response_json}")
 
     final_poa_block = response_json.get("finalPOABlock", None)
-    logger.info(f"asdf final_poa_block {final_poa_block}")
 
     redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
 

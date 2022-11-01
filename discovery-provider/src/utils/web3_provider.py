@@ -10,11 +10,12 @@ from src.utils.config import shared_config
 from src.utils.multi_provider import MultiProvider
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
-import logging
 
 web3: Optional[Web3] = None
 
-logger = logging.getLogger(__name__)
+
+NETHERMIND_BLOCK_OFFSET = 30000000
+
 
 def get_web3():
     # pylint: disable=W0603

@@ -19,6 +19,7 @@ from src.queries.get_underground_trending import (
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import (
     PrometheusMetric,
@@ -251,6 +252,9 @@ def get_should_update_trending(
         current_db_block = (
             session.query(Block.blockhash).filter(Block.is_current == True).first()
         )
+        current_block_number = current_db_block[0]
+        if helpers.get_final_poa_block(shared_config):
+            current_block_number -= web3_provider.NETHERMIND_BLOCK_OFFSET
         current_block = web3.eth.get_block(current_db_block[0], True)
         current_timestamp = current_block["timestamp"]
         block_datetime = floor_time(

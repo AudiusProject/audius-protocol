@@ -184,7 +184,7 @@ module.exports = function (app) {
           numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
           failedTransactionHashes: failureTxs,
           startBlock: startBlockNumber,
-          endBlock: endBlockNumber,
+          endBlock: endBlockNumber
         },
         redis: {
           attemptedTxsCount: attemptedTxsInRedis.length,
