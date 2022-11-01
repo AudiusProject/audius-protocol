@@ -2,6 +2,7 @@
 Interface for using a web3 provider
 """
 
+import os
 from typing import Optional
 
 from src.utils import helpers
@@ -19,8 +20,7 @@ def get_web3():
     # pylint: disable=W0603
     global web3
     if helpers.get_final_poa_block(shared_config):
-        logger.info(f"asdf web3 configs {shared_config['web3']}")
-        web3endpoint = shared_config["web3"]["nethermind_rpc"]
+        web3endpoint = os.environ["audius_web3_nethermind_rpc"]
         web3 = Web3(HTTPProvider(web3endpoint))
 
         # required middleware for POA
