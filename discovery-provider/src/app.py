@@ -423,6 +423,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
+            "src.tasks.index_rewards_manager_backfill",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.user_listening_history.index_user_listening_history",
@@ -510,6 +511,11 @@ def configure_celery(celery, test_config=None):
             "index_rewards_manager": {
                 "task": "index_rewards_manager",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_rewards_manager_backfill": {
+                "task": "index_rewards_manager_backfill",
+                "schedule": timedelta(seconds=5),
+                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_related_artists": {
                 "task": "index_related_artists",
@@ -612,6 +618,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
+    redis_inst.delete("solana_rewards_manager_backfill_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
