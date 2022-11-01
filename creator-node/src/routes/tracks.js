@@ -50,7 +50,7 @@ router.post(
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     tracing.setSpanAttribute('requestID', req.logContext.requestID)
     if (req.fileSizeError || req.fileFilterError) {
       removeTrackFolder({ logContext: req.logContext }, req.fileDir)
@@ -104,7 +104,7 @@ router.post(
 router.post(
   '/clear_transcode_and_segment_artifacts',
   ensureValidSPMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const fileDir = req.body.fileDir
     req.logger.info('Clearing filesystem fileDir', fileDir)
     if (!fileDir.includes('tmp_track_artifacts')) {
@@ -130,7 +130,7 @@ router.post(
   ensureValidSPMiddleware,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const AsyncProcessingQueue =
       req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -205,7 +205,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const metadataJSON = req.body.metadata
 
     if (
@@ -400,7 +400,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const {
       blockchainTrackId,
       blockNumber,
@@ -675,7 +675,7 @@ router.post(
 /** Returns download status of track and 320kbps CID if ready + downloadable. */
 router.get(
   '/tracks/download_status/:blockchainId',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const blockchainId = req.params.blockchainId
     if (!blockchainId) {
       return errorResponseBadRequest('Please provide blockchainId.')

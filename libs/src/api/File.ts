@@ -71,10 +71,12 @@ export class File extends Base {
           )
 
           if (!response) {
-            const allForbidden = errored.every(
-              // @ts-expect-error not valid axios error
-              (error) => error.response.status === 403
-            )
+            const allForbidden =
+              errored.length &&
+              errored.every(
+                // @ts-expect-error not valid axios error
+                (error) => error.response.status === 403
+              )
             if (allForbidden) {
               // In the case for a 403, do not retry fetching
               bail(new Error('Forbidden'))

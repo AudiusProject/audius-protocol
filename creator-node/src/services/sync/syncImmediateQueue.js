@@ -96,22 +96,25 @@ class SyncImmediateQueue {
       creatorNodeEndpoint,
       forceResyncConfig,
       logContext,
-      serviceRegistry
+      serviceRegistry,
+      syncUuid
     } = job.data
 
     const startTime = getStartTime()
     try {
-      await secondarySyncFromPrimary({
+      const result = await secondarySyncFromPrimary({
         serviceRegistry,
         wallet,
         creatorNodeEndpoint,
         forceResyncConfig,
-        logContext
+        logContext,
+        syncUuid: syncUuid || null
       })
       logInfoWithDuration(
         { logger, startTime },
         `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
       )
+      return result
     } catch (e) {
       logErrorWithDuration(
         { logger, startTime },
@@ -130,14 +133,16 @@ class SyncImmediateQueue {
     creatorNodeEndpoint,
     forceResyncConfig,
     logContext,
-    parentSpanContext
+    parentSpanContext,
+    syncUuid = null // Could be null for backwards compatibility
   }) {
     const job = await this.queue.add('process-sync-immediate', {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
       logContext,
-      parentSpanContext
+      parentSpanContext,
+      syncUuid: syncUuid || null
     })
     const result = await job.waitUntilFinished(this.queueEvents)
     return result

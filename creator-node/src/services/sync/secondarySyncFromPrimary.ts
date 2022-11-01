@@ -1,5 +1,7 @@
 import type Logger from 'bunyan'
+import type { SyncStatus } from './syncUtil'
 
+import axios from 'axios'
 import _ from 'lodash'
 import {
   logger as genericLogger,
@@ -16,12 +18,14 @@ import {
   getAndValidateOwnEndpoint
 } from './secondarySyncFromPrimaryUtils'
 import { instrumentTracing, tracing } from '../../tracer'
-import { fetchExportFromNode } from './syncUtil'
+import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
 const models = require('../../models')
 const config = require('../../config')
+
+const selfSpId = config.get('spID')
 
 type SecondarySyncFromPrimaryParams = {
   serviceRegistry: any
@@ -31,6 +35,7 @@ type SecondarySyncFromPrimaryParams = {
   logContext: Object
   forceWipe?: boolean
   blockNumber?: number | null
+  syncUuid?: string | null
 }
 
 const handleSyncFromPrimary = async ({
@@ -135,6 +140,16 @@ const handleSyncFromPrimary = async ({
         return {
           abort: 'Stopping sync early because syncForceWipeEnabled=false',
           result: 'abort_force_wipe_disabled'
+        }
+      }
+
+      // Short circuit if this node was ever the user's primary. This is a temporary
+      // guardrail to prevent deleting corrupted data caused by the trackBlockchainId bug
+      if (await wasThisNodeEverPrimaryFor(wallet, libs)) {
+        return {
+          abort:
+            "Stopping sync early because forceWipe=true and this node used to be the user's primary",
+          result: 'abort_node_used_to_be_primary'
         }
       }
 
@@ -754,7 +769,8 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
-  blockNumber = null
+  blockNumber = null,
+  syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
@@ -802,6 +818,16 @@ async function _secondarySyncFromPrimary({
     }
   ) as Logger
 
+  try {
+    if (syncUuid && result?.length) {
+      await setSyncStatus(syncUuid, result as SyncStatus)
+    }
+  } catch (e) {
+    secondarySyncFromPrimaryLogger.error(
+      `Failed to update sync status for polling: ${e}`
+    )
+  }
+
   if (error) {
     tracing.setSpanAttribute('error', error)
     secondarySyncFromPrimaryLogger.error(
@@ -830,6 +856,34 @@ async function _secondarySyncFromPrimary({
   }
 
   return { result }
+}
+
+const wasThisNodeEverPrimaryFor = async (
+  wallet: string,
+  libs: any
+): Promise<boolean> => {
+  // Get userId from wallet
+  const users = await libs.User.getUsers(1, 0, null, wallet)
+  const userId = users[0].user_id
+
+  // Return true if any snapshot of the user's history had this node as their primary
+  const history = (
+    await axios({
+      baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
+      url: `/users/history/${userId}`,
+      params: {
+        limit: 100
+      },
+      method: 'get',
+      timeout: 45_000
+    })
+  ).data.data
+  if (history.length >= 100) return true
+  for (const snapshot of history) {
+    if (snapshot.primary_id === selfSpId) return true
+  }
+
+  return false
 }
 
 export const secondarySyncFromPrimary = instrumentTracing({
