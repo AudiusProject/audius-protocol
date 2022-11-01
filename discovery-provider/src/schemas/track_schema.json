@@ -359,13 +359,23 @@
         "PremiumConditionsNFTCollection": {
             "type": "object",
             "additionalProperties": false,
-            "oneOf": [
-                {
-                    "$ref": "#/definitions/PremiumConditionsEthNFTCollection"
-                },
-                {
-                    "$ref": "#/definitions/PremiumConditionsSolNFTCollection"
+            "properties": {
+                "nft_collection": {
+                    "type": "object",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/PremiumConditionsEthNFTCollection"
+                            },
+                            {
+                                "$ref": "#/definitions/PremiumConditionsSolNFTCollection"
+                            }
+                        ]
+                    }
                 }
+            },
+            "required": [
+                "nft_collection"
             ],
             "title": "PremiumConditionsNFTCollection"
         },
