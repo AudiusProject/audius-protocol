@@ -19,7 +19,6 @@ from src.models.users.audio_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
-from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,

@@ -6,12 +6,10 @@ import time
 from decimal import Decimal
 from typing import List, Optional, TypedDict
 
-import base58
 from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
-from src.database_task import DatabaseTask
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
     TransactionMethod,
@@ -20,14 +18,12 @@ from src.models.users.audio_transactions_history import (
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount
 from src.models.users.user_bank_backfill import UserBankBackfillTx
-from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
@@ -112,7 +108,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
+def get_user_ids_from_bank_accounts(session: Session, accts=List[str]):
     results = (
         session.query(User.user_id, UserBankAccount.bank_account)
         .join(
@@ -153,8 +149,8 @@ def process_transfer_instruction(
     logger.info(
         f"index_user_bank_backfill.py | Balance refresh accounts: {sender_account}, {receiver_account}"
     )
-    user_id_accounts = refresh_user_balances(
-        session, redis, [sender_account, receiver_account]
+    user_id_accounts = get_user_ids_from_bank_accounts(
+        session, [sender_account, receiver_account]
     )
     if not user_id_accounts:
         logger.error(

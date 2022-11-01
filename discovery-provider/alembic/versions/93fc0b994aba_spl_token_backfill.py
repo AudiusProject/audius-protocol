@@ -18,7 +18,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "spl_token_backfill_txs",
-        sa.Column("last_scanned_slot", sa.Integer, nullable=False),
+        sa.Column("last_scanned_slot", sa.Integer(), nullable=False),
         sa.Column("signature", sa.String(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
