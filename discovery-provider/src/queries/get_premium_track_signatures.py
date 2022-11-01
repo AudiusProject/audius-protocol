@@ -85,7 +85,9 @@ def _get_nft_gated_tracks(track_ids: List[int], session: Session):
         .all()
     )
     nft_gated_tracks = list(
-        filter(lambda track: "nft_collection" in track, premium_tracks)
+        filter(
+            lambda track: "nft_collection" in track.premium_conditions, premium_tracks  # type: ignore
+        )
     )
     return nft_gated_tracks
 
@@ -105,7 +107,7 @@ def _get_eth_nft_gated_track_signatures(
     # Handle premium tracks gated by ERC721 nft collections
     erc721_gated_tracks = list(
         filter(
-            lambda track: track.premium_conditions["nft_collection"]["standard"]
+            lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
             == "ERC721",
             tracks,
         )
@@ -117,7 +119,7 @@ def _get_eth_nft_gated_track_signatures(
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
         contract_address = Web3.toChecksumAddress(
-            track.premium_conditions["nft_collection"]["address"]
+            track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc721_collection_track_map[contract_address].append(track.track_id)
 
@@ -152,7 +154,7 @@ def _get_eth_nft_gated_track_signatures(
     # Handle premium tracks gated by ERC1155 nft collections
     erc1155_gated_tracks = list(
         filter(
-            lambda track: track.premium_conditions["nft_collection"]["standard"]
+            lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
             == "ERC1155",
             tracks,
         )
@@ -168,7 +170,7 @@ def _get_eth_nft_gated_track_signatures(
     contract_address_token_id_map: Dict[str, Set[int]] = defaultdict(set)
     for track in erc1155_gated_tracks:
         contract_address = Web3.toChecksumAddress(
-            track.premium_conditions["nft_collection"]["address"]
+            track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc1155_collection_track_map[contract_address].append(track.track_id)
         track_token_id_set = set(map(int, track_token_id_map[track.track_id]))
