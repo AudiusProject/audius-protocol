@@ -1,5 +1,5 @@
 import type { PrometheusRegistry } from '../../prometheusMonitoring/prometheusRegistry'
-import type { Queue, Job } from 'bullmq'
+import type { Queue } from 'bullmq'
 import type Logger from 'bunyan'
 
 import _ from 'lodash'
