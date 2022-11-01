@@ -23,7 +23,7 @@ const CID_DIRECTORY_REGEX =
 // Prefix for redis keys that store which files to delete for a user
 const REDIS_DEL_FILE_KEY_PREFIX = 'filePathsToDeleteFor'
 
-const DAYS_BEFORE_PRUNING_ORPHANED_CONTENT = 7
+const DAYS_BEFORE_PRUNING_ORPHANED_CONTENT = 4
 
 const DB_QUERY_SUCCESS_CHECK_STR = `sweep_db_query_success_${Math.floor(
   Math.random() * 10000
