@@ -128,7 +128,7 @@ const startAppForPrimary = async () => {
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  const firstWorker = cluster.fork()
+  const firstWorker = cluster.fork({ isInitWorker: true })
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
     if (msg?.cmd === 'initComplete') {
@@ -189,8 +189,11 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
+  if (process.env.isInitWorker) clusterUtils.markThisWorkerAsInit()
   logger.info(
-    `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
+    `Worker process with pid=${process.pid} and worker ID=${
+      cluster.worker?.id
+    } is running. Is this worker init: ${clusterUtils.isThisWorkerInit()}`
   )
   await verifyConfigAndDb()
   await startApp()
