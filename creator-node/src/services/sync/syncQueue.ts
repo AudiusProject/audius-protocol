@@ -64,7 +64,6 @@ export class SyncQueue {
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
     if (clusterUtils.isThisWorkerInit()) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       await this.deleteOldActiveJobs()
     }
 
