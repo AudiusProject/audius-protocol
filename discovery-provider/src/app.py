@@ -429,6 +429,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
+            "src.tasks.index_spl_token_backfill",
             "src.tasks.index_solana_user_data",
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
@@ -539,6 +540,11 @@ def configure_celery(celery, test_config=None):
             "index_spl_token": {
                 "task": "index_spl_token",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_spl_token_backfill": {
+                "task": "index_spl_token_backfill",
+                "schedule": timedelta(seconds=5),
+                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",

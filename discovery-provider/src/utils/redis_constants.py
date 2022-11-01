@@ -43,6 +43,10 @@ latest_sol_user_bank_backfill_db_tx_key = "latest_sol_program_tx:user_bank_backf
 
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
+latest_sol_spl_token_backfill_program_tx_key = (
+    "latest_sol_program_tx:spl_token_backfill:chain"
+)
+latest_sol_spl_token_backfill_db_key = "latest_sol_program_tx:spl_token_backfill:db"
 
 # Solana latest slot per indexer
 # Used to get the latest processed slot of each indexing task, using the global slots instead of the per-program slots
