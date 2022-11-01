@@ -14,6 +14,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
@@ -84,7 +85,12 @@ export const ListeningHistoryScreen = () => {
   )
 
   return (
-    <Screen title={messages.title} topbarRight={null} variant='secondary'>
+    <Screen
+      title={messages.title}
+      icon={IconListeningHistory}
+      topbarRight={null}
+      variant='secondary'
+    >
       <WithLoader loading={status === Status.LOADING}>
         {status === Status.SUCCESS && entries.length === 0 ? (
           <EmptyTileCTA message={messages.noHistoryMessage} />

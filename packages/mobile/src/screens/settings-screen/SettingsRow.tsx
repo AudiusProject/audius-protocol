@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import type { StyleProp, ViewStyle } from 'react-native'
-import { Pressable, View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import { Link } from 'app/components/core'
@@ -14,6 +14,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     borderTopWidth: 1
   },
   root: {
+    backgroundColor: palette.white
+  },
+  row: {
     backgroundColor: palette.white,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -41,18 +44,17 @@ export const SettingsRow = (props: SettingsRowProps) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
-  const Root = url ? Link : Pressable
+  const Row = url ? Link : onPress ? TouchableOpacity : View
 
   return (
-    <Root
-      url={url as string}
-      onPress={onPress}
-      style={[styles.root, firstItem && styles.firstItem, style]}
-    >
-      <View style={styles.content}>{children}</View>
-      {onPress || url ? (
-        <IconCaretRight fill={neutralLight4} height={16} width={16} />
-      ) : null}
-    </Root>
+    <View style={[styles.root, firstItem && styles.firstItem]}>
+      {/* @ts-ignore */}
+      <Row url={url as string} onPress={onPress} style={[styles.row, style]}>
+        <View style={styles.content}>{children}</View>
+        {onPress || url ? (
+          <IconCaretRight fill={neutralLight4} height={16} width={16} />
+        ) : null}
+      </Row>
+    </View>
   )
 }

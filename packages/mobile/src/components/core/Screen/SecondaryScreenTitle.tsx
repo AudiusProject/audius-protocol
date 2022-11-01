@@ -24,10 +24,11 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type SecondaryScreenTitleProps = {
   icon?: ComponentType<SvgProps>
+  IconProps?: SvgProps
   title: ReactNode
 }
 export const SecondaryScreenTitle = (props: SecondaryScreenTitleProps) => {
-  const { icon: Icon, title } = props
+  const { icon: Icon, IconProps, title } = props
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
@@ -39,6 +40,7 @@ export const SecondaryScreenTitle = (props: SecondaryScreenTitleProps) => {
           fill={neutralLight4}
           height={spacing(6)}
           width={spacing(6)}
+          {...IconProps}
         />
       ) : null}
       <Text

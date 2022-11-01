@@ -4,7 +4,7 @@ import type { CastMethod } from '@audius/common'
 import { accountSelectors, castSelectors, castActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
+import Cast from 'app/assets/images/emojis/speaker-with-three-sound-waves.png'
 import { SegmentedControl } from 'app/components/core'
 
 import { SettingsRowLabel } from './SettingRowLabel'
@@ -45,7 +45,7 @@ export const CastSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.cast} iconSource={Appearance} />
+      <SettingsRowLabel label={messages.cast} iconSource={Cast} />
       <SettingsRowDescription>
         {messages.castDescription}
       </SettingsRowDescription>
