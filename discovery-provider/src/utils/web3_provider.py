@@ -24,7 +24,7 @@ def get_web3():
         # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         return web3
-        
+
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
 

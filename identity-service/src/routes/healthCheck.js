@@ -185,7 +185,6 @@ module.exports = function (app) {
           failedTransactionHashes: failureTxs,
           startBlock: startBlockNumber,
           endBlock: endBlockNumber,
-          finalPOABlock: config.get('finalPOABlock')
         },
         redis: {
           attemptedTxsCount: attemptedTxsInRedis.length,
@@ -222,6 +221,16 @@ module.exports = function (app) {
         git: process.env.GIT_SHA,
         selectedDiscoveryProvider:
           audiusLibsInstance.discoveryProvider.discoveryProviderEndpoint
+      })
+    })
+  )
+
+  app.get(
+    '/health_check/poa',
+    handleResponse(async (req, res) => {
+      // for now we just check db connectivity
+      return successResponse({
+        finalPOABlock: config.get('finalPOABlock')
       })
     })
   )

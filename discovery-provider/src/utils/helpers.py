@@ -521,6 +521,7 @@ def get_solana_tx_owner(meta, idx) -> str:
         "",
     )
 
+
 def get_final_poa_block(shared_config):
     logger = logging.getLogger(__name__)
 
@@ -532,7 +533,7 @@ def get_final_poa_block(shared_config):
         return cached_final_poa_block
 
     identity_endpoint = (
-        f"{shared_config['discprov']['identity_service_url']}/health_check/relay"
+        f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
     )
     logger.info(f"asdf identity_endpoint {identity_endpoint}")
 
@@ -541,14 +542,9 @@ def get_final_poa_block(shared_config):
     response_json = response.json()
     logger.info(f"asdf response_json {response_json}")
 
-    if "error" in response_json:
-        response_json = response_json["error"]
-
-    final_poa_block = response_json["blockchain"].get("finalPOABlock", None)
+    final_poa_block = response_json.get("finalPOABlock", None)
     logger.info(f"asdf final_poa_block {final_poa_block}")
 
-    redis_set_and_dump(
-        redis, final_poa_block_redis_key, final_poa_block
-    )
+    redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
 
     return final_poa_block
