@@ -400,6 +400,7 @@ def configure_celery(celery, test_config=None):
     indexing_interval_sec = int(
         shared_config["discprov"]["block_processing_interval_sec"]
     )
+    backfill_stop_sig = shared_config["discprov"]["backfill_stop_sig"]
 
     # Update celery configuration
     celery.conf.update(
@@ -418,6 +419,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
+            "src.tasks.index_user_bank_backfill",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
@@ -487,6 +489,11 @@ def configure_celery(celery, test_config=None):
             "index_user_bank": {
                 "task": "index_user_bank",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_user_bank_backfill": {
+                "task": "index_user_bank_backfill",
+                "schedule": timedelta(seconds=5),
+                "kwargs": {"stop_sig": backfill_stop_sig},
             },
             "index_challenges": {
                 "task": "index_challenges",
@@ -601,6 +608,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
+    redis_inst.delete("user_bank_backfill_lock")
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
