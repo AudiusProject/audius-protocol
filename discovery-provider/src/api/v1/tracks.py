@@ -1211,7 +1211,7 @@ track_signatures_parser.add_argument(
 )
 
 
-@full_ns.route("/<string:user_id>/signatures")
+@full_ns.route("/<string:user_id>/nft-gated-signatures")
 class NFTGatedPremiumTrackSignatures(Resource):
     @record_metrics
     @full_ns.doc(

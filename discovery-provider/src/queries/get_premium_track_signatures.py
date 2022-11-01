@@ -1,5 +1,7 @@
 import concurrent.futures
+import json
 import logging
+import pathlib
 from collections import defaultdict
 from typing import Dict, List, Set
 
@@ -17,8 +19,8 @@ from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
-erc721_abi = '[{"constant":true,"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]'
-erc1155_abi = '[{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"accounts","type":"address[]"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"}]'
+erc721_abi = None
+erc1155_abi = None
 
 eth_web3 = web3_provider.get_eth_web3()
 
@@ -320,3 +322,16 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
                 {"id": track_id, "type": "track", "user_wallet": user_wallet}
             )
         return track_signature_map
+
+
+def _load_abis():
+    global erc721_abi
+    global erc1155_abi
+    ERC721_ABI_PATH = pathlib.Path(__file__).parent / "../abis" / "ERC721.json"
+    ERC1155_ABI_PATH = pathlib.Path(__file__).parent / "../abis" / "ERC1155.json"
+    with open(ERC721_ABI_PATH) as f721, open(ERC1155_ABI_PATH) as f1155:
+        erc721_abi = json.dumps(json.load(f721))
+        erc1155_abi = json.dumps(json.load(f1155))
+
+
+_load_abis()
