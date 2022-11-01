@@ -9,14 +9,17 @@ from src.utils.config import shared_config
 from src.utils.multi_provider import MultiProvider
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
+import logging
 
 web3: Optional[Web3] = None
 
+logger = logging.getLogger(__name__)
 
 def get_web3():
     # pylint: disable=W0603
     global web3
     if helpers.get_final_poa_block(shared_config):
+        logger.info(f"asdf web3 configs {shared_config['web3']}")
         web3endpoint = shared_config["web3"]["nethermind_rpc"]
         web3 = Web3(HTTPProvider(web3endpoint))
 
