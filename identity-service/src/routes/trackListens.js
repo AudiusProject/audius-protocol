@@ -70,6 +70,86 @@ const parseTimeframe = (inputTime) => {
   return inputTime
 }
 
+const getTrendingTracks = async (idList, timeFrame, limit, offset) => {
+  if (idList !== undefined && !Array.isArray(idList)) {
+    return errorResponseBadRequest(
+      'Invalid id list provided. Please provide an array of track IDs'
+    )
+  }
+
+  const dbQuery = {
+    attributes: [
+      'trackId',
+      [models.Sequelize.fn('sum', models.Sequelize.col('listens')), 'listens']
+    ],
+    group: ['trackId'],
+    order: [
+      [models.Sequelize.col('listens'), 'DESC'],
+      [models.Sequelize.col('trackId'), 'DESC']
+    ],
+    where: {}
+  }
+
+  // If id list present, add filter
+  if (idList) {
+    dbQuery.where.trackId = { [models.Sequelize.Op.in]: idList }
+  }
+
+  const currentHour = trimToHour(new Date())
+  switch (timeFrame) {
+    case 'day': {
+      const oneDayBefore = new Date(currentHour.getTime() - oneDayInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneDayBefore }
+      break
+    }
+    case 'week': {
+      const oneWeekBefore = new Date(currentHour.getTime() - oneWeekInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneWeekBefore }
+      break
+    }
+    case 'month': {
+      const oneMonthBefore = new Date(currentHour.getTime() - oneMonthInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneMonthBefore }
+      break
+    }
+    case 'year': {
+      const oneYearBefore = new Date(currentHour.getTime() - oneYearInMs)
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: oneYearBefore }
+      break
+    }
+    case 'millennium': {
+      dbQuery.where.hour = { [models.Sequelize.Op.gte]: new Date(0) }
+      break
+    }
+    case undefined:
+      break
+    default:
+      return errorResponseBadRequest(
+        'Invalid time parameter provided, use day/week/month/year or no parameter'
+      )
+  }
+  if (limit) {
+    dbQuery.limit = limit
+  }
+
+  if (offset) {
+    dbQuery.offset = offset
+  }
+
+  const listenCounts = await models.TrackListenCount.findAll(dbQuery)
+  const parsedListenCounts = []
+  const seenTrackIds = []
+  listenCounts.forEach((elem) => {
+    parsedListenCounts.push({
+      trackId: elem.trackId,
+      listens: parseInt(elem.listens)
+    })
+    seenTrackIds.push(elem.trackId)
+  })
+
+  return parsedListenCounts
+}
+
 /**
  * Generate the redis keys required for tracking listen submission vs success
  * @param {string} hour formatted as such - 2022-01-25T21:00:00.000Z
