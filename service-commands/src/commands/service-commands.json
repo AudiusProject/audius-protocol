@@ -276,9 +276,5 @@
   "monitoring": {
     "up": ["cd monitoring; scripts/up.sh"],
     "down": ["cd monitoring; scripts/down.sh"]
-  },
-  "logging": {
-    "up": ["./logging/bin/start.sh"],
-    "down": ["./logging/bin/stop.sh"]
   }
 }
