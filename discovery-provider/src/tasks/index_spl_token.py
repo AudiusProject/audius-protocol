@@ -319,7 +319,6 @@ def parse_sol_tx_batch(
             audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
             session.bulk_save_objects(audio_txs)
 
-
         if updated_root_accounts:
             # Remove the user bank owner
             user_bank_owner, _ = get_base_address(SPL_TOKEN_PUBKEY, USER_BANK_PUBKEY)
