@@ -296,10 +296,10 @@ const config = convict({
     env: 'imageProcessingMaxConcurrency',
     default: -1
   },
-  trackUploadArtifactDeletionEnabled: {
+  deleteTrackUploadArtifacts: {
     doc: 'whether or not to delete track upload artifacts from disk in `fileManager.removeTrackFolder()`',
     format: Boolean,
-    env: 'trackUploadArtifactDeletionEnabled',
+    env: 'deleteTrackUploadArtifacts',
     default: false
   },
 
