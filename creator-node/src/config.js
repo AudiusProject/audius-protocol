@@ -227,19 +227,19 @@ const config = convict({
     doc: 'Latitude where the server running this service is located',
     format: String,
     env: 'serviceLatitude',
-    default: null
+    default: ''
   },
   serviceLongitude: {
     doc: 'Longitude where the server running this service is located',
     format: String,
     env: 'serviceLongitude',
-    default: null
+    default: ''
   },
   serviceCountry: {
     doc: 'Country where the server running this service is located',
     format: String,
     env: 'serviceCountry',
-    default: null
+    default: ''
   },
   sampleRate: {
     doc: 'FFMPEG sample rate',
@@ -348,19 +348,19 @@ const config = convict({
     doc: 'eth token address',
     format: String,
     env: 'ethTokenAddress',
-    default: null
+    default: ''
   },
   ethRegistryAddress: {
     doc: 'eth registry address',
     format: String,
     env: 'ethRegistryAddress',
-    default: null
+    default: ''
   },
   ethOwnerWallet: {
     doc: 'eth owner wallet',
     format: String,
     env: 'ethOwnerWallet',
-    default: null
+    default: ''
   },
   spOwnerWallet: {
     doc: 'Service provider owner wallet',
@@ -390,7 +390,7 @@ const config = convict({
     doc: 'data contracts registry address',
     format: String,
     env: 'dataRegistryAddress',
-    default: null
+    default: ''
   },
   entityManagerAddress: {
     doc: 'entity manager registry address',
@@ -402,7 +402,7 @@ const config = convict({
     doc: 'data contracts web3 provider url',
     format: String,
     env: 'dataProviderUrl',
-    default: null
+    default: ''
   },
   dataNetworkId: {
     doc: 'data contracts network id',
