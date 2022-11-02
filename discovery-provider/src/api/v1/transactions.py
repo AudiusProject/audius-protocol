@@ -1,5 +1,6 @@
 import logging
 
+from src.utils.auth_middleware import SIGNATURE_HEADER, MESSAGE_HEADER
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     abort_not_found,
@@ -44,9 +45,21 @@ transaction_history_parser.add_argument(
     choices=SortDirection._member_names_,
     default=SortDirection.desc,
 )
+transaction_history_parser.add_argument(
+    MESSAGE_HEADER,
+    required=True,
+    description="The data that was signed by the user for signature recovery",
+    location="headers"
+)
+transaction_history_parser.add_argument(
+    SIGNATURE_HEADER,
+    required=True,
+    description="The signature of data, used for signature recovery",
+    location="headers"
+)
 
 
-@full_ns.route("")
+@full_ns.route("", doc=False)
 class GetTransactionHistory(Resource):
     @full_ns.doc(
         id="""Get Audio Transaction History""",
