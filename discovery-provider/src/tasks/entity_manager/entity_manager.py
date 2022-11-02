@@ -389,12 +389,18 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             entity_id = subscription_to_fetch[2]
             and_queries.append(
                 and_(
-                    Subscription.user_id == user_id,
-                    Subscription.repost_type == entity_type.lower(),
-                    Repost.repost_item_id == entity_id,
-                    Repost.is_current == True,
+                    Subscription.subscriber_id == user_id,
+                    Subscription.user_id == entity_type.lower(),
+                    Subscription.is_current == True,
                 )
             )
+        subscriptions: List[Subscription] = session.query(Subscription).filter(or_(*and_queries)).all()
+        existing_entities[EntityType.SUBSCRIPTION] = {
+            get_record_key(
+                subscription.subscriber_id, EntityType.USER, subscription.user_id
+            ): subscription
+            for subscription in subscriptions
+        }
 
     return existing_entities
 

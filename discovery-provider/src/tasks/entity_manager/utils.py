@@ -7,6 +7,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -59,6 +60,7 @@ class RecordDict(TypedDict):
     Follow: Dict[Tuple, List[Follow]]
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
+    Subscription: Dict[Tuple, List[Subscription]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -67,6 +69,7 @@ class ExistingRecordDict(TypedDict):
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
+    Subscription: Dict[Tuple, Subscription]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -75,6 +78,7 @@ class EntitiesToFetchDict(TypedDict):
     User: Set[int]
     Follow: Set[Tuple]
     Save: Set[Tuple]
+    Subscription: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
