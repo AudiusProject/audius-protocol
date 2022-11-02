@@ -379,6 +379,7 @@ def configure_flask(test_config, app, mode="app"):
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
+    app.register_blueprint(api_v1.playlist_stream_bp)
 
     return app
 

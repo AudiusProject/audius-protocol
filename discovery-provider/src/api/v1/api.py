@@ -6,6 +6,7 @@ from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
 from src.api.v1.playlists import full_ns as full_playlists_ns
 from src.api.v1.playlists import ns as playlists_ns
+from src.api.v1.playlists import playlist_stream_bp
 from src.api.v1.reactions import ns as reactions_ns
 from src.api.v1.resolve import ns as resolve_ns
 from src.api.v1.search import full_ns as full_search_ns
