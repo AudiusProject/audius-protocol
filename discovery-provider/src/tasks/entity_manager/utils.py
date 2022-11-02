@@ -31,6 +31,8 @@ class Action(str, Enum):
     REPOST = "Repost"
     UNREPOST = "Unrepost"
     VERIFY = "Verify"
+    SUBSCRIBE = "Subscribe"
+    UNSUBSCRIBE = "Unsubscribe"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -44,6 +46,7 @@ class EntityType(str, Enum):
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
+    SUBSCRIPTION = "Subscription"
 
     def __str__(self) -> str:
         return str.__str__(self)
