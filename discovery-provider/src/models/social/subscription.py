@@ -24,8 +24,8 @@ class Subscription(Base, RepresentableMixin):
     )
 
     block = relationship(  # type: ignore
-        "Block", primaryjoin="Follow.blockhash == Block.blockhash"
+        "Block", primaryjoin="Subscription.blockhash == Block.blockhash"
     )
     block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Follow.blocknumber == Block.number"
+        "Block", primaryjoin="Subscription.blocknumber == Block.number"
     )
