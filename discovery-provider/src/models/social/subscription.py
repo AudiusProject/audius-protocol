@@ -22,7 +22,11 @@ class Subscription(Base, RepresentableMixin):
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP")
+    )
     txhash = Column(
         String,
         primary_key=True,
