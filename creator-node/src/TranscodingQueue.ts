@@ -48,9 +48,7 @@ class TranscodingQueue {
       genericLogger.debug(e)
     )
 
-    // disabling because `new Worker()` has side effects
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const worker = new Worker(
+    const _worker = new Worker(
       'transcoding-queue',
       async (job) => {
         switch (job.name) {
