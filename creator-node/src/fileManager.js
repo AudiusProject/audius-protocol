@@ -472,6 +472,11 @@ async function saveFileForMultihashToFS(
 async function removeTrackFolder({ logContext }, fileDir) {
   const logger = genericLogger.child(logContext)
   try {
+    const deleteTrackUploadArtifacts = config.get(
+      'deleteTrackUploadArtifacts'
+    )
+    if (!deleteTrackUploadArtifacts) return
+
     if (!fileDir) {
       throw new Error('Cannot remove null fileDir')
     }
