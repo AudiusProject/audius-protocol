@@ -14,9 +14,7 @@ class Subscription(Base, RepresentableMixin):
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     created_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP")
+        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
     txhash = Column(
         String,
