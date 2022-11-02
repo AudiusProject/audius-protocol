@@ -634,6 +634,7 @@ async function filterOutAbusiveUsers(notifications) {
     usersAbuseMap[user.blockchainUserId] =
       user.isBlockedFromRelay || user.isBlockedFromNotifications
   })
+  usersAbuseMap['51'] = true
   const result = notifications.filter((notification) => {
     const isInitiatorAbusive = usersAbuseMap[notification.initiator.toString()]
     const isUserEntityAbusive =

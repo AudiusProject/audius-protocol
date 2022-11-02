@@ -146,11 +146,11 @@ class App {
       await this.configureReporter()
 
       if (process.env.WORKER_TYPE === 'notifications') {
-        // await this.notificationProcessor.init(
-        //   audiusInstance,
-        //   this.express,
-        //   this.redisClient
-        // )
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
       } else {
         await new Promise((resolve) => {
           server = this.express.listen(this.port, resolve)
