@@ -89,6 +89,7 @@ type TableProps = {
   showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number
+  useLocalSort?: boolean
   wrapperClassName?: string
 }
 
@@ -116,6 +117,7 @@ export const Table = ({
   showMoreLimit,
   tableClassName,
   totalRowCount = 9999,
+  useLocalSort = false,
   wrapperClassName
 }: TableProps) => {
   const defaultColumn = useMemo(
@@ -166,7 +168,7 @@ export const Table = ({
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
   // - This can be updated if we need multiple sorters in the future
   const handleSortChange = useCallback(() => {
-    if (isVirtualized) {
+    if (isVirtualized && !useLocalSort) {
       // Virtualized Table -> Pass back the selected column and direction for backend sorting
       if (sortBy.length === 0) return onSort?.('', '')
 
@@ -197,9 +199,9 @@ export const Table = ({
         onSort?.({ column: null, order })
       }
     }
-  }, [columns, defaultSorter, isVirtualized, onSort, sortBy])
+  }, [columns, defaultSorter, isVirtualized, onSort, sortBy, useLocalSort])
 
-  useEffect(handleSortChange, [handleSortChange, sortBy])
+  useEffect(handleSortChange, [sortBy])
 
   const renderTableHeader = useCallback((column) => {
     return (

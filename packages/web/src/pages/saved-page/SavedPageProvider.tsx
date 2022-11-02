@@ -22,7 +22,8 @@ import {
   SavedPageCollection,
   tracksSocialActions as socialActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  Kind
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -78,6 +79,7 @@ type SavedPageState = {
   filterText: string
   sortMethod: string
   sortDirection: string
+  allTracksFetched: boolean
   initialOrder: UID[] | null
   reordering?: UID[] | null
   allowReordering?: boolean
@@ -89,6 +91,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     sortMethod: '',
     sortDirection: '',
     initialOrder: null,
+    allTracksFetched: false,
     currentTab: ProfileTabs.TRACKS
   }
 
@@ -130,9 +133,22 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 
   componentDidUpdate() {
     const { tracks } = this.props
+    const allTracksFetched = tracks.entries.every(
+      (track) => track.kind === Kind.TRACKS
+    )
+
+    if (
+      allTracksFetched &&
+      !this.state.allTracksFetched &&
+      !this.state.filterText
+    ) {
+      this.setState({ allTracksFetched: true })
+    } else if (!allTracksFetched && this.state.allTracksFetched) {
+      this.setState({ allTracksFetched: false })
+    }
 
     if (!this.state.initialOrder && tracks.entries.length > 0) {
-      const initialOrder = tracks.entries.map((track: any) => track.uid)
+      const initialOrder = tracks.entries.map((track: any) => track.id)
       this.setState({
         initialOrder,
         reordering: initialOrder
@@ -141,7 +157,10 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   onFilterChange = (e: any) => {
-    this.setState({ filterText: e.target.value }, this.handleFetchSavedTracks)
+    const callBack = !this.state.allTracksFetched
+      ? this.handleFetchSavedTracks
+      : undefined
+    this.setState({ filterText: e.target.value }, callBack)
   }
 
   onSortChange = (method: string, direction: string) => {
@@ -209,8 +228,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
       (item) =>
-        item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
-        item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+        item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
+        item.user?.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
       playingIndex > -1
@@ -381,7 +400,13 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const dataSource = this.formatMetadata(entries)
     let updatedOrder
     if (!column) {
-      updatedOrder = this.state.initialOrder
+      const trackIdMap = this.props.tracks.entries.reduce((acc, track) => {
+        acc[track.id] = track
+        return acc
+      }, {})
+      updatedOrder = this.state.initialOrder?.map((id) => {
+        return trackIdMap[id]?.uid
+      })
       this.setState({ allowReordering: true })
     } else {
       updatedOrder = dataSource
@@ -391,7 +416,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
         .map((metadata) => metadata.uid)
       this.setState({ allowReordering: false })
     }
-    this.props.updateLineupOrder(updatedOrder!)
+    if (updatedOrder) this.props.updateLineupOrder(updatedOrder)
   }
 
   onChangeTab = (tab: ProfileTabs) => {
@@ -418,6 +443,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       currentTab: this.state.currentTab,
       filterText: this.state.filterText,
       initialOrder: this.state.initialOrder,
+      allTracksFetched: this.state.allTracksFetched,
       reordering: this.state.reordering,
       allowReordering: this.state.allowReordering,
 
@@ -449,7 +475,11 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       onFilterChange: this.onFilterChange,
       onSortChange: this.onSortChange,
       formatMetadata: this.formatMetadata,
-      getFilteredData: this.getFormattedData,
+      // Pass in function to allow client side filtering if all tracks have been fetched
+      // Else pass in formatted data function
+      getFilteredData: this.state.allTracksFetched
+        ? this.getFilteredData
+        : this.getFormattedData,
       onPlay: this.onPlay,
       onSortTracks: this.onSortTracks,
       onChangeTab: this.onChangeTab,
