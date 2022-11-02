@@ -356,7 +356,9 @@ def extend_transaction_details(transaction_details):
     new_transaction_details = transaction_details.copy()
     new_transaction_details["change"] = str(transaction_details["change"])
     new_transaction_details["balance"] = str(transaction_details["balance"])
-    new_transaction_details["transaction_date"] = transaction_details["transaction_created_at"]
+    new_transaction_details["transaction_date"] = transaction_details[
+        "transaction_created_at"
+    ]
     return new_transaction_details
 
 
