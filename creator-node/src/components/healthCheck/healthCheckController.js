@@ -16,7 +16,7 @@ const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
-const TranscodingQueue = require('../../TranscodingQueue')
+const { transcodingQueue } = require('../../TranscodingQueue')
 
 const { ensureValidSPMiddleware } = require('../../middlewares')
 
@@ -55,8 +55,8 @@ const healthCheckController = async (req) => {
     logger,
     sequelize,
     getMonitors,
-    TranscodingQueue.getTranscodeQueueJobs,
-    TranscodingQueue.isAvailable,
+    transcodingQueue.getTranscodeQueueJobs,
+    transcodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
@@ -188,8 +188,8 @@ const healthCheckVerboseController = async (req) => {
     sequelize,
     getMonitors,
     numberOfCPUs,
-    TranscodingQueue.getTranscodeQueueJobs,
-    TranscodingQueue.isAvailable,
+    transcodingQueue.getTranscodeQueueJobs,
+    transcodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 

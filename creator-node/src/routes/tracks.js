@@ -35,7 +35,7 @@ const { getCID, streamFromFileSystem } = require('./files')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
-const TranscodingQueue = require('../TranscodingQueue')
+const { transcodingQueue } = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
 
 const router = express.Router()
@@ -61,7 +61,7 @@ router.post(
       req.app.get('serviceRegistry').asyncProcessingQueue
 
     const selfTranscode = currentNodeShouldHandleTranscode({
-      transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
+      transcodingQueueCanAcceptMoreJobs: await transcodingQueue.isAvailable(),
       spID: config.get('spID')
     })
 

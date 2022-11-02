@@ -10,7 +10,7 @@ import {
 import { getSegmentsDuration } from '../../segmentDuration'
 
 import DBManager from '../../dbManager'
-import TranscodingQueue from '../../TranscodingQueue'
+import { transcodingQueue } from '../../TranscodingQueue'
 import FileManager from '../../fileManager'
 import { tracing } from '../../tracer'
 
@@ -51,8 +51,8 @@ export async function transcodeAndSegment(
   let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8FilePath
   try {
     const response = await Promise.all([
-      TranscodingQueue.segment(fileDir, fileName, { logContext }),
-      TranscodingQueue.transcode320(fileDir, fileName, { logContext })
+      transcodingQueue.segment(fileDir, fileName, { logContext }),
+      transcodingQueue.transcode320(fileDir, fileName, { logContext })
     ])
 
     segmentFileNames = response[0].segments.fileNames

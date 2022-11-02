@@ -22,7 +22,7 @@ const { AsyncProcessingQueue } = require('./AsyncProcessingQueue')
 const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
 const { TrustedNotifierManager } = require('./services/TrustedNotifierManager')
 const { ImageProcessingQueue } = require('./ImageProcessingQueue')
-const TranscodingQueue = require('./TranscodingQueue')
+const { transcodingQueue } = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
 const {
@@ -55,7 +55,7 @@ class ServiceRegistry {
     this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
-    this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
+    this.transcodingQueue = transcodingQueue // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.syncImmediateQueue = null // Handles syncing manual immediate jobs
