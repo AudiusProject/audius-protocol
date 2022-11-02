@@ -689,9 +689,18 @@ describe('test removeTrackFolder()', async function () {
       await fs.pathExists(path.join(trackSourceFileDir, 'transcode.mp3'))
     )
 
+    const configOverride = config
+    configOverride.set('deleteTrackUploadArtifacts', true)
+    const { removeTrackFolder: removeTrackFolderFn } = proxyquire(
+      '../src/fileManager',
+      {
+        config: configOverride
+      }
+    )
+
     // Call removeTrackFolder + expect success
     try {
-      await removeTrackFolder(req, trackSourceFileDir)
+      await removeTrackFolderFn(req, trackSourceFileDir)
     } catch (e) {
       assert.fail(e.message)
     }
