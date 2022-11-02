@@ -73,6 +73,7 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
@@ -252,6 +253,9 @@ services:
 
       redisHost: "identity-service-redis"
       redisPort: 6379
+
+      aaoEndpoint: "http://anti-abuse-oracle:8000"
+      aaoAddress: "${AAO_WALLET_ADDRESS}"
 
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
