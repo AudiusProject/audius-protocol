@@ -589,7 +589,7 @@ def cli(
                 show_output=True,
                 exit_on_error=IGNORE,
                 dry_run=dry_run,
-                timeout_sec=180
+                timeout_sec=180,
             )
 
             if environment == "prod":
