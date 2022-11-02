@@ -163,6 +163,7 @@ const Card = ({
   const menuActionsRef = useRef<HTMLDivElement>(null)
   const handleClick = useCallback(
     (e) => {
+      e.preventDefault()
       if (isDescendantElementOf(e?.target, menuActionsRef.current)) return
       onClick(e)
     },
