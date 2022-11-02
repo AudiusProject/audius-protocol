@@ -63,7 +63,7 @@ export function* setupBackend() {
   // If we couldn't connect, show the error page
   // and just sit here waiting for reachability.
   if (!establishedReachability) {
-    console.error('No internet connectivity')
+    console.warn('No internet connectivity')
     yield* put(accountActions.fetchAccountNoInternet())
     yield* take(reachabilityActions.SET_REACHABLE)
     console.info('Reconnected')

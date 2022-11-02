@@ -20,6 +20,8 @@ import UserBadges from 'app/components/user-badges'
 import { font, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { TrackDownloadIndicator } from '../offline-downloads/TrackDownloadIndicator'
+
 import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
 import type { TrackMetadata } from './types'
@@ -233,6 +235,7 @@ export const TrackListItem = ({
             <UserBadges user={track.user} badgeSize={12} hideName />
           </Text>
         </View>
+        <TrackDownloadIndicator trackId={track_id} />
         {trackItemAction === 'save' ? (
           <IconButton
             icon={IconHeart}

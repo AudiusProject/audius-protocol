@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import IconFeed from 'app/assets/images/iconFeed.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { make, track } from 'app/services/analytics'
 
@@ -44,7 +45,9 @@ export const FeedScreen = () => {
         icon={IconFeed}
         styles={{ icon: { marginLeft: 2 } }}
       >
-        <FeedFilterButton />
+        <OnlineOnly>
+          <FeedFilterButton />
+        </OnlineOnly>
       </ScreenHeader>
       <ScreenContent>
         <Lineup
