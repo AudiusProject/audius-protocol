@@ -1,12 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    text,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
 from sqlalchemy.orm import relationship
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
