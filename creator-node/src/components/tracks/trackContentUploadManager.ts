@@ -1,5 +1,6 @@
 import type { LogContext } from '../../apiHelpers'
 
+import { libs } from '@audius/sdk'
 import path from 'path'
 import {
   getStartTime,
@@ -11,10 +12,10 @@ import { getSegmentsDuration } from '../../segmentDuration'
 import DBManager from '../../dbManager'
 import TranscodingQueue from '../../TranscodingQueue'
 import FileManager from '../../fileManager'
-import { libs } from '@audius/sdk'
 import { tracing } from '../../tracer'
-const Utils = libs.Utils
+
 const models = require('../../models')
+const Utils = libs.Utils
 
 const SEGMENT_FILE_BATCH_SIZE = 10
 
