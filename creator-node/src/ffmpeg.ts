@@ -5,7 +5,10 @@ import fs from 'fs-extra'
 import path from 'path'
 import { logger as genericLogger } from './logging'
 import { spawn } from 'child_process'
-import ffmpeg from 'ffmpeg-static'
+import ffmpegPath from 'ffmpeg-static'
+// The typing for the ffmpeg-static model is incorrect
+// so this line is here to fix that
+const ffmpeg = (ffmpegPath as unknown as { path: string }).path
 
 /**
  * Segments file into equal size chunks without re-encoding.
