@@ -10,7 +10,7 @@ const _ = require('lodash')
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 const BlacklistManager = require('../src/blacklistManager')
-const TranscodingQueue = require('../src/TranscodingQueue')
+const { transcodingQueue } = require('../src/TranscodingQueue')
 const models = require('../src/models')
 const DiskManager = require('../src/diskManager')
 const FileManager = require('../src/fileManager')
@@ -68,10 +68,7 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
-  let app,
-    server,
-    libsMock,
-    handleTrackContentRoute
+  let app, server, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -295,8 +292,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const clockMax = 8
 
     /** clockMin */
-    const expectedFilesHashClockMin = computeFilesHash(multihashesSorted
-      .slice(clockMin - 1))
+    const expectedFilesHashClockMin = computeFilesHash(
+      multihashesSorted.slice(clockMin - 1)
+    )
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`
@@ -310,8 +308,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMax */
-    const expectedFilesHashClockMax = computeFilesHash(multihashesSorted
-      .slice(0, clockMax - 1))
+    const expectedFilesHashClockMax = computeFilesHash(
+      multihashesSorted.slice(0, clockMax - 1)
+    )
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`
@@ -325,8 +324,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     })
 
     /** clockMin and clockMax */
-    let expectedFilesHashClockRange = computeFilesHash(multihashesSorted
-      .slice(clockMin - 1, clockMax - 1))
+    let expectedFilesHashClockRange = computeFilesHash(
+      multihashesSorted.slice(clockMin - 1, clockMax - 1)
+    )
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`
@@ -405,8 +405,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const numExpectedFilesForUser = TestAudiusTrackFileNumSegments + 1 // numSegments + 320kbps copy
 
     /** Upload track for user 1 */
-    const { fileUUID: fileUUID1, fileDir: fileDir1 } =
-      await saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID1, fileDir: fileDir1 } = await saveFileToStorage(
+      testAudioFilePath
+    )
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID1, fileDir1, session)
@@ -423,8 +424,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const session2 = await createStarterCNodeUser(userId2, pubKey2)
 
     /** Upload track for user 2 */
-    const { fileUUID: fileUUID2, fileDir: fileDir2 } =
-      await saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } = await saveFileToStorage(
+      testAudioFilePath
+    )
     await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID2, fileDir2, session2)
@@ -695,8 +697,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
             blocknumber: 99999,
             owner_id: trackOwnerId
           }
-      ]
-    }
+        ]
+      }
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -748,7 +750,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Make chain NOT recognize wallet as owner of track
     const blockchainTrackId = 1
-    const getTrackStub = sinon.stub().resolves(({
+    const getTrackStub = sinon.stub().resolves({
       latest_indexed_block: 10,
       latest_chain_block: 10,
       data: [
@@ -756,8 +758,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
           blocknumber: 0,
           owner_id: -1
         }
-      ] 
-    }))
+      ]
+    })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
     await request(app)
@@ -868,7 +870,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       if (trackIds[0] === blockchainTrackId) {
         trackOwnerId = userId
       }
-      return ({
+      return {
         latest_indexed_block: 10,
         latest_chain_block: 10,
         data: [
@@ -876,8 +878,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
             blocknumber: 99999,
             owner_id: trackOwnerId
           }
-        ]}
-      )
+        ]
+      }
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
@@ -924,17 +926,19 @@ describe('test Polling Tracks with real files', function () {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
-    const { handleTrackContentRoute } = proxyquire(
+    const { transcodingQueue: transcodingQueueMock } = proxyquire(
       '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           segment: sinon
-            .stub(TranscodingQueue, 'segment')
+            .stub(transcodingQueue, 'segment')
             .rejects(new Error('failed to segment')),
           '@global': true
         }
       }
     )
+
+    const handleTrackContentRoute = transcodingQueueMock.handleTrackContentRoute
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
@@ -949,17 +953,18 @@ describe('test Polling Tracks with real files', function () {
   })
 
   it('sends server error response if transcoding fails', async function () {
-    const { handleTrackContentRoute } = proxyquire(
+    const { transcodingQueue: transcodingQueueMock } = proxyquire(
       '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           transcode320: sinon
-            .stub(TranscodingQueue, 'transcode320')
+            .stub(transcodingQueue, 'transcode320')
             .rejects(new Error('failed to transcode')),
           '@global': true
         }
       }
     )
+    const handleTrackContentRoute = transcodingQueueMock.handleTrackContentRoute
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
@@ -988,7 +993,9 @@ describe('test Polling Tracks with real files', function () {
       'testTranscoded320Track.mp3'
     )
     const transcodedTrackAssetBuf = await fs.readFile(transcodedTrackAssetPath)
-    const transcodedTrackPath = await DiskManager.computeFilePath(transcodedTrackCID)
+    const transcodedTrackPath = await DiskManager.computeFilePath(
+      transcodedTrackCID
+    )
     const transcodedTrackTestBuf = await fs.readFile(transcodedTrackPath)
     assert.deepStrictEqual(
       transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
@@ -1169,8 +1176,9 @@ describe('test Polling Tracks with real files', function () {
     )
 
     // Upload same track content again
-    const { fileUUID: fileUUID2, fileDir: fileDir2 } =
-      await saveFileToStorage(testAudioFilePath)
+    const { fileUUID: fileUUID2, fileDir: fileDir2 } = await saveFileToStorage(
+      testAudioFilePath
+    )
     const {
       track_segments: track2Segments,
       transcodedTrackUUID: transcodedTrack2UUID,
@@ -1225,7 +1233,7 @@ describe('test Polling Tracks with real files', function () {
       ) {
         trackOwnerId = userId
       }
-      return ({
+      return {
         latest_chain_block: 20,
         latest_indexed_block: 20,
         data: [
@@ -1233,8 +1241,8 @@ describe('test Polling Tracks with real files', function () {
             blocknumber: 99999,
             owner_id: trackOwnerId
           }
-        ]}
-      )
+        ]
+      }
     })
     libsMock.Track = { getTracksVerbose: getTrackStub }
 
