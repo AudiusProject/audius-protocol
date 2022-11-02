@@ -157,7 +157,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    * @param {Object} logContext to create a logger.child(logContext) from
-   * @returns {Object} response in the structure 
+   * @returns response in the structure 
     {
       segments: {
         fileNames: segmentFileNames {string[]}: the segment file names only, 
@@ -194,7 +194,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    * @param {Object} logContext to create a logger.child(logContext) from
-   * @returns {Object} { transcodeFilePath {string}: where the transcode exists in the fs }
+   * @returns { transcodeFilePath {string}: where the transcode exists in the fs }
    */
   async transcode320(fileDir, fileName, { logContext }) {
     this.logStatus(

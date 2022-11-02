@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
+import type { LogContext } from '../../apiHelpers'
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -36,7 +37,7 @@ type SecondarySyncFromPrimaryParams = {
   wallet: string
   creatorNodeEndpoint: string
   forceResyncConfig: ForceResyncConfig
-  logContext: Object
+  logContext: LogContext
   forceWipe?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
@@ -761,7 +762,7 @@ const handleSyncFromPrimary = async ({
  * @param {string} param.wallet
  * @param {string} param.creatorNodeEndpoint
  * @param {Object} param.forceResyncConfig
- * @param {Object} param.logContext
+ * @param {LogContext} param.logContext
  * @param {boolean} [param.forceWipe]
  * @param {number} [param.blockNumber]
  */

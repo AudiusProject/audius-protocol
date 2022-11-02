@@ -12,7 +12,7 @@ const { logger: genericLogger } = require('./logging')
  * @param {Object} params
  * @param {string} params.fileDir the directory of the uploaded track artifact
  * @param {string} params.fileName the uploaded track artifact filename
- * @param {Object} params.logContext the log context used to instantiate a logger
+ * @param {LogContext} params.logContext the log context used to instantiate a logger
  * @returns {Promise<Object>} response in the structure 
   {
     segments: {
