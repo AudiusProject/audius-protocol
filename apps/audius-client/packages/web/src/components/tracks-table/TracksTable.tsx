@@ -72,6 +72,7 @@ type TracksTableProps = {
   showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number
+  useLocalSort?: boolean
   userId?: number | null
   wrapperClassName?: string
 }
@@ -118,6 +119,7 @@ export const TracksTable = ({
   showMoreLimit,
   tableClassName,
   totalRowCount,
+  useLocalSort = false,
   userId,
   wrapperClassName
 }: TracksTableProps) => {
@@ -176,7 +178,7 @@ export const TracksTable = ({
 
       return (
         <div className={styles.artistCellContainer}>
-          <ArtistPopover handle={track.user.handle}>
+          <ArtistPopover handle={track.user?.handle}>
             <div
               className={styles.textContainer}
               onClick={(e) => {
@@ -552,6 +554,7 @@ export const TracksTable = ({
       showMoreLimit={showMoreLimit}
       tableClassName={tableClassName}
       totalRowCount={totalRowCount}
+      useLocalSort={useLocalSort}
       wrapperClassName={wrapperClassName}
     />
   )

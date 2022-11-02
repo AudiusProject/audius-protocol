@@ -23,6 +23,7 @@ import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Page from 'components/page/Page'
+import { dateSorter } from 'components/table'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
@@ -70,6 +71,7 @@ export type SavedPageProps = {
   onSortTracks: (sorters: any) => void
   onChangeTab: (tab: ProfileTabs) => void
   formatCardSecondaryText: (saves: number, tracks: number) => string
+  allTracksFetched: boolean
   filterText: string
   initialOrder: UID[] | null
   currentTab: ProfileTabs
@@ -107,6 +109,7 @@ const SavedPage = ({
   onPlay,
   onFilterChange,
   onSortChange,
+  allTracksFetched,
   filterText,
   formatCardSecondaryText,
   onChangeTab,
@@ -244,6 +247,7 @@ const SavedPage = ({
         <TracksTable
           columns={tableColumns}
           data={dataSource}
+          defaultSorter={dateSorter('dateSaved')}
           fetchMoreTracks={fetchMoreTracks}
           isVirtualized
           key='favorites'
@@ -253,10 +257,11 @@ const SavedPage = ({
           onClickRepost={onClickRepost}
           onClickRow={onClickRow}
           onClickTrackName={onClickTrackName}
-          onSortTracks={onSortChange}
+          onSortTracks={allTracksFetched ? onSortTracks : onSortChange}
           playing={queuedAndPlaying}
           playingIndex={playingIndex}
           scrollRef={mainContentRef}
+          useLocalSort={allTracksFetched}
           totalRowCount={Math.min(
             dataSource.length,
             account?.track_save_count ?? Infinity
