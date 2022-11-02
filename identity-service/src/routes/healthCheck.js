@@ -228,7 +228,6 @@ module.exports = function (app) {
   app.get(
     '/health_check/poa',
     handleResponse(async (req, res) => {
-      // for now we just check db connectivity
       return successResponse({
         finalPOABlock: config.get('finalPOABlock')
       })

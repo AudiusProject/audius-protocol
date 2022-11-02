@@ -859,7 +859,7 @@ def notifications():
                 continue
             playlist_contents = entry.playlist_contents
 
-            if helpers.get_final_poa_block():
+            if helpers.get_final_poa_block(shared_config):
                 min_block_number -= web3_provider.NETHERMIND_BLOCK_OFFSET
                 max_block_number -= web3_provider.NETHERMIND_BLOCK_OFFSET
 

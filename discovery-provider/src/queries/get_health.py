@@ -301,11 +301,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     }
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
+        final_poa_block = None
+        try:
+            # health check does not need to be blocked on this
+            final_poa_block = helpers.get_final_poa_block(shared_config)
+        except Exception:
+            pass
         if (
-            helpers.get_final_poa_block(shared_config)
-            and latest_block_num < web3_provider.NETHERMIND_BLOCK_OFFSET
+            final_poa_block
+            and web3_provider.NETHERMIND_BLOCK_OFFSET
+            and latest_block_num < int(web3_provider.NETHERMIND_BLOCK_OFFSET)
         ):
-            latest_block_num += web3_provider.NETHERMIND_BLOCK_OFFSET
+            latest_block_num += int(web3_provider.NETHERMIND_BLOCK_OFFSET)
         block_difference = abs(
             latest_block_num - latest_indexed_block_num
         )  # nethermind offset

@@ -14,14 +14,14 @@ from web3.middleware import geth_poa_middleware
 web3: Optional[Web3] = None
 
 
-NETHERMIND_BLOCK_OFFSET = 30000000
+NETHERMIND_BLOCK_OFFSET = os.getenv("audius_web3_nethermind_block_offset")
 
 
 def get_web3():
     # pylint: disable=W0603
     global web3
     if helpers.get_final_poa_block(shared_config):
-        web3endpoint = os.environ["audius_web3_nethermind_rpc"]
+        web3endpoint = os.getenv("audius_web3_nethermind_rpc")
         web3 = Web3(HTTPProvider(web3endpoint))
 
         # required middleware for POA
