@@ -336,13 +336,13 @@ const config = convict({
     doc: 'eth provider url',
     format: String,
     env: 'ethProviderUrl',
-    default: null
+    default: ''
   },
   ethNetworkId: {
     doc: 'eth network id',
     format: String,
     env: 'ethNetworkId',
-    default: null
+    default: ''
   },
   ethTokenAddress: {
     doc: 'eth token address',
@@ -408,7 +408,7 @@ const config = convict({
     doc: 'data contracts network id',
     format: String,
     env: 'dataNetworkId',
-    default: null
+    default: ''
   },
   creatorNodeEndpoint: {
     doc: 'http endpoint registered on chain for cnode',
@@ -827,6 +827,18 @@ const config = convict({
     format: String,
     env: 'reconfigSPIdBlacklistString',
     default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
+  },
+  recordSyncResults: {
+    doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
+    format: Boolean,
+    env: 'recordSyncResults',
+    default: false
+  },
+  processSyncResults: {
+    doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
+    format: Boolean,
+    env: 'processSyncResults',
+    default: false
   }
 })
 
