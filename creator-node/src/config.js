@@ -283,20 +283,24 @@ const config = convict({
     default: true
   },
 
-  // Transcoding settings
+  /** Upload settings */
   transcodingMaxConcurrency: {
     doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
     format: Number,
     env: 'transcodingMaxConcurrency',
     default: -1
   },
-
-  // Image processing settings
   imageProcessingMaxConcurrency: {
     doc: 'Maximum image resizing processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
     format: Number,
     env: 'imageProcessingMaxConcurrency',
     default: -1
+  },
+  trackUploadArtifactDeletionEnabled: {
+    doc: 'whether or not to delete track upload artifacts from disk in `fileManager.removeTrackFolder()`',
+    format: Boolean,
+    env: 'trackUploadArtifactDeletionEnabled',
+    default: false
   },
 
   // wallet information
