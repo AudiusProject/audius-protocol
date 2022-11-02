@@ -926,7 +926,7 @@ describe('test Polling Tracks with real files', function () {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
-    const { transcodingQueue: transcodingQueueMock } = proxyquire(
+    const { handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
@@ -937,8 +937,6 @@ describe('test Polling Tracks with real files', function () {
         }
       }
     )
-
-    const handleTrackContentRoute = transcodingQueueMock.handleTrackContentRoute
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
@@ -953,7 +951,7 @@ describe('test Polling Tracks with real files', function () {
   })
 
   it('sends server error response if transcoding fails', async function () {
-    const { transcodingQueue: transcodingQueueMock } = proxyquire(
+    const { handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
@@ -964,7 +962,6 @@ describe('test Polling Tracks with real files', function () {
         }
       }
     )
-    const handleTrackContentRoute = transcodingQueueMock.handleTrackContentRoute
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     try {
