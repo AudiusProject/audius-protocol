@@ -7,6 +7,7 @@ from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
@@ -59,6 +60,34 @@ def test_index_valid_social_features(app, mocker):
                         "_action": "Unfollow",
                         "_metadata": "",
                         "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "SubscribeUserTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "User",
+                        "_userId": 3,
+                        "_action": "Subscribe",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+        "UnsubscribeUserTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "User",
+                        "_userId": 3,
+                        "_action": "Unsubscribe",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
                     }
                 )
             },
@@ -145,6 +174,7 @@ def test_index_valid_social_features(app, mocker):
         "tracks": [{"track_id": 1}],
         "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
         "playlists": [{"playlist_id": 1}],
+        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
     }
     populate_mock_db(db, entities)
 
@@ -183,8 +213,31 @@ def test_index_valid_social_features(app, mocker):
         user_2_follow = user_2_follows[0]
         assert user_2_follow.is_delete == False
 
-        # Verify saves
+        # Verify subscriptions
+        all_subscriptions: List[Subscription] = session.query(Subscription).all()
+        assert len(all_subscriptions) == 3
 
+        user_1_subscribers: List[Subscription] = (
+            session.query(Subscription)
+            .filter(Subscription.is_current == True, Subscription.user_id == 1)
+            .all()
+        )
+        assert len(user_1_subscribers) == 1
+        user_1_subscriber = user_1_subscribers[0]
+        assert user_1_subscriber.subscriber_id == 3
+        assert user_1_subscriber.is_delete == False
+
+        user_2_subscribers: List[Subscription] = (
+            session.query(Subscription)
+            .filter(Subscription.is_current == True, Subscription.user_id == 2)
+            .all()
+        )
+        assert len(user_2_subscribers) == 1
+        user_2_subscriber = user_2_subscribers[0]
+        assert user_2_subscriber.subscriber_id == 3
+        assert user_2_subscriber.is_delete == True
+
+        # Verify saves
         all_saves: List[Save] = session.query(Save).all()
         assert len(all_saves) == 2
 
@@ -198,7 +251,6 @@ def test_index_valid_social_features(app, mocker):
         assert current_save.save_item_id == 1
 
         # Verify repost
-
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 3
 
@@ -288,6 +340,20 @@ def test_index_invalid_social_features(app, mocker):
                 )
             },
         ],
+        "UserCannotSubscribeToThemselfTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "User",
+                        "_userId": 2,
+                        "_action": "Subscribe",
+                        "_metadata": "",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -313,6 +379,7 @@ def test_index_invalid_social_features(app, mocker):
         "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
         "tracks": [{"track_id": 1}],
         "playlists": [{"playlist_id": 1}],
+        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
     }
     populate_mock_db(db, entities)
 
@@ -332,6 +399,10 @@ def test_index_invalid_social_features(app, mocker):
         # Verify follows
         all_follows: List[Follow] = session.query(Follow).all()
         assert len(all_follows) == 1
+
+        # Verify subscriptions
+        all_subscriptions: List[Subscription] = session.query(Subscription).all()
+        assert len(all_subscriptions) == 1
 
         # Verify saves
         all_saves: List[Save] = session.query(Save).all()

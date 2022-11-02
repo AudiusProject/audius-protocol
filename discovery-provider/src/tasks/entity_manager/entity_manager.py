@@ -394,7 +394,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                     Subscription.is_current == True,
                 )
             )
-        subscriptions: List[Subscription] = session.query(Subscription).filter(or_(*and_queries)).all()
+        subscriptions: List[Subscription] = (
+            session.query(Subscription).filter(or_(*and_queries)).all()
+        )
         existing_entities[EntityType.SUBSCRIPTION] = {
             get_record_key(
                 subscription.subscriber_id, EntityType.USER, subscription.user_id

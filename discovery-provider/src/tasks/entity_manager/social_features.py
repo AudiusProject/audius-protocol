@@ -20,8 +20,18 @@ action_to_record_type = {
     Action.UNSUBSCRIBE: EntityType.SUBSCRIPTION,
 }
 
-create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST, Action.SUBSCRIBE}
-delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST, Action.UNSUBSCRIBE}
+create_social_action_types = {
+    Action.FOLLOW,
+    Action.SAVE,
+    Action.REPOST,
+    Action.SUBSCRIBE,
+}
+delete_social_action_types = {
+    Action.UNFOLLOW,
+    Action.UNSAVE,
+    Action.UNREPOST,
+    Action.UNSUBSCRIBE,
+}
 
 premium_content_validation_actions = {
     Action.SAVE,
@@ -171,6 +181,10 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
             raise Exception("User cannot follow themself")
+
+    if params.action == Action.SUBSCRIBE or params.action == Action.UNSUBSCRIBE:
+        if params.user_id == params.entity_id:
+            raise Exception("User cannot subscribe to themself")
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
