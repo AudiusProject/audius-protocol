@@ -20,13 +20,13 @@ def upgrade():
     op.create_table(
         "subscriptions",
         sa.Column("blockhash", sa.String()),
-        sa.Column("blocknumber", sa.Integer()),
+        sa.Column("blocknumber", sa.Integer(), index=True),
         sa.Column("subscriber_id", sa.Integer(), nullable=False),
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False, index=True),
         sa.Column("is_current", sa.Boolean(), nullable=False),
         sa.Column("is_delete", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("txhash", sa.String(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.func.current_timestamp()),
+        sa.Column("txhash", sa.String(), nullable=False, server_default=""),
         sa.ForeignKeyConstraint(
             ["blockhash"],
             ["blocks.blockhash"],
