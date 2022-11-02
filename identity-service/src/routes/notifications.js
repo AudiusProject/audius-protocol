@@ -871,8 +871,8 @@ module.exports = function (app) {
       }
       if (isSubscribed) {
         await models.sequelize.query(`
-          INSERT INTO "Subscriptions" ("subscriberId", "userId")
-          VALUES (:subscriberId, :userId)
+          INSERT INTO "Subscriptions" ("subscriberId", "userId", "updatedAt", "createdAt")
+          VALUES (:subscriberId, :userId, now(), now())
           ON CONFLICT
           DO NOTHING;
         `, {
