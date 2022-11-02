@@ -43,8 +43,6 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     mkdir /usr/local/openresty/logs && \
     mkdir /usr/local/openresty/cache
 
-COPY nginx_conf /usr/local/openresty/conf/
-
 # Create a db user if postgres in case it will be run inside this container
 COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
@@ -88,3 +86,6 @@ HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
     CMD curl -f http://localhost:${port}/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
+
+ENV contentCacheLayerEnabled true
+COPY nginx_conf /usr/local/openresty/conf/

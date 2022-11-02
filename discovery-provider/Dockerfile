@@ -58,8 +58,6 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0
 
-COPY nginx_conf /usr/local/openresty/conf/
-
 COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
 
@@ -89,3 +87,6 @@ HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
     CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
+
+ENV audius_openresty_enable true
+COPY nginx_conf /usr/local/openresty/conf/
