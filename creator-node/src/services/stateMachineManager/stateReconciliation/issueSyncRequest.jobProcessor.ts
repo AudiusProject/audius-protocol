@@ -623,7 +623,7 @@ const _additionalSyncIsRequired = async (
     }
   }
 
-  if (syncStatus.startsWith('success')) {
+  if (syncStatus?.startsWith('success')) {
     await SecondarySyncHealthTracker.recordSuccess(
       targetNode,
       userWallet,

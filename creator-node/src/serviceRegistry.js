@@ -325,8 +325,10 @@ class ServiceRegistry {
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.syncQueue = new SyncQueue(config, this.redis, this)
-    this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis, this)
+    this.syncQueue = new SyncQueue()
+    await this.syncQueue.init(config, this.redis, this)
+    this.syncImmediateQueue = new SyncImmediateQueue()
+    await this.syncImmediateQueue.init(config, this.redis, this)
 
     // If entity manager is enabled, there's no need to register on L2 because
     // discovery node will use L1 to validate
