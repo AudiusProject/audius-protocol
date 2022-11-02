@@ -95,6 +95,14 @@ const TrackTile = memo(
       (e: MouseEvent) => e.stopPropagation(),
       []
     )
+    const onClickTitleWrapper = useCallback(
+      (e: MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onClickTitle(e)
+      },
+      [onClickTitle]
+    )
     const hideShare: boolean = fieldVisibility
       ? fieldVisibility.share === false
       : false
@@ -192,7 +200,7 @@ const TrackTile = memo(
                 <a
                   href={permalink}
                   className={styles.title}
-                  onClick={onClickTitle}
+                  onClick={onClickTitleWrapper}
                 >
                   {title}
                   {isActive ? (

@@ -49,7 +49,8 @@ const ExplorePage = ({
         isPlaylist={!playlist.is_album}
         onClickReposts={() => onClickReposts(playlist.playlist_id)}
         onClickFavorites={() => onClickFavorites(playlist.playlist_id)}
-        onClick={() =>
+        onClick={(e) => {
+          e.preventDefault()
           playlist.is_album
             ? goToRoute(
                 albumPage(
@@ -65,7 +66,7 @@ const ExplorePage = ({
                   playlist.playlist_id
                 )
               )
-        }
+        }}
       />
     )
   })

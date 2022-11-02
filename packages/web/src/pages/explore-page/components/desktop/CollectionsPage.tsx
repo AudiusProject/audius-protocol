@@ -110,7 +110,8 @@ const CollectionsPage = ({
         trackCount={playlist.playlist_contents.track_ids.length}
         onClickReposts={() => onClickReposts(playlist.playlist_id)}
         onClickFavorites={() => onClickFavorites(playlist.playlist_id)}
-        onClick={() =>
+        onClick={(e) => {
+          e.preventDefault()
           playlist.is_album
             ? goToRoute(
                 albumPage(
@@ -126,7 +127,7 @@ const CollectionsPage = ({
                   playlist.playlist_id
                 )
               )
-        }
+        }}
       />
     )
   })
