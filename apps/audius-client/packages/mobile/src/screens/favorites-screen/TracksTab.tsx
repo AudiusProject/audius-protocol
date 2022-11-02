@@ -13,22 +13,22 @@ import {
   lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageSelectors,
-  tracksSocialActions
+  tracksSocialActions,
+  reachabilitySelectors
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
-import { Button, Tile, VirtualizedScrollView } from 'app/components/core'
+import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import {
-  downloadTrack,
-  purgeAllDownloads
-} from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
 import { FilterInput } from './FilterInput'
@@ -37,6 +37,7 @@ const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getSavedTracksLineup, getSavedTracksStatus } = savedPageSelectors
 const { fetchSaves } = savedPageActions
 const { makeGetTableMetadatas } = lineupSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   emptyTabText: "You haven't favorited any tracks yet.",
@@ -66,26 +67,23 @@ const getTracks = makeGetTableMetadatas(getSavedTracksLineup)
 export const TracksTab = () => {
   const dispatch = useDispatch()
   const styles = useStyles()
+  const isReachable = useSelector(getIsReachable)
   const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
     FeatureFlags.OFFLINE_MODE_ENABLED
   )
-
-  useEffectOnce(() => {
+  const handleFetchSaves = useCallback(() => {
     dispatch(fetchSaves())
-  })
+  }, [dispatch])
+
+  useFocusEffect(handleFetchSaves)
+  useLoadOfflineTracks(DOWNLOAD_REASON_FAVORITES)
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getUid)
   const savedTracksStatus = useSelector(getSavedTracksStatus)
   const savedTracks = useProxySelector(getTracks, [])
-
-  const handleDownloadAllTracks = useCallback(() => {
-    if (!isOfflineModeEnabled) return
-    savedTracks.entries.forEach((track) => {
-      downloadTrack(track.track_id, 'favorites')
-    })
-  }, [isOfflineModeEnabled, savedTracks])
+  const offlineTracks = useSelector(getOfflineTracks)
 
   const filterTrack = (track: TrackMetadata) => {
     const matchValue = filterValue?.toLowerCase()
@@ -108,6 +106,8 @@ export const TracksTab = () => {
     (uid: UID, id: ID) => {
       if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
         dispatch(tracksActions.play(uid))
+        // TODO: store and queue events locally; upload on reconnect
+        if (!isReachable && isOfflineModeEnabled) return
         track(
           make({
             eventName: Name.PLAYBACK_PLAY,
@@ -117,6 +117,7 @@ export const TracksTab = () => {
         )
       } else if (uid === playingUid && isPlaying) {
         dispatch(tracksActions.pause())
+        if (!isReachable && isOfflineModeEnabled) return
         track(
           make({
             eventName: Name.PLAYBACK_PAUSE,
@@ -126,11 +127,15 @@ export const TracksTab = () => {
         )
       }
     },
-    [dispatch, isPlaying, playingUid]
+    [playingUid, isPlaying, dispatch, isReachable, isOfflineModeEnabled]
   )
 
   const isLoading = savedTracksStatus !== Status.SUCCESS
-  const hasNoFavorites = savedTracks.entries.length === 0
+  const tracks =
+    !isReachable && isOfflineModeEnabled
+      ? Object.values(offlineTracks)
+      : savedTracks.entries
+  const hasNoFavorites = tracks.length === 0
 
   return (
     <WithLoader loading={isLoading}>
@@ -139,24 +144,12 @@ export const TracksTab = () => {
           <EmptyTileCTA message={messages.emptyTabText} />
         ) : (
           <>
-            {isOfflineModeEnabled ? (
-              <>
-                <Button
-                  onPress={handleDownloadAllTracks}
-                  title='Download All Favorites'
-                />
-                <Button
-                  onPress={purgeAllDownloads}
-                  title='Purge All Downloads'
-                />
-              </>
-            ) : null}
             <FilterInput
               value={filterValue}
               placeholder={messages.inputPlaceholder}
               onChangeText={setFilterValue}
             />
-            {savedTracks.entries.length ? (
+            {tracks.length ? (
               <Tile
                 styles={{
                   root: styles.container,
@@ -168,7 +161,7 @@ export const TracksTab = () => {
                   showDivider
                   togglePlay={togglePlay}
                   trackItemAction='save'
-                  tracks={savedTracks.entries.filter(filterTrack)}
+                  tracks={tracks.filter(filterTrack)}
                   hideArt
                 />
               </Tile>

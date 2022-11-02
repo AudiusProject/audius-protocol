@@ -24,6 +24,8 @@ import mobileUi from './mobileUi/slice'
 import type { MobileUiState } from './mobileUi/slice'
 import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
+import type { OfflineDownloadsState } from './offline-downloads/slice'
+import offlineDownloads from './offline-downloads/slice'
 import rootSaga from './sagas'
 import type { SearchState } from './search/reducer'
 import search from './search/reducer'
@@ -40,6 +42,7 @@ export type AppState = {
   downloads: DownloadState
   keyboard: KeyboardState
   oauth: OAuthState
+  offlineDownloads: OfflineDownloadsState
   remoteConfig: RemoteConfigState
   search: SearchState
   mobileUi: MobileUiState
@@ -60,6 +63,7 @@ const createRootReducer = () =>
     downloads,
     keyboard,
     oauth,
+    offlineDownloads,
     remoteConfig,
     search,
     mobileUi

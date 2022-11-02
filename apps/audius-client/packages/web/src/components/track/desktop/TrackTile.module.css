@@ -174,7 +174,7 @@
 .creatorRow .userName:active,
 .creatorRow .userName:hover {
   text-decoration: inherit;
-  color: inherit
+  color: inherit;
 }
 
 .creatorRow .skeleton {

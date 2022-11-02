@@ -1152,13 +1152,13 @@ export const audiusBackend = ({
       console.error(getErrorMessage(err))
       return []
     }
-  } 
-  
+  }
+
   // userId, start, end
   async function getUserListenCountsMonthly(
     currentUserId: number,
     startTime: string,
-    endTime: string,
+    endTime: string
   ) {
     try {
       const userListenCountsMonthly = await withEagerOption(

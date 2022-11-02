@@ -9,6 +9,7 @@ import {
   playerActions,
   queueActions,
   queueSelectors,
+  reachabilitySelectors,
   RepeatMode,
   FeatureFlags,
   encodeHashId
@@ -20,7 +21,7 @@ import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useOfflineTrackUri } from 'app/hooks/useOfflineTrack'
+import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -32,6 +33,7 @@ const { getUser } = cacheUsersSelectors
 const { getPlaying, getSeek, getCurrentTrack } = playerSelectors
 const { getIndex, getLength, getRepeat, getShuffle, getShuffleIndex } =
   queueSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const { getUserId } = accountSelectors
 
@@ -78,6 +80,10 @@ export const Audio = () => {
     getUser(state, { id: track?.owner_id })
   )
   const currentUserId = useSelector(getUserId)
+  const isReachable = useSelector(getIsReachable)
+  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
+    FeatureFlags.OFFLINE_MODE_ENABLED
+  )
 
   const dispatch = useDispatch()
 
@@ -320,7 +326,9 @@ export const Audio = () => {
       if (
         progress.currentTime > RECORD_LISTEN_SECONDS &&
         (track.owner_id !== currentUserId || track.play_count < 10) &&
-        !listenLoggedForTrack
+        !listenLoggedForTrack &&
+        // TODO: log listens for offline plays when reconnected
+        (!isOfflineModeEnabled || isReachable)
       ) {
         // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
         setListenLoggedForTrack(true)
@@ -334,18 +342,20 @@ export const Audio = () => {
       track,
       currentUserId,
       listenLoggedForTrack,
-      setListenLoggedForTrack,
-      progressInvalidator
+      isOfflineModeEnabled,
+      isReachable
     ]
   )
-  const offlineTrackUri = useOfflineTrackUri(track)
+  const { value: offlineTrackUri, loading } = useOfflineTrackUri(
+    track?.track_id.toString()
+  )
   const streamingUri = useMemo(() => {
-    return track
+    return track && isReachable
       ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
       : null
-  }, [track])
+  }, [isReachable, track])
 
-  if (!track || track.is_delete) return null
+  if (loading || !track || track.is_delete) return null
 
   const gateways = trackOwner
     ? audiusBackendInstance.getCreatorNodeIPFSGateways(
