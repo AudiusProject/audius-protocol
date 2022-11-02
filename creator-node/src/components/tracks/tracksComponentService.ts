@@ -1,3 +1,4 @@
+import type { LogContext } from '../../apiHelpers'
 import {
   logger as genericLogger,
   logInfoWithDuration,
@@ -16,7 +17,7 @@ import {
  * Also the logic used in /track_content_async route. Params are extracted to keys that are necessary for the job so that
  * we can pass this task into a worker queue.
  *
- * @param {Object} logContext the context of the request used to create a generic logger
+ * @param {LogContext} logContext the context of the request used to create a generic logger
  * @param {Object} requestProps more request specific context, NOT the req object from Express
  * @returns a success or error server response
  *
@@ -24,7 +25,7 @@ import {
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
 export const handleTrackContentRoute = async (
-  { logContext }: { logContext: { requestId: string } },
+  { logContext }: { logContext: LogContext },
   requestProps: {
     fileName: string
     fileDir: string
@@ -68,7 +69,7 @@ export const handleTrackContentRoute = async (
 }
 
 export async function handleTranscodeAndSegment(
-  { logContext }: { logContext: { requestId: string } },
+  { logContext }: { logContext: LogContext },
   {
     fileName,
     fileDir
@@ -81,7 +82,7 @@ export async function handleTranscodeAndSegment(
 }
 
 export async function handleTranscodeHandOff(
-  { logContext }: { logContext: { requestId: string } },
+  { logContext }: { logContext: LogContext },
   {
     libs,
     fileName,

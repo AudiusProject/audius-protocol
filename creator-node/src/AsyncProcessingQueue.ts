@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq'
 import type { Request } from 'express'
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from './apiHelpers'
 
 import { Queue, Worker } from 'bullmq'
 import { logger } from './logging'
@@ -41,7 +42,7 @@ export const ProcessStates = {
 } as const
 
 type AddTaskParams = {
-  logContext: { requestID: string }
+  logContext: LogContext
   task: string
   req: Request
   parentSpanContext?: SpanContext
@@ -95,7 +96,7 @@ export class AsyncProcessingQueue {
                 ]
               : [],
             attributes: {
-              requestID: logContext.requestID,
+              requestID: logContext.requestId,
               [tracing.CODE_FILEPATH]: __filename
             }
           }
@@ -250,7 +251,7 @@ export class AsyncProcessingQueue {
   async monitorProgress(
     task: string,
     func: (...args: any) => any,
-    { logContext, req }: { logContext: any; req: Request }
+    { logContext, req }: { logContext: LogContext; req: Request }
   ) {
     const uuid = logContext.requestID
     const redisKey = this.constructAsyncProcessingKey(uuid)

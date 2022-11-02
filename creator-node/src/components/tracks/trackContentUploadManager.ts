@@ -1,5 +1,6 @@
-import path from 'path'
+import type { LogContext } from '../../apiHelpers'
 
+import path from 'path'
 import {
   getStartTime,
   logInfoWithDuration,
@@ -29,7 +30,7 @@ type Segment = {
 /**
    * Create track transcode and segments, and save all to disk. Removes temp file dir of track data if failed to
    * segment or transcode.
-   * @param {Object} logContext
+   * @param {LogContext} logContext
    * @param {Object} transcodeAndSegmentParams
    * @param {string} transcodeAndSegmentParams.fileName the file name of the uploaded track (<cid>.<file type extension>)
    * @param {string} transcodeAndSegmentParams.fileDir the dir path of the temp track artifacts
@@ -43,7 +44,7 @@ type Segment = {
     } 
    */
 export async function transcodeAndSegment(
-  { logContext }: { logContext: { requestId: string } },
+  { logContext }: { logContext: LogContext },
   { fileName, fileDir }: { fileName: string; fileDir: string }
 ) {
   let transcodeFilePath, segmentFileNames, segmentFilePaths, m3u8FilePath
@@ -82,7 +83,7 @@ export async function transcodeAndSegment(
  * 2. Fetches segment duration to build a map of <segment CID: duration>
  * 3. Adds transcode and segments to DB in Files table
  * 4. Removes the upload artifacts after successful processing
- * @param {Object} logContext
+ * @param {LogContext} logContext
  * @param {Object} param
  * @param {Object} param.cnodeUserUUID the current user's cnodeUserUUID
  * @param {string} param.fileName the filename of the uploaded artifact
@@ -100,7 +101,7 @@ export async function transcodeAndSegment(
  *  }
  */
 export async function processTranscodeAndSegments(
-  { logContext }: { logContext: { requestId: string } },
+  { logContext }: { logContext: LogContext },
   {
     cnodeUserUUID,
     fileName,
@@ -196,7 +197,7 @@ async function addFilesToDb({
   fileDir: string
   cnodeUserUUID: string
   segmentFileResult: Segment[]
-  logContext: { requestId: string }
+  logContext: LogContext
 }) {
   const transaction = await models.sequelize.transaction()
   let transcodeFileUUID
@@ -254,7 +255,7 @@ async function addFilesToDb({
  * @param {Object} params.segmentFileResult an array of { multihash, srcPath: segmentFilePath, dstPath }
  * @param {Object} params.segmentDurations mapping of segment filePath (segmentName) => segment duration
  * @param {string} params.fileDir the dir path of the temp track artifacts
- * @param {Object} params.logContext
+ * @param {LogContext} params.logContext
  * @returns an array of track segments with the structure { multihash, duration }
  */
 function createSegmentToDurationMap({
@@ -266,7 +267,7 @@ function createSegmentToDurationMap({
   segmentFileResult: Segment[]
   segmentDurations: Record<string, number>
   fileDir: string
-  logContext: { requestId: string }
+  logContext: LogContext
 }) {
   let trackSegments = segmentFileResult.map((segmentFile: Segment) => {
     return {
@@ -296,7 +297,7 @@ function createSegmentToDurationMap({
  * Save transcode and segment files (in parallel batches) to disk.
  * @param {Object} batchParams
  * @param {string} batchParams.fileDir the dir path of the temp track artifacts
- * @param {Object} batchParams.logContext
+ * @param {LogContext} batchParams.logContext
  * @param {string} batchParams.transcodeFilePath the transcoded track path
  * @param {string} batchParams.segmentFilePaths the segments path
  * @returns an object of array of segment multihashes, src paths, and dest paths and transcode multihash and path
@@ -308,7 +309,7 @@ async function batchSaveFilesToDisk({
   segmentFileNames
 }: {
   fileDir: string
-  logContext: { requestId: string }
+  logContext: LogContext
   transcodeFilePath: string
   segmentFileNames: string[]
 }) {
