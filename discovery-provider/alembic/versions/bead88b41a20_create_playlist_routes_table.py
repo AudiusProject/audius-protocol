@@ -36,7 +36,7 @@ def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
 
-    # Bring over existing routes (current tracks)
+    # Bring over existing routes (current playlists)
     session.execute(
         sa.text(
             """
@@ -77,7 +77,7 @@ def upgrade():
         )
     )
 
-    # Bring over existing routes (non-current tracks)
+    # Bring over existing routes (non-current playlists)
     session.execute(
         sa.text(
             """
