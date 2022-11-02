@@ -25,7 +25,7 @@ const config = convict({
     doc: 'Database URL connection string',
     format: String,
     env: 'dbUrl',
-    default: "postgres://postgres:postgres@localhost:4432/audius_creator_node"
+    default: 'postgres://postgres:postgres@localhost:4432/audius_creator_node'
   },
   dbConnectionPoolMax: {
     doc: 'Max connections in database pool',
@@ -37,13 +37,13 @@ const config = convict({
     doc: 'File system path to store raw files that are uploaded',
     format: String,
     env: 'storagePath',
-    default: "/file_storage"
+    default: '/file_storage'
   },
   redisHost: {
     doc: 'Redis host name',
     format: String,
     env: 'redisHost',
-    default: "localhost"
+    default: 'localhost'
   },
   allowedUploadFileExtensions: {
     doc: 'Override the default list of file extension allowed',
@@ -142,7 +142,7 @@ const config = convict({
     doc: 'Log level',
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
     env: 'logLevel',
-    default: "info"
+    default: 'info'
   },
 
   /**
@@ -165,7 +165,8 @@ const config = convict({
     `,
     format: String,
     env: 'endpointRateLimits',
-    default: '{\"/image_upload\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/login/challenge\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/logout\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/batch_clock_status\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/track_content\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/tracks/metadata\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/tracks\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/audius_users/metadata\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/audius_users\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/sync\":{\"post\":[{\"expiry\":60,\"max\":500}]},\"/vector_clock_sync\":{\"post\":[{\"expiry\":60,\"max\":500}]}}'
+    default:
+      '{"/image_upload":{"post":[{"expiry":60,"max":100}]},"/users":{"post":[{"expiry":60,"max":100}]},"/users/login/challenge":{"post":[{"expiry":60,"max":100}]},"/users/logout":{"post":[{"expiry":60,"max":100}]},"/users/batch_clock_status":{"post":[{"expiry":60,"max":100}]},"/track_content":{"post":[{"expiry":60,"max":100}]},"/tracks/metadata":{"post":[{"expiry":60,"max":100}]},"/tracks":{"post":[{"expiry":60,"max":100}]},"/audius_users/metadata":{"post":[{"expiry":60,"max":100}]},"/audius_users":{"post":[{"expiry":60,"max":100}]},"/sync":{"post":[{"expiry":60,"max":500}]},"/vector_clock_sync":{"post":[{"expiry":60,"max":500}]}}'
   },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
@@ -827,28 +828,6 @@ const config = convict({
     env: 'reconfigSPIdBlacklistString',
     default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   }
-  /**
-   * unsupported options at the moment
-   */
-
-  // awsBucket: {
-  //   doc: 'AWS S3 bucket to upload files to',
-  //   format: String,
-  //   env: 'awsBucket',
-  //   default: null
-  // },
-  // awsAccessKeyId: {
-  //   doc: 'AWS access key id',
-  //   format: String,
-  //   env: 'awsAccessKeyId',
-  //   default: null
-  // },
-  // awsSecretAccessKey: {
-  //   doc: 'AWS access key secret',
-  //   format: String,
-  //   env: 'awsSecretAccessKey',
-  //   default: null
-  // }
 })
 
 /*
