@@ -33,15 +33,15 @@ type EnqueueSyncArgs = {
  */
 export class SyncQueue {
   nodeConfig: any
-  redis: Redis
+  redis?: Redis
   serviceRegistry: any
-  queue: Queue
+  queue?: Queue
   /**
    * Construct bull queue and define job processor
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig: any, redis: Redis, serviceRegistry: any) {
+  async init(nodeConfig: any, redis: Redis, serviceRegistry: any) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
@@ -60,6 +60,12 @@ export class SyncQueue {
         removeOnFail: SYNC_QUEUE_HISTORY
       }
     })
+
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+    if (clusterUtils.isThisWorkerInit()) {
+      await this.deleteOldActiveJobs()
+    }
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
@@ -107,6 +113,16 @@ export class SyncQueue {
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
+  }
+
+  private async deleteOldActiveJobs() {
+    // safe null check assuming `init()` is called after constructor
+    // (which it should be)
+    const oldActiveJobs = await this.queue!.getJobs(['active'])
+    logger.info(
+      `[sync-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
+    )
+    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
   }
 
   private async processTask(job: Job) {
@@ -160,7 +176,9 @@ export class SyncQueue {
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
   }: EnqueueSyncArgs) {
-    const job = await this.queue.add(
+    // safe null check assuming `init()` is called after constructor
+    // (which it should be)
+    const job = await this.queue!.add(
       'process-sync',
       {
         wallet,
