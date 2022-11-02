@@ -1,4 +1,4 @@
-import { MouseEvent, ReactNode } from 'react'
+import React, { MouseEvent, ReactNode } from 'react'
 
 import {
   ID,
@@ -88,13 +88,17 @@ const Card = ({
 }: CardProps) => {
   const showRepostFavoriteStats =
     !isUser && reposts && favorites && onClickReposts && onClickFavorites
+  const onClickWrapper = (e: React.MouseEvent) => {
+    e.preventDefault()
+    onClick(e)
+  }
   return (
     <a
       className={cn(styles.cardContainer, {
         [className!]: !!className
       })}
       href={href}
-      onClick={onClick}
+      onClick={onClickWrapper}
     >
       {updateDot && <UpdateDot />}
       <div className={styles.tileCoverArtContainer}>

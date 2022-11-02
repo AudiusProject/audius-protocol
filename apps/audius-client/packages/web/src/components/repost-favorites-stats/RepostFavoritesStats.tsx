@@ -41,6 +41,7 @@ const RepostFavoritesStats = ({
 }: RepostFavoritesStatsProps) => {
   const handleOnClickReposts = useCallback(
     (e: MouseEvent) => {
+      e.preventDefault()
       e.stopPropagation()
       onClickReposts()
     },
@@ -48,6 +49,7 @@ const RepostFavoritesStats = ({
   )
   const handleOnClickFavorites = useCallback(
     (e: MouseEvent) => {
+      e.preventDefault()
       e.stopPropagation()
       onClickFavorites()
     },
