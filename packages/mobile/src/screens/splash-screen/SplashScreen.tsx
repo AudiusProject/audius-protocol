@@ -26,8 +26,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 10,
     alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0.5
+    justifyContent: 'center'
   }
 })
 
@@ -51,6 +50,17 @@ export const SplashScreen = () => {
     }
   })
 
+  const handleAnimationFinish = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      // Unhide the StatusBar on ios
+      StatusBar.setHidden(false, 'fade')
+    } else {
+      // Make the StatusBar opaque on android
+      updateStatusBarTheme(theme, systemAppearance)
+    }
+    setAnimationFinished(true)
+  }, [setAnimationFinished, systemAppearance, theme])
+
   useEffect(() => {
     if (![Status.IDLE, Status.LOADING].includes(accountStatus)) {
       if (animationRef.current) {
@@ -59,11 +69,11 @@ export const SplashScreen = () => {
           delay: 400,
           duration: 300,
           useNativeDriver: true
-        }).start()
+        }).start(handleAnimationFinish)
         animationRef.current.play()
       }
     }
-  }, [accountStatus])
+  }, [accountStatus, handleAnimationFinish])
 
   const [scaleAnim] = useState(new Animated.Value(1))
 
@@ -84,17 +94,6 @@ export const SplashScreen = () => {
     ).start()
   }, [scaleAnim])
 
-  const onAnimationFinish = useCallback(() => {
-    if (Platform.OS === 'ios') {
-      // Unhide the StatusBar on ios
-      StatusBar.setHidden(false, 'fade')
-    } else {
-      // Make the StatusBar opaque on android
-      updateStatusBarTheme(theme, systemAppearance)
-    }
-    setAnimationFinished(true)
-  }, [setAnimationFinished, theme, systemAppearance])
-
   const animationRef = useRef<LottieView | null>(null)
 
   return animationFinished ? null : (
@@ -112,7 +111,6 @@ export const SplashScreen = () => {
         }}
         autoPlay={false}
         loop={false}
-        onAnimationFinish={onAnimationFinish}
         style={{
           height: LOTTIE_HEIGHT
         }}
