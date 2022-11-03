@@ -3,7 +3,9 @@ local resty_rsa = require "resty.rsa"
 local utils = require "utils"
 
 local limit_to_rps = os.getenv("audius_openresty_rps") or "1000"
-local public_url = os.getenv("audius_discprov_url") or ""
+local delegate_owner_wallet = os.getenv("audius_delegate_owner_wallet") or ""
+-- accept_redirect_from is a whitelist of all discovery node delegate wallets that this discovery
+-- node will accept a redirection from.
 -- local accept_redirect_from = os.getenv("audius_openresty_accept_redirect_from") or ""
 local rsa_public_key = os.getenv("audius_openresty_rsa_public_key") or ""
 local rsa_private_key = os.getenv("audius_openresty_rsa_private_key") or ""
@@ -32,8 +34,8 @@ local _M = {}
 _M.limit_to_rps = tonumber(limit_to_rps)
 ngx.log(ngx.NOTICE, "limit_to_rps=", limit_to_rps)
 
-_M.public_url = public_url
-ngx.log(ngx.NOTICE, "public_url=", public_url)
+_M.delegate_owner_wallet = delegate_owner_wallet
+ngx.log(ngx.NOTICE, "delegate_owner_wallet=", delegate_owner_wallet)
 
 -- _M.accept_redirect_from = utils.toset(utils.split_on_comma(accept_redirect_from))
 
@@ -43,8 +45,8 @@ _M.rsa_private_key = rsa_private_key
 
 _M.private_key = private_key
 
--- Disable rate limiting if there are no redirect targets or public_url is not set
-_M.rate_limiting_enabled = public_url ~= ""
+-- Disable rate limiting if there are no redirect targets or delegate_owner_wallet is not set
+_M.rate_limiting_enabled = delegate_owner_wallet ~= ""
 ngx.log(ngx.NOTICE, "rate_limiting_enabled=", _M.rate_limiting_enabled)
 
 _M.update_redirect_weights_every = tonumber(update_redirect_weights_every)
