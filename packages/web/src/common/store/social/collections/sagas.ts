@@ -317,8 +317,6 @@ export function* saveCollectionAsync(
   const user = yield* select(getUser, { id: collection.playlist_owner_id })
   if (!user) return
 
-  yield* put(accountActions.didFavoriteItem())
-
   const event = make(Name.FAVORITE, {
     kind: collection.is_album ? 'album' : 'playlist',
     source: action.source,

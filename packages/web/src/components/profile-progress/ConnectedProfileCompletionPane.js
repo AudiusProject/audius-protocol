@@ -1,16 +1,20 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
-import { accountSelectors, challengesSelectors } from '@audius/common'
-import { connect } from 'react-redux'
+import {
+  musicConfettiActions,
+  accountSelectors,
+  challengesSelectors
+} from '@audius/common'
+import { connect, useDispatch } from 'react-redux'
 import { animated } from 'react-spring'
 
-import MusicConfetti from 'components/background-animations/MusicConfetti'
 import ProfileCompletionPanel from 'components/profile-progress/components/ProfileCompletionPanel'
 
 import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
 const getAccountUser = accountSelectors.getAccountUser
+const { show: showMusicConfetti } = musicConfettiActions
 
 const ORIGINAL_HEIGHT_PIXELS = 118
 
@@ -25,6 +29,7 @@ const ConnectedProfileCompletionPanel = ({
   isAccountLoaded,
   isLoggedIn
 }) => {
+  const dispatch = useDispatch()
   const [isDismissed, setIsDismissed] = useState(false)
   const [isTooltipDisabled, setIsTooltipDisabled] = useState(false)
   const onDismiss = () => {
@@ -36,10 +41,7 @@ const ConnectedProfileCompletionPanel = ({
       setIsDismissed(true)
     }, 200)
   }
-  const [confettiIsFinished, setConfettiIsFinished] = useState(false)
-  const onConfettiFinished = useCallback(() => {
-    setConfettiIsFinished(true)
-  }, [])
+
   const { isHidden, didCompleteThisSession, shouldNeverShow } =
     useProfileCompletionDismissal({
       onDismiss,
@@ -48,13 +50,16 @@ const ConnectedProfileCompletionPanel = ({
       isDismissed
     })
 
+  useEffect(() => {
+    if (didCompleteThisSession) {
+      showMusicConfetti()
+    }
+  }, [didCompleteThisSession, dispatch])
+
   const transitions = useSlideDown(!isHidden, ORIGINAL_HEIGHT_PIXELS, true)
 
   return (
     <>
-      {didCompleteThisSession && !confettiIsFinished ? (
-        <MusicConfetti zIndex={10000} onCompletion={onConfettiFinished} />
-      ) : null}
       {!shouldNeverShow && isLoggedIn
         ? transitions.map(({ item, key, props }) =>
             item ? (

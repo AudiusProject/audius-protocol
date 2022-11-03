@@ -68,7 +68,6 @@ export type ComputedUserProperties = {
   _collectionIds?: string[]
   _profile_picture_color?: Color
   _artist_pick?: ID
-  _has_reposted?: boolean
   updatedProfilePicture?: { file: File; url: string }
   updatedCoverPhoto?: { file: File; url: string }
 }

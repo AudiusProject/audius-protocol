@@ -7,7 +7,6 @@ import {
   makeKindId,
   formatShareText,
   accountSelectors,
-  accountActions,
   cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
@@ -50,22 +49,11 @@ export function* repostTrackAsync(
     return
   }
 
-  //  Increment the repost count on the user
+  // Increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
-  // Indicates that the user has reposted `this` session
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          _has_reposted: true
-        }
-      }
-    ])
-  )
 
   const event = make(Name.REPOST, {
     kind: 'track',
@@ -322,7 +310,16 @@ export function* saveTrackAsync(
   const track = tracks[action.trackId]
 
   if (track.has_current_user_saved) return
-  yield* put(accountActions.didFavoriteItem())
+
+  // Increment the save count on the user
+  const user = yield* select(getUser, { id: userId })
+  if (!user) return
+
+  yield* call(adjustUserField, {
+    user,
+    fieldName: 'track_save_count',
+    delta: 1
+  })
 
   const event = make(Name.FAVORITE, {
     kind: 'track',
@@ -331,7 +328,7 @@ export function* saveTrackAsync(
   })
   yield* put(event)
 
-  yield* call(confirmSaveTrack, action.trackId)
+  yield* call(confirmSaveTrack, action.trackId, user)
 
   const eagerlyUpdatedMetadata: Partial<Track> = {
     has_current_user_saved: true,
@@ -393,7 +390,7 @@ export function* saveTrackAsync(
   }
 }
 
-export function* confirmSaveTrack(trackId: ID) {
+export function* confirmSaveTrack(trackId: ID, user: User) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -418,6 +415,13 @@ export function* confirmSaveTrack(trackId: ID) {
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
+        // Revert the incremented save count
+        yield* call(adjustUserField, {
+          user,
+          fieldName: 'track_save_count',
+          delta: -1
+        })
+
         yield* put(
           socialActions.saveTrackFailed(trackId, timeout ? 'Timeout' : message)
         )
@@ -442,6 +446,16 @@ export function* unsaveTrackAsync(
     return
   }
 
+  // Decrement the save count
+  const user = yield* select(getUser, { id: userId })
+  if (!user) return
+
+  yield* call(adjustUserField, {
+    user,
+    fieldName: 'track_save_count',
+    delta: -1
+  })
+
   const event = make(Name.UNFAVORITE, {
     kind: 'track',
     source: action.source,
@@ -449,7 +463,7 @@ export function* unsaveTrackAsync(
   })
   yield* put(event)
 
-  yield* call(confirmUnsaveTrack, action.trackId)
+  yield* call(confirmUnsaveTrack, action.trackId, user)
 
   const tracks = yield* select(getTracks, { ids: [action.trackId] })
   const track = tracks[action.trackId]
@@ -460,7 +474,7 @@ export function* unsaveTrackAsync(
     }
 
     if (track.remix_of?.tracks?.[0]?.user?.user_id === userId) {
-      // This repost is a co-sign
+      // This save is a co-sign
       const remixOf = {
         tracks: [
           {
@@ -493,7 +507,7 @@ export function* unsaveTrackAsync(
   yield* put(socialActions.unsaveTrackSucceeded(action.trackId))
 }
 
-export function* confirmUnsaveTrack(trackId: ID) {
+export function* confirmUnsaveTrack(trackId: ID, user: User) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -518,6 +532,12 @@ export function* confirmUnsaveTrack(trackId: ID) {
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
+        // revert the decremented save count
+        yield* call(adjustUserField, {
+          user,
+          fieldName: 'track_save_count',
+          delta: 1
+        })
         yield* put(
           socialActions.unsaveTrackFailed(
             trackId,

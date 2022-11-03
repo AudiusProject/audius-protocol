@@ -22,7 +22,6 @@ const initialState = {
   userId: null as number | null,
   status: Status.IDLE,
   reason: null as Nullable<FailureReason>,
-  hasFavoritedItem: false,
   connectivityFailure: false, // Did we fail from no internet connectivity?
   needsAccountRecovery: false
 }
@@ -31,7 +30,6 @@ type FetchAccountSucceededPayload = {
   userId: ID
   collections: AccountCollection[]
   orderedPlaylists: string[]
-  hasFavoritedItem: boolean
 }
 
 type FetchAccountFailedPayload = {
@@ -56,13 +54,11 @@ const slice = createSlice({
       state,
       action: PayloadAction<FetchAccountSucceededPayload>
     ) => {
-      const { userId, orderedPlaylists, collections, hasFavoritedItem } =
-        action.payload
+      const { userId, orderedPlaylists, collections } = action.payload
       state.userId = userId
       state.orderedPlaylists = orderedPlaylists
       state.collections = keyBy(collections, 'id')
       state.status = Status.SUCCESS
-      state.hasFavoritedItem = hasFavoritedItem
       state.reason = null
     },
     fetchAccountFailed: (
@@ -119,9 +115,6 @@ const slice = createSlice({
         ...keyBy(collections, 'id')
       }
     },
-    didFavoriteItem: (state) => {
-      state.hasFavoritedItem = true
-    },
     setNeedsAccountRecovery: (state) => {
       state.needsAccountRecovery = true
     },
@@ -163,7 +156,6 @@ export const {
   fetchSavedAlbumsSucceeded,
   fetchSavedPlaylists,
   fetchSavedPlaylistsSucceeded,
-  didFavoriteItem,
   setNeedsAccountRecovery,
   setPlaylistOrder,
   fetchBrowserPushNotifications,

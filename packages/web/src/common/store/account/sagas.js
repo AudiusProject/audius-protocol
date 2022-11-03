@@ -261,14 +261,9 @@ function* cacheAccount(account) {
     ])
   )
 
-  const hasFavoritedItem =
-    collections.some((playlist) => playlist.user.id !== account.user_id) ||
-    account.track_save_count > 0
-
   const formattedAccount = {
     userId: account.user_id,
-    collections,
-    hasFavoritedItem
+    collections
   }
 
   yield call([localStorage, 'setAudiusAccount'], formattedAccount)
