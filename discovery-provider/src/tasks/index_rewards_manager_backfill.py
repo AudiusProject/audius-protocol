@@ -714,7 +714,7 @@ def index_rewards_manager_backfill(self):
         if not stop_sig:
             stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
             if not stop_sig:
-                logger.error(
+                logger.info(
                     "index_rewards_manager_backfill.py | Failed to find true stop signature"
                 )
                 return
