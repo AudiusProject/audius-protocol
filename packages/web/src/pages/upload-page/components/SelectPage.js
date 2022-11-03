@@ -1,5 +1,6 @@
 import { Component } from 'react'
 
+import { UploadType } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -10,7 +11,6 @@ import InvalidFileType from 'components/upload/InvalidFileType'
 
 import styles from './SelectPage.module.css'
 import TracksPreview from './TracksPreview'
-import UploadType from './uploadType'
 
 class SelectPage extends Component {
   state = {

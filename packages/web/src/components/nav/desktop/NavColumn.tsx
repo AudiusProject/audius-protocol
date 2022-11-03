@@ -21,7 +21,8 @@ import {
   playerSelectors,
   queueSelectors,
   playlistLibraryActions,
-  playlistLibraryHelpers
+  playlistLibraryHelpers,
+  uploadActions
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -52,7 +53,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { resetState as resetUploadState } from 'pages/upload-page/store/actions'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
@@ -75,6 +75,8 @@ import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
+
+const { resetState: resetUploadState } = uploadActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
 const { makeGetCurrent } = queueSelectors

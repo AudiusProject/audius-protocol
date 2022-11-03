@@ -19,7 +19,6 @@ import remixSettingsModal from 'components/remix-settings-modal/store/slice'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import deleted from 'pages/deleted-page/store/slice'
-import upload from 'pages/upload-page/store/reducer'
 import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
@@ -55,7 +54,6 @@ const createRootReducer = (routeHistory: History) =>
     dragndrop,
 
     // Pages
-    upload,
     dashboard,
     serviceSelection,
 

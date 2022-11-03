@@ -9,7 +9,11 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  actionChannelDispatcher
+  actionChannelDispatcher,
+  uploadActions,
+  UploadType,
+  ProgressStatus,
+  uploadSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -31,20 +35,17 @@ import { reformat } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
-import UploadType from 'pages/upload-page/components/uploadType'
-import { getStems } from 'pages/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
-import * as uploadActions from './actions'
 import { watchUploadErrors } from './errorSagas'
-import { ProgressStatus } from './types'
 import { reportResultEvents } from './utils/sagaHelpers'
 
 const { getUser } = cacheUsersSelectors
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
+const { getStems } = uploadSelectors
 
 const MAX_CONCURRENT_UPLOADS = 4
 const MAX_CONCURRENT_REGISTRATIONS = 4

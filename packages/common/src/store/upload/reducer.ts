@@ -7,10 +7,15 @@ import {
   UPDATE_PROGRESS,
   RESET,
   RESET_STATE,
-  UNDO_RESET_STATE
+  UNDO_RESET_STATE,
+  uploadTracksRequested,
+  uploadTracksSucceeded,
+  updateProgress,
+  uploadSingleTrackFailed
 } from './actions'
+import { ProgressStatus, UploadState } from './types'
 
-const initialState = {
+const initialState: UploadState = {
   openMultiTrackNotification: true,
   tracks: null,
   metadata: null,
@@ -27,27 +32,43 @@ const initialState = {
 
   // Id to take the user to after completing upload.
   // Can be either a track or playlist/album.
-  completionId: null
+  completionId: null,
+  error: false
+}
+
+const initialUploadState = {
+  status: ProgressStatus.UPLOADING,
+  loaded: 0,
+  total: 0
 }
 
 const actionsMap = {
-  [TOGGLE_MULTI_TRACK_NOTIFICATION](state, action) {
+  [TOGGLE_MULTI_TRACK_NOTIFICATION](
+    state: UploadState,
+    action: { open: boolean }
+  ) {
     return {
       ...state,
       openMultiTrackNotification: action.open
     }
   },
-  [UPLOAD_TRACKS_REQUESTED](state, action) {
+  [UPLOAD_TRACKS_REQUESTED](
+    state: UploadState,
+    action: ReturnType<typeof uploadTracksRequested>
+  ) {
     const newState = { ...state }
     newState.uploading = true
     newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks.map((t) => ({}))
-    newState.metadata = action.metadata
-    newState.uploadType = action.uploadType
-    newState.stems = action.stems
+    newState.uploadProgress = action.tracks.map(() => initialUploadState)
+    newState.metadata = action.metadata ?? null
+    newState.uploadType = action.uploadType ?? null
+    newState.stems = action.stems ?? newState.stems
     return newState
   },
-  [UPLOAD_TRACKS_SUCCEEDED](state, action) {
+  [UPLOAD_TRACKS_SUCCEEDED](
+    state: UploadState,
+    action: ReturnType<typeof uploadTracksSucceeded>
+  ) {
     const newState = { ...state }
     newState.uploading = false
     newState.success = true
@@ -57,14 +78,15 @@ const actionsMap = {
 
     // Update the upload tracks with resulting metadata. This is used for TikTok sharing
     if (action.trackMetadatas) {
-      newState.tracks = state.tracks.map((t, i) => ({
-        ...t,
-        metadata: action.trackMetadatas[i]
-      }))
+      newState.tracks =
+        state.tracks?.map((t, i) => ({
+          ...t,
+          metadata: action.trackMetadatas[i]
+        })) ?? null
     }
     return newState
   },
-  [UPLOAD_TRACKS_FAILED](state, action) {
+  [UPLOAD_TRACKS_FAILED](state: UploadState) {
     const newState = { ...state }
     newState.uploading = false
     newState.uploadType = null
@@ -73,34 +95,40 @@ const actionsMap = {
     newState.stems = []
     return newState
   },
-  [UPDATE_PROGRESS](state, action) {
+  [UPDATE_PROGRESS](
+    state: UploadState,
+    action: ReturnType<typeof updateProgress>
+  ) {
     const newState = { ...state }
-    newState.uploadProgress = [...state.uploadProgress]
+    newState.uploadProgress = [...(state.uploadProgress ?? [])]
     newState.uploadProgress[action.index] = {
       ...newState.uploadProgress[action.index],
       ...action.progress
     }
     return newState
   },
-  [RESET](state, action) {
+  [RESET](state: UploadState) {
     return {
       ...initialState,
       openMultiTrackNotification: state.openMultiTrackNotification
     }
   },
-  [RESET_STATE](state) {
+  [RESET_STATE](state: UploadState) {
     return {
       ...state,
       shouldReset: true
     }
   },
-  [UNDO_RESET_STATE](state) {
+  [UNDO_RESET_STATE](state: UploadState) {
     return {
       ...state,
       shouldReset: false
     }
   },
-  [UPLOAD_SINGLE_TRACK_FAILED](state, action) {
+  [UPLOAD_SINGLE_TRACK_FAILED](
+    state: UploadState,
+    action: ReturnType<typeof uploadSingleTrackFailed>
+  ) {
     return {
       ...state,
       failedTrackIndices: [...state.failedTrackIndices, action.index]
@@ -108,8 +136,12 @@ const actionsMap = {
   }
 }
 
-export default function upload(state = initialState, action) {
+export default function upload(
+  state = initialState,
+  action: { type: keyof typeof actionsMap }
+) {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
+  // @ts-ignore action type should be a unionType of all actions in actions.ts
   return matchingReduceFunction(state, action)
 }

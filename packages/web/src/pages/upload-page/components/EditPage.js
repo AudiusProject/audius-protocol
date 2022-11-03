@@ -1,5 +1,6 @@
 import { Component } from 'react'
 
+import { UploadType } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
@@ -8,7 +9,6 @@ import FormTile from 'components/data-entry/FormTile'
 import InlineFormTile from 'components/data-entry/InlineFormTile'
 
 import styles from './EditPage.module.css'
-import UploadType from './uploadType'
 
 class EditPage extends Component {
   state = {

@@ -30,7 +30,6 @@ import RemixSettingsModalReducer from 'components/remix-settings-modal/store/sli
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
 import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
-import { UploadPageState } from 'pages/upload-page/store/types'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 
@@ -97,7 +96,6 @@ export type AppState = CommonState & {
   }
 
   // Pages
-  upload: UploadPageState
   dashboard: ArtistDashboardState
   history: HistoryPageState
   collection: CollectionsPageState
