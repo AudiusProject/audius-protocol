@@ -201,7 +201,8 @@ export const Table = ({
     }
   }, [columns, defaultSorter, isVirtualized, onSort, sortBy, useLocalSort])
 
-  useEffect(handleSortChange, [sortBy])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => handleSortChange(), [sortBy])
 
   const renderTableHeader = useCallback((column) => {
     return (

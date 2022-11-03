@@ -1,8 +1,7 @@
+import { uploadActions } from '@audius/common'
 import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'store/errors/actions'
-
-import * as uploadActions from './actions'
 
 const BYTES_PER_MB = 1000 * 1000
 

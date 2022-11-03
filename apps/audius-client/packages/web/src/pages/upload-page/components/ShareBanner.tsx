@@ -4,7 +4,8 @@ import {
   Name,
   User,
   FeatureFlags,
-  shareSoundToTiktokModalActions
+  shareSoundToTiktokModalActions,
+  UploadState
 } from '@audius/common'
 import { Button, ButtonType, IconTikTok, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
@@ -31,8 +32,6 @@ import {
 } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
 
-import { UploadPageState } from '../store/types'
-
 import styles from './ShareBanner.module.css'
 const { open: openTikTokModal } = shareSoundToTiktokModalActions
 
@@ -42,7 +41,7 @@ type ContinuePage = 'Track' | 'Profile' | 'Album' | 'Playlist' | 'Remix'
 type ShareBannerProps = {
   isHidden: boolean
   type: UploadType
-  upload: UploadPageState
+  upload: UploadState
   user: User
 }
 
@@ -71,9 +70,10 @@ const getTwitterHandleByUserHandle = async (userHandle: string) => {
 const getShareTextUrl = async (
   uploadType: UploadType,
   user: User,
-  upload: UploadPageState,
+  upload: UploadState,
   fullUrl = true
 ) => {
+  if (!upload.tracks) return { text: '', url: '' }
   switch (uploadType) {
     case 'Track': {
       const { title, permalink } = upload.tracks[0].metadata
@@ -112,20 +112,24 @@ const getShareTextUrl = async (
       return { text: `Check out my new tracks on @AudiusProject #Audius`, url }
     }
     case 'Album': {
-      // @ts-ignore
-      const { playlist_name: title } = upload.metadata
+      const { metadata, completionId } = upload
+      if (!metadata || !completionId) return { text: '', url: '' }
+
+      const { playlist_name: title } = metadata
       const getPage = fullUrl ? fullAlbumPage : albumPage
-      const url = getPage(user.handle, title, upload.completionId)
+      const url = getPage(user.handle, title, completionId)
       return {
         text: `Check out my new album, ${title} on @AudiusProject #Audius`,
         url
       }
     }
     case 'Playlist': {
-      // @ts-ignore
-      const { playlist_name: title } = upload.metadata
+      const { metadata, completionId } = upload
+      if (!metadata || !completionId) return { text: '', url: '' }
+
+      const { playlist_name: title } = metadata
       const getPage = fullUrl ? fullPlaylistPage : playlistPage
-      const url = getPage(user.handle, title, upload.completionId)
+      const url = getPage(user.handle, title, completionId)
       return {
         text: `Check out my new playlist, ${title} on @AudiusProject #Audius`,
         url
@@ -157,8 +161,8 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
 
   const onClickTikTok = useCallback(async () => {
     // Sharing to TikTok is currently only enabled for single track uploads
-    const track = upload.tracks[0]
-    if (track.metadata) {
+    const track = upload.tracks?.[0]
+    if (track?.metadata) {
       dispatch(
         openTikTokModal({
           track: {
@@ -188,7 +192,7 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
     return (
       type === 'Track' &&
       isShareSoundToTikTokEnabled &&
-      !upload.tracks[0]?.metadata.is_unlisted
+      !upload.tracks?.[0]?.metadata.is_unlisted
     )
   }
 

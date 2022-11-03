@@ -10,7 +10,8 @@ import {
   accountSelectors,
   ExploreCollectionsVariant,
   themeSelectors,
-  themeActions
+  themeActions,
+  UploadType
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -69,7 +70,6 @@ import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
-import UploadType from 'pages/upload-page/components/uploadType'
 import Visualizer from 'pages/visualizer/Visualizer'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'

@@ -4,7 +4,9 @@ import {
   Name,
   accountSelectors,
   queueActions,
-  newCollectionMetadata
+  newCollectionMetadata,
+  uploadActions,
+  UploadType
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -23,15 +25,10 @@ import styles from './UploadPage.module.css'
 import EditPage from './components/EditPage'
 import FinishPage from './components/FinishPage'
 import SelectPage from './components/SelectPage'
-import UploadType from './components/uploadType'
-import {
-  uploadTracks,
-  reset,
-  undoResetState,
-  toggleMultiTrackNotification
-} from './store/actions'
 const { pause: pauseQueue } = queueActions
-const getAccountUser = accountSelectors.getAccountUser
+const { uploadTracks, reset, undoResetState, toggleMultiTrackNotification } =
+  uploadActions
+const { getAccountUser } = accountSelectors
 
 const Pages = Object.freeze({
   SELECT: 0,
