@@ -325,9 +325,15 @@ def parse_sol_tx_batch(
 
             record = session.query(SPLTokenBackfillTransaction).first()
             if record:
+                logger.info(
+                    f"REED adding backfill record for first time: {last_scanned_signature} {last_scanned_slot}"
+                )
                 record.last_scanned_slot = last_scanned_slot
                 record.signature = last_scanned_signature
             else:
+                logger.info(
+                    f"REED updating backfill record: {last_scanned_signature} {last_scanned_slot}"
+                )
                 record = SPLTokenBackfillTransaction(
                     last_scanned_slot=last_scanned_slot,
                     signature=last_scanned_signature,
@@ -392,7 +398,11 @@ def process_spl_token_tx(
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
+        logger.info(f"REED Retrieved transactions before: {last_tx_signature}")
         transactions_array = transactions_history["result"]
+        logger.info(
+            f"REED txs: len={len(transactions_array)} | sample slot={transactions_array[0]['slot']}"
+        )
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
             # really represents the end of known history for this ProgramId
@@ -406,6 +416,9 @@ def process_spl_token_tx(
                 intersection_found = True
             else:
                 for tx in transactions_array:
+                    # logger.info(
+                    #     f"REED index_spl_token_backfill.py | Adding tx to be processed: tx={tx['signature']} | slot={tx['slot']}"
+                    # )
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx)
                     elif tx["slot"] <= latest_processed_slot:
