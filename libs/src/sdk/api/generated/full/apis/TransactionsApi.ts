@@ -21,6 +21,33 @@ import {
     TransactionHistoryResponseToJSON,
 } from '../models';
 
+export interface GetAudioTransactionHistoryRequest {
+    /**
+     * The data that was signed by the user for signature recovery
+     */
+    encodedDataMessage: string;
+    /**
+     * The signature of data, used for signature recovery
+     */
+    encodedDataSignature: string;
+    /**
+     * The number of items to skip. Useful for pagination (page number * limit)
+     */
+    offset?: number;
+    /**
+     * The number of items to fetch
+     */
+    limit?: number;
+    /**
+     * The sort method
+     */
+    sortMethod?: GetAudioTransactionHistorySortMethodEnum;
+    /**
+     * The sort direction
+     */
+    sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
+}
+
 /**
  * 
  */
@@ -29,10 +56,42 @@ export class TransactionsApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistory(): Promise<NonNullable<TransactionHistoryResponse["data"]>> {
+    async getAudioTransactionHistory(requestParameters: GetAudioTransactionHistoryRequest): Promise<NonNullable<TransactionHistoryResponse["data"]>> {
+        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
+        }
+
+        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getAudioTransactionHistory.');
+        }
+
         const queryParameters: any = {};
 
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        }
+
+        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        }
 
         return this.request({
             path: `/transactions`,
@@ -42,4 +101,21 @@ export class TransactionsApi extends runtime.BaseAPI {
         }) as Promise<NonNullable<TransactionHistoryResponse["data"]>>;
     }
 
+}
+
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetAudioTransactionHistorySortMethodEnum {
+    Date = 'date',
+    TransactionType = 'transaction_type'
+}
+/**
+    * @export
+    * @enum {string}
+    */
+export enum GetAudioTransactionHistorySortDirectionEnum {
+    Asc = 'asc',
+    Desc = 'desc'
 }

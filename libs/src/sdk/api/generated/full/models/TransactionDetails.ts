@@ -28,6 +28,12 @@ export interface TransactionDetails
         * @type {string}
         * @memberof TransactionDetails
         */
+        transaction_date: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TransactionDetails
+        */
         transaction_type: string;
         /**
         * 
@@ -55,10 +61,10 @@ export interface TransactionDetails
         balance: string;
         /**
         * 
-        * @type {string}
+        * @type {object}
         * @memberof TransactionDetails
         */
-        metadata: string;
+        metadata: object;
     }
 
 

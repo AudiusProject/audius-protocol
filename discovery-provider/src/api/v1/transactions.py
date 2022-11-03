@@ -1,9 +1,8 @@
 import logging
 
-from src.utils.auth_middleware import SIGNATURE_HEADER, MESSAGE_HEADER
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
-    abort_not_found,
+    abort_bad_request_param,
     extend_transaction_details,
     make_full_response,
     pagination_parser,
@@ -11,7 +10,7 @@ from src.api.v1.helpers import (
 )
 from src.queries.get_audio_transactions_history import get_audio_transactions_history
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
-from src.utils.auth_middleware import auth_middleware
+from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER, auth_middleware
 
 from .models.transactions import transaction_details
 
@@ -49,17 +48,17 @@ transaction_history_parser.add_argument(
     MESSAGE_HEADER,
     required=True,
     description="The data that was signed by the user for signature recovery",
-    location="headers"
+    location="headers",
 )
 transaction_history_parser.add_argument(
     SIGNATURE_HEADER,
     required=True,
     description="The signature of data, used for signature recovery",
-    location="headers"
+    location="headers",
 )
 
 
-@full_ns.route("", doc=False)
+@full_ns.route("")
 class GetTransactionHistory(Resource):
     @full_ns.doc(
         id="""Get Audio Transaction History""",
@@ -70,7 +69,7 @@ class GetTransactionHistory(Resource):
     @auth_middleware()
     def get(self, authed_user_id=None):
         if authed_user_id is None:
-            abort_not_found(None, full_ns)
+            abort_bad_request_param(None, full_ns)
         args = transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)

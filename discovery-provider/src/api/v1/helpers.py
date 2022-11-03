@@ -359,6 +359,7 @@ def extend_transaction_details(transaction_details):
     new_transaction_details["transaction_date"] = transaction_details[
         "transaction_created_at"
     ]
+    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
     return new_transaction_details
 
 
