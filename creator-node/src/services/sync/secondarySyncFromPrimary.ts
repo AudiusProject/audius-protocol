@@ -160,16 +160,18 @@ const handleSyncFromPrimary = async ({
 
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
-      } catch (error) {
-        await clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        } catch (error) {
+          await clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
