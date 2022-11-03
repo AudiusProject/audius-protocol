@@ -5,6 +5,7 @@ import _ from 'lodash'
 import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint } from './types/blocknumber_checkpoint'
 import { MsearchResponseItem } from '@elastic/elasticsearch/lib/api/types'
+import { logger } from './logger'
 
 let pool: PG | undefined = undefined
 export function dialPg(): PG {
@@ -29,6 +30,25 @@ export function dialEs() {
     esc = new ES({ node: url })
   }
   return esc
+}
+
+export async function recoverFromRedIndex() {
+  const es = dialEs()
+  const indices = await es.cat.indices({ format: 'json' })
+  const hasRed = indices.find((i) => i.health == 'red')
+  if (Boolean(hasRed)) {
+    logger.warn('found red index... nuking')
+    try {
+      await Promise.all(
+        indices.map((idx) =>
+          es.indices.delete({ index: idx.index }, { ignore: [404] })
+        )
+      )
+      logger.info('nuke worked')
+    } catch (e) {
+      logger.error(e, 'nuke failed')
+    }
+  }
 }
 
 export async function waitForHealthyCluster() {
