@@ -7,7 +7,9 @@ export type ValuesOf<T> = T[keyof T]
 // is a type that adds additional fields to the request object.
 export type CustomRequest = Request & {
   logger: Logger
+  logContext?: LogContext
   normalizedPath?: string
+  startTime?: [number, number]
 }
 
 export type LogContext = {

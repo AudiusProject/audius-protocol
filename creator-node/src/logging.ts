@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import type { WriteFn, Stream } from 'bunyan'
+import type { CustomRequest } from './utils'
 import bunyan, { createLogger, nameFromLevel, safeCycles } from 'bunyan'
 import cluster from 'cluster'
 import shortid from 'shortid'
@@ -62,7 +63,8 @@ export function requestNotExcludedFromLogging(url: string) {
 /**
  * @notice request headers are case-insensitive
  */
-export function getRequestLoggingContext(req: Request, requestID: string) {
+export function getRequestLoggingContext(request: Request, requestID: string) {
+  const req = request as CustomRequest
   req.startTime = getStartTime()
   const urlParts = req.url.split('?')
   return {
@@ -85,10 +87,11 @@ export function getStartTime() {
 }
 
 export function loggingMiddleware(
-  req: Request,
+  request: Request,
   res: Response,
   next: NextFunction
 ) {
+  const req = request as CustomRequest
   const providedRequestID = req.header('X-Request-ID')
   const requestID = providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
@@ -108,7 +111,7 @@ export function loggingMiddleware(
  * @param {Object} options optional object to define child logger properties. adds to JSON fields, allowing for better log filtering/querying
  * @returns {Object} child logger instance with defined options
  */
-export function createChildLogger(logger: Logger, options = {}) {
+export function createChildLogger(logger: bunyan, options = {}) {
   return logger.child(options)
 }
 
