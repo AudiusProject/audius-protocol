@@ -326,13 +326,13 @@ def parse_sol_tx_batch(
             record = session.query(SPLTokenBackfillTransaction).first()
             if record:
                 logger.info(
-                    f"REED adding backfill record for first time: {last_scanned_signature} {last_scanned_slot}"
+                    f"REED updating backfill record: {last_scanned_signature} {last_scanned_slot}"
                 )
                 record.last_scanned_slot = last_scanned_slot
                 record.signature = last_scanned_signature
             else:
                 logger.info(
-                    f"REED updating backfill record: {last_scanned_signature} {last_scanned_slot}"
+                    f"REED adding backfill record for first time: {last_scanned_signature} {last_scanned_slot}"
                 )
                 record = SPLTokenBackfillTransaction(
                     last_scanned_slot=last_scanned_slot,
@@ -401,7 +401,7 @@ def process_spl_token_tx(
         logger.info(f"REED Retrieved transactions before: {last_tx_signature}")
         transactions_array = transactions_history["result"]
         logger.info(
-            f"REED txs: len={len(transactions_array)} | sample slot={transactions_array[0]['slot']}"
+            f"REED txs: len={len(transactions_array)} | from slot={transactions_array[0]['slot']} to slot={transactions_array[-1]['slot']}"
         )
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
@@ -411,14 +411,14 @@ def process_spl_token_tx(
         else:
             # handle initial case where no there is no stored latest processed slot and start from current
             if latest_processed_slot is None:
+                logger.info(
+                    f"REED we are in latest_processed_slot={latest_processed_slot} case"
+                )
                 logger.debug("index_spl_token_backfill.py | setting from none")
                 transaction_signature_batch = transactions_array
                 intersection_found = True
             else:
                 for tx in transactions_array:
-                    # logger.info(
-                    #     f"REED index_spl_token_backfill.py | Adding tx to be processed: tx={tx['signature']} | slot={tx['slot']}"
-                    # )
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx)
                     elif tx["slot"] <= latest_processed_slot:
@@ -450,6 +450,7 @@ def process_spl_token_tx(
             page_count={page_count}"
         )
         page_count = page_count + 1
+    logger.info(f"REED exited intersection loop")
 
     transaction_signatures.reverse()
     totals = {"user_ids": 0, "root_accts": 0, "token_accts": 0}
