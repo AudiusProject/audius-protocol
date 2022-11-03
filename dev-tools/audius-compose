@@ -167,8 +167,8 @@ def build(
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
-@click.argument("services", nargs=-1)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
     protocol_dir,
@@ -176,8 +176,8 @@ def up(
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer,
-    services,
     anti_abuse_oracle,
+    services,
 ):
     generate_env(
         protocol_dir,
