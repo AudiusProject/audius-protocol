@@ -8,3 +8,4 @@ class IndexingCheckpoint(Base, RepresentableMixin):
 
     tablename = Column(String, primary_key=True)
     last_checkpoint = Column(Integer, nullable=False)
+    signature = Column(String, nullable=True)
