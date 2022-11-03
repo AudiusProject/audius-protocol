@@ -31,17 +31,21 @@ def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
 
     if params.entity_type != EntityType.USER:
-        raise Exception("Invalid User Transaction, wrong entity type")
+        raise Exception(
+            f"Invalid User Transaction, wrong entity type {params.entity_type}"
+        )
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
-            raise Exception("Invalid User Transaction, user already exists")
+            raise Exception(f"Invalid User Transaction, user {user_id} already exists")
         if user_id < USER_ID_OFFSET:
-            raise Exception("Invalid User Transaction, user id offset incorrect")
+            raise Exception(
+                f"Invalid User Transaction, user id {user_id} offset incorrect"
+            )
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception("Invalid User Transaction, user does not exist")
+            raise Exception(f"Invalid User Transaction, user {user_id} does not exist")
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
             raise Exception(

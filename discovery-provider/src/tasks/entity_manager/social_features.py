@@ -134,18 +134,18 @@ def delete_social_record(params):
 
 def validate_social_feature(params: ManageEntityParameters):
     if params.user_id not in params.existing_records[EntityType.USER]:
-        raise Exception("User does not exists")
+        raise Exception(f"User {params.user_id} does not exists")
 
     wallet = params.existing_records[EntityType.USER][params.user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception("User does not match signer")
+        raise Exception(f"User {params.user_id} does not match signer")
 
     if params.entity_id not in params.existing_records[params.entity_type]:
-        raise Exception("Entity does not exist")
+        raise Exception(f"Entity {params.entity_id} does not exist")
 
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
-            raise Exception("User cannot follow themself")
+            raise Exception(f"User {params.user_id} cannot follow themself")
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
@@ -157,7 +157,7 @@ def validate_social_feature(params: ManageEntityParameters):
             ],
         )
         if not premium_content_access["does_user_have_access"]:
-            raise Exception("User has no access to entity")
+            raise Exception(f"User {params.user_id} has no access to entity")
 
 
 def should_check_entity_access(action: Action, entity_type: EntityType):
