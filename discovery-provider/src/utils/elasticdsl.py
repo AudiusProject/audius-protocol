@@ -25,12 +25,16 @@ STALE_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
 def raise_if_es_is_stale():
     # get most recent repost
     # if the created_at is > 4 hours old, ES is stale so raise an exception
+
+    is_prod = os.getenv("audius_discprov_env") == "prod"
+    if not is_prod:
+        return
+
     found = esclient.search(index="reposts", size=1, sort="created_at:desc")
     ts_str = found["hits"]["hits"][0]["_source"]["created_at"]
     ts = datetime.datetime.strptime(ts_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     age = datetime.datetime.now() - ts
-    is_prod = os.getenv("audius_discprov_env") == "prod"
-    if is_prod and age.seconds > STALE_THRESHOLD_SECONDS:
+    if age.seconds > STALE_THRESHOLD_SECONDS:
         raise Exception(f"ES data is stale. Last repost: {ts_str}")
 
 
