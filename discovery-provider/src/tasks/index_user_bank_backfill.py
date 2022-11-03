@@ -58,6 +58,7 @@ TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 
 index_user_bank_backfill_tablename = "index_user_bank_backfill"
+index_user_bank_backfill_complete = "index_user_bank_backfill_complete"
 
 
 # Recover ethereum public key from bytes array
