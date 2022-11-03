@@ -1,12 +1,15 @@
 <p align="center">
   <br/>
   <a target="_blank" href="https://audius.co">
-    <img src="https://avatars1.githubusercontent.com/u/38231615?s=400&u=c00678880596dabd2746dae13a47edbe7ea7210e&v=4" width="150px" >
+    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="200">
   </a>
   <br/>
 
+
   <p align="center">
-    <b>Audius Protocol</b>
+    The Audius Protocol Monorepo
+    <br/>
+    🎧🎸🎹🤘🎶🥁🎷🎻🎤🔊
   </p>
 </p>
 
