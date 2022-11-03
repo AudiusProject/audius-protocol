@@ -37,8 +37,8 @@ def test_save_cid_metadata(app):
                 .all()
             )
             assert len(users) == 2
-            assert users[0] = { "user_id": 1}
-            assert users[1] = { "user_id": 2}
+            assert users[0] == { "user_id": 1 }
+            assert users[1] == { "user_id": 2 }
 
             tracks = (
                 session.query(CIDData)
@@ -46,7 +46,7 @@ def test_save_cid_metadata(app):
                 .all()
             )
             assert len(tracks) == 1
-            assert tracks[0] = { "track_id": 2 }
+            assert tracks[0] == { "track_id": 2 }
 
             playlists = (
                 session.query(CIDData)
@@ -54,4 +54,4 @@ def test_save_cid_metadata(app):
                 .all()
             )
             assert len(playlists) == 1
-            assert playlists[0] = { "playlist_id": 2 }
+            assert playlists[0] == { "playlist_id": 2 }

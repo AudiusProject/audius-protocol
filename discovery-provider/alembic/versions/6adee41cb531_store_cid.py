@@ -1,7 +1,7 @@
 """store cid
 
 Revision ID: 6adee41cb531
-Revises: 42d5afb85d42
+Revises: 03dbd1b775c5
 Create Date: 2022-10-31 14:08:49.888394
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '6adee41cb531'
-down_revision = '42d5afb85d42'
+down_revision = '03dbd1b775c5'
 branch_labels = None
 depends_on = None
 
