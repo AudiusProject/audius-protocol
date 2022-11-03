@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import type { DocumentPickerResponse } from 'react-native-document-picker'
 import * as Yup from 'yup'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -15,7 +14,7 @@ import { makeStyles } from 'app/styles'
 
 import { UploadStackScreen } from './UploadStackScreen'
 import { PickArtworkField, SelectGenreField, TextField } from './fields'
-import type { TrackMetadata } from './types'
+import type { UploadTrack, UploadTrackMetadata } from './types'
 
 const messages = {
   screenTitle: 'Complete Track',
@@ -25,7 +24,7 @@ const messages = {
   fixErrors: 'Fix Errors To Continue'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   tile: {
     margin: spacing(3)
   },
@@ -40,12 +39,12 @@ const CompleteTrackSchema = Yup.object().shape({
     url: Yup.string().nullable().required('Required')
   }),
   genre: Yup.string().required('Required'),
-  description: Yup.string()
+  description: Yup.string().nullable()
 })
 
-export type CompleteTrackParams = DocumentPickerResponse
+export type CompleteTrackParams = UploadTrack
 
-const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
+const CompleteTrackForm = (props: FormikProps<UploadTrackMetadata>) => {
   const { handleSubmit, isSubmitting, errors, touched } = props
   const errorsKeys = Object.keys(errors)
   const hasErrors =
@@ -87,25 +86,22 @@ const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
 
 export const CompleteTrackScreen = () => {
   const { params } = useRoute<'CompleteTrack'>()
-  const { name } = params
+  const { metadata, file } = params
   const navigation = useNavigation()
 
-  const initialValues: TrackMetadata = {
-    name,
-    description: '',
-    genre: null,
-    artwork: { url: null }
-  }
+  const initialValues = metadata
 
   const handleSubmit = useCallback(
     (values) => {
-      navigation.push('UploadingTracks', { tracks: [values] })
+      navigation.push('UploadingTracks', {
+        tracks: [{ file, metadata: { ...metadata, ...values } }]
+      })
     },
-    [navigation]
+    [navigation, file, metadata]
   )
 
   return (
-    <Formik<TrackMetadata>
+    <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
       component={CompleteTrackForm}

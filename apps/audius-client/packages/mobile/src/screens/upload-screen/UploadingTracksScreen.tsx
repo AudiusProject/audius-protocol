@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
+import type { CommonState, UploadTrack } from '@audius/common'
+import { uploadSelectors, UploadType, uploadActions } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Screen, Text, Tile } from 'app/components/core'
@@ -10,7 +14,8 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { UploadingTrackTile } from './UploadingTrackTile'
-import type { CompletedTrackMetadata } from './types'
+const { uploadTracks } = uploadActions
+const { getUploadProgress, getUploadSuccess } = uploadSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: { marginHorizontal: spacing(3) },
@@ -42,28 +47,35 @@ const messages = {
     'Please make sure the screen stays on and keep the app open until the upload is complete.'
 }
 
-export type UploadingTracksParams = { tracks: CompletedTrackMetadata[] }
+export type UploadingTracksParams = { tracks: UploadTrack[] }
 
 export const UploadingTracksScreen = () => {
   const { params } = useRoute<'UploadingTracks'>()
   const { tracks } = params
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
-  const [uploadProgress, setUploadProgress] = useState(0)
   const navigation = useNavigation()
+  const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    dispatch(uploadTracks(tracks, undefined, UploadType.INDIVIDUAL_TRACK))
+  })
+
+  const trackUploadProgress = useSelector((state: CommonState) => {
+    const uploadProgress = getUploadProgress(state)
+    if (!uploadProgress) return 0
+    const { loaded, total } = uploadProgress[0]
+    if (total === 0) return 0
+    return (loaded / total) * 100
+  })
+
+  const uploadSuccess = useSelector(getUploadSuccess)
 
   useEffect(() => {
-    if (uploadProgress < 100) {
-      const timeout = setTimeout(() => {
-        setUploadProgress(uploadProgress + 20)
-      }, 800)
-      return () => clearTimeout(timeout)
-    } else {
-      navigation.navigate('UploadComplete', {
-        tracks: tracks.map((track) => ({ ...track, permalink: 'tmp' }))
-      })
+    if (uploadSuccess) {
+      navigation.navigate('UploadComplete')
     }
-  }, [uploadProgress, navigation, tracks])
+  })
 
   return (
     <Screen title={messages.uploading} icon={IconUpload} style={styles.root}>
@@ -85,9 +97,9 @@ export const UploadingTracksScreen = () => {
       </Tile>
       {tracks.map((track) => (
         <UploadingTrackTile
-          key={track.name}
+          key={track.metadata.title}
           track={track}
-          uploadProgress={uploadProgress}
+          uploadProgress={trackUploadProgress}
         />
       ))}
     </Screen>

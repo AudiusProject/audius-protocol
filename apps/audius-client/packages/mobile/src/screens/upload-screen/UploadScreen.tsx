@@ -10,6 +10,8 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
+import { processTrackFile } from './processTrackFile'
+
 const messages = {
   screenTitle: 'Upload',
   title: 'Upload Tracks',
@@ -38,15 +40,18 @@ export const UploadScreen = () => {
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
 
-  const [{ value }, handlePickTrack] = useAsyncFn(async () => {
-    return DocumentPicker.pick({ type: DocumentPicker.types.audio })
+  const [{ value: track }, handlePickTrack] = useAsyncFn(async () => {
+    const trackFile = await DocumentPicker.pickSingle({
+      type: DocumentPicker.types.audio
+    })
+    return processTrackFile(trackFile)
   }, [])
 
   useEffect(() => {
-    if (value) {
-      navigation.push('CompleteTrack', value[0])
+    if (track) {
+      navigation.push('CompleteTrack', track)
     }
-  }, [value, navigation])
+  }, [track, navigation])
 
   return (
     <Screen title={messages.title} icon={IconUpload} variant='secondary'>

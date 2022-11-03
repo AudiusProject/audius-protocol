@@ -10,7 +10,7 @@ import { takeEvery, put, call, select } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { handleUploads } from 'pages/upload-page/store/sagas'
+import { handleUploads } from 'common/store/upload/sagas'
 import { createStemMetadata } from 'pages/upload-page/store/utils/stems'
 const { getUser } = cacheUsersSelectors
 const { startStemUploads, stemUploadsSucceeded } = stemsUploadActions

@@ -1,10 +1,8 @@
-import type { Nullable, Genre } from '@audius/common'
+import type { Nullable, Genre, TrackMetadata } from '@audius/common'
+import type { DocumentPickerResponse } from 'react-native-document-picker'
 
-export type TrackMetadata = {
-  name: Nullable<string>
-  description: Nullable<string>
-  genre: Nullable<Genre>
-  artwork: { url: Nullable<string> }
+export type UploadTrackMetadata = {
+  [T in keyof TrackMetadata]: Nullable<TrackMetadata[T]>
 }
 
 export type CompletedTrackMetadata = {
@@ -12,4 +10,14 @@ export type CompletedTrackMetadata = {
   description: Nullable<string>
   genre: Genre
   artwork: { url: string }
+}
+
+export type UploadTrack = {
+  file: DocumentPickerResponse
+  metadata: TrackMetadata
+}
+
+export type CompletedTrackUpload = {
+  file: DocumentPickerResponse
+  metadata: CompletedTrackMetadata
 }
