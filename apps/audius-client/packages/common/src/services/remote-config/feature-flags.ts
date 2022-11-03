@@ -29,7 +29,8 @@ export enum FeatureFlags {
   AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow',
   MOBILE_NAV_OVERHAUL = 'mobile_nav_overhaul_final',
   MOBILE_UPLOAD = 'mobile_upload',
-  STREAM_MP3 = 'stream_mp3'
+  STREAM_MP3 = 'stream_mp3',
+  READ_ARTIST_PICK_FROM_DISCOVERY = 'read_artist_pick_from_discovery'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -80,5 +81,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW]: false,
   [FeatureFlags.MOBILE_NAV_OVERHAUL]: false,
   [FeatureFlags.MOBILE_UPLOAD]: false,
-  [FeatureFlags.STREAM_MP3]: false
+  [FeatureFlags.STREAM_MP3]: false,
+  [FeatureFlags.READ_ARTIST_PICK_FROM_DISCOVERY]: false
 }

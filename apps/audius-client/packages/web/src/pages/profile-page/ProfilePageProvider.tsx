@@ -217,24 +217,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
   }
 
-  // Check that the sorted order has the _artist_pick track as the first
-  updateOrderArtistPickCheck = (tracks: Array<{ track_id: ID }>) => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return []
-    const artistPick = profile._artist_pick
-    const artistTrackIndex = tracks.findIndex(
-      (track) => track.track_id === artistPick
-    )
-    if (artistTrackIndex > -1) {
-      return [tracks[artistTrackIndex]]
-        .concat(tracks.slice(0, artistTrackIndex))
-        .concat(tracks.slice(artistTrackIndex + 1))
-    }
-    return tracks
-  }
-
   onFollow = () => {
     const {
       profile: { profile }

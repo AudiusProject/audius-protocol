@@ -873,6 +873,16 @@ export const audiusBackend = ({
         account = audiusLibs.Account.getCurrentUser()
         if (!account) return null
       }
+
+      // If reading the artist pick from discovery, set _artist_pick on
+      // the user to the value from discovery (set in artist_pick_track_id
+      // on the user).
+      // TODO after migration is complete: replace all usages of
+      // _artist_pick with artist_pick_track_id
+      const readArtistPickFromDiscoveryEnabled =
+        (await getFeatureEnabled(
+          FeatureFlags.READ_ARTIST_PICK_FROM_DISCOVERY
+        )) ?? false
       try {
         const body = await getCreatorSocialHandle(account.handle)
         account.twitter_handle = body.twitterHandle || null
@@ -880,7 +890,14 @@ export const audiusBackend = ({
         account.tiktok_handle = body.tikTokHandle || null
         account.website = body.website || null
         account.donation = body.donation || null
-        account._artist_pick = body.pinnedTrackId || null
+        account._artist_pick =
+          (readArtistPickFromDiscoveryEnabled
+            ? account.artist_pick_track_id
+            : body.pinnedTrackId) || null
+        account.artist_pick_track_id =
+          (readArtistPickFromDiscoveryEnabled
+            ? account.artist_pick_track_id
+            : body.pinnedTrackId) || null
         account.twitterVerified = body.twitterVerified || false
         account.instagramVerified = body.instagramVerified || false
       } catch (e) {
