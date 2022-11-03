@@ -416,8 +416,10 @@ def process_spl_token_tx(
                 )
                 logger.debug("index_spl_token_backfill.py | setting from none")
                 transaction_signature_batch = transactions_array
-                intersection_found = True
+                # intersection_found = True
             else:
+                # We shouldn't hit this in backfiller!
+                logger.info(f"REED hit weird else in backfiller")
                 for tx in transactions_array:
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx)
