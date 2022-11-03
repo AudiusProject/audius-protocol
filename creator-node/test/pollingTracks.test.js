@@ -8,7 +8,6 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 
 const config = require('../src/config')
-const defaultConfig = require('../default-config.json')
 const BlacklistManager = require('../src/blacklistManager')
 const { transcodingQueue } = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -158,7 +157,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(400)
 
     // Reset max file limits
-    process.env.maxAudioFileSizeBytes = defaultConfig.maxAudioFileSizeBytes
+    process.env.maxAudioFileSizeBytes = config.get('maxAudioFileSizeBytes')
+    
   })
 
   it('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
@@ -183,7 +183,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(500)
 
     // Reset max file limits
-    process.env.maxMemoryFileSizeBytes = defaultConfig.maxMemoryFileSizeBytes
+    process.env.maxMemoryFileSizeBytes = config.get('maxMemoryFileSizeBytes')
   })
 
   it('uploads /track_content_async', async function () {
