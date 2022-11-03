@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 def is_valid_track_tx(params: ManageEntityParameters):
-    logger.info(f"params {params}")
+    logger.info(f"asdf params.user_id {params.user_id}")
+    logger.info(f"asdf params.entity_id {params.entity_id}")
+    logger.info(f"asdf params.signer.lower() {params.signer.lower()}")
+
     user_id = params.user_id
     track_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:

@@ -118,7 +118,6 @@ def entity_manager_update(
                         event_blockhash,
                         txhash,
                     )
-                    logger.info(f"asdf event params {params}")
                     if (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
