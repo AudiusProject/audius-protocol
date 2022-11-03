@@ -419,6 +419,7 @@ services:
       replicas: "${CREATOR_NODE_REPLICAS}"
 
   # port forwarder
+  # required for getting consistent port mappings
 
   port-forwarder:
     image: alpine:3.16.0
@@ -437,13 +438,15 @@ services:
 
   sshuttle-server:
     image: linuxserver/openssh-server:latest # don't pin
-    command: bash -c "apk add python3 && sleep inf"
+    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
     environment:
       PASSWORD_ACCESS: "true"
       USER_NAME: "sshuttle"
       USER_PASSWORD: "sshuttle"
     ports:
       - "2222:2222"
+    volumes:
+      - ./dev-tools/:/tmp/dev-tools
 
 volumes:
   poa-contracts-abis:
