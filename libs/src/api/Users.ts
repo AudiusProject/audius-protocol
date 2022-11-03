@@ -770,6 +770,54 @@ export class Users extends Base {
   }
 
   /**
+   * Adds a user subscribe for a given subscriber and user
+   */
+  async addUserSubscribe(userId: number) {
+    try {
+      const subscriberUserId = this.userStateManager.getCurrentUserId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        subscriberUserId!,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.SUBSCRIBE,
+        ''
+      )
+      return {
+        blockHash: response.txReceipt.blockHash,
+        blockNumber: response.txReceipt.blockNumber
+      }
+    } catch (e) {
+      return {
+        error: (e as Error).message
+      }
+    }
+  }
+
+  /**
+   * Delete a user subscribe for a given subscriber and user
+   */
+  async deleteUserSubscribe(userId: number) {
+    try {
+      const subscriberUserId = this.userStateManager.getCurrentUserId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        subscriberUserId!,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.UNSUBSCRIBE,
+        ''
+      )
+      return {
+        blockHash: response.txReceipt.blockHash,
+        blockNumber: response.txReceipt.blockNumber
+      }
+    } catch (e) {
+      return {
+        error: (e as Error).message
+      }
+    }
+  }
+
+  /**
    * Gets listen count data for a user's tracks grouped by month
    * @returns Dictionary of listen count data where keys are requested months
    */

@@ -91,11 +91,6 @@ export class EntityManager extends Base {
 
   followUser = this.createSocialMethod(EntityType.USER, Action.FOLLOW)
   unfollowUser = this.createSocialMethod(EntityType.USER, Action.UNFOLLOW)
-  subscribeToUser = this.createSocialMethod(EntityType.USER, Action.SUBSCRIBE)
-  unsubscribeFromUser = this.createSocialMethod(
-    EntityType.USER,
-    Action.UNSUBSCRIBE
-  )
   saveTrack = this.createSocialMethod(EntityType.TRACK, Action.SAVE)
   unsaveTrack = this.createSocialMethod(EntityType.TRACK, Action.UNSAVE)
   savePlaylist = this.createSocialMethod(EntityType.PLAYLIST, Action.SAVE)
