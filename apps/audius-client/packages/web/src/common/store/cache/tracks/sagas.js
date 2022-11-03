@@ -34,6 +34,7 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { updateProfileAsync } from 'common/store/profile/sagas'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
@@ -339,6 +340,10 @@ function* deleteTrackAsync(action) {
     handle
   )
   if (socials.pinnedTrackId === action.trackId) {
+    // Dual write to the artist_pick_track_id field in the
+    // users table in the discovery DB. Part of the migration
+    // of the artist pick feature from the identity service
+    // to the entity manager in discovery.
     yield put(
       cacheActions.update(Kind.USERS, [
         {
@@ -350,8 +355,9 @@ function* deleteTrackAsync(action) {
         }
       ])
     )
+    yield call(audiusBackendInstance.setArtistPick)
     const user = yield call(waitForValue, getUser, { id: userId })
-    yield call(audiusBackendInstance.setArtistPick, user, userId)
+    yield fork(updateProfileAsync, { metadata: user })
   }
 
   const track = yield select(getTrack, { id: action.trackId })
