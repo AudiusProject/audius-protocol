@@ -106,7 +106,6 @@ def _get_eth_nft_gated_track_signatures(
         map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
     )
 
-    # Handle premium tracks gated by ERC721 nft collections
     erc721_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
@@ -125,35 +124,6 @@ def _get_eth_nft_gated_track_signatures(
         )
         erc721_collection_track_map[contract_address].append(track.track_id)
 
-    # Check ownership of nfts from erc721 collections from given contract addresses,
-    # using all user eth wallets, and generate signatures for corresponding tracks.
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_to_contract_address_map = {
-            executor.submit(
-                _does_user_own_erc721_nft_collection, contract_address, user_eth_wallets
-            ): contract_address
-            for contract_address in list(erc721_collection_track_map.keys())
-        }
-        for future in concurrent.futures.as_completed(future_to_contract_address_map):
-            contract_address = future_to_contract_address_map[future]
-            try:
-                # Generate premium content signatures for tracks whose
-                # nft collection is owned by the user.
-                if future.result():
-                    for track_id in erc721_collection_track_map[contract_address]:
-                        track_signature_map[track_id] = get_premium_content_signature(
-                            {
-                                "id": track_id,
-                                "type": "track",
-                                "user_wallet": user_wallet,
-                            }
-                        )
-            except Exception as e:
-                logger.error(
-                    f"Could not future result for erc721 contract_address {contract_address}. Error: {e}"
-                )
-
-    # Handle premium tracks gated by ERC1155 nft collections
     erc1155_gated_tracks = list(
         filter(
             lambda track: track.premium_conditions["nft_collection"]["standard"]  # type: ignore
@@ -180,10 +150,39 @@ def _get_eth_nft_gated_track_signatures(
             contract_address
         ].union(track_token_id_set)
 
-    # Check ownership of nfts from erc1155 collections from given contract addresses,
-    # using all user eth wallets, and generate signatures for corresponding tracks.
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_to_contract_address_map = {
+        # Check ownership of nfts from erc721 collections from given contract addresses,
+        # using all user eth wallets, and generate signatures for corresponding tracks.
+        future_to_erc721_contract_address_map = {
+            executor.submit(
+                _does_user_own_erc721_nft_collection, contract_address, user_eth_wallets
+            ): contract_address
+            for contract_address in list(erc721_collection_track_map.keys())
+        }
+        for future in concurrent.futures.as_completed(
+            future_to_erc721_contract_address_map
+        ):
+            contract_address = future_to_erc721_contract_address_map[future]
+            try:
+                # Generate premium content signatures for tracks whose
+                # nft collection is owned by the user.
+                if future.result():
+                    for track_id in erc721_collection_track_map[contract_address]:
+                        track_signature_map[track_id] = get_premium_content_signature(
+                            {
+                                "id": track_id,
+                                "type": "track",
+                                "user_wallet": user_wallet,
+                            }
+                        )
+            except Exception as e:
+                logger.error(
+                    f"Could not future result for erc721 contract_address {contract_address}. Error: {e}"
+                )
+
+        # Check ownership of nfts from erc1155 collections from given contract addresses,
+        # using all user eth wallets, and generate signatures for corresponding tracks.
+        future_to_erc1155_contract_address_map = {
             executor.submit(
                 _does_user_own_erc1155_nft_collection,
                 contract_address,
@@ -192,8 +191,10 @@ def _get_eth_nft_gated_track_signatures(
             ): contract_address
             for contract_address in list(erc1155_collection_track_map.keys())
         }
-        for future in concurrent.futures.as_completed(future_to_contract_address_map):
-            contract_address = future_to_contract_address_map[future]
+        for future in concurrent.futures.as_completed(
+            future_to_erc1155_contract_address_map
+        ):
+            contract_address = future_to_erc1155_contract_address_map[future]
             try:
                 # Generate premium content signatures for tracks whose
                 # nft collection is owned by the user.
