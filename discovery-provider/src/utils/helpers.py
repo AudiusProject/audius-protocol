@@ -543,7 +543,7 @@ def get_final_poa_block(shared_config) -> Optional[int]:
         response.raise_for_status()
         response_json = response.json()
 
-        final_poa_block = response_json.get("finalPOABlock", None)
+        final_poa_block = int(response_json.get("finalPOABlock", None))
 
         redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
     except requests.exceptions.ConnectionError:

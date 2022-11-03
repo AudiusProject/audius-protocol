@@ -283,17 +283,17 @@ const config = convict({
     env: 'endpointRateLimits',
     default: '{}'
   },
+  minimumBalance: {
+    doc: 'Minimum token balance below which /balance_check fails',
+    format: Number,
+    env: 'minimumBalance',
+    default: null
+  },
   finalPOABlock: {
     doc: 'Last block number on POA',
     format: Number,
     env: 'finalPOABlock',
     nullable: true,
-    default: null
-  },
-  minimumBalance: {
-    doc: 'Minimum token balance below which /balance_check fails',
-    format: Number,
-    env: 'minimumBalance',
     default: null
   },
   minimumRelayerBalance: {
