@@ -37,14 +37,14 @@ class TrackSegment(TypedDict):
 
 
 class TrackMetadata(TypedDict):
-    owner_id: int
-    title: str
-    route_id: str
+    owner_id: Optional[int]
+    title: Optional[str]
+    route_id: Optional[str]
     length: int
     cover_art: Optional[str]
     cover_art_sizes: Optional[str]
     tags: Optional[str]
-    genre: str
+    genre: Optional[str]
     mood: Optional[str]
     credits_splits: Optional[str]
     create_date: None

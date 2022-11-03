@@ -1,14 +1,14 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import time
 from datetime import datetime
-import json
 from operator import itemgetter, or_
-from sqlalchemy.orm.session import Session
 from typing import Any, Dict, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -536,7 +536,9 @@ UPSERT_CID_METADATA_QUERY = """
 """
 
 
-def save_cid_metadata(session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]):
+def save_cid_metadata(
+    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
+):
 
     if not cid_metadata:
         return
@@ -545,10 +547,7 @@ def save_cid_metadata(session: Session, cid_metadata: Dict[str, Dict], cid_type:
     for cid, val in cid_metadata.items():
         vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
 
-    session.execute(
-        UPSERT_CID_METADATA_QUERY,
-        vals
-    )
+    session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def create_and_raise_indexing_error(err, redis):
@@ -728,26 +727,23 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
-
-                    """
-                    Add CID Metadata to db (cid -> json blob, etc.)
-                    """
-                    save_cid_metadata_time = time.time()
-                    # bulk process operations once all tx's for block have been parsed
-                    # and get changed entity IDs for cache clearing
-                    # after session commit
-                    save_cid_metadata(
-                        session,
-                        cid_metadata,
-                        cid_type
-                    )
-                    metric.save_time(
-                        {"scope": "save_cid_metadata"},
-                        start_time=save_cid_metadata_time,
-                    )
-                    logger.info(
-                        f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
-                    )
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    if is_save_cid_enabled:
+                        """
+                        Add CID Metadata to db (cid -> json blob, etc.)
+                        """
+                        save_cid_metadata_time = time.time()
+                        # bulk process operations once all tx's for block have been parsed
+                        # and get changed entity IDs for cache clearing
+                        # after session commit
+                        save_cid_metadata(session, cid_metadata, cid_type)
+                        metric.save_time(
+                            {"scope": "save_cid_metadata"},
+                            start_time=save_cid_metadata_time,
+                        )
+                        logger.info(
+                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                        )
 
                 except Exception as e:
 
