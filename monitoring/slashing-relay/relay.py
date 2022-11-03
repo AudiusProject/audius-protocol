@@ -2,9 +2,10 @@
 
 import json
 from os import getenv
+from pprint import pprint
 
 import requests
-from flask import Flask
+from flask import Flask, request
 
 app = Flask(__name__)
 
@@ -57,7 +58,7 @@ def index():
 
     signer = host_to_signer(host)
 
-    with open(f"audius-protocol/alerts.json") as f:
+    with open("audius-protocol/alerts.json") as f:
         alerts = json.load(f)
         for discord_handle in alerts[signer]:
             content = []
