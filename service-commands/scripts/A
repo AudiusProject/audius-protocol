@@ -6,6 +6,8 @@ import os
 import subprocess
 import sys
 
+os.environ["OLD_FLOW"] = "TRUE"
+
 DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
 PROTOCOL_DIR = os.getenv("PROTOCOL_DIR", DEFAULT_PROTOCOL_DIR)
 
