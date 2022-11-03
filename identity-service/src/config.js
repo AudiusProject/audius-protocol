@@ -287,6 +287,7 @@ const config = convict({
     doc: 'Last block number on POA',
     format: Number,
     env: 'finalPOABlock',
+    nullable: true,
     default: null
   },
   minimumBalance: {

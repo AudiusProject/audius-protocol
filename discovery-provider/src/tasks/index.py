@@ -1060,9 +1060,12 @@ def update_task(self):
     web3 = update_task.web3
     redis = update_task.redis
 
-    latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
+    latest_indexed_block = None
+    with db.scoped_session() as session:
+        latest_indexed_block = session.query(Block).filter_by(is_current=True)
+
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
-    if latest_indexed_block >= final_poa_block:
+    if latest_indexed_block and final_poa_block and latest_indexed_block.number >= final_poa_block:
         # done indexing POA
         return
 

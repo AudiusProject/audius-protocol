@@ -26,6 +26,7 @@ def get_web3():
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         return web3
 
+    # fallback to POA endpoint
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
 
