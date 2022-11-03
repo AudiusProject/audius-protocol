@@ -1,13 +1,4 @@
-const _ = require('lodash')
-
-const ServiceCommands = require('@audius/service-commands')
-const { logger } = require('../../logger')
-const DEFAULT_INDEX = 1
-
-const {
-  distribute,
-  creatorNodeUp
-} = ServiceCommands
+const { distribute, creatorNodeUp } = require('@audius/service-commands')
 
 /**
  * Parses a content node endpoint for the ID
@@ -15,7 +6,7 @@ const {
  * @returns number The content node id
  */
 const getIDfromEndpoint = (endpoint) => {
-  const val = endpoint.match(/http:\/\/cn(\d+)_creator-node_1:\d+$/i)
+  const val = endpoint.match(/http:\/\/audius-protocol-creator-node-(\d+):\d+$/i)
   return val[1]
 }
 

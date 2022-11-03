@@ -1,4 +1,4 @@
-const ServiceCommands = require('@audius/service-commands')
+const { runSetupCommand, Service, SetupCommand, LibsWrapper } = require('@audius/service-commands')
 const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 const { _ } = require('lodash')
  
@@ -26,21 +26,13 @@ const MAD_DOG_NIGHTLY_DURATION_SECONDS = 300
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
 let accountOffset = commandLineOffset || 0
  
-const {
- runSetupCommand,
- Service,
- SetupCommand,
- LibsWrapper,
- allUp
-} = ServiceCommands
- 
 const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce(
  (acc, cur) => {
    return [
      ...acc,
      [
        Service.CREATOR_NODE,
-       SetupCommand.HEALTH_CHECK,
+       SetupCommand.HEALTH_CHECK_RETRY,
        { verbose: true, serviceNumber: cur }
      ]
    ]
@@ -48,8 +40,8 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
  []
 )
 const services = [
- [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
- [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+ [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK_RETRY],
+ [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY],
  ...contentNodeHealthChecks
 ]
  

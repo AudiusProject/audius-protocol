@@ -4,6 +4,7 @@ export delegateOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")
 export delegatePrivateKey=$(printenv "CN${replica}_SP_OWNER_PRIVATE_KEY")
 
 export spOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")
+export spID=$replica
 
 export creatorNodeEndpoint="http://audius-protocol-creator-node-${replica}:4000"
 
