@@ -770,7 +770,7 @@ export class Users extends Base {
   }
 
   /**
-   * Adds a user subscribe for a given subscriber and user
+   * Adds a user subscription for a given subscriber and user
    */
   async addUserSubscribe(userId: number) {
     try {
@@ -794,7 +794,7 @@ export class Users extends Base {
   }
 
   /**
-   * Delete a user subscribe for a given subscriber and user
+   * Delete a user subscription for a given subscriber and user
    */
   async deleteUserSubscribe(userId: number) {
     try {
