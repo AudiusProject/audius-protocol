@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_valid_track_tx(params: ManageEntityParameters):
+    logger.info(f"params {params}")
     user_id = params.user_id
     track_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
@@ -38,7 +39,7 @@ def is_valid_track_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
-            # playlist already exists
+            # track already exists
             return False
         if track_id < TRACK_ID_OFFSET:
             return False
