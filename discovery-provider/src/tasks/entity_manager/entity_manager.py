@@ -385,12 +385,12 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         and_queries = []
         for subscription_to_fetch in subscriptions_to_fetch:
             user_id = subscription_to_fetch[0]
-            entity_type = subscription_to_fetch[1]
+            # subscriptions does not need entity type in subscription_to_fetch[1]
             entity_id = subscription_to_fetch[2]
             and_queries.append(
                 and_(
                     Subscription.subscriber_id == user_id,
-                    Subscription.user_id == entity_type.lower(),
+                    Subscription.user_id == entity_id,
                     Subscription.is_current == True,
                 )
             )
