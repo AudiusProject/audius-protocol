@@ -93,9 +93,13 @@ export interface GetPremiumTrackSignaturesRequest {
      */
     userId: string;
     /**
-     * A string representation of track ids and corresponding nft token ids from user for that track\&#39;s nft collection.         For tracks gated with the ERC1155 nft token standard, we also need the nft token ids claimed to be owned by the user.         Example: \&#39;1-1.2_2_3-1\&#39; represents track ids 1, 2, and 3 (separated by \&#39;_\&#39;).         Track id and its token ids are separated by a dash \&#39;-\&#39;.         In the above example, the user claims to own token ids 1 and 2 (separated by \&#39;.\&#39;) for track id 1.         Similarly, the user claims to own token id 1 for track id 3.
+     * A list of track ids. The order of these track ids will match the order of the token ids.
      */
-    trackIds?: string;
+    trackIds?: Array<number>;
+    /**
+     * A list of ERC1155 token ids. The order of these token ids will match the order of the track ids.         There may be multiple token ids for a given track id, so we use a \&#39;-\&#39; as the delimiter for a track id\&#39;s token ids.
+     */
+    tokenIds?: Array<string>;
 }
 
 export interface GetRecommendedTracksRequest {
