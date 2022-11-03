@@ -6,10 +6,10 @@ import time
 from decimal import Decimal
 from typing import List, Optional, TypedDict
 
-from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm.session import Session
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
     TransactionMethod,
@@ -37,19 +37,9 @@ from src.solana.solana_transaction_types import (
     TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    cache_latest_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_constants import (
-    latest_sol_user_bank_backfill_db_tx_key,
-    latest_sol_user_bank_backfill_program_tx_key,
-    latest_sol_user_bank_backfill_slot_key,
-    latest_sol_user_bank_backfill_stop_sig_key,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +55,8 @@ MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
+
+index_user_bank_backfill_tablename = "index_user_bank_backfill"
 
 
 # Recover ethereum public key from bytes array
@@ -93,12 +85,6 @@ def get_highest_user_bank_tx_slot(session: Session):
     return slot
 
 
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_sol_user_bank_db_tx(redis: Redis, tx):
-    cache_latest_sol_db_tx(redis, latest_sol_user_bank_backfill_db_tx_key, tx)
-
-
 # Query a tx signature and confirm its existence
 def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     exists = False
@@ -107,6 +93,16 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     ).count()
     exists = tx_sig_db_count > 0
     return exists
+
+
+def get_tx_in_audio_tx_history(session: Session, tx_sig: str) -> bool:
+    """Checks if the transaction signature already exists in Audio Transactions History"""
+    tx_sig_in_db = (
+        session.query(AudioTransactionsHistory).filter(
+            AudioTransactionsHistory.signature == tx_sig
+        )
+    ).first()
+    return bool(tx_sig_in_db)
 
 
 def get_user_ids_from_bank_accounts(session: Session, accts=List[str]):
@@ -132,7 +128,6 @@ create_token_account_instr: List[InstructionFormat] = [
 
 def process_transfer_instruction(
     session: Session,
-    redis: Redis,
     instruction: TransactionMessageInstruction,
     account_keys: List[str],
     meta: ResultMeta,
@@ -300,7 +295,6 @@ def get_valid_instruction(
 
 def process_user_bank_tx_details(
     session: Session,
-    redis: Redis,
     tx_info: ConfirmedTransaction,
     tx_sig,
     timestamp,
@@ -338,7 +332,6 @@ def process_user_bank_tx_details(
     if has_transfer_instruction:
         process_transfer_instruction(
             session=session,
-            redis=redis,
             instruction=instruction,
             account_keys=account_keys,
             meta=meta,
@@ -352,7 +345,6 @@ def parse_user_bank_transaction(
     session: Session,
     solana_client_manager: SolanaClientManager,
     tx_sig,
-    redis,
 ):
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
@@ -364,7 +356,7 @@ def parse_user_bank_transaction(
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
 
-    process_user_bank_tx_details(session, redis, tx_info, tx_sig, parsed_timestamp)
+    process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
     session.add(
         UserBankBackfillTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
     )
@@ -376,7 +368,6 @@ def process_user_bank_txs(stop_sig: str):
         index_user_bank_backfill.solana_client_manager
     )
     db = index_user_bank_backfill.db
-    redis = index_user_bank_backfill.redis
     logger.info("index_user_bank_backfill.py | Acquired lock")
 
     # Exit if required configs are not found
@@ -394,12 +385,6 @@ def process_user_bank_txs(stop_sig: str):
 
     # Loop exit condition
     intersection_found = False
-
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
-    try:
-        latest_global_slot = solana_client_manager.get_slot()
-    except:
-        logger.error("index_user_bank_backfill.py | Failed to get block height")
 
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
@@ -490,7 +475,6 @@ def process_user_bank_txs(stop_sig: str):
                         session,
                         solana_client_manager,
                         tx_sig,
-                        redis,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
@@ -514,19 +498,92 @@ def process_user_bank_txs(stop_sig: str):
             f"index_user_bank_backfill.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
-    if last_tx and last_tx_sig:
-        cache_latest_sol_user_bank_db_tx(
-            redis,
-            {
-                "signature": last_tx_sig,
-                "slot": last_tx["slot"],
-                "timestamp": last_tx["blockTime"],
-            },
+
+def check_if_backfilling_complete(
+    session: Session, solana_client_manager: SolanaClientManager
+) -> bool:
+    stop_sig_tuple = (
+        session.query(IndexingCheckpoint.signature)
+        .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
+        .first()
+    )
+    if not stop_sig_tuple:
+        logger.error(
+            "index_user_bank_backfill.py | Tried to check if complete, but no stop_sig"
         )
-    if last_tx:
-        redis.set(latest_sol_user_bank_backfill_slot_key, last_tx["slot"])
-    elif latest_global_slot is not None:
-        redis.set(latest_sol_user_bank_backfill_slot_key, latest_global_slot)
+        return False
+    else:
+        stop_sig = stop_sig_tuple[0]
+    one_sig_before_stop = solana_client_manager.get_signatures_for_address(
+        USER_BANK_ADDRESS,
+        before=stop_sig,
+        limit=1,
+    )
+    if one_sig_before_stop:
+        one_sig_before_stop = one_sig_before_stop["result"][0]["signature"]
+    sig_before_stop_in_db = (
+        session.query(UserBankBackfillTx)
+        .filter(UserBankBackfillTx.signature == one_sig_before_stop)
+        .first()
+    )
+    return bool(sig_before_stop_in_db)
+
+
+def find_true_stop_sig(
+    session: Session, solana_client_manager: SolanaClientManager, stop_sig: str
+) -> str:
+    stop_sig_and_slot = (
+        session.query(AudioTransactionsHistory.slot, AudioTransactionsHistory.signature)
+        .filter(
+            or_(
+                AudioTransactionsHistory.transaction_type == TransactionType.tip,
+                and_(
+                    AudioTransactionsHistory.transaction_type
+                    == TransactionType.transfer,
+                    AudioTransactionsHistory.method == TransactionMethod.send,
+                ),
+            )
+        )
+        .order_by(asc(AudioTransactionsHistory.slot))
+    ).first()
+
+    if not stop_sig_and_slot:
+        return ""
+    stop_sig = stop_sig_and_slot[1]
+    stop_sig_slot = stop_sig_and_slot[0]
+
+    # Traverse backwards 1-by-1 from the min sig from audio_transactions_history table.
+    # When we find a sig that is not in the table, then the sig after that is the true
+    # stop sig.
+    count = 100
+    while count:
+        tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
+            USER_BANK_ADDRESS,
+            before=stop_sig,
+            limit=1,
+        )
+        if tx_before_stop_sig:
+            tx_before_stop_sig = tx_before_stop_sig["result"][0]
+        if get_tx_in_audio_tx_history(session, tx_before_stop_sig["signature"]):
+            stop_sig = tx_before_stop_sig["signature"]
+            stop_sig_slot = tx_before_stop_sig["slot"]
+        else:
+            break
+        count -= 1
+    if not count:
+        return ""
+
+    session.add(
+        IndexingCheckpoint(
+            tablename=index_user_bank_backfill_tablename,
+            last_checkpoint=stop_sig_slot,
+            signature=stop_sig,
+        )
+    )
+    logger.info(
+        f"index_user_bank_backfill.py | Added new stop_sig to indexing_checkpoints: {stop_sig}"
+    )
+    return stop_sig
 
 
 # ####### CELERY TASKS ####### #
@@ -543,42 +600,38 @@ def index_user_bank_backfill(self):
     # Define redis lock object
     update_lock = redis.lock("user_bank_backfill_lock", timeout=10 * 60)
 
-    stop_sig = redis.get(latest_sol_user_bank_backfill_stop_sig_key)
-    if not stop_sig:
-        db = index_user_bank_backfill.db
-        with db.scoped_session() as session:
-            stop_sig_list = (
-                session.query(AudioTransactionsHistory.signature)
-                .filter(
-                    or_(
-                        AudioTransactionsHistory.transaction_type
-                        == TransactionType.tip,
-                        and_(
-                            AudioTransactionsHistory.transaction_type
-                            == TransactionType.transfer,
-                            AudioTransactionsHistory.method == TransactionMethod.send,
-                        ),
-                    )
+    db = index_user_bank_backfill.db
+    solana_client_manager = index_user_bank_backfill.solana_client_manager
+
+    with db.scoped_session() as session:
+
+        stop_sig = (
+            session.query(IndexingCheckpoint.signature)
+            .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
+            .first()
+        )
+        if not stop_sig:
+            stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
+            if not stop_sig:
+                logger.error(
+                    "index_user_bank_backfill.py | Failed to find true stop signature"
                 )
-                .order_by(desc(AudioTransactionsHistory.slot))
-            ).first()
-
-            if not stop_sig_list:
                 return
+            logger.info(
+                f"index_user_bank_backfill.py | Found true stop_sig: {stop_sig}"
+            )
+        else:
+            stop_sig = stop_sig[0]
 
-            stop_sig = stop_sig_list[0]
-            redis.set(latest_sol_user_bank_backfill_stop_sig_key, stop_sig)
-    else:
-        stop_sig = stop_sig.decode()
+    if not stop_sig:
+        logger.info(f"index_user_bank_backfill.py | No stop_sig found: {stop_sig}")
+        return
+
+    if check_if_backfilling_complete(session, solana_client_manager):
+        logger.info("index_user_bank_backfill.py | Backfill indexing complete!")
+        return
 
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            index_user_bank_backfill.solana_client_manager,
-            redis,
-            USER_BANK_ADDRESS,
-            latest_sol_user_bank_backfill_program_tx_key,
-        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

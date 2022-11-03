@@ -6,9 +6,9 @@ from decimal import Decimal
 from typing import Callable, Dict, List, Optional, TypedDict
 
 import base58
-from redis import Redis
-from sqlalchemy import desc, or_
+from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm.session import Session
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.rewards_manager_backfill import (
     RewardsManagerBackfillTransaction,
@@ -39,19 +39,9 @@ from src.solana.solana_transaction_types import (
     TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    cache_latest_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_constants import (
-    latest_sol_rewards_manager_backfill_db_tx_key,
-    latest_sol_rewards_manager_backfill_program_tx_key,
-    latest_sol_rewards_manager_backfill_slot_key,
-    latest_sol_rewards_manager_backfill_stop_sig_key,
-)
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -108,15 +98,8 @@ class RewardManagerTransactionInfo(TypedDict):
     transfer_instruction: Optional[RewardTransferInstruction]
 
 
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
-    cache_latest_sol_db_tx(
-        redis, latest_sol_rewards_manager_backfill_db_tx_key, latest_tx
-    )
-
-
 challenge_type_map_global: Dict[str, TransactionType] = {}
+index_rewards_manager_backfill_tablename = "index_rewards_manager_backfill"
 
 
 def get_challenge_type_map(
@@ -277,7 +260,6 @@ def process_batch_sol_reward_manager_txs(
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
-        logger.info(f"index_rewards_manager | processing {reward_manager_txs}")
         eth_recipients = [
             tx["transfer_instruction"]["eth_recipient"]
             for tx in reward_manager_txs
@@ -413,6 +395,16 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
+def get_tx_in_audio_tx_history(session: Session, tx_sig: str) -> bool:
+    """Checks if the transaction signature already exists in Audio Transactions History"""
+    tx_sig_in_db = (
+        session.query(AudioTransactionsHistory).filter(
+            AudioTransactionsHistory.signature == tx_sig
+        )
+    ).first()
+    return bool(tx_sig_in_db)
+
+
 def get_transaction_signatures(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
@@ -459,6 +451,9 @@ def get_transaction_signatures(
                     logger.debug(
                         f"index_rewards_manager_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
+                    logger.info(
+                        f"index_rewards_manager_backfill.py | Adding tx to be processed: tx={tx_sig} | slot={tx_slot}"
+                    )
                     if tx_info["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info["slot"] <= latest_processed_slot and (
@@ -502,7 +497,6 @@ def get_transaction_signatures(
 def process_transaction_signatures(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
-    redis: Redis,
     transaction_signatures: List[List[str]],
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
@@ -512,7 +506,9 @@ def process_transaction_signatures(
         last_tx_sig = transaction_signatures[-1][0]
 
     for tx_sig_batch in transaction_signatures:
-        logger.info(f"index_rewards_manager_backfill.py | processing {tx_sig_batch}")
+        logger.info(
+            f"index_rewards_manager_backfill.py | considering for processing: past {tx_sig_batch}"
+        )
         batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
@@ -549,22 +545,12 @@ def process_transaction_signatures(
             f"index_rewards_manager_backfill.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
-    if last_tx:
-        cache_latest_sol_rewards_manager_db_tx(
-            redis,
-            {
-                "signature": last_tx["tx_sig"],
-                "slot": last_tx["slot"],
-                "timestamp": last_tx["timestamp"],
-            },
-        )
     return last_tx
 
 
 def process_solana_rewards_manager(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
-    redis: Redis,
     stop_sig: str,
 ):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
@@ -579,12 +565,6 @@ def process_solana_rewards_manager(
         )
         return
 
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
-    try:
-        latest_global_slot = solana_client_manager.get_slot()
-    except:
-        logger.error("index_rewards_manager_backfill.py | Failed to get slot")
-
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
         solana_client_manager,
@@ -597,13 +577,94 @@ def process_solana_rewards_manager(
     )
     logger.info(f"index_rewards_manager_backfill.py | {transaction_signatures}")
 
-    last_tx = process_transaction_signatures(
-        solana_client_manager, db, redis, transaction_signatures
+    process_transaction_signatures(solana_client_manager, db, transaction_signatures)
+
+
+def check_if_backfilling_complete(
+    session: Session, solana_client_manager: SolanaClientManager
+) -> bool:
+    stop_sig_tuple = (
+        session.query(IndexingCheckpoint.signature)
+        .filter(
+            IndexingCheckpoint.tablename == index_rewards_manager_backfill_tablename
+        )
+        .first()
     )
-    if last_tx:
-        redis.set(latest_sol_rewards_manager_backfill_slot_key, last_tx["slot"])
-    elif latest_global_slot is not None:
-        redis.set(latest_sol_rewards_manager_backfill_slot_key, latest_global_slot)
+    if not stop_sig_tuple:
+        logger.error(
+            "index_rewards_manager_backfill.py | Tried to check if complete, but no stop_sig"
+        )
+        return False
+    else:
+        stop_sig = stop_sig_tuple[0]
+    one_sig_before_stop = solana_client_manager.get_signatures_for_address(
+        REWARDS_MANAGER_PROGRAM,
+        before=stop_sig,
+        limit=1,
+    )
+    if one_sig_before_stop:
+        one_sig_before_stop = one_sig_before_stop["result"][0]["signature"]
+    sig_before_stop_in_db = (
+        session.query(RewardsManagerBackfillTransaction)
+        .filter(RewardsManagerBackfillTransaction.signature == one_sig_before_stop)
+        .first()
+    )
+    return bool(sig_before_stop_in_db)
+
+
+def find_true_stop_sig(
+    session: Session, solana_client_manager: SolanaClientManager, stop_sig: str
+) -> str:
+    stop_sig_and_slot = (
+        session.query(AudioTransactionsHistory.slot, AudioTransactionsHistory.signature)
+        .filter(
+            or_(
+                AudioTransactionsHistory.transaction_type
+                == TransactionType.user_reward,
+                AudioTransactionsHistory.transaction_type
+                == TransactionType.trending_reward,
+            )
+        )
+        .order_by(asc(AudioTransactionsHistory.slot))
+    ).first()
+
+    if not stop_sig_and_slot:
+        return ""
+    stop_sig = stop_sig_and_slot[1]
+    stop_sig_slot = stop_sig_and_slot[0]
+
+    # Traverse backwards 1-by-1 from the min sig from audio_transactions_history table.
+    # When we find a sig that is not in the table, then the sig after that is the true
+    # stop sig.
+    count = 100
+    while count:
+        tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
+            REWARDS_MANAGER_PROGRAM,
+            before=stop_sig,
+            limit=1,
+        )
+        if tx_before_stop_sig:
+            tx_before_stop_sig = tx_before_stop_sig["result"][0]
+        if get_tx_in_audio_tx_history(session, tx_before_stop_sig["signature"]):
+            stop_sig = tx_before_stop_sig["signature"]
+            stop_sig_slot = tx_before_stop_sig["slot"]
+        else:
+            break
+        count -= 1
+    if not count:
+        return ""
+
+    session.add(
+        IndexingCheckpoint(
+            tablename=index_rewards_manager_backfill_tablename,
+            last_checkpoint=stop_sig_slot,
+            signature=stop_sig,
+        )
+    )
+    logger.info(
+        f"index_rewards_manager_backfill.py | Added new stop_sig to indexing_checkpoints: {stop_sig}"
+    )
+    return stop_sig
 
 
 # ####### CELERY TASKS ####### #
@@ -619,48 +680,43 @@ def index_rewards_manager_backfill(self):
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_rewards_manager_backfill_lock", timeout=14400)
 
-    stop_sig = redis.get(latest_sol_rewards_manager_backfill_stop_sig_key)
-    if not stop_sig:
-        db = index_rewards_manager_backfill.db
-        with db.scoped_session() as session:
-            stop_sig_list = (
-                session.query(AudioTransactionsHistory.signature)
-                .filter(
-                    or_(
-                        AudioTransactionsHistory.transaction_type
-                        == TransactionType.user_reward,
-                        AudioTransactionsHistory.transaction_type
-                        == TransactionType.trending_reward,
-                    )
+    with db.scoped_session() as session:
+        stop_sig = (
+            session.query(IndexingCheckpoint.signature)
+            .filter(
+                IndexingCheckpoint.tablename == index_rewards_manager_backfill_tablename
+            )
+            .first()
+        )
+        if not stop_sig:
+            stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
+            if not stop_sig:
+                logger.error(
+                    "index_rewards_manager_backfill.py | Failed to find true stop signature"
                 )
-                .order_by(desc(AudioTransactionsHistory.slot))
-            ).first()
-
-            if not stop_sig_list:
                 return
-
-            stop_sig = stop_sig_list[0]
-            redis.set(latest_sol_rewards_manager_backfill_stop_sig_key, stop_sig)
-    else:
-        stop_sig = stop_sig.decode()
+            logger.info(
+                f"index_rewards_manager_backfill.py | Found true stop_sig: {stop_sig}"
+            )
+        else:
+            stop_sig = stop_sig[0]
 
     if not stop_sig:
+        logger.info(
+            f"index_rewards_manager_backfill.py | No stop_sig found: {stop_sig}"
+        )
+        return
+
+    if check_if_backfilling_complete(session, solana_client_manager):
+        logger.info("index_rewards_manager_backfill.py | Backfill indexing complete!")
         return
 
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            REWARDS_MANAGER_PROGRAM,
-            latest_sol_rewards_manager_backfill_program_tx_key,
-        )
-
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_rewards_manager_backfill.py | Acquired lock")
-            process_solana_rewards_manager(solana_client_manager, db, redis, stop_sig)
+            process_solana_rewards_manager(solana_client_manager, db, stop_sig)
         else:
             logger.info("index_rewards_manager_backfill.py | Failed to acquire lock")
     except Exception as e:

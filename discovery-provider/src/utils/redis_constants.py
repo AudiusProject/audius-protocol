@@ -32,9 +32,6 @@ latest_sol_rewards_manager_backfill_program_tx_key = (
 latest_sol_rewards_manager_backfill_db_tx_key = (
     "latest_sol_program_tx:rewards_manager_backfill:db"
 )
-latest_sol_rewards_manager_backfill_stop_sig_key = (
-    "latest_sol_program_tx:rewards_manager_backfill:stop_sig"
-)
 
 latest_sol_user_bank_program_tx_key = "latest_sol_program_tx:user_bank:chain"
 latest_sol_user_bank_db_tx_key = "latest_sol_program_tx:user_bank:db"
@@ -43,15 +40,9 @@ latest_sol_user_bank_backfill_program_tx_key = (
     "latest_sol_program_tx:user_bank_backfill:chain"
 )
 latest_sol_user_bank_backfill_db_tx_key = "latest_sol_program_tx:user_bank_backfill:db"
-latest_sol_user_bank_backfill_stop_sig_key = (
-    "latest_sol_program_tx:user_bank_backfill:stop_sig"
-)
 
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
-latest_sol_spl_token_backfill_stop_sig_key = (
-    "latest_sol_program_tx:spl_token_backfill:stop_sig"
-)
 
 # Solana latest slot per indexer
 # Used to get the latest processed slot of each indexing task, using the global slots instead of the per-program slots
