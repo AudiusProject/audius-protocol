@@ -6,8 +6,8 @@ import {
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas
 } from '@audius/common'
-import analyticsSagas from 'audius-client/src/common/store/analytics/sagas'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
+import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
@@ -42,6 +42,7 @@ import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
+import uploadSagas from 'common/store/upload/sagas'
 import favoritePageSagas from 'common/store/user-list/favorites/sagas'
 import followersPageSagas from 'common/store/user-list/followers/sagas'
 import followingPageSagas from 'common/store/user-list/following/sagas'
@@ -141,6 +142,7 @@ export default function* rootSaga() {
     ...themeSagas(),
     ...tokenDashboardSagas(),
     ...mobileUiSagas(),
+    ...uploadSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),

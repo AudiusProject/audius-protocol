@@ -41,7 +41,7 @@ import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { watchUploadErrors } from './errorSagas'
-import { reportResultEvents } from './utils/sagaHelpers'
+import { reportResultEvents } from './sagaHelpers'
 
 const { getUser } = cacheUsersSelectors
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors

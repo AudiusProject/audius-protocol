@@ -1,8 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import type { Track } from '@audius/common'
+import type { CommonState } from '@audius/common'
+import { uploadSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View, Image } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import IconShare from 'app/assets/images/iconShare.svg'
@@ -12,15 +14,11 @@ import { LineupTileSkeleton } from 'app/components/lineup-tile'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { TwitterButton } from 'app/components/twitter-button'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
 import { UploadStackScreen } from './UploadStackScreen'
-
-export type UploadCompleteParams = {
-  tracks: Track[]
-}
+const { getTracks } = uploadSelectors
 
 const messages = {
   title: 'Upload',
@@ -64,10 +62,10 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const UploadCompleteScreen = () => {
   const styles = useStyles()
-  const { params } = useRoute<'UploadComplete'>()
-  const { tracks } = params
-  const track = tracks[0]
-  const { title } = track
+  const track = useSelector(
+    (state: CommonState) => getTracks(state)?.[0]?.metadata
+  )
+  const { title } = track!
   const { toast } = useContext(ToastContext)
   const navigation = useNavigation()
 
@@ -116,7 +114,7 @@ export const UploadCompleteScreen = () => {
             type='static'
             size='large'
             fullWidth
-            url={getTrackRoute(track, true)}
+            url={getTrackRoute(track!, true)}
             shareText={messages.twitterShareText(title)}
           />
           <TextButton
