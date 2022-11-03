@@ -15,6 +15,7 @@ import {
   tracksSocialActions as socialActions,
   waitForValue
 } from '@audius/common'
+import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -23,6 +24,7 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
@@ -556,7 +558,11 @@ export function* watchSetArtistPick() {
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* waitForBackendAndAccount()
       const userId = yield* select(getUserId)
-      if (!userId) return
+
+      // Dual write to the artist_pick_track_id field in the
+      // users table in the discovery DB. Part of the migration
+      // of the artist pick feature from the identity service
+      // to the entity manager in discovery.
       yield* put(
         cacheActions.update(Kind.USERS, [
           {
@@ -568,13 +574,9 @@ export function* watchSetArtistPick() {
           }
         ])
       )
+      yield* call(audiusBackendInstance.setArtistPick, action.trackId)
       const user = yield* call(waitForValue, getUser, { id: userId })
-      yield* call(
-        audiusBackendInstance.setArtistPick,
-        user,
-        userId,
-        action.trackId
-      )
+      yield fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -587,7 +589,11 @@ export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* waitForBackendAndAccount()
     const userId = yield* select(getUserId)
-    if (!userId) return
+
+    // Dual write to the artist_pick_track_id field in the
+    // users table in the discovery DB. Part of the migration
+    // of the artist pick feature from the identity service
+    // to the entity manager in discovery.
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
@@ -599,8 +605,9 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
+    yield* call(audiusBackendInstance.setArtistPick)
     const user = yield* call(waitForValue, getUser, { id: userId })
-    yield* call(audiusBackendInstance.setArtistPick, user, userId)
+    yield fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)

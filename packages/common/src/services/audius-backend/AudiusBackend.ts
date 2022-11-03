@@ -2158,23 +2158,11 @@ export const audiusBackend = ({
 
   /**
    * Sets the artist pick for a user
-   * @param {User} userMetadata
-   * @param {number} userId
    * @param {number?} trackId if null, unsets the artist pick
    */
-  async function setArtistPick(
-    userMetadata: User,
-    userId: ID,
-    trackId: Nullable<ID> = null
-  ) {
+  async function setArtistPick(trackId: Nullable<ID> = null) {
     await waitForLibsInit()
     try {
-      // Dual write to the artist_pick_track_id field in the
-      // users table in the discovery DB. Part of the migration
-      // of the artist pick feature from the identity service
-      // to the entity manager in discovery.
-      updateCreator(userMetadata, userId)
-
       const { data, signature } = await signData()
       return await fetch(`${identityServiceUrl}/artist_pick`, {
         method: 'POST',
