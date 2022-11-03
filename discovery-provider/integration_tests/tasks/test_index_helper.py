@@ -31,8 +31,8 @@ def test_save_cid_metadata(app):
                 .all()
             )
             assert len(users) == 2
-            assert users[0] == {"user_id": 1}
-            assert users[1] == {"user_id": 2}
+            assert users[0] == {"user_id": 2}
+            assert users[1] == {"user_id": 1}
 
             tracks = session.query(CIDData).filter(CIDData.type == "track").all()
             assert len(tracks) == 1
