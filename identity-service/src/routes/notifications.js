@@ -870,14 +870,17 @@ module.exports = function (app) {
         return errorResponseBadRequest('Invalid request body')
       }
       if (isSubscribed) {
-        await models.sequelize.query(`
+        await models.sequelize.query(
+          `
           INSERT INTO "Subscriptions" ("subscriberId", "userId", "updatedAt", "createdAt")
           VALUES (:subscriberId, :userId, now(), now())
           ON CONFLICT
           DO NOTHING;
-        `, {
-          replacements: { subscriberId, userId }
-        })
+        `,
+          {
+            replacements: { subscriberId, userId }
+          }
+        )
       } else {
         await models.Subscription.destroy({
           where: { subscriberId, userId }
