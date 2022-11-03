@@ -1,4 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../apiHelpers'
 
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
@@ -22,7 +23,7 @@ type EnqueueSyncArgs = {
   blockNumber: number
   forceResyncConfig: ForceResyncConfig
   forceWipe?: boolean
-  logContext: Object
+  logContext: LogContext
   parentSpanContext: SpanContext
   syncUuid: string | null
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import pathlib
 import random
 import string
@@ -89,6 +90,12 @@ def generate_env(
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
 
+    aao_wallets = []
+    for key, value in env.items():
+        if key.startswith("AAO_WALLET_") and key.endswith("_ADDRESS"):
+            aao_wallets.append(value)
+    env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
+
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
 
@@ -161,6 +168,7 @@ def build(
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.argument("services", nargs=-1)
+@click.option("-o", "--anti-abuse-oracle", is_flag=True)
 @click.pass_obj
 def up(
     protocol_dir,
@@ -169,6 +177,7 @@ def up(
     elasticsearch_replicas,
     block_explorer,
     services,
+    anti_abuse_oracle,
 ):
     generate_env(
         protocol_dir,
@@ -178,11 +187,19 @@ def up(
         block_explorer,
     )
 
+    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+
     subprocess.run(
         [
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.yml'}",
+            *(
+                [f"--file={AAO_DIR / 'audius-compose.yml'}"]
+                if anti_abuse_oracle
+                else []
+            ),
             "up",
             "--build",
             "-d",
@@ -200,7 +217,8 @@ def down(protocol_dir):
             "compose",
             f"--project-directory={protocol_dir}",
             "down",
-            "-v",
+            "--remove-orphans",
+            "--volumes",
         ],
     )
 
@@ -305,11 +323,15 @@ def exec(protocol_dir, service, command, args):
 @cli.command()
 @click.pass_obj
 def ps(protocol_dir):
+    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+
     proc = subprocess.run(
         [
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.yml'}",
+            *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
             "ps",
             "--format=json",
         ],

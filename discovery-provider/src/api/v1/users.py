@@ -244,6 +244,7 @@ user_track_listen_counts_response = make_response(
                 ],
             }
         },
+        skip_none=True,
     ),
 )
 
@@ -279,7 +280,6 @@ class UserTrackListenCountsMonthly(Resource):
         formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
             user_listen_counts
         )
-
         return success_response(formatted_user_listen_counts)
 
 
