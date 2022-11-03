@@ -12,7 +12,6 @@ const AudiusABIDecoder = libs.AudiusABIDecoder
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
-const NETHERMIND_BLOCK_OFFSET = 30000000
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
 
 const ENVIRONMENT = config.get('environment')
@@ -372,7 +371,7 @@ async function relayToNethermind(encodedABI) {
     const receipt = await primaryWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
-    receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
+    receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()
     const took = end - start

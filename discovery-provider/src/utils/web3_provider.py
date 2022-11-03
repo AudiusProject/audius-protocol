@@ -14,9 +14,6 @@ from web3.middleware import geth_poa_middleware
 web3: Optional[Web3] = None
 
 
-NETHERMIND_BLOCK_OFFSET = os.getenv("audius_web3_nethermind_block_offset")
-
-
 def get_web3():
     # pylint: disable=W0603
     global web3

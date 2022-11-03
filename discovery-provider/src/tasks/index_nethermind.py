@@ -141,7 +141,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
     return target_blockhash
 
 
-def get_latest_block(db: SessionManager):
+def get_latest_block(db: SessionManager, final_poa_block: int):
     latest_block = None
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
@@ -172,7 +172,7 @@ def get_latest_block(db: SessionManager):
         latest_block = dict(
             update_task.web3.eth.get_block(target_latest_block_number, True)
         )
-        latest_block["number"] += web3_provider.NETHERMIND_BLOCK_OFFSET
+        latest_block["number"] += final_poa_block
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -1017,7 +1017,7 @@ def update_task(self):
             )
             initialize_blocks_table_if_necessary(db)
 
-            latest_block = get_latest_block(db)
+            latest_block = get_latest_block(db, final_poa_block)
 
             # Capture block information between latest and target block hash
             index_blocks_list = []
@@ -1070,7 +1070,7 @@ def update_task(self):
                         intersect_block_hash = default_config_start_hash
                     else:
                         latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += web3_provider.NETHERMIND_BLOCK_OFFSET
+                        latest_block["number"] += final_poa_block
                         latest_block = AttributeDict(latest_block)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
