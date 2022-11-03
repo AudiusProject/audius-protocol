@@ -1,7 +1,7 @@
 <p align="center">
   <br/>
   <a target="_blank" href="https://audius.co">
-    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="300">
+    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="200">
   </a>
   <br/>
 
