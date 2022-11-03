@@ -3,9 +3,9 @@
 import json
 import os
 import pathlib
-import subprocess
-import string
 import random
+import string
+import subprocess
 
 import click
 import dotenv
