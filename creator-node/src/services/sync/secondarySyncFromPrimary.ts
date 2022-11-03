@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import axios from 'axios'
 import _ from 'lodash'
