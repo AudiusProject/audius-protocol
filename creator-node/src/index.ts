@@ -20,7 +20,10 @@ import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
-import DiskManager from './diskManager'
+import {
+  emptyTmpTrackUploadArtifacts,
+  sweepSubdirectoriesInFiles
+} from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
 const redisClient = require('./redis')
@@ -111,7 +114,7 @@ const startAppForPrimary = async () => {
   await setupDbAndRedis()
 
   const startTime = Date.now()
-  const size = await DiskManager.emptyTmpTrackUploadArtifacts()
+  const size = await emptyTmpTrackUploadArtifacts()
   logger.info(
     `old tmp track artifacts deleted : ${size} : ${
       (Date.now() - startTime) / 1000
@@ -125,7 +128,7 @@ const startAppForPrimary = async () => {
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  const firstWorker = cluster.fork()
+  const firstWorker = cluster.fork({ isInitWorker: true })
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
     if (msg?.cmd === 'initComplete') {
@@ -179,15 +182,18 @@ const startAppForPrimary = async () => {
   // wait one minute before starting this because it might cause init to degrade
   if (config.get('backgroundDiskCleanupCheckEnabled')) {
     setTimeout(() => {
-      DiskManager.sweepSubdirectoriesInFiles()
+      sweepSubdirectoriesInFiles()
     }, 60_000)
   }
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
+  if (process.env.isInitWorker) clusterUtils.markThisWorkerAsInit()
   logger.info(
-    `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
+    `Worker process with pid=${process.pid} and worker ID=${
+      cluster.worker?.id
+    } is running. Is this worker init: ${clusterUtils.isThisWorkerInit()}`
   )
   await verifyConfigAndDb()
   await startApp()

@@ -5,8 +5,7 @@ import type {
 } from './types'
 import type { WalletsToSecondariesMapping } from '../types'
 
-// eslint-disable-next-line import/no-unresolved
-import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { computeUsersSecondarySyncSuccessRatesForToday } from '../stateReconciliation/SecondarySyncHealthTracker'
 import { asyncRetry } from '../../../utils/asyncRetry'
 
 const _ = require('lodash')
@@ -119,7 +118,7 @@ const getNodeUsers = async (
       `getNodeUsers() Error: ${e.toString()} - connected discovery node [${discoveryNodeEndpoint}]`
     )
   } finally {
-    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
+    logger.debug(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
   }
 
   // Ensure every object in response array contains all required fields
@@ -187,7 +186,7 @@ const computeUserSecondarySyncSuccessRatesMap = async (
   }
 
   const userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap =
-    await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
+    await computeUsersSecondarySyncSuccessRatesForToday(
       walletsToSecondariesMapping
     )
 

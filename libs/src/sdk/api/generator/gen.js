@@ -33,7 +33,7 @@ const generate = ({ env, apiVersion, apiFlavor, generator }) => {
   // Setup args
   let baseURL = ''
   if (env === 'dev') {
-    baseURL = 'http://dn1_web-server_1:5000'
+    baseURL = 'http://localhost:5000'
   } else if (env === 'stage') {
     // Hardcode a stage DN, it doesn't matter
     baseURL = 'https://discoveryprovider.staging.audius.co'

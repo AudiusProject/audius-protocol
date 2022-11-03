@@ -208,7 +208,7 @@ async function monitorState({
     }
   } catch (e: any) {
     tracing.recordException(e)
-    logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
+    logger.error(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
 
@@ -275,7 +275,7 @@ const _addToDecisionTree = (
   decisionTree.push(obj)
 
   if (logger) {
-    logger.info(logStr)
+    logger.debug(logStr)
   }
 }
 
@@ -288,7 +288,7 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
     decisionTree[decisionTree.length - 1].fullDuration = duration
   }
   try {
-    logger.info(
+    logger.debug(
       `monitor-state job processor Decision Tree${JSON.stringify(decisionTree)}`
     )
   } catch (e: any) {

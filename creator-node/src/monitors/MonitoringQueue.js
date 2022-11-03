@@ -62,12 +62,12 @@ class MonitoringQueue {
                 try {
                   await this.refresh(monitorProps, monitorKey)
                 } catch (e) {
-                  this.logStatus(`Error on ${monitorProps.name} ${e}`)
+                  this.logError(`Error on ${monitorProps.name} ${e}`)
                 }
               }
             )
           } catch (e) {
-            this.logStatus(`Error ${e}`)
+            this.logError(`Error ${e}`)
           }
         },
         { connection }
@@ -138,6 +138,18 @@ class MonitoringQueue {
   }
 
   /**
+   * Logs a serror message and includes current queue info
+   * @param {string} message
+   */
+  async logError(message) {
+    const { waiting, active, completed, failed, delayed } =
+      await this.queue.getJobCounts()
+    logger.error(
+      `Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
+    )
+  }
+
+  /**
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
@@ -151,11 +163,11 @@ class MonitoringQueue {
           try {
             await this.queue.add(PROCESS_NAMES.monitor, {})
           } catch (e) {
-            this.logStatus('Failed to enqueue!')
+            this.logError('Failed to enqueue!')
           }
         }, QUEUE_INTERVAL_MS)
       } catch (e) {
-        this.logStatus('Startup failed!')
+        this.logError('Startup failed!')
       }
     }
   }

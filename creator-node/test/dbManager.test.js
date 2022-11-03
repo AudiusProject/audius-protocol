@@ -714,7 +714,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
       // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
       const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
-        '../src/components/tracks/tracksComponentService.js',
+        '../src/components/tracks/tracksComponentService',
         {
           '@audius/sdk': {
             libs: {

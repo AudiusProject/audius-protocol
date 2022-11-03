@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
+import type { LogContext } from '../../apiHelpers'
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -10,7 +11,11 @@ import {
   logInfoWithDuration
 } from '../../logging'
 import { saveFileForMultihashToFS } from '../../fileManager'
-import DiskManager from '../../diskManager'
+import {
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete,
+  deleteAllCNodeUserDataFromDisk
+} from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
@@ -32,7 +37,7 @@ type SecondarySyncFromPrimaryParams = {
   wallet: string
   creatorNodeEndpoint: string
   forceResyncConfig: ForceResyncConfig
-  logContext: Object
+  logContext: LogContext
   forceWipe?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
@@ -155,19 +160,18 @@ const handleSyncFromPrimary = async ({
 
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
-      } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        } catch (error) {
+          await clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
@@ -186,7 +190,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -200,12 +204,11 @@ const handleSyncFromPrimary = async ({
       // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
       if (config.get('syncForceWipeDiskEnabled')) {
         try {
-          const numFilesDeleted =
-            await DiskManager.deleteAllCNodeUserDataFromDisk(
-              wallet,
-              numFilesToDelete,
-              logger
-            )
+          const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
+            wallet,
+            numFilesToDelete,
+            logger
+          )
           logger.info(
             `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
           )
@@ -626,7 +629,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all ClockRecord entries to DB')
+      logger.debug('Saved all ClockRecord entries to DB')
 
       await models.File.bulkCreate(
         nonTrackFiles.map((file: any) => {
@@ -641,7 +644,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all non-track File entries to DB')
+      logger.debug('Saved all non-track File entries to DB')
 
       await models.Track.bulkCreate(
         fetchedCNodeUser.tracks.map((track: any) => ({
@@ -650,7 +653,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all Track entries to DB')
+      logger.debug('Saved all Track entries to DB')
 
       await models.File.bulkCreate(
         trackFiles.map((trackFile: any) => {
@@ -664,7 +667,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all track File entries to DB')
+      logger.debug('Saved all track File entries to DB')
 
       await models.AudiusUser.bulkCreate(
         fetchedCNodeUser.audiusUsers.map((audiusUser: any) => ({
@@ -673,11 +676,11 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all AudiusUser entries to DB')
+      logger.debug('Saved all AudiusUser entries to DB')
 
       await transaction.commit()
 
-      logger.info(
+      logger.debug(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
@@ -761,7 +764,7 @@ const handleSyncFromPrimary = async ({
  * @param {string} param.wallet
  * @param {string} param.creatorNodeEndpoint
  * @param {Object} param.forceResyncConfig
- * @param {Object} param.logContext
+ * @param {LogContext} param.logContext
  * @param {boolean} [param.forceWipe]
  * @param {number} [param.blockNumber]
  */
