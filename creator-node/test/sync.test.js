@@ -1083,7 +1083,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       server = appInfo.server
       app = appInfo.app
 
-      serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
+      serviceRegistryMock = await getServiceRegistryMock(
+        libsMock,
+        BlacklistManager
+      )
     })
 
     afterEach(function () {
@@ -1818,7 +1821,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
 
     // Define mocks
 
-    serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
+    serviceRegistryMock = await getServiceRegistryMock(
+      libsMock,
+      BlacklistManager
+    )
 
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',
