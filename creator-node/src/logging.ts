@@ -1,34 +1,35 @@
-const bunyan = require('bunyan')
-const cluster = require('cluster')
-const shortid = require('shortid')
-
-const config = require('./config')
+import type { Request, Response, NextFunction } from 'express'
+import type { WriteFn, Stream } from 'bunyan'
+import bunyan, { createLogger, nameFromLevel, safeCycles } from 'bunyan'
+import cluster from 'cluster'
+import shortid from 'shortid'
+import config from './config'
 
 // taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
 // since there is no official support for string-based "level" values
 // response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
-function RawStdOutWithLevelName() {
+function RawStdOutWithLevelName(): WriteFn {
   return {
-    write: (log) => {
+    write: (log: Stream) => {
       // duplicate log object before sending to stdout
-      const clonedLog = { ...log }
+      const clonedLog = { ...log, logLevel: 'info' }
 
       // add new level (string) to level key
-      clonedLog.logLevel = bunyan.nameFromLevel[clonedLog.level]
+      clonedLog.logLevel = nameFromLevel[clonedLog.level as number]
 
       // stringify() uses the safeCycles() replacer, which returns '[Circular]'
       // when circular references are detected
       // related code: https://github.com/trentm/node-bunyan/blob/0ff1ae29cc9e028c6c11cd6b60e3b90217b66a10/lib/bunyan.js#L1155-L1200
-      const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
+      const logLine = JSON.stringify(clonedLog, safeCycles()) + '\n'
       process.stdout.write(logLine)
     }
   }
 }
 
 const logLevel = config.get('logLevel') || 'info'
-const logger = bunyan.createLogger({
+export const logger = createLogger({
   name: 'audius_creator_node',
-  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker.id}`,
+  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker?.id}`,
   streams: [
     {
       level: logLevel,
@@ -51,7 +52,7 @@ const excludedRoutes = [
   '/disk_check',
   '/sync_status'
 ]
-function requestNotExcludedFromLogging(url) {
+export function requestNotExcludedFromLogging(url: string) {
   return (
     excludedRoutes.filter((excludedRoute) => url.includes(excludedRoute))
       .length === 0
@@ -61,7 +62,7 @@ function requestNotExcludedFromLogging(url) {
 /**
  * @notice request headers are case-insensitive
  */
-function getRequestLoggingContext(req, requestID) {
+export function getRequestLoggingContext(req: Request, requestID: string) {
   req.startTime = getStartTime()
   const urlParts = req.url.split('?')
   return {
@@ -79,11 +80,15 @@ function getRequestLoggingContext(req, requestID) {
  * Gets the start time
  * @returns the start time
  */
-function getStartTime() {
+export function getStartTime() {
   return process.hrtime()
 }
 
-function loggingMiddleware(req, res, next) {
+export function loggingMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const providedRequestID = req.header('X-Request-ID')
   const requestID = providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
@@ -99,11 +104,11 @@ function loggingMiddleware(req, res, next) {
 
 /**
  * Creates and returns a child logger for provided logger
- * @param {Object} logger bunyan parent logger instance
+ * @param {bunyan} logger bunyan parent logger instance
  * @param {Object} options optional object to define child logger properties. adds to JSON fields, allowing for better log filtering/querying
  * @returns {Object} child logger instance with defined options
  */
-function createChildLogger(logger, options = {}) {
+export function createChildLogger(logger: Logger, options = {}) {
   return logger.child(options)
 }
 
@@ -113,7 +118,7 @@ function createChildLogger(logger, options = {}) {
  * @param {number} param.startTime the start time
  * @returns the duration of the fn call in ms
  */
-function getDuration({ startTime }) {
+export function getDuration({ startTime }: { startTime: [number, number] }) {
   let durationMs
   if (startTime) {
     const endTime = process.hrtime(startTime)
@@ -129,9 +134,15 @@ function getDuration({ startTime }) {
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logDebugWithDuration(
-  { logger, startTime },
-  msg,
+export function logDebugWithDuration(
+  {
+    logger,
+    startTime
+  }: {
+    logger: bunyan
+    startTime: [number, number]
+  },
+  msg: string,
   durationKey = 'duration'
 ) {
   const durationMs = getDuration({ startTime })
@@ -149,9 +160,15 @@ function logDebugWithDuration(
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logInfoWithDuration(
-  { logger, startTime },
-  msg,
+export function logInfoWithDuration(
+  {
+    logger,
+    startTime
+  }: {
+    logger: bunyan
+    startTime: [number, number]
+  },
+  msg: string,
   durationKey = 'duration'
 ) {
   const durationMs = getDuration({ startTime })
@@ -169,7 +186,16 @@ function logInfoWithDuration(
  * @param {number} startTime the start time
  * @param {string} msg the message to print
  */
-function logErrorWithDuration({ logger, startTime }, msg) {
+export function logErrorWithDuration(
+  {
+    logger,
+    startTime
+  }: {
+    logger: bunyan
+    startTime: [number, number]
+  },
+  msg: string
+) {
   const durationMs = getDuration({ startTime })
 
   if (durationMs) {
@@ -177,17 +203,4 @@ function logErrorWithDuration({ logger, startTime }, msg) {
   } else {
     logger.error(msg)
   }
-}
-
-module.exports = {
-  logger,
-  loggingMiddleware,
-  requestNotExcludedFromLogging,
-  getRequestLoggingContext,
-  getStartTime,
-  getDuration,
-  createChildLogger,
-  logDebugWithDuration,
-  logInfoWithDuration,
-  logErrorWithDuration
 }
