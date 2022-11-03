@@ -521,20 +521,18 @@ def check_if_backfilling_complete(
                 "index_user_bank_backfill.py | Tried to check if complete, but no stop_sig"
             )
             return False
-        else:
-            stop_sig = stop_sig_tuple[0]
+        stop_sig = stop_sig_tuple[0]
 
         one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
             USER_BANK_ADDRESS,
             before=stop_sig,
             limit=1,
         )
-        if one_sig_before_stop_result:
-            one_sig_before_stop_result = one_sig_before_stop_result["result"][0]
-            one_sig_before_stop = one_sig_before_stop_result["signature"]
-        else:
+        if not one_sig_before_stop_result:
             logger.error("index_user_bank_backfill.py | No sigs before stop_sig")
             return False
+        one_sig_before_stop_result = one_sig_before_stop_result["result"][0]
+        one_sig_before_stop = one_sig_before_stop_result["signature"]
 
         sig_before_stop_in_db = (
             session.query(UserBankBackfillTx)

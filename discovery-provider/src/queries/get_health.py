@@ -259,21 +259,33 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         last_track_unavailability_job_end_time = None
 
     try:
-        is_index_user_bank_backfill_complete = str(
-            redis.get(index_user_bank_backfill_complete).decode()
-        )
-        is_index_rewards_manager_backfill_complete = str(
-            redis.get(index_rewards_manager_backfill_complete).decode()
-        )
-        is_spl_token_backfill_complete = str(
-            redis.get(index_spl_token_backfill_complete).decode()
-        )
+        redis_result = redis.get(index_user_bank_backfill_complete)
+        if redis_result:
+            is_index_user_bank_backfill_complete = str(redis_result.decode())
     except Exception as e:
         logger.error(
-            f"Could not check whether audio_transactions_history backfilling is complete: {e}"
+            f"Could not check whether index_user_bank backfilling is complete: {e}"
         )
         is_index_user_bank_backfill_complete = None
+
+    try:
+        redis_result = redis.get(index_rewards_manager_backfill_complete)
+        if redis_result:
+            is_index_rewards_manager_backfill_complete = str(redis_result.decode())
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_rewards_manager backfilling is complete: {e}"
+        )
         is_index_rewards_manager_backfill_complete = None
+
+    try:
+        redis_result = redis.get(index_spl_token_backfill_complete)
+        if redis_result:
+            is_spl_token_backfill_complete = str(redis_result.decode())
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_spl_token backfilling is complete: {e}"
+        )
         is_spl_token_backfill_complete = None
 
     # Get system information monitor values
@@ -325,7 +337,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # Temp
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
-        "zz_audio_transactions_history_backfill": {
+        "transactions_history_backfill": {
             "index_user_backfilling_complete": is_index_user_bank_backfill_complete,
             "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
             "spl_token_backfilling_complete": is_spl_token_backfill_complete,
