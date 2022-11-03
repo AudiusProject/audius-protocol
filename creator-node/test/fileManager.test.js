@@ -697,6 +697,6 @@ describe('test removeTrackFolder()', async function () {
     }
 
     // Ensure dir has been removed
-    assert.ok(!(await fs.pathExists(trackSourceFileDir)))
+    assert.ok((await fs.pathExists(trackSourceFileDir)))
   })
 })
