@@ -121,6 +121,11 @@ class SortMethod(str, enum.Enum):
     saves = "saves"
 
 
+class TransactionSortMethod(str, enum.Enum):
+    date = "date"
+    transaction_type = "transaction_type"
+
+
 class SortDirection(str, enum.Enum):
     asc = "asc"
     desc = "desc"
