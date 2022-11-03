@@ -453,9 +453,6 @@ def get_transaction_signatures(
                     logger.debug(
                         f"index_rewards_manager_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    logger.info(
-                        f"index_rewards_manager_backfill.py | Adding tx to be processed: tx={tx_sig} | slot={tx_slot}"
-                    )
                     if tx_info["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info["slot"] <= latest_processed_slot and (

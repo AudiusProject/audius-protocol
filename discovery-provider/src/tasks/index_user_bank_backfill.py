@@ -413,9 +413,6 @@ def process_user_bank_txs(stop_sig: str):
                     logger.debug(
                         f"index_user_bank_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    logger.info(
-                        f"index_user_bank_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
-                    )
                     if tx_info["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif (
