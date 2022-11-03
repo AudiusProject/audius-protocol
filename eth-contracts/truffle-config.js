@@ -84,8 +84,8 @@ module.exports = {
       },
     },
     test_local: {
-      host: '127.0.0.1',
-      port: 8556,
+      host: 'localhost',
+      port: 8545,
       network_id: '*',
       gas: 8000000, // 8,000,000 is a proxy for block gas limit even though it is now much higher
       // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522

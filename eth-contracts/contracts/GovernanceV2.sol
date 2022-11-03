@@ -643,6 +643,8 @@ contract GovernanceV2 is InitializableV2 {
 
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
+        // ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
+        // require(_votingPeriod < spFactory.getDecreaseStakeLockupDuration(), ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
         emit VotingPeriodUpdated(_votingPeriod);
     }
