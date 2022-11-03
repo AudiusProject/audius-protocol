@@ -340,7 +340,7 @@ def test_index_invalid_social_features(app, mocker):
                 )
             },
         ],
-        "UserCannotSubscribeToThemselfTx4": [
+        "UserCannotSubscribeToThemselfTx5": [
             {
                 "args": AttributeDict(
                     {

@@ -130,7 +130,12 @@ def populate_mock_db(db, entities, block_offset=None):
         challenge_disbursements = entities.get("challenge_disbursements", [])
 
         num_blocks = max(
-            len(tracks), len(users), len(follows), len(saves), len(reposts), len(subscriptions)
+            len(tracks),
+            len(users),
+            len(follows),
+            len(saves),
+            len(reposts),
+            len(subscriptions),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
