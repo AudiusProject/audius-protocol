@@ -1202,12 +1202,16 @@ class FeelingLucky(Resource):
 track_signatures_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 track_signatures_parser.add_argument(
     "track_ids",
-    description="""A string representation of track ids and corresponding nft token ids from user for that track's nft collection.
-        For tracks gated with the ERC1155 nft token standard, we also need the nft token ids claimed to be owned by the user.
-        Example: '1-1.2_2_3-1' represents track ids 1, 2, and 3 (separated by '_').
-        Track id and its token ids are separated by a dash '-'.
-        In the above example, the user claims to own token ids 1 and 2 (separated by '.') for track id 1.
-        Similarly, the user claims to own token id 1 for track id 3.""",
+    description="""A list of track ids. The order of these track ids will match the order of the token ids.""",
+    type=int,
+    action="append",
+)
+track_signatures_parser.add_argument(
+    "token_ids",
+    description="""A list of ERC1155 token ids. The order of these token ids will match the order of the track ids.
+        There may be multiple token ids for a given track id, so we use a '-' as the delimiter for a track id's token ids.""",
+    type=str,
+    action="append",
 )
 
 
@@ -1226,17 +1230,20 @@ class NFTGatedPremiumTrackSignatures(Resource):
     def get(self, user_id):
         decoded_user_id = decode_with_abort(user_id, full_ns)
         request_args = track_signatures_parser.parse_args()
-        track_id_str = request_args.get("track_ids")
-        if not track_id_str:
-            full_ns.abort(400, "NFT-gated premium track signatures require track ids.")
+        track_ids = request_args.get("track_ids")
+        token_ids = request_args.get("token_ids")
+
+        # Track ids and token ids should have the same length.
+        # If a track id does not have token ids, then we should still receive an empty string for its token ids.
+        # We need to enforce this because we won't be able to tell which track ids the token ids are for otherwise.
+        if len(track_ids) != len(token_ids):
+            full_ns.abort(400, "Mismatch between track ids and their token ids.")
 
         track_token_id_map = {}
-        track_token_ids = list(filter(lambda item: item, track_id_str.split("_")))
-        for item in track_token_ids:
-            parts = item.split("-")
-            track_id = int(parts[0])
-            token_ids = parts[1].split(".") if len(parts) > 1 else []
-            track_token_id_map[track_id] = token_ids
+        for i, track_id in enumerate(track_ids):
+            track_token_id_map[track_id] = (
+                token_ids[i].split("-") if token_ids[i] else []
+            )
 
         premium_track_signatures = get_nft_gated_premium_track_signatures(
             decoded_user_id, track_token_id_map
