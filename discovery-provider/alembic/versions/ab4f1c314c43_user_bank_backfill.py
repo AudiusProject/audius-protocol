@@ -1,7 +1,7 @@
 """user_bank_backfill
 
 Revision ID: ab4f1c314c43
-Revises: 42d5afb85d42
+Revises: 03dbd1b775c5
 Create Date: 2022-10-31 23:05:10.795098
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ab4f1c314c43"
-down_revision = "42d5afb85d42"
+down_revision = "03dbd1b775c5"
 branch_labels = None
 depends_on = None
 
