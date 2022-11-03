@@ -629,6 +629,10 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
+    redis_inst.delete("index_user_bank_backfill_complete")
+    redis_inst.delete("index_rewards_manager_backfill_complete")
+    redis_inst.delete("index_spl_token_backfill_complete")
+
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

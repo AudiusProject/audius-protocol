@@ -6,6 +6,7 @@ import time
 from decimal import Decimal
 from typing import List, Optional, TypedDict
 
+from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm.session import Session
@@ -500,33 +501,54 @@ def process_user_bank_txs(stop_sig: str):
 
 
 def check_if_backfilling_complete(
-    session: Session, solana_client_manager: SolanaClientManager
+    session: Session, solana_client_manager: SolanaClientManager, redis: Redis
 ) -> bool:
-    stop_sig_tuple = (
-        session.query(IndexingCheckpoint.signature)
-        .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
-        .first()
-    )
-    if not stop_sig_tuple:
-        logger.error(
-            "index_user_bank_backfill.py | Tried to check if complete, but no stop_sig"
+    try:
+        redis_complete = redis.get(index_user_bank_backfill_complete)
+        if redis_complete:
+            redis_complete = str(redis_complete.decode())
+        if redis_complete == "true":
+            return True
+
+        stop_sig_tuple = (
+            session.query(IndexingCheckpoint.signature)
+            .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
+            .first()
         )
-        return False
-    else:
-        stop_sig = stop_sig_tuple[0]
-    one_sig_before_stop = solana_client_manager.get_signatures_for_address(
-        USER_BANK_ADDRESS,
-        before=stop_sig,
-        limit=1,
-    )
-    if one_sig_before_stop:
-        one_sig_before_stop = one_sig_before_stop["result"][0]["signature"]
-    sig_before_stop_in_db = (
-        session.query(UserBankBackfillTx)
-        .filter(UserBankBackfillTx.signature == one_sig_before_stop)
-        .first()
-    )
-    return bool(sig_before_stop_in_db)
+        if not stop_sig_tuple:
+            logger.error(
+                "index_user_bank_backfill.py | Tried to check if complete, but no stop_sig"
+            )
+            return False
+        else:
+            stop_sig = stop_sig_tuple[0]
+
+        one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
+            USER_BANK_ADDRESS,
+            before=stop_sig,
+            limit=1,
+        )
+        if one_sig_before_stop_result:
+            one_sig_before_stop_result = one_sig_before_stop_result["result"][0]
+            one_sig_before_stop = one_sig_before_stop_result["signature"]
+        else:
+            logger.error("index_user_bank_backfill.py | No sigs before stop_sig")
+            return False
+
+        sig_before_stop_in_db = (
+            session.query(UserBankBackfillTx)
+            .filter(UserBankBackfillTx.signature == one_sig_before_stop)
+            .first()
+        )
+        complete = bool(sig_before_stop_in_db)
+        redis.set(index_user_bank_backfill_complete, "true" if complete else "false")
+        return complete
+    except Exception as e:
+        logger.error(
+            "index_user_bank_backfill.py | Error during check_if_backfilling_complete",
+            exc_info=True,
+        )
+        raise e
 
 
 def find_true_stop_sig(
@@ -627,7 +649,7 @@ def index_user_bank_backfill(self):
         logger.info(f"index_user_bank_backfill.py | No stop_sig found: {stop_sig}")
         return
 
-    if check_if_backfilling_complete(session, solana_client_manager):
+    if check_if_backfilling_complete(session, solana_client_manager, redis):
         logger.info("index_user_bank_backfill.py | Backfill indexing complete!")
         return
 
