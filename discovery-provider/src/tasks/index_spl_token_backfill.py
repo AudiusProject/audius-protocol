@@ -403,7 +403,6 @@ def process_spl_token_tx(
             if latest_processed_slot is None:
                 logger.debug("index_spl_token_backfill.py | setting from none")
                 transaction_signature_batch = transactions_array
-                intersection_found = True
             else:
                 for tx in transactions_array:
                     if tx["slot"] > latest_processed_slot:
