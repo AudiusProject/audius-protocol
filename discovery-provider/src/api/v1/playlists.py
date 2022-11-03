@@ -1,5 +1,6 @@
 import logging
 
+from flask import Blueprint, Response
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
@@ -41,6 +42,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -428,3 +430,27 @@ class FullTrendingPlaylists(Resource):
         )
         playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)
+
+
+playlist_stream_bp = Blueprint("playlist_stream", __name__)
+
+
+@playlist_stream_bp.route("/v1/playlists/<string:playlist_id>/stream", methods=["GET"])
+def playlist_stream(playlist_id):
+    decoded_id = decode_string_id(playlist_id)
+    if decoded_id is None:
+        return f"#Invalid Id: {playlist_id}", 404
+
+    tracks = get_tracks_for_playlist(playlist_id=decoded_id, exclude_premium=True)
+
+    return Response(
+        response="#EXTM3U\n"
+        + "\n".join(
+            [
+                f"#EXTINF:{track['duration']},{track['title']}\n../../tracks/{track['id']}/stream"
+                for track in tracks
+            ]
+        ),
+        status=200,
+        mimetype="application/mpegurl",
+    )

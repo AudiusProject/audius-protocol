@@ -4,6 +4,7 @@ import type {
   ForceResyncSigningData,
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
+import type { LogContext } from '../../apiHelpers'
 
 import {
   getContentNodeInfoFromEndpoint,
@@ -34,11 +35,11 @@ const generateDataForSignatureRecovery = (
  * @param {string} param.wallet the observed user's wallet
  * @param {boolean} param.forceResync flag from the request to force resync (i.e. clearing old user state) or not
  * @param {Object} param.logger log object
- * @param {Object} param.logContext object of log context. used when this sync job is enqueued
+ * @param {LogContext} param.logContext object of log context. used when this sync job is enqueued
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
 const shouldForceResync = async (
-  { libs, logContext }: any,
+  { libs, logContext }: { libs: any; logContext: LogContext },
   forceResyncConfig: ForceResyncConfig
 ) => {
   if (!forceResyncConfig) return false
