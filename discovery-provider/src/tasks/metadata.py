@@ -1,8 +1,70 @@
-from typing import Any, Dict
+from typing import Any, List, Optional, TypedDict
 
 # Required format for track metadata retrieved from the content system
 
-track_metadata_format: Dict[str, Any] = {
+
+class TrackDownload(TypedDict):
+    cid: Optional[str]
+    is_downloadable: bool
+    requires_follow: bool
+
+
+class TrackParent(TypedDict):
+    parent_track_id: int
+
+
+class TrackRemix(TypedDict):
+    tracks: List[TrackParent]
+
+
+class TrackStem(TypedDict):
+    parent_track_id: int
+    category: str
+
+
+class TrackFieldVisibility(TypedDict):
+    genre: bool
+    mood: bool
+    play_count: bool
+    share: bool
+    tags: bool
+    remixes: Optional[bool]
+
+
+class TrackSegment(TypedDict):
+    multihash: str
+    duration: float
+
+
+class TrackMetadata(TypedDict):
+    owner_id: int
+    title: str
+    route_id: str
+    length: int
+    cover_art: Optional[str]
+    cover_art_sizes: Optional[str]
+    tags: Optional[str]
+    genre: str
+    mood: Optional[str]
+    credits_splits: Optional[str]
+    create_date: None
+    release_date: None
+    file_type: None
+    description: Optional[str]
+    license: Optional[str]
+    isrc: Optional[str]
+    iswc: Optional[str]
+    track_segments: List[TrackSegment]
+    download: Any
+    remix_of: Optional[TrackRemix]
+    is_unlisted: bool
+    field_visibility: Optional[TrackFieldVisibility]
+    stem_of: Optional[TrackStem]
+    is_premium: Optional[bool]
+    premium_conditions: Optional[Any]
+
+
+track_metadata_format: TrackMetadata = {
     "owner_id": None,
     "title": None,
     "route_id": None,
@@ -49,7 +111,18 @@ user_metadata_format = {
     "artist_pick_track_id": None,
 }
 
-playlist_metadata_format = {
+
+class PlaylistMetadata(TypedDict):
+    playlist_id: Optional[int]
+    playlist_contents: Optional[Any]
+    playlist_name: Optional[str]
+    playlist_image_sizes_multihash: Optional[str]
+    description: Optional[str]
+    is_album: Optional[bool]
+    is_private: Optional[bool]
+
+
+playlist_metadata_format: PlaylistMetadata = {
     "playlist_id": None,
     "playlist_contents": None,
     "playlist_name": None,
