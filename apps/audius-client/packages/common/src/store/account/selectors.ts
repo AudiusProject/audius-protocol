@@ -26,8 +26,7 @@ export const getNeedsAccountRecovery = (state: CommonState) =>
   state.account.needsAccountRecovery
 export const getAccountToCache = (state: CommonState) => ({
   userId: state.account.userId,
-  collections: state.account.collections,
-  hasFavoritedItem: state.account.hasFavoritedItem
+  collections: state.account.collections
 })
 
 export const getAccountUser = createSelector(
