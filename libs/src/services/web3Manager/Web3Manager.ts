@@ -32,6 +32,8 @@ export class Web3Manager {
   web3: Web3Type | undefined
   useExternalWeb3: boolean | undefined
   ownerWallet?: EthereumWallet
+  // Need to maintain the user's provided handle for anti-abuse measures on relay
+  userSuppliedHandle?: string
 
   constructor({
     web3Config,
@@ -125,6 +127,10 @@ export class Web3Manager {
 
   web3IsExternal() {
     return this.useExternalWeb3
+  }
+
+  setUserSuppliedHandle(handle: string) {
+    this.userSuppliedHandle = handle
   }
 
   getOwnerWalletPrivateKey() {
