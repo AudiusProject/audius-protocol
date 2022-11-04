@@ -18,7 +18,7 @@ def trigger_circle_ci_job(parameters):
     # trigger a circleci job
     project = "audius-protocol"
     data = {
-        "branch": "master",
+        "branch": "main",
         "parameters": parameters,
     }
     r = requests.post(
@@ -55,6 +55,7 @@ def index():
     threshold = request.form["threshold"]
     value = request.form["value"]
     level = request.form["level"]
+    pprint(request.form)
 
     signer = host_to_signer(host)
 
@@ -77,12 +78,13 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
-            r = requests.post(
-                DISCORD_WEBHOOK,
-                data=json.dumps(data),
-                headers={"Content-Type": "application/json"},
-            )
-            response = r.json()
+            pprint(data)
+            # r = requests.post(
+            #     DISCORD_WEBHOOK,
+            #     data=json.dumps(data),
+            #     headers={"Content-Type": "application/json"},
+            # )
+            # response = r.json()
 
             # print response messages
             pprint(response)
@@ -90,6 +92,8 @@ def index():
     if level == "critical":
         trigger_circle_ci_job(
             {
-                "slash_address": signer,
+                "reservations": "asdf",
+                # "slash_address": signer,
+                # "slash_amount": SLASH_AMOUNT,
             }
         )
