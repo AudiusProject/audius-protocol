@@ -67,6 +67,7 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
+from src.queries.get_subscribers_for_user import get_subscribers_for_user
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
     get_support_sent_by_user,
@@ -804,8 +805,63 @@ class UserSearchResult(Resource):
         response = search(search_args)
         return success_response(response["users"])
 
+subscribers_response = make_response(
+    "subscribers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_subscribers_response = make_full_response(
+    "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
 
-followers_response = make_full_response(
+USER_SUBSCRIBERS_ROUTE = "/<string:id>/subscribers"
+
+
+@full_ns.route(USER_SUBSCRIBERS_ROUTE)
+class FullSubscriberUsers(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        args = {
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        users = get_subscribers_for_user(args)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_subscribers_response)
+    def get(self, id):
+        return self._get(id)
+
+
+@ns.route(USER_SUBSCRIBERS_ROUTE)
+class SubscriberUsers(FullSubscriberUsers):
+    @ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(subscribers_response)
+    def get(self, id):
+        return super()._get(id)
+
+
+followers_response = make_response(
     "followers_response", ns, fields.List(fields.Nested(user_model))
 )
 full_followers_response = make_full_response(
@@ -861,7 +917,7 @@ class FollowerUsers(FullFollowerUsers):
         return super()._get(id)
 
 
-following_response = make_full_response(
+following_response = make_response(
     "following_response", ns, fields.List(fields.Nested(user_model))
 )
 following_response_full = make_full_response(
