@@ -1,7 +1,7 @@
 """Create playlist_routes table
 
 Revision ID: bead88b41a20
-Revises: a8752810936c
+Revises: 03dbd1b775c5
 Create Date: 2022-10-28 18:08:50.677819
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = "bead88b41a20"
-down_revision = "42d5afb85d42"
+down_revision = "f91c041d1d8d"
 branch_labels = None
 depends_on = None
 
@@ -31,7 +31,7 @@ def upgrade():
         sa.Column("blocknumber", sa.Integer(), nullable=False, index=False),
         sa.Column("txhash", sa.String(), nullable=False, index=False),
         sa.PrimaryKeyConstraint("owner_id", "slug"),
-        sa.Index("playlist_id", "is_current"),
+        sa.Index("playlist_routes_playlist_id_idx", "playlist_id", "is_current"),
     )
     bind = op.get_bind()
     session = Session(bind=bind)
