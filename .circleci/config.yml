@@ -262,6 +262,9 @@ parameters:
   slash_address:
     type: string
     default: ""
+  slash_amount:
+    type: string
+    default: ""
   reservations:
     type: string
     default: ""
@@ -1262,6 +1265,14 @@ jobs:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
         enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
+      slash_address:
+        description: Required for target:slash-proposal. Address to be slashed.
+        type: string
+        default: ""
+      slash_amount:
+        description: Required for target:slash-proposal. Amount in $AUDIO.
+        type: string
+        default: ""
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1276,6 +1287,8 @@ jobs:
           cd audius-tooling
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+          SLASH_ADDRESS=<< parameters.slash_address >> \
+          SLASH_AMOUNT=<< parameters.slash_amount >> \
           release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
@@ -1339,6 +1352,7 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.slash_address >>
+         - not: << pipeline.parameters.slash_amount >>
          - not: << pipeline.parameters.sp_release >>
     jobs:
       - noop:
@@ -1843,16 +1857,23 @@ workflows:
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
   # 2. click "Trigger Pipeline"
-  # 3. Add string parameter "slash_address" with any non-null value
+  # 3. Add string parameter "slash_address" and "slash_amount" with any non-null value
   slash-proposal:
-    when: << pipeline.parameters.slash_address >>
+    when:
+      and:
+        - << pipeline.parameters.slash_address >>
+        - << pipeline.parameters.slash_amount >>
     jobs:
-      - release-scripts:
-          name: slash-proposal
-          target: slash-proposal
-          context:
-            - slack-secrets
-            - gh-tokens.releases
+      - noop:
+          name: address (<< pipeline.parameters.slash_address >>) amount (<< pipeline.parameters.slash_amount >>)
+      # - release-scripts:
+      #     name: slash-proposal
+      #     target: slash-proposal
+      #     slash_address: << pipeline.parameters.slash_address >>
+      #     slash_amount: << pipeline.parameters.slash_amount >>
+      #     context:
+      #       - slack-secrets
+      #       - gh-tokens.releases
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
