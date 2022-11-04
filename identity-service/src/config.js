@@ -831,6 +831,12 @@ const config = convict({
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
     default: false
+  },
+  updateReplicaSetReconfigurationLimit: {
+    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds',
+    format: Number,
+    env: 'updateReplicaSetReconfigurationLimit',
+    default: 30
   }
 })
 

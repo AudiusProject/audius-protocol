@@ -16,6 +16,7 @@ from src.models.social.play import Play
 from src.models.social.reaction import Reaction
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
@@ -102,6 +103,7 @@ def populate_mock_db(db, entities, block_offset=None):
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
         follows = entities.get("follows", [])
+        subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
         track_routes = entities.get("track_routes", [])
@@ -128,7 +130,12 @@ def populate_mock_db(db, entities, block_offset=None):
         challenge_disbursements = entities.get("challenge_disbursements", [])
 
         num_blocks = max(
-            len(tracks), len(users), len(follows), len(saves), len(reposts)
+            len(tracks),
+            len(users),
+            len(follows),
+            len(saves),
+            len(reposts),
+            len(subscriptions),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -248,6 +255,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=follow_meta.get("created_at", datetime.now()),
             )
             session.add(follow)
+        for i, subscription_meta in enumerate(subscriptions):
+            subscription = Subscription(
+                blockhash=hex(i + block_offset),
+                blocknumber=subscription_meta.get("blocknumber", i + block_offset),
+                subscriber_id=subscription_meta.get("subscriber_id", i + 1),
+                user_id=subscription_meta.get("user_id", i),
+                is_current=subscription_meta.get("is_current", True),
+                is_delete=subscription_meta.get("is_delete", False),
+                created_at=subscription_meta.get("created_at", datetime.now()),
+            )
+            session.add(subscription)
         for i, repost_meta in enumerate(reposts):
             repost = Repost(
                 blockhash=hex(i + block_offset),

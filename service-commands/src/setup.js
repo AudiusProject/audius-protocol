@@ -289,7 +289,7 @@ const getServiceURL = (service, serviceNumber) => {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://${getContentNodeContainerName(serviceNumber)}:${4000 + parseInt(serviceNumber) - 1
+    return `http://localhost:${4000 + parseInt(serviceNumber) - 1
       }/${healthCheckEndpoint}`
   }
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
