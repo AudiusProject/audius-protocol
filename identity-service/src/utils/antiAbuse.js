@@ -107,6 +107,8 @@ const detectAbuse = async (user, reqIP, abbreviated = false) => {
     )
   } catch (e) {
     logger.warn(`detectAbuse: aao request failed ${e.message}`)
+    // If it failed, don't update anything
+    return
   }
 
   // Use !! for nullable columns :(
