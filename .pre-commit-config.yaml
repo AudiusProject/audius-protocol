@@ -36,4 +36,3 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        exclude: ^discovery-provider/alembic/
