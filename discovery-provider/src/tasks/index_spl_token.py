@@ -316,6 +316,9 @@ def parse_sol_tx_batch(
             user_bank_set = {user[1] for user in user_result}
             update_user_ids.update(user_set)
 
+            audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
+            session.bulk_save_objects(audio_txs)
+
         if updated_root_accounts:
             # Remove the user bank owner
             user_bank_owner, _ = get_base_address(SPL_TOKEN_PUBKEY, USER_BANK_PUBKEY)
@@ -338,9 +341,6 @@ def parse_sol_tx_batch(
                 f"index_spl_token.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
             )
             enqueue_immediate_balance_refresh(redis, user_ids)
-
-        audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
-        session.bulk_save_objects(audio_txs)
 
         if tx_sig_batch_records:
             last_tx = tx_sig_batch_records[0]

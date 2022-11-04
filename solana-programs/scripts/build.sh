@@ -48,9 +48,9 @@ replace_address \
     ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
 
 cargo build-bpf
-cargo build -p audius-eth-registry-cli
-cargo build -p claimable-tokens-cli
-cargo build -p audius-reward-manager-cli
+cargo install --debug --target-dir ./target --path cli
+cargo install --debug --target-dir ./target --path reward-manager/cli
+cargo install --debug --target-dir ./target --path claimable-tokens/cli
 
 cd anchor/audius-data
 anchor build
