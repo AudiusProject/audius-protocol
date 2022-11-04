@@ -527,6 +527,7 @@ def get_final_poa_block(shared_config) -> Optional[int]:
     # get final poa block from identity and cache result
     # marks the transition to nethermind
     # returns None if still on POA
+
     redis = redis_connection.get_redis()
     cached_final_poa_block = redis.get(final_poa_block_redis_key)
     if cached_final_poa_block:
