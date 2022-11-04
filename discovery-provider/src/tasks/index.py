@@ -1065,10 +1065,7 @@ def update_task(self):
         latest_indexed_block = session.query(Block).filter_by(is_current=True)
 
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
-    if (
-        latest_indexed_block
-        and latest_indexed_block.number >= final_poa_block
-    ):
+    if latest_indexed_block and latest_indexed_block.number >= final_poa_block:
         # done indexing POA
         return
 

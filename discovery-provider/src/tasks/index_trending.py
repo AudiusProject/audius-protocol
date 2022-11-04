@@ -258,7 +258,8 @@ def get_should_update_trending(
             nethermind_web3 = web3_provider.get_web3()
             current_block_number -= final_poa_block
             current_block = nethermind_web3.eth.get_block(current_block_number, True)
-        current_block = web3.eth.get_block(current_block_number, True)
+        else:
+            current_block = web3.eth.get_block(current_block_number, True)
 
         current_timestamp = current_block["timestamp"]
         block_datetime = floor_time(
