@@ -47,16 +47,6 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'cnodeUserUUID',
       onDelete: 'RESTRICT'
     })
-    Track.belongsTo(models.File, {
-      foreignKey: 'metadataFileUUID',
-      targetKey: 'fileUUID',
-      onDelete: 'RESTRICT'
-    })
-    Track.belongsTo(models.File, {
-      foreignKey: 'coverArtFileUUID',
-      targetKey: 'fileUUID',
-      onDelete: 'RESTRICT'
-    })
     // Track also has a composite foreign key on ClockRecords (cnodeUserUUID, clock)
     // sequelize does not support composite foreign keys
   }
