@@ -2,6 +2,41 @@
   # prod.yml
   ##########
 
+  ##########################
+  # monitor identity service
+  ##########################
+
+  - job_name: 'prod-identity_postgres_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['prod-identity:9187']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'postgres'
+          component: 'identity'
+  - job_name: 'prod-identity_redis_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['prod-identity:9121']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'redis'
+          component: 'identity'
+  - job_name: 'prod-identity_linux_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['prod-identity:9100']
+        labels:
+          host: 'prod-identity'
+          environment: 'prod'
+          service: 'linux'
+          component: 'identity'
+
   #############################################
   # monitor custom exporters produced by audius
   #############################################

@@ -2,6 +2,41 @@
   # stage.yml
   ###########
 
+  ##########################
+  # monitor identity service
+  ##########################
+
+  - job_name: 'stage-identity_postgres_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['stage-identity:9187']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'postgres'
+          component: 'identity'
+  - job_name: 'stage-identity_redis_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['stage-identity:9121']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'redis'
+          component: 'identity'
+  - job_name: 'stage-identity_linux_exporter'
+    scheme: 'http'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['stage-identity:9100']
+        labels:
+          host: 'stage-identity'
+          environment: 'stage'
+          service: 'linux'
+          component: 'identity'
+
   #############################################
   # monitor custom exporters produced by audius
   #############################################

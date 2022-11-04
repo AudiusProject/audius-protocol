@@ -13,6 +13,8 @@ services:
     user: 0:0
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "stage-identity:${STAGE_IDENTITY_IP}"
+      - "prod-identity:${PROD_IDENTITY_IP}"
     ports:
       - "9090:9090"
     restart: always
