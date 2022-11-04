@@ -527,7 +527,7 @@ const handleSyncFromPrimary = async ({
       // Save all track files to disk in batches (to limit concurrent load)
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-        logger.info(
+        logger.debug(
           `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
@@ -565,7 +565,7 @@ const handleSyncFromPrimary = async ({
           i,
           i + FileSaveMaxConcurrency
         )
-        logger.info(
+        logger.debug(
           `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
