@@ -275,9 +275,11 @@
             "title": "CID"
         },
         "PremiumConditions": {
-            "type": ["object", "null"],
             "additionalProperties": false,
             "oneOf": [
+                {
+                    "type": "null"
+                },
                 {
                     "$ref": "#/definitions/PremiumConditionsNFTCollection"
                 },

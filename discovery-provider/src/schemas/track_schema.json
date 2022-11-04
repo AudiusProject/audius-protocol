@@ -200,7 +200,9 @@
                 "stem_of",
                 "tags",
                 "title",
-                "track_segments"
+                "track_segments",
+                "is_premium",
+                "premium_conditions"
             ],
             "title": "Track"
         },
@@ -341,12 +343,11 @@
             "title": "CID"
         },
         "PremiumConditions": {
-            "type": [
-                "object",
-                "null"
-            ],
             "additionalProperties": false,
             "oneOf": [
+                {
+                    "type": "null"
+                },
                 {
                     "$ref": "#/definitions/PremiumConditionsNFTCollection"
                 },
