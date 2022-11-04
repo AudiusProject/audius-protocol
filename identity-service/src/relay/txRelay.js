@@ -125,7 +125,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         transactionRateLimiter.updateReplicaSetReconfiguration >
         UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
       ) {
-        throw new Error('Is not first replica set config')
+        throw new Error('updateReplicaSet rate limit reached')
       }
     }
   }
