@@ -238,7 +238,6 @@ services:
       minimumBalance: 1
       minimumRelayerBalance: 1
       minimumFunderBalance: 1
-      finalPOABlock: 0
 
       relayerPrivateKey: "${POA_RELAYER_WALLET_1_PRIVATE_KEY}"
       relayerPublicKey: "${POA_RELAYER_WALLET_1_ADDRESS}"
