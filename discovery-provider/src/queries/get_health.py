@@ -157,9 +157,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_hash: Optional[str] = None
     last_track_unavailability_job_start_time: Optional[str] = None
     last_track_unavailability_job_end_time: Optional[str] = None
-    is_index_user_bank_backfill_complete: Optional[str] = None
-    is_index_rewards_manager_backfill_complete: Optional[str] = None
-    is_spl_token_backfill_complete: Optional[str] = None
+    is_index_user_bank_backfill_complete: bool = False
+    is_index_rewards_manager_backfill_complete: bool = False
+    is_index_spl_token_backfill_complete: bool = False
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -259,34 +259,34 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         last_track_unavailability_job_end_time = None
 
     try:
-        redis_result = redis.get(index_user_bank_backfill_complete)
-        if redis_result:
-            is_index_user_bank_backfill_complete = str(redis_result.decode())
+        is_index_user_bank_backfill_complete = bool(
+            redis.get(index_user_bank_backfill_complete)
+        )
     except Exception as e:
         logger.error(
             f"Could not check whether index_user_bank backfilling is complete: {e}"
         )
-        is_index_user_bank_backfill_complete = None
+        is_index_user_bank_backfill_complete = False
 
     try:
-        redis_result = redis.get(index_rewards_manager_backfill_complete)
-        if redis_result:
-            is_index_rewards_manager_backfill_complete = str(redis_result.decode())
+        is_index_rewards_manager_backfill_complete = bool(
+            redis.get(index_rewards_manager_backfill_complete)
+        )
     except Exception as e:
         logger.error(
             f"Could not check whether index_rewards_manager backfilling is complete: {e}"
         )
-        is_index_rewards_manager_backfill_complete = None
+        is_index_rewards_manager_backfill_complete = False
 
     try:
-        redis_result = redis.get(index_spl_token_backfill_complete)
-        if redis_result:
-            is_spl_token_backfill_complete = str(redis_result.decode())
+        is_index_spl_token_backfill_complete = bool(
+            redis.get(index_spl_token_backfill_complete)
+        )
     except Exception as e:
         logger.error(
             f"Could not check whether index_spl_token backfilling is complete: {e}"
         )
-        is_spl_token_backfill_complete = None
+        is_index_spl_token_backfill_complete = False
 
     # Get system information monitor values
     sys_info = monitors.get_monitors(
@@ -340,7 +340,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "transactions_history_backfill": {
             "index_user_backfilling_complete": is_index_user_bank_backfill_complete,
             "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
-            "spl_token_backfilling_complete": is_spl_token_backfill_complete,
+            "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
         },
     }
 

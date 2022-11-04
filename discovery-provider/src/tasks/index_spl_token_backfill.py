@@ -468,10 +468,8 @@ def check_if_backfilling_complete(
     session: Session, solana_client_manager: SolanaClientManager, redis: Redis
 ) -> bool:
     try:
-        redis_complete = redis.get(index_spl_token_backfill_complete)
+        redis_complete = bool(redis.get(index_spl_token_backfill_complete))
         if redis_complete:
-            redis_complete = str(redis_complete.decode())
-        if redis_complete == "true":
             return True
 
         stop_sig_tuple = (
@@ -503,7 +501,8 @@ def check_if_backfilling_complete(
             .first()
         )
         complete = bool(sig_before_stop_in_db)
-        redis.set(index_spl_token_backfill_complete, "true" if complete else "false")
+        if complete:
+            redis.set(index_spl_token_backfill_complete, int(complete))
         return complete
     except Exception as e:
         logger.error(
