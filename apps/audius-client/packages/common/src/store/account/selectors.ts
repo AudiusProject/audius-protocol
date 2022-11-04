@@ -171,14 +171,17 @@ export const getAccountWithAlbums = createSelector(
   }
 )
 
-export const getAccountWithPlaylistsAndAlbums = createSelector(
+export const getAccountWithNameSortedPlaylistsAndAlbums = createSelector(
   [getAccountWithCollections],
   (account) => {
     if (!account) return undefined
+    const nameSortedCollections = account.collections.sort((a, b) =>
+      a.playlist_name.toLowerCase().localeCompare(b.playlist_name.toLowerCase())
+    )
     return {
       ...account,
-      playlists: account.collections.filter((c) => !c.is_album),
-      albums: account.collections.filter((c) => c.is_album)
+      playlists: nameSortedCollections.filter((c) => !c.is_album),
+      albums: nameSortedCollections.filter((c) => c.is_album)
     }
   }
 )
