@@ -122,6 +122,7 @@ def get_contract_info_if_exists(self, address):
     return None
 
 
+
 def initialize_blocks_table_if_necessary(db: SessionManager):
     redis = update_task.redis
 
