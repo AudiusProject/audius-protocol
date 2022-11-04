@@ -17,6 +17,7 @@ from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
 from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
+from src.api.v1.playlists import playlist_stream_bp
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
@@ -379,6 +380,7 @@ def configure_flask(test_config, app, mode="app"):
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
+    app.register_blueprint(playlist_stream_bp)
 
     return app
 
@@ -416,14 +418,17 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
+            "src.tasks.index_user_bank_backfill",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
+            "src.tasks.index_rewards_manager_backfill",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
+            "src.tasks.index_spl_token_backfill",
             "src.tasks.index_solana_user_data",
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
@@ -486,6 +491,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_user_bank",
                 "schedule": timedelta(seconds=5),
             },
+            "index_user_bank_backfill": {
+                "task": "index_user_bank_backfill",
+                "schedule": timedelta(seconds=5),
+            },
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
@@ -502,6 +511,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_rewards_manager",
                 "schedule": timedelta(seconds=5),
             },
+            "index_rewards_manager_backfill": {
+                "task": "index_rewards_manager_backfill",
+                "schedule": timedelta(seconds=5),
+            },
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(hours=12),
@@ -512,7 +525,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_aggregate_monthly_plays": {
                 "task": "index_aggregate_monthly_plays",
-                "schedule": crontab(minute=0, hour=0),  # daily at midnight
+                "schedule": timedelta(minutes=5),
             },
             "prune_plays": {
                 "task": "prune_plays",
@@ -523,6 +536,10 @@ def configure_celery(celery, test_config=None):
             },
             "index_spl_token": {
                 "task": "index_spl_token",
+                "schedule": timedelta(seconds=5),
+            },
+            "index_spl_token_backfill": {
+                "task": "index_spl_token_backfill",
                 "schedule": timedelta(seconds=5),
             },
             "index_aggregate_tips": {
@@ -599,13 +616,16 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
+    redis_inst.delete("user_bank_backfill_lock")
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
+    redis_inst.delete("solana_rewards_manager_backfill_lock")
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete("spl_token_backfill_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
