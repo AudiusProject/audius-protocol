@@ -46,7 +46,7 @@ const { updatePlaylistLastViewedAt } = notificationsActions
 const { getPlaylistUpdates } = notificationsSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 
-const { getAccountWithSavedPlaylistsAndAlbums } = accountSelectors
+const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
   title: 'Favorites',
@@ -492,7 +492,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 }
 
 type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
-type AccountData = ReturnType<typeof getAccountWithSavedPlaylistsAndAlbums>
+type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
 let tracksRef: LineupData
 let accountRef: AccountData
 
@@ -501,7 +501,7 @@ function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
     const tracks = getLineupMetadatas(state)
-    const account = getAccountWithSavedPlaylistsAndAlbums(state)
+    const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
 
     if (!isEqual(tracksRef, tracks)) {
       tracksRef = tracks
