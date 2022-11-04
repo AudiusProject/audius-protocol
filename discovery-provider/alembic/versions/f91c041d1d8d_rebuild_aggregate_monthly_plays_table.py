@@ -10,7 +10,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 
 
-
 # revision identifiers, used by Alembic.
 revision = 'f91c041d1d8d'
 down_revision = '3e99d419fd63'
