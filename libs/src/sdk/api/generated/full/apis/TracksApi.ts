@@ -87,6 +87,21 @@ export interface GetMostLovedTracksRequest {
     withUsers?: boolean;
 }
 
+export interface GetPremiumTrackSignaturesRequest {
+    /**
+     * The user for whom we are generating premium track signatures.
+     */
+    userId: string;
+    /**
+     * A list of track ids. The order of these track ids will match the order of the token ids.
+     */
+    trackIds?: Array<number>;
+    /**
+     * A list of ERC1155 token ids. The order of these token ids will match the order of the track ids.         There may be multiple token ids for a given track id, so we use a \&#39;-\&#39; as the delimiter for a track id\&#39;s token ids.
+     */
+    tokenIds?: Array<string>;
+}
+
 export interface GetRecommendedTracksRequest {
     /**
      * The number of items to fetch
