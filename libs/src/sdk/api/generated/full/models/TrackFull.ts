@@ -38,12 +38,6 @@ import {
     FullRemixParentToJSON,
 } from './FullRemixParent';
 import {
-    PremiumConditions,
-    PremiumConditionsFromJSON,
-    PremiumConditionsFromJSONTyped,
-    PremiumConditionsToJSON,
-} from './PremiumConditions';
-import {
     PremiumContentSignature,
     PremiumContentSignatureFromJSON,
     PremiumContentSignatureFromJSONTyped,
@@ -335,10 +329,10 @@ export interface TrackFull
         is_premium?: boolean;
         /**
         * 
-        * @type {PremiumConditions}
+        * @type {object}
         * @memberof TrackFull
         */
-        premium_conditions?: PremiumConditions;
+        premium_conditions?: object;
         /**
         * 
         * @type {PremiumContentSignature}
