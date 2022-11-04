@@ -15,7 +15,7 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
   url = url.replace("https://", "").replace("http://", "")
   sanitizedUrl = url.split(".").join("-")
 
-  return `
+  let yaml = `
   - job_name: '${sanitizedUrl}'
     scheme: '${scheme}'
     metrics_path: '/prometheus_metrics'
@@ -26,7 +26,64 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'audius'
           component: '${component}'
+  - job_name: '${sanitizedUrl}_postgres_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/postgres'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'postgres'
+          component: '${component}'
+  - job_name: '${sanitizedUrl}_redis_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/redis'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'redis'
+          component: '${component}'
+  - job_name: '${sanitizedUrl}_linux_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/linux'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'linux'
+          component: '${component}'
 `
+
+  if (component == 'discovery-node') {
+    yaml += `
+  - job_name: '${sanitizedUrl}_postgres_read_replica_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/postgres/read-replica'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'postgres-read-replica'
+          component: '${component}'
+  - job_name: '${sanitizedUrl}_elasticsearch_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/elasticsearch'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'elasticsearch'
+          component: '${component}'
+  `
+  }
+
+  return yaml
 }
 
 const generateEnv = async (stream, env) => {
