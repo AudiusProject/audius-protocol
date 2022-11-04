@@ -54,7 +54,14 @@ def _index_aggregate_monthly_plays(session):
     )
 
     # get the new latest checkpoint
-    new_id_checkpoint = (session.query(func.max(Play.id))).scalar()
+    most_recent_play_id = (session.query(func.max(Play.id))).scalar()
+
+    if not most_recent_play_id:
+        return
+
+    new_id_checkpoint = (
+        min(most_recent_play_id - prev_id_checkpoint, 1000000) + prev_id_checkpoint
+    )
 
     if not new_id_checkpoint or new_id_checkpoint == prev_id_checkpoint:
         logger.info(
