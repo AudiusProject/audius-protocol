@@ -1,7 +1,6 @@
 const _ = require('lodash')
 
-const ServiceCommands = require('@audius/service-commands')
-const { deregisterCreatorNode } = ServiceCommands
+const { deregisterCreatorNode } = require('@audius/service-commands')
 
 /**
  * Deregisters a random creator node and returns the corresponding id

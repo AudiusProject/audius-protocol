@@ -10,10 +10,13 @@ from src.utils.elasticdsl import (
     pluck_hits,
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
+    raise_if_es_is_stale,
 )
 
 
 def get_feed_es(args, limit=10):
+    raise_if_es_is_stale()
+
     current_user_id = str(args.get("user_id"))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]

@@ -12,6 +12,7 @@ from src.utils.elasticdsl import (
     pluck_hits,
     populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
+    raise_if_es_is_stale,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,8 @@ logger = logging.getLogger(__name__)
 def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
+
+    raise_if_es_is_stale()
 
     search_str = args.get("query")
     current_user_id = args.get("current_user_id")
