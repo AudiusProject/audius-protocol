@@ -18,4 +18,4 @@ fi
 echo "Waiting for redis and postgres"
 WAIT_HOSTS="localhost:6379,localhost:5432" /wait
 
-pytest "$@"
+pytest integration_tests/tasks/test_index_operations.py

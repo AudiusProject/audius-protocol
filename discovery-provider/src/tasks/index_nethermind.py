@@ -975,14 +975,19 @@ def update_task(self):
     web3 = web3_provider.get_web3()
     redis = update_task.redis
 
-    latest_indexed_block = None
-    with db.scoped_session() as session:
-        latest_indexed_block = session.query(Block).filter_by(is_current=True)
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    current_block_query_results = None
 
-    if latest_indexed_block < final_poa_block:
-        # not ready for aud chain
-        return
+    with db.scoped_session() as session:
+        current_block_query = session.query(Block).filter_by(is_current=True)
+        current_block_query_results = current_block_query.all()
+
+        if (
+            current_block_query_results
+            and current_block_query_results[0].number < final_poa_block
+        ):
+            # need to finish indexing POA
+            return
 
     # Initialize contracts and attach to the task singleton
     entity_manager_address = web3.toChecksumAddress(
