@@ -121,8 +121,19 @@
                 },
                 "premium_conditions": {
                     "type": ["object", "null"],
-                    "$ref": "#/definitions/PremiumConditions",
-                    "default": null
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "$ref": "#/definitions/PremiumConditionsNFTCollection"
+                            },
+                            {
+                                "$ref": "#/definitions/PremiumConditionsFollowUserId"
+                            }
+                        ]
+                    }
                 }
             },
             "required": [
@@ -273,21 +284,6 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
-        },
-        "PremiumConditions": {
-            "additionalProperties": false,
-            "oneOf": [
-                {
-                    "type": "null"
-                },
-                {
-                    "$ref": "#/definitions/PremiumConditionsNFTCollection"
-                },
-                {
-                    "$ref": "#/definitions/PremiumConditionsFollowUserId"
-                }
-            ],
-            "title": "PremiumConditions"
         },
         "PremiumConditionsNFTCollection": {
             "type": "object",
