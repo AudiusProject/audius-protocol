@@ -66,14 +66,14 @@ mobile-build-upload-staging-ios:
   steps:
     - mobile-build-ios:
         build-directory: 'build-mobile-staging'
-        bundle-id: 'co.audius.audiusmusic.bounce'
+        bundle-id: 'co.audius.audiusmusic.staging'
         env: '.env.stage'
     - when:
         condition:
           matches: { pattern: '^main$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-ios:
-              bundle-id: 'co.audius.audiusmusic.bounce'
+              bundle-id: 'co.audius.audiusmusic.staging'
 
 mobile-build-upload-production-ios:
   working_directory: ~/audius-client
@@ -93,6 +93,36 @@ mobile-build-upload-production-ios:
         steps:
           - mobile-upload-ios:
               bundle-id: 'co.audius.audiusmusic'
+
+mobile-build-upload-releasecandidate-ios:
+  working_directory: ~/audius-client
+  macos: # Run on osx so app can be created and signed.
+    xcode: '14.0.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-build-ios:
+        build-directory: 'build-mobile-releasecandidate'
+        bundle-id: 'co.audius.audiusmusic.releasecandidate'
+        env: '.env.prod'
+    - mobile-upload-ios:
+        bundle-id: 'co.audius.audiusmusic.releasecandidate'
+
+mobile-build-upload-staging-releasecandidate-ios:
+  working_directory: ~/audius-client
+  macos: # Run on osx so app can be created and signed.
+    xcode: '14.0.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-build-ios:
+        build-directory: 'build-mobile-staging-releasecandidate'
+        bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
+        env: '.env.prod'
+    - mobile-upload-ios:
+        bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
 
 mobile-build-upload-staging-android:
   working_directory: ~/audius-client

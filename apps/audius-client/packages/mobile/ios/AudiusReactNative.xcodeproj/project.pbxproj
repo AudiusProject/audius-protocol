@@ -31,6 +31,7 @@
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AudiusReactNativeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudiusReactNativeTests.m; sourceTree = "<group>"; };
+		021F02CDEBEC9193E350DD1F /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Audius Music.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Audius Music.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AudiusReactNative/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = AudiusReactNative/AppDelegate.m; sourceTree = "<group>"; };
@@ -41,6 +42,8 @@
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
+		3549AE74B86B49C376C63B88 /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
+		49D82B2FFDC7A314D7DF7D5F /* Pods-AudiusReactNative.staging.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.release.xcconfig"; sourceTree = "<group>"; };
 		5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AvenirNextLTPro-DemiBold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-DemiBold.otf"; sourceTree = "<group>"; };
@@ -48,10 +51,9 @@
 		83E8F64123F6101600817622 /* libRNAnalytics.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNAnalytics.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayViewManager.m; sourceTree = "<group>"; };
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
+		89A7C3D6A808EBB25935ECD5 /* Pods-AudiusReactNative.staging.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.debug.xcconfig"; sourceTree = "<group>"; };
 		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
-		AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.release.xcconfig"; sourceTree = "<group>"; };
-		AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.debug.xcconfig"; sourceTree = "<group>"; };
 		BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Thin.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Thin.otf"; sourceTree = "<group>"; };
 		C7BA0E377C49EAD2B77B4D02 /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Heavy.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Heavy.otf"; sourceTree = "<group>"; };
@@ -158,9 +160,11 @@
 			isa = PBXGroup;
 			children = (
 				5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */,
-				AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */,
 				DEDD0DBCA2181D0CE2C5A21D /* Pods-AudiusReactNative.release.xcconfig */,
-				AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */,
+				89A7C3D6A808EBB25935ECD5 /* Pods-AudiusReactNative.staging.debug.xcconfig */,
+				3549AE74B86B49C376C63B88 /* Pods-AudiusReactNative.releasecandidate.xcconfig */,
+				49D82B2FFDC7A314D7DF7D5F /* Pods-AudiusReactNative.staging.release.xcconfig */,
+				021F02CDEBEC9193E350DD1F /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -373,12 +377,10 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks.sh",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/FingerprintPro/FingerprintPro.framework/FingerprintPro",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal/OpenSSL.framework/OpenSSL",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FingerprintPro.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -466,7 +468,7 @@
 			baseConfigurationReference = 5F7BF21B8CA5939E46BBE018 /* Pods-AudiusReactNative.debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				BUNDLE_ID_SUFFIX = "";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
@@ -498,7 +500,7 @@
 			baseConfigurationReference = DEDD0DBCA2181D0CE2C5A21D /* Pods-AudiusReactNative.release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				BUNDLE_ID_SUFFIX = "";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
@@ -629,7 +631,172 @@
 			};
 			name = Release;
 		};
-		D4E8207224577D66007BFEE4 /* Bounce.Debug */ = {
+		9E85FA572913022900DF18A9 /* ReleaseCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = ReleaseCandidate;
+		};
+		9E85FA582913022900DF18A9 /* ReleaseCandidate */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3549AE74B86B49C376C63B88 /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
+			buildSettings = {
+				APP_DISPLAY_NAME = "Audius Music (Release Candidate)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.ReleaseCandidate;
+				BUNDLE_ID_SUFFIX = "";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRFCG93S85;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = LRFCG93S85;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
+				INFOPLIST_FILE = AudiusReactNative/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.releasecandidate;
+				PRODUCT_NAME = "Audius Music Release Candidate";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.releasecandidate";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.releasecandidate";
+				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = ReleaseCandidate;
+		};
+		9E85FA592914164300DF18A9 /* Staging.ReleaseCandidate */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = LRFCG93S85;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Staging.ReleaseCandidate;
+		};
+		9E85FA5A2914164300DF18A9 /* Staging.ReleaseCandidate */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 021F02CDEBEC9193E350DD1F /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */;
+			buildSettings = {
+				APP_DISPLAY_NAME = "Audius Music (Release Candidate Staging)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging.ReleaseCandidate;
+				BUNDLE_ID_SUFFIX = .staging.releasecandidate;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRFCG93S85;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = LRFCG93S85;
+				EXCLUDED_ARCHS = "";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
+				INFOPLIST_FILE = AudiusReactNative/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.staging.releasecandidate;
+				PRODUCT_NAME = "Audius Music Release Candidate Staging";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
+				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Staging.ReleaseCandidate;
+		};
+		D4E8207224577D66007BFEE4 /* Staging.Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -683,15 +850,15 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
-			name = Bounce.Debug;
+			name = Staging.Debug;
 		};
-		D4E8207324577D66007BFEE4 /* Bounce.Debug */ = {
+		D4E8207324577D66007BFEE4 /* Staging.Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = AE4E2F21CB0C756441EA2941 /* Pods-AudiusReactNative.bounce.debug.xcconfig */;
+			baseConfigurationReference = 89A7C3D6A808EBB25935ECD5 /* Pods-AudiusReactNative.staging.debug.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "Audius Bounce";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
-				BUNDLE_ID_SUFFIX = .bounce;
+				APP_DISPLAY_NAME = "Audius Music (Staging)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging;
+				BUNDLE_ID_SUFFIX = .staging;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -708,17 +875,17 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.bounce;
-				PRODUCT_NAME = "Audius Bounce Music";
-				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.bounce";
+				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.staging;
+				PRODUCT_NAME = "Audius Music Staging";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
-			name = Bounce.Debug;
+			name = Staging.Debug;
 		};
-		D4E8207424577D78007BFEE4 /* Bounce.Release */ = {
+		D4E8207424577D78007BFEE4 /* Staging.Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -765,15 +932,15 @@
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
-			name = Bounce.Release;
+			name = Staging.Release;
 		};
-		D4E8207524577D78007BFEE4 /* Bounce.Release */ = {
+		D4E8207524577D78007BFEE4 /* Staging.Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = AB456077D7BA5F103540F98A /* Pods-AudiusReactNative.bounce.release.xcconfig */;
+			baseConfigurationReference = 49D82B2FFDC7A314D7DF7D5F /* Pods-AudiusReactNative.staging.release.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "Audius Bounce";
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon${BUNDLE_ID_SUFFIX}";
-				BUNDLE_ID_SUFFIX = .bounce;
+				APP_DISPLAY_NAME = "Audius Music (Staging)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging;
+				BUNDLE_ID_SUFFIX = .staging;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -789,14 +956,14 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.bounce;
-				PRODUCT_NAME = "Audius Bounce Music";
-				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.bounce";
+				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.staging;
+				PRODUCT_NAME = "Audius Music Staging";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
-			name = Bounce.Release;
+			name = Staging.Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -805,9 +972,11 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
-				D4E8207324577D66007BFEE4 /* Bounce.Debug */,
+				D4E8207324577D66007BFEE4 /* Staging.Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
-				D4E8207524577D78007BFEE4 /* Bounce.Release */,
+				9E85FA582913022900DF18A9 /* ReleaseCandidate */,
+				D4E8207524577D78007BFEE4 /* Staging.Release */,
+				9E85FA5A2914164300DF18A9 /* Staging.ReleaseCandidate */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -816,9 +985,11 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
-				D4E8207224577D66007BFEE4 /* Bounce.Debug */,
+				D4E8207224577D66007BFEE4 /* Staging.Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
-				D4E8207424577D78007BFEE4 /* Bounce.Release */,
+				9E85FA572913022900DF18A9 /* ReleaseCandidate */,
+				D4E8207424577D78007BFEE4 /* Staging.Release */,
+				9E85FA592914164300DF18A9 /* Staging.ReleaseCandidate */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
