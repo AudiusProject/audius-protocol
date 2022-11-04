@@ -2,12 +2,13 @@
 
 import json
 from os import getenv
-from pprint import pprint
+from pprint import pformat
 
 import requests
 from flask import Flask, request
 
 app = Flask(__name__)
+app.debug = True
 
 CIRCLE_API_KEY = getenv("CIRCLE_API_KEY")
 DISCORD_WEBHOOK = getenv("DISCORD_WEBHOOK")
@@ -31,12 +32,12 @@ def trigger_circle_ci_job(parameters):
     response = r.json()
 
     # print response messages
-    pprint(response)
+    app.logger.error(pformat(response))
 
     # print quick url
     pipeline_number = response["number"]
     url = f"https://app.circleci.com/pipelines/github/AudiusProject/{project}/{pipeline_number}"
-    print(f"\n{url}")
+    app.logger.error(f"\n{url}")
 
 
 def host_to_signer(host):
@@ -50,14 +51,26 @@ def host_to_signer(host):
 
 @app.route("/", methods=["POST"])
 def index():
-    host = request.form["host"]
-    alert_name = request.form["alert_name"]
-    threshold = request.form["threshold"]
-    value = request.form["value"]
-    level = request.form["level"]
-    pprint(request.form)
+    request_data = request.get_json()
+    app.logger.error(123)
+    for alert in request_data['alerts']:
+        app.logger.error(alert['labels']['alertname'])
+        app.logger.error(alert['labels']['instance'])
+        app.logger.error(alert['valueString'])
+    # app.logger.error(pformat(request_data))
+    # host = request.form["host"]
+    # alert_name = request.form["alert_name"]
+    # threshold = request.form["threshold"]
+    # value = request.form["value"]
+    # level = request.form["level"]
 
-    signer = host_to_signer(host)
+    # signer = host_to_signer(host)
+    signer = "signer"
+    level = "critical"
+    host = "host"
+    alert_name = "alert_name"
+    threshold = "threshold"
+    value = "value"
 
     with open("audius-protocol/alerts.json") as f:
         alerts = json.load(f)
@@ -78,16 +91,17 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
-            pprint(data)
-            # r = requests.post(
-            #     DISCORD_WEBHOOK,
-            #     data=json.dumps(data),
-            #     headers={"Content-Type": "application/json"},
-            # )
-            # response = r.json()
+            app.logger.error(pformat(data))
+            r = requests.post(
+                DISCORD_WEBHOOK,
+                data=json.dumps(data),
+                headers={"Content-Type": "application/json"},
+            )
+            response = r.text
 
             # print response messages
-            # pprint(response)
+            app.logger.error(pformat(response))
+            break
 
     if level == "critical":
         trigger_circle_ci_job(
@@ -97,3 +111,8 @@ def index():
                 # "slash_amount": SLASH_AMOUNT,
             }
         )
+
+    return {}, 200
+
+if __name__ == '__main__':
+    app.run(debug=True)

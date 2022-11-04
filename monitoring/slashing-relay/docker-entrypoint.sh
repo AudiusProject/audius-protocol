@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
+cd ${WORKDIR}/audius-protocol
 git pull
-flask --app hello run
+
+cd ${WORKDIR}
+flask --app relay run --host=0.0.0.0
