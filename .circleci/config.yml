@@ -1287,8 +1287,8 @@ jobs:
           cd audius-tooling
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
-          SLASH_AMOUNT=${SLASH_AMOUNT} \
-          SLASH_ADDRESS=${SLASH_ADDRESS} \
+          SLASH_ADDRESS=<< parameters.slash_address >> \
+          SLASH_AMOUNT=<< parameters.slash_amount >> \
           release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
