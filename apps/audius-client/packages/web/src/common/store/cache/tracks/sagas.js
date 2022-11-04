@@ -14,11 +14,9 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  waitForValue,
-  getPremiumContentHeaders
+  waitForValue
 } from '@audius/common'
 import {
-  all,
   call,
   fork,
   getContext,
@@ -58,72 +56,6 @@ function* fetchRepostInfo(entries) {
   }
 }
 
-function* fetchSegment(metadata) {
-  if (metadata.is_premium && !metadata.premium_content_signature) return
-  if (!metadata.track_segments[0]) return
-  const cid = metadata.track_segments[0].multihash
-
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const user = yield call(waitForValue, getUser, { id: metadata.owner_id })
-  const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-    user.creator_node_endpoint
-  )
-
-  const libs = yield call(audiusBackendInstance.getAudiusLibs)
-  const web3Manager = libs.web3Manager
-  const premiumContentHeaders = yield call(
-    getPremiumContentHeaders,
-    metadata.premium_content_signature,
-    web3Manager.sign.bind(web3Manager)
-  )
-
-  return yield call(
-    audiusBackendInstance.fetchCID,
-    cid,
-    gateways,
-    /* cache */ false,
-    /* asUrl */ true,
-    /* trackId */ null,
-    premiumContentHeaders
-  )
-}
-
-// TODO(AUD-1837) -- we should not rely on this logic anymore of fetching first
-// segments, particularly to flag unauthorized content, but it should probably
-// just be removed altogether since first segment fetch is usually fast.
-function* fetchFirstSegments(entries) {
-  // Segments aren't part of the critical path so let them resolve later.
-  try {
-    const firstSegments = yield all(
-      entries.map((e) => call(fetchSegment, e.metadata))
-    )
-
-    yield put(
-      cacheActions.update(
-        Kind.TRACKS,
-        firstSegments.map((s, i) => {
-          if (s === 'Unauthorized') {
-            return {
-              id: entries[i].id,
-              metadata: {
-                is_delete: true,
-                _blocked: true,
-                _marked_deleted: true
-              }
-            }
-          }
-          return {
-            id: entries[i].id,
-            metadata: { _first_segment: s }
-          }
-        })
-      )
-    )
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 function* watchAdd() {
   yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
     if (action.kind === Kind.TRACKS) {
@@ -141,7 +73,6 @@ function* watchAdd() {
       const isNativeMobile = yield getContext('isNativeMobile')
       if (!isNativeMobile) {
         yield fork(fetchRepostInfo, action.entries)
-        yield fork(fetchFirstSegments, action.entries)
       }
     }
   })
