@@ -221,14 +221,25 @@ export class Web3Manager {
       const encodedABI = contractMethod.encodeABI()
 
       const response = await retry(
-        async () => {
-          return await this.identityService?.relay(
-            contractRegistryKey,
-            contractAddress,
-            this.ownerWallet!.getAddressString(),
-            encodedABI,
-            gasLimit
-          )
+        async (bail) => {
+          try {
+            return await this.identityService?.relay(
+              contractRegistryKey,
+              contractAddress,
+              this.ownerWallet!.getAddressString(),
+              encodedABI,
+              gasLimit,
+              this.userSuppliedHandle
+            )
+          } catch (e: any) {
+            // If forbidden, don't retry
+            if (e.response.status === 403) {
+              bail(e)
+              return
+            }
+            // Otherwise, throw to retry
+            throw e
+          }
         },
         {
           // Retry function 5x by default
