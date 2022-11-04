@@ -20,6 +20,17 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT = config.get(
+  'updateReplicaSetReconfigurationLimit'
+)
+
+const transactionRateLimiter = {
+  updateReplicaSetReconfiguration: 0
+}
+
+setInterval(() => {
+  transactionRateLimiter.updateReplicaSetReconfiguration = 0
+}, 10000)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -72,12 +83,6 @@ const sendTransaction = async (
   return resp
 }
 
-/**
- * TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
- *  contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
- *  contracts (eg. storage contracts, discovery service contract, should not be allowed
- *  to relay TXes from here but can today).
- */
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const {
     contractRegistryKey,
@@ -105,6 +110,25 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const contractName =
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
+
+  // Rate limit replica set reconfiguration transactions
+  // A reconfiguration (as opposed to a first time selection) will have an
+  // _oldPrimaryId value of "0"
+  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
+  if (isReplicaSetTransaction) {
+    const isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+    if (!isFirstReplicaSetConfig) {
+      transactionRateLimiter.updateReplicaSetReconfiguration += 1
+      if (
+        transactionRateLimiter.updateReplicaSetReconfiguration >
+        UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
+      ) {
+        throw new Error('updateReplicaSet rate limit reached')
+      }
+    }
+  }
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
