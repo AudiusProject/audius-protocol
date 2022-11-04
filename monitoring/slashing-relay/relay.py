@@ -52,7 +52,10 @@ def host_to_signer(host):
 @app.route("/", methods=["POST"])
 def index():
     request_data = request.get_json()
-    app.logger.error(123)
+
+    with open("audius-protocol/alerts.json") as f:
+        alerts = json.load(f)
+
     for alert in request_data["alerts"]:
         alert_name = alert['labels']['alertname']
         app.logger.error(alert["labels"]["instance"])
@@ -62,17 +65,15 @@ def index():
         app.logger.error(value)
         app.logger.error(labels)
 
-    # signer = host_to_signer(host)
+        # signer = host_to_signer(host)
 
-    signer = "signer"
-    level = "none"
-    host = "host"
-    alert_name = "alert_name"
-    threshold = "threshold"
-    value = "value"
+        signer = "signer"
+        level = "none"
+        host = "host"
+        alert_name = "alert_name"
+        threshold = "threshold"
+        value = "value"
 
-    with open("audius-protocol/alerts.json") as f:
-        alerts = json.load(f)
         for discord_handle in alerts[signer]:
             content = []
             if level == "critical":
@@ -91,16 +92,13 @@ def index():
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
             app.logger.debug(pformat(data))
-            r = requests.post(
-                DISCORD_WEBHOOK,
-                data=json.dumps(data),
-                headers={"Content-Type": "application/json"},
-            )
-            response = r.text
-
-            # print response messages
-            app.logger.info(pformat(response))
-            break
+            # r = requests.post(
+            #     DISCORD_WEBHOOK,
+            #     data=json.dumps(data),
+            #     headers={"Content-Type": "application/json"},
+            # )
+            # response = r.text
+            # app.logger.info(pformat(response))
 
     if level == "critical":
         trigger_circle_ci_job(
