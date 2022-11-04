@@ -53,10 +53,10 @@ def host_to_signer(host):
 def index():
     request_data = request.get_json()
     app.logger.error(123)
-    for alert in request_data['alerts']:
-        app.logger.error(alert['labels']['alertname'])
-        app.logger.error(alert['labels']['instance'])
-        app.logger.error(alert['valueString'])
+    for alert in request_data["alerts"]:
+        app.logger.error(alert["labels"]["alertname"])
+        app.logger.error(alert["labels"]["instance"])
+        app.logger.error(alert["valueString"])
     # app.logger.error(pformat(request_data))
     # host = request.form["host"]
     # alert_name = request.form["alert_name"]
@@ -114,5 +114,6 @@ def index():
 
     return {}, 200
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
