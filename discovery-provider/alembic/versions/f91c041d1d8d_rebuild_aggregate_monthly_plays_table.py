@@ -1,7 +1,7 @@
 """Rebuild aggregate monthly plays table
 
 Revision ID: f91c041d1d8d
-Revises: 42d5afb85d42
+Revises: 3e99d419fd63
 Create Date: 2022-11-01 21:39:58.467895
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = 'f91c041d1d8d'
-down_revision = '42d5afb85d42'
+down_revision = '3e99d419fd63'
 branch_labels = None
 depends_on = None
 
