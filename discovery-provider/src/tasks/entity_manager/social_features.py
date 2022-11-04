@@ -3,6 +3,7 @@ from typing import Union
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
@@ -15,10 +16,22 @@ action_to_record_type = {
     Action.UNSAVE: EntityType.SAVE,
     Action.REPOST: EntityType.REPOST,
     Action.UNREPOST: EntityType.REPOST,
+    Action.SUBSCRIBE: EntityType.SUBSCRIPTION,
+    Action.UNSUBSCRIBE: EntityType.SUBSCRIPTION,
 }
 
-create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
-delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+create_social_action_types = {
+    Action.FOLLOW,
+    Action.SAVE,
+    Action.REPOST,
+    Action.SUBSCRIBE,
+}
+delete_social_action_types = {
+    Action.UNFOLLOW,
+    Action.UNSAVE,
+    Action.UNREPOST,
+    Action.UNSUBSCRIBE,
+}
 
 premium_content_validation_actions = {
     Action.SAVE,
@@ -33,7 +46,7 @@ def create_social_record(params: ManageEntityParameters):
 
     validate_social_feature(params)
 
-    create_record: Union[Save, Follow, Repost, None] = None
+    create_record: Union[Save, Follow, Repost, Subscription, None] = None
     if params.action == Action.FOLLOW:
         create_record = Follow(
             blockhash=params.event_blockhash,
@@ -66,6 +79,17 @@ def create_social_record(params: ManageEntityParameters):
             user_id=params.user_id,
             repost_item_id=params.entity_id,
             repost_type=params.entity_type.lower(),
+            is_current=True,
+            is_delete=False,
+        )
+    if params.action == Action.SUBSCRIBE:
+        create_record = Subscription(
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+            created_at=params.block_datetime,
+            txhash=params.txhash,
+            user_id=params.entity_id,
+            subscriber_id=params.user_id,
             is_current=True,
             is_delete=False,
         )
@@ -120,6 +144,17 @@ def delete_social_record(params):
             is_current=True,
             is_delete=True,
         )
+    elif params.action == Action.UNSUBSCRIBE:
+        deleted_record = Subscription(
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+            created_at=params.block_datetime,
+            txhash=params.txhash,
+            user_id=params.entity_id,
+            subscriber_id=params.user_id,
+            is_current=True,
+            is_delete=True,
+        )
 
     if deleted_record:
         record_type = action_to_record_type[params.action]
@@ -146,6 +181,10 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
             raise Exception("User cannot follow themself")
+
+    if params.action == Action.SUBSCRIBE or params.action == Action.UNSUBSCRIBE:
+        if params.user_id == params.entity_id:
+            raise Exception("User cannot subscribe to themself")
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
