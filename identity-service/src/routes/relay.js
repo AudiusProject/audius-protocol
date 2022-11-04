@@ -90,10 +90,11 @@ module.exports = function (app) {
             const useProvisionalHandle = !user.handle && !user.blockchainUserId
             if (body.handle && useProvisionalHandle) {
               user.handle = body.handle
-              req.logger.info(
-                `Setting provisional handle for user ${body.handle}, wallet ${user.walletAddress}`
-              )
               await user.save()
+              const reqIP = getIP(req)
+              // Perform an abbreviated check here, b/c we
+              // won't have all the requried info on DN for a full check
+              detectAbuse(user, reqIP, true /* abbreviated */)
             }
           } catch (e) {
             req.logger.error(

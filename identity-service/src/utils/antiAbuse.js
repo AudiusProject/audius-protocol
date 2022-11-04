@@ -39,12 +39,15 @@ const recordIP = async (userIP, handle) => {
   }
 }
 
-const getAbuseData = async (handle, reqIP) => {
-  const res = await axios.get(`${aaoEndpoint}/abuse/${handle}`, {
-    headers: {
-      'X-Forwarded-For': reqIP
+const getAbuseData = async (handle, reqIP, abbreviated) => {
+  const res = await axios.get(
+    `${aaoEndpoint}/abuse/${handle}${abbreviated ? '?abbreviated=true' : ''}`,
+    {
+      headers: {
+        'X-Forwarded-For': reqIP
+      }
     }
-  })
+  )
   const { data: rules } = res
 
   const appliedSuccessRules = rules
@@ -77,7 +80,7 @@ const getAbuseData = async (handle, reqIP) => {
   }
 }
 
-const detectAbuse = async (user, reqIP) => {
+const detectAbuse = async (user, reqIP, abbreviated = false) => {
   if (config.get('skipAbuseCheck') || !user.handle) {
     return
   }
@@ -92,7 +95,7 @@ const detectAbuse = async (user, reqIP) => {
 
     // Perform abuse check conditional on environment
     ;({ appliedRules, blockedFromRelay, blockedFromNotifications } =
-      await getAbuseData(user.handle, reqIP))
+      await getAbuseData(user.handle, reqIP, abbreviated))
     logger.info(
       `detectAbuse: got info for user id ${user.blockchainUserId} handle ${
         user.handle
