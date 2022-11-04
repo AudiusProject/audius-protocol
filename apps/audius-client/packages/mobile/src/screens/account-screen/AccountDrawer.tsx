@@ -57,8 +57,8 @@ const accountStatHitSlop = {
 }
 
 type AccountDrawerProps = DrawerContentComponentProps & {
-  disableGestures: boolean
-  setDisableGestures: (disabled: boolean) => void
+  gesturesDisabled: boolean
+  setGesturesDisabled: (disabled: boolean) => void
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({

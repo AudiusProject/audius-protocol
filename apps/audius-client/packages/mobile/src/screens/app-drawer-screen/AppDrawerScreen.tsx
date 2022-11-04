@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common'
 import { createDrawerNavigator } from '@react-navigation/drawer'
@@ -26,29 +26,38 @@ const Drawer = createDrawerNavigator()
 
 type AppTabScreenProps = {
   navigation: DrawerNavigationHelpers
+  gesturesDisabled: boolean
+  setGesturesDisabled: (gesturesDisabled: boolean) => void
 }
 
 /**
  * The app stack after signing up or signing in
  */
-const AppStack = (props: AppTabScreenProps) => {
-  const { navigation: drawerHelpers } = props
+const AppStack = memo(function AppStack(props: AppTabScreenProps) {
+  const {
+    navigation: drawerHelpers,
+    gesturesDisabled,
+    setGesturesDisabled
+  } = props
   const drawerNavigation = useNavigation()
   return (
     <AppDrawerContextProvider
       drawerNavigation={drawerNavigation}
       drawerHelpers={drawerHelpers}
+      gesturesDisabled={gesturesDisabled}
+      setGesturesDisabled={setGesturesDisabled}
     >
       <AppScreen />
     </AppDrawerContextProvider>
   )
-}
+})
 
 export const AppDrawerScreen = () => {
-  const [disableGestures, setDisableGestures] = useState(false)
+  const [gesturesDisabled, setGesturesDisabled] = useState(false)
   const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
     FeatureFlags.MOBILE_NAV_OVERHAUL
   )
+
   const DrawerComponent = isNavOverhaulEnabled
     ? AccountDrawer
     : NotificationsDrawer
@@ -63,11 +72,13 @@ export const AppDrawerScreen = () => {
         width: isNavOverhaulEnabled ? '75%' : '100%'
       },
       gestureHandlerProps: {
-        enabled: !disableGestures
+        enabled: !gesturesDisabled
       }
     }),
-    [isNavOverhaulEnabled, disableGestures]
+    [isNavOverhaulEnabled, gesturesDisabled]
   )
+
+  const gestureProps = { gesturesDisabled, setGesturesDisabled }
 
   return (
     <Drawer.Navigator
@@ -75,14 +86,12 @@ export const AppDrawerScreen = () => {
       useLegacyImplementation={true}
       screenOptions={drawerScreenOptions}
       drawerContent={(props) => (
-        <DrawerComponent
-          disableGestures={disableGestures}
-          setDisableGestures={setDisableGestures}
-          {...props}
-        />
+        <DrawerComponent {...gestureProps} {...props} />
       )}
     >
-      <Drawer.Screen name='App' component={AppStack} />
+      <Drawer.Screen name='App'>
+        {(props) => <AppStack {...props} {...gestureProps} />}
+      </Drawer.Screen>
     </Drawer.Navigator>
   )
 }
