@@ -21,26 +21,21 @@ limit :limit;
 )
 
 
-def get_subscribers_for_user(args):
-    users = []
-    user_id = args.get("user_id")
-    current_user_id = args.get("current_user_id")
+def get_subscribers_for_users(args):
+    subscribers = {}
+    user_ids = args.get("user_ids")
     limit = args.get("limit")
     offset = args.get("offset")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
 
-        rows = session.execute(
-            sql,
-            {"user_id": user_id, "limit": limit, "offset": offset},
-        )
-        user_ids = [r[0] for r in rows]
+        for user_id in user_ids:
+            rows = session.execute(
+                sql,
+                {"user_id": user_id, "limit": limit, "offset": offset},
+            )
+            subscriber_ids = [r[0] for r in rows]
+            subscribers[user_id] = subscriber_ids
 
-        # get all users for above user_ids
-        users = get_unpopulated_users(session, user_ids)
-
-        # bundle peripheral info into user results
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
-
-    return users
+    return subscribers

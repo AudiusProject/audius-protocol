@@ -55,6 +55,7 @@ from src.api.v1.models.users import (
     user_model,
     user_model_full,
     user_replica_set,
+    user_subscribers,
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
@@ -67,7 +68,10 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
-from src.queries.get_subscribers_for_user import get_subscribers_for_user
+from src.queries.get_subscribers import (
+    get_subscribers_for_user,
+    get_subscribers_for_users
+)
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
     get_support_sent_by_user,
@@ -126,7 +130,7 @@ class User(Resource):
     @ns.doc(
         id="""Get User""",
         description="Gets a single user by their user ID",
-        params={"id": "A User ID"},
+        pgrams={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(user_response)
@@ -816,7 +820,7 @@ USER_SUBSCRIBERS_ROUTE = "/<string:id>/subscribers"
 
 
 @full_ns.route(USER_SUBSCRIBERS_ROUTE)
-class FullSubscriberUsers(Resource):
+class FullUserSubscribers(Resource):
     @record_metrics
     @cache(ttl_sec=5)
     def _get(self, id):
@@ -848,17 +852,73 @@ class FullSubscriberUsers(Resource):
 
 
 @ns.route(USER_SUBSCRIBERS_ROUTE)
-class SubscriberUsers(FullSubscriberUsers):
+class UserSubscribers(FullUserSubscribers):
     @ns.doc(
         id="""Get Subscribers""",
         description="""All users that subscribe to the provided user""",
-        params={"id": "A User ID"},
+        params={"user_ids": "User IDs"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(subscribers_response)
     def get(self, id):
         return super()._get(id)
+
+
+bulk_subscribers_request_parser = pagination_parser.copy()
+bulk_subscribers_request_parser.add_argument(
+    "ids", required=True, action="split", description="User IDs to fetch subscribers for"
+)
+bulk_subscribers_response = make_response(
+    "bulk_subscribers_response", ns, fields.List(fields.Nested(user_subscribers))
+)
+full_bulk_subscribers_response = make_full_response(
+    "full_bulk_subscribers_response", full_ns, fields.List(fields.Nested(user_subscribers))
+)
+
+BULK_USERS_SUBSCRIBERS_ROUTE = "/subscribers"
+
+
+@full_ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class FullBulkUsersSubscribers(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    # def _post(self):
+    def _get(self):
+        args = bulk_subscribers_request_parser.parse_args()
+        decoded_user_ids = list(map(lambda id: decode_with_abort(id, full_ns), args.get("ids", [])))
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = {
+            "user_ids": decoded_user_ids,
+            "limit": limit,
+            "offset": offset,
+        }
+        subscribers = get_subscribers_for_users(args)
+        return success_response(subscribers)
+
+    @full_ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(bulk_subscribers_request_parser)
+    @full_ns.marshal_with(full_bulk_subscribers_response)
+    def get(self):
+        return self._get()
+
+
+@ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class BulkUsersSubscribers(FullBulkUsersSubscribers):
+    @ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_subscribers_request_parser)
+    @ns.marshal_with(bulk_subscribers_response)
+    def get(self):
+        return super()._get()
 
 
 followers_response = make_response(

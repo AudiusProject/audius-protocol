@@ -141,3 +141,11 @@ decoded_user_token = ns.model(
         "iat": fields.String(required=True),
     },
 )
+
+user_subscribers = ns.model(
+    "user_subscribers",
+    {
+        "user_id": fields.String(required=True),
+        "subscriber_ids": fields.List(fields.String)
+    }
+)
