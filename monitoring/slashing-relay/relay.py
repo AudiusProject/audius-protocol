@@ -87,7 +87,7 @@ def index():
             # response = r.json()
 
             # print response messages
-            pprint(response)
+            # pprint(response)
 
     if level == "critical":
         trigger_circle_ci_job(
