@@ -836,13 +836,13 @@ const config = convict({
     doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
     format: Boolean,
     env: 'recordSyncResults',
-    default: false
+    default: true
   },
   processSyncResults: {
     doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
     format: Boolean,
     env: 'processSyncResults',
-    default: false
+    default: true
   }
 })
 
