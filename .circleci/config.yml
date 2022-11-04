@@ -1859,8 +1859,9 @@ workflows:
   # 2. click "Trigger Pipeline"
   # 3. Add string parameter "slash_address" and "slash_amount" with any non-null value
   slash-proposal:
-    when: << pipeline.parameters.slash_address >>
-    when: << pipeline.parameters.slash_amount >>
+    when:
+      - << pipeline.parameters.slash_address >>
+      - << pipeline.parameters.slash_amount >>
     jobs:
       - noop:
           name: address (<< pipeline.parameters.slash_address >>) amount (<< pipeline.parameters.slash_amount >>)
