@@ -694,7 +694,7 @@ describe('test removeTrackFolder()', async function () {
     const { removeTrackFolder: removeTrackFolderFn } = proxyquire(
       '../src/fileManager',
       {
-        config: configOverride
+        './config': configOverride
       }
     )
 
