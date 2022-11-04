@@ -15,11 +15,15 @@
 
 default_platform(:ios)
 
-MY_APP_ID = "co.audius.audiusmusic"
-MY_STAGING_APP_ID = "co.audius.audiusmusic.bounce"
-MY_PROFILE = "match AppStore co.audius.audiusmusic"
-MY_STAGING_PROFILE = "match AppStore co.audius.audiusmusic.bounce"
-MY_TEAM = "LRFCG93S85"
+AUDIUSMUSIC_ID = "co.audius.audiusmusic"
+AUDIUSMUSIC_RELEASECANDIDATE_ID = "co.audius.audiusmusic.releasecandidate"
+AUDIUSMUSIC_STAGING_ID = "co.audius.audiusmusic.staging"
+AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID = "co.audius.audiusmusic.staging.releasecandidate"
+AUDIUSMUSIC_PROFILE = "match AppStore co.audius.audiusmusic"
+AUDIUSMUSIC_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.releasecandidate"
+AUDIUSMUSIC_STAGING_PROFILE = "match AppStore co.audius.audiusmusic.staging"
+AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.staging.releasecandidate"
+TEAM = "LRFCG93S85"
 
 platform :ios do
   before_all do
@@ -28,18 +32,30 @@ platform :ios do
   desc "Build the app"
   lane :build do |options|
 
-    if options[:bundle_id] === 'co.audius.audiusmusic'  
-      appId = MY_APP_ID
-      provisioningProfile = MY_PROFILE
+    if options[:bundle_id] === AUDIUSMUSIC_ID
+      appId = AUDIUSMUSIC_ID
+      provisioningProfile = AUDIUSMUSIC_PROFILE
       environment = 'production'
       scheme = 'AudiusReactNative'
       configuration = 'Release'
-    else
-      appId = MY_STAGING_APP_ID
-      provisioningProfile = MY_STAGING_PROFILE
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
+      appId = AUDIUSMUSIC_STAGING_ID
+      provisioningProfile = AUDIUSMUSIC_STAGING_PROFILE
       environment = 'staging'
-      scheme = 'Bounce'
-      configuration = 'Bounce.Release'
+      scheme = 'Staging'
+      configuration = 'Staging.Release'
+    elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
+      appId = AUDIUSMUSIC_RELEASECANDIDATE_ID
+      provisioningProfile = AUDIUSMUSIC_RELEASECANDIDATE_PROFILE
+      environment = 'production'
+      scheme = 'AudiusReactNative'
+      configuration = 'ReleaseCandidate'
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      appId = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      provisioningProfile = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE
+      environment = 'staging'
+      scheme = 'Staging'
+      configuration = 'Staging.ReleaseCandidate'
     end
 
     match(
@@ -51,7 +67,7 @@ platform :ios do
     settings_to_override = {
       :BUNDLE_IDENTIFIER => appId,
       :PROVISIONING_PROFILE_SPECIFIER => provisioningProfile,
-      :DEVELOPMENT_TEAM => MY_TEAM
+      :DEVELOPMENT_TEAM => TEAM
     }
 
     if ENV["IS_PRODUCTION"] == "true"
@@ -106,10 +122,10 @@ platform :ios do
     increment_build_number(
       build_number: app_store_build_number(
         app_identifier: options[:bundle_id],
-        initial_build_number: 1,
+        initial_build_number: 0,
         version: versionNumber.to_s,
         live: false
-      ) + 2,
+      ) + 1,
     )
 
     # Build ios
@@ -134,9 +150,15 @@ platform :ios do
     if (options[:bundle_id] === 'co.audius.audiusmusic') 
       appleId = "1491270519"
       ipa = './output/gym/Audius Music.ipa'
-    else
-      appleId = "1510764836"
-      ipa = './output/gym/Audius Bounce Music.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.staging')
+      appleId = "6444191594"
+      ipa = './output/gym/Audius Music Staging.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.releasecandidate')
+      appleId = "6444068448"
+      ipa = './output/gym/Audius Music Release Candidate.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.staging.releasecandidate')
+      appleId = "6444190971"
+      ipa = './output/gym/Audius Music Release Candidate Staging.ipa'
     end
    
     # Upload to test flight

@@ -21,7 +21,7 @@ cd ..
 # Run a simulator using a prod configuration
 npm run ios
 # Run a simulator using a stage configuration
-npm run ios:bounce
+npm run ios:stage
 # Run a simulator using a dev configuration
 npm run ios:dev
 
@@ -37,7 +37,7 @@ xcrun xctrace list devices
 # Run a simulator using a prod configuration
 npm run android
 # Run a simulator using a stage configuration
-npm run android:bounce
+npm run android:stage
 # Run a simulator using a dev configuration
 npm run android:dev
 
