@@ -6,8 +6,8 @@ import { AppDrawerContextProvider } from '../app-drawer-screen'
 import { NotificationsDrawerScreen } from './NotificationsDrawerScreen'
 
 type NotificationDrawerContentsProps = DrawerContentComponentProps & {
-  disableGestures: boolean
-  setDisableGestures: (disabled: boolean) => void
+  gesturesDisabled: boolean
+  setGesturesDisabled: (disabled: boolean) => void
 }
 
 /**
@@ -16,8 +16,8 @@ type NotificationDrawerContentsProps = DrawerContentComponentProps & {
 export const NotificationsDrawer = (props: NotificationDrawerContentsProps) => {
   const {
     navigation: drawerHelpers,
-    disableGestures,
-    setDisableGestures
+    gesturesDisabled,
+    setGesturesDisabled
   } = props
   const drawerNavigation = useNavigation()
 
@@ -25,8 +25,8 @@ export const NotificationsDrawer = (props: NotificationDrawerContentsProps) => {
     <AppDrawerContextProvider
       drawerHelpers={drawerHelpers}
       drawerNavigation={drawerNavigation}
-      gesturesDisabled={disableGestures}
-      setGesturesDisabled={setDisableGestures}
+      gesturesDisabled={gesturesDisabled}
+      setGesturesDisabled={setGesturesDisabled}
     >
       <NotificationsDrawerScreen />
     </AppDrawerContextProvider>
