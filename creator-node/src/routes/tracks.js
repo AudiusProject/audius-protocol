@@ -31,7 +31,7 @@ const {
   ensureValidSPMiddleware
 } = require('../middlewares')
 const { decode } = require('../hashids')
-const { getCID, streamFromFileSystem } = require('./files')
+const { getCID, getTrackCID, streamFromFileSystem } = require('./files')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
@@ -927,5 +927,11 @@ router.get(
   },
   getCID
 )
+
+/**
+ * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
+ * @dev - Wrapper around getCID, which retrieves track given its CID.
+ **/
+router.get('/tracks/cidstream/:cid', getTrackCID)
 
 module.exports = router

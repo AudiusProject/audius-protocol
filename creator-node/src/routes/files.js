@@ -488,6 +488,42 @@ const getCID = async (req, res) => {
   }
 }
 
+/**
+ * Given a CID, return the appropriate file
+ * 1. Check if file exists at expected storage path (current and legacy)
+ * 2. If found, stream from FS
+ * 3. Else, check if CID exists in DB. If not, return 404 not found error
+ * 4. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 5. If not avail in CN network, respond with 400 server error
+ */
+const getTrackCID = async (req, res) => {
+  const CID = req.params.CID
+
+  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
+  const logPrefix = `[getCID] [CID=${CID}]`
+
+  /**
+   * Check if signature is valid from Discovery Node; return error if not
+   */
+  const discoverySignature = req.query.signature
+  const isValidSignature = verifyDiscoverySignature(discoverySignature)
+
+  if (!isValidSignature) {
+    decisionTree.push({
+      stage: `SIGNATURE_NOT_VALID`
+    })
+
+    logGetCIDDecisionTree(decisionTree, req)
+    return sendResponse(
+      req,
+      res,
+      errorResponseForbidden(`${logPrefix} Discovery signature invalid`)
+    )
+  }
+
+  return getCID(req, res)
+}
+
 // Gets a CID in a directory, streaming from the filesystem if available
 const getDirCID = async (req, res) => {
   if (!(req.params && req.params.dirCID && req.params.filename)) {
@@ -979,6 +1015,6 @@ router.get('/file_lookup', async (req, res) => {
 })
 
 module.exports = router
-
 module.exports.getCID = getCID
+module.exports.getTrackCID = getTrackCID
 module.exports.streamFromFileSystem = streamFromFileSystem
