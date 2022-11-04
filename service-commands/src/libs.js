@@ -6,7 +6,7 @@ const { libs: AudiusLibs } = require('@audius/sdk')
 const { CreatorNode, Utils } = AudiusLibs
 const config = require('../config/config')
 
-const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
+const DISCOVERY_NODE_ENDPOINT = 'http://localhost:5000'
 const MAX_INDEXING_TIMEOUT = 10000
 
 /**
@@ -16,12 +16,81 @@ const loadLibsVars = () => {
   const configDir = untildify(config.get('audius_config_dir'))
   const dataConfig = `${configDir}/config.json`
   const ethConfig = `${configDir}/eth-config.json`
+
+  console.log(`Config dir: ${configDir}`)
+  console.log(dataConfig)
+  console.log(ethConfig)
+
   try {
-    console.log(`Config dir: ${configDir}`)
-    console.log(dataConfig)
-    console.log(ethConfig)
-    const dataConfigJson = require(dataConfig)
-    const ethConfigJson = require(ethConfig)
+    let dataConfigJson
+    let ethConfigJson
+    if (fs.existsSync(configDir)) {
+      dataConfigJson = require(dataConfig)
+      ethConfigJson = require(ethConfig)
+    } else {
+      dataConfigJson = {
+        registryAddress: "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
+        ownerWallet: "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
+        allWallets: [
+          "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
+          "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+          "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+          "0xE11BA2b4D45Eaed5996Cd0823791E0C93114882d",
+          "0xd03ea8624C8C5987235048901fB614fDcA89b117",
+          "0x95cED938F7991cd0dFcb48F0a06a40FA1aF46EBC",
+          "0x3E5e9111Ae8eB78Fe1CC3bb8915d5D461F3Ef9A9",
+          "0x28a8746e75304c0780E011BEd21C72cD78cd535E",
+          "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
+          "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e",
+          "0x610Bb1573d1046FCb8A70Bbbd395754cD57C2b60",
+          "0x855FA758c77D68a04990E992aA4dcdeF899F654A",
+          "0xfA2435Eacf10Ca62ae6787ba2fB044f8733Ee843",
+          "0x64E078A8Aa15A41B85890265648e965De686bAE6",
+          "0x2F560290FEF1B3Ada194b6aA9c40aa71f8e95598",
+          "0xf408f04F9b7691f7174FA2bb73ad6d45fD5d3CBe",
+          "0x66FC63C2572bF3ADD0Fe5d44b97c2E614E35e9a3",
+          "0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3",
+          "0x325A621DeA613BCFb5B1A69a7aCED0ea4AfBD73A",
+          "0x3fD652C93dFA333979ad762Cf581Df89BaBa6795",
+          "0x73EB6d82CFB20bA669e9c178b718d770C49BB52f",
+          "0x9D8E5fAc117b15DaCED7C326Ae009dFE857621f1",
+          "0x982a8CbE734cb8c29A6a7E02a3B0e4512148F6F9",
+          "0xCDC1E53Bdc74bBf5b5F715D6327Dca5785e228B4",
+          "0xf5d1EAF516eF3b0582609622A221656872B82F78",
+          "0xf8eA26C3800D074a11bf814dB9a0735886C90197",
+          "0x2647116f9304abb9F0B7aC29aBC0D9aD540506C8",
+          "0x80a32A0E5cA81b5a236168C21532B32e3cBC95e2",
+          "0x47f55A2ACe3b84B0F03717224DBB7D0Df4351658",
+          "0xC817898296b27589230B891f144dd71A892b0C18",
+          "0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c",
+          "0x1B569e8f1246907518Ff3386D523dcF373e769B6",
+          "0xCBB025e7933FADfc7C830AE520Fb2FD6D28c1065",
+          "0xdDEEA4839bBeD92BDAD8Ec79AE4f4Bc2Be1A3974",
+          "0xBC2cf859f671B78BA42EBB65Deb31Cc7fEc07019",
+          "0xF75588126126DdF76bDc8aBA91a08f31d2567Ca5",
+          "0x369109C74ea7159E77e180f969f7D48c2bf19b4C",
+          "0xA2A628f4eEE25F5b02B0688Ad9c1290e2e9A3D9e",
+          "0x693D718cCfadE6F4A1379051D6ab998146F3173F",
+          "0x845A0F9441081779110FEE40E6d5d8b90cE676eF",
+          "0xC7739909e08A9a0F303A010d46658Bdb4d5a6786",
+          "0x99cce66d3A39C2c2b83AfCefF04c5EC56E9B2A58",
+          "0x4b930E7b3E491e37EaB48eCC8a667c59e307ef20",
+          "0x02233B22860f810E32fB0751f368fE4ef21A1C05",
+          "0x89c1D413758F8339Ade263E6e6bC072F1d429f32",
+          "0x61bBB5135b43F03C96570616d6d3f607b7103111",
+          "0x8C4cE7a10A4e38EE96feD47C628Be1FfA57Ab96e",
+          "0x25c1230C7EFC00cFd2fcAA3a44f30948853824bc",
+          "0x709F7Ae06Fe93be48FbB90FFDDd69e2746FA8506",
+          "0xc0514C03D097fCbB77a74B4DA5b594bA473b6CE1"
+        ]
+      }
+
+      ethConfigJson = {
+        audiusTokenAddress: "0xdcB2fC9469808630DD0744b0adf97C0003fC29B2",
+        ownerWallet: "0x855FA758c77D68a04990E992aA4dcdeF899F654A",
+        registryAddress: "0xABbfF712977dB51f9f212B85e8A4904c818C2b63",
+      }
+    }
 
     const convictConfig = {
       registry_address: dataConfigJson.registryAddress,
@@ -373,7 +442,7 @@ function LibsWrapper(walletIndex = 0) {
   /**
    * Gets the primary off the user metadata and then sets the primary
    * on the CreatorNode instance in libs
-   * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+   * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
    */
   this.getPrimaryAndSetLibs = contentNodeEndpointField => {
     assertLibsDidInit()

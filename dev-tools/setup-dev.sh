@@ -10,3 +10,23 @@ for dir in contracts creator-node eth-contracts identity-service libs; do
     cd "$PROTOCOL_DIR/$dir"
     nvm install
 done
+
+# Link mad-dog (this is temporary, hopefully we can get mad-dog to run in docker)
+cd $PROTOCOL_DIR/libs
+nvm use
+npm i
+npm run build
+npm link
+
+cd $PROTOCOL_DIR/service-commands
+npm i
+npm link @audius/sdk
+npm link
+
+cd $PROTOCOL_DIR/mad-dog
+npm i
+npm link @audius/sdk
+npm link @audius/service-commands
+
+cd $PROTOCOL_DIR/libs
+npm link
