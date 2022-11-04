@@ -170,13 +170,13 @@ echo
 echo "------------- Initialize programs ---------------"
 
 echo "Creating a signer group..."
-./target/debug/audius-eth-registry-cli create-signer-group "$signer_group_keypair"
+audius-eth-registry-cli create-signer-group "$signer_group_keypair"
 echo
 
 if [[ "$valid_signer_eth_address" != "" ]]; then
     echo "Creating a valid signer..."
     echo "$valid_signer_eth_address"
-    ./target/debug/audius-eth-registry-cli create-valid-signer \
+    audius-eth-registry-cli create-valid-signer \
         "$(solana address -k "$signer_group_keypair")" \
         "$(echo $valid_signer_eth_address | tail -c+3)" \
         "$valid_signer_keypair"
@@ -192,13 +192,13 @@ spl-token mint "$(solana address -k "$token_keypair")" 100000000
 echo
 
 echo "Initalizing claimable tokens..."
-./target/debug/claimable-tokens-cli generate-base-pda \
+claimable-tokens-cli generate-base-pda \
     "$(solana address -k "$token_keypair")" \
     "$(solana address -k target/deploy/claimable_tokens-keypair.json)"
 echo
 
 echo "Initalizing reward manager..."
-./target/debug/audius-reward-manager-cli init \
+audius-reward-manager-cli init \
     --keypair "$reward_manager_pda_keypair" \
     --token-keypair "$reward_manager_token_pda_keypair" \
     --min-votes 2 \

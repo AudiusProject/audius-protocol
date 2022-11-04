@@ -1,11 +1,8 @@
-const _ = require('lodash')
-const ServiceCommands = require('@audius/service-commands')
+const { getUser } = require('@audius/service-commands')
 
 const { verifyUserReplicaSetStatus } = require('../test_userReplicaSetManager')
 const { monitorAllUsersSyncStatus } = require('../test_snapbackSM')
 const { getIDfromEndpoint } = require('./setNumCreatorNodes')
-
-const { getUser } = ServiceCommands
 
 const verifyCreatorNodeRemoved = async (executeAll, removedCnId, walletIndexToUserIdMap) => {
   const userReplicaSets = await executeAll(async (libs, i) => {
