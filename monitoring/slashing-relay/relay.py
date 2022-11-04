@@ -37,7 +37,7 @@ def trigger_circle_ci_job(parameters):
     # print quick url
     pipeline_number = response["number"]
     url = f"https://app.circleci.com/pipelines/github/AudiusProject/{project}/{pipeline_number}"
-    app.logger.error(f"\n{url}")
+    app.logger.info(f"\n{url}")
 
 
 def host_to_signer(host):
@@ -54,19 +54,18 @@ def index():
     request_data = request.get_json()
     app.logger.error(123)
     for alert in request_data["alerts"]:
-        app.logger.error(alert["labels"]["alertname"])
+        alert_name = alert['labels']['alertname']
         app.logger.error(alert["labels"]["instance"])
-        app.logger.error(alert["valueString"])
-    # app.logger.error(pformat(request_data))
-    # host = request.form["host"]
-    # alert_name = request.form["alert_name"]
-    # threshold = request.form["threshold"]
-    # value = request.form["value"]
-    # level = request.form["level"]
+        labels = alert['valueString'].lstrip('[').rstrip(']').strip().split()
+        value = labels[-1].split('=')[1]
+        labels = labels[0:-1]
+        app.logger.error(value)
+        app.logger.error(labels)
 
     # signer = host_to_signer(host)
+
     signer = "signer"
-    level = "critical"
+    level = "none"
     host = "host"
     alert_name = "alert_name"
     threshold = "threshold"
@@ -91,7 +90,7 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
-            app.logger.error(pformat(data))
+            app.logger.debug(pformat(data))
             r = requests.post(
                 DISCORD_WEBHOOK,
                 data=json.dumps(data),
@@ -100,7 +99,7 @@ def index():
             response = r.text
 
             # print response messages
-            app.logger.error(pformat(response))
+            app.logger.info(pformat(response))
             break
 
     if level == "critical":
