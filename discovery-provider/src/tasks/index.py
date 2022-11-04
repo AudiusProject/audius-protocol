@@ -1067,7 +1067,6 @@ def update_task(self):
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
     if (
         latest_indexed_block
-        and final_poa_block
         and latest_indexed_block.number >= final_poa_block
     ):
         # done indexing POA
