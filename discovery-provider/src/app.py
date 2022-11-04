@@ -525,7 +525,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_aggregate_monthly_plays": {
                 "task": "index_aggregate_monthly_plays",
-                "schedule": crontab(minute=0, hour=0),  # daily at midnight
+                "schedule": timedelta(minutes=5),
             },
             "prune_plays": {
                 "task": "prune_plays",
