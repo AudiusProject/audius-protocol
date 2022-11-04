@@ -384,7 +384,7 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   })
 
   // TODO: This test is temporary with a hardcoded number of successes, failures, and successRate of 1
-  it('returns the hardcoded number of successes, failures, and successRate', async function () {
+  it.skip('returns the hardcoded number of successes, failures, and successRate', async function () {
     const nodeUsers = [
       {
         user_id: 1,
@@ -470,7 +470,7 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   })
 })
 
-it.skip('returns expected counts and percentages after recording successes and failures', async function () {
+it('returns expected counts and percentages after recording successes and failures', async function () {
   const nodeUsers = [
     {
       user_id: 1,
