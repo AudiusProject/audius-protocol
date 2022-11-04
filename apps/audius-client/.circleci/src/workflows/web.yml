@@ -58,6 +58,15 @@ jobs:
         branches:
           only: /(^release.*)$/
 
+  - web-deploy-staging-release-candidate:
+      context: Audius Client
+      requires:
+        - web-init
+        - web-build-staging
+      filters:
+        branches:
+          only: /(^release.*)$/
+
   # Release production web.
   - web-hold-production:
       type: approval
