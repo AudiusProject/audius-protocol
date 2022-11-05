@@ -202,7 +202,6 @@ commands:
             # cleanup code setup before starting actual execution
             cleanup() {
               # Delete GCP box
-              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
               # Delete GCP firewall
               gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet

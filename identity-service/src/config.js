@@ -289,6 +289,13 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
+  finalPOABlock: {
+    doc: 'Last block number on POA',
+    format: Number,
+    env: 'finalPOABlock',
+    nullable: true,
+    default: null
+  },
   minimumRelayerBalance: {
     doc: 'Minimum token balance for relayer below which /balance_check fails',
     format: Number,
