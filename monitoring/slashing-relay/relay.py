@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 import json
 from os import getenv
 from pprint import pformat
@@ -52,26 +53,31 @@ def host_to_signer(host):
 @app.route("/", methods=["POST"])
 def index():
     request_data = request.get_json()
+    app.logger.error(pformat(request_data))
 
     with open("audius-protocol/alerts.json") as f:
         alerts = json.load(f)
 
     for alert in request_data["alerts"]:
         alert_name = alert['labels']['alertname']
+        starts_at = datetime.strptime(alert['startsAt'].split('.')[0], '%Y-%m-%dT%H:%M:%S')
+        alert_life = datetime.utcnow() - starts_at
+
+        level = "notification"
+        if alert_life.days > 2:
+            level = "critical"
+
         labels = alert['valueString'].lstrip('[').rstrip(']').strip().split()
         value = labels[-1].split('=')[1]
         labels = labels[0:-1]
 
-        # TODO: create real mapping
-        # signer = host_to_signer(host)
-        signer = "signer"
-
-        # TODO: decide on when an alert is "critical"/proposal is formed
-        level = "none"
-
         # TODO: extract from labels
         host = "host"
         threshold = "threshold"
+
+        # TODO: create real mapping
+        # signer = host_to_signer(host)
+        signer = "signer"
 
         for discord_handle in alerts[signer]:
             content = []
