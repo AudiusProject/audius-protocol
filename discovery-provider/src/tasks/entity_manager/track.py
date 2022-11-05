@@ -25,7 +25,7 @@ def validate_track_tx(params: ManageEntityParameters):
     user_id = params.user_id
     track_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exists")
+        raise Exception(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():

@@ -71,7 +71,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
-            return
+            raise Exception(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = user_metadata["handle"].lower()
 
@@ -91,9 +91,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if not track_id_exists:
             # Invalid artist pick. Should not continue to save
-            return
-
-    return user_record
+            raise Exception(
+                f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
+            )
 
 
 def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
@@ -160,15 +160,11 @@ def update_user(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    user_record = validate_user_metadata(
+    validate_user_metadata(
         params.session,
         user_record,
         user_metadata,
     )
-
-    if not user_record:
-        # Validations failed. Do not continue to save.
-        return
 
     user_record = update_user_metadata(
         params.session,
