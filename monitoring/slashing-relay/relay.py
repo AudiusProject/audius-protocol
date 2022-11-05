@@ -73,9 +73,6 @@ def index():
         host = "host"
         threshold = "threshold"
 
-        alert_name = "alert_name"
-        value = "value"
-
         for discord_handle in alerts[signer]:
             content = []
             if level == "critical":
@@ -93,6 +90,7 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
+            app.logger.error(f"Discord handle: {discord_handle}")
             app.logger.error(pformat(data))
             # r = requests.post(
             #     DISCORD_WEBHOOK,
