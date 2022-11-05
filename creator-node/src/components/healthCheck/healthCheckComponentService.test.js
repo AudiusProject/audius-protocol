@@ -3,7 +3,8 @@ const { Keypair } = require('@solana/web3.js')
 
 const {
   healthCheck,
-  healthCheckVerbose
+  healthCheckVerbose,
+  configCheck
 } = require('./healthCheckComponentService')
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
@@ -698,5 +699,13 @@ describe('Test Health Check Verbose', function () {
     )
 
     assert.deepStrictEqual(defaultRes.healthy, false)
+  })
+})
+
+describe.only('Test config check', () => {
+  it.only('asdf', async () => {
+    const resp = await configCheck()
+    console.log(resp)
+    
   })
 })

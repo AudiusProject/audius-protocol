@@ -279,8 +279,14 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+const configCheck = async () => {
+  const data = config.toString()
+  return data
+}
+
 module.exports = {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 }
