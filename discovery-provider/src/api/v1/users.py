@@ -131,7 +131,7 @@ class User(Resource):
     @ns.doc(
         id="""Get User""",
         description="Gets a single user by their user ID",
-        pgrams={"id": "A User ID"},
+        params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(user_response)
@@ -891,7 +891,8 @@ class FullBulkUsersSubscribers(Resource):
 
     @record_metrics
     @cache(ttl_sec=5)
-    # Use POST with a JSON body to request subscribers for the given user IDs
+    # Use POST to request subscribers for the user IDs in the JSON body.
+    # Does not actually write any data.
     def _post(self):
         args = request.json
         return self._get_subscribers(args)
