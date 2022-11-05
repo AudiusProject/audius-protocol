@@ -71,7 +71,7 @@ from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
 from src.queries.get_subscribers import (
     get_subscribers_for_user,
-    get_subscribers_for_users
+    get_subscribers_for_users,
 )
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
@@ -810,6 +810,7 @@ class UserSearchResult(Resource):
         response = search(search_args)
         return success_response(response["users"])
 
+
 subscribers_response = make_response(
     "subscribers_response", ns, fields.List(fields.Nested(user_model))
 )
@@ -868,13 +869,18 @@ class UserSubscribers(FullUserSubscribers):
 
 bulk_subscribers_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 bulk_subscribers_parser.add_argument(
-    "ids", required=True, action="split", description="User IDs to fetch subscribers for"
+    "ids",
+    required=True,
+    action="split",
+    description="User IDs to fetch subscribers for",
 )
 bulk_subscribers_response = make_response(
     "bulk_subscribers_response", ns, fields.List(fields.Nested(user_subscribers))
 )
 full_bulk_subscribers_response = make_full_response(
-    "full_bulk_subscribers_response", full_ns, fields.List(fields.Nested(user_subscribers))
+    "full_bulk_subscribers_response",
+    full_ns,
+    fields.List(fields.Nested(user_subscribers)),
 )
 
 BULK_USERS_SUBSCRIBERS_ROUTE = "/subscribers"
@@ -883,10 +889,14 @@ BULK_USERS_SUBSCRIBERS_ROUTE = "/subscribers"
 @full_ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
 class FullBulkUsersSubscribers(Resource):
     def _get_subscribers(self, args):
-        decoded_user_ids = list(map(lambda id: decode_with_abort(id, full_ns), args.get("ids", [])))
-        subscribers = get_subscribers_for_users({
-            "user_ids": decoded_user_ids,
-        })
+        decoded_user_ids = list(
+            map(lambda id: decode_with_abort(id, full_ns), args.get("ids", []))
+        )
+        subscribers = get_subscribers_for_users(
+            {
+                "user_ids": decoded_user_ids,
+            }
+        )
         return success_response(subscribers)
 
     @record_metrics
