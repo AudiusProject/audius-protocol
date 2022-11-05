@@ -50,8 +50,6 @@ def get_subscribers_for_user(args):
 def get_subscribers_for_users(args):
     subscribers = []
     user_ids = args.get("user_ids")
-    limit = args.get("limit")
-    offset = args.get("offset")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -59,7 +57,7 @@ def get_subscribers_for_users(args):
         for user_id in user_ids:
             rows = session.execute(
                 sql,
-                {"user_id": user_id, "limit": limit, "offset": offset},
+                {"user_id": user_id, "limit": None, "offset": 0},
             )
             subscriber_ids = [encode_int_id(r[0]) for r in rows]
             subscribers.append({
