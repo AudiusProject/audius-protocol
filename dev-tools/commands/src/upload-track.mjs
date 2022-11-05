@@ -41,7 +41,8 @@ program.command("upload-track")
   .option("-g, --genre <genre>", "Genre of track (chosen randomly if not specified)")
   .option("-l, --license <license>", "License of track", null)
   .option("-f, --from <from>", "The account to upload track from")
-  .action(async (track, { title, tags, description, mood, genre, license, from }) => {
+  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium")
+  .action(async (track, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
 
     const rand = randomBytes(2).toString("hex").padStart(4, "0").toUpperCase();
@@ -87,8 +88,8 @@ program.command("upload-track")
           isrc: null,
           iswc: null,
           track_segments: [],
-          is_premium: false,
-          premium_conditions: null,
+          is_premium: !!premiumConditions,
+          premium_conditions: JSON.parse(premiumConditions),
         },
         () => null,
       );
