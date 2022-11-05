@@ -58,20 +58,22 @@ def index():
 
     for alert in request_data["alerts"]:
         alert_name = alert['labels']['alertname']
-        app.logger.error(alert["labels"]["instance"])
         labels = alert['valueString'].lstrip('[').rstrip(']').strip().split()
         value = labels[-1].split('=')[1]
         labels = labels[0:-1]
-        app.logger.error(value)
-        app.logger.error(labels)
 
+        # TODO: create real mapping
         # signer = host_to_signer(host)
-
         signer = "signer"
+
+        # TODO: decide on when an alert is "critical"/proposal is formed
         level = "none"
+
+        # TODO: extract from labels
         host = "host"
-        alert_name = "alert_name"
         threshold = "threshold"
+
+        alert_name = "alert_name"
         value = "value"
 
         for discord_handle in alerts[signer]:
@@ -91,7 +93,7 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
-            app.logger.debug(pformat(data))
+            app.logger.error(pformat(data))
             # r = requests.post(
             #     DISCORD_WEBHOOK,
             #     data=json.dumps(data),
