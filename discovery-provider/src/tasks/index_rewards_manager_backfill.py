@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Callable, Dict, List, Optional, TypedDict
 
 import base58
+from redis import Redis
 from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
@@ -100,6 +101,7 @@ class RewardManagerTransactionInfo(TypedDict):
 
 challenge_type_map_global: Dict[str, TransactionType] = {}
 index_rewards_manager_backfill_tablename = "index_rewards_manager_backfill"
+index_rewards_manager_backfill_complete = "index_rewards_manager_backfill_complete"
 
 
 def get_challenge_type_map(
@@ -451,9 +453,6 @@ def get_transaction_signatures(
                     logger.debug(
                         f"index_rewards_manager_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    logger.info(
-                        f"index_rewards_manager_backfill.py | Adding tx to be processed: tx={tx_sig} | slot={tx_slot}"
-                    )
                     if tx_info["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info["slot"] <= latest_processed_slot and (
@@ -581,35 +580,53 @@ def process_solana_rewards_manager(
 
 
 def check_if_backfilling_complete(
-    session: Session, solana_client_manager: SolanaClientManager
+    session: Session, solana_client_manager: SolanaClientManager, redis: Redis
 ) -> bool:
-    stop_sig_tuple = (
-        session.query(IndexingCheckpoint.signature)
-        .filter(
-            IndexingCheckpoint.tablename == index_rewards_manager_backfill_tablename
+    try:
+        redis_complete = bool(redis.get(index_rewards_manager_backfill_complete))
+        if redis_complete:
+            return True
+
+        stop_sig_tuple = (
+            session.query(IndexingCheckpoint.signature)
+            .filter(
+                IndexingCheckpoint.tablename == index_rewards_manager_backfill_tablename
+            )
+            .first()
         )
-        .first()
-    )
-    if not stop_sig_tuple:
-        logger.error(
-            "index_rewards_manager_backfill.py | Tried to check if complete, but no stop_sig"
-        )
-        return False
-    else:
+        if not stop_sig_tuple:
+            logger.error(
+                "index_rewards_manager_backfill.py | Tried to check if complete, but no stop_sig"
+            )
+            return False
         stop_sig = stop_sig_tuple[0]
-    one_sig_before_stop = solana_client_manager.get_signatures_for_address(
-        REWARDS_MANAGER_PROGRAM,
-        before=stop_sig,
-        limit=1,
-    )
-    if one_sig_before_stop:
-        one_sig_before_stop = one_sig_before_stop["result"][0]["signature"]
-    sig_before_stop_in_db = (
-        session.query(RewardsManagerBackfillTransaction)
-        .filter(RewardsManagerBackfillTransaction.signature == one_sig_before_stop)
-        .first()
-    )
-    return bool(sig_before_stop_in_db)
+
+        one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
+            REWARDS_MANAGER_PROGRAM,
+            before=stop_sig,
+            limit=1,
+        )
+        if not one_sig_before_stop_result:
+            logger.error("index_rewards_manager_backfill.py | No sigs before stop_sig")
+            return False
+        one_sig_before_stop_result = one_sig_before_stop_result["result"][0]
+        one_sig_before_stop = one_sig_before_stop_result["signature"]
+
+        sig_before_stop_in_db = (
+            session.query(RewardsManagerBackfillTransaction)
+            .filter(RewardsManagerBackfillTransaction.signature == one_sig_before_stop)
+            .first()
+        )
+        complete = bool(sig_before_stop_in_db)
+        if complete:
+            redis.set(index_rewards_manager_backfill_complete, int(complete))
+        return complete
+    except Exception as e:
+        logger.error(
+            "index_rewards_manager_backfill.py | Error during check_if_backfilling_complete",
+            exc_info=True,
+        )
+        raise e
 
 
 def find_true_stop_sig(
@@ -691,7 +708,7 @@ def index_rewards_manager_backfill(self):
         if not stop_sig:
             stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
             if not stop_sig:
-                logger.error(
+                logger.info(
                     "index_rewards_manager_backfill.py | Failed to find true stop signature"
                 )
                 return
@@ -707,7 +724,7 @@ def index_rewards_manager_backfill(self):
         )
         return
 
-    if check_if_backfilling_complete(session, solana_client_manager):
+    if check_if_backfilling_complete(session, solana_client_manager, redis):
         logger.info("index_rewards_manager_backfill.py | Backfill indexing complete!")
         return
 

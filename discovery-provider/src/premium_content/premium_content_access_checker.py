@@ -82,7 +82,7 @@ class PremiumContentAccessChecker:
         # premium_conditions should always be true here because we know
         # that is_premium is true if we get here and it makes no sense
         # to have a premium track with no conditions
-        if not premium_conditions:
+        if premium_conditions is None:
             logger.warn(
                 f"premium_content_access_checker.py | check_access | premium content with id {premium_content_id} and type {premium_content_type} has no premium conditions."
             )
@@ -166,7 +166,7 @@ class PremiumContentAccessChecker:
             # premium_conditions should always be true here because we know
             # that is_premium is true if we get here and it makes no sense
             # to have a premium track with no conditions
-            elif not premium_conditions:
+            elif premium_conditions is None:
                 logger.warn(
                     f"premium_content_access_checker.py | check_access_for_batch | premium content with id {track_id} and type 'track' has no premium conditions."
                 )
