@@ -17,7 +17,6 @@ SLASH_AMOUNT = getenv("SLASH_AMOUNT")
 
 
 def trigger_circle_ci_job(parameters):
-    # trigger a circleci job
     project = "audius-protocol"
     data = {
         "branch": "main",
@@ -31,14 +30,7 @@ def trigger_circle_ci_job(parameters):
         headers={"Content-Type": "application/json"},
     )
     response = r.json()
-
-    # print response messages
     app.logger.error(pformat(response))
-
-    # print quick url
-    pipeline_number = response["number"]
-    url = f"https://app.circleci.com/pipelines/github/AudiusProject/{project}/{pipeline_number}"
-    app.logger.info(f"\n{url}")
 
 
 def host_to_signer(host):
@@ -47,7 +39,7 @@ def host_to_signer(host):
         headers={"Content-Type": "application/json"},
     )
     response = r.json()
-    return response["data"]["signer"]
+    return response["signer"]
 
 
 @app.route("/", methods=["POST"])
@@ -72,12 +64,10 @@ def index():
         labels = labels[0:-1]
 
         # TODO: extract from labels
-        host = "host"
+        host = "discoveryprovider5.staging.audius.co"
         threshold = "threshold"
 
-        # TODO: create real mapping
-        # signer = host_to_signer(host)
-        signer = "signer"
+        signer = host_to_signer(host)
 
         for discord_handle in alerts[signer]:
             content = []
@@ -96,6 +86,8 @@ def index():
                 f"Value: {value}",
             ]
             data = {"content": "\n".join(content), "embeds": None, "attachments": []}
+
+            # TODO: can we send Discord DMs?
             app.logger.error(f"Discord handle: {discord_handle}")
             app.logger.error(pformat(data))
             # r = requests.post(
@@ -106,14 +98,14 @@ def index():
             # response = r.text
             # app.logger.info(pformat(response))
 
-    if level == "critical":
-        trigger_circle_ci_job(
-            {
-                "reservations": "asdf",
-                # "slash_address": signer,
-                # "slash_amount": SLASH_AMOUNT,
-            }
-        )
+        if level == "critical":
+            trigger_circle_ci_job(
+                {
+                    "reservations": "asdf",
+                    # "slash_address": signer,
+                    # "slash_amount": SLASH_AMOUNT,
+                }
+            )
 
     return {}, 200
 
