@@ -404,7 +404,7 @@ def create_track_route_id(title, handle):
     return f"{sanitized_handle}/{sanitized_title}"
 
 
-def create_track_slug(title, track_id, collision_id=0):
+def sanitize_slug(title, track_id, collision_id=0):
     """Converts the title of a track into a URL-friendly 'slug'
 
     Strips special characters, replaces spaces with dashes, converts to
