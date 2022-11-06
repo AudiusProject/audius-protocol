@@ -38,9 +38,8 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           component: '${component}'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '(.*)'
-        replacement: 'postgres_${1}'
         target_label: __name__
+        replacement: postgres_$1
   - job_name: '${sanitizedUrl}_redis_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/redis'
@@ -53,9 +52,8 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           component: '${component}'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '(.*)'
-        replacement: 'redis_${1}'
         target_label: __name__
+        replacement: redis_$1
   - job_name: '${sanitizedUrl}_linux_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/linux'
@@ -68,9 +66,8 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           component: '${component}'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '(.*)'
-        replacement: 'linux_${1}'
         target_label: __name__
+        replacement: linux_$1
 `
 
   if (component == 'discovery-node') {
@@ -87,9 +84,8 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           component: '${component}'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '(.*)'
-        replacement: 'postgres_readreplica_${1}'
         target_label: __name__
+        replacement: postgres_$1
   - job_name: '${sanitizedUrl}_elasticsearch_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/elasticsearch'
@@ -102,9 +98,8 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           component: '${component}'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '(.*)'
-        replacement: 'elasticsearch_${1}'
         target_label: __name__
+        replacement: elastic_$1
   `
   }
 
