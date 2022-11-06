@@ -336,19 +336,19 @@ def update_track_routes_table(
 
 def generate_track_slug_and_collision_id(
     session,
-    track_record,
-    track_metadata,
-    pending_track_routes,
-    new_track_slug_title,
+    model_record,
+    model_metadata,
+    pending_model_routes,
+    new_model_slug_title,
     new_track_slug,
 ):
     # Check for collisions by slug titles, and get the max collision_id
     max_collision_id: Optional[int] = None
     # Check pending updates first
-    for route in pending_track_routes:
+    for route in pending_model_routes:
         if (
-            route.title_slug == new_track_slug_title
-            and route.owner_id == track_record.owner_id
+            route.title_slug == new_model_slug_title
+            and route.owner_id == model_record.owner_id
         ):
             max_collision_id = (
                 route.collision_id
@@ -365,8 +365,8 @@ def generate_track_slug_and_collision_id(
         max_collision_id = (
             session.query(functions.max(TrackRoute.collision_id))
             .filter(
-                TrackRoute.title_slug == new_track_slug_title,
-                TrackRoute.owner_id == track_record.owner_id,
+                TrackRoute.title_slug == new_model_slug_title,
+                TrackRoute.owner_id == model_record.owner_id,
             )
             .one_or_none()
         )[0]
@@ -378,9 +378,9 @@ def generate_track_slug_and_collision_id(
         existing_track_route = next(
             (
                 route
-                for route in pending_track_routes
+                for route in pending_model_routes
                 if route.slug == new_track_slug
-                and route.owner_id == track_record.owner_id
+                and route.owner_id == model_record.owner_id
             ),
             None,
         )
@@ -393,7 +393,7 @@ def generate_track_slug_and_collision_id(
                 session.query(TrackRoute)
                 .filter(
                     TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == track_record.owner_id,
+                    TrackRoute.owner_id == model_record.owner_id,
                 )
                 .one_or_none()
             )
@@ -417,7 +417,7 @@ def generate_track_slug_and_collision_id(
         # then we need to append the collision number to the slug
         new_collision_id += 1
         new_track_slug = helpers.create_track_slug(
-            track_metadata["title"], track_record.track_id, new_collision_id
+            model_metadata["title"], model_record.track_id, new_collision_id
         )
 
         # Check for new collisions after making the new slug
@@ -442,9 +442,9 @@ def generate_track_slug_and_collision_id(
         existing_track_route = next(
             (
                 route
-                for route in pending_track_routes
+                for route in pending_model_routes
                 if route.slug == new_track_slug
-                and route.owner_id == track_record.owner_id
+                and route.owner_id == model_record.owner_id
             ),
             None,
         )
@@ -453,7 +453,7 @@ def generate_track_slug_and_collision_id(
                 session.query(TrackRoute)
                 .filter(
                     TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == track_record.owner_id,
+                    TrackRoute.owner_id == model_record.owner_id,
                 )
                 .one_or_none()
             )
