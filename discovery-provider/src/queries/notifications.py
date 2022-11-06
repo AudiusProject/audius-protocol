@@ -25,7 +25,7 @@ from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.utils import web3_provider
+from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
@@ -858,6 +858,12 @@ def notifications():
                 # skip empty playlists
                 continue
             playlist_contents = entry.playlist_contents
+
+            final_poa_block = helpers.get_final_poa_block(shared_config)
+            if final_poa_block:
+                min_block_number -= final_poa_block
+                max_block_number -= final_poa_block
+
             min_block = web3.eth.get_block(min_block_number)
             max_block = web3.eth.get_block(max_block_number)
 

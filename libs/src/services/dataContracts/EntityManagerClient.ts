@@ -16,7 +16,9 @@ export enum Action {
   SAVE = 'Save',
   UNSAVE = 'Unsave',
   REPOST = 'Repost',
-  UNREPOST = 'Unrepost'
+  UNREPOST = 'Unrepost',
+  SUBSCRIBE = 'Subscribe',
+  UNSUBSCRIBE = 'Unsubscribe'
 }
 
 export enum EntityType {

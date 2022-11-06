@@ -48,7 +48,6 @@ from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
-from web3.middleware import geth_poa_middleware
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # these global vars will be set in create_celery function
@@ -69,9 +68,6 @@ user_library_factory = None
 user_replica_set_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
-
-entity_manager_nethermind = None
-contract_addresses_nethermind: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
 
@@ -168,25 +164,6 @@ def init_contracts():
     )
 
 
-def init_entity_manager():
-    entity_manager_address = None
-    entity_manager_inst = None
-    if shared_config["contracts"]["entity_manager_address"]:
-        entity_manager_address = web3.toChecksumAddress(
-            shared_config["contracts"]["entity_manager_address"]
-        )
-        entity_manager_inst = web3.eth.contract(
-            address=entity_manager_address, abi=abi_values["EntityManager"]["abi"]
-        )
-    contract_address_dict = {
-        "entity_manager": entity_manager_address,
-    }
-    return (
-        entity_manager_inst,
-        contract_address_dict,
-    )
-
-
 def create_app(test_config=None):
     return create(test_config)
 
@@ -198,12 +175,6 @@ def create_celery(test_config=None):
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
-
-    if shared_config["discprov"]["env"] == "stage":
-        # required middleware for POA
-        # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
-        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
@@ -225,23 +196,17 @@ def create_celery(test_config=None):
     global contract_addresses
     # pylint: enable=W0603
 
-    if shared_config["discprov"]["env"] == "stage":
-        (
-            entity_manager,
-            contract_addresses,
-        ) = init_entity_manager()
-    else:
-        (
-            registry,
-            user_factory,
-            track_factory,
-            social_feature_factory,
-            playlist_factory,
-            user_library_factory,
-            user_replica_set_manager,
-            entity_manager,
-            contract_addresses,
-        ) = init_contracts()
+    (
+        registry,
+        user_factory,
+        track_factory,
+        social_feature_factory,
+        playlist_factory,
+        user_library_factory,
+        user_replica_set_manager,
+        entity_manager,
+        contract_addresses,
+    ) = init_contracts()
 
     return create(test_config, mode="celery")
 

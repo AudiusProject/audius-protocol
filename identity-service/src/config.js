@@ -289,6 +289,13 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
+  finalPOABlock: {
+    doc: 'Last block number on POA',
+    format: Number,
+    env: 'finalPOABlock',
+    nullable: true,
+    default: null
+  },
   minimumRelayerBalance: {
     doc: 'Minimum token balance for relayer below which /balance_check fails',
     format: Number,
@@ -831,6 +838,12 @@ const config = convict({
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
     default: false
+  },
+  updateReplicaSetReconfigurationLimit: {
+    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds',
+    format: Number,
+    env: 'updateReplicaSetReconfigurationLimit',
+    default: 30
   }
 })
 

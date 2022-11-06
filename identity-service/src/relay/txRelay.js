@@ -12,7 +12,6 @@ const AudiusABIDecoder = libs.AudiusABIDecoder
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
-const NETHERMIND_BLOCK_OFFSET = 30000000
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
 
 const ENVIRONMENT = config.get('environment')
@@ -20,6 +19,17 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT = config.get(
+  'updateReplicaSetReconfigurationLimit'
+)
+
+const transactionRateLimiter = {
+  updateReplicaSetReconfiguration: 0
+}
+
+setInterval(() => {
+  transactionRateLimiter.updateReplicaSetReconfiguration = 0
+}, 10000)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -72,12 +82,6 @@ const sendTransaction = async (
   return resp
 }
 
-/**
- * TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
- *  contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
- *  contracts (eg. storage contracts, discovery service contract, should not be allowed
- *  to relay TXes from here but can today).
- */
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const {
     contractRegistryKey,
@@ -89,7 +93,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const redis = req.app.get('redis')
 
   // SEND to either POA or Nethermind here...
-  const sendToNethermind = config.get('environment') === 'staging'
+  const currentBlock = await web3.eth.getBlockNumber()
+  const finalPOABlock = config.get('finalPOABlock')
+  const sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -105,6 +111,25 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const contractName =
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
+
+  // Rate limit replica set reconfiguration transactions
+  // A reconfiguration (as opposed to a first time selection) will have an
+  // _oldPrimaryId value of "0"
+  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
+  if (isReplicaSetTransaction) {
+    const isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+    if (!isFirstReplicaSetConfig) {
+      transactionRateLimiter.updateReplicaSetReconfiguration += 1
+      if (
+        transactionRateLimiter.updateReplicaSetReconfiguration >
+        UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
+      ) {
+        throw new Error('updateReplicaSet rate limit reached')
+      }
+    }
+  }
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
@@ -370,7 +395,7 @@ async function relayToNethermind(encodedABI) {
     const receipt = await primaryWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
-    receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
+    receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()
     const took = end - start
