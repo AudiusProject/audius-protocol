@@ -16,6 +16,8 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
+from src.utils import redis_connection
+from src.utils.redis_constants import final_poa_block_redis_key
 
 from . import multihash
 
@@ -519,3 +521,35 @@ def get_solana_tx_owner(meta, idx) -> str:
         ),
         "",
     )
+
+
+def get_final_poa_block(shared_config) -> Optional[int]:
+    # get final poa block from identity and cache result
+    # marks the transition to nethermind
+    # returns None if still on POA
+    if os.getenv("audius_disc_prov_env") != "stage":
+        return None
+
+    redis = redis_connection.get_redis()
+    cached_final_poa_block = redis.get(final_poa_block_redis_key)
+    if cached_final_poa_block:
+        return int(cached_final_poa_block)
+
+    final_poa_block = None
+    try:
+
+        identity_endpoint = (
+            f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
+        )
+
+        response = requests.get(identity_endpoint, timeout=1)
+        response.raise_for_status()
+        response_json = response.json()
+
+        final_poa_block = int(response_json.get("finalPOABlock", None))
+
+        redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
+    except requests.exceptions.ConnectionError:
+        # while identity is not running e.g. test env
+        pass
+    return final_poa_block

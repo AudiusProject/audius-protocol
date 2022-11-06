@@ -31,17 +31,21 @@ def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
 
     if params.entity_type != EntityType.USER:
-        raise Exception("Invalid User Transaction, wrong entity type")
+        raise Exception(
+            f"Invalid User Transaction, wrong entity type {params.entity_type}"
+        )
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
-            raise Exception("Invalid User Transaction, user already exists")
+            raise Exception(f"Invalid User Transaction, user {user_id} already exists")
         if user_id < USER_ID_OFFSET:
-            raise Exception("Invalid User Transaction, user id offset incorrect")
+            raise Exception(
+                f"Invalid User Transaction, user id {user_id} offset incorrect"
+            )
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception("Invalid User Transaction, user does not exist")
+            raise Exception(f"Invalid User Transaction, user {user_id} does not exist")
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
             raise Exception(
@@ -67,7 +71,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
-            return
+            raise Exception(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = user_metadata["handle"].lower()
 
@@ -87,9 +91,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if not track_id_exists:
             # Invalid artist pick. Should not continue to save
-            return
-
-    return user_record
+            raise Exception(
+                f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
+            )
 
 
 def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
@@ -156,15 +160,11 @@ def update_user(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    user_record = validate_user_metadata(
+    validate_user_metadata(
         params.session,
         user_record,
         user_metadata,
     )
-
-    if not user_record:
-        # Validations failed. Do not continue to save.
-        return
 
     user_record = update_user_metadata(
         params.session,

@@ -19,6 +19,11 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
+from src.tasks.index_rewards_manager_backfill import (
+    index_rewards_manager_backfill_complete,
+)
+from src.tasks.index_spl_token_backfill import index_spl_token_backfill_complete
+from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
@@ -61,7 +66,6 @@ infra_setup = shared_config["discprov"]["infra_setup"]
 min_number_of_cpus: int = 8  # 8 cpu
 min_total_memory: int = 15500000000  # 15.5 GB of RAM
 min_filesystem_size: int = 240000000000  # 240 GB of file system storage
-NETHERMIND_BLOCK_OFFSET = 30000000
 
 
 def get_elapsed_time_redis(redis, redis_key):
@@ -152,6 +156,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_hash: Optional[str] = None
     last_track_unavailability_job_start_time: Optional[str] = None
     last_track_unavailability_job_end_time: Optional[str] = None
+    is_index_user_bank_backfill_complete: bool = False
+    is_index_rewards_manager_backfill_complete: bool = False
+    is_index_spl_token_backfill_complete: bool = False
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -250,6 +257,36 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
         last_track_unavailability_job_end_time = None
 
+    try:
+        is_index_user_bank_backfill_complete = bool(
+            redis.get(index_user_bank_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_user_bank backfilling is complete: {e}"
+        )
+        is_index_user_bank_backfill_complete = False
+
+    try:
+        is_index_rewards_manager_backfill_complete = bool(
+            redis.get(index_rewards_manager_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_rewards_manager backfilling is complete: {e}"
+        )
+        is_index_rewards_manager_backfill_complete = False
+
+    try:
+        is_index_spl_token_backfill_complete = bool(
+            redis.get(index_spl_token_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_spl_token backfilling is complete: {e}"
+        )
+        is_index_spl_token_backfill_complete = False
+
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -266,6 +303,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     url = shared_config["discprov"]["url"]
+    final_poa_block = helpers.get_final_poa_block(shared_config)
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -299,14 +338,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # Temp
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
+        "final_poa_block": final_poa_block,
+        "transactions_history_backfill": {
+            "index_user_backfilling_complete": is_index_user_bank_backfill_complete,
+            "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
+            "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
+        },
     }
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        if (
-            shared_config["discprov"]["env"] == "stage"
-            and latest_block_num < NETHERMIND_BLOCK_OFFSET
-        ):
-            latest_block_num += NETHERMIND_BLOCK_OFFSET
+        if final_poa_block and latest_block_num < final_poa_block:
+            latest_block_num += final_poa_block
         block_difference = abs(
             latest_block_num - latest_indexed_block_num
         )  # nethermind offset
