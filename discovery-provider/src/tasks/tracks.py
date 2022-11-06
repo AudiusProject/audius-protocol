@@ -269,12 +269,7 @@ def update_track_routes_table(
         track_metadata["title"], track_record.track_id
     )
     new_track_slug = new_track_slug_title
-    print("\n\n\n")
-    print("new track slug")
-    print(new_track_slug)
-    print("pending track routes!!!")
-    print(pending_track_routes)
-    print("\n\n\n")
+
     # Find the current route for the track
     # Check the pending track route updates first
     prev_track_route_record = next(
@@ -286,10 +281,6 @@ def update_track_routes_table(
         None,
     )
 
-    print("\n\n\n")
-    print("prev trac record routes!!!")
-    print(prev_track_route_record)
-    print("\n\n\n")
     # Then query the DB if necessary
     if prev_track_route_record is None:
         prev_track_route_record = (
@@ -308,8 +299,9 @@ def update_track_routes_table(
         # The new route will be current
         prev_track_route_record.is_current = False
 
-    new_track_slug, new_collision_id = generate_track_slug_and_collision_id(
+    new_track_slug, new_collision_id = generate_slug_and_collision_id(
         session,
+        TrackRoute,
         track_record,
         track_metadata,
         pending_track_routes,
@@ -334,90 +326,71 @@ def update_track_routes_table(
     pending_track_routes.append(new_track_route)
 
 
-def generate_track_slug_and_collision_id(
+def generate_slug_and_collision_id(
     session,
-    model_record,
-    model_metadata,
-    pending_model_routes,
-    new_model_slug_title,
-    new_track_slug,
+    model,
+    record,
+    metadata,
+    pending_routes,
+    new_slug_title,
+    new_slug,
 ):
     # Check for collisions by slug titles, and get the max collision_id
     max_collision_id: Optional[int] = None
     # Check pending updates first
-    for route in pending_model_routes:
-        if (
-            route.title_slug == new_model_slug_title
-            and route.owner_id == model_record.owner_id
-        ):
+    for route in pending_routes:
+        if route.title_slug == new_slug_title and route.owner_id == record.owner_id:
             max_collision_id = (
                 route.collision_id
                 if max_collision_id is None
                 else max(max_collision_id, route.collision_id)
             )
 
-    print("\n\n\n")
-    print("collision id!!!")
-    print(max_collision_id)
-    print("\n\n\n")
     # Check DB if necessary
     if max_collision_id is None:
         max_collision_id = (
-            session.query(functions.max(TrackRoute.collision_id))
+            session.query(functions.max(model.collision_id))
             .filter(
-                TrackRoute.title_slug == new_model_slug_title,
-                TrackRoute.owner_id == model_record.owner_id,
+                model.title_slug == new_slug_title,
+                model.owner_id == record.owner_id,
             )
             .one_or_none()
         )[0]
 
-    existing_track_route: Optional[TrackRoute] = None
+    existing_route: Optional[model] = None
     # If the new track_slug ends in a digit, there's a possibility it collides
     # with an existing route when the collision_id is appended to its title_slug
-    if new_track_slug[-1].isdigit():
-        existing_track_route = next(
+    if new_slug[-1].isdigit():
+        existing_route = next(
             (
                 route
-                for route in pending_model_routes
-                if route.slug == new_track_slug
-                and route.owner_id == model_record.owner_id
+                for route in pending_routes
+                if route.slug == new_slug and route.owner_id == record.owner_id
             ),
             None,
         )
-        print("\n\n\n")
-        print("existiong track route!!!")
-        print(existing_track_route)
-        print("\n\n\n")
-        if existing_track_route is None:
-            existing_track_route = (
-                session.query(TrackRoute)
+        if existing_route is None:
+            existing_route = (
+                session.query(model)
                 .filter(
-                    TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == model_record.owner_id,
+                    model.slug == new_slug,
+                    model.owner_id == record.owner_id,
                 )
                 .one_or_none()
             )
 
-            print("\n\n\n")
-            print("existiong track route2!!!")
-            print(existing_track_route)
-            print("\n\n\n")
-
     new_collision_id = 0
-    has_collisions = existing_track_route is not None
+    has_collisions = existing_route is not None
 
     if max_collision_id is not None:
         has_collisions = True
         new_collision_id = max_collision_id
     while has_collisions:
-        print("\n\n\n")
-        print("colliding")
-        print("\n\n\n")
         # If there is an existing track by the user with that slug,
         # then we need to append the collision number to the slug
         new_collision_id += 1
-        new_track_slug = helpers.create_track_slug(
-            model_metadata["title"], model_record.track_id, new_collision_id
+        new_slug = helpers.create_track_slug(
+            metadata["title"], record.track_id, new_collision_id
         )
 
         # Check for new collisions after making the new slug
@@ -439,30 +412,25 @@ def generate_track_slug_and_collision_id(
         #       - Use collision_id: 1, slug: 'track-1-1'
         #
         # This may be expensive with many collisions, but should be rare.
-        existing_track_route = next(
+        existing_route = next(
             (
                 route
-                for route in pending_model_routes
-                if route.slug == new_track_slug
-                and route.owner_id == model_record.owner_id
+                for route in pending_routes
+                if route.slug == new_slug and route.owner_id == record.owner_id
             ),
             None,
         )
-        if existing_track_route is None:
-            existing_track_route = (
-                session.query(TrackRoute)
+        if existing_route is None:
+            existing_route = (
+                session.query(model)
                 .filter(
-                    TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == model_record.owner_id,
+                    model.slug == new_slug,
+                    model.owner_id == record.owner_id,
                 )
                 .one_or_none()
             )
-        has_collisions = existing_track_route is not None
-    return new_track_slug, new_collision_id
-
-
-def calculate_track_slug_collision_id():
-    pass
+        has_collisions = existing_route is not None
+    return new_slug, new_collision_id
 
 
 def parse_track_event(
