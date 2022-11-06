@@ -269,7 +269,12 @@ def update_track_routes_table(
         track_metadata["title"], track_record.track_id
     )
     new_track_slug = new_track_slug_title
-
+    print("\n\n\n")
+    print("new track slug")
+    print(new_track_slug)
+    print("pending track routes!!!")
+    print(pending_track_routes)
+    print("\n\n\n")
     # Find the current route for the track
     # Check the pending track route updates first
     prev_track_route_record = next(
@@ -280,6 +285,11 @@ def update_track_routes_table(
         ),
         None,
     )
+
+    print("\n\n\n")
+    print("prev trac record routes!!!")
+    print(prev_track_route_record)
+    print("\n\n\n")
     # Then query the DB if necessary
     if prev_track_route_record is None:
         prev_track_route_record = (
@@ -298,6 +308,40 @@ def update_track_routes_table(
         # The new route will be current
         prev_track_route_record.is_current = False
 
+    new_track_slug, new_collision_id = generate_track_slug_and_collision_id(
+        session,
+        track_record,
+        track_metadata,
+        pending_track_routes,
+        new_track_slug_title,
+        new_track_slug,
+    )
+
+    # Add the new track route
+    new_track_route = TrackRoute()
+    new_track_route.slug = new_track_slug
+    new_track_route.title_slug = new_track_slug_title
+    new_track_route.collision_id = new_collision_id
+    new_track_route.owner_id = track_record.owner_id
+    new_track_route.track_id = track_record.track_id
+    new_track_route.is_current = True
+    new_track_route.blockhash = track_record.blockhash
+    new_track_route.blocknumber = track_record.blocknumber
+    new_track_route.txhash = track_record.txhash
+    session.add(new_track_route)
+
+    # Add to pending track routes so we don't add the same route twice
+    pending_track_routes.append(new_track_route)
+
+
+def generate_track_slug_and_collision_id(
+    session,
+    track_record,
+    track_metadata,
+    pending_track_routes,
+    new_track_slug_title,
+    new_track_slug,
+):
     # Check for collisions by slug titles, and get the max collision_id
     max_collision_id: Optional[int] = None
     # Check pending updates first
@@ -311,6 +355,11 @@ def update_track_routes_table(
                 if max_collision_id is None
                 else max(max_collision_id, route.collision_id)
             )
+
+    print("\n\n\n")
+    print("collision id!!!")
+    print(max_collision_id)
+    print("\n\n\n")
     # Check DB if necessary
     if max_collision_id is None:
         max_collision_id = (
@@ -335,6 +384,10 @@ def update_track_routes_table(
             ),
             None,
         )
+        print("\n\n\n")
+        print("existiong track route!!!")
+        print(existing_track_route)
+        print("\n\n\n")
         if existing_track_route is None:
             existing_track_route = (
                 session.query(TrackRoute)
@@ -345,6 +398,11 @@ def update_track_routes_table(
                 .one_or_none()
             )
 
+            print("\n\n\n")
+            print("existiong track route2!!!")
+            print(existing_track_route)
+            print("\n\n\n")
+
     new_collision_id = 0
     has_collisions = existing_track_route is not None
 
@@ -352,6 +410,9 @@ def update_track_routes_table(
         has_collisions = True
         new_collision_id = max_collision_id
     while has_collisions:
+        print("\n\n\n")
+        print("colliding")
+        print("\n\n\n")
         # If there is an existing track by the user with that slug,
         # then we need to append the collision number to the slug
         new_collision_id += 1
@@ -397,22 +458,11 @@ def update_track_routes_table(
                 .one_or_none()
             )
         has_collisions = existing_track_route is not None
+    return new_track_slug, new_collision_id
 
-    # Add the new track route
-    new_track_route = TrackRoute()
-    new_track_route.slug = new_track_slug
-    new_track_route.title_slug = new_track_slug_title
-    new_track_route.collision_id = new_collision_id
-    new_track_route.owner_id = track_record.owner_id
-    new_track_route.track_id = track_record.track_id
-    new_track_route.is_current = True
-    new_track_route.blockhash = track_record.blockhash
-    new_track_route.blocknumber = track_record.blocknumber
-    new_track_route.txhash = track_record.txhash
-    session.add(new_track_route)
 
-    # Add to pending track routes so we don't add the same route twice
-    pending_track_routes.append(new_track_route)
+def calculate_track_slug_collision_id():
+    pass
 
 
 def parse_track_event(
