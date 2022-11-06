@@ -165,8 +165,7 @@ const Service = Object.freeze({
   AAO: 'aao',
   TN: 'tn',
   LIBS: 'libs',
-  MONITORING: 'monitoring',
-  LOGGING: 'logging'
+  MONITORING: 'monitoring'
 })
 
 // gets a service command, interpolating service names
@@ -777,9 +776,6 @@ const allUp = async ({
       nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
     }
   }
-
-  // Add Centralized Logging
-  // nodeUpCommands.push([[Service.LOGGING, SetupCommand.UP]])
 
   // Spin up local exporters, as well as standalone Prometheus/Grafana
   nodeUpCommands.push([[Service.MONITORING, SetupCommand.UP]])

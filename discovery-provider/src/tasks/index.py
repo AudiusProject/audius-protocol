@@ -1052,8 +1052,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-    if update_task.shared_config["discprov"]["env"] == "stage":
-        return
 
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -1061,6 +1059,19 @@ def update_task(self):
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis
+    final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    current_block_query_results = None
+
+    with db.scoped_session() as session:
+        current_block_query = session.query(Block).filter_by(is_current=True)
+        current_block_query_results = current_block_query.all()
+        if (
+            final_poa_block
+            and current_block_query_results
+            and current_block_query_results[0].number >= final_poa_block
+        ):
+            # done indexing POA
+            return
 
     # Initialize contracts and attach to the task singleton
     track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]
