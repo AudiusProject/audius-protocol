@@ -3350,6 +3350,11 @@ export const audiusBackend = ({
     return audiusLibs.web3Manager.getWeb3()
   }
 
+  async function setUserHandleForRelay(handle: string) {
+    const audiusLibs = await getAudiusLibs()
+    audiusLibs.web3Manager.setUserSuppliedHandle(handle)
+  }
+
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
@@ -3448,6 +3453,7 @@ export const audiusBackend = ({
     setArtistPick,
     setCreatorNodeEndpoint,
     setup,
+    setUserHandleForRelay,
     signData,
     signDiscoveryNodeRequest,
     signIn,
