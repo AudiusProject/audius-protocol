@@ -8,7 +8,6 @@ from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
-from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -73,6 +72,7 @@ BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
 web3 = web3_provider.get_nethermind_web3()
+entity_manager_address = None
 
 # HELPER FUNCTIONS
 
@@ -354,7 +354,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
-        tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
+        tx_is_type = tx_target_contract_address == entity_manager_address
         if tx_is_type:
             contract_type = tx_type
             logger.info(
