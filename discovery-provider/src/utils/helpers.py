@@ -16,6 +16,8 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
+from src.utils import redis_connection
+from src.utils.redis_constants import final_poa_block_redis_key
 
 from . import multihash
 
@@ -481,3 +483,73 @@ def get_tx_arg(tx, arg_name):
 def split_list(list, n):
     for i in range(0, len(list), n):
         yield list[i : i + n]
+
+
+def get_solana_tx_token_balances(meta, idx):
+    """Extracts the pre and post balances for a given index from a solana transaction
+    metadata object
+    """
+    pre_balance_dict = next(
+        (
+            balance
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    post_balance_dict = next(
+        (
+            balance
+            for balance in meta["postTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    if pre_balance_dict is None or post_balance_dict is None:
+        return (-1, -1)
+    pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
+    post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
+    return (pre_balance, post_balance)
+
+
+def get_solana_tx_owner(meta, idx) -> str:
+    return next(
+        (
+            balance["owner"]
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        "",
+    )
+
+
+def get_final_poa_block(shared_config) -> Optional[int]:
+    # get final poa block from identity and cache result
+    # marks the transition to nethermind
+    # returns None if still on POA
+    if os.getenv("audius_disc_prov_env") != "stage":
+        return None
+
+    redis = redis_connection.get_redis()
+    cached_final_poa_block = redis.get(final_poa_block_redis_key)
+    if cached_final_poa_block:
+        return int(cached_final_poa_block)
+
+    final_poa_block = None
+    try:
+
+        identity_endpoint = (
+            f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
+        )
+
+        response = requests.get(identity_endpoint, timeout=1)
+        response.raise_for_status()
+        response_json = response.json()
+
+        final_poa_block = int(response_json.get("finalPOABlock", None))
+
+        redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
+    except requests.exceptions.ConnectionError:
+        # while identity is not running e.g. test env
+        pass
+    return final_poa_block

@@ -121,7 +121,9 @@ describe('test monitorState job processor', function () {
             computeUserSecondarySyncSuccessRatesMapStub
         },
         '../CNodeHealthManager': {
-          getUnhealthyPeers: getUnhealthyPeersStub
+          CNodeHealthManager: {
+            getUnhealthyPeers: getUnhealthyPeersStub
+          }
         },
         '../../ContentNodeInfoManager': {
           getMapOfCNodeEndpointToSpId: getCNodeEndpointToSpIdMapStub
@@ -146,6 +148,7 @@ describe('test monitorState job processor', function () {
     config.set('snapbackUsersPerJob', numUsersToProcess)
     const jobFunc = makeProcessStateMonitoringJob({ ...steps })
     logger = {
+      debug: sandbox.stub(),
       info: sandbox.stub(),
       warn: sandbox.stub(),
       error: sandbox.stub()
@@ -268,7 +271,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      'http://default_cn1.co'
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -298,7 +304,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      'http://default_cn1.co'
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -329,7 +338,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      'http://default_cn1.co'
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -359,7 +371,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      'http://default_cn1.co'
+    )
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
@@ -385,7 +400,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
+    expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(
+      USERS,
+      'http://default_cn1.co'
+    )
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
     expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called

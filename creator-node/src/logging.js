@@ -37,7 +37,6 @@ const logger = bunyan.createLogger({
     }
   ]
 })
-logger.info('Loglevel set to:', logLevel)
 
 /**
  * TODO make this more readable
@@ -93,7 +92,7 @@ function loggingMiddleware(req, res, next) {
   req.logger = logger.child(req.logContext)
 
   if (requestNotExcludedFromLogging(req.originalUrl)) {
-    req.logger.info('Begin processing request')
+    req.logger.debug('Begin processing request')
   }
   next()
 }
@@ -122,6 +121,26 @@ function getDuration({ startTime }) {
   }
 
   return durationMs
+}
+
+/**
+ * Prints the debug message with the duration
+ * @param {Object} logger
+ * @param {number} startTime the start time
+ * @param {string} msg the message to print
+ */
+function logDebugWithDuration(
+  { logger, startTime },
+  msg,
+  durationKey = 'duration'
+) {
+  const durationMs = getDuration({ startTime })
+
+  if (durationMs) {
+    logger.debug({ [durationKey]: durationMs }, msg)
+  } else {
+    logger.debug(msg)
+  }
 }
 
 /**
@@ -168,6 +187,7 @@ module.exports = {
   getStartTime,
   getDuration,
   createChildLogger,
+  logDebugWithDuration,
   logInfoWithDuration,
   logErrorWithDuration
 }

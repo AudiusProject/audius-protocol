@@ -26,7 +26,7 @@ A convenience script is also included to do a "one click" kubeadm node setup. Yo
 yes | sh setup.sh
 ```
 
-However, if the node setup is not successful and kubectl is not available, it's advised to follow the installation steps by hand [here](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/cluster-setup.md).
+However, if the node setup is not successful and kubectl is not available, it's advised to follow the installation steps by hand [here](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/cluster-setup.md).
 
 ## 2. Audius CLI Setup
 
@@ -264,7 +264,7 @@ First, obtain the service provider secrets from your contact at Audius. This con
 kubectl apply -f <secret_from_audius>.yaml
 ```
 
-Next, update the logger tags in the fluentd daemonset with your name, so we can identify you and your service uniquely here: [https://github.com/AudiusProject/audius-k8s-manifests/blob/master/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/audius/logger/logger.yaml#L207). This allows our logging service to filter logs by service provider and by service provider and service. `SP_NAME` refers to your organization's name and `SP_NAME_TYPE_ID` refers to your organization's name plus the type of service you're running, plus an id to distinguish multiple services of the same type.
+Next, update the logger tags in the fluentd daemonset with your name, so we can identify you and your service uniquely here: [https://github.com/AudiusProject/audius-k8s-manifests/blob/main/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/audius/logger/logger.yaml#L207). This allows our logging service to filter logs by service provider and by service provider and service. `SP_NAME` refers to your organization's name and `SP_NAME_TYPE_ID` refers to your organization's name plus the type of service you're running, plus an id to distinguish multiple services of the same type.
 
 For example, if your name is `Awesome Operator` and you're running a content node, set the tags as:
 
@@ -340,7 +340,7 @@ Before registering a service to the dashboard we need to make sure the service i
 
 The `sp-actions/` folder contains scripts that test the health of services. Run the corresponding checks for your service type below to verify your service is correctly sete up. Be sure to run `npm install` in `sp-actions/` to install all depdencies.
 
-For more information about `sp-actions/` see the README in the [sp-actions/ folder](https://github.com/AudiusProject/audius-k8s-manifests/tree/master/sp-utilities)
+For more information about `sp-actions/` see the README in the [sp-actions/ folder](https://github.com/AudiusProject/audius-k8s-manifests/tree/main/sp-utilities)
 
 **Creator Node**
 

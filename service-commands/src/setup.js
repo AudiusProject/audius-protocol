@@ -165,8 +165,7 @@ const Service = Object.freeze({
   AAO: 'aao',
   TN: 'tn',
   LIBS: 'libs',
-  MONITORING: 'monitoring',
-  LOGGING: 'logging'
+  MONITORING: 'monitoring'
 })
 
 // gets a service command, interpolating service names
@@ -290,7 +289,7 @@ const getServiceURL = (service, serviceNumber) => {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://${getContentNodeContainerName(serviceNumber)}:${4000 + parseInt(serviceNumber) - 1
+    return `http://localhost:${4000 + parseInt(serviceNumber) - 1
       }/${healthCheckEndpoint}`
   }
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
@@ -777,9 +776,6 @@ const allUp = async ({
       nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
     }
   }
-
-  // Add Centralized Logging
-  // nodeUpCommands.push([[Service.LOGGING, SetupCommand.UP]])
 
   // Spin up local exporters, as well as standalone Prometheus/Grafana
   nodeUpCommands.push([[Service.MONITORING, SetupCommand.UP]])

@@ -5,4 +5,5 @@ export * from './ReactionsApi';
 export * from './SearchApi';
 export * from './TipsApi';
 export * from './TracksApi';
+export * from './TransactionsApi';
 export * from './UsersApi';

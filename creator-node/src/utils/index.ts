@@ -29,11 +29,11 @@ import {
   validateStateForImageDirCIDAndReturnFileUUID,
   _streamFileToDiskHelper
 } from './fsUtils'
-import { runShellCommand } from './runShellCommand'
+import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
-export type { ValuesOf, RequestWithLogger } from './utils'
+export type { ValuesOf } from './utils'
 export {
   isFqdn,
   timeout,
@@ -47,6 +47,7 @@ export {
   writeStreamToFileSystem,
   _streamFileToDiskHelper,
   runShellCommand,
+  execShellCommand,
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
@@ -66,6 +67,7 @@ module.exports = {
   writeStreamToFileSystem,
   _streamFileToDiskHelper,
   runShellCommand,
+  execShellCommand,
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,

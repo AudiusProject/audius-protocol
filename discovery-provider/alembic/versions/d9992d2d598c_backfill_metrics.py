@@ -11,7 +11,6 @@ Create Date: 2021-04-27 00:29:31.849031
 """
 from alembic import context, op
 
-
 # revision identifiers, used by Alembic.
 revision = "d9992d2d598c"
 down_revision = "29864cb80469"

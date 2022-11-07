@@ -13,15 +13,15 @@ import type {
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { CNodeHealthManager } from '../CNodeHealthManager'
+import config from '../../../config'
+import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
 
-const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
-const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -109,7 +109,10 @@ async function monitorState({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
+      unhealthyPeers = await CNodeHealthManager.getUnhealthyPeers(
+        users,
+        config.get('creatorNodeEndpoint')
+      )
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
@@ -142,7 +145,7 @@ async function monitorState({
 
     // Retrieve user info for all users and their current replica sets
     try {
-      const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
+      const retrieveUserInfoResp: any = await retrieveUserInfoFromReplicaSet(
         replicaSetNodesToUserWalletsMap
       )
       replicaToAllUserInfoMaps = retrieveUserInfoResp.replicaToAllUserInfoMaps
@@ -205,7 +208,7 @@ async function monitorState({
     }
   } catch (e: any) {
     tracing.recordException(e)
-    logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
+    logger.error(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
 
@@ -272,7 +275,7 @@ const _addToDecisionTree = (
   decisionTree.push(obj)
 
   if (logger) {
-    logger.info(logStr)
+    logger.debug(logStr)
   }
 }
 
@@ -285,7 +288,7 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
     decisionTree[decisionTree.length - 1].fullDuration = duration
   }
   try {
-    logger.info(
+    logger.debug(
       `monitor-state job processor Decision Tree${JSON.stringify(decisionTree)}`
     )
   } catch (e: any) {

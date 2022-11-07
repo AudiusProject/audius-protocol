@@ -97,19 +97,6 @@ class StateReconciliationManager {
         max:
           config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
-      },
-      onFailCallback: (job, error, _prev) => {
-        const logger = createChildLogger(recoverOrphanedDataLogger, {
-          jobId: job?.id || 'unknown'
-        })
-        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
-        // This is a recurring job that re-enqueues itself on success, so we want to also re-enqueue on failure
-        const {
-          data: { discoveryNodeEndpoint }
-        } = job
-        recoverOrphanedDataQueue.add('retry-after-fail', {
-          discoveryNodeEndpoint
-        })
       }
     })
 

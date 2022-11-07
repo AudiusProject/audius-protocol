@@ -25,7 +25,7 @@ const config = convict({
     doc: 'Database URL connection string',
     format: String,
     env: 'dbUrl',
-    default: null
+    default: 'postgres://postgres:postgres@localhost:4432/audius_creator_node'
   },
   dbConnectionPoolMax: {
     doc: 'Max connections in database pool',
@@ -37,13 +37,13 @@ const config = convict({
     doc: 'File system path to store raw files that are uploaded',
     format: String,
     env: 'storagePath',
-    default: null
+    default: '/file_storage'
   },
   redisHost: {
     doc: 'Redis host name',
     format: String,
     env: 'redisHost',
-    default: null
+    default: 'localhost'
   },
   allowedUploadFileExtensions: {
     doc: 'Override the default list of file extension allowed',
@@ -88,13 +88,13 @@ const config = convict({
     doc: 'Redis port',
     format: 'port',
     env: 'redisPort',
-    default: null
+    default: 4379
   },
   port: {
     doc: 'Port to run service on',
     format: 'port',
     env: 'port',
-    default: null
+    default: 4000
   },
   setTimeout: {
     doc: `
@@ -142,7 +142,7 @@ const config = convict({
     doc: 'Log level',
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
     env: 'logLevel',
-    default: null
+    default: 'info'
   },
 
   /**
@@ -165,80 +165,81 @@ const config = convict({
     `,
     format: String,
     env: 'endpointRateLimits',
-    default: '{}'
+    default:
+      '{"/image_upload":{"post":[{"expiry":60,"max":100}]},"/users":{"post":[{"expiry":60,"max":100}]},"/users/login/challenge":{"post":[{"expiry":60,"max":100}]},"/users/logout":{"post":[{"expiry":60,"max":100}]},"/users/batch_clock_status":{"post":[{"expiry":60,"max":100}]},"/track_content":{"post":[{"expiry":60,"max":100}]},"/tracks/metadata":{"post":[{"expiry":60,"max":100}]},"/tracks":{"post":[{"expiry":60,"max":100}]},"/audius_users/metadata":{"post":[{"expiry":60,"max":100}]},"/audius_users":{"post":[{"expiry":60,"max":100}]},"/sync":{"post":[{"expiry":60,"max":500}]},"/vector_clock_sync":{"post":[{"expiry":60,"max":500}]}}'
   },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
     format: 'nat',
     env: 'rateLimitingAudiusUserReqLimit',
-    default: null
+    default: 3000
   },
   rateLimitingUserReqLimit: {
     doc: 'Total requests per hour rate limit for /users routes',
     format: 'nat',
     env: 'rateLimitingUserReqLimit',
-    default: null
+    default: 60000
   },
   rateLimitingMetadataReqLimit: {
     doc: 'Total requests per hour rate limit for /metadata routes',
     format: 'nat',
     env: 'rateLimitingMetadataReqLimit',
-    default: null
+    default: 3000
   },
   rateLimitingImageReqLimit: {
     doc: 'Total requests per hour rate limit for /image_upload routes',
     format: 'nat',
     env: 'rateLimitingImageReqLimit',
-    default: null
+    default: 6000
   },
   rateLimitingTrackReqLimit: {
     doc: 'Total requests per hour rate limit for /track routes',
     format: 'nat',
     env: 'rateLimitingTrackReqLimit',
-    default: null
+    default: 6000
   },
   rateLimitingBatchCidsExistLimit: {
     doc: 'Total requests per hour rate limit for /track routes',
     format: 'nat',
     env: 'rateLimitingBatchCidsExistLimit',
-    default: null
+    default: 1
   },
   URSMRequestForSignatureReqLimit: {
     doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
     format: 'nat',
     env: 'URSMRequestForSignatureReqLimit',
-    default: null
+    default: 30
   },
 
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
     format: 'nat',
     env: 'maxAudioFileSizeBytes',
-    default: null
+    default: 1_000_000_000
   },
   maxMemoryFileSizeBytes: {
     doc: 'Maximum memory usage for audio file uploads in bytes',
     format: 'nat',
     env: 'maxMemoryFileSizeBytes',
-    default: null
+    default: 50_000_000
   },
   serviceLatitude: {
     doc: 'Latitude where the server running this service is located',
     format: String,
     env: 'serviceLatitude',
-    default: null
+    default: ''
   },
   serviceLongitude: {
     doc: 'Longitude where the server running this service is located',
     format: String,
     env: 'serviceLongitude',
-    default: null
+    default: ''
   },
   serviceCountry: {
     doc: 'Country where the server running this service is located',
     format: String,
     env: 'serviceCountry',
-    default: null
+    default: ''
   },
   sampleRate: {
     doc: 'FFMPEG sample rate',
@@ -283,20 +284,24 @@ const config = convict({
     default: true
   },
 
-  // Transcoding settings
+  /** Upload settings */
   transcodingMaxConcurrency: {
     doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
     format: Number,
     env: 'transcodingMaxConcurrency',
     default: -1
   },
-
-  // Image processing settings
   imageProcessingMaxConcurrency: {
     doc: 'Maximum image resizing processes to spawn concurrently. If unset (-1), set to # of CPU cores available',
     format: Number,
     env: 'imageProcessingMaxConcurrency',
     default: -1
+  },
+  deleteTrackUploadArtifacts: {
+    doc: 'whether or not to delete track upload artifacts from disk in `fileManager.removeTrackFolder()`',
+    format: Boolean,
+    env: 'deleteTrackUploadArtifacts',
+    default: false
   },
 
   // wallet information
@@ -335,31 +340,31 @@ const config = convict({
     doc: 'eth provider url',
     format: String,
     env: 'ethProviderUrl',
-    default: null
+    default: ''
   },
   ethNetworkId: {
     doc: 'eth network id',
     format: String,
     env: 'ethNetworkId',
-    default: null
+    default: ''
   },
   ethTokenAddress: {
     doc: 'eth token address',
     format: String,
     env: 'ethTokenAddress',
-    default: null
+    default: ''
   },
   ethRegistryAddress: {
     doc: 'eth registry address',
     format: String,
     env: 'ethRegistryAddress',
-    default: null
+    default: ''
   },
   ethOwnerWallet: {
     doc: 'eth owner wallet',
     format: String,
     env: 'ethOwnerWallet',
-    default: null
+    default: ''
   },
   spOwnerWallet: {
     doc: 'Service provider owner wallet',
@@ -389,7 +394,7 @@ const config = convict({
     doc: 'data contracts registry address',
     format: String,
     env: 'dataRegistryAddress',
-    default: null
+    default: ''
   },
   entityManagerAddress: {
     doc: 'entity manager registry address',
@@ -401,13 +406,13 @@ const config = convict({
     doc: 'data contracts web3 provider url',
     format: String,
     env: 'dataProviderUrl',
-    default: null
+    default: ''
   },
   dataNetworkId: {
     doc: 'data contracts network id',
     format: String,
     env: 'dataNetworkId',
-    default: null
+    default: ''
   },
   creatorNodeEndpoint: {
     doc: 'http endpoint registered on chain for cnode',
@@ -445,6 +450,12 @@ const config = convict({
     env: 'snapbackHighestReconfigMode',
     default: 'PRIMARY_AND_OR_SECONDARIES'
   },
+  reconfigModePrimaryOnly: {
+    doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
+    format: Boolean,
+    env: 'reconfigModePrimaryOnly',
+    default: false
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
@@ -455,7 +466,7 @@ const config = convict({
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
     env: 'maxStorageUsedPercent',
-    default: 95
+    default: 97
   },
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
@@ -490,11 +501,29 @@ const config = convict({
 
   /** sync / snapback configs */
 
-  syncForceWipeEnabled: {
+  syncForceWipeDBEnabled: {
     doc: "whether or not this node can wipe a user's data from its database during a sync (true = wipe allowed)",
     format: Boolean,
-    env: 'syncForceWipeEnabled',
+    env: 'syncForceWipeDBEnabled',
     default: true
+  },
+  syncForceWipeDiskEnabled: {
+    doc: "whether or not this node can wipe a user's data from its disk after DB deletion during a sync (true = wipe allowed)",
+    format: Boolean,
+    env: 'syncForceWipeDiskEnabled',
+    default: false
+  },
+  backgroundDiskCleanupCheckEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
+    format: Boolean,
+    env: 'backgroundDiskCleanupCheckEnabled',
+    default: true
+  },
+  backgroundDiskCleanupDeleteEnabled: {
+    doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
+    format: Boolean,
+    env: 'backgroundDiskCleanupDeleteEnabled',
+    default: false
   },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
@@ -530,7 +559,7 @@ const config = convict({
     doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
     format: 'nat',
     env: 'recoverOrphanedDataNumUsersPerBatch',
-    default: 2
+    default: 5
   },
   recoverOrphanedDataDelayMsBetweenBatches: {
     doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
@@ -554,13 +583,13 @@ const config = convict({
     doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
-    default: 5
+    default: 10
   },
   syncQueueMaxConcurrency: {
     doc: 'Max concurrency of SyncQueue',
     format: 'nat',
     env: 'syncQueueMaxConcurrency',
-    default: 30
+    default: 50
   },
   issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
     doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
@@ -663,8 +692,7 @@ const config = convict({
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    // 24 hours in seconds
-    default: 86400 // 24hr in s
+    default: 3600 // 1 hour in s
   },
   maxNumberSecondsSecondaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a secondary's users start issuing replica set updates",
@@ -778,7 +806,7 @@ const config = convict({
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
     format: Boolean,
     env: 'mergePrimaryAndSecondaryEnabled',
-    default: false
+    default: true
   },
   findCIDInNetworkEnabled: {
     doc: 'enable findCIDInNetwork lookups',
@@ -802,31 +830,20 @@ const config = convict({
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default:
-      '1,2,3,4,7,12,13,14,15,16,19,27,28,33,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,57,58,59,60,61,63,64,65'
+    default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
+  },
+  recordSyncResults: {
+    doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
+    format: Boolean,
+    env: 'recordSyncResults',
+    default: true
+  },
+  processSyncResults: {
+    doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
+    format: Boolean,
+    env: 'processSyncResults',
+    default: true
   }
-  /**
-   * unsupported options at the moment
-   */
-
-  // awsBucket: {
-  //   doc: 'AWS S3 bucket to upload files to',
-  //   format: String,
-  //   env: 'awsBucket',
-  //   default: null
-  // },
-  // awsAccessKeyId: {
-  //   doc: 'AWS access key id',
-  //   format: String,
-  //   env: 'awsAccessKeyId',
-  //   default: null
-  // },
-  // awsSecretAccessKey: {
-  //   doc: 'AWS access key secret',
-  //   format: String,
-  //   env: 'awsSecretAccessKey',
-  //   default: null
-  // }
 })
 
 /*
@@ -835,10 +852,6 @@ const config = convict({
  */
 
 const pathTo = (fileName) => path.join(process.cwd(), fileName)
-
-// TODO(DM) - remove these defaults
-const defaultConfigExists = fs.existsSync('default-config.json')
-if (defaultConfigExists) config.loadFile('default-config.json')
 
 if (fs.existsSync(pathTo('eth-contract-config.json'))) {
   const ethContractConfig = require(pathTo('eth-contract-config.json'))

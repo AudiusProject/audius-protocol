@@ -134,7 +134,7 @@ export async function findCIDInNetwork(
             throw new Error('CID does not match what is expected to be')
           }
 
-          logger.info(
+          logger.debug(
             `Successfully fetched CID=${cid} file=${filePath} from node ${endpoint}`
           )
 
@@ -144,7 +144,7 @@ export async function findCIDInNetwork(
         logLabel: 'findCIDInNetwork',
         options: {
           retries: numRetries,
-          minTimeout: 3000
+          maxTimeout: 10000
         }
       })
     } catch (e: any) {

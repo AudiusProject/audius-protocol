@@ -28,7 +28,7 @@ export async function clearDatabase() {
 }
 
 export async function clearRunningQueries() {
-  logger.info(`Clearing running db queries...`)
+  logger.debug(`Clearing running db queries...`)
   try {
     await sequelize.query(`
     BEGIN;

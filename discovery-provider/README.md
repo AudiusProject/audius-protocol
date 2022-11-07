@@ -6,7 +6,7 @@ A Discovery Node is the metadata and indexing layer for the Audius Protocol.
 
 ## Development
 
-See the dev-tools [README](https://github.com/AudiusProject/audius-protocol/tree/master/dev-tools).
+See the dev-tools [README](https://github.com/AudiusProject/audius-protocol/tree/main/dev-tools).
 
 ```bash
 audius-compose up

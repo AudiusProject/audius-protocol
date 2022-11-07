@@ -12,7 +12,7 @@ const { logger: genericLogger } = require('./logging')
  * @param {Object} params
  * @param {string} params.fileDir the directory of the uploaded track artifact
  * @param {string} params.fileName the uploaded track artifact filename
- * @param {Object} params.logContext the log context used to instantiate a logger
+ * @param {LogContext} params.logContext the log context used to instantiate a logger
  * @returns {Promise<Object>} response in the structure 
   {
     segments: {
@@ -54,7 +54,7 @@ function segmentFile(fileDir, fileName, { logContext }) {
       '-vn', // skip inclusion of video, process only the audio file without "video"
       m3u8FilePath
     ]
-    logger.info(`Spawning: ffmpeg ${args}`)
+    logger.debug(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output
@@ -125,7 +125,7 @@ async function transcodeFileTo320(fileDir, fileName, { logContext }) {
       '-vn', // skip inclusion of video, process only the audio file without "video"
       targetPath
     ]
-    logger.info(`Spawning: ffmpeg ${args}`)
+    logger.debug(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output

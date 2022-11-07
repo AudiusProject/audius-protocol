@@ -7,14 +7,22 @@ import { tracing } from './tracer'
 import config from './config'
 
 import {
-  requestNotExcludedFromLogging,
   getDuration,
   createChildLogger,
   logger as genericLogger
 } from './logging'
 import { generateTimestampAndSignature } from './apiSigning'
 
-type RequestWithLogger = Request & { logger: Logger }
+// Content node app adds additional fields to the Express request object. This typing
+// is a type that adds additional fields to the request object.
+export type CustomRequest = Request & {
+  logger: Logger
+  normalizedPath?: string
+}
+
+export type LogContext = {
+  requestID: string
+}
 
 type ApiResponse = {
   statusCode: number
@@ -99,23 +107,19 @@ export const sendResponse = (
   res: Response,
   resp: ApiResponse
 ) => {
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   const duration = getDuration(req as any)
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
     if (req && req.body) {
-      logger.info(
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
@@ -124,7 +128,7 @@ export const sendResponse = (
         req.query
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
   }
 
@@ -141,29 +145,25 @@ export const sendResponseWithHeartbeatTerminator = (
   resp: ApiResponse
 ) => {
   const duration = getDuration(req as any)
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
     if (req && req.body) {
-      logger.info(
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
         req.body
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
 
     // Converts the error object into an object that JSON.stringify can parse

@@ -33,12 +33,12 @@ def run_cmd(cmd, exit_on_error=True, msg=None):
 
 
 def standardize_branch(branches):
-    """Return 'master' and 'release' for all detected master/release branches"""
+    """Return 'main' and 'release' for all detected main/release branches"""
     result = None
     for branch in branches:
-        if "remotes/origin/master" in branch:
+        if "remotes/origin/main" in branch:
             if not result:
-                result = "master"
+                result = "main"
         if "remotes/origin/release" in branch:
             result = "release"
     if not result:
@@ -46,10 +46,10 @@ def standardize_branch(branches):
     return result
 
 
-def ensure_commit_on_master(commit):
+def ensure_commit_on_main(commit):
     """Ensure commit has been merged before proceeding"""
-    if commit == "master":
-        print("Commit cannot be 'master'.")
+    if commit == "main":
+        print("Commit cannot be 'main'.")
         exit(1)
     try:
         branches = run_cmd(
@@ -60,6 +60,6 @@ def ensure_commit_on_master(commit):
 
     branch = standardize_branch(branches)
 
-    if branch not in ("master", "release"):
-        print(f"Commit not found on master, nor release branches: {branch}")
+    if branch not in ("main", "release"):
+        print(f"Commit not found on main, nor release branches: {branch}")
         exit(1)
