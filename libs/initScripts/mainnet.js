@@ -101,7 +101,6 @@ function getLibsConfig(config, privateKey, ownerWallet) {
     throw new Error('Missing private key or owner wallet')
   }
   console.log('Querying environment variables:')
-  console.log(privateKey)
   console.log(ownerWallet)
 
   const dataWeb3 = new Web3(

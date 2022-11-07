@@ -25,24 +25,26 @@ import {
  * @export
  * @interface FullSupporting
  */
-export interface FullSupporting {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullSupporting
-     */
-    rank: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullSupporting
-     */
-    amount: string;
-    /**
-     * 
-     * @type {UserFull}
-     * @memberof FullSupporting
-     */
-    receiver: UserFull;
-}
+export interface FullSupporting 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullSupporting
+        */
+        rank: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullSupporting
+        */
+        amount: string;
+        /**
+        * 
+        * @type {UserFull}
+        * @memberof FullSupporting
+        */
+        receiver: UserFull;
+    }
+
 

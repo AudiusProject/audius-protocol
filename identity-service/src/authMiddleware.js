@@ -72,6 +72,8 @@ async function authMiddleware(req, res, next) {
         `[Error]: no user found for wallet address ${walletAddress}`
       )
 
+    // This overwrites any provisionally set handles (b/c blockchainUserId is never set with those),
+    // ensuring that the user.handle always represents the latest state on chain
     if (!user.blockchainUserId || !user.handle) {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
       user = await user.update({

@@ -31,54 +31,56 @@ import {
  * @export
  * @interface TopGenreUsersResponseFull
  */
-export interface TopGenreUsersResponseFull {
-    /**
-     * 
-     * @type {number}
-     * @memberof TopGenreUsersResponseFull
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TopGenreUsersResponseFull
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TopGenreUsersResponseFull
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof TopGenreUsersResponseFull
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TopGenreUsersResponseFull
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TopGenreUsersResponseFull
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof TopGenreUsersResponseFull
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {Array<UserFull>}
-     * @memberof TopGenreUsersResponseFull
-     */
-    data?: Array<UserFull>;
-}
+export interface TopGenreUsersResponseFull 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof TopGenreUsersResponseFull
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TopGenreUsersResponseFull
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TopGenreUsersResponseFull
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof TopGenreUsersResponseFull
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TopGenreUsersResponseFull
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TopGenreUsersResponseFull
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof TopGenreUsersResponseFull
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {Array<UserFull>}
+        * @memberof TopGenreUsersResponseFull
+        */
+        data?: Array<UserFull>;
+    }
+
 

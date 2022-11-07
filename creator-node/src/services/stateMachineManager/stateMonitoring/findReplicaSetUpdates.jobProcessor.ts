@@ -16,6 +16,7 @@ import type {
 import { instrumentTracing, tracing } from '../../../tracer'
 import { stringifyMap } from '../../../utils'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
+import { CNodeHealthManager } from '../CNodeHealthManager'
 
 const _: LoDashStatic = require('lodash')
 
@@ -23,7 +24,6 @@ const {
   FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
   QUEUE_NAMES
 } = require('../stateMachineConstants')
-const CNodeHealthManager = require('../CNodeHealthManager')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -120,7 +120,9 @@ async function findReplicaSetUpdates({
           primary: updateReplicaSetOp.primary,
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
+          nodesToReconfigOffOf: Array.from(
+            updateReplicaSetOp.nodesToReconfigOffOf
+          ),
           replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
             replicaToAllUserInfoMaps,
             wallet,
@@ -151,7 +153,7 @@ async function findReplicaSetUpdates({
 }
 
 type UpdateReplicaSetOp = UpdateReplicaSetUser & {
-  unhealthyReplicas: Set<string>
+  nodesToReconfigOffOf: Set<string>
 }
 /**
  * Determines which replica set update operations should be performed for a given user.
@@ -278,35 +280,32 @@ const _findReplicaSetUpdatesForUser = async (
         )
         unhealthyReplicas.add(replica.endpoint)
       } else if (unhealthyPeersSet.has(replica.endpoint)) {
-        // Else, continue with conducting extra health check if the current observed node is a primary, and
-        // add to `unhealthyReplicas` if observed node is a secondary
-        let addToUnhealthyReplicas = true
-
-        if (replica.endpoint === primary) {
-          addToUnhealthyReplicas = !(await CNodeHealthManager.isPrimaryHealthy(
-            primary
-          ))
-        }
-
-        if (addToUnhealthyReplicas) {
-          logger.error(
-            `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} was already marked unhealthy and failed an additional health check if it was primary.`
-          )
-          unhealthyReplicas.add(replica.endpoint)
-        }
+        logger.error(
+          `_findReplicaSetUpdatesForUser(): Replica ${replica.endpoint} for user ${wallet} was already marked unhealthy.`
+        )
+        unhealthyReplicas.add(replica.endpoint)
       }
     }
   }
 
   // If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
-  if (unhealthyReplicas.size > 0) {
+  const nodesToReconfigOffOf = new Set<string>()
+  for (const node of unhealthyReplicas) {
+    const shouldReconfigOffNode =
+      !(await CNodeHealthManager.isNodeHealthyOrInGracePeriod(
+        node,
+        node === primary
+      ))
+    if (shouldReconfigOffNode) nodesToReconfigOffOf.add(node)
+  }
+  if (nodesToReconfigOffOf.size) {
     requiredUpdateReplicaSetOps.push({
       wallet: user.wallet,
       userId: user.user_id,
       primary: user.primary,
       secondary1: user.secondary1,
       secondary2: user.secondary2,
-      unhealthyReplicas
+      nodesToReconfigOffOf
     })
   }
 

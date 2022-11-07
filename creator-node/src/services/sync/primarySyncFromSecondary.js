@@ -322,7 +322,7 @@ const primarySyncFromSecondary = instrumentTracing({
  * - `saveFileForMultihashToFS` will short-circuit if file already exists on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({ files, gatewaysToTry, wallet, libs, logger }) {
+async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>
@@ -669,14 +669,9 @@ async function filterOutAlreadyPresentDBEntries({
       FETCHED_ENTRIES_SET_KEY,
       fetchedEntriesComparable
     )
-    // Fail-safe in case for some reason not all entries were written to redis
-    if (numFetchedEntriesAdded !== fetchedEntries.length) {
-      throw new Error(
-        `Failed to add all entries to redis set for ${FETCHED_ENTRIES_SET_KEY}`
-      )
-    }
     decisionTree.recordStage({
       name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
+      data: { numFetchedEntriesAdded },
       log: true
     })
 
@@ -724,12 +719,6 @@ async function filterOutAlreadyPresentDBEntries({
         LOCAL_DB_ENTRIES_SET_KEY,
         localEntriesComparable
       )
-      // Fail-safe in case for some reason not all entries were written to redis
-      if (numLocalEntriesAddedBatch !== localEntries.length) {
-        throw new Error(
-          `Failed to add all entries to redis set for ${LOCAL_DB_ENTRIES_SET_KEY}`
-        )
-      }
       numLocalEntriesAdded += numLocalEntriesAddedBatch
 
       // Move pagination cursor

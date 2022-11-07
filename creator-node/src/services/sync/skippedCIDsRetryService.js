@@ -37,6 +37,10 @@ class SkippedCIDsRetryQueue {
     })
   }
 
+  logDebug(msg) {
+    logger.debug(`${LogPrefix} ${msg}`)
+  }
+
   logInfo(msg) {
     logger.info(`${LogPrefix} ${msg}`)
   }
@@ -63,9 +67,9 @@ class SkippedCIDsRetryQueue {
       const CIDMaxAgeMs =
         this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
-      const worker = new Worker(
+      const _worker = new Worker(
         'skipped-cids-retry-queue',
-        async (job) => {
+        async (_job) => {
           try {
             await this.process(CIDMaxAgeMs, this.libs)
           } catch (e) {
@@ -81,7 +85,7 @@ class SkippedCIDsRetryQueue {
 
       // Add first job to queue
       await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
-      this.logInfo(`Successfully initialized and enqueued initial job.`)
+      this.logDebug(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
       this.logError(`Failed to start`)
     }

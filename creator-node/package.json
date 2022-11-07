@@ -18,7 +18,8 @@
     "lint:fix": "eslint --format table --fix --ext=js,ts src",
     "lint": "eslint --format table --ext=js,ts src",
     "build": "./node_modules/.bin/tsc --project tsconfig.build.json",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "typecheck": "./node_modules/.bin/tsc --project tsconfig.build.json --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -94,6 +95,7 @@
     "web3": "1.2.8"
   },
   "devDependencies": {
+    "@types/async-retry": "^1.4.5",
     "@types/base64-url": "^2.2.0",
     "@types/bunyan": "^1.8.8",
     "@types/chai": "^4.3.3",

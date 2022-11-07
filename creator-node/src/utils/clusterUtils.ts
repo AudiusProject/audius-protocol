@@ -11,6 +11,7 @@ const config = require('../config')
  * - regularly add jobs to the session expiration queue on an interval
  */
 class ClusterUtils {
+  private _isInitWorker = false
   private _specialWorkerId = 1
   get specialWorkerId(): number {
     return this._specialWorkerId
@@ -33,7 +34,15 @@ class ClusterUtils {
    * some special initialization logic that other workers don't need to duplicate.
    */
   isThisWorkerInit() {
-    return !this.isClusterEnabled() || cluster.worker?.id === 1
+    return !this.isClusterEnabled() || this._isInitWorker
+  }
+
+  /**
+   * Marks this worker process is the first worker, which performs
+   * some special initialization logic that other workers don't need to duplicate.
+   */
+  markThisWorkerAsInit() {
+    this._isInitWorker = true
   }
 
   isThisWorkerSpecial() {
@@ -48,7 +57,7 @@ class ClusterUtils {
 
     // This is called `cpus()` but it actually returns the # of logical cores, which is possibly higher than # of physical cores if there's hyperthreading
     const logicalCores = cpus().length
-    return config.get('expressAppConcurrency') || logicalCores
+    return config.get('expressAppConcurrency') || Math.ceil(logicalCores / 2)
   }
 
   /**

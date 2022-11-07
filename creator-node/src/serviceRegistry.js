@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
@@ -16,12 +15,12 @@ const {
 const utils = require('./utils')
 const config = require('./config')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
-const SyncQueue = require('./services/sync/syncQueue')
+const { SyncQueue } = require('./services/sync/syncQueue')
 const SyncImmediateQueue = require('./services/sync/syncImmediateQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
-const SessionExpirationQueue = require('./services/SessionExpirationQueue')
-const AsyncProcessingQueue = require('./AsyncProcessingQueue')
-const TrustedNotifierManager = require('./services/TrustedNotifierManager')
+const { AsyncProcessingQueue } = require('./AsyncProcessingQueue')
+const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
+const { TrustedNotifierManager } = require('./services/TrustedNotifierManager')
 const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
@@ -326,12 +325,23 @@ class ServiceRegistry {
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.syncQueue = new SyncQueue(config, this.redis, this)
-    this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis, this)
+    this.syncQueue = new SyncQueue()
+    await this.syncQueue.init(config, this.redis, this)
+    this.syncImmediateQueue = new SyncImmediateQueue()
+    await this.syncImmediateQueue.init(config, this.redis, this)
 
-    // L2URSMRegistration (requires L1 identity)
-    // Retries indefinitely
-    await this._registerNodeOnL2URSM()
+    // If entity manager is enabled, there's no need to register on L2 because
+    // discovery node will use L1 to validate
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      config.set('isRegisteredOnURSM', true)
+      this.logInfo(
+        `When EntityManager is enabled, skip register node on l2 ursm`
+      )
+    } else {
+      // L2URSMRegistration (requires L1 identity)
+      // Retries indefinitely
+      await this._registerNodeOnL2URSM()
+    }
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

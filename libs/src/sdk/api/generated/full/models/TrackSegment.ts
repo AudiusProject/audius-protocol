@@ -18,18 +18,20 @@
  * @export
  * @interface TrackSegment
  */
-export interface TrackSegment {
-    /**
-     * 
-     * @type {number}
-     * @memberof TrackSegment
-     */
-    duration: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackSegment
-     */
-    multihash: string;
-}
+export interface TrackSegment 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof TrackSegment
+        */
+        duration: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackSegment
+        */
+        multihash: string;
+    }
+
 

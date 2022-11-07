@@ -66,6 +66,7 @@ export class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
 
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
@@ -765,6 +766,71 @@ export class Users extends Base {
     return await this.contracts.SocialFeatureFactoryClient.deleteUserFollow(
       followerUserId!,
       followeeUserId
+    )
+  }
+
+  /**
+   * Adds a user subscription for a given subscriber and user
+   */
+  async addUserSubscribe(userId: number) {
+    try {
+      const subscriberUserId = this.userStateManager.getCurrentUserId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        subscriberUserId!,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.SUBSCRIBE,
+        ''
+      )
+      return {
+        blockHash: response.txReceipt.blockHash,
+        blockNumber: response.txReceipt.blockNumber
+      }
+    } catch (e) {
+      return {
+        error: (e as Error).message
+      }
+    }
+  }
+
+  /**
+   * Delete a user subscription for a given subscriber and user
+   */
+  async deleteUserSubscribe(userId: number) {
+    try {
+      const subscriberUserId = this.userStateManager.getCurrentUserId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        subscriberUserId!,
+        EntityManagerClient.EntityType.USER,
+        userId,
+        EntityManagerClient.Action.UNSUBSCRIBE,
+        ''
+      )
+      return {
+        blockHash: response.txReceipt.blockHash,
+        blockNumber: response.txReceipt.blockNumber
+      }
+    } catch (e) {
+      return {
+        error: (e as Error).message
+      }
+    }
+  }
+
+  /**
+   * Gets listen count data for a user's tracks grouped by month
+   * @returns Dictionary of listen count data where keys are requested months
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
     )
   }
 

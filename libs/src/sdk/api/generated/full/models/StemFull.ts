@@ -18,42 +18,44 @@
  * @export
  * @interface StemFull
  */
-export interface StemFull {
-    /**
-     * 
-     * @type {string}
-     * @memberof StemFull
-     */
-    id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemFull
-     */
-    parent_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemFull
-     */
-    category: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemFull
-     */
-    cid: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof StemFull
-     */
-    user_id: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof StemFull
-     */
-    blocknumber: number;
-}
+export interface StemFull 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof StemFull
+        */
+        id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemFull
+        */
+        parent_id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemFull
+        */
+        category: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemFull
+        */
+        cid: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof StemFull
+        */
+        user_id: string;
+        /**
+        * 
+        * @type {number}
+        * @memberof StemFull
+        */
+        blocknumber: number;
+    }
+
 

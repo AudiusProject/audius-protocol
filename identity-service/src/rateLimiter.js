@@ -23,7 +23,7 @@ const isIPWhitelisted = (ip, req) => {
   }
 
   // Don't return early so we can see logs for both paths
-  req.logger.info(
+  req.logger.debug(
     `isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`
   )
   return isWhitelisted || isFromContentNode

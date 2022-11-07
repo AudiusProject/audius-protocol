@@ -17,6 +17,7 @@ from src.api.v1.helpers import (
     extend_supporting,
     extend_track,
     extend_user,
+    format_aggregate_monthly_plays_for_user,
     format_limit,
     format_offset,
     format_query,
@@ -32,6 +33,7 @@ from src.api.v1.helpers import (
     success_response,
     track_history_parser,
     user_favorited_tracks_parser,
+    user_track_listen_count_route_parser,
     user_tracks_route_parser,
     verify_token_parser,
 )
@@ -73,6 +75,7 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
 from src.queries.get_tracks import GetTrackArgs, get_tracks
+from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
@@ -201,6 +204,83 @@ USER_TRACKS_ROUTE = "/<string:id>/tracks"
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
 )
+
+listen_count = ns.model(
+    "listen_count",
+    {
+        "trackId": fields.Integer,
+        "date": fields.String,
+        "listens": fields.Integer,
+    },
+)
+
+monthly_aggregate_play = ns.model(
+    "monthly_aggregate_play",
+    {
+        "totalListens": fields.Integer,
+        "trackIds": fields.List(fields.Integer),
+        "listenCounts": fields.List(fields.Nested(listen_count)),
+    },
+)
+
+wild_month = fields.Wildcard(fields.Nested(monthly_aggregate_play, required=True))
+
+wild_month_model = ns.model("wild_month_model", {"*": wild_month})
+user_track_listen_counts_response = make_response(
+    "user_track_listen_counts_response",
+    ns,
+    fields.Nested(
+        wild_month_model,
+        example={
+            "2021-10-01T00:00:00.000Z": {
+                "totalListens": 7,
+                "trackIds": [484436],
+                "listenCounts": [
+                    {
+                        "trackId": 484436,
+                        "date": "2021-10-01T00:00:00.000Z",
+                        "listens": 7,
+                    }
+                ],
+            }
+        },
+        skip_none=True,
+    ),
+)
+
+
+@ns.route("/<string:id>/listen_counts_monthly")
+class UserTrackListenCountsMonthly(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Monthly Track Listens""",
+        description="""Gets the listen data for a user by month and track within a given time frame.""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_track_listen_count_route_parser)
+    @ns.marshal_with(user_track_listen_counts_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_track_listen_count_route_parser.parse_args()
+        start_time = args.get("start_time")
+        end_time = args.get("end_time")
+
+        user_listen_counts = get_user_listen_counts_monthly(
+            {
+                "user_id": decoded_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            }
+        )
+
+        formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
+            user_listen_counts
+        )
+        return success_response(formatted_user_listen_counts)
 
 
 @ns.route(USER_TRACKS_ROUTE)

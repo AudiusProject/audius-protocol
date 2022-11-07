@@ -2,7 +2,7 @@
 
 ```
 # initial setup
-curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/master/dev-tools/setup.sh" | bash
+curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-tools/setup.sh" | bash
 
 # refresh terminal for docker
 exit
@@ -19,7 +19,7 @@ To use the client from a mac, we need to setup a transparent proxy server to int
 To setup the transparent proxy server from a mac:
 ```
 brew install sshuttle
-sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o "StrictHostKeyChecking=no"'
+sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 ```
 
 The password is `sshuttle`

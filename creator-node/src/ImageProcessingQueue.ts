@@ -1,5 +1,6 @@
 import type { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
 import type { ValuesOf } from './utils'
+import type { LogContext } from './apiHelpers'
 
 import { Queue, QueueEvents, Worker } from 'bullmq'
 import path from 'path'
@@ -45,7 +46,17 @@ export class ImageProcessingQueue {
     })
 
     // Process jobs sandboxed - https://docs.bullmq.io/guide/workers/sandboxed-processors
-    const processorFile = path.join(__dirname, 'resizeImage.js')
+    let processorFile
+
+    // run the sandbox worker from the transpiled js resizeImage file
+    // this cannot import typescript so we need to give it vanilla js
+    // during local dev we're in src/, but prod starts in build/src
+    // see scripts/start.sh for entry points
+    if (__dirname.includes('/build/src')) {
+      processorFile = path.join(__dirname, 'resizeImage.js')
+    } else {
+      processorFile = path.join(__dirname, '../build/src', 'resizeImage.js')
+    }
     const worker = new Worker('image-processing-queue', processorFile, {
       connection,
       concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
@@ -64,14 +75,13 @@ export class ImageProcessingQueue {
 
   /**
    * Logs a status message and includes current queue info
-   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {LogContext} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus(logContext: Object, message: string) {
+  async logStatus(logContext: LogContext, message: string) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.info(`Image Processing Queue: ${message}`)
-    logger.info(`Image Processing Queue: count: ${count}`)
+    logger.info(`Image Processing Queue (count ${count}): ${message}`)
   }
 
   /**
@@ -109,7 +119,7 @@ export class ImageProcessingQueue {
     fileName: string
     sizes: Record<string, number>
     square: boolean
-    logContext: Object
+    logContext: LogContext
   }) {
     const job = await this.queue.add(ProcessNames.resizeImage, {
       file,

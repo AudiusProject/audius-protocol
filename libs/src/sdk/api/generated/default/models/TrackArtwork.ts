@@ -18,24 +18,26 @@
  * @export
  * @interface TrackArtwork
  */
-export interface TrackArtwork {
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackArtwork
-     */
-    _150x150?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackArtwork
-     */
-    _480x480?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TrackArtwork
-     */
-    _1000x1000?: string;
-}
+export interface TrackArtwork 
+    {
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackArtwork
+        */
+        _150x150?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackArtwork
+        */
+        _480x480?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackArtwork
+        */
+        _1000x1000?: string;
+    }
+
 

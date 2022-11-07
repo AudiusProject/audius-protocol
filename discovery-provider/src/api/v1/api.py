@@ -13,6 +13,7 @@ from src.api.v1.tips import full_ns as full_tips_ns
 from src.api.v1.tips import ns as tips_ns
 from src.api.v1.tracks import full_ns as full_tracks_ns
 from src.api.v1.tracks import ns as tracks_ns
+from src.api.v1.transactions import full_ns as full_transactions_ns
 from src.api.v1.users import full_ns as full_users_ns
 from src.api.v1.users import ns as users_ns
 
@@ -48,3 +49,4 @@ api_v1_full.add_namespace(full_users_ns)
 api_v1_full.add_namespace(full_search_ns)
 api_v1_full.add_namespace(full_tips_ns)
 api_v1_full.add_namespace(reactions_ns)
+api_v1_full.add_namespace(full_transactions_ns)

@@ -25,12 +25,14 @@ import {
  * @export
  * @interface GetSupporting
  */
-export interface GetSupporting {
-    /**
-     * 
-     * @type {Array<Supporting>}
-     * @memberof GetSupporting
-     */
-    data?: Array<Supporting>;
-}
+export interface GetSupporting 
+    {
+        /**
+        * 
+        * @type {Array<Supporting>}
+        * @memberof GetSupporting
+        */
+        data?: Array<Supporting>;
+    }
+
 

@@ -16,13 +16,13 @@ import {
   MAX_MS_TO_ISSUE_RECOVER_ORPHANED_DATA_REQUESTS
 } from '../stateMachineConstants'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { asyncRetry } from '../../../utils/asyncRetry'
 
 const { QUEUE_NAMES } = require('../stateMachineConstants')
 const { getNodeUsers } = require('../stateMonitoring/stateMonitoringUtils')
 const config = require('../../../config')
 const redisClient: Redis = require('../../../redis')
 const models = require('../../../models')
-const asyncRetry = require('../../../utils/asyncRetry')
 const Utils = require('../../../utils')
 
 const WALLETS_ON_NODE_KEY = 'orphanedDataWalletsWithStateOnNode'
@@ -295,7 +295,7 @@ const _getPrimaryForWallet = async (
   try {
     const resp = await asyncRetry({
       logLabel: "fetch user's primary endpoint",
-      options: { retries: 3 },
+      options: { retries: 3, maxTimeout: 5000 },
       asyncFn: async () => {
         return axios({
           method: 'get',

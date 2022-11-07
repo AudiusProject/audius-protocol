@@ -22,6 +22,8 @@ redis = get_redis()
 test_file = "integration_tests/res/test_audio_file.mp3"
 track_metadata_json_file = "integration_tests/res/test_track_metadata.json"
 
+final_poa_block = 30000000
+
 
 def seed_contract_data(task, contracts, web3):
     user_factory_contract = contracts["user_factory_contract"]
@@ -206,6 +208,12 @@ def test_index_operations(celery_app, celery_app_contracts, mocker):
     new_user_id = seed_data["new_user_id"]
 
     mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
+
+    mocker.patch(
         "src.utils.cid_metadata_client.CIDMetadataClient._get_gateway_endpoints",
         return_value=["https://test-content-node.audius.co"],
         autospec=True,
@@ -260,6 +268,11 @@ def test_index_operations_metadata_fetch_error(
     )
 
     seed_contract_data(task, celery_app_contracts, web3)
+    mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
 
     current_block = None
     latest_block = None
@@ -321,6 +334,11 @@ def test_index_operations_tx_receipts_fetch_error(
     )
 
     seed_contract_data(task, celery_app_contracts, web3)
+    mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
 
     current_block = None
     latest_block = None
@@ -362,6 +380,12 @@ def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocke
     task = celery_app.celery.tasks["update_discovery_provider"]
     db = task.db
     web3 = celery_app_contracts["web3"]
+
+    mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
 
     # patch parse track event to raise an exception
     def parse_track_event(*_):
@@ -428,6 +452,11 @@ def test_index_operations_indexing_error_on_commit(
     task = celery_app.celery.tasks["update_discovery_provider"]
     db = task.db
     web3 = celery_app_contracts["web3"]
+    mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
@@ -500,6 +529,11 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
     task = celery_app.celery.tasks["update_discovery_provider"]
     db = task.db
     web3 = celery_app_contracts["web3"]
+    mocker.patch(
+        "src.utils.helpers.get_final_poa_block",
+        return_value=final_poa_block,
+        autospec=True,
+    )
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(

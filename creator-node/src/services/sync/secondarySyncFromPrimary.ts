@@ -1,5 +1,8 @@
 import type Logger from 'bunyan'
+import type { SyncStatus } from './syncUtil'
+import type { LogContext } from '../../apiHelpers'
 
+import axios from 'axios'
 import _ from 'lodash'
 import {
   logger as genericLogger,
@@ -8,7 +11,11 @@ import {
   logInfoWithDuration
 } from '../../logging'
 import { saveFileForMultihashToFS } from '../../fileManager'
-import DiskManager from '../../diskManager'
+import {
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete,
+  deleteAllCNodeUserDataFromDisk
+} from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
@@ -16,21 +23,24 @@ import {
   getAndValidateOwnEndpoint
 } from './secondarySyncFromPrimaryUtils'
 import { instrumentTracing, tracing } from '../../tracer'
-import { fetchExportFromNode } from './syncUtil'
+import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
 
 const models = require('../../models')
 const config = require('../../config')
 
+const selfSpId = config.get('spID')
+
 type SecondarySyncFromPrimaryParams = {
   serviceRegistry: any
   wallet: string
   creatorNodeEndpoint: string
   forceResyncConfig: ForceResyncConfig
-  logContext: Object
+  logContext: LogContext
   forceWipe?: boolean
   blockNumber?: number | null
+  syncUuid?: string | null
 }
 
 const handleSyncFromPrimary = async ({
@@ -131,28 +141,37 @@ const handleSyncFromPrimary = async ({
       }
 
       // Short circuit if wiping is disabled via env var
-      if (!config.get('syncForceWipeEnabled')) {
+      if (!config.get('syncForceWipeDBEnabled')) {
         return {
-          abort: 'Stopping sync early because syncForceWipeEnabled=false',
+          abort: 'Stopping sync early because syncForceWipeDBEnabled=false',
           result: 'abort_force_wipe_disabled'
+        }
+      }
+
+      // Short circuit if this node was ever the user's primary. This is a temporary
+      // guardrail to prevent deleting corrupted data caused by the trackBlockchainId bug
+      if (await wasThisNodeEverPrimaryFor(wallet, libs)) {
+        return {
+          abort:
+            "Stopping sync early because forceWipe=true and this node used to be the user's primary",
+          result: 'abort_node_used_to_be_primary'
         }
       }
 
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
-      } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        } catch (error) {
+          await clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
@@ -171,7 +190,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -182,23 +201,25 @@ const handleSyncFromPrimary = async ({
       }
 
       // Wipe disk - delete files whose paths we stored in redis earlier
-      try {
-        const numFilesDeleted =
-          await DiskManager.deleteAllCNodeUserDataFromDisk(
+      // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
             wallet,
             numFilesToDelete,
             logger
           )
-        logger.info(
-          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
-        )
-      } catch (error) {
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+          logger.info(
+            `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
+          )
+        } catch (error) {
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       if (forceWipe) {
@@ -506,7 +527,7 @@ const handleSyncFromPrimary = async ({
       // Save all track files to disk in batches (to limit concurrent load)
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-        logger.info(
+        logger.debug(
           `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
@@ -544,7 +565,7 @@ const handleSyncFromPrimary = async ({
           i,
           i + FileSaveMaxConcurrency
         )
-        logger.info(
+        logger.debug(
           `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
@@ -608,7 +629,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all ClockRecord entries to DB')
+      logger.debug('Saved all ClockRecord entries to DB')
 
       await models.File.bulkCreate(
         nonTrackFiles.map((file: any) => {
@@ -623,7 +644,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all non-track File entries to DB')
+      logger.debug('Saved all non-track File entries to DB')
 
       await models.Track.bulkCreate(
         fetchedCNodeUser.tracks.map((track: any) => ({
@@ -632,7 +653,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all Track entries to DB')
+      logger.debug('Saved all Track entries to DB')
 
       await models.File.bulkCreate(
         trackFiles.map((trackFile: any) => {
@@ -646,7 +667,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all track File entries to DB')
+      logger.debug('Saved all track File entries to DB')
 
       await models.AudiusUser.bulkCreate(
         fetchedCNodeUser.audiusUsers.map((audiusUser: any) => ({
@@ -655,11 +676,11 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all AudiusUser entries to DB')
+      logger.debug('Saved all AudiusUser entries to DB')
 
       await transaction.commit()
 
-      logger.info(
+      logger.debug(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
@@ -738,6 +759,14 @@ const handleSyncFromPrimary = async ({
  *    with progressively increasing clock values until secondaries have completely synced up.
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
+ * @param {Object} param
+ * @param {Object} param.serviceRegistry
+ * @param {string} param.wallet
+ * @param {string} param.creatorNodeEndpoint
+ * @param {Object} param.forceResyncConfig
+ * @param {LogContext} param.logContext
+ * @param {boolean} [param.forceWipe]
+ * @param {number} [param.blockNumber]
  */
 async function _secondarySyncFromPrimary({
   serviceRegistry,
@@ -746,7 +775,8 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
-  blockNumber = null
+  blockNumber = null,
+  syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
   const { prometheusRegistry } = serviceRegistry
   const secondarySyncFromPrimaryMetric = prometheusRegistry.getMetric(
@@ -794,6 +824,16 @@ async function _secondarySyncFromPrimary({
     }
   ) as Logger
 
+  try {
+    if (syncUuid && result?.length) {
+      await setSyncStatus(syncUuid, result as SyncStatus)
+    }
+  } catch (e) {
+    secondarySyncFromPrimaryLogger.error(
+      `Failed to update sync status for polling: ${e}`
+    )
+  }
+
   if (error) {
     tracing.setSpanAttribute('error', error)
     secondarySyncFromPrimaryLogger.error(
@@ -822,6 +862,34 @@ async function _secondarySyncFromPrimary({
   }
 
   return { result }
+}
+
+const wasThisNodeEverPrimaryFor = async (
+  wallet: string,
+  libs: any
+): Promise<boolean> => {
+  // Get userId from wallet
+  const users = await libs.User.getUsers(1, 0, null, wallet)
+  const userId = users[0].user_id
+
+  // Return true if any snapshot of the user's history had this node as their primary
+  const history = (
+    await axios({
+      baseURL: libs.discoveryProvider.discoveryProviderEndpoint,
+      url: `/users/history/${userId}`,
+      params: {
+        limit: 100
+      },
+      method: 'get',
+      timeout: 45_000
+    })
+  ).data.data
+  if (history.length >= 100) return true
+  for (const snapshot of history) {
+    if (snapshot.primary_id === selfSpId) return true
+  }
+
+  return false
 }
 
 export const secondarySyncFromPrimary = instrumentTracing({

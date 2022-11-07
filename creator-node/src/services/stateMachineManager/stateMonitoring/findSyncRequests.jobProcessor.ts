@@ -85,7 +85,7 @@ async function findSyncRequests({
       [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
       ...userSecondarySyncMetricsMap[wallet]
     }
-    logger.info(
+    logger.debug(
       `Finding sync requests for user ${JSON.stringify(
         user
       )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`
@@ -253,10 +253,27 @@ async function _findSyncsForUser(
 
     // Determine if secondary requires a sync by comparing its user data against primary (this node)
     let syncMode
-    const { clock: primaryClock, filesHash: primaryFilesHash } =
-      replicaToAllUserInfoMaps[primary][wallet]
+    const primaryUserInfo = replicaToAllUserInfoMaps[primary]?.[wallet]
+    const secondaryUserInfo = replicaToAllUserInfoMaps[secondary]?.[wallet]
+
+    if (_.isEmpty(primaryUserInfo) || _.isEmpty(secondaryUserInfo)) {
+      let missingFor
+      if (_.isEmpty(primaryUserInfo) && _.isEmpty(secondaryUserInfo)) {
+        missingFor = 'primary and secondary'
+      } else if (_.isEmpty(primaryUserInfo)) missingFor = 'primary'
+      else missingFor = 'secondary'
+      tracing.error(
+        `missing user info for ${missingFor} - maybe batch_clock_status failed earlier`
+      )
+      outcomesBySecondary[secondary].result = 'no_sync_unexpected_error'
+      continue
+    }
+
+    const { clock: primaryClock, filesHash: primaryFilesHash } = primaryUserInfo
+
     const { clock: secondaryClock, filesHash: secondaryFilesHash } =
-      replicaToAllUserInfoMaps[secondary][wallet]
+      secondaryUserInfo
+
     try {
       syncMode = await computeSyncModeForUserAndReplica({
         wallet,

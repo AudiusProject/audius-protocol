@@ -8,7 +8,6 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 
 const config = require('../src/config')
-const defaultConfig = require('../default-config.json')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -93,7 +92,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
     const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '@audius/sdk': {
           libs: {
@@ -161,7 +160,8 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(400)
 
     // Reset max file limits
-    process.env.maxAudioFileSizeBytes = defaultConfig.maxAudioFileSizeBytes
+    process.env.maxAudioFileSizeBytes = config.get('maxAudioFileSizeBytes')
+    
   })
 
   it('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
@@ -186,7 +186,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .expect(500)
 
     // Reset max file limits
-    process.env.maxMemoryFileSizeBytes = defaultConfig.maxMemoryFileSizeBytes
+    process.env.maxMemoryFileSizeBytes = config.get('maxMemoryFileSizeBytes')
   })
 
   it('uploads /track_content_async', async function () {
@@ -925,7 +925,7 @@ describe('test Polling Tracks with real files', function () {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
     const { handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           segment: sinon
@@ -950,7 +950,7 @@ describe('test Polling Tracks with real files', function () {
 
   it('sends server error response if transcoding fails', async function () {
     const { handleTrackContentRoute } = proxyquire(
-      '../src/components/tracks/tracksComponentService.js',
+      '../src/components/tracks/tracksComponentService',
       {
         '../../TranscodingQueue': {
           transcode320: sinon

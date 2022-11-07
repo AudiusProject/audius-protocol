@@ -16,6 +16,7 @@ const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
 const { clusterUtils } = require('../../utils')
+const { clearSyncStatuses } = require('../sync/syncUtil')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -25,10 +26,17 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+    if (clusterUtils.isThisWorkerInit()) {
+      await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+      await clearSyncStatuses()
 
-    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
-    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
+      // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+      await updateContentNodeChainInfo(
+        baseLogger,
+        redis,
+        audiusLibs.ethContracts
+      )
+    }
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -74,11 +82,11 @@ class StateMachineManager {
         },
         [QUEUE_NAMES.RECURRING_SYNC]: {
           queue: recurringSyncQueue,
-          maxWaitingJobs: 100000
+          maxWaitingJobs: 10000
         },
         [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
           queue: updateReplicaSetQueue,
-          maxWaitingJobs: 10000
+          maxWaitingJobs: 1000
         },
         [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
           queue: recoverOrphanedDataQueue,
@@ -92,14 +100,20 @@ class StateMachineManager {
             port: config.get('redisPort')
           }
         })
-        queueEvents.on(
-          'completed',
-          makeOnCompleteCallback(
-            queueName,
-            queueNameToQueueMap,
-            prometheusRegistry
-          ).bind(this)
-        )
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        queueEvents.on('completed', async ({ jobId, returnvalue }, id) => {
+          try {
+            await makeOnCompleteCallback(
+              queueName,
+              queueNameToQueueMap,
+              prometheusRegistry
+            ).bind(this)({ jobId, returnvalue }, id)
+          } catch (e) {
+            baseLogger.error(
+              'Fatal: onComplete errored. Cron queues may be broken.'
+            )
+          }
+        })
 
         // Update the mapping in this StateMachineManager whenever a job successfully fetches it
         if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
@@ -107,6 +121,47 @@ class StateMachineManager {
             'completed',
             this.updateMapOnMapFetchJobComplete.bind(this)
           )
+          queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
+          })
+          queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            cNodeEndpointToSpIdMapQueue.add('retry-after-error', {})
+          })
+        }
+
+        // Recurring queues need to re-enqueue jobs when they fail/error
+        else if (queueName === QUEUE_NAMES.MONITOR_STATE) {
+          queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            stateMonitoringManager.recoverFromJobFailure(
+              monitorStateQueue,
+              audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            )
+          })
+          queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            stateMonitoringManager.recoverFromJobFailure(
+              monitorStateQueue,
+              audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            )
+          })
+        } else if (queueName === QUEUE_NAMES.RECOVER_ORPHANED_DATA) {
+          queueEvents.on('failed', (_args, _id) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            recoverOrphanedDataQueue.add('retry-after-fail', {
+              discoveryNodeEndpoint:
+                audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            })
+          })
+          queueEvents.on('error', (_args) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            recoverOrphanedDataQueue.add('retry-after-error', {
+              discoveryNodeEndpoint:
+                audiusLibs.discoveryProvider.discoveryProviderEndpoint
+            })
+          })
         }
       }
 
@@ -143,7 +198,7 @@ class StateMachineManager {
    * @param {number} jobId the ID of the job that completed
    * @param {string} returnvalue the stringified JSON of the job's returnValue
    */
-  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, id) {
+  updateMapOnMapFetchJobComplete({ jobId, returnvalue }, _id) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
     try {

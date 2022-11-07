@@ -25,18 +25,20 @@ import {
  * @export
  * @interface RemixesResponse
  */
-export interface RemixesResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof RemixesResponse
-     */
-    count: number;
-    /**
-     * 
-     * @type {Array<TrackFull>}
-     * @memberof RemixesResponse
-     */
-    tracks?: Array<TrackFull>;
-}
+export interface RemixesResponse 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof RemixesResponse
+        */
+        count: number;
+        /**
+        * 
+        * @type {Array<TrackFull>}
+        * @memberof RemixesResponse
+        */
+        tracks?: Array<TrackFull>;
+    }
+
 

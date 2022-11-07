@@ -274,8 +274,7 @@ const makeQueue = ({
   removeOnFail,
   prometheusRegistry,
   globalConcurrency = 1,
-  limiter = null,
-  onFailCallback = null
+  limiter = null
 }) => {
   const connection = {
     host: config.get('redisHost'),
@@ -295,22 +294,10 @@ const makeQueue = ({
     limiter
   })
   if (limiter) {
-    const scheduler = new QueueScheduler(name, { connection })
+    const _scheduler = new QueueScheduler(name, { connection })
   }
 
   _registerQueueEvents(worker, logger)
-  queue.on(
-    'failed',
-    onFailCallback ||
-      ((job, error, prev) => {
-        const loggerWithId = createChildLogger(logger, {
-          jobId: job?.id || 'unknown'
-        })
-        loggerWithId.error(
-          `Job failed to complete. ID=${job?.id}. Error=${error}`
-        )
-      })
-  )
 
   if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
     prometheusRegistry.startQueueMetrics(queue, worker)
@@ -320,16 +307,22 @@ const makeQueue = ({
 }
 
 const _registerQueueEvents = (worker, queueLogger) => {
-  worker.on('active', (job, prev) => {
+  worker.on('active', (job, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId: job.id })
-    logger.info('Job active')
+    logger.debug('Job active')
   })
-  worker.on('error', (error) => {
-    queueLogger.error(`Job error - ${error}`)
+  worker.on('failed', (job, error, _prev) => {
+    const loggerWithId = createChildLogger(queueLogger, {
+      jobId: job?.id || 'unknown'
+    })
+    loggerWithId.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
   })
-  worker.on('stalled', (jobId, prev) => {
+  worker.on('error', (failedReason) => {
+    queueLogger.error(`Job error - ${failedReason}`)
+  })
+  worker.on('stalled', (jobId, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId })
-    logger.info('Job stalled')
+    logger.debug('Job stalled')
   })
 }
 

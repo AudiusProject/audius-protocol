@@ -31,54 +31,56 @@ import {
  * @export
  * @interface FullGetSupporter
  */
-export interface FullGetSupporter {
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporter
-     */
-    latest_chain_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporter
-     */
-    latest_indexed_block: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporter
-     */
-    latest_chain_slot_plays: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof FullGetSupporter
-     */
-    latest_indexed_slot_plays: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporter
-     */
-    signature: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof FullGetSupporter
-     */
-    timestamp: string;
-    /**
-     * 
-     * @type {VersionMetadata}
-     * @memberof FullGetSupporter
-     */
-    version: VersionMetadata;
-    /**
-     * 
-     * @type {FullSupporter}
-     * @memberof FullGetSupporter
-     */
-    data?: FullSupporter;
-}
+export interface FullGetSupporter 
+    {
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporter
+        */
+        latest_chain_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporter
+        */
+        latest_indexed_block: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporter
+        */
+        latest_chain_slot_plays: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof FullGetSupporter
+        */
+        latest_indexed_slot_plays: number;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporter
+        */
+        signature: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof FullGetSupporter
+        */
+        timestamp: string;
+        /**
+        * 
+        * @type {VersionMetadata}
+        * @memberof FullGetSupporter
+        */
+        version: VersionMetadata;
+        /**
+        * 
+        * @type {FullSupporter}
+        * @memberof FullGetSupporter
+        */
+        data?: FullSupporter;
+    }
+
 

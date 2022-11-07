@@ -7,9 +7,9 @@ import { generateTimestampAndSignature } from '../apiSigning'
 import { libs } from '@audius/sdk'
 import { getAllRegisteredCNodes } from '../services/ContentNodeInfoManager'
 import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
+import { asyncRetry } from './asyncRetry'
 
 const DecisionTree = require('./decisionTree')
-const asyncRetry = require('./asyncRetry')
 const LibsUtils = libs.Utils
 
 export const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
@@ -134,7 +134,7 @@ export async function findCIDInNetwork(
             throw new Error('CID does not match what is expected to be')
           }
 
-          logger.info(
+          logger.debug(
             `Successfully fetched CID=${cid} file=${filePath} from node ${endpoint}`
           )
 
@@ -144,7 +144,7 @@ export async function findCIDInNetwork(
         logLabel: 'findCIDInNetwork',
         options: {
           retries: numRetries,
-          minTimeout: 3000
+          maxTimeout: 10000
         }
       })
     } catch (e: any) {

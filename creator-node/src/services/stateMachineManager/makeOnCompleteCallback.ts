@@ -1,5 +1,5 @@
 import type Logger from 'bunyan'
-import type { Queue } from 'bullmq'
+import type { Queue, BulkJobOptions } from 'bullmq'
 import type {
   AnyJobParams,
   QueueNameToQueueMap,
@@ -7,7 +7,7 @@ import type {
   ParamsForJobsToEnqueue
 } from './types'
 import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
-import type { TQUEUE_NAMES } from './stateMachineConstants'
+import { TQUEUE_NAMES, SYNC_MODES } from './stateMachineConstants'
 
 import { instrumentTracing, tracing } from '../../tracer'
 
@@ -58,7 +58,7 @@ function makeOnCompleteCallback(
       jobId,
       returnvalue
     }: { jobId: string; returnvalue: string | AnyDecoratedJobReturnValue },
-    id: string
+    _id: string
   ) {
     // Create a logger so that we can filter logs by the tags `queue` and `jobId` = <id of the job that successfully completed>
     const logger = createChildLogger(baseLogger, {
@@ -81,7 +81,7 @@ function makeOnCompleteCallback(
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
     try {
-      logger.info(`Job successfully completed. Parsing result`)
+      logger.debug(`Job processor successfully completed. Parsing result`)
       if (typeof returnvalue === 'string' || returnvalue instanceof String) {
         jobResult = JSON.parse(returnvalue as string) || {}
       } else {
@@ -147,7 +147,7 @@ const enqueueJobs = async (
   triggeredByJobId: string,
   logger: Logger
 ) => {
-  logger.info(
+  logger.debug(
     `Attempting to add ${jobs?.length} jobs in bulk to queue ${queueNameToAddTo}`
   )
 
@@ -164,16 +164,25 @@ const enqueueJobs = async (
   try {
     const bulkAddResult = await queueToAddTo.addBulk(
       jobs.map((job) => {
-        return {
+        const jobInfo: { name: any; data: any; opts?: BulkJobOptions } = {
           name: 'defaultName',
           data: {
             enqueuedBy: `${triggeredByQueueName}#${triggeredByJobId}`,
             ...job
           }
         }
+
+        if (
+          (job as any)?.syncMode === SYNC_MODES.MergePrimaryAndSecondary ||
+          (job as any)?.syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary
+        ) {
+          jobInfo.opts = { ...jobInfo.opts, lifo: true }
+        }
+
+        return jobInfo
       })
     )
-    logger.info(
+    logger.debug(
       `Added ${bulkAddResult.length} jobs to ${queueNameToAddTo} in bulk after successful completion`
     )
   } catch (e: any) {

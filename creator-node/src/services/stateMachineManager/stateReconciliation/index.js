@@ -59,6 +59,10 @@ class StateReconciliationManager {
       prometheusRegistry
     })
 
+    if (config.get('maxRecurringRequestSyncJobConcurrency') === 0) {
+      await recurringSyncQueue.pause()
+    }
+
     const { queue: updateReplicaSetQueue } = makeQueue({
       name: QUEUE_NAMES.UPDATE_REPLICA_SET,
       processor: this.makeProcessJob(
@@ -72,6 +76,10 @@ class StateReconciliationManager {
       removeOnFail: QUEUE_HISTORY.UPDATE_REPLICA_SET,
       prometheusRegistry
     })
+
+    if (config.get('maxUpdateReplicaSetJobConcurrency') === 0) {
+      await updateReplicaSetQueue.pause()
+    }
 
     const { queue: recoverOrphanedDataQueue } = makeQueue({
       name: QUEUE_NAMES.RECOVER_ORPHANED_DATA,
@@ -89,19 +97,6 @@ class StateReconciliationManager {
         max:
           config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
-      },
-      onFailCallback: (job, error, prev) => {
-        const logger = createChildLogger(recoverOrphanedDataLogger, {
-          jobId: job?.id || 'unknown'
-        })
-        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
-        // This is a recurring job that re-enqueues itself on success, so we want to also re-enqueue on failure
-        const {
-          data: { discoveryNodeEndpoint }
-        } = job
-        recoverOrphanedDataQueue.add('retry-after-fail', {
-          discoveryNodeEndpoint
-        })
       }
     })
 

@@ -72,6 +72,9 @@ module.exports = (sequelize, DataTypes) => {
           fields: ['multihash']
         },
         {
+          fields: ['storagePath']
+        },
+        {
           fields: ['dirMultihash']
         },
         {

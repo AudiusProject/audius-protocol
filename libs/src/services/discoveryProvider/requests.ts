@@ -724,3 +724,18 @@ export const getUserReplicaSet = (encodedUserId: string) => {
     timeout: 5000
   }
 }
+
+export const getUserListenCountsMonthly = (
+  encodedUserId: string,
+  startTime: string,
+  endTime: string
+) => {
+  return {
+    endpoint: `/v1/users/${encodedUserId}/listen_counts_monthly`,
+    timeout: 10000,
+    queryParams: {
+      start_time: startTime,
+      end_time: endTime
+    }
+  }
+}

@@ -37,7 +37,7 @@ yes | sh setup.sh
 ```
 
 
-Cependant, si l'installation du nœud ne réussit pas et que kubectl n'est pas disponible, il est conseillé de suivre les étapes d'installation à la main [ici](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/cluster-setup.md).
+Cependant, si l'installation du nœud ne réussit pas et que kubectl n'est pas disponible, il est conseillé de suivre les étapes d'installation à la main [ici](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/cluster-setup.md).
 
 
 
@@ -368,7 +368,7 @@ kubectl apply -f <secret_from_audius>.yaml
 ```
 
 
-Ensuite, mettez à jour les balises de journalisation dans le daemonset fluentd avec votre nom, afin que nous puissions vous identifier vous et votre service de façon unique ici : [https://github.com/AudiusProject/audius-k8s-manifests/blob/master/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/master/audius/logger/logger.yaml#L207). Cela permet à notre service de journalisation de filtrer les logs par fournisseur de service et par fournisseur de service et service. `SP_NAME` fait référence au nom de votre organisation et `SP_NAME_TYPE_ID` fait référence au nom de votre organisation plus au type de service que vous utilisez, plus un id pour distinguer plusieurs services du même type.
+Ensuite, mettez à jour les balises de journalisation dans le daemonset fluentd avec votre nom, afin que nous puissions vous identifier vous et votre service de façon unique ici : [https://github.com/AudiusProject/audius-k8s-manifests/blob/main/audius/logger/logger.yaml\#L207](https://github.com/AudiusProject/audius-k8s-manifests/blob/main/audius/logger/logger.yaml#L207). Cela permet à notre service de journalisation de filtrer les logs par fournisseur de service et par fournisseur de service et service. `SP_NAME` fait référence au nom de votre organisation et `SP_NAME_TYPE_ID` fait référence au nom de votre organisation plus au type de service que vous utilisez, plus un id pour distinguer plusieurs services du même type.
 
 Par exemple, si votre nom est `Génial Opérateur` et que vous exécutez un noeud de contenu, définissez les balises comme :
 
@@ -466,7 +466,7 @@ Avant d'enregistrer un service dans le tableau de bord, nous devons nous assurer
 
 Le dossier `sp-actions/` contient des scripts qui testent la qualité des services. Effectuez les vérifications correspondantes de votre type de service ci-dessous pour vérifier que votre service est correctement configuré. Assurez-vous d'exécuter `npm install` dans `sp-actions/` pour installer toutes les dépendances.
 
-Pour plus d'informations sur `sp-actions/` voir README dans le dossier [sp-actions/](https://github.com/AudiusProject/audius-k8s-manifests/tree/master/sp-utilities)
+Pour plus d'informations sur `sp-actions/` voir README dans le dossier [sp-actions/](https://github.com/AudiusProject/audius-k8s-manifests/tree/main/sp-utilities)
 
 **Creator Node**
 

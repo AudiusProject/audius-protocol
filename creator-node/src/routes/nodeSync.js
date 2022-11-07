@@ -14,7 +14,7 @@ const { instrumentTracing, tracing } = require('../tracer')
 
 const router = express.Router()
 
-const handleExport = async (req, res) => {
+const handleExport = async (req, _res) => {
   const start = Date.now()
 
   const walletPublicKeys = req.query.wallet_public_key // array
@@ -93,7 +93,7 @@ router.get(
 /** Checks if node sync is in progress for wallet. */
 router.get(
   '/sync_status/:walletPublicKey',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const walletPublicKey = req.params.walletPublicKey
 
     const redisClient = req.app.get('redisClient')

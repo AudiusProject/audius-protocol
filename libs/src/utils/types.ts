@@ -30,7 +30,7 @@ type UID = string
 export type UserMetadata = {
   user_id: number
   album_count: number
-  artist_pick_track_id: number
+  artist_pick_track_id: Nullable<number>
   bio: string | null
   cover_photo: Nullable<CID>
   creator_node_endpoint: string
@@ -85,8 +85,23 @@ export interface Download {
   cid: Nullable<string>
 }
 
+export type TokenStandard = 'ERC721' | 'ERC1155'
+
+export type PremiumConditionsEthNFTCollection = {
+  chain: 'eth'
+  standard: TokenStandard
+  address: string
+}
+
+export type PremiumConditionsSolNFTCollection = {
+  chain: 'sol'
+  name: string
+}
+
 export type PremiumConditions = {
-  nft_collection?: string
+  nft_collection?:
+    | PremiumConditionsEthNFTCollection
+    | PremiumConditionsSolNFTCollection
   follow_user_id?: number
 }
 

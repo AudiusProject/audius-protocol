@@ -116,6 +116,7 @@ def get_tracks_route():
     current_user_id = get_current_user_id(required=False)
     args["current_user_id"] = current_user_id
     args["skip_unlisted_filter"] = True
+    args["skip_stem_of_filter"] = True
     tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 

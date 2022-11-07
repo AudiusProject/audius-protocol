@@ -4,8 +4,9 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, marshal_with
+from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_path_param,
     abort_bad_request_param,
     abort_not_found,
@@ -33,6 +34,9 @@ from src.api.v1.helpers import (
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
 from src.queries.get_max_id import get_max_id
+from src.queries.get_premium_track_signatures import (
+    get_nft_gated_premium_track_signatures,
+)
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -1193,6 +1197,58 @@ class FeelingLucky(Resource):
         tracks = get_random_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
+
+
+track_signatures_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+track_signatures_parser.add_argument(
+    "track_ids",
+    description="""A list of track ids. The order of these track ids will match the order of the token ids.""",
+    type=int,
+    action="append",
+)
+track_signatures_parser.add_argument(
+    "token_ids",
+    description="""A list of ERC1155 token ids. The order of these token ids will match the order of the track ids.
+        There may be multiple token ids for a given track id, so we use a '-' as the delimiter for a track id's token ids.""",
+    type=str,
+    action="append",
+)
+
+
+@full_ns.route("/<string:user_id>/nft-gated-signatures")
+class NFTGatedPremiumTrackSignatures(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Premium Track Signatures""",
+        description="""Gets premium track signatures for passed in premium track ids""",
+        params={
+            "user_id": """The user for whom we are generating premium track signatures."""
+        },
+    )
+    @full_ns.expect(track_signatures_parser)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_user_id = decode_with_abort(user_id, full_ns)
+        request_args = track_signatures_parser.parse_args()
+        track_ids = request_args.get("track_ids")
+        token_ids = request_args.get("token_ids")
+
+        # Track ids and token ids should have the same length.
+        # If a track id does not have token ids, then we should still receive an empty string for its token ids.
+        # We need to enforce this because we won't be able to tell which track ids the token ids are for otherwise.
+        if len(track_ids) != len(token_ids):
+            full_ns.abort(400, "Mismatch between track ids and their token ids.")
+
+        track_token_id_map = {}
+        for i, track_id in enumerate(track_ids):
+            track_token_id_map[track_id] = (
+                token_ids[i].split("-") if token_ids[i] else []
+            )
+
+        premium_track_signatures = get_nft_gated_premium_track_signatures(
+            decoded_user_id, track_token_id_map
+        )
+        return success_response(premium_track_signatures)
 
 
 @ns.route("/latest", doc=False)

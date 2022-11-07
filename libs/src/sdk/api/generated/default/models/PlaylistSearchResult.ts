@@ -25,12 +25,14 @@ import {
  * @export
  * @interface PlaylistSearchResult
  */
-export interface PlaylistSearchResult {
-    /**
-     * 
-     * @type {Array<Playlist>}
-     * @memberof PlaylistSearchResult
-     */
-    data?: Array<Playlist>;
-}
+export interface PlaylistSearchResult 
+    {
+        /**
+        * 
+        * @type {Array<Playlist>}
+        * @memberof PlaylistSearchResult
+        */
+        data?: Array<Playlist>;
+    }
+
 
