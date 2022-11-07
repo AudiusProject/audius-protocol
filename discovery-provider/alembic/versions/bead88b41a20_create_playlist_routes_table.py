@@ -122,7 +122,7 @@ def upgrade():
                 ON c_playlists.playlist_id = nc.playlist_id
                 WHERE NOT nc.is_current
                 AND c_playlists.is_current
-                AND NOT nc.playlist_name = c_playlists.playlist_name
+                AND NOT LOWER(nc.playlist_name) = LOWER(c_playlists.playlist_name)
             ) p
             WHERE p.rank = 1;
             """
