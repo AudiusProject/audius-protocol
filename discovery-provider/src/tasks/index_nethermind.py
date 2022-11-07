@@ -72,7 +72,6 @@ BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
 web3 = web3_provider.get_nethermind_web3()
-entity_manager_address = None
 
 # HELPER FUNCTIONS
 
@@ -351,6 +350,9 @@ def save_skipped_tx(session, redis):
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
+    entity_manager_address = os.getenv(
+        "audius_contracts_nethermind_entity_manager_address"
+    )
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
