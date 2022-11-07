@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import ast
 import datetime
 import logging
+import os
 import time
 from collections import defaultdict
 from typing import Any, Dict
@@ -196,17 +197,23 @@ def create_celery(test_config=None):
     global contract_addresses
     # pylint: enable=W0603
 
-    (
-        registry,
-        user_factory,
-        track_factory,
-        social_feature_factory,
-        playlist_factory,
-        user_library_factory,
-        user_replica_set_manager,
-        entity_manager,
-        contract_addresses,
-    ) = init_contracts()
+    try:
+        (
+            registry,
+            user_factory,
+            track_factory,
+            social_feature_factory,
+            playlist_factory,
+            user_library_factory,
+            user_replica_set_manager,
+            entity_manager,
+            contract_addresses,
+        ) = init_contracts()
+    except:
+        # init_contracts will fail when poa-gateway points to nethermind
+        # only swallow exception in stage
+        if os.getenv("audius_discprov_env") != "stage":
+            raise Exception("Failed to init POA contracts")
 
     return create(test_config, mode="celery")
 

@@ -527,7 +527,7 @@ def get_final_poa_block(shared_config) -> Optional[int]:
     # get final poa block from identity and cache result
     # marks the transition to nethermind
     # returns None if still on POA
-    if os.getenv("audius_disc_prov_env") != "stage":
+    if os.getenv("audius_discprov_env") != "stage":
         return None
 
     redis = redis_connection.get_redis()
