@@ -280,6 +280,7 @@ const healthCheckDuration = async () => {
 }
 
 const configCheck = async () => {
+  // https://github.com/mozilla/node-convict/tree/master/packages/convict#configtostring
   const data = config.toString()
   return data
 }

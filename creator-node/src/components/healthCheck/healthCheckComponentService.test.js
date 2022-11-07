@@ -702,10 +702,7 @@ describe('Test Health Check Verbose', function () {
   })
 })
 
-describe.only('Test config check', () => {
-  it.only('asdf', async () => {
-    const resp = await configCheck()
-    console.log(resp)
-    
-  })
+it('Test config check route', async () => {
+  const resp = await configCheck()
+  assert.ok(resp.includes('"dbUrl": "[Sensitive]"'))
 })
