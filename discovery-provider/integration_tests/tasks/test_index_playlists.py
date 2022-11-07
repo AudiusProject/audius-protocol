@@ -1,6 +1,5 @@
 import random
 from datetime import datetime
-from functools import partial
 
 from integration_tests.challenges.index_helpers import (
     AttrDict,
