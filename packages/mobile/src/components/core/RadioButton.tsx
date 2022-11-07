@@ -1,5 +1,5 @@
-import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
+import type { ViewStyle } from 'react-native'
 
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -13,12 +13,24 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  outerInactive: { backgroundColor: palette.neutralLight4 },
+  outerInactive: { backgroundColor: palette.neutralLight1 },
   outerActive: {
     backgroundColor: palette.secondary
   },
   inner: {},
-  innerInactive: {},
+  innerInactive: {
+    backgroundColor: palette.neutralLight6,
+    borderRadius: spacing(5.5),
+    height: spacing(5.5),
+    width: spacing(5.5),
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    shadowColor: palette.neutralLight6,
+    shadowOpacity: 0.9,
+    shadowRadius: 2,
+    shadowOffset: { height: -2, width: -2 }
+  },
   innerActive: {
     height: spacing(3.5),
     width: spacing(3.5),

@@ -1,6 +1,15 @@
 import { CollectionMetadata, TrackMetadata } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
 
+type NativeFile = {
+  uri: string
+  name: string | null
+  copyError?: string
+  fileCopyUri: string | null
+  type: string | null
+  size: number | null
+}
+
 export enum UploadType {
   INDIVIDUAL_TRACK = 0,
   INDIVIDUAL_TRACKS = 1,
@@ -9,14 +18,14 @@ export enum UploadType {
 }
 
 export interface UploadTrack {
-  file: File
+  file: File | NativeFile
   preview: any // Basically the Howler.js API, but with underscores.
   metadata: ExtendedTrackMetadata
 }
 
 export interface ExtendedTrackMetadata extends TrackMetadata {
   artwork: {
-    file: Blob
+    file: Blob | NativeFile
     url: string
   }
 }

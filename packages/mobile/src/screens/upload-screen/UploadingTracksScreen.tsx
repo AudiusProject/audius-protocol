@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import type { CommonState, UploadTrack } from '@audius/common'
 import { uploadSelectors, UploadType, uploadActions } from '@audius/common'
+import { useRoute } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
@@ -9,10 +10,10 @@ import { useEffectOnce } from 'react-use'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Screen, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import type { UploadRouteProp } from './ParamList'
 import { UploadingTrackTile } from './UploadingTrackTile'
 const { uploadTracks } = uploadActions
 const { getUploadProgress, getUploadSuccess } = uploadSelectors
@@ -50,7 +51,7 @@ const messages = {
 export type UploadingTracksParams = { tracks: UploadTrack[] }
 
 export const UploadingTracksScreen = () => {
-  const { params } = useRoute<'UploadingTracks'>()
+  const { params } = useRoute<UploadRouteProp<'UploadingTracks'>>()
   const { tracks } = params
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
@@ -78,7 +79,12 @@ export const UploadingTracksScreen = () => {
   })
 
   return (
-    <Screen title={messages.uploading} icon={IconUpload} style={styles.root}>
+    <Screen
+      title={messages.uploading}
+      icon={IconUpload}
+      style={styles.root}
+      topbarLeft={null}
+    >
       <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
         <View style={styles.title}>
           <IconUpload

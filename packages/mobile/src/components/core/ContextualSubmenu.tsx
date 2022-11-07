@@ -32,13 +32,32 @@ export type ContextualSubmenuProps = {
   styles?: StylesProp<{ divider: ViewStyle }>
   error?: boolean
   errorMessage?: string
+  lastItem?: boolean
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  root: {
+    marginVertical: spacing(4)
+  },
   content: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: spacing(4)
+    justifyContent: 'space-between'
+  },
+  optionPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: spacing(4)
+  },
+  optionPill: {
+    padding: spacing(2),
+    backgroundColor: palette.neutralLight8,
+    borderWidth: 1,
+    borderColor: palette.neutralLight7,
+    opacity: 0.8,
+    borderRadius: 2
+  },
+  optionPillText: {
+    textTransform: 'uppercase'
   }
 }))
 
@@ -51,7 +70,8 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
     ListSelectionProps,
     styles: stylesProp,
     errorMessage,
-    error
+    error,
+    lastItem
   } = props
   const styles = useStyles()
 
@@ -71,21 +91,35 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   return (
     <TouchableOpacity onPress={handlePress}>
       <Divider style={stylesProp?.divider} />
-      <View style={styles.content}>
-        <Text fontSize='large' weight='demiBold'>
-          {label}
-        </Text>
-        {value ? <Text>{value}</Text> : null}
-        <IconCaretRight
-          fill={neutralLight4}
-          height={spacing(4)}
-          width={spacing(4)}
-        />
+      <View style={styles.root}>
+        <View style={styles.content}>
+          <Text fontSize='large' weight='demiBold'>
+            {label}
+          </Text>
+          <IconCaretRight
+            fill={neutralLight4}
+            height={spacing(4)}
+            width={spacing(4)}
+          />
+        </View>
+        {value ? (
+          <View style={styles.optionPills}>
+            <View style={styles.optionPill}>
+              <Text
+                fontSize='small'
+                weight='demiBold'
+                style={styles.optionPillText}
+              >
+                {value}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+        {error && errorMessage ? (
+          <InputErrorMessage message={errorMessage} />
+        ) : null}
       </View>
-      {error && errorMessage ? (
-        <InputErrorMessage message={errorMessage} />
-      ) : null}
-      <Divider style={stylesProp?.divider} />
+      {!lastItem ? <Divider style={stylesProp?.divider} /> : null}
     </TouchableOpacity>
   )
 }

@@ -14,7 +14,9 @@ type UploadStackScreenProps = Omit<ScreenProps, 'children'> & {
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: { justifyContent: 'space-between' },
   bottomSection: {
-    padding: spacing(4),
+    paddingHorizontal: spacing(4),
+    paddingTop: spacing(6),
+    paddingBottom: spacing(12),
     backgroundColor: palette.white,
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight6

@@ -1,20 +1,29 @@
-import type { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+
+import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+import { ListSelectionScreen } from '../list-selection-screen'
 
 import { CompleteTrackScreen } from './CompleteTrackScreen'
+import { SelectTrackScreen } from './SelectTrackScreen'
 import { UploadCompleteScreen } from './UploadCompleteScreen'
-import { UploadScreen } from './UploadScreen'
 import { UploadingTracksScreen } from './UploadingTracksScreen'
 
-export * from './UploadScreen'
-export * from './ParamList'
+export * from './SelectTrackScreen'
 
-export const uploadScreens = (
-  Stack: ReturnType<typeof createNativeStackNavigator>
-) => (
-  <Stack.Group>
-    <Stack.Screen name='Upload' component={UploadScreen} />
-    <Stack.Screen name='CompleteTrack' component={CompleteTrackScreen} />
-    <Stack.Screen name='UploadingTracks' component={UploadingTracksScreen} />
-    <Stack.Screen name='UploadComplete' component={UploadCompleteScreen} />
-  </Stack.Group>
-)
+const Stack = createNativeStackNavigator()
+
+const screenOptionOverrides = { headerRight: () => null }
+
+export const UploadScreen = () => {
+  const screenOptions = useAppScreenOptions(screenOptionOverrides)
+
+  return (
+    <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Screen name='SelectTrack' component={SelectTrackScreen} />
+      <Stack.Screen name='CompleteTrack' component={CompleteTrackScreen} />
+      <Stack.Screen name='UploadingTracks' component={UploadingTracksScreen} />
+      <Stack.Screen name='UploadComplete' component={UploadCompleteScreen} />
+      <Stack.Screen name='ListSelection' component={ListSelectionScreen} />
+    </Stack.Navigator>
+  )
+}

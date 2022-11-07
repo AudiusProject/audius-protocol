@@ -16,6 +16,7 @@ export type TextProps = RNTextProps & {
     | 'neutralLight4'
     | 'inherit'
     | 'error'
+    | 'warning'
     | 'white'
   weight?: FontWeight
   fontSize?: FontSize | 'inherit'
@@ -30,9 +31,14 @@ const useStyles = makeStyles(
       ...typography[variant],
       ...(color === 'inherit'
         ? null
-        : color === 'error'
-        ? { color: palette.accentRed }
-        : { color: palette[color] }),
+        : {
+            color:
+              color === 'error'
+                ? palette.accentRed
+                : color === 'warning'
+                ? palette.accentOrange
+                : palette[color]
+          }),
       ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
       ...(fontSize && fontSize !== 'inherit'
         ? { fontSize: typography.fontSize[fontSize] }

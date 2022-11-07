@@ -315,7 +315,10 @@ export const Button = (props: ButtonProps) => {
     [rootHeightRef]
   )
 
-  const iconStyles = StyleSheet.flatten([styles.icon, stylesProp?.icon])
+  const { color: iconColor, ...iconStyles } = StyleSheet.flatten([
+    styles.icon,
+    stylesProp?.icon
+  ])
 
   const icon = Icon ? (
     <Icon
@@ -326,7 +329,7 @@ export const Button = (props: ButtonProps) => {
       ]}
       height={iconStyles.height}
       width={iconStyles.width}
-      fill={iconStyles.color}
+      fill={iconColor}
       {...IconProps}
     />
   ) : null

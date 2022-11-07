@@ -3,7 +3,7 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 
 import type { TextInputProps } from 'app/components/core'
-import { TextInput, Text } from 'app/components/core'
+import { TextInput } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { makeStyles } from 'app/styles'
 
@@ -13,12 +13,17 @@ type TextFieldProps = FieldProps & TextInputProps
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
-    marginVertical: spacing(4)
+    marginVertical: spacing(2)
   },
   label: { marginBottom: spacing(2) },
   input: {
     fontSize: typography.fontSize.large,
     fontFamily: typography.fontByWeight.demiBold
+  },
+  labelText: {
+    fontSize: typography.fontSize.large,
+    fontFamily: typography.fontByWeight.demiBold,
+    top: 4
   }
 }))
 
@@ -28,6 +33,7 @@ export const TextField = (props: TextFieldProps) => {
     label: labelProp,
     required,
     errorMessage: errorMessageProp,
+    styles: stylesProp,
     ...other
   } = props
 
@@ -39,19 +45,17 @@ export const TextField = (props: TextFieldProps) => {
 
   return (
     <View style={styles.root}>
-      <Text
-        fontSize='medium'
-        weight='demiBold'
-        color='neutralLight4'
-        style={styles.label}
-      >
-        {label}
-      </Text>
       <TextInput
-        styles={{ input: styles.input }}
+        label={label}
+        styles={{
+          ...stylesProp,
+          input: [styles.input, stylesProp?.input],
+          labelText: [styles.labelText, stylesProp?.labelText]
+        }}
         value={value}
         onChangeText={onChange(name)}
         onBlur={onBlur(name)}
+        returnKeyType='done'
         {...other}
       />
       {errorMessage && touched ? (
