@@ -94,13 +94,13 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // SEND to either POA or Nethermind here...
   let sendToNethermind = false
-  if (config.get('environment') === 'staging'){
+  if (config.get('environment') === 'staging') {
+    sendToNethermind = true
+  } else {
     const currentBlock = await web3.eth.getBlockNumber()
     const finalPOABlock = config.get('finalPOABlock')
-    sendToNethermind = finalPOABlock
-      ? config.get('environment') === 'staging' || currentBlock > finalPOABlock
-      : false  
-  } 
+    sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
+  }
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -370,7 +370,7 @@ let inFlight = 0
 
 async function relayToNethermind(encodedABI) {
   // generate a new private key per transaction (gas is free)
-  const accounts = new Accounts(config.get('nethermindWeb3'))
+  const accounts = new Accounts(config.get('nethermindWeb3Provider'))
 
   const wallet = accounts.create()
   const privateKey = wallet.privateKey.substring(2)
