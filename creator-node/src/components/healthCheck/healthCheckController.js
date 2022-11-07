@@ -219,7 +219,7 @@ const healthCheckNetworkController = async (req) => {
 
 const configCheckController = async (_req) => {
   const configs = configCheck()
-  return successResponse({ data: configs })
+  return successResponse({ ...configs })
 }
 
 // Routes

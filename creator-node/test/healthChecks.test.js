@@ -26,7 +26,7 @@ describe('Test health checks', () => {
     await request(app).get('/config_check')
       .expect(200)
       .expect(resp => {
-        const configs = resp.body.data.data
+        const configs = resp.body.data
         assert.strictEqual(configs.dbUrl, '[Sensitive]')
         assert.strictEqual(configs.delegatePrivateKey, '[Sensitive]')
       })
