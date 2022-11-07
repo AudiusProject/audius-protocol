@@ -13,7 +13,7 @@
     "dev": "ts-node src/main.ts",
     "nuke": "ts-node scripts/nuke.ts",
     "sql-ts": "ts-node scripts/sql-ts.ts && pg_dump -s --no-owner --no-privileges $audius_db_url > tests/schema.sql",
-    "start": "pm2-runtime build/src/main.js --restart-delay=3000",
+    "start": "pm2-runtime start ecosystem.config.js",
     "test": "vitest",
     "tsc": "tsc --noEmit"
   },
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "8.1.0",
+    "@types/commander": "^2.12.2",
     "apollo-server": "^3.10.0",
     "bodybuilder": "^2.5.0",
     "commander": "9.2.0",

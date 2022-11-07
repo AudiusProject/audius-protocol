@@ -35,12 +35,12 @@ export function dialEs() {
 export async function recoverFromRedIndex() {
   const es = dialEs()
   const indices = await es.cat.indices({ format: 'json' })
-  const hasRed = indices.find((i) => i.health == 'red')
+  const hasRed = indices.find((i: any) => i.health == 'red')
   if (Boolean(hasRed)) {
     logger.warn('found red index... nuking')
     try {
       await Promise.all(
-        indices.map((idx) =>
+        indices.map((idx: any) =>
           es.indices.delete({ index: idx.index }, { ignore: [404] })
         )
       )

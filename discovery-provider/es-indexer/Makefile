@@ -1,4 +1,5 @@
-test:
+test::
+	docker compose up -d
 	./tests/tests.sh
 
 down::
