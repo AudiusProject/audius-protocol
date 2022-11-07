@@ -417,12 +417,12 @@ def sanitize_slug(title, record_id, collision_id=0):
 
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
-    (PlaylistName="My Awesome Playlist!", collision_id=2) => "my-awesome-playlist-2"
+    (PlaylistName="My Awesome Playlist'~~", collision_id=2) => "my-awesome-playlist"
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|’,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
         "",
         sanitized_title,
     )
