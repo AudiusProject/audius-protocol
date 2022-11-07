@@ -218,8 +218,8 @@ const healthCheckNetworkController = async (req) => {
 }
 
 const configCheckController = async (_req) => {
-  const response = await configCheck()
-  return successResponse(response)
+  const configs = configCheck()
+  return successResponse({ data: configs })
 }
 
 // Routes
@@ -244,6 +244,6 @@ router.get(
   '/health_check/network',
   handleResponse(healthCheckNetworkController)
 )
-router.get('config_check', handleResponse(configCheckController))
+router.get('/config_check', handleResponse(configCheckController))
 
 module.exports = router
