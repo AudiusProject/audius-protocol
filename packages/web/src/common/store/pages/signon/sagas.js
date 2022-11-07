@@ -342,6 +342,8 @@ function* signUp() {
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
 
+  yield call(audiusBackendInstance.setUserHandleForRelay, handle)
+
   const feePayerOverride = yield select(getFeePayer)
 
   yield put(
