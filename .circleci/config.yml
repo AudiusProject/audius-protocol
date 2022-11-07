@@ -202,7 +202,6 @@ commands:
             # cleanup code setup before starting actual execution
             cleanup() {
               # Delete GCP box
-              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
               # Delete GCP firewall
               gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
@@ -1965,6 +1964,11 @@ workflows:
     triggers:
       - schedule:
           cron: '0 19 * * 5'
+          filters:
+            branches:
+              only: /(^main$)/
+      - schedule:
+          cron: '0 23 * * 6'
           filters:
             branches:
               only: /(^main$)/

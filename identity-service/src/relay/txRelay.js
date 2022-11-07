@@ -12,7 +12,6 @@ const AudiusABIDecoder = libs.AudiusABIDecoder
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
-const NETHERMIND_BLOCK_OFFSET = 30000000
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
 
 const ENVIRONMENT = config.get('environment')
@@ -94,7 +93,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const redis = req.app.get('redis')
 
   // SEND to either POA or Nethermind here...
-  const sendToNethermind = config.get('environment') === 'staging'
+  const currentBlock = await web3.eth.getBlockNumber()
+  const finalPOABlock = config.get('finalPOABlock')
+  const sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -394,7 +395,7 @@ async function relayToNethermind(encodedABI) {
     const receipt = await primaryWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
-    receipt.blockNumber += NETHERMIND_BLOCK_OFFSET
+    receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()
     const took = end - start

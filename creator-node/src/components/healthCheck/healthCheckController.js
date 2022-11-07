@@ -10,7 +10,8 @@ const {
 const {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
@@ -216,6 +217,11 @@ const healthCheckNetworkController = async (req) => {
   })
 }
 
+const configCheckController = async (_req) => {
+  const response = await configCheck()
+  return successResponse(response)
+}
+
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
@@ -234,9 +240,10 @@ router.get(
   '/health_check/verbose',
   handleResponse(healthCheckVerboseController)
 )
-
 router.get(
   '/health_check/network',
   handleResponse(healthCheckNetworkController)
 )
+router.get('config_check', handleResponse(configCheckController))
+
 module.exports = router

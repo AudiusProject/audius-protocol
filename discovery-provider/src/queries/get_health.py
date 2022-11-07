@@ -66,7 +66,6 @@ infra_setup = shared_config["discprov"]["infra_setup"]
 min_number_of_cpus: int = 8  # 8 cpu
 min_total_memory: int = 15500000000  # 15.5 GB of RAM
 min_filesystem_size: int = 240000000000  # 240 GB of file system storage
-NETHERMIND_BLOCK_OFFSET = 30000000
 
 
 def get_elapsed_time_redis(redis, redis_key):
@@ -304,6 +303,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     url = shared_config["discprov"]["url"]
+    final_poa_block = helpers.get_final_poa_block(shared_config)
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -337,6 +338,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # Temp
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
+        "final_poa_block": final_poa_block,
         "transactions_history_backfill": {
             "index_user_backfilling_complete": is_index_user_bank_backfill_complete,
             "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
@@ -345,11 +347,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     }
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        if (
-            shared_config["discprov"]["env"] == "stage"
-            and latest_block_num < NETHERMIND_BLOCK_OFFSET
-        ):
-            latest_block_num += NETHERMIND_BLOCK_OFFSET
+        if final_poa_block and latest_block_num < final_poa_block:
+            latest_block_num += final_poa_block
         block_difference = abs(
             latest_block_num - latest_indexed_block_num
         )  # nethermind offset

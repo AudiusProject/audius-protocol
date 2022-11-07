@@ -28,6 +28,11 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
       playlist_update_timestamp: playlistUpdatedAt,
       playlist_update_users: userIds
     } = metadata
+    // If playlist if Hot and New skip playlist update notification
+    // NOTE: This is a temporary fix
+    if (playlistId === 4281) {
+      return
+    }
     userIds.forEach((userId) => {
       if (userPlaylistUpdatesMap[userId]) {
         userPlaylistUpdatesMap[userId][playlistId] = playlistUpdatedAt
