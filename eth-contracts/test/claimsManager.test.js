@@ -618,25 +618,21 @@ contract('ClaimsManager', async (accounts) => {
     )
   })
 
-  it('Set the new Staking address if called from current ClaimsManager contract', async () => {
+  it('Confirm stakingAddress cannot be set twice', async () => {
     assert.equal(
       staking.address,
       await claimsManager.getStakingAddress(),
       "expected Staking address before changing"  
     )
 
-    await governance.guardianExecuteTransaction(
-      claimsManagerProxyKey,
-      callValue0,
-      'setStakingAddress(address)',
-      _lib.abiEncode(['address'], [newUpdateAddress]),
-      { from: guardianAddress }
-    )
-
-    assert.equal(
-      newUpdateAddress,
-      await claimsManager.getStakingAddress(),
-      "updated Staking addresses don't match"
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        claimsManagerProxyKey,
+        callValue0,
+        'setStakingAddress(address)',
+        _lib.abiEncode(['address'], [newUpdateAddress]),
+        { from: guardianAddress }
+      )
     )
   })
 
