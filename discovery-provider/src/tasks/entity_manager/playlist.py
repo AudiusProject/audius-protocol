@@ -12,6 +12,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
 )
+from src.tasks.playlists import update_playlist_routes_table
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,11 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
     )
+
+    update_playlist_routes_table(
+        params.session, create_playlist_record, params.pending_playlist_routes
+    )
+
     params.add_playlist_record(playlist_id, create_playlist_record)
 
     if tracks:
@@ -121,6 +127,10 @@ def update_playlist(params: ManageEntityParameters):
         params.block_integer_time,
         params.block_datetime,
         params.metadata_cid,
+    )
+
+    update_playlist_routes_table(
+        params.session, updated_playlist, params.pending_playlist_routes
     )
     params.add_playlist_record(playlist_id, updated_playlist)
 
