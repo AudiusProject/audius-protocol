@@ -11,6 +11,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -183,7 +184,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
+                        f"entity_manager.py | failed to process {params.action} {params.entity_type} tx error {e} | with event {event}"
                     )
                     metric_num_errors.save_time(
                         {"entity_type": params.entity_type}, start_time=start_time_tx
@@ -376,6 +377,31 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 repost.user_id, repost.repost_type, repost.repost_item_id
             ): repost
             for repost in reposts
+        }
+
+    # SUBSCRIPTIONS
+    if entities_to_fetch[EntityType.SUBSCRIPTION]:
+        subscriptions_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SUBSCRIPTION]
+        and_queries = []
+        for subscription_to_fetch in subscriptions_to_fetch:
+            user_id = subscription_to_fetch[0]
+            # subscriptions does not need entity type in subscription_to_fetch[1]
+            entity_id = subscription_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Subscription.subscriber_id == user_id,
+                    Subscription.user_id == entity_id,
+                    Subscription.is_current == True,
+                )
+            )
+        subscriptions: List[Subscription] = (
+            session.query(Subscription).filter(or_(*and_queries)).all()
+        )
+        existing_entities[EntityType.SUBSCRIPTION] = {
+            get_record_key(
+                subscription.subscriber_id, EntityType.USER, subscription.user_id
+            ): subscription
+            for subscription in subscriptions
         }
 
     return existing_entities

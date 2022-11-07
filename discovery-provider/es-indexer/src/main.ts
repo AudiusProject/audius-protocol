@@ -10,6 +10,7 @@ import { setupTriggers } from './setup'
 import {
   ensureSaneCluterSettings,
   getBlocknumberCheckpoints,
+  recoverFromRedIndex,
   waitForHealthyCluster,
 } from './conn'
 import { program } from 'commander'
@@ -41,6 +42,7 @@ async function start() {
     .opts()
 
   logger.info(cliFlags, 'booting')
+  await recoverFromRedIndex()
   const health = await waitForHealthyCluster()
   await ensureSaneCluterSettings()
   logger.info(`starting: health ${health.status}`)

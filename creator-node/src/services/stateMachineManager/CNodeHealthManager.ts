@@ -55,9 +55,8 @@ const CNodeHealthManager = {
  */
 async function getUnhealthyPeers(
   nodeUsers: StateMonitoringUser[],
-  thisContentNodeEndpoint: string,
-  performSimpleCheck = false
-) {
+  thisContentNodeEndpoint: string
+): Promise<Set<string>> {
   // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
   const peerSet = CNodeHealthManager._computeContentNodePeerSet(
     nodeUsers,
@@ -68,13 +67,10 @@ async function getUnhealthyPeers(
    * Determine health for every peer & build list of unhealthy peers
    * TODO: change from sequential to chunked parallel
    */
-  const unhealthyPeers = new Set()
+  const unhealthyPeers = new Set<string>()
 
   for await (const peer of peerSet) {
-    const isHealthy = await CNodeHealthManager.isNodeHealthy(
-      peer,
-      performSimpleCheck
-    )
+    const isHealthy = await CNodeHealthManager.isNodeHealthy(peer)
     if (!isHealthy) {
       unhealthyPeers.add(peer)
     }
@@ -83,7 +79,7 @@ async function getUnhealthyPeers(
   return unhealthyPeers
 }
 
-async function isNodeHealthy(node: string, performSimpleCheck = false) {
+async function isNodeHealthy(node: string) {
   try {
     const verboseHealthCheckResp =
       await CNodeHealthManager._queryVerboseHealthCheck(node)
@@ -92,9 +88,7 @@ async function isNodeHealthy(node: string, performSimpleCheck = false) {
     if (!healthy) {
       throw new Error(`Node health check returned healthy: false`)
     }
-    if (!performSimpleCheck) {
-      CNodeHealthManager.determinePeerHealth(verboseHealthCheckResp)
-    }
+    CNodeHealthManager.determinePeerHealth(verboseHealthCheckResp)
   } catch (e: any) {
     logger.error(`isNodeHealthy() peer=${node} is unhealthy: ${e.toString()}`)
     return false
@@ -190,7 +184,7 @@ function determinePeerHealth(verboseHealthCheckResp: any) {
  * - unhealthy but in a grace period (extra time where it can be unhealthy before being reconfiged)
  */
 async function isNodeHealthyOrInGracePeriod(node: string, isPrimary: boolean) {
-  const isHealthy = await CNodeHealthManager.isNodeHealthy(node, isPrimary)
+  const isHealthy = await CNodeHealthManager.isNodeHealthy(node)
   if (isHealthy) {
     // If a node ever becomes healthy again and was once marked as unhealthy, remove tracker
     await CNodeHealthManager.resetEarliestUnhealthyTimestamp(node, isPrimary)

@@ -46,14 +46,8 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    logger.info(
-                        f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
-                    )
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
-                    )
-                    logger.info(
-                        f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}"
                     )
                     if tx_info["result"] is not None:
                         return tx_info
@@ -93,16 +87,10 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    logger.info(
-                        f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}"
-                    )
                     transactions: ConfirmedSignatureForAddressResponse = (
                         client.get_signatures_for_address(
                             account, before, until, limit, Commitment("finalized")
                         )
-                    )
-                    logger.info(
-                        f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}"
                     )
                     return transactions
                 except Exception as e:

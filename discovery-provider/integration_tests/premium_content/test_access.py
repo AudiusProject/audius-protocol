@@ -17,13 +17,25 @@ def test_access(app):
         "track_id": 2,
         "owner_id": 3,
         "is_premium": True,
-        "premium_conditions": {"nft_collection": "some-nft-collection"},
+        "premium_conditions": {
+            "nft_collection": {
+                "chain": "eth",
+                "standard": "ERC721",
+                "address": "some-nft-collection",
+            }
+        },
     }
     premium_track_entity_2 = {
         "track_id": 3,
         "owner_id": 2,
         "is_premium": True,
-        "premium_conditions": {"nft_collection": "some-nft-collection"},
+        "premium_conditions": {
+            "nft_collection": {
+                "chain": "eth",
+                "standard": "ERC721",
+                "address": "some-nft-collection",
+            }
+        },
     }
     track_entities = [
         non_premium_track_entity,
@@ -98,13 +110,25 @@ def test_batch_access(app):
         premium_track_entity_1 = {
             "track_id": 3,
             "is_premium": True,
-            "premium_conditions": {"nft_collection": "some-nft-collection"},
+            "premium_conditions": {
+                "nft_collection": {
+                    "chain": "eth",
+                    "standard": "ERC721",
+                    "address": "some-nft-collection",
+                }
+            },
         }
         premium_track_entity_2 = {
             "track_id": 4,
             "owner_id": user_entity_3["user_id"],
             "is_premium": True,
-            "premium_conditions": {"nft_collection": "some-nft-collection"},
+            "premium_conditions": {
+                "nft_collection": {
+                    "chain": "eth",
+                    "standard": "ERC721",
+                    "address": "some-nft-collection",
+                }
+            },
         }
         track_entities = [
             non_premium_track_entity,

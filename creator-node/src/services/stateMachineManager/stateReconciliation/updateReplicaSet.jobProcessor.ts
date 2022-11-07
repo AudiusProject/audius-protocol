@@ -40,6 +40,9 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   : null
 
 const RECONFIG_SP_IDS_BLACKLIST: number[] = config.get('reconfigSPIdBlacklist')
+const RECONFIG_MODE_PRIMARY_ONLY: Boolean = config.get(
+  'reconfigModePrimaryOnly'
+)
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
@@ -820,6 +823,15 @@ const _issueUpdateReplicaSetOp = async (
  */
 const _isReconfigEnabled = (enabledReconfigModes: string[], mode: string) => {
   if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
+
+  // If primary only override is enabled, only issue reconfig if mode is in enabled modes set and indicates a primary reconfig
+  if (RECONFIG_MODE_PRIMARY_ONLY) {
+    return (
+      enabledReconfigModes.includes(mode) &&
+      mode === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+    )
+  }
+
   return enabledReconfigModes.includes(mode)
 }
 

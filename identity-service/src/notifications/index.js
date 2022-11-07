@@ -296,7 +296,7 @@ class NotificationProcessor {
 
     // Download Email notification queue
     this.downloadEmailQueue.process(async (job, done) => {
-      logger.info('processDownloadEmails')
+      logger.debug('processDownloadEmails')
       let error = null
       try {
         await processDownloadAppEmail(expressApp, audiusLibs)
