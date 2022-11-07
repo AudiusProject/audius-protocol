@@ -211,7 +211,7 @@ def create_celery(test_config=None):
         ) = init_contracts()
     except:
         # init_contracts will fail when poa-gateway points to nethermind
-        # only affect staging 
+        # only swallow exception in stage
         if os.getenv("audius_discprov_env") != "stage":
             raise Exception("Failed to init POA contracts")
 
