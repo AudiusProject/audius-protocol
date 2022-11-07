@@ -9,7 +9,7 @@ const { Lock } = require('../redis')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
-const { primaryWeb3, secondaryWeb3 } = require('../web3')
+const { primaryWeb3, nethermindWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
@@ -95,7 +95,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   // SEND to either POA or Nethermind here...
   const currentBlock = await web3.eth.getBlockNumber()
   const finalPOABlock = config.get('finalPOABlock')
-  const sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
+  const sendToNethermind = finalPOABlock
+    ? config.get('environment') === 'staging' || currentBlock > finalPOABlock
+    : false
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -365,7 +367,7 @@ let inFlight = 0
 
 async function relayToNethermind(encodedABI) {
   // generate a new private key per transaction (gas is free)
-  const accounts = new Accounts(config.get('web3Provider'))
+  const accounts = new Accounts(config.get('nethermindWeb3'))
 
   const wallet = accounts.create()
   const privateKey = wallet.privateKey.substring(2)
@@ -380,7 +382,7 @@ async function relayToNethermind(encodedABI) {
       data: encodedABI
     }
 
-    const signedTx = await primaryWeb3.eth.accounts.signTransaction(
+    const signedTx = await nethermindWeb3.eth.accounts.signTransaction(
       transaction,
       privateKey
     )
@@ -392,7 +394,7 @@ async function relayToNethermind(encodedABI) {
       `relayToNethermind sending txhash: ${signedTx.transactionHash} num: ${myDepth}`
     )
 
-    const receipt = await primaryWeb3.eth.sendSignedTransaction(
+    const receipt = await nethermindWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
     receipt.blockNumber += config.get('finalPOABlock')
