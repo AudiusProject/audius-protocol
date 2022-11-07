@@ -7,8 +7,9 @@ from src.utils import helpers
 def generate_slug_and_collision_id(
     session,
     model,
-    record,
-    metadata,
+    record_id,
+    record_title,
+    record_owner_id,
     pending_routes,
     new_slug_title,
     new_slug,
@@ -17,7 +18,7 @@ def generate_slug_and_collision_id(
     max_collision_id: Optional[int] = None
     # Check pending updates first
     for route in pending_routes:
-        if route.title_slug == new_slug_title and route.owner_id == record.owner_id:
+        if route.title_slug == new_slug_title and route.owner_id == record_owner_id:
             max_collision_id = (
                 route.collision_id
                 if max_collision_id is None
@@ -30,7 +31,7 @@ def generate_slug_and_collision_id(
             session.query(functions.max(model.collision_id))
             .filter(
                 model.title_slug == new_slug_title,
-                model.owner_id == record.owner_id,
+                model.owner_id == record_owner_id,
             )
             .one_or_none()
         )[0]
@@ -43,7 +44,7 @@ def generate_slug_and_collision_id(
             (
                 route
                 for route in pending_routes
-                if route.slug == new_slug and route.owner_id == record.owner_id
+                if route.slug == new_slug and route.owner_id == record_owner_id
             ),
             None,
         )
@@ -52,7 +53,7 @@ def generate_slug_and_collision_id(
                 session.query(model)
                 .filter(
                     model.slug == new_slug,
-                    model.owner_id == record.owner_id,
+                    model.owner_id == record_owner_id,
                 )
                 .one_or_none()
             )
@@ -67,9 +68,7 @@ def generate_slug_and_collision_id(
         # If there is an existing track by the user with that slug,
         # then we need to append the collision number to the slug
         new_collision_id += 1
-        new_slug = helpers.sanitize_slug(
-            metadata["title"], record.track_id, new_collision_id
-        )
+        new_slug = helpers.sanitize_slug(record_title, record_id, new_collision_id)
 
         # Check for new collisions after making the new slug
         # In rare cases the user may have track names that end in numbers that
@@ -94,7 +93,7 @@ def generate_slug_and_collision_id(
             (
                 route
                 for route in pending_routes
-                if route.slug == new_slug and route.owner_id == record.owner_id
+                if route.slug == new_slug and route.owner_id == record_owner_id
             ),
             None,
         )
@@ -103,7 +102,7 @@ def generate_slug_and_collision_id(
                 session.query(model)
                 .filter(
                     model.slug == new_slug,
-                    model.owner_id == record.owner_id,
+                    model.owner_id == record_owner_id,
                 )
                 .one_or_none()
             )

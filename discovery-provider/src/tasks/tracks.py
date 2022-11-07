@@ -303,8 +303,9 @@ def update_track_routes_table(
     new_track_slug, new_collision_id = generate_slug_and_collision_id(
         session,
         TrackRoute,
-        track_record,
-        track_metadata,
+        track_record.track_id,
+        track_metadata["title"],
+        track_record.owner_id,
         pending_track_routes,
         new_track_slug_title,
         new_track_slug,
