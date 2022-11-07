@@ -50,7 +50,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 const messages = {
-  addArtwork: 'Add Artwork'
+  addArtwork: 'Add Artwork',
+  changeArtwork: 'Change Artwork'
 }
 
 export const PickArtworkField = () => {
@@ -59,7 +60,7 @@ export const PickArtworkField = () => {
   const name = 'artwork'
   const [{ value }, { error, touched }, { setValue }] = useField(name)
   const { url } = value
-  const uri = url === null ? ' ' : url
+  const uri = url === null || url === '' ? ' ' : url
   const { secondary } = useThemeColors()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -98,7 +99,7 @@ export const PickArtworkField = () => {
           <Button
             variant='commonAlt'
             styles={{ root: { zIndex: 1000 }, icon: styles.buttonIcon }}
-            title={messages.addArtwork}
+            title={url ? messages.changeArtwork : messages.addArtwork}
             icon={IconCamera}
             iconPosition='left'
             onPress={handlePress}

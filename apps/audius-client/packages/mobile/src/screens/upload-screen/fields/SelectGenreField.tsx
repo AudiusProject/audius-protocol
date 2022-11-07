@@ -15,6 +15,7 @@ export const SelectGenreField = () => {
   return (
     <ContextualSubmenuField
       name='genre'
+      lastItem
       label={messages.genre}
       data={genres}
       required

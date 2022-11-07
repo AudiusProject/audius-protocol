@@ -1,7 +1,6 @@
+import type { UploadTrack } from '@audius/common'
 import { newTrackMetadata } from '@audius/common'
 import type { DocumentPickerResponse } from 'react-native-document-picker'
-
-import type { UploadTrack } from './types'
 
 const ALLOWED_MAX_AUDIO_SIZE_BYTES = 250 * 1000 * 1000
 
@@ -17,6 +16,7 @@ export const processTrackFile = (
 
   return {
     file: trackFile,
+    preview: null,
     metadata: newTrackMetadata({
       title,
       artwork: { url: '' }

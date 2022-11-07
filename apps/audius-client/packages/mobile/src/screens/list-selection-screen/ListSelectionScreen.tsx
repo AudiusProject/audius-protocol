@@ -62,7 +62,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     marginRight: spacing(4)
   },
   confirmSelection: {
-    padding: spacing(4),
+    paddingHorizontal: spacing(4),
+    paddingTop: spacing(6),
+    paddingBottom: spacing(12),
     backgroundColor: palette.white,
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight6
@@ -78,12 +80,15 @@ export const ListSelectionScreen = () => {
     renderItem: renderItemProp,
     onChange,
     value: valueProp,
+    data,
     ...other
   } = params
 
   const styles = useStyles()
 
   const [value, setValue] = useState(valueProp)
+  const [filterInput, setFilterInput] = useState('')
+  const filterRegexp = new RegExp(filterInput, 'i')
 
   const navigation = useNavigation()
 
@@ -119,16 +124,20 @@ export const ListSelectionScreen = () => {
     [renderItemProp, value, styles]
   )
 
+  const filteredData = data.filter(({ label }) => label.match(filterRegexp))
+
   return (
     <Screen title={screenTitle} icon={icon} variant='white' style={styles.root}>
       <View style={styles.content}>
         <TextInput
           placeholder={searchText}
           styles={{ root: styles.search, input: styles.searchInput }}
+          onChangeText={setFilterInput}
         />
         <FlatList
           renderItem={renderItem}
           ItemSeparatorComponent={Divider}
+          data={filteredData}
           {...other}
         />
       </View>
