@@ -93,11 +93,14 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const redis = req.app.get('redis')
 
   // SEND to either POA or Nethermind here...
-  const currentBlock = await web3.eth.getBlockNumber()
-  const finalPOABlock = config.get('finalPOABlock')
-  const sendToNethermind = finalPOABlock
-    ? config.get('environment') === 'staging' || currentBlock > finalPOABlock
-    : false
+  let sendToNethermind = false
+  if (config.get('environment') === 'staging'){
+    const currentBlock = await web3.eth.getBlockNumber()
+    const finalPOABlock = config.get('finalPOABlock')
+    sendToNethermind = finalPOABlock
+      ? config.get('environment') === 'staging' || currentBlock > finalPOABlock
+      : false  
+  } 
 
   const existingTx = await models.Transaction.findOne({
     where: {
