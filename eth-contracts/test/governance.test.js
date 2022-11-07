@@ -1574,41 +1574,34 @@ contract.only('Governance.sol', async (accounts) => {
       })
 
       it.only('Fail to influence vote by restaking', async function () {
-        const TWO = _lib.toBN(2)
-        let votingPeriod = await governance.getVotingPeriod()
-        const executionDelay = await governance.getExecutionDelay()
-        const decreaseStakeDelay = await serviceProviderFactory.getDecreaseStakeLockupDuration()
         // Initial votingPeriod = 10, executionDelay=10, decreaseStakeDelay=10
-        // Update votingPeriod to be greater than decreaseStakeDelay
-        console.log(`votingPeriod=${votingPeriod.toString()}, decreaseStakeDelay=${decreaseStakeDelay}, executionDelay=${executionDelay}`)
+        // Update votingPeriod to be greater than decreaseStakeDelay to facilitate restaking manipulation of proposal
         const votingPeriodUpdate = 30
-        await governance.guardianExecuteTransaction(
+        await _lib.assertRevert(governance.guardianExecuteTransaction(
           governanceKey,
           callValue0,
           'setVotingPeriod(uint256)',
           _lib.abiEncode(['uint256'], [votingPeriodUpdate]),
           { from: guardianAddress }
-        )
+        ))
+        // Uncomment below and remote assertRevert for confirmation of behavior prior to enforcing voting period bounds in Governance
+        /*
+        const TWO = _lib.toBN(2)
         let totalStakedForVoter1 = await staking.totalStakedFor(voter1Address)
         let totalStakedForVoter2 = await staking.totalStakedFor(voter2Address)
-        console.log(`totalStakedForVoter1=${totalStakedForVoter1} - totalStakedForVoter2=${totalStakedForVoter2}`)
 
         const vote = Vote.Yes
         let txReceipt = await governance.submitVote(proposalId, vote, { from: voter1Address })
-        console.log(`Voter 1 submitted`)
 
         // Decrease stake from voter1 by half
         const decreaseStakeAmount = totalStakedForVoter1.div(TWO)
-        console.log(` decreaseStakeAmount ${decreaseStakeAmount}`)
         // Request decrease in stake
         await serviceProviderFactory.requestDecreaseStake(decreaseStakeAmount, { from: stakerAccount1 })
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount1)
         // Advance to valid block
         await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
 
-        console.log(`Balance before decrease eval = ${await token.balanceOf(stakerAccount1)}`)
         await serviceProviderFactory.decreaseStake({ from: stakerAccount1 })
-        console.log(`Balance after decrease eval = ${await token.balanceOf(stakerAccount1)}`)
         // After withdrawing half the stake from voter 1, transfer all the stake to voter 2
         await token.transfer(stakerAccount2, decreaseStakeAmount, { from: stakerAccount1 })
 
@@ -1628,18 +1621,14 @@ contract.only('Governance.sol', async (accounts) => {
         totalStakedForVoter2 = await staking.totalStakedFor(voter2Address)
         txReceipt = await governance.submitVote(proposalId, vote, { from: voter2Address })
 
-        console.log(`totalStakedForVoter1=${totalStakedForVoter1} - totalStakedForVoter2=${totalStakedForVoter2}`)
         // At this point voteMagnitudeYes is greater than the total stake held by both periods due to malicious transfer
-        let proposalInfo = await governance.getProposalById(proposalId)
-        console.log(`voteMagnitudeYes=${proposalInfo.voteMagnitudeYes.toString()}`)
         const proposalStartBlock = submitProposalTxReceipt.receipt.blockNumber
         votingPeriod = await governance.getVotingPeriod()
-        console.log(`proposalStartBlock=${proposalStartBlock} + votingPeriod=${votingPeriod} + executionDelay=${executionDelay}`)
         const targetBlock = parseInt(proposalStartBlock) + parseInt(votingPeriod) + parseInt(executionDelay)
-        console.log(`Advancing to ${targetBlock} from ${(await _lib.getLatestBlock(web3)).number}`)
         await time.advanceBlockTo(targetBlock)
         // Successfully evaluate proposal
         let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
+        */
       })
 
       it('Successfully vote on Proposal for Slash', async function () {
@@ -2542,7 +2531,7 @@ contract.only('Governance.sol', async (accounts) => {
     await _lib.assertRevert(governance.getProposalTargetContractHash(10000), 'Must provide valid non-zero _proposalId')
   })
 
-  it('Test max value of maxInProgressProposals', async function () {
+  it.only('Test max value of maxInProgressProposals', async function () {
     /**
      * currently confirms ~170 inprogress proposals takes about 1mm gas for submit and ~300k gas for evaluate
      * - could prob handle 1000 easy
@@ -2552,7 +2541,7 @@ contract.only('Governance.sol', async (accounts) => {
 
     // Confirm all InProgress proposals are uptodate since none exist
     assert.isTrue(await governance.inProgressProposalsAreUpToDate.call(), 'Expected all proposals to be uptodate')
-    
+
     const functionSignature = 'slash(uint256,address)'
     const slashAmount = _lib.toBN(1)
     const targetAddress = accounts[11]
@@ -2905,7 +2894,7 @@ contract.only('Governance.sol', async (accounts) => {
       )
     })
 
-    it('Update voting period', async function () {
+    it.only('Update voting period', async function () {
       const newVotingPeriod = 15
       assert.equal(
         await governance.getVotingPeriod(),
