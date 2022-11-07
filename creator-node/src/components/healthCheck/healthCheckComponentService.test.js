@@ -704,5 +704,5 @@ describe('Test Health Check Verbose', function () {
 
 it('Test config check route', async () => {
   const resp = await configCheck()
-  assert.ok(resp.includes('"dbUrl": "[Sensitive]"'))
+  assert.strictEqual(resp.dbUrl, '[Sensitive]')
 })
