@@ -6,8 +6,7 @@ const config = require('../../config')
  */
 function readOnlyMiddleware(req, res, next) {
   const isReadOnlyMode = config.get('isReadOnlyMode')
-  console.log("config.get('spID')", config.get('spID'))
-  const spIDNotDefined = config.get('spID') === 0 // true if not a valid spID
+  const spIDNotDefined = !config.get('spID') || config.get('spID') <= 0 // true if not a valid spID
   const method = req.method
   const canProceed = readOnlyMiddlewareHelper(
     isReadOnlyMode,
