@@ -5,6 +5,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -12,10 +13,12 @@
       "name": "getDiscoveryProvider",
       "outputs": [
         {
+          "internalType": "address",
           "name": "wallet",
           "type": "address"
         },
         {
+          "internalType": "string",
           "name": "endpoint",
           "type": "string"
         }
@@ -30,6 +33,7 @@
       "name": "getTotalNumberOfProviders",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "total",
           "type": "uint256"
         }
@@ -42,10 +46,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_wallet",
           "type": "address"
         },
         {
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         }
@@ -53,6 +59,7 @@
       "name": "register",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "id",
           "type": "uint256"
         }

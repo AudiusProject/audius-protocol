@@ -5,6 +5,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_registryAddress",
           "type": "address"
         }

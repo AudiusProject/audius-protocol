@@ -5,6 +5,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_trackId",
           "type": "uint256"
         }
@@ -12,18 +13,22 @@
       "name": "getTrack",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "trackOwnerId",
           "type": "uint256"
         },
         {
+          "internalType": "bytes32",
           "name": "multihashDigest",
           "type": "bytes32"
         },
         {
+          "internalType": "uint8",
           "name": "multihashHashFn",
           "type": "uint8"
         },
         {
+          "internalType": "uint8",
           "name": "multihashSize",
           "type": "uint8"
         }
@@ -36,18 +41,22 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_trackOwnerId",
           "type": "uint256"
         },
         {
+          "internalType": "bytes32",
           "name": "_multihashDigest",
           "type": "bytes32"
         },
         {
+          "internalType": "uint8",
           "name": "_multihashHashFn",
           "type": "uint8"
         },
         {
+          "internalType": "uint8",
           "name": "_multihashSize",
           "type": "uint8"
         }
@@ -55,6 +64,7 @@
       "name": "addTrack",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "newTrackId",
           "type": "uint256"
         }
@@ -67,22 +77,27 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_trackId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_trackOwnerId",
           "type": "uint256"
         },
         {
+          "internalType": "bytes32",
           "name": "_multihashDigest",
           "type": "bytes32"
         },
         {
+          "internalType": "uint8",
           "name": "_multihashHashFn",
           "type": "uint8"
         },
         {
+          "internalType": "uint8",
           "name": "_multihashSize",
           "type": "uint8"
         }
@@ -90,6 +105,7 @@
       "name": "updateTrack",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "updatePerformed",
           "type": "bool"
         }
@@ -102,6 +118,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -109,6 +126,7 @@
       "name": "trackExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }
