@@ -1,113 +1,88 @@
-import {
-  isCIDForPremiumTrack,
-  isPremiumContentMatch,
-  isRegisteredDiscoveryNode
-} from './helpers'
-import {
-  CheckAccessArgs,
-  CheckAccessResponse,
-  PremiumContentAccessError
-} from './types'
-import { recoverWallet } from '../apiSigning'
+import { isRegisteredDiscoveryNode } from './helpers'
+import { CheckAccessArgs, CheckAccessResponse } from './types'
+import { recoverWallet, signatureHasExpired } from '../apiSigning'
 
-export class PremiumContentAccessChecker {
-  /**
-   * Checks that all premium content headers are passed in.
-   * Checks that discovery node that generated signature is registered.
-   * Checks that signature is not too old.
-   * Checks that user requesting the content has access.
-   */
-  async checkPremiumContentAccess({
-    cid,
-    premiumContentHeaders,
+const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+
+/**
+ * Checks that all premium content headers are passed in.
+ * Checks that discovery node that generated signature is registered.
+ * Checks that signature is not too old.
+ * Checks that user requesting the content has access.
+ */
+export async function checkPremiumContentAccess({
+  cid,
+  premiumContentHeaders,
+  libs,
+  logger,
+  redis
+}: CheckAccessArgs): Promise<CheckAccessResponse> {
+  if (!premiumContentHeaders) {
+    return {
+      doesUserHaveAccess: false,
+      error: 'MissingHeaders'
+    }
+  }
+
+  const {
+    signedDataFromDiscoveryNode,
+    signatureFromDiscoveryNode,
+    signedDataFromUser,
+    signatureFromUser
+  } = JSON.parse(premiumContentHeaders)
+  if (
+    !signedDataFromDiscoveryNode ||
+    !signatureFromDiscoveryNode ||
+    !signedDataFromUser ||
+    !signatureFromUser
+  ) {
+    return {
+      doesUserHaveAccess: false,
+      error: 'MissingHeaders'
+    }
+  }
+
+  const discoveryNodeWallet = recoverWallet(
+    signedDataFromDiscoveryNode,
+    signatureFromDiscoveryNode
+  )
+  const isRegisteredDN = await isRegisteredDiscoveryNode({
+    wallet: discoveryNodeWallet,
     libs,
     logger,
     redis
-  }: CheckAccessArgs): Promise<CheckAccessResponse> {
-    // Only apply premium content middleware logic if file is a premium track file
-    const { trackId, isPremium } = await isCIDForPremiumTrack(cid)
-    if (!trackId || !isPremium) {
-      return {
-        doesUserHaveAccess: true,
-        trackId,
-        isPremium: false,
-        error: null
-      }
-    }
-
-    if (!premiumContentHeaders) {
-      return {
-        doesUserHaveAccess: false,
-        trackId,
-        isPremium,
-        error: PremiumContentAccessError.MISSING_HEADERS
-      }
-    }
-
-    const {
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode,
-      signedDataFromUser,
-      signatureFromUser
-    } = JSON.parse(premiumContentHeaders)
-    if (
-      !signedDataFromDiscoveryNode ||
-      !signatureFromDiscoveryNode ||
-      !signedDataFromUser ||
-      !signatureFromUser
-    ) {
-      return {
-        doesUserHaveAccess: false,
-        trackId,
-        isPremium,
-        error: PremiumContentAccessError.MISSING_HEADERS
-      }
-    }
-
-    const discoveryNodeWallet = recoverWallet(
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode
-    )
-    const isRegisteredDN = await isRegisteredDiscoveryNode({
-      wallet: discoveryNodeWallet,
-      libs,
-      logger,
-      redis
-    })
-    if (!isRegisteredDN) {
-      return {
-        doesUserHaveAccess: false,
-        trackId,
-        isPremium,
-        error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
-      }
-    }
-
-    const userWallet = await libs.web3Manager.verifySignature(
-      signedDataFromUser,
-      signatureFromUser
-    )
-    const isMatch = await isPremiumContentMatch({
-      signedDataFromDiscoveryNode,
-      userWallet,
-      premiumContentId: trackId,
-      premiumContentType: 'track',
-      logger
-    })
-    if (!isMatch) {
-      return {
-        doesUserHaveAccess: false,
-        trackId,
-        isPremium,
-        error: PremiumContentAccessError.FAILED_MATCH
-      }
-    }
-
+  })
+  if (!isRegisteredDN) {
     return {
-      doesUserHaveAccess: true,
-      trackId,
-      isPremium,
-      error: null
+      doesUserHaveAccess: false,
+      error: 'InvalidDiscoveryNode'
     }
+  }
+
+  const { cid: copy320CID, timestamp: signedTimestamp } =
+    signedDataFromDiscoveryNode
+
+  if (copy320CID !== cid) {
+    return {
+      doesUserHaveAccess: false,
+      error: 'IncorrectCID'
+    }
+  }
+
+  const hasSignatureExpired = signatureHasExpired(
+    signedTimestamp,
+    PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS
+  )
+  if (hasSignatureExpired) {
+    logger.info(`Premium content signature for cid ${copy320CID} is too old.`)
+    return {
+      doesUserHaveAccess: false,
+      error: 'ExpiredTimestamp'
+    }
+  }
+
+  return {
+    doesUserHaveAccess: true,
+    error: null
   }
 }

@@ -3,12 +3,12 @@ import {
   errorResponseServerError,
   errorResponseForbidden,
   errorResponseUnauthorized,
-  errorResponseBadRequest
+  errorResponseBadRequest,
+  CustomRequest
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
-import { PremiumContentAccessError } from '../../premiumContent/types'
 import type Logger from 'bunyan'
-import { PremiumContentAccessChecker } from '../../premiumContent/premiumContentAccessChecker'
+import { checkPremiumContentAccess } from '../../premiumContent/premiumContentAccessChecker'
 import config from '../../config'
 
 /**
@@ -25,10 +25,11 @@ import config from '../../config'
  * If all these verifications are successful, then this middleware will proceed with the request as normal.
  */
 export const premiumContentMiddleware = async (
-  req: Request,
+  request: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const req = request as CustomRequest
   const cid = req.params?.CID
   if (!cid) {
     return sendResponse(
@@ -45,34 +46,31 @@ export const premiumContentMiddleware = async (
   try {
     const premiumContentHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
-    const { premiumContentAccessChecker, libs, redis } = serviceRegistry
+    const { libs, redis } = serviceRegistry
     // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
-    const accessChecker =
-      premiumContentAccessChecker as PremiumContentAccessChecker
-    const logger = (req as any).logger as Logger
+    const logger = req.logger as Logger
 
-    const { doesUserHaveAccess, trackId, isPremium, error } =
-      await accessChecker.checkPremiumContentAccess({
-        cid,
-        premiumContentHeaders,
-        libs,
-        logger,
-        redis
-      })
+    const { doesUserHaveAccess, error } = await checkPremiumContentAccess({
+      cid,
+      premiumContentHeaders,
+      libs,
+      logger,
+      redis
+    })
     if (doesUserHaveAccess) {
       // Set premium content track id and 'premium-ness' so that next middleware or
       // request handler does not need to make trips to the database to get this info.
       // We need the info because if the content is premium, then we need to set
       // the cache-control response header to no-cache so that nginx does not cache it.
-      ;(req as any).premiumContent = {
-        trackId,
-        isPremium
-      }
+      // req.premiumContent = {
+      //   trackId,
+      //   isPremium
+      // }
       return next()
     }
 
     switch (error) {
-      case PremiumContentAccessError.MISSING_HEADERS:
+      case 'MissingHeaders':
         return sendResponse(
           req,
           res,
@@ -80,7 +78,7 @@ export const premiumContentMiddleware = async (
             'Missing request headers for premium content.'
           )
         )
-      case PremiumContentAccessError.INVALID_DISCOVERY_NODE:
+      case 'InvalidDiscoveryNode':
         return sendResponse(
           req,
           res,
@@ -88,7 +86,18 @@ export const premiumContentMiddleware = async (
             'Failed discovery node signature validation for premium content.'
           )
         )
-      case PremiumContentAccessError.FAILED_MATCH:
+      case 'IncorrectCID':
+        return sendResponse(
+          req,
+          res,
+          errorResponseForbidden('Incorrect CID signature')
+        )
+      case 'ExpiredTimestamp':
+        return sendResponse(
+          req,
+          res,
+          errorResponseForbidden('Timestamp for content is expired')
+        )
       default:
         return sendResponse(
           req,
@@ -102,9 +111,7 @@ export const premiumContentMiddleware = async (
     const error = `Could not validate premium content access: ${
       (e as Error).message
     }`
-    ;(req as any).logger.error(
-      `${error}.\nError: ${JSON.stringify(e, null, 2)}`
-    )
+    req.logger.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
     return sendResponse(req, res, errorResponseServerError(error))
   }
 }

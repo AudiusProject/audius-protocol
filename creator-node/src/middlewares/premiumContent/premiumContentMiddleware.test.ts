@@ -72,8 +72,6 @@ describe('Test premium content middleware', () => {
     it('returns unauthorized when it fails because of missing headers', async () => {
       premiumContentAccessChecker.accessCheckReturnsWith = {
         doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
         error: PremiumContentAccessError.MISSING_HEADERS
       }
       let nextCalled = false
@@ -91,28 +89,7 @@ describe('Test premium content middleware', () => {
     it('returns forbidden when it fails because of invalid discovery node', async () => {
       premiumContentAccessChecker.accessCheckReturnsWith = {
         doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
         error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
-      }
-      let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
-        mockReq as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(mockRes.statusCode, 403)
-      assert.deepStrictEqual(nextCalled, false)
-    })
-
-    it('returns forbidden when it fails because of failed verification match', async () => {
-      premiumContentAccessChecker.accessCheckReturnsWith = {
-        doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
-        error: PremiumContentAccessError.FAILED_MATCH
       }
       let nextCalled = false
       await premiumContentMiddlewareProxy.premiumContentMiddleware(
@@ -129,8 +106,6 @@ describe('Test premium content middleware', () => {
     it('passes and moves to the next middleware when all checks are fine and content is NOT premium', async () => {
       premiumContentAccessChecker.accessCheckReturnsWith = {
         doesUserHaveAccess: true,
-        trackId: null,
-        isPremium: false,
         error: null
       }
       let nextCalled = false
@@ -147,8 +122,6 @@ describe('Test premium content middleware', () => {
     it('passes and moves to the next middleware when all checks are fine and content IS premium', async () => {
       premiumContentAccessChecker.accessCheckReturnsWith = {
         doesUserHaveAccess: true,
-        trackId: 1,
-        isPremium: true,
         error: null
       }
       let nextCalled = false
