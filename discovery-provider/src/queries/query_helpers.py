@@ -22,7 +22,7 @@ from src.models.users.user_bank import UserBankAccount
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
-from src.premium_content.signature import get_premium_content_signature
+from src.premium_content.signature import get_authed_premium_content_signature
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users
@@ -548,7 +548,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
         if does_user_have_track_access:
             track[
                 response_name_constants.premium_content_signature
-            ] = get_premium_content_signature(
+            ] = get_authed_premium_content_signature(
                 {
                     "id": track_id,
                     "type": "track",
