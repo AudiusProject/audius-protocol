@@ -8,7 +8,7 @@ const {
   getMonitorRedisKey
 } = require('./monitors')
 const { logger } = require('../logging')
-const { clusterUtils } = require('../utils')
+const { clusterUtils, deleteOldActiveJobs } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -28,7 +28,7 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor(prometheusRegistry) {
+  async init(prometheusRegistry) {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -45,8 +45,9 @@ class MonitoringQueue {
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
     if (clusterUtils.isThisWorkerInit()) {
-      this.queue.drain(true)
-      this.seedInitialValues()
+      await this.queue.obliterate({ force: true })
+      await deleteOldActiveJobs(this.queue, logger)
+      await this.seedInitialValues()
     }
     if (clusterUtils.isThisWorkerSpecial()) {
       const _worker = new Worker(
@@ -67,7 +68,7 @@ class MonitoringQueue {
               }
             )
           } catch (e) {
-            this.logError(`Error ${e}`)
+            await this.logError(`Error ${e}`)
           }
         },
         { connection }

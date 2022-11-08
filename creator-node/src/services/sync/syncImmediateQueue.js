@@ -1,6 +1,6 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
 
-const { clusterUtils } = require('../../utils')
+const { clusterUtils, deleteOldActiveJobs } = require('../../utils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const {
   logger,
@@ -47,7 +47,7 @@ class SyncImmediateQueue {
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
     if (clusterUtils.isThisWorkerInit()) {
-      await this.deleteOldActiveJobs()
+      await deleteOldActiveJobs(this.queue, logger)
     }
 
     const worker = new Worker(
@@ -95,14 +95,6 @@ class SyncImmediateQueue {
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
-  }
-
-  async deleteOldActiveJobs() {
-    const oldActiveJobs = await this.queue.getJobs(['active'])
-    logger.info(
-      `[sync-immediate-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
-    )
-    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
   }
 
   async processTask(job) {

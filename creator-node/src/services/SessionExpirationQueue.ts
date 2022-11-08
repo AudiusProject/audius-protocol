@@ -3,7 +3,7 @@ import Sequelize from 'sequelize'
 
 import { deleteSessions } from '../sessionManager'
 import { logger } from '../logging'
-import { clusterUtils } from '../utils'
+import { clusterUtils, deleteOldActiveJobs } from '../utils'
 const config = require('../config')
 const { SessionToken } = require('../models')
 
@@ -73,7 +73,8 @@ export class SessionExpirationQueue {
 
     // Clean up anything that might be still stuck in the queue on restart
     if (clusterUtils.isThisWorkerInit()) {
-      await this.queue.drain(true)
+      await this.queue.obliterate({ force: true })
+      await deleteOldActiveJobs(this.queue, logger)
     }
 
     const _worker = new Worker(

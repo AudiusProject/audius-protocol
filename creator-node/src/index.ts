@@ -128,7 +128,11 @@ const startAppForPrimary = async () => {
 
   const numWorkers = clusterUtils.getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  const firstWorker = cluster.fork({ isInitWorker: true })
+  const firstWorker = cluster.fork({
+    isInitWorker: true,
+    isSpecialWorker: true
+  })
+  clusterUtils.primaryOnlySetSpecialWorkerId(firstWorker.id)
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
     if (msg?.cmd === 'initComplete') {
@@ -158,7 +162,7 @@ const startAppForPrimary = async () => {
     }
   })
 
-  // Respawn workers and update each worker's knowledge of who the special worker is.
+  // Respawn workers and track which worker is the special worker.
   // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
   cluster.on('exit', (worker, code, signal) => {
     logger.info(
@@ -166,15 +170,14 @@ const startAppForPrimary = async () => {
         signal || code
       }. Respawning...`
     )
-    const newWorker = cluster.fork()
-    if (clusterUtils.specialWorkerId === worker.id) {
+    const killedWorkerWasSpecial =
+      clusterUtils.primaryOnlyGetSpecialWorkerId() === worker.id
+    const newWorker = cluster.fork({ isSpecialWorker: killedWorkerWasSpecial })
+    if (killedWorkerWasSpecial) {
       logger.info(
         'The worker that died was the special worker. Setting a new special worker...'
       )
-      clusterUtils.specialWorkerId = newWorker.id
-      for (const worker of Object.values(cluster.workers || {})) {
-        worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
-      }
+      clusterUtils.primaryOnlySetSpecialWorkerId(newWorker.id)
     }
   })
 
@@ -189,7 +192,11 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
-  if (process.env.isInitWorker) clusterUtils.markThisWorkerAsInit()
+  if (process.env.isInitWorker === 'true') clusterUtils.markThisWorkerAsInit()
+  if (process.env.isSpecialWorker === 'true') {
+    clusterUtils.markThisWorkerAsSpecial()
+  }
+
   logger.info(
     `Worker process with pid=${process.pid} and worker ID=${
       cluster.worker?.id
@@ -199,9 +206,7 @@ const startAppForWorker = async () => {
   await startApp()
 
   cluster.worker!.on('message', (msg) => {
-    if (msg?.cmd === 'setSpecialWorkerId') {
-      clusterUtils.specialWorkerId = msg?.val
-    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+    if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
       try {
         const { prometheusRegistry } = serviceRegistry
         prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
@@ -215,6 +220,16 @@ const startAppForWorker = async () => {
 
   if (clusterUtils.isThisWorkerInit() && process.send) {
     process.send({ cmd: 'initComplete' })
+  }
+
+  // Ensure health of queues that might've been affected by the special worker dying.
+  // The special worker is responsible for re-enqueing jobs when other jobs complete,
+  // so if it died then it might have failed to re-enqueue some jobs
+  if (clusterUtils.isThisWorkerSpecial()) {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    setInterval(async () => {
+      await serviceRegistry.recoverStateMachineQueues()
+    }, 90_000)
   }
 }
 

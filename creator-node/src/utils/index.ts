@@ -11,7 +11,8 @@ import {
   getRandomInt,
   verifySignature,
   stringifyMap,
-  isFqdn
+  isFqdn,
+  deleteOldActiveJobs
 } from './utils'
 import {
   validateMetadata,
@@ -51,7 +52,8 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils
+  clusterUtils,
+  deleteOldActiveJobs
 }
 
 module.exports = {
@@ -73,5 +75,6 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils
+  clusterUtils,
+  deleteOldActiveJobs
 }

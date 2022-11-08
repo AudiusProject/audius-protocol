@@ -19,7 +19,7 @@ const {
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
 const { instrumentTracing, tracing } = require('../../tracer')
-const { clusterUtils } = require('../../utils')
+const { clusterUtils, deleteOldActiveJobs } = require('../../utils')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -266,7 +266,7 @@ const makeMetricToRecord = (
   return metric
 }
 
-const makeQueue = ({
+const makeQueue = async ({
   name,
   processor,
   logger,
@@ -287,6 +287,12 @@ const makeQueue = ({
       removeOnFail
     }
   })
+
+  // Clear any old state if redis was running but the rest of the server restarted
+  if (clusterUtils.isThisWorkerInit()) {
+    await queue.obliterate({ force: true })
+    await deleteOldActiveJobs(queue, logger)
+  }
 
   const worker = new Worker(name, processor, {
     connection,

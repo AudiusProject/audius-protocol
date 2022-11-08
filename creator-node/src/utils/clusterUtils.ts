@@ -12,14 +12,8 @@ const config = require('../config')
  */
 class ClusterUtils {
   private _isInitWorker = false
-  private _specialWorkerId = 1
-  get specialWorkerId(): number {
-    return this._specialWorkerId
-  }
-
-  set specialWorkerId(specialWorkerId: number) {
-    this._specialWorkerId = specialWorkerId
-  }
+  private _isSpecialWorker = false
+  private _primaryOnlySpecialWorkerId = -1
 
   /**
    * Returns true if cluster mode is enabled. If it's disabled, then
@@ -46,9 +40,25 @@ class ClusterUtils {
   }
 
   isThisWorkerSpecial() {
-    return (
-      !this.isClusterEnabled() || cluster.worker?.id === this._specialWorkerId
-    )
+    return !this.isClusterEnabled() || this._isSpecialWorker
+  }
+
+  markThisWorkerAsSpecial() {
+    this._isSpecialWorker = true
+  }
+
+  primaryOnlyGetSpecialWorkerId() {
+    if (cluster.isWorker) {
+      throw new Error('This should only be called by the primary')
+    }
+    return this._primaryOnlySpecialWorkerId
+  }
+
+  primaryOnlySetSpecialWorkerId(specialWorkerId: number) {
+    if (cluster.isWorker) {
+      throw new Error('This should only be called by the primary')
+    }
+    this._primaryOnlySpecialWorkerId = specialWorkerId
   }
 
   getNumWorkers() {

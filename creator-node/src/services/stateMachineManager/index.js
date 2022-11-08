@@ -54,9 +54,6 @@ class StateMachineManager {
       recoverOrphanedDataQueue
     } = await stateReconciliationManager.init(prometheusRegistry)
 
-    if (clusterUtils.isThisWorkerInit()) {
-      await SyncRequestDeDuplicator.clear()
-    }
     if (clusterUtils.isThisWorkerSpecial()) {
       // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
       const queueNameToQueueMap = {
@@ -164,8 +161,12 @@ class StateMachineManager {
           })
         }
       }
+    }
 
-      // Start recurring queues that need an initial job to get started
+    if (clusterUtils.isThisWorkerInit()) {
+      await SyncRequestDeDuplicator.clear()
+
+      // Start queues that need an initial job to get started and then re-add jobs to themselves
       await stateMonitoringManager.startEndpointToSpIdMapQueue(
         cNodeEndpointToSpIdMapQueue
       )
@@ -187,7 +188,9 @@ class StateMachineManager {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
-      recoverOrphanedDataQueue
+      recoverOrphanedDataQueue,
+      stateMonitoringManager,
+      stateReconciliationManager
     }
   }
 

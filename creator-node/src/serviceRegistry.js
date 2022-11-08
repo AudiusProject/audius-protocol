@@ -52,7 +52,7 @@ class ServiceRegistry {
     this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = null // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
@@ -68,6 +68,8 @@ class ServiceRegistry {
     this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
     this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
     this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
+    this.stateMonitoringManager = null // Handles all the queues for monitoring state of the system
+    this.stateReconciliationManager = null // Handles all the queues for reconciliting state of the system
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -95,6 +97,9 @@ class ServiceRegistry {
 
     this.synchronousServicesInitialized = true
 
+    this.monitoringQueue = new MonitoringQueue()
+    await this.monitoringQueue.init(this.prometheusRegistry)
+
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -109,7 +114,9 @@ class ServiceRegistry {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
-      recoverOrphanedDataQueue
+      recoverOrphanedDataQueue,
+      stateMonitoringManager,
+      stateReconciliationManager
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
     this.monitorStateQueue = monitorStateQueue
     this.findSyncRequestsQueue = findSyncRequestsQueue
@@ -119,6 +126,8 @@ class ServiceRegistry {
     this.recurringSyncQueue = recurringSyncQueue
     this.updateReplicaSetQueue = updateReplicaSetQueue
     this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
+    this.stateMonitoringManager = stateMonitoringManager
+    this.stateReconciliationManager = stateReconciliationManager
 
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
@@ -362,6 +371,42 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized services that require server'
     )
+  }
+
+  /**
+   * Checks for queues that are missing a job and adds a job to them.
+   * Some queues run on a cron and should always have 1 job either active or delayed.
+   */
+  async recoverStateMachineQueues() {
+    if (
+      !(await this.cNodeEndpointToSpIdMapQueue.getActive())?.length &&
+      !(await this.cNodeEndpointToSpIdMapQueue.getDelayed())?.length
+    ) {
+      this.logError('cNodeEndpointToSpIdMapQueue was empty - restarting it')
+      await this.stateMonitoringManager.startEndpointToSpIdMapQueue(
+        this.cNodeEndpointToSpIdMapQueue
+      )
+    }
+    if (
+      !(await this.monitorStateQueue.getActive())?.length &&
+      !(await this.monitorStateQueue.getDelayed())?.length
+    ) {
+      this.logError('monitorStateQueue was empty - restarting it')
+      await this.stateMonitoringManager.startMonitorStateQueue(
+        this.monitorStateQueue,
+        this.libs.discoveryProvider.discoveryProviderEndpoint
+      )
+    }
+    if (
+      !(await this.recoverOrphanedDataQueue.getActive())?.length &&
+      !(await this.recoverOrphanedDataQueue.getDelayed())?.length
+    ) {
+      this.logError('recoverOrphanedDataQueue was empty - restarting it')
+      await this.stateReconciliationManager.startRecoverOrphanedDataQueue(
+        this.recoverOrphanedDataQueue,
+        this.libs.discoveryProvider.discoveryProviderEndpoint
+      )
+    }
   }
 
   /**
