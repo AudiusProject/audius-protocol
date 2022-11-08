@@ -22,6 +22,9 @@ import {
     FollowingResponseFull,
     FollowingResponseFullFromJSON,
     FollowingResponseFullToJSON,
+    FullBulkSubscribersResponse,
+    FullBulkSubscribersResponseFromJSON,
+    FullBulkSubscribersResponseToJSON,
     FullFollowersResponse,
     FullFollowersResponseFromJSON,
     FullFollowersResponseToJSON,
@@ -37,6 +40,9 @@ import {
     FullReposts,
     FullRepostsFromJSON,
     FullRepostsToJSON,
+    FullSubscribersResponse,
+    FullSubscribersResponseFromJSON,
+    FullSubscribersResponseToJSON,
     FullTracks,
     FullTracksFromJSON,
     FullTracksToJSON,
@@ -59,6 +65,20 @@ import {
     UsersByContentNodeFromJSON,
     UsersByContentNodeToJSON,
 } from '../models';
+
+export interface BulkGetSubscribersRequest {
+    /**
+     * User IDs to fetch subscribers for
+     */
+    ids: Array<string>;
+}
+
+export interface BulkGetSubscribersViaJSONRequestRequest {
+    /**
+     * User IDs to fetch subscribers for
+     */
+    ids: Array<string>;
+}
 
 export interface GetFavoritesRequest {
     /**
@@ -168,6 +188,25 @@ export interface GetRepostsByHandleRequest {
      * A User handle
      */
     handle: string;
+    /**
+     * The number of items to skip. Useful for pagination (page number * limit)
+     */
+    offset?: number;
+    /**
+     * The number of items to fetch
+     */
+    limit?: number;
+    /**
+     * The user ID of the user making the request
+     */
+    userId?: string;
+}
+
+export interface GetSubscribersRequest {
+    /**
+     * A User ID
+     */
+    id: string;
     /**
      * The number of items to skip. Useful for pagination (page number * limit)
      */
@@ -428,6 +467,54 @@ export interface GetUsersTrackHistoryRequest {
 export class UsersApi extends runtime.BaseAPI {
 
     /**
+     * All users that subscribe to the provided users
+     */
+    async bulkGetSubscribers(requestParameters: BulkGetSubscribersRequest): Promise<NonNullable<FullBulkSubscribersResponse["data"]>> {
+        if (requestParameters.ids === null || requestParameters.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.ids) {
+            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/subscribers`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<FullBulkSubscribersResponse["data"]>>;
+    }
+
+    /**
+     * Get all users that subscribe to the users listed in the JSON request
+     */
+    async bulkGetSubscribersViaJSONRequest(requestParameters: BulkGetSubscribersViaJSONRequestRequest): Promise<NonNullable<FullBulkSubscribersResponse["data"]>> {
+        if (requestParameters.ids === null || requestParameters.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribersViaJSONRequest.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.ids) {
+            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/subscribers`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<FullBulkSubscribersResponse["data"]>>;
+    }
+
+    /**
      * Gets a user\'s favorite tracks
      */
     async getFavorites(requestParameters: GetFavoritesRequest): Promise<NonNullable<FavoritesResponseFull["data"]>> {
@@ -625,6 +712,38 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<FullReposts["data"]>>;
+    }
+
+    /**
+     * All users that subscribe to the provided user
+     */
+    async getSubscribers(requestParameters: GetSubscribersRequest): Promise<NonNullable<FullSubscribersResponse["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSubscribers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/subscribers`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<FullSubscribersResponse["data"]>>;
     }
 
     /**
