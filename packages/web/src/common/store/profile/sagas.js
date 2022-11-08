@@ -2,6 +2,7 @@ import {
   DefaultSizes,
   Kind,
   DoubleKeys,
+  FeatureFlags,
   makeUid,
   makeKindId,
   squashNewLines,
@@ -42,6 +43,10 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
+import {
+  subscribeToUserAsync,
+  unsubscribeFromUserAsync
+} from 'common/store/social/users/sagas'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
@@ -568,11 +573,28 @@ function* watchSetNotificationSubscription() {
     function* (action) {
       if (action.update) {
         try {
+          const getFeatureEnabled = yield getContext('getFeatureEnabled')
+
           yield call(
             audiusBackendInstance.updateUserSubscription,
             action.userId,
             action.isSubscribed
           )
+
+          // Dual write to discovery. Part of the migration of subscriptions
+          // from identity to discovery.
+          const socialFeatureEntityManagerEnabled =
+            (yield call(
+              getFeatureEnabled,
+              FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
+            )) ?? false
+          if (socialFeatureEntityManagerEnabled) {
+            if (action.isSubscribed) {
+              yield fork(subscribeToUserAsync, action.userId)
+            } else {
+              yield fork(unsubscribeFromUserAsync, action.userId)
+            }
+          }
         } catch (err) {
           const isReachable = yield select(getIsReachable)
           if (!isReachable) return

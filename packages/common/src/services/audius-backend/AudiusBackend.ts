@@ -2848,6 +2848,30 @@ export const audiusBackend = ({
     }
   }
 
+  async function subscribeToUser(userId: ID) {
+    try {
+      await waitForLibsInit()
+      const account = audiusLibs.Account.getCurrentUser()
+      if (!account) return
+      return await audiusLibs.User.addUserSubscribe(userId)
+    } catch (err) {
+      console.error(getErrorMessage(err))
+      throw err
+    }
+  }
+
+  async function unsubscribeFromUser(userId: ID) {
+    try {
+      await waitForLibsInit()
+      const account = audiusLibs.Account.getCurrentUser()
+      if (!account) return
+      return await audiusLibs.User.deleteUserSubscribe(userId)
+    } catch (err) {
+      console.error(getErrorMessage(err))
+      throw err
+    }
+  }
+
   async function updateUserLocationTimezone() {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -3481,6 +3505,8 @@ export const audiusBackend = ({
     updateUserEvent,
     updateUserLocationTimezone,
     updateUserSubscription,
+    subscribeToUser,
+    unsubscribeFromUser,
     upgradeToCreator,
     uploadImage,
     uploadTrack,

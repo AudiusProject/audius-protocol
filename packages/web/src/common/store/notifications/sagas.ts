@@ -44,6 +44,10 @@ import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import {
+  subscribeToUserAsync,
+  unsubscribeFromUserAsync
+} from 'common/store/social/users/sagas'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
@@ -392,16 +396,42 @@ export function* fetchNotificationUsers(action: FetchNotificationUsers) {
 
 export function* subscribeUserSettings(action: SubscribeUser) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
   yield* call(audiusBackendInstance.updateUserSubscription, action.userId, true)
+
+  // Dual write to discovery. Part of the migration of subscriptions
+  // from identity to discovery.
+  const socialFeatureEntityManagerEnabled =
+    ((yield* call(
+      getFeatureEnabled,
+      FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
+    )) as boolean | null) ?? false
+  if (socialFeatureEntityManagerEnabled) {
+    yield* fork(subscribeToUserAsync, action.userId)
+  }
 }
 
 export function* unsubscribeUserSettings(action: UnsubscribeUser) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
   yield* call(
     audiusBackendInstance.updateUserSubscription,
     action.userId,
     false
   )
+
+  // Dual write to discovery. Part of the migration of subscriptions
+  // from identity to discovery.
+  const socialFeatureEntityManagerEnabled =
+    ((yield* call(
+      getFeatureEnabled,
+      FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
+    )) as boolean | null) ?? false
+  if (socialFeatureEntityManagerEnabled) {
+    yield* fork(unsubscribeFromUserAsync, action.userId)
+  }
 }
 
 export function* updatePlaylistLastViewedAt(

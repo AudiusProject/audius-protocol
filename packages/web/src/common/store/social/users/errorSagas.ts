@@ -9,7 +9,9 @@ type UserErrors =
 const errorSagas = createErrorSagas<UserErrors>({
   errorTypes: [
     socialUserActions.FOLLOW_USER_FAILED,
-    socialUserActions.UNFOLLOW_USER_FAILED
+    socialUserActions.UNFOLLOW_USER_FAILED,
+    socialUserActions.SUBSCRIBE_USER_FAILED,
+    socialUserActions.UNSUBSCRIBE_USER_FAILED
   ],
   getShouldRedirect: () => false,
   getShouldReport: () => true,
