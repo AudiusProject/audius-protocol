@@ -17,6 +17,7 @@ import { UserRow, TrackRow } from '../src/types/db'
 import { PlaylistDoc, RepostDoc, TrackDoc, UserDoc } from '../src/types/docs'
 import { typeDefs } from './schema'
 import { SearchResponse } from '@elastic/elasticsearch/lib/api/types'
+import { dialPg } from '../src/conn'
 
 //
 // DataLoaders
@@ -24,6 +25,8 @@ import { SearchResponse } from '@elastic/elasticsearch/lib/api/types'
 
 let esUrl = process.env.audius_elasticsearch_url || 'http://localhost:9200'
 const esc = new Client({ node: esUrl })
+
+const pg = dialPg()
 
 const indexNames = {
   users: 'users',
@@ -69,6 +72,17 @@ const trackResolvers: TrackResolvers<Ctx, Track & TrackDoc> = {
 
   owner: async (track, args, ctx) => {
     return ctx.es.user.load(track.owner_id)
+  },
+
+  cover_art_urls: async (track, args, ctx) => {
+    if (!track.cover_art_sizes) return []
+    const size = args.size.substring(1)
+    const user = await ctx.es.user.load(track.owner_id)
+    if (!user.creator_node_endpoint) return []
+    const urls = user.creator_node_endpoint
+      .split(',')
+      .map((u) => `${u}/ipfs/${track.cover_art_sizes}/${size}.jpg`)
+    return urls
   },
 
   async reposted_by(track, args) {
@@ -156,6 +170,24 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
     }
     const tracks = await bbSearch(indexNames.tracks, bb)
     return tracks as any
+  },
+
+  cover_photo_urls: async (user, args) => {
+    if (!user.creator_node_endpoint) return []
+    const size = args.size.substring(1)
+    const urls = user.creator_node_endpoint
+      .split(',')
+      .map((u) => `${u}/ipfs/${user.cover_photo_sizes}/${size}.jpg`)
+    return urls
+  },
+
+  profile_picture_urls: async (user, args) => {
+    if (!user.creator_node_endpoint) return []
+    const size = args.size.substring(1)
+    const urls = user.creator_node_endpoint
+      .split(',')
+      .map((u) => `${u}/ipfs/${user.profile_picture_sizes}/${size}.jpg`)
+    return urls
   },
 
   reposted_tracks: async (user, args, ctx) => {
@@ -247,17 +279,31 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
   },
 }
 
-//
+// ------------------------
 // Root Query Resolver
-//
+// ------------------------
 
 const queryResolvers: QueryResolvers<Ctx> = {
-  users: async (root, args, ctx) => {
+  wip_notifications: async () => {
+    let sql = `select * from notification where 1 = any(user_ids) limit 500`
+    const result = await pg.query(sql)
+    return result.rows
+  },
+
+  user: async (root, args, ctx) => {
     const bb = bodybuilder()
     if (args.handle) {
       bb.filter('term', 'handle', args.handle)
     }
-    return bbSearch(indexNames.users, bb)
+    const users = await bbSearch<User>(indexNames.users, bb)
+    return users[0]
+  },
+
+  track: async (root, args, ctx) => {
+    const bb = bodybuilder()
+    bb.filter('term', 'permalink', args.permalink)
+    const docs = await bbSearch<Track>(indexNames.tracks, bb)
+    return docs[0]
   },
 
   feed: async (root, args, ctx) => {

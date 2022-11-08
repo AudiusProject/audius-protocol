@@ -4,6 +4,16 @@ export const typeDefs = gql`
   scalar Date
   scalar JSON
 
+  enum SizeSquare {
+    _150x150
+    _480x480
+    _1000x1000
+  }
+  enum SizeWidth {
+    _640x
+    _2000x
+  }
+
   enum TrackSort {
     length # todo: length or duration
     # favorite_count # todo: need to map this field (or use save_count)
@@ -35,6 +45,8 @@ export const typeDefs = gql`
     length: Int!
     created_at: String!
     owner: User!
+    permalink: String!
+    cover_art_urls(size: SizeSquare! = _150x150): [String!]!
 
     favorite_count: Int!
     repost_count: Int!
@@ -56,6 +68,8 @@ export const typeDefs = gql`
     name: String!
     bio: String
     location: String
+    cover_photo_urls(size: SizeWidth! = _640x): [String!]!
+    profile_picture_urls(size: SizeSquare! = _150x150): [String!]!
 
     follower_count: Int!
     following_count: Int!
@@ -129,12 +143,21 @@ export const typeDefs = gql`
 
   union FeedItem = Track | Playlist
 
+  # -----------------------
+  # ROOT QUERY
+  # -----------------------
+
   type Query {
-    users(handle: String): [User!]!
+    user(handle: String): User
+
+    track(permalink: String!): Track
+
     feed(
       reposts: Boolean = true
       original: Boolean = true
       limit: Int = 11
     ): [FeedItem!]!
+
+    wip_notifications: JSON
   }
 `

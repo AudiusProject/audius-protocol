@@ -61,7 +61,9 @@ export enum PlaylistSort {
 export type Query = {
   __typename?: 'Query';
   feed: Array<FeedItem>;
-  users: Array<User>;
+  track?: Maybe<Track>;
+  user?: Maybe<User>;
+  wip_notifications?: Maybe<Scalars['JSON']>;
 };
 
 
@@ -72,9 +74,25 @@ export type QueryFeedArgs = {
 };
 
 
-export type QueryUsersArgs = {
+export type QueryTrackArgs = {
+  permalink: Scalars['String'];
+};
+
+
+export type QueryUserArgs = {
   handle?: InputMaybe<Scalars['String']>;
 };
+
+export enum SizeSquare {
+  '150x150' = '_150x150',
+  '480x480' = '_480x480',
+  '1000x1000' = '_1000x1000'
+}
+
+export enum SizeWidth {
+  '640x' = '_640x',
+  '2000x' = '_2000x'
+}
 
 export enum SortDirection {
   Asc = 'asc',
@@ -84,6 +102,7 @@ export enum SortDirection {
 export type Track = {
   __typename?: 'Track';
   activity_timestamp?: Maybe<Scalars['String']>;
+  cover_art_urls: Array<Scalars['String']>;
   created_at: Scalars['String'];
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
@@ -92,10 +111,16 @@ export type Track = {
   is_saved: Scalars['Boolean'];
   length: Scalars['Int'];
   owner: User;
+  permalink: Scalars['String'];
   repost_count: Scalars['Int'];
   reposted_by: Array<User>;
   stream_urls: Array<Scalars['String']>;
   title: Scalars['String'];
+};
+
+
+export type TrackCover_Art_UrlsArgs = {
+  size?: SizeSquare;
 };
 
 
@@ -119,6 +144,7 @@ export enum TrackSort {
 export type User = {
   __typename?: 'User';
   bio?: Maybe<Scalars['String']>;
+  cover_photo_urls: Array<Scalars['String']>;
   follower_count: Scalars['Int'];
   followers: Array<User>;
   following: Array<User>;
@@ -130,9 +156,15 @@ export type User = {
   location?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   playlists: Array<Playlist>;
+  profile_picture_urls: Array<Scalars['String']>;
   reposted_playlists: Array<Playlist>;
   reposted_tracks: Array<Track>;
   tracks: Array<Track>;
+};
+
+
+export type UserCover_Photo_UrlsArgs = {
+  size?: SizeWidth;
 };
 
 
@@ -160,6 +192,11 @@ export type UserPlaylistsArgs = {
   query?: InputMaybe<Scalars['String']>;
   sort?: InputMaybe<PlaylistSort>;
   sort_direction?: InputMaybe<SortDirection>;
+};
+
+
+export type UserProfile_Picture_UrlsArgs = {
+  size?: SizeSquare;
 };
 
 
@@ -264,6 +301,8 @@ export type ResolversTypes = {
   Playlist: ResolverTypeWrapper<Playlist>;
   PlaylistSort: PlaylistSort;
   Query: ResolverTypeWrapper<{}>;
+  SizeSquare: SizeSquare;
+  SizeWidth: SizeWidth;
   SortDirection: SortDirection;
   String: ResolverTypeWrapper<Scalars['String']>;
   Track: ResolverTypeWrapper<Track>;
@@ -317,11 +356,14 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit' | 'original' | 'reposts'>>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
+  track?: Resolver<Maybe<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<QueryTrackArgs, 'permalink'>>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUserArgs>>;
+  wip_notifications?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
 };
 
 export type TrackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Track'] = ResolversParentTypes['Track']> = {
   activity_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cover_art_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<TrackCover_Art_UrlsArgs, 'size'>>;
   created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   favorited_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackFavorited_ByArgs, 'limit' | 'offset'>>;
@@ -330,6 +372,7 @@ export type TrackResolvers<ContextType = any, ParentType extends ResolversParent
   is_saved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   length?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   owner?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  permalink?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   repost_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reposted_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackReposted_ByArgs, 'limit' | 'offset'>>;
   stream_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -339,6 +382,7 @@ export type TrackResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cover_photo_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<UserCover_Photo_UrlsArgs, 'size'>>;
   follower_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   followers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserFollowersArgs, 'limit' | 'offset'>>;
   following?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserFollowingArgs, 'limit' | 'offset'>>;
@@ -350,6 +394,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType, RequireFields<UserPlaylistsArgs, 'limit' | 'offset'>>;
+  profile_picture_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<UserProfile_Picture_UrlsArgs, 'size'>>;
   reposted_playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType>;
   reposted_tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserReposted_TracksArgs, 'limit' | 'offset'>>;
   tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserTracksArgs, 'limit' | 'offset'>>;
