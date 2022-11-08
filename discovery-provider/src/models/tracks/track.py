@@ -30,6 +30,9 @@ class Track(Base, RepresentableMixin):
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False, index=True)
+    track_cid = Column(
+        String, index=True
+    )  # todo: after backfill, add nullable=False, both here and in a db migration
     title = Column(Text)
     length = Column(Integer)
     cover_art = Column(String)
