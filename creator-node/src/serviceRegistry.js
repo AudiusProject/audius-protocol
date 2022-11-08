@@ -378,35 +378,32 @@ class ServiceRegistry {
    * Some queues run on a cron and should always have 1 job either active or delayed.
    */
   async recoverStateMachineQueues() {
-    if (
-      !(await this.cNodeEndpointToSpIdMapQueue.getActive())?.length &&
-      !(await this.cNodeEndpointToSpIdMapQueue.getDelayed())?.length
-    ) {
+    if (await this._isQueueEmpty(this.cNodeEndpointToSpIdMapQueue)) {
       this.logError('cNodeEndpointToSpIdMapQueue was empty - restarting it')
       await this.stateMonitoringManager.startEndpointToSpIdMapQueue(
         this.cNodeEndpointToSpIdMapQueue
       )
     }
-    if (
-      !(await this.monitorStateQueue.getActive())?.length &&
-      !(await this.monitorStateQueue.getDelayed())?.length
-    ) {
+    if (await this._isQueueEmpty(this.monitorStateQueue)) {
       this.logError('monitorStateQueue was empty - restarting it')
       await this.stateMonitoringManager.startMonitorStateQueue(
         this.monitorStateQueue,
         this.libs.discoveryProvider.discoveryProviderEndpoint
       )
     }
-    if (
-      !(await this.recoverOrphanedDataQueue.getActive())?.length &&
-      !(await this.recoverOrphanedDataQueue.getDelayed())?.length
-    ) {
+    if (await this._isQueueEmpty(this.recoverOrphanedDataQueue)) {
       this.logError('recoverOrphanedDataQueue was empty - restarting it')
       await this.stateReconciliationManager.startRecoverOrphanedDataQueue(
         this.recoverOrphanedDataQueue,
         this.libs.discoveryProvider.discoveryProviderEndpoint
       )
     }
+  }
+
+  async _isQueueEmpty(queue) {
+    const activeJobs = await queue.getActive()
+    const delayedJobs = await queue.getDelayed()
+    return !activeJobs?.length && !delayedJobs?.length
   }
 
   /**
