@@ -5,6 +5,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_key",
           "type": "bytes32"
         }
@@ -12,6 +13,7 @@
       "name": "getData",
       "outputs": [
         {
+          "internalType": "bytes32",
           "name": "val",
           "type": "bytes32"
         }
@@ -24,10 +26,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "_key",
           "type": "bytes32"
         },
         {
+          "internalType": "bytes32",
           "name": "_val",
           "type": "bytes32"
         }

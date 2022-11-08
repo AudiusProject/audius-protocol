@@ -2,20 +2,17 @@
   "contractName": "BaseAdminUpgradeabilityProxy",
   "abi": [
     {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
+          "internalType": "address",
           "name": "previousAdmin",
           "type": "address"
         },
         {
           "indexed": false,
+          "internalType": "address",
           "name": "newAdmin",
           "type": "address"
         }
@@ -28,6 +25,7 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "implementation",
           "type": "address"
         }
@@ -36,11 +34,17 @@
       "type": "event"
     },
     {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
       "constant": false,
       "inputs": [],
       "name": "admin",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -55,6 +59,7 @@
       "name": "implementation",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -67,6 +72,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newAdmin",
           "type": "address"
         }
@@ -81,6 +87,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newImplementation",
           "type": "address"
         }
@@ -95,10 +102,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newImplementation",
           "type": "address"
         },
         {
+          "internalType": "bytes",
           "name": "data",
           "type": "bytes"
         }

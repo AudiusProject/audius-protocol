@@ -2,35 +2,82 @@
   "contractName": "TestEntityManager",
   "abi": [
     {
-      "constant": false,
+      "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "_userId",
           "type": "uint256"
         },
         {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_signer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_entityType",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_entityId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_metadata",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_action",
+          "type": "string"
+        }
+      ],
+      "name": "ManageEntity",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
           "name": "_isVerified",
           "type": "bool"
         }
       ],
-      "name": "manageIsVerified",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "ManageIsVerified",
+      "type": "event"
     },
     {
       "constant": false,
       "inputs": [
         {
+          "internalType": "string",
           "name": "name",
           "type": "string"
         },
         {
+          "internalType": "string",
           "name": "version",
           "type": "string"
         },
         {
+          "internalType": "uint256",
           "name": "chainId",
           "type": "uint256"
         }
@@ -45,10 +92,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_verifierAddress",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_networkId",
           "type": "uint256"
         }
@@ -63,30 +112,37 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_userId",
           "type": "uint256"
         },
         {
+          "internalType": "string",
           "name": "_entityType",
           "type": "string"
         },
         {
+          "internalType": "uint256",
           "name": "_entityId",
           "type": "uint256"
         },
         {
+          "internalType": "string",
           "name": "_action",
           "type": "string"
         },
         {
+          "internalType": "string",
           "name": "_metadata",
           "type": "string"
         },
         {
+          "internalType": "bytes32",
           "name": "_nonce",
           "type": "bytes32"
         },
         {
+          "internalType": "bytes",
           "name": "_subjectSig",
           "type": "bytes"
         }
@@ -98,9 +154,30 @@
       "type": "function"
     },
     {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "_isVerified",
+          "type": "bool"
+        }
+      ],
+      "name": "manageIsVerified",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
         }
@@ -108,6 +185,7 @@
       "name": "usedSignatures",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -117,65 +195,12 @@
       "type": "function"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_signer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "name": "_entityType",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "name": "_entityId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_metadata",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "name": "_action",
-          "type": "string"
-        }
-      ],
-      "name": "ManageEntity",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "name": "_isVerified",
-          "type": "bool"
-        }
-      ],
-      "name": "ManageIsVerified",
-      "type": "event"
-    },
-    {
       "constant": true,
       "inputs": [],
       "name": "newFunction",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
