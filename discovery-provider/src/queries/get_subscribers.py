@@ -16,7 +16,7 @@ where
     and is_current = true
     and is_delete = false
 order by
-    user_id asc
+    subscriber_id asc
 offset :offset
 limit :limit;
 """
