@@ -13,26 +13,25 @@
  * Do not edit the class manually.
  */
 
-import {
-    User,
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
-
 /**
  * 
  * @export
- * @interface FollowersResponse
+ * @interface UserSubscribers
  */
-export interface FollowersResponse 
+export interface UserSubscribers 
     {
         /**
         * 
-        * @type {Array<User>}
-        * @memberof FollowersResponse
+        * @type {string}
+        * @memberof UserSubscribers
         */
-        data?: Array<User>;
+        user_id: string;
+        /**
+        * 
+        * @type {Array<string>}
+        * @memberof UserSubscribers
+        */
+        subscriber_ids?: Array<string>;
     }
 
 

@@ -139,3 +139,6 @@ solana_notification_reaction_reaction_value = "reaction_value"
 
 # Trending
 owner_follower_count = "owner_follower_count"
+
+# User subscribers metadata
+subscriber_ids = "subscriber_ids"

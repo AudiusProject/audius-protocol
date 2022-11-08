@@ -23,14 +23,14 @@ import {
 /**
  * 
  * @export
- * @interface FollowersResponse
+ * @interface SubscribersResponse
  */
-export interface FollowersResponse 
+export interface SubscribersResponse 
     {
         /**
         * 
         * @type {Array<User>}
-        * @memberof FollowersResponse
+        * @memberof SubscribersResponse
         */
         data?: Array<User>;
     }
