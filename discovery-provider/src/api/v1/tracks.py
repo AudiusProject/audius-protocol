@@ -1,4 +1,6 @@
+import json
 import logging  # pylint: disable=C0302
+import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
@@ -32,6 +34,12 @@ from src.api.v1.helpers import (
     trending_parser_paginated,
 )
 from src.api.v1.models.users import user_model_full
+from src.api_helpers import recover_wallet
+from src.premium_content.premium_content_access_checker import (
+    premium_content_access_checker,
+)
+from src.premium_content.signature import get_premium_content_signature
+from src.queries.get_authed_user_id import get_authed_user_id
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
@@ -361,6 +369,19 @@ class FullBulkTracks(Resource):
 
 # Stream
 
+stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+stream_parser.add_argument(
+    "user_signature",
+    description="""An optional signature from the requesting user's wallet.
+        This is needed to authenticate the user and verify access in case the track is premium.""",
+    type=str,
+)
+stream_parser.add_argument(
+    "user_data",
+    description="""The data which was used to generate the optional signature argument.""",
+    type=str,
+)
+
 
 def tranform_stream_cache(stream_url):
     return redirect(stream_url)
@@ -369,6 +390,7 @@ def tranform_stream_cache(stream_url):
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
     @record_metrics
+    @ns.expect(stream_parser)
     @ns.doc(
         id="""Stream Track""",
         params={"track_id": "A Track ID"},
@@ -402,7 +424,6 @@ class TrackStream(Resource):
         args = {
             "id": [decoded_id],
             "with_users": True,
-            "exclude_premium": True,
         }
         tracks = get_tracks(args)
 
@@ -413,8 +434,43 @@ class TrackStream(Resource):
         if track["is_delete"] or track["user"]["is_deactivated"]:
             abort_not_found(track_id, ns)
 
+        # if the track is premium, make sure that the requesting user has access
+        request_args = stream_parser.parse_args()
+        user_data = request_args.get("user_data", None)
+        user_signature = request_args.get("user_signature", None)
+        if track["is_premium"]:
+            if not user_data:
+                abort_bad_request_param("user_data", ns)
+            if not user_signature:
+                abort_bad_request_param("user_signature", ns)
+
+            user_id = get_authed_user_id(user_data, user_signature)
+            if not user_id:
+                abort_not_found("user id", ns)
+
+            access = premium_content_access_checker.check_access(
+                user_id=user_id,
+                premium_content_id=decoded_id,
+                premium_content_type="track",
+                premium_content_entity=track,
+            )
+            if not access["does_user_have_access"]:
+                abort_bad_request_param("user does not have access to this track", ns)
+
+        # generate a signature for the track and include the signature
+        # as a query param in the redirect to CN
+        signature = get_premium_content_signature(
+            {
+                # todo: add track_cid migration, to indexing, to model
+                "id": track["track_cid"],
+                "type": "track",
+            }
+        )
+        signature_param = urllib.parse.quote(json.dumps(signature))
+
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, f"tracks/stream/{track_id}")
+        path = f"tracks/stream/{track_id}?signature={signature_param}"
+        stream_url = urljoin(primary_node, path)
 
         return stream_url
 

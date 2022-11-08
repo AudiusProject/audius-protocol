@@ -12,7 +12,7 @@ from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
-from src.premium_content.signature import get_premium_content_signature
+from src.premium_content.signature import get_authed_premium_content_signature
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.utils import db_session, web3_provider
 from web3 import Web3
@@ -168,7 +168,9 @@ def _get_eth_nft_gated_track_signatures(
                 # nft collection is owned by the user.
                 if future.result():
                     for track_id in erc721_collection_track_map[contract_address]:
-                        track_signature_map[track_id] = get_premium_content_signature(
+                        track_signature_map[
+                            track_id
+                        ] = get_authed_premium_content_signature(
                             {
                                 "id": track_id,
                                 "type": "track",
@@ -200,7 +202,9 @@ def _get_eth_nft_gated_track_signatures(
                 # nft collection is owned by the user.
                 if future.result():
                     for track_id in erc1155_collection_track_map[contract_address]:
-                        track_signature_map[track_id] = get_premium_content_signature(
+                        track_signature_map[
+                            track_id
+                        ] = get_authed_premium_content_signature(
                             {
                                 "id": track_id,
                                 "type": "track",
@@ -319,7 +323,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
 
         track_signature_map = {}
         for track_id in track_ids_with_access:
-            track_signature_map[track_id] = get_premium_content_signature(
+            track_signature_map[track_id] = get_authed_premium_content_signature(
                 {"id": track_id, "type": "track", "user_wallet": user_wallet}
             )
         return track_signature_map

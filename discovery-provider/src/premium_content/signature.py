@@ -1,22 +1,41 @@
 import json
 from datetime import datetime
-from typing import TypedDict
+from typing import TypedDict, Union
 
 from src.api_helpers import generate_signature
 from src.premium_content.premium_content_types import PremiumContentType
 
 
 class PremiumContentSignatureData(TypedDict):
-    premium_content_id: int
+    premium_content_id: Union[
+        int, str
+    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
     premium_content_type: PremiumContentType
-    user_wallet: str
     timestamp: int
 
 
 class PremiumContentSignatureArgs(TypedDict):
-    id: int
+    id: Union[
+        int, str
+    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
     type: PremiumContentType
+
+
+class AuthedPremiumContentSignatureData(TypedDict):
     user_wallet: str
+    premium_content_id: Union[
+        int, str
+    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
+    premium_content_type: PremiumContentType
+    timestamp: int
+
+
+class AuthedPremiumContentSignatureArgs(TypedDict):
+    user_wallet: str
+    id: Union[
+        int, str
+    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
+    type: PremiumContentType
 
 
 class PremiumContentSignature(TypedDict):
@@ -34,7 +53,19 @@ def get_premium_content_signature(
     data: PremiumContentSignatureData = {
         "premium_content_id": args["id"],
         "premium_content_type": args["type"],
+        "timestamp": _get_current_utc_timestamp_ms(),
+    }
+    signature = generate_signature(data)
+    return {"data": json.dumps(data), "signature": signature}
+
+
+def get_authed_premium_content_signature(
+    args: AuthedPremiumContentSignatureArgs,
+) -> PremiumContentSignature:
+    data: AuthedPremiumContentSignatureData = {
         "user_wallet": args["user_wallet"],
+        "premium_content_id": args["id"],
+        "premium_content_type": args["type"],
         "timestamp": _get_current_utc_timestamp_ms(),
     }
     signature = generate_signature(data)
