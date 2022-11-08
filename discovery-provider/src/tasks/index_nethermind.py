@@ -188,7 +188,7 @@ def update_latest_block_redis():
 
 
 def fetch_tx_receipt(transaction):
-    web3 = update_task.web3
+    web3 = web3
     tx_hash = web3.toHex(transaction["hash"])
     receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
@@ -372,7 +372,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(db_session, block):
-    web3 = update_task.web3
     current_block_query = db_session.query(Block).filter_by(is_current=True)
 
     block_model = Block(
@@ -444,7 +443,6 @@ def create_and_raise_indexing_error(err, redis):
 
 
 def index_blocks(self, db, blocks_list):
-    web3 = update_task.web3
     redis = update_task.redis
     shared_config = update_task.shared_config
 
