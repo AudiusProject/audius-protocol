@@ -53,7 +53,7 @@ class MonitoringQueue {
         'monitoring-queue',
         async (_job) => {
           try {
-            await this.logStatus('Starting')
+            await this._logStatus('Starting')
 
             // Iterate over each monitor and set a new value if the cached
             // value is not fresh.
@@ -62,12 +62,12 @@ class MonitoringQueue {
                 try {
                   await this.refresh(monitorProps, monitorKey)
                 } catch (e) {
-                  this.logError(`Error on ${monitorProps.name} ${e}`)
+                  this._logError(`Error on ${monitorProps.name} ${e}`)
                 }
               }
             )
           } catch (e) {
-            this.logError(`Error ${e}`)
+            this._logError(`Error ${e}`)
           }
         },
         { connection }
@@ -129,24 +129,12 @@ class MonitoringQueue {
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus(message) {
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.info(
-      `Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
+  _logStatus(message) {
+    logger.info(`Monitoring Queue: ${message}`)
   }
 
-  /**
-   * Logs a serror message and includes current queue info
-   * @param {string} message
-   */
-  async logError(message) {
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.error(
-      `Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
+  _logError(message) {
+    logger.error(`Monitoring Queue: ${message}`)
   }
 
   /**
@@ -163,11 +151,11 @@ class MonitoringQueue {
           try {
             await this.queue.add(PROCESS_NAMES.monitor, {})
           } catch (e) {
-            this.logError('Failed to enqueue!')
+            this._logError('Failed to enqueue!')
           }
         }, QUEUE_INTERVAL_MS)
       } catch (e) {
-        this.logError('Startup failed!')
+        this._logError('Startup failed!')
       }
     }
   }
