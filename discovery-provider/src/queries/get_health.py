@@ -296,14 +296,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
         is_index_spl_token_backfill_complete = False
 
-    db = db_session.get_db_read_replica()
-    with db.scoped_session() as session:
-        spl_token_backfill_progress = spl_token_backfill_check_progress(session)
-        rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
-            session
-        )
-        user_bank_backfill_progress = user_bank_backfill_check_progress(session)
-
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -358,11 +350,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "transactions_history_backfill": {
             "user_bank_backfilling_complete": is_index_user_bank_backfill_complete,
-            "user_bank_backfilling_progress": user_bank_backfill_progress,
             "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
-            "rewards_manager_backfill_progress": rewards_manager_backfill_progress,
             "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
-            "spl_token_backfill_progress": spl_token_backfill_progress,
         },
     }
 
@@ -423,6 +412,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
         health_results["tables"] = table_size_info_json
+
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            spl_token_backfill_progress = spl_token_backfill_check_progress(session)
+            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
+                session
+            )
+            user_bank_backfill_progress = user_bank_backfill_check_progress(session)
+
+        health_results["transactions_history_backfill_progress"] = {
+            "user_bank_backfilling_progress": user_bank_backfill_progress,
+            "rewards_manager_backfilling_progress": rewards_manager_backfill_progress,
+            "spl_token_backfilling_progress": spl_token_backfill_progress,
+        }
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
