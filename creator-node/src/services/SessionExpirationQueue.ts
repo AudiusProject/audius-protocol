@@ -28,7 +28,7 @@ export class SessionExpirationQueue {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
-    this.logStatus = this.logStatus.bind(this)
+    this._logStatus = this._logStatus.bind(this)
     this.expireSessions = this.expireSessions.bind(this)
     const connection = {
       host: config.get('redisHost'),
@@ -50,7 +50,7 @@ export class SessionExpirationQueue {
     await deleteSessions(sessionsToDelete)
   }
 
-  logStatus(message: string) {
+  _logStatus(message: string) {
     logger.info(`Session Expiration Queue: ${message}`)
   }
 
