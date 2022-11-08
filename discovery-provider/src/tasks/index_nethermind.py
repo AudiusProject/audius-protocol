@@ -8,7 +8,6 @@ from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
-from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -351,10 +350,13 @@ def save_skipped_tx(session, redis):
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
+    entity_manager_address = os.getenv(
+        "audius_contracts_nethermind_entity_manager_address"
+    )
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
-        tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
+        tx_is_type = tx_target_contract_address == entity_manager_address
         if tx_is_type:
             contract_type = tx_type
             logger.info(
