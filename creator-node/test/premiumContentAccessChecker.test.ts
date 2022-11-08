@@ -2,15 +2,12 @@ import { generateSignature } from '../src/apiSigning'
 import { getLibsMock } from './lib/libsMock'
 import { loggerFactory } from './lib/reqMock'
 import assert from 'assert'
-import { PremiumContentAccessError } from '../src/premiumContent/types'
 import { getApp } from './lib/app'
-import { PremiumContentAccessChecker } from '../src/premiumContent/premiumContentAccessChecker'
+import { checkPremiumContentAccess } from '../src/premiumContent/premiumContentAccessChecker'
 
 const models = require('../src/models')
 
 describe('Test premium content access', function () {
-  let premiumContentAccessChecker: PremiumContentAccessChecker
-
   let server: any
   let libsMock: any
   let redisMock: any
@@ -49,7 +46,6 @@ describe('Test premium content access', function () {
   })
 
   beforeEach(() => {
-    premiumContentAccessChecker = new PremiumContentAccessChecker()
     redisMock = new Map()
     redisMock.set(
       'all_registered_dnodes',
@@ -87,19 +83,16 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         badDNPrivateKey
       )
-      const accessWithoutHeaders =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: null as unknown as string,
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
+      const accessWithoutHeaders = await checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: null as unknown as string,
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
       assert.deepStrictEqual(accessWithoutHeaders, {
         doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
-        error: PremiumContentAccessError.MISSING_HEADERS
+        error: 'MissingHeaders'
       })
 
       const missingPremiumContentHeadersObj = {
@@ -107,21 +100,16 @@ describe('Test premium content access', function () {
         signatureFromDiscoveryNode,
         signedDataFromUser
       }
-      const accessWithMissingHeaders =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: JSON.stringify(
-            missingPremiumContentHeadersObj
-          ),
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
+      const accessWithMissingHeaders = await checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: JSON.stringify(missingPremiumContentHeadersObj),
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
       assert.deepStrictEqual(accessWithMissingHeaders, {
         doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
-        error: PremiumContentAccessError.MISSING_HEADERS
+        error: 'MissingHeaders'
       })
     })
 
@@ -136,19 +124,16 @@ describe('Test premium content access', function () {
         signedDataFromUser,
         signatureFromUser
       }
-      const access =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
+      const access = await checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: false,
-        trackId: 1,
-        isPremium: true,
-        error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
+        error: 'InvalidDiscoveryNode'
       })
     })
 
@@ -163,18 +148,15 @@ describe('Test premium content access', function () {
         signedDataFromUser,
         signatureFromUser
       }
-      const access =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
+      const access = await checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: true,
-        trackId: 1,
-        isPremium: true,
         error: null
       })
     })
@@ -182,18 +164,15 @@ describe('Test premium content access', function () {
 
   describe('non-premium content', () => {
     it('passes when the CID is missing', async () => {
-      const access =
-        await premiumContentAccessChecker.checkPremiumContentAccess({
-          cid,
-          premiumContentHeaders: 'premium-content-headers',
-          libs: libsMock,
-          logger: loggerMock,
-          redis: redisMock
-        })
+      const access = await checkPremiumContentAccess({
+        cid,
+        premiumContentHeaders: 'premium-content-headers',
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: true,
-        trackId: null,
-        isPremium: false,
         error: null
       })
     })
@@ -217,18 +196,15 @@ describe('Test premium content access', function () {
 
       try {
         await createRecords()
-        const access =
-          await premiumContentAccessChecker.checkPremiumContentAccess({
-            cid,
-            premiumContentHeaders: 'premium-content-headers',
-            libs: libsMock,
-            logger: loggerMock,
-            redis: redisMock
-          })
+        const access = await checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: 'premium-content-headers',
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
         assert.deepStrictEqual(access, {
           doesUserHaveAccess: true,
-          trackId: null,
-          isPremium: false,
           error: null
         })
         await deleteRecords()
@@ -258,18 +234,15 @@ describe('Test premium content access', function () {
 
       try {
         await createRecords()
-        const access =
-          await premiumContentAccessChecker.checkPremiumContentAccess({
-            cid,
-            premiumContentHeaders: 'premium-content-headers',
-            libs: libsMock,
-            logger: loggerMock,
-            redis: redisMock
-          })
+        const access = await checkPremiumContentAccess({
+          cid,
+          premiumContentHeaders: 'premium-content-headers',
+          libs: libsMock,
+          logger: loggerMock,
+          redis: redisMock
+        })
         assert.deepStrictEqual(access, {
           doesUserHaveAccess: true,
-          trackId: 1,
-          isPremium: false,
           error: null
         })
         await deleteRecords()

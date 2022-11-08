@@ -3,13 +3,10 @@ import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 import { Request, Response } from 'express'
 import Logger from 'bunyan'
 import { Redis } from 'ioredis'
-import { PremiumContentAccessError } from '../../premiumContent/types'
-import { StubPremiumContentAccessChecker } from '../../premiumContent/stubPremiumContentAccessChecker'
 import config from '../../config'
 import proxyquire from 'proxyquire' // eslint-disable-line node/no-unpublished-import
 
 describe('Test premium content middleware', () => {
-  let premiumContentMiddlewareProxy: any
   let app: any
   let serviceRegistry: any
   let libs: any
@@ -18,7 +15,27 @@ describe('Test premium content middleware', () => {
   let headers: any
   let mockReq: any
   let mockRes: any
-  let premiumContentAccessChecker: StubPremiumContentAccessChecker
+
+  const premiumContentMiddlewareProxy = ({
+    accessCheckReturnsWith
+  }: {
+    accessCheckReturnsWith?: Object
+  }) => {
+    if (
+      accessCheckReturnsWith !== undefined &&
+      accessCheckReturnsWith !== null
+    ) {
+      return proxyquire('./premiumContentMiddleware', {
+        './../../config': config,
+        '../../premiumContent/premiumContentAccessChecker': async () =>
+          accessCheckReturnsWith
+      })
+    }
+
+    return proxyquire('./premiumContentMiddleware', {
+      './../../config': config
+    })
+  }
 
   beforeEach(() => {
     libs = {
@@ -31,7 +48,6 @@ describe('Test premium content middleware', () => {
     logger = loggerFactory() as unknown as Logger
     redis = new Map() as unknown as Redis
     headers = {}
-    premiumContentAccessChecker = new StubPremiumContentAccessChecker()
     serviceRegistry = {
       premiumContentAccessChecker,
       libs,
@@ -51,14 +67,11 @@ describe('Test premium content middleware', () => {
   describe('when premium content is enabled', () => {
     beforeEach(() => {
       config.set('premiumContentEnabled', true)
-      premiumContentMiddlewareProxy = proxyquire('./premiumContentMiddleware', {
-        './../../config': config
-      })
     })
 
     it('returns bad request when missing the CID param', async () => {
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({}).premiumContentMiddleware(
         { ...mockReq, params: { CID: null } } as unknown as Request,
         mockRes as unknown as Response,
         () => {
@@ -70,12 +83,13 @@ describe('Test premium content middleware', () => {
     })
 
     it('returns unauthorized when it fails because of missing headers', async () => {
-      premiumContentAccessChecker.accessCheckReturnsWith = {
-        doesUserHaveAccess: false,
-        error: PremiumContentAccessError.MISSING_HEADERS
-      }
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({
+        accessCheckReturnsWith: {
+          doesUserHaveAccess: false,
+          error: 'MissingHeaders'
+        }
+      }).premiumContentMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
@@ -87,12 +101,13 @@ describe('Test premium content middleware', () => {
     })
 
     it('returns forbidden when it fails because of invalid discovery node', async () => {
-      premiumContentAccessChecker.accessCheckReturnsWith = {
-        doesUserHaveAccess: false,
-        error: PremiumContentAccessError.INVALID_DISCOVERY_NODE
-      }
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({
+        accessCheckReturnsWith: {
+          doesUserHaveAccess: false,
+          error: 'InvalidDiscoveryNode'
+        }
+      }).premiumContentMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
@@ -104,12 +119,13 @@ describe('Test premium content middleware', () => {
     })
 
     it('passes and moves to the next middleware when all checks are fine and content is NOT premium', async () => {
-      premiumContentAccessChecker.accessCheckReturnsWith = {
-        doesUserHaveAccess: true,
-        error: null
-      }
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({
+        accessCheckReturnsWith: {
+          doesUserHaveAccess: true,
+          error: null
+        }
+      }).premiumContentMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
@@ -120,12 +136,13 @@ describe('Test premium content middleware', () => {
     })
 
     it('passes and moves to the next middleware when all checks are fine and content IS premium', async () => {
-      premiumContentAccessChecker.accessCheckReturnsWith = {
-        doesUserHaveAccess: true,
-        error: null
-      }
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({
+        accessCheckReturnsWith: {
+          doesUserHaveAccess: true,
+          error: null
+        }
+      }).premiumContentMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
@@ -139,11 +156,9 @@ describe('Test premium content middleware', () => {
   describe('when premium content is disabled', () => {
     it('moves on to the next middleware', async () => {
       config.set('premiumContentEnabled', false)
-      premiumContentMiddlewareProxy = proxyquire('./premiumContentMiddleware', {
-        './../../config': config
-      })
+
       let nextCalled = false
-      await premiumContentMiddlewareProxy.premiumContentMiddleware(
+      await premiumContentMiddlewareProxy({}).premiumContentMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {
