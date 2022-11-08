@@ -382,6 +382,7 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   afterEach(async function () {
     await server.close()
   })
+})
 
 it('returns expected counts and percentages after recording successes and failures', async function () {
   const nodeUsers = [
