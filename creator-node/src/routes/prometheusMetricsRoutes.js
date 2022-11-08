@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 const express = require('express')
-const { clusterUtils } = require('../utils')
+const { isClusterEnabled } = require('../utils')
 
 const router = express.Router()
 
@@ -23,7 +23,7 @@ router.get('/prometheus_metrics_worker', async (req, res) => {
  * Exposes Prometheus metrics aggregated across all workers at `GET /prometheus_metrics`
  */
 router.get('/prometheus_metrics', async (req, res) => {
-  if (!clusterUtils.isClusterEnabled()) {
+  if (!isClusterEnabled()) {
     return returnMetricsForSingleProcess(req, res)
   }
 

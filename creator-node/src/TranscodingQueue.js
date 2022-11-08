@@ -4,7 +4,7 @@ const os = require('os')
 
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { clusterUtils } = require('./utils')
+const { getConcurrencyPerWorker } = require('./utils')
 
 const TRANSCODING_MAX_CONCURRENCY = config.get('transcodingMaxConcurrency')
 const MAX_ACTIVE_JOBS = config.get('maximumTranscodingActiveJobs')
@@ -112,7 +112,7 @@ class TranscodingQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
       }
     )
 

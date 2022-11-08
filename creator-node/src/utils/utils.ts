@@ -39,7 +39,7 @@ export function isFqdn(url: string) {
   return fqdn.test(url)
 }
 
-export async function deleteOldActiveJobs(queue: Queue, queueLogger: Logger) {
+export async function clearActiveJobs(queue: Queue, queueLogger: Logger) {
   const oldActiveJobs = await queue.getJobs(['active'])
   queueLogger.info(
     `Removing ${oldActiveJobs.length} leftover active jobs from ${queue.name}`

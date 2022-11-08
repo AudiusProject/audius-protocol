@@ -401,9 +401,8 @@ class ServiceRegistry {
   }
 
   async _isQueueEmpty(queue) {
-    const activeJobs = await queue.getActive()
-    const delayedJobs = await queue.getDelayed()
-    return !activeJobs?.length && !delayedJobs?.length
+    const activeAndDelayedJobs = await queue.getJobs(['active', 'delayed'])
+    return !activeAndDelayedJobs?.length
   }
 
   /**

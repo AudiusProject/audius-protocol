@@ -12,7 +12,7 @@ import {
   verifySignature,
   stringifyMap,
   isFqdn,
-  deleteOldActiveJobs
+  clearActiveJobs
 } from './utils'
 import {
   validateMetadata,
@@ -32,7 +32,13 @@ import {
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
-import { clusterUtils } from './clusterUtils'
+import {
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker
+} from './clusterUtils'
+import { clusterUtilsForPrimary } from './clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './clusterUtilsForWorker'
 
 export type { ValuesOf } from './utils'
 export {
@@ -52,8 +58,12 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils,
-  deleteOldActiveJobs
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs
 }
 
 module.exports = {
@@ -75,6 +85,10 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils,
-  deleteOldActiveJobs
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs
 }

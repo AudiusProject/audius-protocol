@@ -6,7 +6,12 @@ setupTracing()
 
 import type { Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
-import { clusterUtils } from './utils'
+import {
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  getNumWorkers,
+  isClusterEnabled
+} from './utils'
 import cluster from 'cluster'
 
 import ON_DEATH from 'death'
@@ -126,13 +131,13 @@ const startAppForPrimary = async () => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   DBManager.createStoragePathIndexOnFilesTable()
 
-  const numWorkers = clusterUtils.getNumWorkers()
+  const numWorkers = getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
   const firstWorker = cluster.fork({
-    isInitWorker: true,
-    isSpecialWorker: true
+    isThisWorkerFirst: true,
+    isThisWorkerSpecial: true
   })
-  clusterUtils.primaryOnlySetSpecialWorkerId(firstWorker.id)
+  clusterUtilsForPrimary.setSpecialWorkerId(firstWorker.id)
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
     if (msg?.cmd === 'initComplete') {
@@ -171,13 +176,13 @@ const startAppForPrimary = async () => {
       }. Respawning...`
     )
     const killedWorkerWasSpecial =
-      clusterUtils.primaryOnlyGetSpecialWorkerId() === worker.id
+      clusterUtilsForPrimary.getSpecialWorkerId() === worker.id
     const newWorker = cluster.fork({ isSpecialWorker: killedWorkerWasSpecial })
     if (killedWorkerWasSpecial) {
       logger.info(
         'The worker that died was the special worker. Setting a new special worker...'
       )
-      clusterUtils.primaryOnlySetSpecialWorkerId(newWorker.id)
+      clusterUtilsForPrimary.setSpecialWorkerId(newWorker.id)
     }
   })
 
@@ -192,15 +197,15 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
-  if (process.env.isInitWorker === 'true') clusterUtils.markThisWorkerAsInit()
-  if (process.env.isSpecialWorker === 'true') {
-    clusterUtils.markThisWorkerAsSpecial()
-  }
+  if (process.env.isThisWorkerFirst === 'true')
+    clusterUtilsForWorker.markThisWorkerAsFirst()
+  if (process.env.isThisWorkerSpecial === 'true')
+    clusterUtilsForWorker.markThisWorkerAsSpecial()
 
   logger.info(
     `Worker process with pid=${process.pid} and worker ID=${
       cluster.worker?.id
-    } is running. Is this worker init: ${clusterUtils.isThisWorkerInit()}`
+    } is running. Is this worker init: ${clusterUtilsForWorker.isThisWorkerFirst()}`
   )
   await verifyConfigAndDb()
   await startApp()
@@ -218,14 +223,14 @@ const startAppForWorker = async () => {
     }
   })
 
-  if (clusterUtils.isThisWorkerInit() && process.send) {
+  if (clusterUtilsForWorker.isThisWorkerFirst() && process.send) {
     process.send({ cmd: 'initComplete' })
   }
 
   // Ensure health of queues that might've been affected by the special worker dying.
   // The special worker is responsible for re-enqueing jobs when other jobs complete,
   // so if it died then it might have failed to re-enqueue some jobs
-  if (clusterUtils.isThisWorkerSpecial()) {
+  if (clusterUtilsForWorker.isThisWorkerSpecial()) {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(async () => {
       await serviceRegistry.recoverStateMachineQueues()
@@ -282,7 +287,7 @@ const startApp = async () => {
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
 
-if (!clusterUtils.isClusterEnabled()) {
+if (!isClusterEnabled()) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppWithoutCluster()
 } else if (cluster.isMaster) {

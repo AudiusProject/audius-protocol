@@ -4,7 +4,11 @@ import type { LogContext } from '../../apiHelpers'
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
-import { clusterUtils, deleteOldActiveJobs } from '../../utils'
+import {
+  clusterUtilsForWorker,
+  getConcurrencyPerWorker,
+  clearActiveJobs
+} from '../../utils'
 import { instrumentTracing, tracing } from '../../tracer'
 import {
   logger,
@@ -64,8 +68,8 @@ export class SyncQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-    if (clusterUtils.isThisWorkerInit()) {
-      await deleteOldActiveJobs(this.queue, logger)
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
     }
 
     /**
@@ -105,7 +109,7 @@ export class SyncQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }

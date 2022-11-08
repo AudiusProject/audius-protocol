@@ -5,7 +5,7 @@ import type { LogContext } from './apiHelpers'
 
 import { Queue, Worker } from 'bullmq'
 import { logger } from './logging'
-import { clusterUtils, ValuesOf } from './utils'
+import { getConcurrencyPerWorker, ValuesOf } from './utils'
 
 // Processing fns
 import {
@@ -106,7 +106,7 @@ export class AsyncProcessingQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
       }
     )
     prometheusRegistry.startQueueMetrics(this.queue, worker)

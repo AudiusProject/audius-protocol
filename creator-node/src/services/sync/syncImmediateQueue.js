@@ -1,6 +1,10 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
 
-const { clusterUtils, deleteOldActiveJobs } = require('../../utils')
+const {
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  getConcurrencyPerWorker
+} = require('../../utils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const {
   logger,
@@ -46,8 +50,8 @@ class SyncImmediateQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-    if (clusterUtils.isThisWorkerInit()) {
-      await deleteOldActiveJobs(this.queue, logger)
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
     }
 
     const worker = new Worker(
@@ -85,7 +89,7 @@ class SyncImmediateQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }
