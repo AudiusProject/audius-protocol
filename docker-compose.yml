@@ -390,6 +390,7 @@ services:
       rateLimitingBatchCidsExistLimit: 1
       maxAudioFileSizeBytes: 250000000
       maxMemoryFileSizeBytes: 50000000
+      expressAppConcurrency: 2
 
       identityService: "http://identity-service:7000"
 

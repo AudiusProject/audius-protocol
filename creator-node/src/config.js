@@ -25,7 +25,8 @@ const config = convict({
     doc: 'Database URL connection string',
     format: String,
     env: 'dbUrl',
-    default: 'postgres://postgres:postgres@localhost:4432/audius_creator_node'
+    default: 'postgres://postgres:postgres@localhost:4432/audius_creator_node',
+    sensitive: true
   },
   dbConnectionPoolMax: {
     doc: 'Max connections in database pool',
@@ -43,7 +44,8 @@ const config = convict({
     doc: 'Redis host name',
     format: String,
     env: 'redisHost',
-    default: 'localhost'
+    default: 'localhost',
+    sensitive: true
   },
   allowedUploadFileExtensions: {
     doc: 'Override the default list of file extension allowed',
@@ -88,13 +90,15 @@ const config = convict({
     doc: 'Redis port',
     format: 'port',
     env: 'redisPort',
-    default: 4379
+    default: 4379,
+    sensitive: true
   },
   port: {
     doc: 'Port to run service on',
     format: 'port',
     env: 'port',
-    default: 4000
+    default: 4000,
+    sensitive: true
   },
   setTimeout: {
     doc: `
@@ -315,13 +319,15 @@ const config = convict({
     doc: 'private key string',
     format: String,
     env: 'delegatePrivateKey',
-    default: null
+    default: null,
+    sensitive: true
   },
   solDelegatePrivateKeyBase64: {
     doc: 'Base64-encoded Solana private key created using delegatePrivateKey as the seed (auto-generated -- any input here will be overwritten)',
     format: String,
     env: 'solDelegatePrivateKeyBase64',
-    default: ''
+    default: '',
+    sensitive: true
   },
   // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
   isRegisteredOnURSM: {
@@ -376,7 +382,8 @@ const config = convict({
     doc: 'all unlocked accounts from eth chain',
     format: Array,
     env: 'ethWallets',
-    default: []
+    default: [],
+    sensitive: true
   },
   spOwnerWalletIndex: {
     doc: 'Index in ethWallets array of service owner wallet',
@@ -824,7 +831,8 @@ const config = convict({
     doc: 'the url for the OpenTelemetry collector',
     format: String,
     env: 'otelCollectorUrl',
-    default: ''
+    default: '',
+    sensitive: true
   },
   reconfigSPIdBlacklistString: {
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
@@ -836,13 +844,13 @@ const config = convict({
     doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
     format: Boolean,
     env: 'recordSyncResults',
-    default: false
+    default: true
   },
   processSyncResults: {
     doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
     format: Boolean,
     env: 'processSyncResults',
-    default: false
+    default: true
   }
 })
 

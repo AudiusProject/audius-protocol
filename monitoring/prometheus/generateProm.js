@@ -15,7 +15,7 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
   url = url.replace("https://", "").replace("http://", "")
   sanitizedUrl = url.split(".").join("-")
 
-  return `
+  let yaml = `
   - job_name: '${sanitizedUrl}'
     scheme: '${scheme}'
     metrics_path: '/prometheus_metrics'
@@ -26,7 +26,84 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'audius'
           component: '${component}'
+  - job_name: '${sanitizedUrl}_postgres_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/postgres'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'postgres'
+          component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: postgres_$1
+  - job_name: '${sanitizedUrl}_redis_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/redis'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'redis'
+          component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: redis_$1
+  - job_name: '${sanitizedUrl}_linux_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/linux'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'linux'
+          component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: linux_$1
 `
+
+  if (component == 'discovery-node') {
+    yaml += `
+  - job_name: '${sanitizedUrl}_postgres_read_replica_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/postgres/read-replica'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'postgres-read-replica'
+          component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: postgres_$1
+  - job_name: '${sanitizedUrl}_elasticsearch_exporter'
+    scheme: '${scheme}'
+    metrics_path: '/prometheus/elasticsearch'
+    static_configs:
+      - targets: ['${url}']
+        labels:
+          host: '${url}'
+          environment: '${env}'
+          service: 'elasticsearch'
+          component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: elastic_$1
+  `
+  }
+
+  return yaml
 }
 
 const generateEnv = async (stream, env) => {

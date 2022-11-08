@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './Activity';
+export * from './BulkSubscribersResponse';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';
@@ -26,6 +27,7 @@ export * from './ProfilePicture';
 export * from './RelatedArtistResponse';
 export * from './RemixParent';
 export * from './Reposts';
+export * from './SubscribersResponse';
 export * from './Supporter';
 export * from './Supporting';
 export * from './TagsResponse';
@@ -44,6 +46,7 @@ export * from './UserAssociatedWalletResponse';
 export * from './UserReplicaSet';
 export * from './UserResponse';
 export * from './UserSearch';
+export * from './UserSubscribers';
 export * from './UserTrackListenCountsResponse';
 export * from './UserTrackListenCountsResponseData';
 export * from './UsersByContentNode';
