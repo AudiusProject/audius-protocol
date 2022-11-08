@@ -1034,19 +1034,21 @@ jobs:
       - queue/until_front_of_line:
           consider-branch: false
           dont-quit: true
-      - when:
-          condition:
-            and:
-              - equal: [ main, << pipeline.git.branch >> ]
-              - equal: [ staging, << parameters.environment >> ]
-              - not:
-                  equal: [ all, << parameters.service >> ]
-          steps:
-            - checkout
-            - run:
-                name: Check for Changes
-                command: |
-                  [[ $(git diff $(git rev-parse HEAD)~1 --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
+      # won't unreserve nodes if the commit being deployed does not have service-related changes:
+      # https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol/31174/workflows/c6e05fe3-d286-4e7c-8759-59487763fb4c
+      # - when:
+      #     condition:
+      #       and:
+      #         - equal: [ main, << pipeline.git.branch >> ]
+      #         - equal: [ staging, << parameters.environment >> ]
+      #         - not:
+      #             equal: [ all, << parameters.service >> ]
+      #     steps:
+      #       - checkout
+      #       - run:
+      #           name: Check for Changes
+      #           command: |
+      #             [[ $(git diff $(git rev-parse HEAD)~1 --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
       # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
