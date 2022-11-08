@@ -23,15 +23,15 @@ from src.tasks.index_rewards_manager_backfill import (
     check_progress as rewards_manager_backfill_check_progress,
 )
 from src.tasks.index_rewards_manager_backfill import (
-    check_progress as user_bank_backfill_check_progress,
-)
-from src.tasks.index_rewards_manager_backfill import (
     index_rewards_manager_backfill_complete,
 )
 from src.tasks.index_spl_token_backfill import (
     check_progress as spl_token_backfill_check_progress,
 )
 from src.tasks.index_spl_token_backfill import index_spl_token_backfill_complete
+from src.tasks.index_user_bank_backfill import (
+    check_progress as user_bank_backfill_check_progress,
+)
 from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
