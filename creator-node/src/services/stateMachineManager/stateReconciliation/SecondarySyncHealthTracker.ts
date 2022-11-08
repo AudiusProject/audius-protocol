@@ -116,16 +116,6 @@ function _aggregateSyncSuccessAndFailureCountBySecondaryPerWallet(
   }
 }
 
-export async function recordSuccess(
-  secondary: string,
-  wallet: string,
-  syncType: string
-) {
-  if (RECORD_SYNC_RESULTS) {
-    await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
-  }
-}
-
 export async function recordFailure(
   secondary: string,
   wallet: string,
@@ -324,7 +314,6 @@ async function _batchGetSyncRequestOutcomeMetricsForToday(wallets: string[]) {
 
 module.exports = {
   Outcomes,
-  recordSuccess,
   recordFailure,
   computeUsersSecondarySyncSuccessRatesForToday,
   getSyncRequestOutcomeMetrics,
