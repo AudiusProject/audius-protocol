@@ -1,4 +1,4 @@
-import type { ComponentType, ReactElement } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useState, useRef, forwardRef, useCallback } from 'react'
 
 import type {
@@ -30,6 +30,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     borderRadius: 8,
     borderWidth: 1,
     paddingVertical: spacing(2),
@@ -54,7 +55,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   input: {
     flex: 1,
     color: palette.neutral,
-    fontFamily: typography.fontByWeight.medium
+    fontFamily: typography.fontByWeight.medium,
+    minWidth: 40
   },
   icon: {
     fill: palette.neutralLight5,
@@ -64,6 +66,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   placeholderText: {
     color: palette.neutralLight4
   },
+  startAdornment: {},
   endAdornment: {
     alignSelf: 'flex-end'
   }
@@ -75,6 +78,7 @@ export type TextInputProps = RNTextInputProps & {
    * Default icon to show at the right side of the input
    */
   Icon?: ComponentType<SvgProps>
+  startAdornment?: ReactNode
   endAdornment?: ReactElement
   /**
    * Whether or not the search input should show a clear icon
@@ -108,6 +112,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       Icon,
       clearable,
       onClear,
+      startAdornment,
       endAdornment,
       value,
       onFocus,
@@ -222,6 +227,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                 {label}
               </Animated.Text>
             </Animated.View>
+          ) : null}
+          {startAdornment ? (
+            <View style={styles.startAdornment}>{startAdornment}</View>
           ) : null}
           <RNTextInput
             ref={mergeRefs([innerInputRef, ref])}

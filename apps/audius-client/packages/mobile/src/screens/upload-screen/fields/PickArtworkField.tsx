@@ -21,6 +21,9 @@ type Error = {
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
+    marginBottom: spacing(2)
+  },
+  image: {
     aspectRatio: 1,
     backgroundColor: palette.neutralLight6,
     borderRadius: 8
@@ -82,11 +85,11 @@ export const PickArtworkField = () => {
   }, [secondary, setValue])
 
   return (
-    <View>
+    <View style={styles.root}>
       <DynamicImage
         uri={uri}
         onLoad={() => setIsLoading(false)}
-        style={styles.root}
+        style={styles.image}
       >
         <View style={styles.iconPicture}>
           {isLoading ? (
