@@ -36,6 +36,10 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'postgres'
           component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: postgres_$1
   - job_name: '${sanitizedUrl}_redis_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/redis'
@@ -46,6 +50,10 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'redis'
           component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: redis_$1
   - job_name: '${sanitizedUrl}_linux_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/linux'
@@ -56,6 +64,10 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'linux'
           component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: linux_$1
 `
 
   if (component == 'discovery-node') {
@@ -70,6 +82,10 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'postgres-read-replica'
           component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: postgres_$1
   - job_name: '${sanitizedUrl}_elasticsearch_exporter'
     scheme: '${scheme}'
     metrics_path: '/prometheus/elasticsearch'
@@ -80,6 +96,10 @@ const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-pr
           environment: '${env}'
           service: 'elasticsearch'
           component: '${component}'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        target_label: __name__
+        replacement: elastic_$1
   `
   }
 
