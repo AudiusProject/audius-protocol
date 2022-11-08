@@ -26,7 +26,7 @@ export const DescriptionField = () => {
 
   return (
     <TextField
-      styles={{ input: styles.input }}
+      styles={styles}
       multiline
       numberOfLines={5}
       maxLength={maxCharCount}
@@ -34,7 +34,7 @@ export const DescriptionField = () => {
       label={messages.description}
       endAdornment={
         <Text variant='body' color={charCountColor}>
-          {value?.length ?? 0}/{maxCharCount}
+          {charCount}/{maxCharCount}
         </Text>
       }
       returnKeyType='default'
