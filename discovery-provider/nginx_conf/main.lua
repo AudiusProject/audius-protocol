@@ -174,7 +174,7 @@ function get_redirect_args ()
         ngx.log(ngx.ERR, "Failed to sign nonce for redirect: ", err)
         return
     end
-    return config.public_url, nonce, ngx.encode_base64(sig)
+    return config.delegate_owner_wallet, nonce, ngx.encode_base64(sig)
 end
 
 function _M.limit_to_rps ()
@@ -186,14 +186,14 @@ function _M.limit_to_rps ()
         return
     end
 
-    if verify_signature(ngx.var.openresty_redirect_from, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
+    if verify_signature(ngx.var.openresty_redirect_from_delegate_owner_wallet, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
         -- if signature is correct remove signature args and skip rate limit logic
         local args, err = ngx.req.get_uri_args()
         if err then
             ngx.log(ngx.ERR, "failed to get uri args: ", err)
             return ngx.exit(500)
         end
-        args.openresty_redirect_from = nil
+        args.openresty_redirect_from_delegate_owner_wallet = nil
         args.openresty_redirect_nonce = nil
         args.openresty_redirect_sig = nil
         ngx.req.set_uri_args(args)
@@ -215,7 +215,7 @@ function _M.limit_to_rps ()
         if rate_limit_hit then
             -- Redirect request after setting redirect args
             local args, err = ngx.req.get_uri_args()
-            args.openresty_redirect_from, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
+            args.openresty_redirect_from_delegate_owner_wallet, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
             ngx.req.set_uri_args(args)
             local redirect_target = get_redirect_target()
             if redirect_target ~= nil then

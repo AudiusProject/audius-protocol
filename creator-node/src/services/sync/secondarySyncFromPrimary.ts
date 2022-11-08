@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
+import type { LogContext } from '../../apiHelpers'
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -36,7 +37,7 @@ type SecondarySyncFromPrimaryParams = {
   wallet: string
   creatorNodeEndpoint: string
   forceResyncConfig: ForceResyncConfig
-  logContext: Object
+  logContext: LogContext
   forceWipe?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
@@ -159,16 +160,18 @@ const handleSyncFromPrimary = async ({
 
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
-      } catch (error) {
-        await clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        } catch (error) {
+          await clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
@@ -524,7 +527,7 @@ const handleSyncFromPrimary = async ({
       // Save all track files to disk in batches (to limit concurrent load)
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-        logger.info(
+        logger.debug(
           `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
@@ -562,7 +565,7 @@ const handleSyncFromPrimary = async ({
           i,
           i + FileSaveMaxConcurrency
         )
-        logger.info(
+        logger.debug(
           `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
@@ -761,7 +764,7 @@ const handleSyncFromPrimary = async ({
  * @param {string} param.wallet
  * @param {string} param.creatorNodeEndpoint
  * @param {Object} param.forceResyncConfig
- * @param {Object} param.logContext
+ * @param {LogContext} param.logContext
  * @param {boolean} [param.forceWipe]
  * @param {number} [param.blockNumber]
  */

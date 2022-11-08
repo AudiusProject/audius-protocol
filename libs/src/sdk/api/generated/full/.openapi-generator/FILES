@@ -3,6 +3,7 @@ apis/ReactionsApi.ts
 apis/SearchApi.ts
 apis/TipsApi.ts
 apis/TracksApi.ts
+apis/TransactionsApi.ts
 apis/UsersApi.ts
 apis/index.ts
 index.ts
@@ -14,6 +15,7 @@ models/FavoritesResponseFull.ts
 models/FieldVisibility.ts
 models/FollowingResponse.ts
 models/FollowingResponseFull.ts
+models/FullBulkSubscribersResponse.ts
 models/FullFollowersResponse.ts
 models/FullGetSupporter.ts
 models/FullGetSupporters.ts
@@ -23,6 +25,7 @@ models/FullPlaylistTracksResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
 models/FullReposts.ts
+models/FullSubscribersResponse.ts
 models/FullSupporter.ts
 models/FullSupporting.ts
 models/FullTip.ts
@@ -37,7 +40,6 @@ models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistLibrary.ts
-models/PremiumConditions.ts
 models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/RelatedArtistResponseFull.ts
@@ -60,10 +62,13 @@ models/TrackFull.ts
 models/TrackId.ts
 models/TrackRepostsResponseFull.ts
 models/TrackSegment.ts
+models/TransactionDetails.ts
+models/TransactionHistoryResponse.ts
 models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
 models/UserFull.ts
 models/UserReplicaSet.ts
+models/UserSubscribers.ts
 models/UsersByContentNode.ts
 models/VersionMetadata.ts
 models/index.ts

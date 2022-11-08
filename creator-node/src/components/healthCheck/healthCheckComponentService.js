@@ -279,8 +279,19 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+const configCheck = () => {
+  /**
+   * Docs: https://github.com/mozilla/node-convict/tree/master/packages/convict#configtostring
+   *
+   * This roundabout approach can be removed once the PR to add a .toJson() is merged: https://github.com/mozilla/node-convict/pull/407
+   */
+  const data = JSON.parse(config.toString())
+  return data
+}
+
 module.exports = {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 }

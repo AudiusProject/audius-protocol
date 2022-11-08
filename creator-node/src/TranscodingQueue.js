@@ -1,8 +1,8 @@
+const { segmentFile, transcodeFileTo320 } = require('./ffmpeg')
 const { Queue, QueueEvents, Worker } = require('bullmq')
 const os = require('os')
 
 const config = require('./config')
-const ffmpeg = require('./ffmpeg')
 const { logger: genericLogger } = require('./logging')
 const { clusterUtils } = require('./utils')
 
@@ -58,7 +58,7 @@ class TranscodingQueue {
                 logContext
               )
 
-              const response = await ffmpeg.segmentFile(fileDir, fileName, {
+              const response = await segmentFile(fileDir, fileName, {
                 logContext
               })
               await this.logStatus(
@@ -86,7 +86,7 @@ class TranscodingQueue {
                 logContext
               )
 
-              const transcodeFilePath = await ffmpeg.transcodeFileTo320(
+              const transcodeFilePath = await transcodeFileTo320(
                 fileDir,
                 fileName,
                 {
@@ -157,7 +157,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    * @param {Object} logContext to create a logger.child(logContext) from
-   * @returns {Object} response in the structure 
+   * @returns response in the structure 
     {
       segments: {
         fileNames: segmentFileNames {string[]}: the segment file names only, 
@@ -194,7 +194,7 @@ class TranscodingQueue {
    * @param {string} fileDir
    * @param {string} fileName
    * @param {Object} logContext to create a logger.child(logContext) from
-   * @returns {Object} { transcodeFilePath {string}: where the transcode exists in the fs }
+   * @returns { transcodeFilePath {string}: where the transcode exists in the fs }
    */
   async transcode320(fileDir, fileName, { logContext }) {
     this.logStatus(

@@ -20,6 +20,10 @@ export type CustomRequest = Request & {
   normalizedPath?: string
 }
 
+export type LogContext = {
+  requestID: string
+}
+
 type ApiResponse = {
   statusCode: number
   object: {

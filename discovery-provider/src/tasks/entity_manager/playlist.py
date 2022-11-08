@@ -20,28 +20,30 @@ def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception("User does not exists")
+        raise Exception(f"User {user_id} does not exists")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception("User does not match signer")
+        raise Exception(f"User {user_id} does not match signer")
 
     if params.entity_type != EntityType.PLAYLIST:
-        raise Exception("Entity type is not a playlist")
+        raise Exception(f"Entity type {params.entity_type} is not a playlist")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception("Cannot create playlist that already exists")
+            raise Exception(f"Cannot create playlist {playlist_id} that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
-            raise Exception("Cannot create playlist below the offset")
+            raise Exception(f"Cannot create playlist {playlist_id} below the offset")
     else:
         if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception("Cannot update playlist that does not exist")
+            raise Exception(f"Cannot update playlist {playlist_id} that does not exist")
         existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
             playlist_id
         ]
         if existing_playlist.playlist_owner_id != user_id:
-            raise Exception("Cannot update playlist that does not match user")
+            raise Exception(
+                f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
+            )
 
 
 def create_playlist(params: ManageEntityParameters):
