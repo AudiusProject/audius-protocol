@@ -112,7 +112,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
@@ -131,7 +131,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const error = new Error('test error')
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .rejects(error)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
@@ -151,7 +151,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const error = new Error('test error')
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .rejects(error)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
@@ -175,7 +175,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const determinePeerHealthError = new Error('test determinePeerHealthError')
     const verboseHealthCheckResp = { healthy: false }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox
       .stub(CNodeHealthManager, 'determinePeerHealth')
@@ -193,7 +193,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
@@ -214,7 +214,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     const node = 'http://some_content_node.co'
     const verboseHealthCheckResp = { healthy: true }
     const queryVerboseHealthCheckStub = sandbox
-      .stub(CNodeHealthManager, '_queryVerboseHealthCheck')
+      .stub(CNodeHealthManager, '_queryHealthCheck')
       .resolves(verboseHealthCheckResp)
     const determinePeerHealthStub = sandbox.stub(
       CNodeHealthManager,
@@ -231,7 +231,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
   })
 })
 
-describe('test CNodeHealthManager -- _queryVerboseHealthCheck()', function () {
+describe('test CNodeHealthManager -- _queryHealthCheck()', function () {
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
@@ -254,7 +254,7 @@ describe('test CNodeHealthManager -- _queryVerboseHealthCheck()', function () {
       .get('/health_check')
       .reply(200, { data: verboseHealthResp })
 
-    await CNodeHealthManager._queryVerboseHealthCheck(endpoint)
+    await CNodeHealthManager._queryHealthCheck(endpoint)
     expect(nock.isDone()).to.be.true
   })
 })

@@ -38,7 +38,7 @@ const CNodeHealthManager = {
   getEarliestFailedHealthCheckTimestamp,
   setHealthCheckTimestampToNow,
   resetEarliestUnhealthyTimestamp,
-  _queryVerboseHealthCheck,
+  _queryHealthCheck,
   _computeContentNodePeerSet
 }
 
@@ -82,7 +82,7 @@ async function getUnhealthyPeers(
 async function isNodeHealthy(node: string) {
   try {
     const verboseHealthCheckResp =
-      await CNodeHealthManager._queryVerboseHealthCheck(node)
+      await CNodeHealthManager._queryHealthCheck(node)
     // if node returns healthy: false consider that unhealthy just like non-200 response
     const { healthy } = verboseHealthCheckResp
     if (!healthy) {
@@ -254,7 +254,7 @@ async function resetEarliestUnhealthyTimestamp(
  * @param {string} endpoint the endpoint to query
  * @returns {Object} the response from /health_check endpoint
  */
-async function _queryVerboseHealthCheck(endpoint: string) {
+async function _queryHealthCheck(endpoint: string) {
   // Axios request will throw on timeout or non-200 response
   const resp = await axios({
     baseURL: endpoint,
