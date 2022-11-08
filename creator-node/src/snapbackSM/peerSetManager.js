@@ -225,17 +225,17 @@ class PeerSetManager {
   }
 
   /**
-   * Returns /health_check/verbose response
+   * Returns /health_check response
    * TODO: - consider moving this pure function to libs
    *
    * @param {string} endpoint
-   * @returns {Object} the /health_check/verbose response
+   * @returns {Object} the /health_check response
    */
   async queryVerboseHealthCheck(endpoint) {
     // Axios request will throw on timeout or non-200 response
     const resp = await axios({
       baseURL: endpoint,
-      url: '/health_check/verbose',
+      url: '/health_check',
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS,
       headers: {

@@ -1,3 +1,4 @@
+const os = require('os')
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
@@ -6,9 +7,12 @@ const config = require('../../config')
 const utils = require('../../utils')
 const { MONITORS } = require('../../monitors/monitors')
 
-const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
+const MIN_NUMBER_OF_CPUS = 8 // 8 cpu
 const MIN_TOTAL_MEMORY = 15500000000 // 15.5 GB of RAM
 const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
+
+const numberOfCPUs = os.cpus().length
+const OSVersionString = os.version().split(' ')[0]
 
 /**
  * Perform a health check, returning the
@@ -20,19 +24,15 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {*} getMonitors
  * @param {*} getTranscodeQueueJobs
  * @param {*} getAsyncProcessingQueueJobs
- * @param {number} numberOfCPUs the number of CPUs on this machine
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
 const healthCheck = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
+  { libs, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   getTranscodeQueueJobs,
   transcodingQueueIsAvailable,
-  getAsyncProcessingQueueJobs,
-  numberOfCPUs,
   randomBytesToSign = null
 ) => {
   // Location information
@@ -42,11 +42,6 @@ const healthCheck = async (
 
   // Storage information
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
-
-  // SnapbackSM information
-  const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
-  const snapbackModuloBase = config.get('snapbackModuloBase')
-  const manualSyncsDisabled = config.get('manualSyncsDisabled')
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
@@ -102,15 +97,8 @@ const healthCheck = async (
     MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
   ])
 
-  let currentSnapbackReconfigMode
-  if (snapbackSM) {
-    currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
-  }
-
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
-
-  const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
 
   const isAvailable = await transcodingQueueIsAvailable()
   const shouldHandleTranscode = utils.currentNodeShouldHandleTranscode({
@@ -143,51 +131,46 @@ const healthCheck = async (
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
+    solDelegatePublicKeyBase58,
+
+    // Machine
     numberOfCPUs,
-    totalMemory,
+    OSVersionString,
     storagePathSize,
-    country,
-    latitude,
-    longitude,
-    databaseConnections,
-    databaseSize,
+    storagePathUsed,
+    maxStorageUsedPercent,
+    totalMemory,
     usedMemory,
     usedTCPMemory,
-    storagePathUsed,
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
     transferredBytesPerSec,
-    maxStorageUsedPercent,
-    // Rolling window days dependent on value set in monitor's sync history file
+
+    // Location
+    country,
+    latitude,
+    longitude,
+
+    // database
+    databaseConnections,
+    databaseSize,
+
+    // Sync success/failure
     thirtyDayRollingSyncSuccessCount,
     thirtyDayRollingSyncFailCount,
     dailySyncSuccessCount,
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
     latestSyncFailTimestamp,
-    currentSnapbackReconfigMode,
-    manualSyncsDisabled,
-    snapbackModuloBase,
-    snapbackUsersPerJob,
-    stateMonitoringQueueRateLimitInterval: config.get(
-      'stateMonitoringQueueRateLimitInterval'
-    ),
-    stateMonitoringQueueRateLimitJobsPerInterval: config.get(
-      'stateMonitoringQueueRateLimitJobsPerInterval'
-    ),
-    recoverOrphanedDataQueueRateLimitInterval: config.get(
-      'recoverOrphanedDataQueueRateLimitInterval'
-    ),
-    recoverOrphanedDataQueueRateLimitJobsPerInterval: config.get(
-      'recoverOrphanedDataQueueRateLimitJobsPerInterval'
-    ),
+
+    // transcode info
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,
     shouldHandleTranscode,
-    asyncProcessingQueue: asyncProcessingQueueJobs,
-    solDelegatePublicKeyBase58,
+
+    // State machine
     stateMachineJobs: {
       latestMonitorStateJobStart: parseDateOrNull(latestMonitorStateJobStart),
       latestMonitorStateJobSuccess: parseDateOrNull(
@@ -206,6 +189,7 @@ const healthCheck = async (
         latestFindReplicaSetUpdatesJobSuccess
       )
     },
+
     trustedNotifier: {
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
@@ -226,7 +210,7 @@ const healthCheck = async (
 
   if (
     !response.numberOfCPUs ||
-    response.numberOfCPUs < MIN_NUBMER_OF_CPUS ||
+    response.numberOfCPUs < MIN_NUMBER_OF_CPUS ||
     !response.totalMemory ||
     response.totalMemory < MIN_TOTAL_MEMORY ||
     !response.storagePathSize ||
@@ -242,29 +226,6 @@ const healthCheck = async (
 
 const parseDateOrNull = (date) => {
   return date ? new Date(parseInt(date)).toISOString() : null
-}
-
-// TODO remove verbose health check after fully deprecated
-const healthCheckVerbose = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
-  logger,
-  sequelize,
-  getMonitors,
-  numberOfCPUs,
-  getTranscodeQueueJobs,
-  transcodingQueueIsAvailable,
-  getAsyncProcessingQueueJobs
-) => {
-  return healthCheck(
-    { libs, snapbackSM, trustedNotifierManager },
-    logger,
-    sequelize,
-    getMonitors,
-    getTranscodeQueueJobs,
-    transcodingQueueIsAvailable,
-    getAsyncProcessingQueueJobs,
-    numberOfCPUs
-  )
 }
 
 /**
@@ -291,7 +252,6 @@ const configCheck = () => {
 
 module.exports = {
   healthCheck,
-  healthCheckVerbose,
   healthCheckDuration,
   configCheck
 }

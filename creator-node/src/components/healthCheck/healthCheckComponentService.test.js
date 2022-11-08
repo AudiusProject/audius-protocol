@@ -1,11 +1,8 @@
+const os = require('os')
 const assert = require('assert')
 const { Keypair } = require('@solana/web3.js')
 
-const {
-  healthCheck,
-  healthCheckVerbose,
-  configCheck
-} = require('./healthCheckComponentService')
+const { healthCheck, configCheck } = require('./healthCheckComponentService')
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
@@ -26,9 +23,8 @@ const SOL_SECRET_KEY_BUFFER = Buffer.from(SOL_SECRET_KEY_BASE64, 'base64')
 // Ed25519 public key (base58 encoded) when ETH_PRIV_KEY is the seed
 const SOL_PUBLIC_KEY_BASE58 = 'GMQMUsxnCKjnDVKG9UfYtQdkLVxDsHyZ9z3sLtLS6Unq'
 
-const snapbackSMMock = {
-  highestEnabledReconfigMode: 'RECONFIG_DISABLED'
-}
+const numberOfCPUs = os.cpus().length
+const OSVersionString = os.version().split(' ')[0]
 
 const libsMock = {
   discoveryProvider: {
@@ -45,10 +41,6 @@ const trustedNotifierManagerMock = {
     }
   },
   trustedNotifierID: 12
-}
-
-const sequelizeMock = {
-  query: async () => Promise.resolve()
 }
 
 const getMonitorsMock = async (monitors) => {
@@ -111,49 +103,12 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   }
 }
 
-const AsyncProcessingQueueMock = (active = 0, waiting = 0, failed = 0) => {
-  return {
-    getAsyncProcessingQueueJobs: async () => {
-      return {
-        waiting: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: waiting
-        },
-        active: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: active
-        },
-        failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: failed
-        }
-      }
-    }
-  }
-}
-
 describe('Test Health Check', function () {
-  it('Should pass', async function () {
+  it('Should ensure expected response', async function () {
     config.set('serviceCountry', 'US')
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackUsersPerJob', 2)
-    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
-    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
-    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
-    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
-    config.set('snapbackModuloBase', 18)
-    config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
@@ -163,17 +118,12 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         libs: libsMock,
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
+      TranscodingQueueMock(4, 0).isAvailable
     )
 
     assert.deepStrictEqual(res, {
@@ -204,48 +154,18 @@ describe('Test Health Check', function () {
       transferredBytesPerSec: 269500,
       maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
-      numberOfCPUs: 2,
+      numberOfCPUs,
+      OSVersionString,
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,
       dailySyncSuccessCount: 5,
       dailySyncFailCount: 0,
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
-      manualSyncsDisabled: false,
-      snapbackModuloBase: 18,
-      snapbackUsersPerJob: 2,
-      stateMonitoringQueueRateLimitInterval: 20_000,
-      stateMonitoringQueueRateLimitJobsPerInterval: 2,
-      recoverOrphanedDataQueueRateLimitInterval: 50_000,
-      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
       shouldHandleTranscode: true,
-      asyncProcessingQueue: {
-        waiting: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 2
-        },
-        active: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        }
-      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineJobs: {
         latestMonitorStateJobStart: null,
@@ -269,28 +189,16 @@ describe('Test Health Check', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackUsersPerJob', 2)
-    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
-    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
-    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
-    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
-    config.set('snapbackModuloBase', 18)
-    config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     const res = await healthCheck(
       {
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
+      TranscodingQueueMock(4, 0).isAvailable
     )
 
     assert.deepStrictEqual(res, {
@@ -321,48 +229,18 @@ describe('Test Health Check', function () {
       transferredBytesPerSec: 269500,
       maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
-      numberOfCPUs: 2,
+      numberOfCPUs,
+      OSVersionString,
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,
       dailySyncSuccessCount: 5,
       dailySyncFailCount: 0,
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
-      manualSyncsDisabled: false,
-      snapbackModuloBase: 18,
-      snapbackUsersPerJob: 2,
-      stateMonitoringQueueRateLimitInterval: 20_000,
-      stateMonitoringQueueRateLimitJobsPerInterval: 2,
-      recoverOrphanedDataQueueRateLimitInterval: 50_000,
-      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
       shouldHandleTranscode: true,
-      asyncProcessingQueue: {
-        waiting: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 2
-        },
-        active: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        }
-      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineJobs: {
         latestMonitorStateJobStart: null,
@@ -384,17 +262,12 @@ describe('Test Health Check', function () {
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
     const res = await healthCheck(
       {
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
+      TranscodingQueueMock(4, 0).isAvailable
     )
 
     assert.deepStrictEqual(res, {
@@ -425,48 +298,18 @@ describe('Test Health Check', function () {
       transferredBytesPerSec: 269500,
       maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
-      numberOfCPUs: 2,
+      numberOfCPUs,
+      OSVersionString,
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,
       dailySyncSuccessCount: 5,
       dailySyncFailCount: 0,
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
-      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
-      manualSyncsDisabled: false,
-      snapbackModuloBase: 18,
-      snapbackUsersPerJob: 2,
-      stateMonitoringQueueRateLimitInterval: 20_000,
-      stateMonitoringQueueRateLimitJobsPerInterval: 2,
-      recoverOrphanedDataQueueRateLimitInterval: 50_000,
-      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
       shouldHandleTranscode: true,
-      asyncProcessingQueue: {
-        waiting: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 2
-        },
-        active: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        }
-      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineJobs: {
         latestMonitorStateJobStart: null,
@@ -513,171 +356,6 @@ describe('Test Health Check', function () {
     assert.strictEqual(solSecretKeyDerived, SOL_SECRET_KEY_BASE64)
     assert.strictEqual(solPublicKeyDerived.toBase58(), SOL_PUBLIC_KEY_BASE58)
   })
-})
-
-describe('Test Health Check Verbose', function () {
-  it('Should have valid values', async function () {
-    config.set('serviceCountry', 'US')
-    config.set('serviceLatitude', '37.7749')
-    config.set('serviceLongitude', '-122.4194')
-    config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackUsersPerJob', 2)
-    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
-    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
-    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
-    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
-    config.set('snapbackModuloBase', 18)
-    config.set('manualSyncsDisabled', false)
-
-    const res = await healthCheckVerbose(
-      {
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
-      },
-      mockLogger,
-      sequelizeMock,
-      getMonitorsMock,
-      2,
-      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
-    )
-
-    assert.deepStrictEqual(res, {
-      ...version,
-      service: 'content-node',
-      healthy: true,
-      git: undefined,
-      selectedDiscoveryProvider: 'none',
-      spID: config.get('spID'),
-      spOwnerWallet: config.get('spOwnerWallet'),
-      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      isRegisteredOnURSM: false,
-      dataProviderUrl: config.get('dataProviderUrl'),
-      audiusContentInfraSetup: '',
-      country: 'US',
-      latitude: '37.7749',
-      longitude: '-122.4194',
-      databaseConnections: 5,
-      databaseSize: 1102901,
-      totalMemory: 6237151232,
-      usedMemory: 5969739776,
-      usedTCPMemory: 922,
-      storagePathSize: 62725623808,
-      storagePathUsed: 54063878144,
-      maxFileDescriptors: 524288,
-      allocatedFileDescriptors: 3392,
-      receivedBytesPerSec: 776.7638177541248,
-      transferredBytesPerSec: 269500,
-      maxStorageUsedPercent: 95,
-      meetsMinRequirements: false,
-      numberOfCPUs: 2,
-      thirtyDayRollingSyncSuccessCount: 50,
-      thirtyDayRollingSyncFailCount: 10,
-      dailySyncSuccessCount: 5,
-      dailySyncFailCount: 0,
-      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
-      latestSyncFailTimestamp: '',
-      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
-      manualSyncsDisabled: false,
-      snapbackModuloBase: 18,
-      snapbackUsersPerJob: 2,
-      stateMonitoringQueueRateLimitInterval: 20_000,
-      stateMonitoringQueueRateLimitJobsPerInterval: 2,
-      recoverOrphanedDataQueueRateLimitInterval: 50_000,
-      recoverOrphanedDataQueueRateLimitJobsPerInterval: 1,
-      transcodeActive: 4,
-      transcodeWaiting: 0,
-      transcodeQueueIsAvailable: true,
-      shouldHandleTranscode: true,
-      asyncProcessingQueue: {
-        waiting: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 2
-        },
-        active: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        },
-        failed: {
-          trackContentUpload: 0,
-          transcodeAndSegment: 0,
-          processTranscodeAndSegments: 0,
-          transcodeHandOff: 0,
-          total: 0
-        }
-      },
-      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
-      stateMachineJobs: {
-        latestMonitorStateJobStart: null,
-        latestMonitorStateJobSuccess: null,
-        latestFindSyncRequestsJobStart: null,
-        latestFindSyncRequestsJobSuccess: null,
-        latestFindReplicaSetUpdatesJobStart: null,
-        latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
-      }
-    })
-  })
-
-  it('Should be the same as default health check', async function () {
-    config.set('serviceCountry', 'US')
-    config.set('serviceLatitude', '37.7749')
-    config.set('serviceLongitude', '-122.4194')
-    config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackUsersPerJob', 2)
-    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
-    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
-    config.set('recoverOrphanedDataQueueRateLimitInterval', 50_000)
-    config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
-    config.set('snapbackModuloBase', 18)
-    config.set('manualSyncsDisabled', false)
-
-    const verboseRes = await healthCheckVerbose(
-      {
-        libs: libsMock,
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
-      },
-      mockLogger,
-      sequelizeMock,
-      getMonitorsMock,
-      2,
-      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
-    )
-    const defaultRes = await healthCheck(
-      {
-        libs: libsMock,
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
-      },
-      mockLogger,
-      sequelizeMock,
-      getMonitorsMock,
-      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
-    )
-
-    assert.deepStrictEqual(verboseRes, defaultRes)
-  })
 
   it('Should check that considerNodeUnhealthy env var returns healthy false', async function () {
     config.set('considerNodeUnhealthy', true)
@@ -685,17 +363,12 @@ describe('Test Health Check Verbose', function () {
     const defaultRes = await healthCheck(
       {
         libs: libsMock,
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
+      TranscodingQueueMock(4, 0).isAvailable
     )
 
     assert.deepStrictEqual(defaultRes.healthy, false)

@@ -251,7 +251,7 @@ describe('test CNodeHealthManager -- _queryVerboseHealthCheck()', function () {
       verboseData: 'data'
     }
     nock(endpoint)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: verboseHealthResp })
 
     await CNodeHealthManager._queryVerboseHealthCheck(endpoint)

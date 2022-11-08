@@ -118,7 +118,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
     this.logger = logger
 
-    this.healthCheckPath = 'health_check/verbose'
+    this.healthCheckPath = 'health_check'
     // String array of healthy Content Node endpoints
     this.backupsList = []
     this.backupTimings = []
