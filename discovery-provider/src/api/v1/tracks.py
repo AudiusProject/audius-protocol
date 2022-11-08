@@ -436,9 +436,9 @@ class TrackStream(Resource):
 
         # if the track is premium, make sure that the requesting user has access
         request_args = stream_parser.parse_args()
-        user_data = request_args.get("user_data", None)
-        user_signature = request_args.get("user_signature", None)
         if track["is_premium"]:
+            user_data = request_args.get("user_data", None)
+            user_signature = request_args.get("user_signature", None)
             if not user_data:
                 abort_bad_request_param("user_data", ns)
             if not user_signature:
@@ -461,7 +461,7 @@ class TrackStream(Resource):
         # as a query param in the redirect to CN
         signature = get_premium_content_signature(
             {
-                # todo: add track_cid migration, to indexing, to model
+                # todo: add encoding of track cid
                 "id": track["track_cid"],
                 "type": "track",
             }
@@ -469,6 +469,7 @@ class TrackStream(Resource):
         signature_param = urllib.parse.quote(json.dumps(signature))
 
         primary_node = creator_nodes[0]
+        # todo: pass track cid instead of track id in path param
         path = f"tracks/stream/{track_id}?signature={signature_param}"
         stream_url = urljoin(primary_node, path)
 
