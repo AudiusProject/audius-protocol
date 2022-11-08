@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Set, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, asc, or_
+from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.spl_token_backfill_transaction import (
@@ -569,6 +569,50 @@ def find_true_stop_sig(
         f"index_spl_token_backfill.py | Added new stop_sig to indexing_checkpoints: {stop_sig}"
     )
     return stop_sig
+
+
+def check_progress(session: Session):
+    stop_row = (
+        session.query(IndexingCheckpoint)
+        .filter(IndexingCheckpoint.tablename == index_spl_token_backfill_tablename)
+        .first()
+    )
+    if not stop_row:
+        return None
+    ret: Any = {}
+    ret["stop_slot"] = stop_row.last_checkpoint
+    ret["stop_sig"] = stop_row.signature
+    latest_processed_row = (
+        session.query(SPLTokenBackfillTransaction)
+        .order_by(desc(SPLTokenBackfillTransaction.last_scanned_slot))
+        .first()
+    )
+    if not latest_processed_row:
+        return ret
+    ret["latest_processed_sig"] = latest_processed_row.signature
+    ret["latest_processed_slot"] = latest_processed_row.last_scanned_slot
+    min_row = (
+        session.query(AudioTransactionsHistory)
+        .filter(
+            and_(
+                or_(
+                    AudioTransactionsHistory.transaction_type.in_(purchase_types),
+                    and_(
+                        AudioTransactionsHistory.transaction_type
+                        == TransactionType.transfer,
+                        AudioTransactionsHistory.method == TransactionMethod.receive,
+                    ),
+                ),
+                AudioTransactionsHistory.slot < ret["stop_slot"],
+            )
+        )
+        .order_by(asc(AudioTransactionsHistory.slot))
+    ).first()
+    if not min_row:
+        return ret
+    ret["min_slot"] = min_row.slot
+    ret["min_sig"] = min_row.signature
+    return ret
 
 
 @celery.task(name="index_spl_token_backfill", bind=True)
