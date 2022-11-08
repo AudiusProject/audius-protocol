@@ -39,7 +39,10 @@ function debugLogTimer(message: string) {
   // 'LogTimer: startApp.serviceRegistry.initServices - 0.625s'
   // 'LogTimer: startApp.initializeApp                - 7.673s'
   const padWidth = 60
-  logger.debug(`LogTimer: ${message}`.padEnd(padWidth) + `- ${(Date.now() - globalStartTimeMS)/1000}s`)
+  logger.debug(
+    `LogTimer: ${message}`.padEnd(padWidth) +
+      `- ${(Date.now() - globalStartTimeMS) / 1000}s`
+  )
 }
 
 const exitWithError = (...msg: any[]) => {
