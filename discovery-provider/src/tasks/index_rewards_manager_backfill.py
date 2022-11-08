@@ -505,9 +505,7 @@ def process_transaction_signatures(
         last_tx_sig = transaction_signatures[-1][0]
 
     for tx_sig_batch in transaction_signatures:
-        logger.info(
-            f"index_rewards_manager_backfill.py | considering for processing: past {tx_sig_batch}"
-        )
+        logger.info(f"index_rewards_manager_backfill.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
