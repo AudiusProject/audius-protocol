@@ -16,6 +16,9 @@
 
 import * as runtime from '../runtime';
 import {
+    BulkSubscribersResponse,
+    BulkSubscribersResponseFromJSON,
+    BulkSubscribersResponseToJSON,
     ConnectedWalletsResponse,
     ConnectedWalletsResponseFromJSON,
     ConnectedWalletsResponseToJSON,
@@ -46,6 +49,9 @@ import {
     Reposts,
     RepostsFromJSON,
     RepostsToJSON,
+    SubscribersResponse,
+    SubscribersResponseFromJSON,
+    SubscribersResponseToJSON,
     TagsResponse,
     TagsResponseFromJSON,
     TagsResponseToJSON,
@@ -77,6 +83,20 @@ import {
     VerifyTokenFromJSON,
     VerifyTokenToJSON,
 } from '../models';
+
+export interface BulkGetSubscribersRequest {
+    /**
+     * User IDs to fetch subscribers for
+     */
+    ids: Array<string>;
+}
+
+export interface BulkGetSubscribersViaJSONRequestRequest {
+    /**
+     * User IDs to fetch subscribers for
+     */
+    ids: Array<string>;
+}
 
 export interface GetConnectedWalletsRequest {
     /**
@@ -169,6 +189,25 @@ export interface GetRepostsByHandleRequest {
      * A User handle
      */
     handle: string;
+    /**
+     * The number of items to skip. Useful for pagination (page number * limit)
+     */
+    offset?: number;
+    /**
+     * The number of items to fetch
+     */
+    limit?: number;
+    /**
+     * The user ID of the user making the request
+     */
+    userId?: string;
+}
+
+export interface GetSubscribersRequest {
+    /**
+     * A User ID
+     */
+    id: string;
     /**
      * The number of items to skip. Useful for pagination (page number * limit)
      */
@@ -464,6 +503,54 @@ export interface VerifyIDTokenRequest {
 export class UsersApi extends runtime.BaseAPI {
 
     /**
+     * All users that subscribe to the provided users
+     */
+    async bulkGetSubscribers(requestParameters: BulkGetSubscribersRequest): Promise<NonNullable<BulkSubscribersResponse["data"]>> {
+        if (requestParameters.ids === null || requestParameters.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.ids) {
+            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/subscribers`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<BulkSubscribersResponse["data"]>>;
+    }
+
+    /**
+     * Get all users that subscribe to the users listed in the JSON request
+     */
+    async bulkGetSubscribersViaJSONRequest(requestParameters: BulkGetSubscribersViaJSONRequestRequest): Promise<NonNullable<BulkSubscribersResponse["data"]>> {
+        if (requestParameters.ids === null || requestParameters.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribersViaJSONRequest.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.ids) {
+            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/subscribers`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<BulkSubscribersResponse["data"]>>;
+    }
+
+    /**
      * Get the User\'s ERC and SPL connected wallets
      */
     async getConnectedWallets(requestParameters: GetConnectedWalletsRequest): Promise<NonNullable<ConnectedWalletsResponse["data"]>> {
@@ -657,6 +744,38 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<Reposts["data"]>>;
+    }
+
+    /**
+     * All users that subscribe to the provided user
+     */
+    async getSubscribers(requestParameters: GetSubscribersRequest): Promise<NonNullable<SubscribersResponse["data"]>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSubscribers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/users/{id}/subscribers`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<SubscribersResponse["data"]>>;
     }
 
     /**
