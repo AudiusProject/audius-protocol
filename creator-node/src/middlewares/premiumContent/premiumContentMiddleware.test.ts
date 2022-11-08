@@ -49,7 +49,6 @@ describe('Test premium content middleware', () => {
     redis = new Map() as unknown as Redis
     headers = {}
     serviceRegistry = {
-      premiumContentAccessChecker,
       libs,
       redis
     }
