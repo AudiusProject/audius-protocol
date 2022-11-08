@@ -4,6 +4,7 @@ const assert = require('assert')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const BlacklistManager = require('../src/blacklistManager')
+const config = require('../src/config')
 
 describe('Test health checks', () => {
   let app, server
@@ -20,6 +21,22 @@ describe('Test health checks', () => {
 
   afterEach(async () => {
     await server.close()
+  })
+
+  it('Ensure /health_check and /health_check/verbose both work, and return identical responses', async () => {
+    const healthCheckResp = await request(app).get('/health_check')
+      .expect(200)
+      .expect(resp => {
+        assert.strictEqual(resp.body.data.creatorNodeEndpoint, config.get('creatorNodeEndpoint'))
+      })
+    
+    const healthCheckVerboseResp = await request(app).get('/health_check/verbose')
+      .expect(200)
+
+    assert.deepStrictEqual(
+      healthCheckResp.body.data,
+      healthCheckVerboseResp.body.data
+    )
   })
 
   it('Ensure GET /config_check works, and hides sensitive configs', async () => {

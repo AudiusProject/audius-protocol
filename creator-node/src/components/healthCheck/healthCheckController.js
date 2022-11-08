@@ -180,10 +180,9 @@ const configCheckController = async (_req) => {
 
 const router = express.Router()
 
-// TODO once all calls to /health_check/verbose are removed, can remove this route
+// TODO once all calls to /health_check/verbose are removed, can remove
 router.get(
-  '/health_check',
-  '/health_check/verbose',
+  ['/health_check', '/health_check/verbose'],
   handleResponse(healthCheckController)
 )
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
