@@ -234,8 +234,8 @@ contract ClaimsManager is InitializableV2 {
     function setStakingAddress(address _stakingAddress) external {
         _requireIsInitialized();
 
+        require(stakingAddress == address(0), "ClaimsManager: Staking address already set");
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-        require(stakingAddress == address(0), "ClaimsManager: Staking already set");
         stakingAddress = _stakingAddress;
         emit StakingAddressUpdated(_stakingAddress);
     }

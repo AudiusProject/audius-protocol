@@ -1972,7 +1972,7 @@ contract('DelegateManager', async (accounts) => {
       )
       await _lib.assertRevert(
         delegateManager.setStakingAddress(_lib.addressZero),
-        'Only callable by Governance contract'
+        'Staking address already set.'
       )
     })
 

@@ -416,7 +416,7 @@ contract('ClaimsManager', async (accounts) => {
     // staking
     await _lib.assertRevert(
       claimsManager.setStakingAddress(newUpdateAddress),
-      'Only callable by Governance contract'
+      'Staking address already set'
     )
 
     // service provider factory

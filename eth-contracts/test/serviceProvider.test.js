@@ -1131,7 +1131,7 @@ contract('ServiceProvider test', async (accounts) => {
       )
       await _lib.assertRevert(
         serviceProviderFactory.setStakingAddress(fakeGovernanceAddress),
-        'Only callable by Governance contract'
+        'Staking address already set'
       )
 
       await _lib.assertRevert(
