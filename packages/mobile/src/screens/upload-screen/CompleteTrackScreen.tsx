@@ -21,7 +21,10 @@ import {
   SelectGenreField,
   TextField,
   DescriptionField,
-  TagField
+  SelectMoodField,
+  TagField,
+  SubmenuList,
+  RemixSettingsField
 } from './fields'
 
 const messages = {
@@ -86,9 +89,15 @@ const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
           <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
             <PickArtworkField />
             <TextField name='title' label={messages.name} required />
-            <SelectGenreField />
+            <SubmenuList>
+              <SelectGenreField />
+              <SelectMoodField />
+            </SubmenuList>
             <TagField />
             <DescriptionField />
+            <SubmenuList>
+              <RemixSettingsField />
+            </SubmenuList>
           </Tile>
         </KeyboardAvoidingView>
       </ScrollView>

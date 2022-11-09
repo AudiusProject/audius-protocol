@@ -15,7 +15,6 @@ import serviceSelection from 'common/store/service-selection/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
-import remixSettingsModal from 'components/remix-settings-modal/store/slice'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
 import dashboard from 'pages/artist-dashboard-page/store/reducer'
 import deleted from 'pages/deleted-page/store/slice'
@@ -71,7 +70,6 @@ const createRootReducer = (routeHistory: History) =>
         editTrackModal,
         embedModal,
         firstUploadModal,
-        remixSettingsModal,
         scrollLock,
         setAsArtistPickConfirmation,
         userListModal,

@@ -127,7 +127,7 @@ export const TagInput = (props: TagInputProps) => {
       onChangeText={handleChangeText}
       onKeyPress={handleKeyPress}
       startAdornment={startAdornment}
-      returnKeyType='none'
+      returnKeyType='default'
       onFocus={handleFocus}
       onBlur={handleBlur}
       styles={{ input: styles.input }}

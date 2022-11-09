@@ -1,6 +1,4 @@
-import { GENRES } from '@audius/common'
-
-import IconGenre from 'app/assets/images/iconGenre.svg'
+import type { ContextualSubmenuProps } from 'app/components/core'
 
 import { ContextualSubmenuField } from './ContextualSubmenuField'
 
@@ -9,23 +7,17 @@ const messages = {
   error: 'Selection Required'
 }
 
-const genres = GENRES.map((genre) => ({ value: genre, label: genre }))
+type SelectGenreFieldProps = Partial<ContextualSubmenuProps>
 
-export const SelectGenreField = () => {
+export const SelectGenreField = (props: SelectGenreFieldProps) => {
   return (
     <ContextualSubmenuField
       name='genre'
-      lastItem
+      submenuScreenName='SelectGenre'
       label={messages.genre}
-      data={genres}
       required
       errorMessage={messages.error}
-      ListSelectionProps={{
-        renderItem: ({ item }) => <>{item.label}</>,
-        screenTitle: 'Select Genre',
-        icon: IconGenre,
-        searchText: 'Select Genres'
-      }}
+      {...props}
     />
   )
 }

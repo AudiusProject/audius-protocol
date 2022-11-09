@@ -54,6 +54,9 @@ import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
 import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
+import remixSettingsReducer, {
+  RemixSettingsState
+} from './remix-settings/slice'
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
@@ -154,6 +157,7 @@ export const reducers = () => ({
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
+    remixSettings: remixSettingsReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     toast: toastReducer,
@@ -253,6 +257,7 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
+    remixSettings: RemixSettingsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     shareModal: ShareModalState
     toast: ToastState

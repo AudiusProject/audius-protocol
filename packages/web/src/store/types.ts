@@ -26,7 +26,6 @@ import ServiceSelectionReducer from 'common/store/service-selection/slice'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
-import RemixSettingsModalReducer from 'components/remix-settings-modal/store/slice'
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
 import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
@@ -75,7 +74,6 @@ export type AppState = CommonState & {
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
       firstUploadModal: FirstUploadModalState
-      remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
       stemsUpload: ReturnType<typeof StemsUploadReducer>

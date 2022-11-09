@@ -18,7 +18,7 @@ export const Switch = (props: SwitchProps) => {
     onValueChange: onValueChangeProp,
     ...other
   } = props
-  const { neutralLight6, neutralLight9, secondary } = useThemeColors()
+  const { neutralLight6, white, secondary } = useThemeColors()
   const [isEnabledState, setIsEnabled] = useToggle(defaultValue)
 
   const isEnabled = value ?? isEnabledState
@@ -36,7 +36,7 @@ export const Switch = (props: SwitchProps) => {
     <RNSwitch
       style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
       trackColor={{ false: neutralLight6, true: secondary }}
-      thumbColor={neutralLight9}
+      thumbColor={white}
       value={isEnabled}
       onValueChange={handleValueChange}
       {...other}
