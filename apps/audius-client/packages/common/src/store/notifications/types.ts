@@ -99,6 +99,24 @@ export type FollowNotification = BaseNotification & {
   userIds: ID[]
 }
 
+export type FollowPushNotification = {
+  type: NotificationType.Follow
+  actions: [
+    {
+      blocknumber: number
+      actionEntityId: ID
+      actionEntityType: Entity.User
+    }
+  ]
+  initiator: ID
+  blocknumber: ID
+  timestamp: string
+  metadata: {
+    followee_user_id: ID
+    follower_user_id: ID
+  }
+}
+
 export type RepostNotification = BaseNotification & {
   type: NotificationType.Repost
   entityId: ID
@@ -106,11 +124,51 @@ export type RepostNotification = BaseNotification & {
   entityType: Entity.Playlist | Entity.Album | Entity.Track
 }
 
+export type RepostPushNotification = {
+  blocknumber: number
+  entityId: ID
+  initiator: ID
+  timestamp: string
+  type: NotificationType.Repost
+  actions: [
+    {
+      blocknumber: number
+      actionEntityId: ID
+      actionEntityType: Entity.User
+    }
+  ]
+  metadata: {
+    entity_owner_id: ID
+    entity_type: Entity
+    entity_id: ID
+  }
+}
+
 export type FavoriteNotification = BaseNotification & {
   type: NotificationType.Favorite
   entityId: ID
   userIds: ID[]
   entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type FavoritePushNotification = {
+  blocknumber: number
+  entityId: ID
+  initiator: ID
+  timestamp: string
+  type: NotificationType.Favorite
+  actions: [
+    {
+      blocknumber: number
+      actionEntityId: ID
+      actionEntityType: Entity.User
+    }
+  ]
+  metadata: {
+    entity_owner_id: ID
+    entity_type: Entity
+    entity_id: ID
+  }
 }
 
 export enum Achievement {
@@ -147,6 +205,31 @@ export type RemixCreateNotification = BaseNotification & {
   entityIds: ID[]
 }
 
+export type RemixCreatePushNotification = {
+  type: NotificationType.RemixCreate
+  entityId: ID
+  actions: [
+    // Parent Track User
+    {
+      actionEntityType: Entity.User
+      actionEntityId: ID
+      blocknumber: number
+    },
+    // Remixed Track
+    {
+      actionEntityType: Entity.Track
+      actionEntityId: ID
+      blocknumber: number
+    },
+    // Parent Track
+    {
+      actionEntityType: Entity.Track
+      actionEntityId: ID
+      blocknumber: number
+    }
+  ]
+}
+
 export type RemixCosignNotification = BaseNotification & {
   type: NotificationType.RemixCosign
   userId: ID
@@ -154,6 +237,23 @@ export type RemixCosignNotification = BaseNotification & {
   childTrackId: ID
   entityType: Entity.Track
   entityIds: ID[]
+}
+
+export type RemixCosignPushNotification = {
+  type: NotificationType.RemixCosign
+  entityId: ID
+  actions: [
+    {
+      actionEntityType: Entity.User
+      actionEntityId: ID
+      blocknumber: number
+    },
+    {
+      actionEntityType: Entity.Track
+      actionEntityId: ID
+      blocknumber: number
+    }
+  ]
 }
 
 export type TrendingTrackNotification = BaseNotification & {
@@ -191,6 +291,21 @@ export type ReactionNotification = BaseNotification & {
   }
 }
 
+export type ReactionPushNotification = {
+  type: NotificationType.Reaction
+  initiator: ID
+  slot: number
+  metadata: {
+    reaction_value: number
+    reacted_to_entity: {
+      tx_signature: string
+      tip_sender_id: ID
+      amount: string
+    }
+    reaction_type: string
+  }
+}
+
 export type TipReceiveNotification = BaseNotification & {
   type: NotificationType.TipReceive
   amount: StringWei
@@ -200,11 +315,35 @@ export type TipReceiveNotification = BaseNotification & {
   tipTxSignature: string
 }
 
+export type TipReceivePushNotification = {
+  type: NotificationType.TipReceive
+  slot: number
+  initiator: ID
+  metadata: {
+    entityId: ID
+    entityType: Entity.User
+    amount: StringWei
+    tipTxSignature: string
+  }
+}
+
 export type TipSendNotification = BaseNotification & {
   type: NotificationType.TipSend
   amount: StringWei
   entityId: ID
   entityType: Entity.User
+}
+
+export type TipSendPushNotification = {
+  type: NotificationType.TipSend
+  slot: number
+  initiator: ID
+  metadata: {
+    entityId: ID
+    entityType: Entity.User
+    amount: StringWei
+    tipTxSignature: string
+  }
 }
 
 export type SupporterRankUpNotification = BaseNotification & {
@@ -214,11 +353,33 @@ export type SupporterRankUpNotification = BaseNotification & {
   entityType: Entity.User
 }
 
+export type SupporterRankUpPushNotification = {
+  type: NotificationType.SupporterRankUp
+  slot: number
+  initiator: ID
+  metadata: {
+    entityId: ID
+    entityType: Entity.User
+    rank: number
+  }
+}
+
 export type SupportingRankUpNotification = BaseNotification & {
   type: NotificationType.SupportingRankUp
   rank: number
   entityId: ID
   entityType: Entity.User
+}
+
+export type SupportingRankUpPushNotification = {
+  type: NotificationType.SupportingRankUp
+  slot: number
+  initiator: ID
+  metadata: {
+    entityId: ID
+    entityType: Entity.User
+    rank: number
+  }
 }
 
 export type SupporterDethronedNotification = BaseNotification & {
@@ -236,6 +397,16 @@ export type AddTrackToPlaylistNotification = BaseNotification & {
   trackId: ID
   playlistId: ID
   playlistOwnerId: ID
+}
+
+export type AddTrackToPlaylistPushNotification = {
+  type: NotificationType.AddTrackToPlaylist
+  entityId: ID
+  metadata: {
+    playlistId: ID
+    trackOwnerId: ID
+    playlistOwnerId: ID
+  }
 }
 
 export type Notification =
