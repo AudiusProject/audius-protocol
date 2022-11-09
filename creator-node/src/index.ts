@@ -38,6 +38,18 @@ const redisClient = require('./redis')
 // https://github.com/siimon/prom-client/issues/501
 const aggregatorRegistry = new AggregatorRegistry()
 
+const globalStartTimeMS = Date.now()
+function debugLogTimer(message: string) {
+  // Make times lineup in grepped logs i.e.
+  // 'LogTimer: startApp.serviceRegistry.initServices - 0.625s'
+  // 'LogTimer: startApp.initializeApp                - 7.673s'
+  const padWidth = 60
+  logger.debug(
+    `LogTimer: ${message}`.padEnd(padWidth) +
+      `- ${(Date.now() - globalStartTimeMS) / 1000}s`
+  )
+}
+
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
   // eslint-disable-next-line no-process-exit
@@ -114,11 +126,14 @@ const getPort = () => {
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {
+  debugLogTimer('startAppForPrimary')
   logger.info(`Primary process with pid=${process.pid} is running`)
 
+  debugLogTimer('startAppForPrimary.setupDbAndRedis')
   await setupDbAndRedis()
 
   const startTime = Date.now()
+  debugLogTimer('startAppForPrimary.emptyTmpTrackUploadArtifacts')
   const size = await emptyTmpTrackUploadArtifacts()
   logger.info(
     `old tmp track artifacts deleted : ${size} : ${
@@ -197,6 +212,7 @@ const startAppForPrimary = async () => {
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
+  debugLogTimer('startAppForWorker')
   if (process.env.isThisWorkerFirst === 'true')
     clusterUtilsForWorker.markThisWorkerAsFirst()
   if (process.env.isThisWorkerSpecial === 'true')
@@ -207,7 +223,9 @@ const startAppForWorker = async () => {
       cluster.worker?.id
     } is running. Is this worker init: ${clusterUtilsForWorker.isThisWorkerFirst()}`
   )
+  debugLogTimer('startAppForWorker.verifyConfigAndDb')
   await verifyConfigAndDb()
+  debugLogTimer('startAppForWorker.startApp')
   await startApp()
 
   cluster.worker!.on('message', (msg) => {
@@ -239,8 +257,11 @@ const startAppForWorker = async () => {
 }
 
 const startAppWithoutCluster = async () => {
+  debugLogTimer('startAppWithoutCluster')
   logger.info(`Starting app with cluster mode disabled`)
+  debugLogTimer('startAppWithoutCluster.setupDbAndRedis')
   await setupDbAndRedis()
+  debugLogTimer('startAppWithoutCluster.startApp')
   await startApp()
 }
 
@@ -275,14 +296,16 @@ const startApp = async () => {
       appInfo.server.close()
     }
   })
-
+  debugLogTimer('startApp.serviceRegistry.initServices')
   await serviceRegistry.initServices()
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
   logger.info(`Initialized services (Node running in ${nodeMode})`)
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   serviceRegistry.initServicesAsynchronously()
+  debugLogTimer('startApp.initializeApp')
   const appInfo = initializeApp(getPort(), serviceRegistry)
+  debugLogTimer('startApp.initialized')
   logger.info('Initialized app and server')
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
