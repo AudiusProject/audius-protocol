@@ -3,7 +3,7 @@ import { getLibsMock } from './lib/libsMock'
 import { loggerFactory } from './lib/reqMock'
 import assert from 'assert'
 import { getApp } from './lib/app'
-import { checkPremiumContentAccess } from '../src/premiumContent/premiumContentAccessChecker'
+import { checkContentAccess } from '../src/contentAccess/contentAccessChecker'
 
 const models = require('../src/models')
 
@@ -73,7 +73,7 @@ describe('Test premium content access', function () {
     })
 
     it('fails when there are missing headers', async () => {
-      const accessWithoutHeaders = await checkPremiumContentAccess({
+      const accessWithoutHeaders = await checkContentAccess({
         cid,
         premiumContentHeaders: null as unknown as string,
         libs: libsMock,
@@ -85,7 +85,7 @@ describe('Test premium content access', function () {
         error: 'MissingHeaders'
       })
 
-      const accessWithMissingHeaders = await checkPremiumContentAccess({
+      const accessWithMissingHeaders = await checkContentAccess({
         cid,
         premiumContentHeaders: JSON.stringify({}),
         libs: libsMock,
@@ -107,7 +107,7 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
-      const access = await checkPremiumContentAccess({
+      const access = await checkContentAccess({
         cid,
         premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
         libs: libsMock,
@@ -129,7 +129,7 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
-      const access = await checkPremiumContentAccess({
+      const access = await checkContentAccess({
         cid,
         premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
         libs: libsMock,

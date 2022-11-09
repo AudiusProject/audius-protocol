@@ -10,7 +10,7 @@ const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
  * Checks that signature is not too old.
  * Checks that user requesting the content has access.
  */
-export async function checkPremiumContentAccess({
+export async function checkContentAccess({
   cid,
   premiumContentHeaders,
   libs,

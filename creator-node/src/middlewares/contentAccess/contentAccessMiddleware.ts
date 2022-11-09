@@ -8,7 +8,7 @@ import {
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
-import { checkPremiumContentAccess } from '../../premiumContent/premiumContentAccessChecker'
+import { checkContentAccess } from '../../contentAccess/contentAccessChecker'
 import config from '../../config'
 import { tracing } from '../../tracer'
 
@@ -51,7 +51,7 @@ export const premiumContentMiddleware = async (
     // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
     const logger = req.logger as Logger
 
-    const { doesUserHaveAccess, error } = await checkPremiumContentAccess({
+    const { doesUserHaveAccess, error } = await checkContentAccess({
       cid,
       premiumContentHeaders,
       libs,

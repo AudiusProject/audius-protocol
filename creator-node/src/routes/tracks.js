@@ -38,8 +38,8 @@ const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
 const {
-  premiumContentMiddleware
-} = require('../middlewares/premiumContent/premiumContentMiddleware')
+  contentAccessMiddleware
+} = require('../middlewares/contentAccess/contentAccessMiddleware')
 
 const router = express.Router()
 
@@ -935,6 +935,6 @@ router.get(
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.
  **/
-router.get('/tracks/cidstream/:cid', premiumContentMiddleware, getCID)
+router.get('/tracks/cidstream/:cid', contentAccessMiddleware, getCID)
 
 module.exports = router
