@@ -21,17 +21,16 @@ function* handleError(action: errorActions.HandleErrorAction) {
   }
 
   if (action.shouldRedirect) {
-    if (action.redirectRoute) {
-      yield put(pushRoute(action.redirectRoute))
-    } else {
+    const redirectRoute = action.redirectRoute ?? ERROR_PAGE
+    if (redirectRoute === ERROR_PAGE) {
       yield put(
         make(Name.ERROR_PAGE, {
           error: action.message,
           name: action.name
         })
       )
-      yield put(pushRoute(ERROR_PAGE))
     }
+    yield put(pushRoute(redirectRoute))
   }
   if (action.shouldToast) {
     yield put(toast({ content: action.message }))
