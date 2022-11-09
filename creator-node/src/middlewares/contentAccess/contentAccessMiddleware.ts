@@ -25,7 +25,7 @@ import { tracing } from '../../tracer'
  * timestamp is relatively recent.
  * If all these verifications are successful, then this middleware will proceed with the request as normal.
  */
-export const premiumContentMiddleware = async (
+export const contentAccessMiddleware = async (
   request: Request,
   res: Response,
   next: NextFunction
