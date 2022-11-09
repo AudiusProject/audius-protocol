@@ -7,7 +7,6 @@ import {
   PlaylistLibrary as PlaylistLibraryType,
   PlaylistLibraryFolder,
   SmartCollectionVariant,
-  FeatureFlags,
   accountSelectors,
   cacheCollectionsActions,
   notificationsSelectors,
@@ -27,7 +26,6 @@ import {
 } from 'common/store/smart-collection/smartCollections'
 import Droppable from 'components/dragndrop/Droppable'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
@@ -119,9 +117,6 @@ const PlaylistLibrary = ({
   const updatesSet = new Set(updates)
   const { dragging, kind: draggingKind } = useSelector(getIsDragging)
   const dispatch = useDispatch()
-  const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_FOLDERS
-  )
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const [, setIsEditFolderModalOpen] = useModalState('EditFolder')
@@ -308,11 +303,7 @@ const PlaylistLibrary = ({
         dragging={dragging}
         draggingKind={draggingKind}
         onClickPlaylist={onClickPlaylist}
-        onClickEdit={
-          isOwner && isPlaylistFoldersEnabled
-            ? handleClickEditPlaylist
-            : undefined
-        }
+        onClickEdit={isOwner ? handleClickEditPlaylist : undefined}
       />
     )
   }
