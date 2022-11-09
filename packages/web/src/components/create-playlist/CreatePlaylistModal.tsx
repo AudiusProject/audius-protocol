@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name, FeatureFlags } from '@audius/common'
+import { Name } from '@audius/common'
 import {
   Modal,
   SegmentedControl,
@@ -12,7 +12,6 @@ import {
 } from '@audius/stems'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { useFlag } from 'hooks/useRemoteConfig'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'
@@ -43,9 +42,6 @@ const CreatePlaylistModal = ({
   onCreatePlaylist
 }: CreatePlaylistModalProps) => {
   const record = useRecord()
-  const { isEnabled: isPlaylistFoldersEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_FOLDERS
-  )
 
   const tabOptions = [
     {
@@ -127,7 +123,7 @@ const CreatePlaylistModal = ({
         />
       </ModalHeader>
       <ModalContent>
-        {!isPlaylistFoldersEnabled || hideFolderTab ? null : (
+        {hideFolderTab ? null : (
           <div className={styles.segmentedControlContainer}>
             <SegmentedControl
               options={tabOptions}
