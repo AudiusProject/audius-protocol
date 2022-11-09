@@ -7,39 +7,35 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import { Divider, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import type {
-  ListSelectionData,
-  ListSelectionParams
-} from 'app/screens/list-selection-screen'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { InputErrorMessage } from './InputErrorMessage'
-
-type ListSelectionProps = Omit<
-  ListSelectionParams,
-  'data' | 'onChange' | 'value'
->
+import { Pill } from './Pill'
 
 export type ContextualSubmenuProps = {
   label: string
-  data: ListSelectionData[]
-  onChange: (value: string) => void
-  value: string
-  ListSelectionProps: ListSelectionProps
-  styles?: StylesProp<{ divider: ViewStyle }>
+  onChange: (value: any) => void
+  value: any
+  submenuScreenName: string
+  styles?: StylesProp<{
+    root: ViewStyle
+    divider: ViewStyle
+    content: ViewStyle
+  }>
   error?: boolean
   errorMessage?: string
   lastItem?: boolean
+  renderValue?: (value: any) => void
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
+const useStyles = makeStyles(({ spacing }) => ({
+  content: {
     marginVertical: spacing(4)
   },
-  content: {
+  select: {
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
@@ -47,14 +43,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: spacing(4)
-  },
-  optionPill: {
-    padding: spacing(2),
-    backgroundColor: palette.neutralLight8,
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    opacity: 0.8,
-    borderRadius: 2
   },
   optionPillText: {
     textTransform: 'uppercase'
@@ -65,13 +53,13 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   const {
     label,
     value,
-    data,
     onChange,
-    ListSelectionProps,
+    submenuScreenName,
     styles: stylesProp,
     errorMessage,
     error,
-    lastItem
+    lastItem,
+    renderValue: renderValueProp
   } = props
   const styles = useStyles()
 
@@ -79,20 +67,26 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    const params = {
-      ...ListSelectionProps,
-      data,
-      value,
-      onChange
-    }
-    navigation.push('ListSelection', params)
-  }, [navigation, ListSelectionProps, data, value, onChange])
+    const params = { value, onChange }
+    navigation.push(submenuScreenName, params)
+  }, [navigation, value, onChange, submenuScreenName])
+
+  const defaultRenderValue = (value: any) => (
+    <View style={styles.optionPills}>
+      <Pill>
+        <Text fontSize='small' weight='demiBold' style={styles.optionPillText}>
+          {value}
+        </Text>
+      </Pill>
+    </View>
+  )
+  const renderValue = renderValueProp ?? defaultRenderValue
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity onPress={handlePress} style={stylesProp?.root}>
       <Divider style={stylesProp?.divider} />
-      <View style={styles.root}>
-        <View style={styles.content}>
+      <View style={[styles.content, stylesProp?.content]}>
+        <View style={styles.select}>
           <Text fontSize='large' weight='demiBold'>
             {label}
           </Text>
@@ -102,24 +96,12 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
             width={spacing(4)}
           />
         </View>
-        {value ? (
-          <View style={styles.optionPills}>
-            <View style={styles.optionPill}>
-              <Text
-                fontSize='small'
-                weight='demiBold'
-                style={styles.optionPillText}
-              >
-                {value}
-              </Text>
-            </View>
-          </View>
-        ) : null}
+        {value ? renderValue(value) : null}
         {error && errorMessage ? (
           <InputErrorMessage message={errorMessage} />
         ) : null}
       </View>
-      {!lastItem ? <Divider style={stylesProp?.divider} /> : null}
+      {lastItem ? <Divider style={stylesProp?.divider} /> : null}
     </TouchableOpacity>
   )
 }

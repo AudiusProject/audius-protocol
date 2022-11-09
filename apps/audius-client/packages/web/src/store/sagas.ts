@@ -40,6 +40,7 @@ import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
+import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
 import serviceSelectionSagas from 'common/store/service-selection/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
@@ -59,7 +60,6 @@ import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
-import remixSettingsModalSagas from 'components/remix-settings-modal/store/sagas'
 import shareSoundToTikTokModalSagas from 'components/share-sound-to-tiktok-modal/store/sagas'
 import dashboardSagas from 'pages/artist-dashboard-page/store/sagas'
 import deletedSagas from 'pages/deleted-page/store/sagas'
@@ -158,7 +158,7 @@ export default function* rootSaga() {
     mutualsPageSagas(),
     notificationUsersPageSagas(),
     remixesSagas(),
-    remixSettingsModalSagas(),
+    remixSettingsSagas(),
     repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),

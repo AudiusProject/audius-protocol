@@ -9,4 +9,5 @@ export type Env = {
   SUGGESTED_FOLLOW_HANDLES: string
   GENERAL_ADMISSION?: string
   IDENTITY_SERVICE?: string
+  PUBLIC_HOSTNAME?: string
 }

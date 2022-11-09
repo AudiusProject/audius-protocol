@@ -1,21 +1,22 @@
-import { ID, Status } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-type State = {
+import { ID, Status } from '../../models'
+
+export type RemixSettingsState = {
   trackId: ID | null
   status: Status
 }
 
-const initialState: State = {
+const initialState: RemixSettingsState = {
   trackId: null,
   status: Status.SUCCESS
 }
 
 const slice = createSlice({
-  name: 'application/ui/remixSettingsModal',
+  name: 'application/ui/remixSettings',
   initialState,
   reducers: {
-    fetchTrack: (state, action: PayloadAction<{ url: string }>) => {
+    fetchTrack: (state, _: PayloadAction<{ url: string }>) => {
       state.status = Status.LOADING
     },
     fetchTrackSucceeded: (state, action: PayloadAction<{ trackId: ID }>) => {
@@ -31,6 +32,7 @@ const slice = createSlice({
   }
 })
 
+export const actions = slice.actions
 export const { fetchTrack, fetchTrackSucceeded, fetchTrackFailed, reset } =
   slice.actions
 

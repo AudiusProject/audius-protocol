@@ -1,14 +1,19 @@
 import { useEffect } from 'react'
 
-import { ID, Status } from '@audius/common'
+import {
+  ID,
+  Status,
+  remixSettingsSelectors,
+  remixSettingsActions
+} from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import RemixSettingsModal from 'components/remix-settings-modal/RemixSettingsModal'
 import { AppState } from 'store/types'
 
-import { getTrack, getUser, getStatus } from './store/selectors'
-import { fetchTrack, fetchTrackSucceeded, reset } from './store/slice'
+const { getTrack, getUser, getStatus } = remixSettingsSelectors
+const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
 
 type OwnProps = {
   isOpen: boolean

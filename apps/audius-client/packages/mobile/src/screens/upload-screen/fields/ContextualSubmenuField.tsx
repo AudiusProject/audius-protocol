@@ -10,9 +10,6 @@ type ContextualSubmenuFieldProps = FieldProps &
   Omit<ContextualSubmenuProps, 'value' | 'onChange'>
 
 const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    marginVertical: spacing(2)
-  },
   content: {
     marginHorizontal: spacing(2)
   },
