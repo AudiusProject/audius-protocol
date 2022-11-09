@@ -88,10 +88,6 @@
   transition: all 0.25s;
 }
 
-.tabBody {
-  left: -10px;
-}
-
 .tabElement {
   justify-content: flex-start;
 }
