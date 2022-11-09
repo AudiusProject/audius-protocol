@@ -27,8 +27,9 @@ describe('Test premium content middleware', () => {
     ) {
       return proxyquire('./premiumContentMiddleware', {
         './../../config': config,
-        '../../premiumContent/premiumContentAccessChecker': async () =>
-          accessCheckReturnsWith
+        '../../premiumContent/premiumContentAccessChecker': {
+          checkPremiumContentAccess: async () => accessCheckReturnsWith
+        }
       })
     }
 
@@ -117,24 +118,7 @@ describe('Test premium content middleware', () => {
       assert.deepStrictEqual(nextCalled, false)
     })
 
-    it('passes and moves to the next middleware when all checks are fine and content is NOT premium', async () => {
-      let nextCalled = false
-      await premiumContentMiddlewareProxy({
-        accessCheckReturnsWith: {
-          doesUserHaveAccess: true,
-          error: null
-        }
-      }).premiumContentMiddleware(
-        mockReq as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(nextCalled, true)
-    })
-
-    it('passes and moves to the next middleware when all checks are fine and content IS premium', async () => {
+    it('passes and moves to the next middleware when all checks are fine', async () => {
       let nextCalled = false
       await premiumContentMiddlewareProxy({
         accessCheckReturnsWith: {

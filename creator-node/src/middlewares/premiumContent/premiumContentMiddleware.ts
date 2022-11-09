@@ -58,56 +58,56 @@ export const premiumContentMiddleware = async (
       logger,
       redis
     })
-    if (doesUserHaveAccess) {
-      // Set premium content track id and 'premium-ness' so that next middleware or
-      // request handler does not need to make trips to the database to get this info.
-      // We need the info because if the content is premium, then we need to set
-      // the cache-control response header to no-cache so that nginx does not cache it.
-      // req.premiumContent = {
-      //   trackId,
-      //   isPremium
-      // }
-      return next()
+    if (!doesUserHaveAccess) {
+      switch (error) {
+        case 'MissingHeaders':
+          return sendResponse(
+            req,
+            res,
+            errorResponseUnauthorized(
+              'Missing request headers for premium content.'
+            )
+          )
+        case 'InvalidDiscoveryNode':
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden(
+              'Failed discovery node signature validation for premium content.'
+            )
+          )
+        case 'IncorrectCID':
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden('Incorrect CID signature')
+          )
+        case 'ExpiredTimestamp':
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden('Timestamp for content is expired')
+          )
+        default:
+          return sendResponse(
+            req,
+            res,
+            errorResponseForbidden(
+              'Failed match verification for premium content.'
+            )
+          )
+      }
     }
 
-    switch (error) {
-      case 'MissingHeaders':
-        return sendResponse(
-          req,
-          res,
-          errorResponseUnauthorized(
-            'Missing request headers for premium content.'
-          )
-        )
-      case 'InvalidDiscoveryNode':
-        return sendResponse(
-          req,
-          res,
-          errorResponseForbidden(
-            'Failed discovery node signature validation for premium content.'
-          )
-        )
-      case 'IncorrectCID':
-        return sendResponse(
-          req,
-          res,
-          errorResponseForbidden('Incorrect CID signature')
-        )
-      case 'ExpiredTimestamp':
-        return sendResponse(
-          req,
-          res,
-          errorResponseForbidden('Timestamp for content is expired')
-        )
-      default:
-        return sendResponse(
-          req,
-          res,
-          errorResponseForbidden(
-            'Failed match verification for premium content.'
-          )
-        )
-    }
+    // Set premium content track id and 'premium-ness' so that next middleware or
+    // request handler does not need to make trips to the database to get this info.
+    // We need the info because if the content is premium, then we need to set
+    // the cache-control response header to no-cache so that nginx does not cache it.
+    // req.premiumContent = {
+    //   trackId,
+    //   isPremium
+    // }
+    return next()
   } catch (e: any) {
     tracing.recordException(e)
     const error = `Could not validate premium content access: ${e.message}`

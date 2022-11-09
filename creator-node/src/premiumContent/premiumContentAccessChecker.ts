@@ -24,18 +24,9 @@ export async function checkPremiumContentAccess({
     }
   }
 
-  const {
-    signedDataFromDiscoveryNode,
-    signatureFromDiscoveryNode,
-    signedDataFromUser,
-    signatureFromUser
-  } = JSON.parse(premiumContentHeaders)
-  if (
-    !signedDataFromDiscoveryNode ||
-    !signatureFromDiscoveryNode ||
-    !signedDataFromUser ||
-    !signatureFromUser
-  ) {
+  const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
+    JSON.parse(premiumContentHeaders)
+  if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
     return {
       doesUserHaveAccess: false,
       error: 'MissingHeaders'
