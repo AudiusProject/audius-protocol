@@ -51,10 +51,10 @@ describe('Test DiskManager', function () {
   })
 
   /**
-   * computeFilePath
+   * computeFilePathAndEnsureItExists
    */
-  it('Should pass if computeFilePath returns the correct path', async function () {
-    const fullPath = await DiskManager.computeFilePath(
+  it('Should pass if computeFilePathAndEnsureItExists returns the correct path', async function () {
+    const fullPath = await DiskManager.computeFilePathAndEnsureItExists(
       'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     )
     const validPath = path.join(
@@ -66,41 +66,41 @@ describe('Test DiskManager', function () {
     assert.deepStrictEqual(fullPath, validPath)
   })
 
-  it('Should fail if fileName is not passed into computeFilePath', async function () {
+  it('Should fail if fileName is not passed into computeFilePathAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePath()
+      await DiskManager.computeFilePathAndEnsureItExists()
     } catch (e) {
       assert.ok(
-        e.message.includes('Please pass in a valid cid to computeFilePath')
+        e.message.includes('Please pass in a valid cid to computeFilePathAndEnsureItExists')
       )
     }
   })
 
   it(`Should fail if fileName doesn't contain the appropriate amount of characters`, async function () {
     try {
-      await DiskManager.computeFilePath('asd')
+      await DiskManager.computeFilePathAndEnsureItExists('asd')
     } catch (e) {
       assert.ok(
-        e.message.includes('Please pass in a valid cid to computeFilePath')
+        e.message.includes('Please pass in a valid cid to computeFilePathAndEnsureItExists')
       )
     }
   })
 
   it(`Should fail if fileName contains a slash`, async function () {
     try {
-      await DiskManager.computeFilePath('/file_storage/asdf')
+      await DiskManager.computeFilePathAndEnsureItExists('/file_storage/asdf')
     } catch (e) {
       assert.ok(
-        e.message.includes('Please pass in a valid cid to computeFilePath')
+        e.message.includes('Please pass in a valid cid to computeFilePathAndEnsureItExists')
       )
     }
   })
 
   /**
-   * computeFilePathInDir
+   * computeFilePathInDirAndEnsureItExists
    */
-  it('Should pass if computeFilePathInDir returns the correct path', async function () {
-    const fullPath = await DiskManager.computeFilePathInDir(
+  it('Should pass if computeFilePathInDirAndEnsureItExists returns the correct path', async function () {
+    const fullPath = await DiskManager.computeFilePathInDirAndEnsureItExists(
       'QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4',
       'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     )
@@ -114,24 +114,24 @@ describe('Test DiskManager', function () {
     assert.deepStrictEqual(fullPath, validPath)
   })
 
-  it('Should fail if dirName and fileName are not passed into computeFilePathInDir', async function () {
+  it('Should fail if dirName and fileName are not passed into computeFilePathInDirAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePathInDir()
+      await DiskManager.computeFilePathInDirAndEnsureItExists()
     } catch (e) {
       assert.ok(e.message.includes('Must pass in valid dirName and fileName'))
     }
   })
 
-  it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDir', async function () {
+  it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDirAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePathInDir(
+      await DiskManager.computeFilePathInDirAndEnsureItExists(
         'Qmdirhash',
         'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       )
     } catch (e) {
       assert.ok(
         e.message.includes(
-          'Please pass in a valid cid to computeFilePathInDir for dirName and fileName'
+          'Please pass in a valid cid to computeFilePathInDirAndEnsureItExists for dirName and fileName'
         )
       )
     }

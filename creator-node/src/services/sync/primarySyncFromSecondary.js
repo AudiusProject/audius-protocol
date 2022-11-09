@@ -6,6 +6,7 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
+const { computeFilePath, computeFilePathInDir } = require('../../dbManager')
 const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
@@ -177,6 +178,16 @@ async function _primarySyncFromSecondary({
           result: abort.code
         }
       }
+
+      // Recompute storage paths to use this node's path prefix
+      fetchedCNodeUser.files.forEach((file) => {
+        return {
+          ...file,
+          storagePath: file.dirMultihash
+            ? computeFilePathInDir(file.dirMultihash, file.multihash)
+            : computeFilePath(file.multihash)
+        }
+      })
 
       const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
         fetchedCNodeUser.clockInfo

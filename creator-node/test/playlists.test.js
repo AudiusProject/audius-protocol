@@ -80,7 +80,7 @@ describe('Test Playlists', function () {
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(
       resp.body.data.metadataMultihash
     )
     assert.ok(await fs.pathExists(metadataPath))
@@ -112,7 +112,7 @@ describe('Test Playlists', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(
       resp.body.data.metadataMultihash
     )
     assert.ok(await fs.pathExists(metadataPath))
@@ -157,7 +157,7 @@ describe('Test Playlists', function () {
       .set('User-Id', session.userId)
 
     const imageDirCID = resp.body.data.dirCID
-    const playlistImagePath = await DiskManager.computeFilePath(imageDirCID)
+    const playlistImagePath = await DiskManager.computeFilePathAndEnsureItExists(imageDirCID)
     assert.ok(await fs.pathExists(playlistImagePath))
     const fileRecord = await models.File.findOne({
       where: {
@@ -182,7 +182,7 @@ describe('Test Playlists', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(
+    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(
       resp2.body.data.metadataMultihash
     )
     assert.ok(await fs.pathExists(metadataPath))

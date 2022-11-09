@@ -79,26 +79,13 @@ export async function getTmpTrackUploadArtifactsPath() {
   return dirPath
 }
 
-/**
- * Construct the path to a file or directory given a CID
- *
- * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
- * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
- * Use `computeFilePathInDir` if you want to get the path for a file inside a directory.
- *
- * @dev Returns a path with the three characters before the last character
- *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
- * @param {String} cid file system destination, either filename or directory
- */
-export async function computeFilePath(cid: string, ensurePathExists = true) {
+function _getParentDirPathForCid(cid: string) {
   try {
     CID.isCID(new CID(cid))
   } catch (e: any) {
     tracing.recordException(e)
     genericLogger.error(`CID invalid, cid=${cid}, error=${e.toString()}`)
-    throw new Error(
-      `Please pass in a valid cid to computeFilePath. Passed in ${cid} ${e.message}`
-    )
+    throw new Error(`Please pass in a valid cid. Passed in ${cid} ${e.message}`)
   }
 
   // This is the directory path that file with cid will go into.
@@ -110,10 +97,33 @@ export async function computeFilePath(cid: string, ensurePathExists = true) {
   // in order to easily dev against the older and newer paths, the line below is the legacy storage path
   // const parentDirPath = getConfigStoragePath()
 
+  return parentDirPath
+}
+
+/**
+ * Construct the path to a file or directory given a CID
+ *
+ * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
+ * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
+ * Use `computeFilePathInDir` if you want to get the path for a file inside a directory.
+ *
+ * @dev Returns a path with the three characters before the last character
+ *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
+ * @param {String} cid file system destination, either filename or directory
+ */
+export function computeFilePath(cid: string) {
+  const parentDirPath = _getParentDirPathForCid(cid)
+  return path.join(parentDirPath, cid)
+}
+
+/**
+ * @see computeFilePath - does the same thing but also performs the equivalent of 'mkdir -p'
+ */
+export async function computeFilePathAndEnsureItExists(cid: string) {
+  const parentDirPath = _getParentDirPathForCid(cid)
+
   // create the subdirectories in parentDirHash if they don't exist
-  if (ensurePathExists) {
-    await ensureDirPathExists(parentDirPath)
-  }
+  await ensureDirPathExists(parentDirPath)
 
   return path.join(parentDirPath, cid)
 }
@@ -141,17 +151,7 @@ export function isValidCID(cid: string) {
   }
 }
 
-/**
- * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
- *
- * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
- * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
- * Use `computeFilePath` if you just want to get to the path of a file or directory.
- *
- * @param {String} dirName directory name
- * @param {String} fileName file name
- */
-export async function computeFilePathInDir(dirName: string, fileName: string) {
+function _validateFileAndDir(dirName: string, fileName: string) {
   if (!dirName || !fileName) {
     genericLogger.error(
       `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
@@ -167,11 +167,40 @@ export async function computeFilePathInDir(dirName: string, fileName: string) {
       `CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`
     )
     throw new Error(
-      `Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
+      `Please pass in a valid cid for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
     )
   }
+}
 
-  const parentDirPath = await computeFilePath(dirName)
+/**
+ * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
+ *
+ * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
+ * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
+ * Use `computeFilePath` if you just want to get to the path of a file or directory.
+ *
+ * @param {String} dirName directory name
+ * @param {String} fileName file name
+ */
+export async function computeFilePathInDir(dirName: string, fileName: string) {
+  _validateFileAndDir(dirName, fileName)
+
+  const parentDirPath = computeFilePath(dirName)
+  const absolutePath = path.join(parentDirPath, fileName)
+  genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
+  return absolutePath
+}
+
+/**
+ * @see computeFilePathInDir - does the same thing but also performs the equivalent of 'mkdir -p'
+ */
+export async function computeFilePathInDirAndEnsureItExists(
+  dirName: string,
+  fileName: string
+) {
+  _validateFileAndDir(dirName, fileName)
+
+  const parentDirPath = await computeFilePathAndEnsureItExists(dirName)
   const absolutePath = path.join(parentDirPath, fileName)
   genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
@@ -297,7 +326,7 @@ export async function gatherCNodeUserDataToDelete(
   const cnodeUser = await models.CNodeUser.findOne({
     where: { walletPublicKey }
   })
-  if (!cnodeUser) throw new Error('No cnodeUser found')
+  if (!cnodeUser) return 0 // User is already wiped if no db record exists
   const { cnodeUserUUID } = cnodeUser
   logger.info(
     `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
