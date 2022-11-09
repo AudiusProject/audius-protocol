@@ -87,6 +87,8 @@ module.exports = function (app) {
         // fire and forget update handle if necessary for early anti-abuse measures
         ;(async () => {
           try {
+            if (!user) return
+
             const useProvisionalHandle = !user.handle && !user.blockchainUserId
             if (body.handle && useProvisionalHandle) {
               user.handle = body.handle

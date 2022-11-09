@@ -28,7 +28,7 @@ export class SessionExpirationQueue {
     this.sessionExpirationAge = SESSION_EXPIRATION_AGE
     this.batchSize = BATCH_SIZE
     this.runInterval = RUN_INTERVAL
-    this.logStatus = this.logStatus.bind(this)
+    this._logStatus = this._logStatus.bind(this)
     this.expireSessions = this.expireSessions.bind(this)
     const connection = {
       host: config.get('redisHost'),
@@ -50,16 +50,8 @@ export class SessionExpirationQueue {
     await deleteSessions(sessionsToDelete)
   }
 
-  /**
-   * Logs a status message and includes current queue info
-   * @param {string} message
-   */
-  async logStatus(message: string) {
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.info(
-      `Session Expiration Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
+  _logStatus(message: string) {
+    logger.info(`Session Expiration Queue: ${message}`)
   }
 
   /**
@@ -80,7 +72,7 @@ export class SessionExpirationQueue {
       'session-expiration-queue',
       async (job: Job) => {
         try {
-          await this.logStatus('Starting')
+          this._logStatus('Starting')
           let progress = 0
           const SESSION_EXPIRED_CONDITION = {
             where: {
@@ -94,7 +86,7 @@ export class SessionExpirationQueue {
           const numExpiredSessions = await SessionToken.count(
             SESSION_EXPIRED_CONDITION
           )
-          await this.logStatus(
+          this._logStatus(
             `${numExpiredSessions} expired sessions ready for deletion.`
           )
 
@@ -107,7 +99,7 @@ export class SessionExpirationQueue {
           }
           return {}
         } catch (e) {
-          await this.logStatus(`Error ${e}`)
+          this._logStatus(`Error ${e}`)
           return e
         }
       },
@@ -124,12 +116,12 @@ export class SessionExpirationQueue {
           try {
             await this.queue.add(PROCESS_NAMES.expire_sessions, {})
           } catch (e) {
-            await this.logStatus('Failed to enqueue!')
+            this._logStatus('Failed to enqueue!')
           }
         }, this.runInterval)
       }
     } catch (e) {
-      await this.logStatus('Startup failed!')
+      this._logStatus('Startup failed!')
     }
   }
 }

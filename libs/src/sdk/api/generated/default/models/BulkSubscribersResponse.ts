@@ -14,25 +14,25 @@
  */
 
 import {
-    User,
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
+    UserSubscribers,
+    UserSubscribersFromJSON,
+    UserSubscribersFromJSONTyped,
+    UserSubscribersToJSON,
+} from './UserSubscribers';
 
 /**
  * 
  * @export
- * @interface FollowersResponse
+ * @interface BulkSubscribersResponse
  */
-export interface FollowersResponse 
+export interface BulkSubscribersResponse 
     {
         /**
         * 
-        * @type {Array<User>}
-        * @memberof FollowersResponse
+        * @type {Array<UserSubscribers>}
+        * @memberof BulkSubscribersResponse
         */
-        data?: Array<User>;
+        data?: Array<UserSubscribers>;
     }
 
 

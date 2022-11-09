@@ -2,21 +2,22 @@
   "contractName": "BaseUpgradeabilityProxy",
   "abi": [
     {
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "implementation",
           "type": "address"
         }
       ],
       "name": "Upgraded",
       "type": "event"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
     }
   ]
 }

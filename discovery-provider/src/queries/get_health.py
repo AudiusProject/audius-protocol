@@ -20,9 +20,18 @@ from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_i
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.tasks.index_rewards_manager_backfill import (
+    check_progress as rewards_manager_backfill_check_progress,
+)
+from src.tasks.index_rewards_manager_backfill import (
     index_rewards_manager_backfill_complete,
 )
+from src.tasks.index_spl_token_backfill import (
+    check_progress as spl_token_backfill_check_progress,
+)
 from src.tasks.index_spl_token_backfill import index_spl_token_backfill_complete
+from src.tasks.index_user_bank_backfill import (
+    check_progress as user_bank_backfill_check_progress,
+)
 from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
@@ -340,7 +349,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
         "transactions_history_backfill": {
-            "index_user_backfilling_complete": is_index_user_bank_backfill_complete,
+            "user_bank_backfilling_complete": is_index_user_bank_backfill_complete,
             "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
             "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
         },
@@ -403,6 +412,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
         health_results["tables"] = table_size_info_json
+
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            spl_token_backfill_progress = spl_token_backfill_check_progress(session)
+            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
+                session
+            )
+            user_bank_backfill_progress = user_bank_backfill_check_progress(session)
+
+        health_results["transactions_history_backfill_progress"] = {
+            "user_bank_backfilling_progress": user_bank_backfill_progress,
+            "rewards_manager_backfilling_progress": rewards_manager_backfill_progress,
+            "spl_token_backfilling_progress": spl_token_backfill_progress,
+        }
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
