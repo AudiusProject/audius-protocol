@@ -7,7 +7,7 @@ import { checkContentAccess } from '../src/contentAccess/contentAccessChecker'
 
 const models = require('../src/models')
 
-describe('Test premium content access', function () {
+describe('Test content access', function () {
   let server: any
   let libsMock: any
   let redisMock: any
@@ -53,7 +53,7 @@ describe('Test premium content access', function () {
     loggerMock = loggerFactory()
   })
 
-  describe('premium content', () => {
+  describe('content access', () => {
     beforeEach(async () => {
       const transaction = await models.sequelize.transaction()
       await createCNodeUser(transaction)
@@ -75,7 +75,7 @@ describe('Test premium content access', function () {
     it('fails when there are missing headers', async () => {
       const accessWithoutHeaders = await checkContentAccess({
         cid,
-        premiumContentHeaders: null as unknown as string,
+        contentAccessHeaders: null as unknown as string,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -87,7 +87,7 @@ describe('Test premium content access', function () {
 
       const accessWithMissingHeaders = await checkContentAccess({
         cid,
-        premiumContentHeaders: JSON.stringify({}),
+        contentAccessHeaders: JSON.stringify({}),
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -103,13 +103,13 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         badDNPrivateKey
       )
-      const premiumContentHeadersObj = {
+      const contentAccessHeadersObj = {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
       const access = await checkContentAccess({
         cid,
-        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -125,13 +125,13 @@ describe('Test premium content access', function () {
         signedDataFromDiscoveryNode,
         dummyDNPrivateKey
       )
-      const premiumContentHeadersObj = {
+      const contentAccessHeadersObj = {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
       const access = await checkContentAccess({
         cid,
-        premiumContentHeaders: JSON.stringify(premiumContentHeadersObj),
+        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
