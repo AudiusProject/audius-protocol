@@ -66,6 +66,7 @@ const HeaderContainer = ({ header, containerRef }) => {
           // Need to set a different gradient for
           // browsers that don't support the
           // backdrop-filter frosted glass effect.
+          paddingLeft: `${scrollBarWidth}px`,
           background: isChromeOrSafari
             ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
             : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
