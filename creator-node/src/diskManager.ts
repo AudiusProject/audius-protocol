@@ -10,7 +10,7 @@ import redisClient from './redis'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { tracing } from './tracer'
-import { execShellCommand } from './utils'
+import { execShellCommand, timeout } from './utils'
 
 const models = require('./models')
 
@@ -436,6 +436,10 @@ export async function sweepSubdirectoriesInFiles(
   const subdirectories = await listSubdirectoriesInFiles()
   if (!subdirectories) return
 
+  genericLogger.info(
+    `diskManager.js#sweepSubdirectoriesInFiles - About to start deleting subdirectories. Total count: ${subdirectories.length}`
+  )
+
   for (let i = 0; i < subdirectories.length; i += 1) {
     try {
       const subdirectory = subdirectories[i]
@@ -495,13 +499,13 @@ export async function sweepSubdirectoriesInFiles(
 
       if (cidsNotToDelete.length > 0) {
         genericLogger.debug(
-          `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+          `diskManager.js - not safe to delete ${cidsNotToDelete.toString()}`
         )
       }
 
       if (cidsToDelete.length > 0) {
         genericLogger.info(
-          `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+          `diskManager.js - safe to delete ${cidsToDelete.toString()}`
         )
 
         // gate deleting files on disk with the same env var
@@ -517,6 +521,9 @@ export async function sweepSubdirectoriesInFiles(
         `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
       )
     }
+
+    // wait 0.5 seconds before each iteration to allow for disk to cleanup
+    await timeout(500)
   }
 
   // keep calling this function recursively without an await so the original function scope can close
