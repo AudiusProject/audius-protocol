@@ -14,7 +14,7 @@ export type contentAccessError =
 
 export type CheckAccessArgs = {
   cid: string
-  premiumContentHeaders: string
+  contentAccessHeaders: string
   libs: any
   logger: Logger
   redis: Redis

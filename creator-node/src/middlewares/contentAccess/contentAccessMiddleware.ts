@@ -45,7 +45,7 @@ export const premiumContentMiddleware = async (
   }
 
   try {
-    const premiumContentHeaders = req.headers['x-premium-content'] as string
+    const contentAccessHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs, redis } = serviceRegistry
     // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
@@ -53,7 +53,7 @@ export const premiumContentMiddleware = async (
 
     const { doesUserHaveAccess, error } = await checkContentAccess({
       cid,
-      premiumContentHeaders,
+      contentAccessHeaders,
       libs,
       logger,
       redis
@@ -110,7 +110,7 @@ export const premiumContentMiddleware = async (
     return next()
   } catch (e: any) {
     tracing.recordException(e)
-    const error = `Could not validate premium content access: ${e.message}`
+    const error = `Could not validate content access: ${e.message}`
     req.logger.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
     return sendResponse(req, res, errorResponseServerError(error))
   }

@@ -12,12 +12,12 @@ const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
  */
 export async function checkContentAccess({
   cid,
-  premiumContentHeaders,
+  contentAccessHeaders,
   libs,
   logger,
   redis
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
-  if (!premiumContentHeaders) {
+  if (!contentAccessHeaders) {
     return {
       doesUserHaveAccess: false,
       error: 'MissingHeaders'
@@ -25,7 +25,7 @@ export async function checkContentAccess({
   }
 
   const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
-    JSON.parse(premiumContentHeaders)
+    JSON.parse(contentAccessHeaders)
   if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
     return {
       doesUserHaveAccess: false,
