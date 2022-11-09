@@ -10,6 +10,7 @@ import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
 import { checkPremiumContentAccess } from '../../premiumContent/premiumContentAccessChecker'
 import config from '../../config'
+import { tracing } from '../../tracer'
 
 /**
  * Middleware to validate requests to get premium content.
@@ -107,10 +108,9 @@ export const premiumContentMiddleware = async (
           )
         )
     }
-  } catch (e) {
-    const error = `Could not validate premium content access: ${
-      (e as Error).message
-    }`
+  } catch (e: any) {
+    tracing.recordException(e)
+    const error = `Could not validate premium content access: ${e.message}`
     req.logger.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
     return sendResponse(req, res, errorResponseServerError(error))
   }
