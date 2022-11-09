@@ -486,6 +486,8 @@ PODS:
   - RNSentry (3.2.8):
     - React-Core
     - Sentry (= 7.5.4)
+  - RNShare (8.0.0):
+    - React-Core
   - RNSVG (12.1.1):
     - React
   - Sentry (7.5.4):
@@ -567,6 +569,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNScrypt (from `../node_modules/react-native-scrypt`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -731,6 +734,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-scrypt"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
+  RNShare:
+    :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   SRSRadialGradient:
@@ -825,6 +830,7 @@ SPEC CHECKSUMS:
   RNScreens: 0df01424e9e0ed7827200d6ed1087ddd06c493f9
   RNScrypt: 5090216bbf2ebb7baea2f42fdd26011dc2c4c7b1
   RNSentry: fe878ca3982d7871e502ccbb90072fe764c8d07d
+  RNShare: 36aa3e6958373a0ad1c95a1c960adef589da3794
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Sentry: 5c5dd4005f3b7b9765d5a8871232cddbd0d888b7
   SRSRadialGradient: 71378a83e52b616c40367c37ee7cb6865f9f7c6e

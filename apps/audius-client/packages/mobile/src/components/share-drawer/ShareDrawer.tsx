@@ -11,8 +11,11 @@ import {
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking, View } from 'react-native'
+import Config from 'react-native-config'
+import Share from 'react-native-share'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
@@ -34,6 +37,14 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
+
+const shareOptions = {
+  backgroundVideo: '', // TODO(nkang): Base64 video goes here
+  stickerImage: '', // TODO(nkang): Base64 sticker image goes here
+  attributionURL: Config.AUDIUS_URL,
+  social: Share.Social.INSTAGRAM_STORIES,
+  appId: Config.INSTAGRAM_APP_ID
+}
 
 const useStyles = makeStyles(({ palette }) => ({
   shareToTwitterAction: {
@@ -76,6 +87,9 @@ export const ShareDrawer = () => {
   const { isEnabled: isShareToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
+  const { isEnabled: isShareToInstagramStoryEnabled } = useFeatureFlag(
+    FeatureFlags.SHARE_TO_STORY
+  )
   const { secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
@@ -106,6 +120,17 @@ export const ShareDrawer = () => {
     }
   }, [content, dispatch])
 
+  // nkang: WIP, will probably be moved:
+  const handleShareToInstagramStory = useCallback(async () => {
+    if (content?.type === 'track') {
+      try {
+        await Share.shareSingle(shareOptions)
+      } catch (error) {
+        console.error('Error sharing story: ', error)
+      }
+    }
+  }, [content?.type])
+
   const handleCopyLink = useCallback(() => {
     if (!content) return
     const link = getContentUrl(content)
@@ -135,6 +160,14 @@ export const ShareDrawer = () => {
     isShareToTikTokEnabled &&
       content?.type === 'track' &&
       isOwner &&
+      !content.track.is_unlisted &&
+      !content.track.is_invalid &&
+      !content.track.is_delete
+  )
+
+  const shouldIncludeInstagramStoryAction = Boolean(
+    isShareToInstagramStoryEnabled &&
+      content?.type === 'track' &&
       !content.track.is_unlisted &&
       !content.track.is_invalid &&
       !content.track.is_delete
@@ -173,25 +206,40 @@ export const ShareDrawer = () => {
       callback: handleOpenShareSheet
     }
 
-    return shouldIncludeTikTokAction
-      ? [
-          shareToTwitterAction,
-          shareToTikTokAction,
-          copyLinkAction,
-          shareSheetAction
-        ]
-      : [shareToTwitterAction, copyLinkAction, shareSheetAction]
+    const shareToInstagramStoriesAction = {
+      text: messages.instagramStory,
+      icon: <IconInstagram fill={secondary} height={26} width={26} />,
+      // TODO(nkang) Replace with style from pending design
+      style: styles.copyLinkAction,
+      callback: handleShareToInstagramStory
+    }
+
+    const result = [shareToTwitterAction, copyLinkAction, shareSheetAction]
+
+    if (shouldIncludeTikTokAction) {
+      result.splice(1, 0, shareToTikTokAction)
+    }
+    if (shouldIncludeInstagramStoryAction) {
+      result.splice(2, 0, shareToInstagramStoriesAction)
+    }
+
+    return result
   }, [
     staticTwitterBlue,
-    styles,
+    styles.shareToTwitterAction,
+    styles.shareToTikTokAction,
+    styles.shareToTikTokActionDark,
+    styles.copyLinkAction,
     handleShareToTwitter,
     isLightMode,
     handleShareToTikTok,
+    shareType,
     secondary,
     handleCopyLink,
     handleOpenShareSheet,
+    handleShareToInstagramStory,
     shouldIncludeTikTokAction,
-    shareType
+    shouldIncludeInstagramStoryAction
   ])
 
   return (

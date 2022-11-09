@@ -39,6 +39,8 @@
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+    <string>instagram-stories</string>
+    <string>instagram</string>
 		<string>itms-apps</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
