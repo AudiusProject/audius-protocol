@@ -6,7 +6,7 @@ import { Redis } from 'ioredis'
 import config from '../../config'
 import proxyquire from 'proxyquire' // eslint-disable-line node/no-unpublished-import
 
-describe('Test premium content middleware', () => {
+describe('Test content access middleware', () => {
   let app: any
   let serviceRegistry: any
   let libs: any
@@ -28,7 +28,7 @@ describe('Test premium content middleware', () => {
       return proxyquire('./contentAccessMiddleware', {
         './../../config': config,
         '../../contentAccess/contentAccessChecker': {
-          checkPremiumContentAccess: async () => accessCheckReturnsWith
+          checkContentAccess: async () => accessCheckReturnsWith
         }
       })
     }
@@ -138,7 +138,7 @@ describe('Test premium content middleware', () => {
 
   describe('when premium content is disabled', () => {
     it('moves on to the next middleware', async () => {
-      config.set('contentAccessEnabled', false)
+      config.set('premiumContentEnabled', false)
 
       let nextCalled = false
       await contentAccessMiddlewareProxy({}).contentAccessMiddleware(
