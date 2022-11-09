@@ -33,7 +33,6 @@ type HandoffState =
   | 'FetchingFilesAndWritingToFs'
 
 // Handles sending a transcode and segment request to an available node in the network
-
 const logContext = {}
 let logger = genericLogger.child(logContext)
 
@@ -150,7 +149,7 @@ export async function handOff(
  * @param {Object} libs
  * @returns array of healthy Content Nodes for transcode hand off
  */
-async function selectRandomSPs(libs: any) {
+export async function selectRandomSPs(libs: any) {
   const allSPs: { endpoint: string }[] =
     await libs.ethContracts.getServiceProviderList('content-node')
   const allValidSPs = allSPs
@@ -174,7 +173,7 @@ async function selectRandomSPs(libs: any) {
  * @param {Object} param.req request object with the params {fileDir, fileName, fileNameNoExtension}
  * @returns the transcoding job uuid
  */
-async function sendTrackToSp({
+export async function sendTrackToSp({
   sp,
   req
 }: {
@@ -203,7 +202,13 @@ async function sendTrackToSp({
  * @param {string} param.sp the Content Node to poll the transcode job for
  * @returns the transcode job results
  */
-async function pollForTranscode({ uuid, sp }: { uuid: string; sp: string }) {
+export async function pollForTranscode({
+  uuid,
+  sp
+}: {
+  uuid: string
+  sp: string
+}) {
   logger.info({ sp }, `Polling for transcode and segments with uuid=${uuid}...`)
 
   return asyncRetry({
@@ -265,7 +270,7 @@ async function pollForTranscode({ uuid, sp }: { uuid: string; sp: string }) {
  *    m3u8FilePath
  * }
  */
-async function fetchFilesAndWriteToFs({
+export async function fetchFilesAndWriteToFs({
   fileNameNoExtension,
   transcodeFilePath,
   segmentFileNames,
@@ -330,7 +335,7 @@ async function fetchFilesAndWriteToFs({
  * @param {string} param.fileNameNoExtension the uploaded track artifact file name without the extension
  * @returns the transcode and segment job uuid used for polling
  */
-async function sendTranscodeAndSegmentRequest({
+export async function sendTranscodeAndSegmentRequest({
   sp,
   fileDir,
   fileName,
@@ -388,7 +393,7 @@ async function sendTranscodeAndSegmentRequest({
  * @param {string} pathToFile path to the uploaded track artifact
  * @returns formData object passed in axios to send a transcode and segment request
  */
-async function createFormData(pathToFile: string) {
+export async function createFormData(pathToFile: string) {
   const fileExists = await fs.pathExists(pathToFile)
   if (!fileExists) {
     throw new Error(`File does not exist at path=${pathToFile}`)
@@ -404,7 +409,7 @@ async function createFormData(pathToFile: string) {
  * Wrapper to fetch health check response
  * @param {string} sp the endpoint to the Content Node
  */
-async function fetchHealthCheck(sp: string) {
+export async function fetchHealthCheck(sp: string) {
   await axios({
     url: `${sp}/health_check`,
     method: 'get',
@@ -419,7 +424,7 @@ async function fetchHealthCheck(sp: string) {
  * @param {string} param.uuid the uuid of the track transcoding task
  * @returns the status, and the success or failed response if the task is complete
  */
-async function fetchTranscodeProcessingStatus({
+export async function fetchTranscodeProcessingStatus({
   sp,
   uuid
 }: {
@@ -456,7 +461,7 @@ async function fetchTranscodeProcessingStatus({
  * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
  * @returns the fetched segment
  */
-async function fetchSegment(
+export async function fetchSegment(
   sp: string,
   segmentFileName: string,
   fileNameNoExtension: string
@@ -496,7 +501,7 @@ async function fetchSegment(
  * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
  * @returns
  */
-async function fetchTranscode(sp: string, fileNameNoExtension: string) {
+export async function fetchTranscode(sp: string, fileNameNoExtension: string) {
   const transcodeFileName = fileNameNoExtension + '-dl.mp3'
   const spID = config.get('spID')
   const { timestamp, signature } =
@@ -533,7 +538,7 @@ async function fetchTranscode(sp: string, fileNameNoExtension: string) {
  * @param {string} fileNameNoExtension the file name of the uploaded track artifact without extension
  * @returns
  */
-async function fetchM3U8File(sp: string, fileNameNoExtension: string) {
+export async function fetchM3U8File(sp: string, fileNameNoExtension: string) {
   const m3u8FileName = fileNameNoExtension + '.m3u8'
   const spID = config.get('spID')
   const { timestamp, signature } =
@@ -568,7 +573,7 @@ async function fetchM3U8File(sp: string, fileNameNoExtension: string) {
  * Initializes the log context and logger
  * @param {Object} logContext
  */
-function initLogger(logContext: Object) {
+export function initLogger(logContext: Object) {
   logger = genericLogger.child(logContext)
 
   return logger
@@ -593,7 +598,7 @@ function initLogger(logContext: Object) {
  * @param {func} [param.options.onRetry] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
-function asyncRetryNotOn404({
+export function asyncRetryNotOn404({
   logger,
   asyncFn: inputAsyncFn,
   logLabel,
