@@ -41,7 +41,7 @@ class ClusterUtilsForWorker {
   }
 
   _ensureThisProcessIsAWorker() {
-    if (!cluster.isWorker) {
+    if (isClusterEnabled() && !cluster.isWorker) {
       throw new Error('This should only be called by a worker process')
     }
   }

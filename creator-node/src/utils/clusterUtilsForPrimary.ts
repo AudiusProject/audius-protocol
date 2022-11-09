@@ -1,4 +1,5 @@
 import type { Cluster } from 'cluster'
+import { isClusterEnabled } from './clusterUtils'
 const cluster: Cluster = require('cluster')
 
 /**
@@ -25,7 +26,7 @@ class ClusterUtilsForPrimary {
   }
 
   _ensureThisProcessIsThePrimary() {
-    if (!cluster.isMaster) {
+    if (isClusterEnabled() && !cluster.isMaster) {
       throw new Error('This should only be called by the primary process')
     }
   }

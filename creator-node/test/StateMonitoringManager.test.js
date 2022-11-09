@@ -55,11 +55,6 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     const MockStateMonitoringManager = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/index.js',
       {
-        '../../../utils': {
-          clusterUtils: {
-            isThisWorkerInit: () => true
-          }
-        },
         '../../../config': config
       }
     )
