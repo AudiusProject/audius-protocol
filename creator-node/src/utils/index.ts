@@ -17,10 +17,7 @@ import {
   validateMetadata,
   validateAssociatedWallets
 } from './validateAudiusUserMetadata'
-import {
-  verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
-} from './cidUtils'
+import { verifyCIDMatchesExpected, EMPTY_FILE_CID } from './cidUtils'
 import {
   createDirForFile,
   writeStreamToFileSystem,

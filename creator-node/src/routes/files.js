@@ -6,7 +6,11 @@ const contentDisposition = require('content-disposition')
 
 const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
+const {
+  saveFileForMultihashToFS,
+  uploadTempDiskStorage,
+  EMPTY_FILE_CID
+} = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -31,7 +35,7 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { findCIDInNetwork, timeout } = require('../utils')
+const { timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -465,10 +469,10 @@ const getCID = async (req, res) => {
       req.logger,
       CID,
       storagePath,
-      gatewaysToTry
+      [] // no replica set so it will scan the whole network
     )
     if (error) {
-      throw new Error('Not found in network: ${error.message}')
+      throw new Error(`Not found in network: ${error.message}`)
     }
     decisionTree.push({
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
@@ -556,11 +560,11 @@ const getDirCID = async (req, res) => {
       req.logger,
       CID,
       storagePath,
-      gatewaysToTry,
-      filename 
+      [], // no replica set so it will scan the whole network
+      filename
     )
     if (error) {
-      throw new Error('Not found in network: ${error.message}')
+      throw new Error(`Not found in network: ${error.message}`)
     }
 
     return await streamFromFileSystem(req, res, storagePath)

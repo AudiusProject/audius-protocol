@@ -13,6 +13,7 @@ const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const DecisionTree = require('./utils/decisionTree')
 const { asyncRetry } = require('./utils/asyncRetry')
 const { getAllRegisteredCNodes } = require('./services/ContentNodeInfoManager')
+const { getIfAttemptedStateFix } = require('./utils')
 
 const LibsUtils = audiusLibs.Utils
 
@@ -219,111 +220,98 @@ async function fetchFileFromNetworkAndWriteToDisk({
   }
 
   // If file is not found in replica set, check network (remaining registered nodes)
-  try {
-    // this is the replacement for the old findCIDInNetwork call
-    if (!config.get('findCIDInNetworkEnabled')) return false
+  // this is the replacement for the old findCIDInNetwork call
+  if (!config.get('findCIDInNetworkEnabled')) return false
 
-    const attemptedStateFix = await getIfAttemptedStateFix(filePath)
-    if (attemptedStateFix) return
+  const attemptedStateFix = await getIfAttemptedStateFix(path)
+  if (attemptedStateFix) return
 
-    for (const contentUrl of remainingContentNodeGatewayContentRoutes) {
+  for (const contentUrl of remainingContentNodeGatewayContentRoutes) {
+    decisionTree.recordStage({
+      name: 'Fetching from non-replica set gateways from the rest of the network',
+      data: { gateway: contentUrl }
+    })
+
+    try {
+      await asyncRetry({
+        asyncFn: async (bail, num) => {
+          try {
+            await fetchFileFromTargetGatewayAndWriteToDisk({
+              contentUrl,
+              trackId,
+              multihash,
+              decisionTree,
+              path,
+              logger
+            })
+          } catch (e) {
+            /**
+             * Abort retries if fetch fails with 403, 401, or 400 status code
+             *
+             * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
+             */
+            if (
+              e.response?.status === 403 || // delist
+              e.response?.status === 401 || // unauth
+              e.response?.status === 400 // bad request
+            ) {
+              decisionTree.recordStage({
+                name: 'Could not fetch content from target gateway',
+                data: {
+                  statusCode: e.response.status,
+                  url: contentUrl
+                }
+              })
+              bail(
+                new Error(
+                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+                )
+              )
+              return
+            }
+
+            // Re-throw any other error to continue with retry logic
+            if (num === numRetries + 1) {
+              // Final error thrown
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+              )
+            } else {
+              throw new Error(
+                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+              )
+            }
+          }
+        },
+        logger,
+        log: false,
+        options: {
+          retries: numRetries
+        }
+      })
+
       decisionTree.recordStage({
-        name: 'Fetching from non-replica set gateways from the rest of the network',
+        name: 'Successfully fetched CID from non-replica set gateway',
         data: { gateway: contentUrl }
       })
-  
-      try {
-        await asyncRetry({
-          asyncFn: async (bail, num) => {
-            try {
-              await fetchFileFromTargetGatewayAndWriteToDisk({
-                contentUrl,
-                trackId,
-                multihash,
-                decisionTree,
-                path,
-                logger
-              })
-            } catch (e) {
-              /**
-               * Abort retries if fetch fails with 403, 401, or 400 status code
-               *
-               * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
-               */
-              if (
-                e.response?.status === 403 || // delist
-                e.response?.status === 401 || // unauth
-                e.response?.status === 400 // bad request
-              ) {
-                decisionTree.recordStage({
-                  name: 'Could not fetch content from target gateway',
-                  data: {
-                    statusCode: e.response.status,
-                    url: contentUrl
-                  }
-                })
-                bail(
-                  new Error(
-                    `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-                  )
-                )
-                return
-              }
-  
-              // Re-throw any other error to continue with retry logic
-              if (num === numRetries + 1) {
-                // Final error thrown
-                throw new Error(
-                  `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
-                )
-              } else {
-                throw new Error(
-                  `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
-                )
-              }
-            }
-          },
-          logger,
-          log: false,
-          options: {
-            retries: numRetries
-          }
-        })
-  
-        decisionTree.recordStage({
-          name: 'Successfully fetched CID from non-replica set gateway',
-          data: { gateway: contentUrl }
-        })
-  
-        // If successful, will reach this point in code. Return out of fn
-        return
-      } catch (e) {
-        decisionTree.recordStage({
-          name: 'Error - Could not retrieve file from non-replica set gateway',
-          data: {
-            url: contentUrl,
-            errorMsg: e.message,
-            multihash
-          }
-        })
-      }
+
+      // If successful, will reach this point in code. Return out of fn
+      return
+    } catch (e) {
+      decisionTree.recordStage({
+        name: 'Error - Could not retrieve file from non-replica set gateway',
+        data: {
+          url: contentUrl,
+          errorMsg: e.message,
+          multihash
+        }
+      })
     }
-
-    if (!found) {
-      throw new Error(`Did not find multihash=${multihash} from network`)
-    }
-
-    decisionTree.recordStage({
-      name: 'Found file from network'
-    })
-
-    return
-  } catch (e) {
-    decisionTree.recordStage({
-      name: `Failed to find file from network`,
-      data: { errorMsg: e.message }
-    })
   }
+
+  decisionTree.recordStage({
+    name: `Failed to find file from network`
+  })
 
   // error if file was not found on any gateway
   const errorMsg = `Failed to retrieve file for multihash ${multihash} after trying entire network`
@@ -452,12 +440,13 @@ async function saveFileForMultihashToFS(
         !targetGateways.includes(c.endpoint) &&
         config.get('creatorNodeEndpoint') !== c.endpoint
     )
-    let remainingContentNodeGatewayContentRoutes = remainingContentNodeGateways.map((endpoint) => {
-      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
-      if (trackId) baseUrl += `?trackId=${trackId}`
+    let remainingContentNodeGatewayContentRoutes =
+      remainingContentNodeGateways.map((endpoint) => {
+        let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+        if (trackId) baseUrl += `?trackId=${trackId}`
 
-      return baseUrl
-    })
+        return baseUrl
+      })
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 
@@ -511,12 +500,13 @@ async function saveFileForMultihashToFS(
             matchObj.outer
           }/${fileNameForImage}`
       )
-      remainingContentNodeGatewayContentRoutes = remainingContentNodeGateways.map(
-        (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            matchObj.outer
-          }/${fileNameForImage}`
-      )
+      remainingContentNodeGatewayContentRoutes =
+        remainingContentNodeGateways.map(
+          (endpoint) =>
+            `${endpoint.replace(/\/$/, '')}/ipfs/${
+              matchObj.outer
+            }/${fileNameForImage}`
+        )
       decisionTree.recordStage({
         name: 'Updated gatewayUrlsMapped'
       })

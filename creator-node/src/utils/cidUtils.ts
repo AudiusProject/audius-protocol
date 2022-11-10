@@ -1,14 +1,7 @@
 import type Logger from 'bunyan'
 
 import fs from 'fs-extra'
-import axios from 'axios'
-import config from '../config'
-import { generateTimestampAndSignature } from '../apiSigning'
 import { libs } from '@audius/sdk'
-import { getAllRegisteredCNodes } from '../services/ContentNodeInfoManager'
-import { getIfAttemptedStateFix, writeStreamToFileSystem } from './fsUtils'
-import { saveFileForMultihashToFS } from '../fileManager'
-import { asyncRetry } from './asyncRetry'
 
 const DecisionTree = require('./decisionTree')
 const LibsUtils = libs.Utils
