@@ -38,7 +38,6 @@ import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { EditProfileScreen } from '../edit-profile-screen'
-import type { ListSelectionParams } from '../list-selection-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -94,7 +93,6 @@ export type AppTabScreenParamList = {
   ChangePasswordScreen: undefined
   NotificationSettingsScreen: undefined
   AudioScreen: undefined
-  ListSelection: ListSelectionParams
   Upload: undefined
 }
 

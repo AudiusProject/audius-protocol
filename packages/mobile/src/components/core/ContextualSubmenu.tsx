@@ -17,7 +17,6 @@ import { Pill } from './Pill'
 
 export type ContextualSubmenuProps = {
   label: string
-  onChange: (value: any) => void
   value: any
   submenuScreenName: string
   styles?: StylesProp<{
@@ -28,7 +27,7 @@ export type ContextualSubmenuProps = {
   error?: boolean
   errorMessage?: string
   lastItem?: boolean
-  renderValue?: (value: any) => void
+  renderValue?: (value: any) => JSX.Element | null
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -53,7 +52,6 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   const {
     label,
     value,
-    onChange,
     submenuScreenName,
     styles: stylesProp,
     errorMessage,
@@ -67,9 +65,8 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    const params = { value, onChange }
-    navigation.push(submenuScreenName, params)
-  }, [navigation, value, onChange, submenuScreenName])
+    navigation.push(submenuScreenName)
+  }, [navigation, submenuScreenName])
 
   const defaultRenderValue = (value: any) => (
     <View style={styles.optionPills}>

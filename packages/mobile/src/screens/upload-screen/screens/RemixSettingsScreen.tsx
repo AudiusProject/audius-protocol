@@ -6,7 +6,8 @@ import {
   remixSettingsSelectors,
   Status
 } from '@audius/common'
-import { useFocusEffect, useRoute } from '@react-navigation/native'
+import { useFocusEffect } from '@react-navigation/native'
+import { useField } from 'formik'
 import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,7 +20,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
-import type { UploadRouteProp } from '../ParamList'
 import { UploadStackScreen } from '../UploadStackScreen'
 import { RemixTrackPill } from '../components'
 
@@ -83,12 +83,12 @@ export type RemixSettingsParams = {
 
 export const RemixSettingsScreen = () => {
   const styles = useStyles()
-  const { params } = useRoute<UploadRouteProp<'RemixSettings'>>()
-  const { value, onChange } = params
-  const [isTrackRemix, setIsTrackRemix] = useState(Boolean(value.remixOf))
-  const [remixOf, setRemixOf] = useState(value.remixOf)
-  const [remixOfInput, setRemixOfInput] = useState(value.remixOf ?? '')
-  const [hideRemixes, setHideRemixes] = useState(!value.remixesVisible)
+  const [{ value: remixOf }, , { setValue: setRemixOf }] =
+    useField<Nullable<string>>('remix_of')
+  const [{ value: remixesVisible }, , { setValue: setRemixesVisible }] =
+    useField<boolean>('field_visibility.remixes')
+  const [isTrackRemix, setIsTrackRemix] = useState(Boolean(remixOf))
+  const [remixOfInput, setRemixOfInput] = useState(remixOf ?? '')
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const parentTrack = useSelector(getTrack)
@@ -129,17 +129,16 @@ export const RemixSettingsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    onChange({
-      remixOf: isTrackRemix ? remixOf : null,
-      remixesVisible: !hideRemixes
-    })
     navigation.goBack()
     dispatch(reset())
-  }, [onChange, remixOf, hideRemixes, navigation, isTrackRemix, dispatch])
+  }, [navigation, dispatch])
 
   useEffect(() => {
-    setRemixOf(parentTrack ? getTrackRoute(parentTrack, true) : null)
-  }, [parentTrack])
+    setRemixOf(
+      parentTrack && isTrackRemix ? getTrackRoute(parentTrack, true) : null
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parentTrack, isTrackRemix])
 
   return (
     <UploadStackScreen
@@ -187,7 +186,10 @@ export const RemixSettingsScreen = () => {
         <View style={styles.setting}>
           <View style={styles.option}>
             <Text {...labelProps}>{messages.hideRemixLabel}</Text>
-            <Switch value={hideRemixes} onValueChange={setHideRemixes} />
+            <Switch
+              value={!remixesVisible}
+              onValueChange={(value) => setRemixesVisible(!value)}
+            />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixDescription}</Text>
         </View>

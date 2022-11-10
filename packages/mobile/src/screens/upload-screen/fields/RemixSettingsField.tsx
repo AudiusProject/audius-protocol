@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import type { Nullable } from '@audius/common'
 import { cacheUsersSelectors, cacheTracksSelectors } from '@audius/common'
 import { useField } from 'formik'
@@ -11,7 +9,6 @@ import { Text, ContextualSubmenu } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { RemixTrackPill } from '../components'
-import type { RemixSettingsValue } from '../screens'
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
@@ -33,10 +30,10 @@ type SelectMoodFieldProps = Partial<ContextualSubmenuProps>
 
 export const RemixSettingsField = (props: SelectMoodFieldProps) => {
   const styles = useStyles()
-  const [{ value: remixOf }, , { setValue: setRemixOf }] =
-    useField<Nullable<string>>('remix_of')
-  const [{ value: remixesVisible }, , { setValue: setRemixesVisible }] =
-    useField<boolean>('field_visibility.remixes')
+  const [{ value: remixOf }] = useField<Nullable<string>>('remix_of')
+  const [{ value: remixesVisible }] = useField<boolean>(
+    'field_visibility.remixes'
+  )
 
   const parentTrack = useSelector((state) =>
     getTrack(state, { permalink: remixOf ? new URL(remixOf).pathname : null })
@@ -50,15 +47,6 @@ export const RemixSettingsField = (props: SelectMoodFieldProps) => {
     remixOf,
     remixesVisible
   }
-
-  const handleChange = useCallback(
-    (value: RemixSettingsValue) => {
-      const { remixOf, remixesVisible } = value
-      setRemixOf(remixOf)
-      setRemixesVisible(remixesVisible)
-    },
-    [setRemixOf, setRemixesVisible]
-  )
 
   const renderValue = () => {
     return remixOf && parentTrack && parentTrackUser ? (
@@ -79,7 +67,6 @@ export const RemixSettingsField = (props: SelectMoodFieldProps) => {
     <ContextualSubmenu
       submenuScreenName='RemixSettings'
       label={messages.label}
-      onChange={handleChange}
       value={value}
       renderValue={renderValue}
       {...props}

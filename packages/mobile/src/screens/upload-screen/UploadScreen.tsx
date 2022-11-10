@@ -6,11 +6,6 @@ import { CompleteTrackScreen } from './CompleteTrackScreen'
 import { SelectTrackScreen } from './SelectTrackScreen'
 import { UploadCompleteScreen } from './UploadCompleteScreen'
 import { UploadingTracksScreen } from './UploadingTracksScreen'
-import {
-  RemixSettingsScreen,
-  SelectGenreScreen,
-  SelectMoodScreen
-} from './screens'
 
 const Stack = createNativeStackNavigator()
 
@@ -22,12 +17,13 @@ export const UploadScreen = () => {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name='SelectTrack' component={SelectTrackScreen} />
-      <Stack.Screen name='CompleteTrack' component={CompleteTrackScreen} />
+      <Stack.Screen
+        name='CompleteTrack'
+        component={CompleteTrackScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name='UploadingTracks' component={UploadingTracksScreen} />
       <Stack.Screen name='UploadComplete' component={UploadCompleteScreen} />
-      <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
-      <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
-      <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
     </Stack.Navigator>
   )
 }

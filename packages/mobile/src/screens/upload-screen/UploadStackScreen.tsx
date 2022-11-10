@@ -3,11 +3,16 @@ import type { ReactElement, ReactNode } from 'react'
 import { View } from 'react-native'
 
 import type { ScreenProps } from 'app/components/core'
-import { Screen } from 'app/components/core'
+import { Button, Screen } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
+const messages = {
+  done: 'Done'
+}
+
 type UploadStackScreenProps = Omit<ScreenProps, 'children'> & {
-  bottomSection: ReactNode
+  bottomSection?: ReactNode
   children: ReactElement
 }
 
@@ -26,11 +31,24 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export const UploadStackScreen = (props: UploadStackScreenProps) => {
   const { children, bottomSection, style: styleProp, ...other } = props
   const styles = useStyles()
+  const navigation = useNavigation()
+
+  const defaultBottomSection = (
+    <Button
+      variant='primary'
+      size='large'
+      fullWidth
+      title={messages.done}
+      onPress={navigation.goBack}
+    />
+  )
 
   return (
     <Screen variant='secondary' style={[styles.root, styleProp]} {...other}>
       {children}
-      <View style={styles.bottomSection}>{bottomSection}</View>
+      <View style={styles.bottomSection}>
+        {bottomSection ?? defaultBottomSection}
+      </View>
     </Screen>
   )
 }

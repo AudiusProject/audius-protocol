@@ -8,12 +8,16 @@ import { KeyboardAvoidingView } from 'react-native'
 import * as Yup from 'yup'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
+import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button, ScrollView, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
+import { TopBarIconButton } from '../app-screen'
+
+import { CompleteTrackStack } from './CompleteTrackStack'
 import type { UploadParamList, UploadRouteProp } from './ParamList'
 import { UploadStackScreen } from './UploadStackScreen'
 import {
@@ -24,7 +28,8 @@ import {
   SelectMoodField,
   TagField,
   SubmenuList,
-  RemixSettingsField
+  RemixSettingsField,
+  AdvancedOptionsField
 } from './fields'
 
 const messages = {
@@ -35,6 +40,9 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
+  backButton: {
+    transform: [{ rotate: '180deg' }]
+  },
   tile: {
     margin: spacing(3)
   },
@@ -54,17 +62,25 @@ const CompleteTrackSchema = Yup.object().shape({
 
 export type CompleteTrackParams = UploadTrack
 
-const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
+export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
   const { handleSubmit, isSubmitting, errors, touched } = props
   const errorsKeys = Object.keys(errors)
   const hasErrors =
     errorsKeys.length > 0 && errorsKeys.every((errorKey) => touched[errorKey])
   const styles = useStyles()
+  const navigation = useNavigation()
 
   return (
     <UploadStackScreen
       title={messages.screenTitle}
       icon={IconUpload}
+      topbarLeft={
+        <TopBarIconButton
+          icon={IconCaretRight}
+          style={styles.backButton}
+          onPress={navigation.goBack}
+        />
+      }
       bottomSection={
         <>
           {hasErrors ? (
@@ -95,8 +111,9 @@ const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
             </SubmenuList>
             <TagField />
             <DescriptionField />
-            <SubmenuList>
+            <SubmenuList removeBottomDivider>
               <RemixSettingsField />
+              <AdvancedOptionsField />
             </SubmenuList>
           </Tile>
         </KeyboardAvoidingView>
@@ -125,7 +142,7 @@ export const CompleteTrackScreen = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      component={CompleteTrackForm}
+      component={CompleteTrackStack}
       validationSchema={CompleteTrackSchema}
     />
   )
