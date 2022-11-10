@@ -204,7 +204,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = await DiskManager.computeFilePath(CID, false)
+    storagePath = DiskManager.computeFilePath(CID)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })

@@ -14,7 +14,9 @@ import { saveFileForMultihashToFS } from '../../fileManager'
 import {
   gatherCNodeUserDataToDelete,
   clearFilePathsToDelete,
-  deleteAllCNodeUserDataFromDisk
+  deleteAllCNodeUserDataFromDisk,
+  computeFilePath,
+  computeFilePathInDir
 } from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
@@ -509,16 +511,28 @@ const handleSyncFromPrimary = async ({
       /*
        * Make list of all track Files to add after track creation
        *
-       * Files with trackBlockchainIds cannot be created until tracks have been created,
-       *    but tracks cannot be created until metadata and cover art files have been created.
+       * Files with trackBlockchainIds cannot be created until tracks have been created.
        */
 
       const startSaveFiles = getStartTime()
-      const trackFiles = fetchedCNodeUser.files.filter((file: any) =>
+
+      // Recompute storage paths to use this node's path prefix
+      const filesWithRecomputedStoragePaths = fetchedCNodeUser.files.map(
+        (file: any) => {
+          return {
+            ...file,
+            storagePath: file.dirMultihash
+              ? computeFilePathInDir(file.dirMultihash, file.multihash)
+              : computeFilePath(file.multihash)
+          }
+        }
+      )
+
+      const trackFiles = filesWithRecomputedStoragePaths.filter((file: any) =>
         models.File.TrackTypes.includes(file.type)
       )
-      const nonTrackFiles = fetchedCNodeUser.files.filter((file: any) =>
-        models.File.NonTrackTypes.includes(file.type)
+      const nonTrackFiles = filesWithRecomputedStoragePaths.filter(
+        (file: any) => models.File.NonTrackTypes.includes(file.type)
       )
       const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
