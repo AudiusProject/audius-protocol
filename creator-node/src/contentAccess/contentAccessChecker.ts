@@ -20,7 +20,8 @@ export async function checkContentAccess({
   if (!contentAccessHeaders) {
     return {
       doesUserHaveAccess: false,
-      error: 'MissingHeaders'
+      error: 'MissingHeaders',
+      shouldCache: false
     }
   }
 
@@ -29,7 +30,8 @@ export async function checkContentAccess({
   if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
     return {
       doesUserHaveAccess: false,
-      error: 'MissingHeaders'
+      error: 'MissingHeaders',
+      shouldCache: false
     }
   }
 
@@ -46,17 +48,22 @@ export async function checkContentAccess({
   if (!isRegisteredDN) {
     return {
       doesUserHaveAccess: false,
-      error: 'InvalidDiscoveryNode'
+      error: 'InvalidDiscoveryNode',
+      shouldCache: false
     }
   }
 
-  const { cid: copy320CID, timestamp: signedTimestamp } =
-    signedDataFromDiscoveryNode
+  const {
+    cid: copy320CID,
+    timestamp: signedTimestamp,
+    cache
+  } = signedDataFromDiscoveryNode
 
   if (copy320CID !== cid) {
     return {
       doesUserHaveAccess: false,
-      error: 'IncorrectCID'
+      error: 'IncorrectCID',
+      shouldCache: false
     }
   }
 
@@ -68,12 +75,14 @@ export async function checkContentAccess({
     logger.info(`Premium content signature for cid ${copy320CID} is too old.`)
     return {
       doesUserHaveAccess: false,
-      error: 'ExpiredTimestamp'
+      error: 'ExpiredTimestamp',
+      shouldCache: false
     }
   }
 
   return {
     doesUserHaveAccess: true,
-    error: null
+    error: null,
+    shouldCache: !!cache
   }
 }

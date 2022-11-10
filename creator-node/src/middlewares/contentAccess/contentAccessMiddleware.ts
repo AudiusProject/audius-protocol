@@ -47,13 +47,15 @@ export const contentAccessMiddleware = async (
     // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
     const logger = req.logger as Logger
 
-    const { doesUserHaveAccess, error } = await checkContentAccess({
-      cid,
-      contentAccessHeaders,
-      libs,
-      logger,
-      redis
-    })
+    const { doesUserHaveAccess, shouldCache, error } = await checkContentAccess(
+      {
+        cid,
+        contentAccessHeaders,
+        libs,
+        logger,
+        redis
+      }
+    )
     if (!doesUserHaveAccess) {
       switch (error) {
         case 'MissingHeaders':
@@ -95,14 +97,10 @@ export const contentAccessMiddleware = async (
       }
     }
 
-    // Set premium content track id and 'premium-ness' so that next middleware or
-    // request handler does not need to make trips to the database to get this info.
     // We need the info because if the content is premium, then we need to set
     // the cache-control response header to no-cache so that nginx does not cache it.
-    // req.premiumContent = {
-    //   trackId,
-    //   isPremium
-    // }
+    ;(req as any).shouldCache = shouldCache
+
     return next()
   } catch (e: any) {
     tracing.recordException(e)
