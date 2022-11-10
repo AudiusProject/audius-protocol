@@ -79,7 +79,7 @@ export async function getTmpTrackUploadArtifactsPath() {
   return dirPath
 }
 
-function _getParentDirPathForCid(cid: string) {
+function _getStorageLocationForCID(cid: string) {
   try {
     CID.isCID(new CID(cid))
   } catch (e: any) {
@@ -93,15 +93,21 @@ function _getParentDirPathForCid(cid: string) {
   // that can cause potential collisions if we're creating large amounts of subdirectories. A way to mitigate this is create one
   // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<cid>
   const directoryID = cid.slice(-4, -1)
-  const parentDirPath = path.join(getConfigStoragePath(), 'files', directoryID)
+  const storageLocationForCid = path.join(
+    getConfigStoragePath(),
+    'files',
+    directoryID
+  )
   // in order to easily dev against the older and newer paths, the line below is the legacy storage path
-  // const parentDirPath = getConfigStoragePath()
+  // const storageLocationForCid = getConfigStoragePath()
 
-  return parentDirPath
+  return storageLocationForCid
 }
 
 /**
- * Construct the path to a file or directory given a CID
+ * Construct the path to a file or directory given a CID.
+ * This function does not ensure the path returned exists on disk, so use it for read-only operations
+ * (like /ipfs retrieval) or tasks where a subsequent step will already ensure the path exists (like syncs).
  *
  * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
  * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
@@ -112,15 +118,16 @@ function _getParentDirPathForCid(cid: string) {
  * @param {String} cid file system destination, either filename or directory
  */
 export function computeFilePath(cid: string) {
-  const parentDirPath = _getParentDirPathForCid(cid)
+  const parentDirPath = _getStorageLocationForCID(cid)
   return path.join(parentDirPath, cid)
 }
 
 /**
+ * Use for operations where it's necessary to ensure that the path exists before using it.
  * @see computeFilePath - does the same thing but also performs the equivalent of 'mkdir -p'
  */
 export async function computeFilePathAndEnsureItExists(cid: string) {
-  const parentDirPath = _getParentDirPathForCid(cid)
+  const parentDirPath = _getStorageLocationForCID(cid)
 
   // create the subdirectories in parentDirHash if they don't exist
   await ensureDirPathExists(parentDirPath)
@@ -173,7 +180,9 @@ function _validateFileAndDir(dirName: string, fileName: string) {
 }
 
 /**
- * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
+ * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory.
+ * This function does not ensure the path returned exists on disk, so use it for read-only operations
+ * (like /ipfs retrieval) or tasks where a subsequent step will already ensure the path exists (like syncs).
  *
  * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
  * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
@@ -192,6 +201,7 @@ export async function computeFilePathInDir(dirName: string, fileName: string) {
 }
 
 /**
+ * Use for operations where it's necessary to ensure that the path exists before using it.
  * @see computeFilePathInDir - does the same thing but also performs the equivalent of 'mkdir -p'
  */
 export async function computeFilePathInDirAndEnsureItExists(
