@@ -9,6 +9,7 @@ from pathlib import Path
 
 import sqlalchemy as sa
 from alembic import op
+import os
 
 # revision identifiers, used by Alembic.
 revision = 'cda3f4983d1e'
@@ -16,8 +17,12 @@ down_revision = 'f91c041d1d8d'
 branch_labels = None
 depends_on = None
 
-def build_sql(up):
-    path = Path(__file__).parent.joinpath("../csvs/subscriptions.csv")
+def build_sql(up, env):
+    if env == "stage":
+        path = Path(__file__).parent.joinpath("../csvs/staging_subscriptions.csv")
+    elif env == "prod":
+        path = Path(__file__).parent.joinpath("../csvs/prod_subscriptions.csv")
+
     with open(path, 'r') as f:
         subscriber_ids = []
         user_ids = []
@@ -45,11 +50,17 @@ def build_sql(up):
     return (sql, params)
 
 def upgrade():
+    env = os.getenv("audius_discprov_env")
+    if env != "stage" and env != "prod":
+        pass
     connection = op.get_bind()
-    sql, params = build_sql(True)
+    sql, params = build_sql(True, env)
     connection.execute(sql, params)
 
 def downgrade():
+    env = os.getenv("audius_discprov_env")
+    if env != "stage" and env != "prod":
+        pass
     connection = op.get_bind()
-    sql, params = build_sql(False)
+    sql, params = build_sql(False, env)
     connection.execute(sql, params)
