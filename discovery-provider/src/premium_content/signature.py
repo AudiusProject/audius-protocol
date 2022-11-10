@@ -6,36 +6,21 @@ from src.api_helpers import generate_signature
 from src.premium_content.premium_content_types import PremiumContentType
 
 
-class PremiumContentSignatureData(TypedDict):
-    premium_content_id: Union[
-        int, str
-    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
-    premium_content_type: PremiumContentType
-    timestamp: int
-
-
 class PremiumContentSignatureArgs(TypedDict):
     id: Union[
         int, str
     ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
     type: PremiumContentType
+    is_premium: bool
 
 
-class AuthedPremiumContentSignatureData(TypedDict):
-    user_wallet: str
-    premium_content_id: Union[
-        int, str
-    ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
-    premium_content_type: PremiumContentType
-    timestamp: int
-
-
-class AuthedPremiumContentSignatureArgs(TypedDict):
+class PremiumContentSignatureArgsForUser(TypedDict):
     user_wallet: str
     id: Union[
         int, str
     ]  # because we sign track CID for premium tracks, but may sign integer ids for other premium content types
     type: PremiumContentType
+    is_premium: bool
 
 
 class PremiumContentSignature(TypedDict):
@@ -50,23 +35,27 @@ def _get_current_utc_timestamp_ms():
 def get_premium_content_signature(
     args: PremiumContentSignatureArgs,
 ) -> PremiumContentSignature:
-    data: PremiumContentSignatureData = {
+    data = {
         "premium_content_id": args["id"],
         "premium_content_type": args["type"],
         "timestamp": _get_current_utc_timestamp_ms(),
     }
+    if not args["is_premium"]:
+        data["cache"] = 1
     signature = generate_signature(data)
     return {"data": json.dumps(data), "signature": signature}
 
 
-def get_authed_premium_content_signature(
-    args: AuthedPremiumContentSignatureArgs,
+def get_premium_content_signature_for_user(
+    args: PremiumContentSignatureArgsForUser,
 ) -> PremiumContentSignature:
-    data: AuthedPremiumContentSignatureData = {
+    data = {
         "user_wallet": args["user_wallet"],
         "premium_content_id": args["id"],
         "premium_content_type": args["type"],
         "timestamp": _get_current_utc_timestamp_ms(),
     }
+    if not args["is_premium"]:
+        data["cache"] = 1
     signature = generate_signature(data)
     return {"data": json.dumps(data), "signature": signature}
