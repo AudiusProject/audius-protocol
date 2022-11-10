@@ -320,7 +320,7 @@ contract.only('Governance.sol', async (accounts) => {
     )
   })
 
-  it.skip('Initialize require statements', async function () {
+  it('Initialize require statements', async function () {
     const governance0 = await Governance.new({ from: proxyDeployerAddress })
     const newMaxInProgressProposals = 100
     const initializeArgumentTypesArray = ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'address']
@@ -1573,7 +1573,7 @@ contract.only('Governance.sol', async (accounts) => {
         )
       })
 
-      it.only('Fail to influence vote by restaking', async function () {
+      it('Fail to influence vote by restaking', async function () {
         // Initial votingPeriod = 10, executionDelay=10, decreaseStakeDelay=10
         // Update votingPeriod to be greater than decreaseStakeDelay to facilitate restaking manipulation of proposal
         const votingPeriodUpdate = 30
@@ -2903,7 +2903,7 @@ contract.only('Governance.sol', async (accounts) => {
       )
     })
 
-    it.only('Update voting period', async function () {
+    it('Update voting period', async function () {
       const currentVotingPeriod = await governance.getVotingPeriod()
       const newVotingPeriod = currentVotingPeriod.sub(_lib.toBN(9))
       assert.equal(
@@ -3345,15 +3345,17 @@ contract.only('Governance.sol', async (accounts) => {
     const govProxy = await AudiusAdminUpgradeabilityProxy.at(governance.address)
     const govLogicAddress = await govProxy.implementation.call({ from: proxyAdminAddress })
 
+    let currentVotingPeriodFromChain = (await governance.getVotingPeriod()).toNumber()
     // Submit and execute arbitrary proposals
     assert.equal(
-      await governance.getVotingPeriod(),
+      currentVotingPeriodFromChain,
       votingPeriod,
       "Incorrect voting period"
     )
     const proposerAddress = stakerAccount1
     const voterAddress = stakerAccount1
-    const newVotingPeriod = votingPeriod + 1
+    // Decrease voting period by 1 block
+    const newVotingPeriod = votingPeriod - 1
     const submitProposalTx0Receipt = await governance.submitProposal(
       governanceKey,
       callValue0,
@@ -3371,8 +3373,10 @@ contract.only('Governance.sol', async (accounts) => {
     await time.advanceBlockTo(proposal0StartBlock + votingPeriod + executionDelay)
     // Call evaluateProposalOutcome()
     await governance.evaluateProposalOutcome(proposalId0, { from: proposerAddress })
+
+    currentVotingPeriodFromChain = (await governance.getVotingPeriod()).toNumber()
     assert.equal(
-      await governance.getVotingPeriod(),
+      currentVotingPeriodFromChain,
       newVotingPeriod,
       "Incorrect voting period"
     )
