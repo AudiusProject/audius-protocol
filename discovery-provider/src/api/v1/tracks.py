@@ -1,5 +1,4 @@
 import json
-import logging  # pylint: disable=C0302
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -76,8 +75,6 @@ from src.utils.redis_metrics import record_metrics
 
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
-
-logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
 
@@ -448,9 +445,9 @@ class TrackStream(Resource):
         if not track["is_premium"]:
             signature = get_premium_content_signature(
                 {
-                    # todo: add encoding of track cid
-                    # "id": track["track_cid"],
                     "id": track["track_id"],
+                    # todo: use encoding of track cid
+                    # "id": track["track_cid"],
                     "type": "track",
                     "is_premium": False,
                 }
@@ -459,14 +456,12 @@ class TrackStream(Resource):
             # if the track is premium, make sure that the requesting user has access
             user_data = request_args.get("user_data", None)
             user_signature = request_args.get("user_signature", None)
-            logger.info(f"user_data is {user_data}, user_signature is {user_signature}")
             if not user_data:
                 abort_bad_request_param("user_data", ns)
             if not user_signature:
                 abort_bad_request_param("user_signature", ns)
 
             auther_user = get_authed_user(user_data, user_signature)
-            logger.info(f"auther_user is {auther_user}")
             if not auther_user:
                 abort_not_found("Could not find user.", ns)
 
@@ -474,19 +469,16 @@ class TrackStream(Resource):
                 "premium_content_signature", None
             )
             # check that authed user is the same as user for whom the premium content signature was signed
-            logger.info(f"premium_content_signature is {premium_content_signature}")
             if premium_content_signature:
-                premium_content_signature_obj = json.loads(premium_content_signature)
-                logger.info(
-                    f"premium_content_signature_obj is {premium_content_signature_obj}"
+                premium_content_signature_obj = json.loads(
+                    urllib.parse.unquote(premium_content_signature)
                 )
                 signature_data = json.loads(premium_content_signature_obj["data"])
-                logger.info(f"signature_data is {signature_data}")
                 if (
                     signature_data.get("user_wallet", False)
                     != auther_user["user_wallet"]
-                    # or signature_data.get("premium_content_id", False) != track["track_cid"]
                     or signature_data.get("premium_content_id", False) != decoded_id
+                    # or signature_data.get("premium_content_id", False) != track["track_cid"]
                     or signature_data.get("premium_content_type", False) != "track"
                 ):
                     abort_bad_request_param("premium_content_signature", ns)
@@ -497,25 +489,21 @@ class TrackStream(Resource):
                     premium_content_type="track",
                     premium_content_entity=track,
                 )
-                logger.info(f"access is {access}")
                 if not access["does_user_have_access"]:
                     abort_not_found("user does not have access to this track", ns)
 
             signature = get_premium_content_signature(
                 {
-                    # todo: add encoding of track cid
-                    # "id": track["track_cid"],
                     "id": track["track_id"],
+                    # todo: use encoding of track cid
+                    # "id": track["track_cid"],
                     "type": "track",
                     "is_premium": True,
                 }
             )
 
-        logger.info(f"signature is {signature}")
-        signature_param = urllib.parse.quote(json.dumps(signature))
-        logger.info(f"signature_param is {signature_param}")
-
         primary_node = creator_nodes[0]
+        signature_param = urllib.parse.quote(json.dumps(signature))
         # todo: pass track cid instead of track id in path param
         path = f"tracks/stream/{track_id}?signature={signature_param}"
         stream_url = urljoin(primary_node, path)
