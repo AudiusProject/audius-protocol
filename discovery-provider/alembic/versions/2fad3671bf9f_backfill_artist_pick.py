@@ -5,6 +5,7 @@ Revises: a8752810936c
 Create Date: 2022-10-27 02:14:19.935610
 
 """
+import os
 from pathlib import Path
 
 from alembic import op
@@ -19,8 +20,12 @@ down_revision = 'a8752810936c'
 branch_labels = None
 depends_on = None
 
-def build_sql(up):
-    path = Path(__file__).parent.joinpath("../csvs/user_pinned_track_ids.csv")
+def build_sql(up, env):
+    if env == "stage":
+        path = Path(__file__).parent.joinpath("../csvs/staging_pinned_track_ids.csv")
+    elif env == "prod":
+        path = Path(__file__).parent.joinpath("../csvs/prod_pinned_track_ids.csv")
+
     with open(path, 'r') as f:
         handles = []
         pinned_track_ids = []
@@ -49,11 +54,17 @@ def build_sql(up):
     return (sql, params)
 
 def upgrade():
+    env = os.getenv("audius_discprov_env")
+    if env != "stage" and env != "prod":
+        pass
     connection = op.get_bind()
-    sql, params = build_sql(True)
+    sql, params = build_sql(True, env)
     connection.execute(sql, params)
 
 def downgrade():
+    env = os.getenv("audius_discprov_env")
+    if env != "stage" and env != "prod":
+        pass
     connection = op.get_bind()
-    sql, params = build_sql(False)
+    sql, params = build_sql(False, env)
     connection.execute(sql, params)
