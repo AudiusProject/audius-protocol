@@ -5,8 +5,6 @@ import assert from 'assert'
 import { getApp } from './lib/app'
 import { checkContentAccess } from '../src/contentAccess/contentAccessChecker'
 
-const models = require('../src/models')
-
 describe('Test content access', function () {
   let server: any
   let libsMock: any
@@ -21,13 +19,11 @@ describe('Test content access', function () {
     '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
-  const trackBlockchainId = 1
   const signedDataFromDiscoveryNode = {
     cid: cid,
+    cache: true,
     timestamp: Date.now()
   }
-  const cnodeUserUUID = '2103c344-3843-11ed-a261-0242ac120002'
-  const fileUUID = 'f536b83e-3842-11ed-a261-0242ac120002'
 
   before(async () => {
     libsMock = getLibsMock()
@@ -54,24 +50,6 @@ describe('Test content access', function () {
   })
 
   describe('content access', () => {
-    beforeEach(async () => {
-      const transaction = await models.sequelize.transaction()
-      await createCNodeUser(transaction)
-      await createClockRecord(transaction)
-      await createFile(transaction)
-      await createTrack(transaction)
-      await transaction.commit()
-    })
-
-    afterEach(async () => {
-      const transaction = await models.sequelize.transaction()
-      await deleteTrack(transaction)
-      await deleteFile(transaction)
-      await deleteClockRecord(transaction)
-      await deleteCNodeUser(transaction)
-      await transaction.commit()
-    })
-
     it('fails when there are missing headers', async () => {
       const accessWithoutHeaders = await checkContentAccess({
         cid,
@@ -82,7 +60,8 @@ describe('Test content access', function () {
       })
       assert.deepStrictEqual(accessWithoutHeaders, {
         doesUserHaveAccess: false,
-        error: 'MissingHeaders'
+        error: 'MissingHeaders',
+        shouldCache: false
       })
 
       const accessWithMissingHeaders = await checkContentAccess({
@@ -94,7 +73,8 @@ describe('Test content access', function () {
       })
       assert.deepStrictEqual(accessWithMissingHeaders, {
         doesUserHaveAccess: false,
-        error: 'MissingHeaders'
+        error: 'MissingHeaders',
+        shouldCache: false
       })
     })
 
@@ -116,7 +96,60 @@ describe('Test content access', function () {
       })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: false,
-        error: 'InvalidDiscoveryNode'
+        error: 'InvalidDiscoveryNode',
+        shouldCache: false
+      })
+    })
+
+    it('failed when the cid does not match what is signed', async () => {
+      const signatureFromDiscoveryNode = generateSignature(
+        signedDataFromDiscoveryNode,
+        dummyDNPrivateKey
+      )
+      const contentAccessHeadersObj = {
+        signedDataFromDiscoveryNode,
+        signatureFromDiscoveryNode
+      }
+      const access = await checkContentAccess({
+        cid: 'incorrectCID',
+        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
+      assert.deepStrictEqual(access, {
+        doesUserHaveAccess: false,
+        error: 'IncorrectCID',
+        shouldCache: false
+      })
+    })
+
+    it('failed when the signed timestamp is expired', async () => {
+      const tenDays = 1_000 * 60 * 60 * 24 * 10
+      const expiredTimestampData = {
+        cid: cid,
+        cache: true,
+        timestamp: Date.now() - tenDays // ten days old
+      }
+      const signatureFromDiscoveryNode = generateSignature(
+        expiredTimestampData,
+        dummyDNPrivateKey
+      )
+      const contentAccessHeadersObj = {
+        signedDataFromDiscoveryNode: expiredTimestampData,
+        signatureFromDiscoveryNode
+      }
+      const access = await checkContentAccess({
+        cid,
+        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        libs: libsMock,
+        logger: loggerMock,
+        redis: redisMock
+      })
+      assert.deepStrictEqual(access, {
+        doesUserHaveAccess: false,
+        error: 'ExpiredTimestamp',
+        shouldCache: false
       })
     })
 
@@ -138,94 +171,9 @@ describe('Test content access', function () {
       })
       assert.deepStrictEqual(access, {
         doesUserHaveAccess: true,
-        error: null
+        error: null,
+        shouldCache: true
       })
     })
   })
-
-  async function createTrack(transaction: any) {
-    await models.Track.create(
-      {
-        cnodeUserUUID,
-        clock: 1,
-        blockchainId: trackBlockchainId,
-        metadataFileUUID: fileUUID,
-        metadataJSON: {}
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteTrack(transaction: any) {
-    await models.Track.destroy(
-      {
-        where: { blockchainId: trackBlockchainId }
-      },
-      { transaction }
-    )
-  }
-
-  async function createFile(transaction: any) {
-    await models.File.create(
-      {
-        fileUUID,
-        cnodeUserUUID,
-        multihash: cid,
-        storagePath: 'storagePath',
-        trackBlockchainId,
-        type: 'track',
-        clock: 1
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteFile(transaction: any) {
-    await models.File.destroy(
-      {
-        where: { multihash: cid }
-      },
-      { transaction }
-    )
-  }
-
-  async function createClockRecord(transaction: any) {
-    await models.ClockRecord.create(
-      {
-        cnodeUserUUID,
-        clock: 1,
-        sourceTable: 'File'
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteClockRecord(transaction: any) {
-    await models.ClockRecord.destroy(
-      {
-        where: { cnodeUserUUID }
-      },
-      { transaction }
-    )
-  }
-
-  async function createCNodeUser(transaction: any) {
-    await models.CNodeUser.create(
-      {
-        cnodeUserUUID,
-        walletPublicKey: 'wallet-public-key',
-        clock: 1
-      },
-      { transaction }
-    )
-  }
-
-  async function deleteCNodeUser(transaction: any) {
-    await models.CNodeUser.destroy(
-      {
-        where: { cnodeUserUUID }
-      },
-      { transaction }
-    )
-  }
 })
