@@ -41,7 +41,7 @@ export async function runShellCommand(
 }
 
 export async function execShellCommand(cmd: string, log = false) {
-  if (log) logger.debug(`calling execShellCommand: ${cmd}`)
+  if (log) logger.info(`calling execShellCommand: ${cmd}`)
   const { stdout, stderr } = await execute(`${cmd}`, {
     maxBuffer: 1024 * 1024 * 5
   }) // 5mb buffer

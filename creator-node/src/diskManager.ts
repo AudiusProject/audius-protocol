@@ -380,7 +380,8 @@ export async function listSubdirectoriesInFiles() {
     // ./nVU
     // `
     const stdout = await execShellCommand(
-      `cd ${fileStorageFilesDirPath}; find . -maxdepth 1`
+      `cd ${fileStorageFilesDirPath}; find . -maxdepth 1`,
+      true
     )
     // stdout is a string so split on newline and remove any empty strings
     // clean any . and ./ results since find can include these to reference relative paths
