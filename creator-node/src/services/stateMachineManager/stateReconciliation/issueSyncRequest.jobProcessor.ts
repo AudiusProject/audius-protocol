@@ -538,13 +538,14 @@ const _deprecatedAdditionalSyncIsRequired = async (
 
     // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
   } else {
-    await SecondarySyncHealthTracker.recordFailure(
+    outcome = 'failure_secondary_failed_to_progress'
+    await SecondarySyncHealthTracker.recordFailure({
       secondaryUrl,
       userWallet,
-      syncType
-    )
+      syncType,
+      outcome
+    })
     additionalSyncIsRequired = true
-    outcome = 'failure_secondary_failed_to_progress'
     logger.error(
       `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest. Prometheus result: ${outcome}`
     )
@@ -614,11 +615,12 @@ const _additionalSyncIsRequired = async (
   }
 
   if (!syncStatus.startsWith('success')) {
-    await SecondarySyncHealthTracker.recordFailure(
+    await SecondarySyncHealthTracker.recordFailure({
       targetNode,
       userWallet,
-      syncType
-    )
+      syncType,
+      outcome: syncStatus
+    })
   }
 
   return response
