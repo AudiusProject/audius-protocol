@@ -112,7 +112,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {Object} param
  * @param {Object} param.libs instance of audiusLibs
  * @param {string[]} param.targetGatewayContentRoutes list of CN endpoints with /ipfs/<cid>
- * @param {string[]} param.remainingContentNodeGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
+ * @param {string[]} param.nonTargetGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
  * @param {string} param.multihash the target cid
  * @param {string} param.path the path to save the cid to
  * @param {number} param.numRetries the number of max retries
@@ -121,8 +121,8 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {Object} param.logger
  */
 async function fetchFileFromNetworkAndWriteToDisk({
-  targetGatewayContentRoutes,
-  remainingContentNodeGatewayContentRoutes,
+  targetGatewayContentRoutes = [],
+  nonTargetGatewayContentRoutes = [],
   multihash,
   path,
   numRetries,
@@ -226,7 +226,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
   const attemptedStateFix = await getIfAttemptedStateFix(path)
   if (attemptedStateFix) return
 
-  for (const contentUrl of remainingContentNodeGatewayContentRoutes) {
+  for (const contentUrl of nonTargetGatewayContentRoutes) {
     decisionTree.recordStage({
       name: 'Fetching from non-replica set gateways from the rest of the network',
       data: { gateway: contentUrl }
@@ -368,7 +368,7 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
 
   decisionTree.recordStage({
     name: 'Wrote file to file system after fetching from target gateway',
-    data: { expectedStoragePath: path }
+    data: { storagePath: path }
   })
 
   const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
@@ -422,39 +422,86 @@ async function saveFileForMultihashToFS(
   })
 
   try {
-    // will be modified to directory compatible route later if directory
-    // TODO - don't concat url's by hand like this, use module like urljoin
-    // ..replace(/\/$/, "") removes trailing slashes
-
-    let targetGatewayContentRoutes = targetGateways.map((endpoint) => {
-      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
-      if (trackId) baseUrl += `?trackId=${trackId}`
-
-      return baseUrl
-    })
+    let actualStoragePath
+    let targetGatewayContentRoutes
+    let nonTargetGatewayContentRoutes
 
     const allContentNodes = await getAllRegisteredCNodes(logger)
     // Remove target gateways + this self endpoint from list
-    const remainingContentNodeGateways = allContentNodes.filter(
+    const nonTargetGateways = allContentNodes.filter(
       (c) =>
         !targetGateways.includes(c.endpoint) &&
         config.get('creatorNodeEndpoint') !== c.endpoint
     )
-    let remainingContentNodeGatewayContentRoutes =
-      remainingContentNodeGateways.map((endpoint) => {
+
+    // regex match to check if a directory or just a regular file
+    // if directory will have both outer and inner properties in match.groups
+    // else will have just outer
+    const dirCIDMatchObj =
+      DiskManager.extractCIDsFromFSPath(expectedStoragePath)
+
+    // if this is a directory, make it compatible with our dir cid gateway url
+    if (
+      dirCIDMatchObj &&
+      dirCIDMatchObj.isDir &&
+      dirCIDMatchObj.outer &&
+      fileNameForImage
+    ) {
+      // override gateway urls to make it compatible with directory given an endpoint
+      // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
+      // in the case of a directory, override the gatewayUrlsMapped array to look like
+      // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
+      // ..replace(/\/$/, "") removes trailing slashes
+      targetGatewayContentRoutes = targetGateways.map(
+        (endpoint) =>
+          `${endpoint.replace(/\/$/, '')}/ipfs/${
+            dirCIDMatchObj.outer
+          }/${fileNameForImage}`
+      )
+      nonTargetGatewayContentRoutes = nonTargetGateways.map(
+        (endpoint) =>
+          `${endpoint.replace(/\/$/, '')}/ipfs/${
+            dirCIDMatchObj.outer
+          }/${fileNameForImage}`
+      )
+      decisionTree.recordStage({
+        name: 'Updated gatewayUrlsMapped'
+      })
+
+      actualStoragePath = DiskManager.computeFilePathInDirAndEnsureItExists(
+        dirCIDMatchObj.outer,
+        multihash
+      )
+    } else {
+      // if it's not a directory, make it a regular gateway route
+      // TODO - don't concat url's by hand like this, use module like urljoin
+      // ..replace(/\/$/, "") removes trailing slashes
+
+      targetGatewayContentRoutes = targetGateways.map((endpoint) => {
         let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
         if (trackId) baseUrl += `?trackId=${trackId}`
 
         return baseUrl
       })
 
-    const parsedStoragePath = path.parse(expectedStoragePath).dir
+      nonTargetGatewayContentRoutes = nonTargetGateways.map((endpoint) => {
+        let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+        if (trackId) baseUrl += `?trackId=${trackId}`
+
+        return baseUrl
+      })
+
+      actualStoragePath =
+        DiskManager.computeFilePathAndEnsureItExists(multihash)
+    }
+
+    const parsedStoragePath = path.parse(actualStoragePath).dir
 
     decisionTree.recordStage({
       name: 'About to start running saveFileForMultihashToFS()',
       data: {
         multihash,
-        expectedStoragePath,
+        actualStoragePath,
         parsedStoragePath
       },
       log: true,
@@ -482,36 +529,6 @@ async function saveFileForMultihashToFS(
       )
     }
 
-    // regex match to check if a directory or just a regular file
-    // if directory will have both outer and inner properties in match.groups
-    // else will have just outer
-    const matchObj = DiskManager.extractCIDsFromFSPath(expectedStoragePath)
-
-    // if this is a directory, make it compatible with our dir cid gateway url
-    if (matchObj && matchObj.isDir && matchObj.outer && fileNameForImage) {
-      // override gateway urls to make it compatible with directory given an endpoint
-      // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
-      // in the case of a directory, override the gatewayUrlsMapped array to look like
-      // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
-      // ..replace(/\/$/, "") removes trailing slashes
-      targetGatewayContentRoutes = targetGateways.map(
-        (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            matchObj.outer
-          }/${fileNameForImage}`
-      )
-      remainingContentNodeGatewayContentRoutes =
-        remainingContentNodeGateways.map(
-          (endpoint) =>
-            `${endpoint.replace(/\/$/, '')}/ipfs/${
-              matchObj.outer
-            }/${fileNameForImage}`
-        )
-      decisionTree.recordStage({
-        name: 'Updated gatewayUrlsMapped'
-      })
-    }
-
     /**
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately
@@ -519,10 +536,10 @@ async function saveFileForMultihashToFS(
      *  - If file does not exist on user's replca set, try the network and write to disk if file exists
      */
 
-    if (await fs.pathExists(expectedStoragePath)) {
+    if (await fs.pathExists(actualStoragePath)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
-        data: { expectedStoragePath }
+        data: { actualStoragePath }
       })
 
       return
@@ -530,9 +547,9 @@ async function saveFileForMultihashToFS(
 
     await fetchFileFromNetworkAndWriteToDisk({
       targetGatewayContentRoutes,
-      remainingContentNodeGatewayContentRoutes,
+      nonTargetGatewayContentRoutes,
       multihash,
-      path: expectedStoragePath,
+      path: actualStoragePath,
       numRetries,
       logger,
       decisionTree,

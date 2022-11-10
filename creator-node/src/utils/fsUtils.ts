@@ -65,6 +65,13 @@ export async function getIfAttemptedStateFix(filePath: string) {
   return !firstTime
 }
 
+export async function deleteAttemptedStateFixes() {
+  // key is `attempted_fs_fixes:<today's date>`
+  // the date function just generates the ISOString and removes the timestamp component
+  const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
+  await redis.del(key)
+}
+
 /**
  * Ensure DB and disk records exist for dirCID and its contents
  * Return fileUUID for dir DB record
