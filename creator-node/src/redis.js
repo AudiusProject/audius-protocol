@@ -165,7 +165,37 @@ const deleteAllKeysMatchingPattern = async function (keyPattern) {
   })
 }
 
+/**
+ * Returns array of all keys in Redis matching pattern, using redis SCAN
+ * https://github.com/luin/ioredis#streamify-scanning
+ *
+ * @returns array | Error
+ */
+const getAllKeysMatchingPattern = async function (
+  pattern,
+  extraFilter = () => true
+) {
+  const stream = redisClient.scanStream({ match: pattern })
+
+  const keySet = new Set()
+  return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    stream.on('data', async (keys = []) => {
+      keys.filter(extraFilter).forEach((key) => {
+        keySet.add(key)
+      })
+    })
+    stream.on('end', () => {
+      resolve(Array.from(keySet).filter(Boolean))
+    })
+    stream.on('error', (e) => {
+      reject(e)
+    })
+  })
+}
+
 redisClient.deleteAllKeysMatchingPattern = deleteAllKeysMatchingPattern
+redisClient.getAllKeysMatchingPattern = getAllKeysMatchingPattern
 
 module.exports = redisClient
 module.exports.WalletWriteLock = WalletWriteLock
