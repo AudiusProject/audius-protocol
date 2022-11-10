@@ -79,8 +79,35 @@ export async function getTmpTrackUploadArtifactsPath() {
   return dirPath
 }
 
+function _getStorageLocationForCID(cid: string) {
+  try {
+    CID.isCID(new CID(cid))
+  } catch (e: any) {
+    tracing.recordException(e)
+    genericLogger.error(`CID invalid, cid=${cid}, error=${e.toString()}`)
+    throw new Error(`Please pass in a valid cid. Passed in ${cid} ${e.message}`)
+  }
+
+  // This is the directory path that file with cid will go into.
+  // The reason for nesting `files` inside `/file_storage` is because legacy nodes store files at the root of `/file_storage`, and
+  // that can cause potential collisions if we're creating large amounts of subdirectories. A way to mitigate this is create one
+  // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<cid>
+  const directoryID = cid.slice(-4, -1)
+  const storageLocationForCid = path.join(
+    getConfigStoragePath(),
+    'files',
+    directoryID
+  )
+  // in order to easily dev against the older and newer paths, the line below is the legacy storage path
+  // const storageLocationForCid = getConfigStoragePath()
+
+  return storageLocationForCid
+}
+
 /**
- * Construct the path to a file or directory given a CID
+ * Construct the path to a file or directory given a CID.
+ * This function does not ensure the path returned exists on disk, so use it for read-only operations
+ * (like /ipfs retrieval) or tasks where a subsequent step will already ensure the path exists (like syncs).
  *
  * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
  * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
@@ -90,30 +117,20 @@ export async function getTmpTrackUploadArtifactsPath() {
  *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
  * @param {String} cid file system destination, either filename or directory
  */
-export async function computeFilePath(cid: string, ensurePathExists = true) {
-  try {
-    CID.isCID(new CID(cid))
-  } catch (e: any) {
-    tracing.recordException(e)
-    genericLogger.error(`CID invalid, cid=${cid}, error=${e.toString()}`)
-    throw new Error(
-      `Please pass in a valid cid to computeFilePath. Passed in ${cid} ${e.message}`
-    )
-  }
+export function computeFilePath(cid: string) {
+  const storageLocationForCid = _getStorageLocationForCID(cid)
+  return path.join(storageLocationForCid, cid)
+}
 
-  // This is the directory path that file with cid will go into.
-  // The reason for nesting `files` inside `/file_storage` is because legacy nodes store files at the root of `/file_storage`, and
-  // that can cause potential collisions if we're creating large amounts of subdirectories. A way to mitigate this is create one
-  // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<cid>
-  const directoryID = cid.slice(-4, -1)
-  const parentDirPath = path.join(getConfigStoragePath(), 'files', directoryID)
-  // in order to easily dev against the older and newer paths, the line below is the legacy storage path
-  // const parentDirPath = getConfigStoragePath()
+/**
+ * Use for operations where it's necessary to ensure that the path exists before using it.
+ * @see computeFilePath - does the same thing but also performs the equivalent of 'mkdir -p'
+ */
+export async function computeFilePathAndEnsureItExists(cid: string) {
+  const parentDirPath = _getStorageLocationForCID(cid)
 
   // create the subdirectories in parentDirHash if they don't exist
-  if (ensurePathExists) {
-    await ensureDirPathExists(parentDirPath)
-  }
+  await ensureDirPathExists(parentDirPath)
 
   return path.join(parentDirPath, cid)
 }
@@ -141,17 +158,7 @@ export function isValidCID(cid: string) {
   }
 }
 
-/**
- * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
- *
- * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
- * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
- * Use `computeFilePath` if you just want to get to the path of a file or directory.
- *
- * @param {String} dirName directory name
- * @param {String} fileName file name
- */
-export async function computeFilePathInDir(dirName: string, fileName: string) {
+function _validateFileAndDir(dirName: string, fileName: string) {
   if (!dirName || !fileName) {
     genericLogger.error(
       `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
@@ -167,11 +174,43 @@ export async function computeFilePathInDir(dirName: string, fileName: string) {
       `CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`
     )
     throw new Error(
-      `Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
+      `Please pass in a valid cid for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
     )
   }
+}
 
-  const parentDirPath = await computeFilePath(dirName)
+/**
+ * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory.
+ * This function does not ensure the path returned exists on disk, so use it for read-only operations
+ * (like /ipfs retrieval) or tasks where a subsequent step will already ensure the path exists (like syncs).
+ *
+ * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
+ * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
+ * Use `computeFilePath` if you just want to get to the path of a file or directory.
+ *
+ * @param {String} dirName directory name
+ * @param {String} fileName file name
+ */
+export function computeFilePathInDir(dirName: string, fileName: string) {
+  _validateFileAndDir(dirName, fileName)
+
+  const parentDirPath = computeFilePath(dirName)
+  const absolutePath = path.join(parentDirPath, fileName)
+  genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
+  return absolutePath
+}
+
+/**
+ * Use for operations where it's necessary to ensure that the path exists before using it.
+ * @see computeFilePathInDir - does the same thing but also performs the equivalent of 'mkdir -p'
+ */
+export async function computeFilePathInDirAndEnsureItExists(
+  dirName: string,
+  fileName: string
+) {
+  _validateFileAndDir(dirName, fileName)
+
+  const parentDirPath = await computeFilePathAndEnsureItExists(dirName)
   const absolutePath = path.join(parentDirPath, fileName)
   genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
@@ -297,7 +336,7 @@ export async function gatherCNodeUserDataToDelete(
   const cnodeUser = await models.CNodeUser.findOne({
     where: { walletPublicKey }
   })
-  if (!cnodeUser) throw new Error('No cnodeUser found')
+  if (!cnodeUser) return 0 // User is already wiped if no db record exists
   const { cnodeUserUUID } = cnodeUser
   logger.info(
     `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
