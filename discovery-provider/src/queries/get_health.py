@@ -61,6 +61,10 @@ MONITORS = monitors.MONITORS
 
 number_of_cpus = os.cpu_count()
 
+# https://github.com/AudiusProject/audius-docker-compose/blob/ed352216dfa647426fcb85ff1a6cfc53b79b9348/audius-cli#L599
+auto_upgrade_enabled = os.system(
+    'crontab -l | grep "audius-cli upgrade" >/dev/null 2>&1') == 0 or False
+
 disc_prov_version = helpers.get_discovery_provider_version()
 
 openresty_public_key = helpers.get_openresty_public_key()
@@ -324,6 +328,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "blockhash": latest_indexed_block_hash,
         },
         "git": os.getenv("GIT_SHA"),
+        "auto_upgrade_enabled": auto_upgrade_enabled,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,

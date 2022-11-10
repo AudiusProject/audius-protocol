@@ -33,6 +33,7 @@ const healthCheck = async (
   transcodingQueueIsAvailable,
   getAsyncProcessingQueueJobs,
   numberOfCPUs,
+  autoUpgradeEnabled,
   randomBytesToSign = null
 ) => {
   // Location information
@@ -143,6 +144,7 @@ const healthCheck = async (
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
+    autoUpgradeEnabled: autoUpgradeEnabled,
     numberOfCPUs,
     totalMemory,
     storagePathSize,
