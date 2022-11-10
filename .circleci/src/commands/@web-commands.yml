@@ -151,4 +151,4 @@ web-deploy-sourcemaps-s3:
         at: ./
     - run:
         name: Deploy to S3
-        command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --delete --cache-control max-age=604800
+        command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
