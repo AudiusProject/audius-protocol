@@ -70,11 +70,7 @@ describe('Test DiskManager', function () {
     try {
       await DiskManager.computeFilePathAndEnsureItExists()
     } catch (e) {
-      assert.ok(
-        e.message.includes(
-          'Please pass in a valid cid to computeFilePathAndEnsureItExists'
-        )
-      )
+      assert.ok(e.message.includes('Please pass in a valid cid'))
     }
   })
 
@@ -82,11 +78,7 @@ describe('Test DiskManager', function () {
     try {
       await DiskManager.computeFilePathAndEnsureItExists('asd')
     } catch (e) {
-      assert.ok(
-        e.message.includes(
-          'Please pass in a valid cid to computeFilePathAndEnsureItExists'
-        )
-      )
+      assert.ok(e.message.includes('Please pass in a valid cid'))
     }
   })
 
@@ -94,11 +86,7 @@ describe('Test DiskManager', function () {
     try {
       await DiskManager.computeFilePathAndEnsureItExists('/file_storage/asdf')
     } catch (e) {
-      assert.ok(
-        e.message.includes(
-          'Please pass in a valid cid to computeFilePathAndEnsureItExists'
-        )
-      )
+      assert.ok(e.message.includes('Please pass in a valid cid'))
     }
   })
 
@@ -137,7 +125,7 @@ describe('Test DiskManager', function () {
     } catch (e) {
       assert.ok(
         e.message.includes(
-          'Please pass in a valid cid to computeFilePathInDirAndEnsureItExists for dirName and fileName'
+          'Please pass in a valid cid for dirName and fileName'
         )
       )
     }
