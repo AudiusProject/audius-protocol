@@ -37,10 +37,6 @@ const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const {
-  contentAccessMiddleware
-} = require('../middlewares/contentAccess/contentAccessMiddleware')
-
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
@@ -755,7 +751,7 @@ router.post(
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], contentAccessMiddleware, getCID)
+router.get(['/ipfs/:CID', '/content/:CID'], getCID)
 
 /**
  * Serve images hosted by content node.
