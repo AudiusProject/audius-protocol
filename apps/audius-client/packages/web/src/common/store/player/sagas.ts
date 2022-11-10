@@ -27,6 +27,8 @@ import {
   delay
 } from 'typed-redux-saga'
 
+import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
 import errorSagas from './errorSagas'
 const { getIsReachable } = reachabilitySelectors
 
@@ -59,6 +61,7 @@ const RECORD_LISTEN_INTERVAL = 1000
 let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
 
 export function* watchPlay() {
+  yield* waitForBackendAndAccount()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
