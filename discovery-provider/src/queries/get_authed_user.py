@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_authed_user(data: str, signature: str):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        user_wallet = recover_wallet(data, signature, strip_quotes=True)
+        user_wallet = recover_wallet(data, signature)
         logger.info(f"get_authed_user_id user_wallet is {user_wallet}")
         # todo: make sure user_wallet casing / checksum is correct
         result = (
