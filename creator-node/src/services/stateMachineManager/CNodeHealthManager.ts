@@ -81,14 +81,13 @@ async function getUnhealthyPeers(
 
 async function isNodeHealthy(node: string) {
   try {
-    const verboseHealthCheckResp =
-      await CNodeHealthManager._queryHealthCheck(node)
+    const healthCheckResp = await CNodeHealthManager._queryHealthCheck(node)
     // if node returns healthy: false consider that unhealthy just like non-200 response
-    const { healthy } = verboseHealthCheckResp
+    const { healthy } = healthCheckResp
     if (!healthy) {
       throw new Error(`Node health check returned healthy: false`)
     }
-    CNodeHealthManager.determinePeerHealth(verboseHealthCheckResp)
+    CNodeHealthManager.determinePeerHealth(healthCheckResp)
   } catch (e: any) {
     logger.error(`isNodeHealthy() peer=${node} is unhealthy: ${e.toString()}`)
     return false
