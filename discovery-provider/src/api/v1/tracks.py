@@ -464,6 +464,7 @@ class TrackStream(Resource):
                 # todo: add encoding of track cid
                 "id": track["track_cid"],
                 "type": "track",
+                "is_premium": track["is_premium"],
             }
         )
         signature_param = urllib.parse.quote(json.dumps(signature))
