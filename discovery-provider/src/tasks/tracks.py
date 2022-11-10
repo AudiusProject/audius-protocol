@@ -471,7 +471,6 @@ def is_valid_json_field(metadata, field):
 
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
-    logger.info(f"populate_track_record_metadata track_metadata is {track_metadata}")
     # track_record.track_cid = track_metadata["track_cid"]
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata.get("length", 0) or 0

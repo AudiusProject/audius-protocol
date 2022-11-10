@@ -118,7 +118,7 @@ def generate_signature(data):
 
 # Accepts raw data with timestamp key and relevant fields, converts data to hash, and recovers the wallet.
 # The 'strip_quotes' parameter is needed in case the data is a atring instead of an object.
-def recover_wallet(data, signature, strip_quotes=False):
+def recover_wallet(data, signature):
     json_dump = json.dumps(
         data,
         sort_keys=True,
@@ -126,8 +126,6 @@ def recover_wallet(data, signature, strip_quotes=False):
         separators=(",", ":"),
         cls=DateTimeEncoder,
     )
-    if strip_quotes:
-        json_dump = json_dump.strip('"')
 
     # generate hash for if data contains unicode chars
     to_recover_hash = Web3.keccak(text=json_dump).hex()
