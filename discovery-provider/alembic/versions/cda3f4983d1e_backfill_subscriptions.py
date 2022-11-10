@@ -5,11 +5,11 @@ Revises: f91c041d1d8d
 Create Date: 2022-11-09 21:23:20.095764
 
 """
+import os
 from pathlib import Path
 
 import sqlalchemy as sa
 from alembic import op
-import os
 
 # revision identifiers, used by Alembic.
 revision = 'cda3f4983d1e'
