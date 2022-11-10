@@ -1,7 +1,7 @@
 """add-track-cid
 
 Revision ID: 959f15b94094
-Revises: bead88b41a20
+Revises: f91c041d1d8d
 Create Date: 2022-11-08 00:39:38.797185
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "959f15b94094"
-down_revision = "bead88b41a20"
+down_revision = "f91c041d1d8d"
 branch_labels = None
 depends_on = None
 
