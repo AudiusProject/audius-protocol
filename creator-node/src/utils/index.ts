@@ -18,7 +18,6 @@ import {
   validateAssociatedWallets
 } from './validateAudiusUserMetadata'
 import {
-  findCIDInNetwork,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID
 } from './cidUtils'
@@ -41,7 +40,6 @@ export {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -61,7 +59,6 @@ module.exports = {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,

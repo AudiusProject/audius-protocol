@@ -384,9 +384,6 @@ describe('test fileManager', () => {
             }),
             verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
               return new Promise((resolve, reject) => resolve(true))
-            }),
-            findCIDInNetwork: sinon.stub().callsFake(() => {
-              return new Promise((resolve, reject) => resolve(true))
             })
           }
         }
@@ -445,9 +442,6 @@ describe('test fileManager', () => {
             }),
             verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
               return new Promise((resolve, reject) => resolve(true))
-            }),
-            findCIDInNetwork: sinon.stub().callsFake(() => {
-              return new Promise((resolve, reject) => resolve(false))
             })
           }
         }

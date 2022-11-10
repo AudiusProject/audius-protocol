@@ -12,6 +12,7 @@ const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const DecisionTree = require('./utils/decisionTree')
 const { asyncRetry } = require('./utils/asyncRetry')
+const { getAllRegisteredCNodes } = require('./services/ContentNodeInfoManager')
 
 const LibsUtils = audiusLibs.Utils
 
@@ -35,7 +36,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   )
 
   // Write file to disk by cid for future retrieval
-  const dstPath = await DiskManager.computeFilePath(cid)
+  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(cid)
   await fs.writeFile(dstPath, buffer)
 
   // verify that the contents of the file match the file's cid
@@ -79,7 +80,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
  */
 async function copyMultihashToFs(multihash, srcPath, logContext) {
   const logger = genericLogger.child(logContext)
-  const dstPath = await DiskManager.computeFilePath(multihash)
+  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(multihash)
 
   try {
     await fs.copyFile(srcPath, dstPath)
@@ -109,8 +110,8 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  *
  * @param {Object} param
  * @param {Object} param.libs instance of audiusLibs
- * @param {string[]} param.gatewayContentRoutes list of CN endpoints with /ipfs/<cid>
- * @param {string[]} param.targetGateways list of CN endpoints
+ * @param {string[]} param.targetGatewayContentRoutes list of CN endpoints with /ipfs/<cid>
+ * @param {string[]} param.remainingContentNodeGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
  * @param {string} param.multihash the target cid
  * @param {string} param.path the path to save the cid to
  * @param {number} param.numRetries the number of max retries
@@ -119,8 +120,8 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {Object} param.logger
  */
 async function fetchFileFromNetworkAndWriteToDisk({
-  gatewayContentRoutes,
-  targetGateways,
+  targetGatewayContentRoutes,
+  remainingContentNodeGatewayContentRoutes,
   multihash,
   path,
   numRetries,
@@ -134,7 +135,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
   })
 
   // Note - Requests are intentionally not parallel to minimize additional load on gateways
-  for (const contentUrl of gatewayContentRoutes) {
+  for (const contentUrl of targetGatewayContentRoutes) {
     decisionTree.recordStage({
       name: 'Fetching from target gateways',
       data: { targetGateway: contentUrl }
@@ -219,13 +220,94 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
   // If file is not found in replica set, check network (remaining registered nodes)
   try {
-    const found = await Utils.findCIDInNetwork(
-      path,
-      multihash,
-      logger,
-      /** trackId */ null,
-      /** excludeList */ targetGateways
-    )
+    // this is the replacement for the old findCIDInNetwork call
+    if (!config.get('findCIDInNetworkEnabled')) return false
+
+    const attemptedStateFix = await getIfAttemptedStateFix(filePath)
+    if (attemptedStateFix) return
+
+    for (const contentUrl of remainingContentNodeGatewayContentRoutes) {
+      decisionTree.recordStage({
+        name: 'Fetching from non-replica set gateways from the rest of the network',
+        data: { gateway: contentUrl }
+      })
+  
+      try {
+        await asyncRetry({
+          asyncFn: async (bail, num) => {
+            try {
+              await fetchFileFromTargetGatewayAndWriteToDisk({
+                contentUrl,
+                trackId,
+                multihash,
+                decisionTree,
+                path,
+                logger
+              })
+            } catch (e) {
+              /**
+               * Abort retries if fetch fails with 403, 401, or 400 status code
+               *
+               * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
+               */
+              if (
+                e.response?.status === 403 || // delist
+                e.response?.status === 401 || // unauth
+                e.response?.status === 400 // bad request
+              ) {
+                decisionTree.recordStage({
+                  name: 'Could not fetch content from target gateway',
+                  data: {
+                    statusCode: e.response.status,
+                    url: contentUrl
+                  }
+                })
+                bail(
+                  new Error(
+                    `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+                  )
+                )
+                return
+              }
+  
+              // Re-throw any other error to continue with retry logic
+              if (num === numRetries + 1) {
+                // Final error thrown
+                throw new Error(
+                  `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+                )
+              } else {
+                throw new Error(
+                  `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+                )
+              }
+            }
+          },
+          logger,
+          log: false,
+          options: {
+            retries: numRetries
+          }
+        })
+  
+        decisionTree.recordStage({
+          name: 'Successfully fetched CID from non-replica set gateway',
+          data: { gateway: contentUrl }
+        })
+  
+        // If successful, will reach this point in code. Return out of fn
+        return
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'Error - Could not retrieve file from non-replica set gateway',
+          data: {
+            url: contentUrl,
+            errorMsg: e.message,
+            multihash
+          }
+        })
+      }
+    }
 
     if (!found) {
       throw new Error(`Did not find multihash=${multihash} from network`)
@@ -356,7 +438,21 @@ async function saveFileForMultihashToFS(
     // TODO - don't concat url's by hand like this, use module like urljoin
     // ..replace(/\/$/, "") removes trailing slashes
 
-    let gatewayContentRoutes = targetGateways.map((endpoint) => {
+    let targetGatewayContentRoutes = targetGateways.map((endpoint) => {
+      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+      if (trackId) baseUrl += `?trackId=${trackId}`
+
+      return baseUrl
+    })
+
+    const allContentNodes = await getAllRegisteredCNodes(logger)
+    // Remove target gateways + this self endpoint from list
+    const remainingContentNodeGateways = allContentNodes.filter(
+      (c) =>
+        !targetGateways.includes(c.endpoint) &&
+        config.get('creatorNodeEndpoint') !== c.endpoint
+    )
+    let remainingContentNodeGatewayContentRoutes = remainingContentNodeGateways.map((endpoint) => {
       let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
       if (trackId) baseUrl += `?trackId=${trackId}`
 
@@ -409,7 +505,13 @@ async function saveFileForMultihashToFS(
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
       // ..replace(/\/$/, "") removes trailing slashes
-      gatewayContentRoutes = targetGateways.map(
+      targetGatewayContentRoutes = targetGateways.map(
+        (endpoint) =>
+          `${endpoint.replace(/\/$/, '')}/ipfs/${
+            matchObj.outer
+          }/${fileNameForImage}`
+      )
+      remainingContentNodeGatewayContentRoutes = remainingContentNodeGateways.map(
         (endpoint) =>
           `${endpoint.replace(/\/$/, '')}/ipfs/${
             matchObj.outer
@@ -437,8 +539,8 @@ async function saveFileForMultihashToFS(
     }
 
     await fetchFileFromNetworkAndWriteToDisk({
-      gatewayContentRoutes,
-      targetGateways,
+      targetGatewayContentRoutes,
+      remainingContentNodeGatewayContentRoutes,
       multihash,
       path: expectedStoragePath,
       numRetries,

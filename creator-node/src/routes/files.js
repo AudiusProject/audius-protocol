@@ -460,9 +460,15 @@ const getCID = async (req, res) => {
   const blockStartMs = Date.now()
   try {
     startMs = Date.now()
-    const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
-    if (!found) {
-      throw new Error('Not found in network')
+    const error = await saveFileForMultihashToFS(
+      libs,
+      req.logger,
+      CID,
+      storagePath,
+      gatewaysToTry
+    )
+    if (error) {
+      throw new Error('Not found in network: ${error.message}')
     }
     decisionTree.push({
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
@@ -544,8 +550,18 @@ const getDirCID = async (req, res) => {
   try {
     // CID is the file CID, parse it from the storagePath
     const CID = storagePath.split('/').slice(-1).join('')
-    const found = await findCIDInNetwork(storagePath, CID, req.logger)
-    if (!found) throw new Error(`CID=${CID} not found in network`)
+
+    const error = await saveFileForMultihashToFS(
+      libs,
+      req.logger,
+      CID,
+      storagePath,
+      gatewaysToTry,
+      filename 
+    )
+    if (error) {
+      throw new Error('Not found in network: ${error.message}')
+    }
 
     return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
@@ -891,6 +907,7 @@ router.post(
  * allow calls from cnodes with delegateWallets registered on chain
  * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
  * same as the /ipfs route
+ * @deprecated - Remove once all nodes stop calling as part of findCIDInNetwork, leaving in for backwards compatibility
  * @param req.query.filePath the fs path for the file. should be full path including leading /file_storage
  * @param req.query.delegateWallet the wallet address that signed this request
  * @param req.query.timestamp the timestamp when the request was made
