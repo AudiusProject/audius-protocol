@@ -1,12 +1,12 @@
 import type Logger from 'bunyan'
 import { Redis } from 'ioredis'
 
-export type contentSignatureData = {
+export type ContentSignatureData = {
   cid: string
   timestamp: number
 }
 
-export type contentAccessError =
+export type ContentAccessError =
   | 'MissingHeaders'
   | 'InvalidDiscoveryNode'
   | 'IncorrectCID'
@@ -24,5 +24,5 @@ export type CheckAccessResponse =
   | { doesUserHaveAccess: true; error: null }
   | {
       doesUserHaveAccess: false
-      error: contentAccessError
+      error: ContentAccessError
     }
