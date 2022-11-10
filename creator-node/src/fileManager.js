@@ -35,7 +35,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   )
 
   // Write file to disk by cid for future retrieval
-  const dstPath = await DiskManager.computeFilePath(cid)
+  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(cid)
   await fs.writeFile(dstPath, buffer)
 
   // verify that the contents of the file match the file's cid
@@ -79,7 +79,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
  */
 async function copyMultihashToFs(multihash, srcPath, logContext) {
   const logger = genericLogger.child(logContext)
-  const dstPath = await DiskManager.computeFilePath(multihash)
+  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(multihash)
 
   try {
     await fs.copyFile(srcPath, dstPath)

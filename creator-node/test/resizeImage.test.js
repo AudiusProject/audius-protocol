@@ -161,7 +161,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = await DiskManager.computeFilePath(DIR_CID_SQUARE)
+    const dirPath = await DiskManager.computeFilePathAndEnsureItExists(DIR_CID_SQUARE)
     assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_150, CID_480, CID_1000, CID_ORIGINAL])
@@ -221,7 +221,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = await DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
+    const dirPath = await DiskManager.computeFilePathAndEnsureItExists(DIR_CID_NOT_SQUARE)
     assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_640, CID_2000, CID_ORIGINAL])
