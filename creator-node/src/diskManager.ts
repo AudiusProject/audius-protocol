@@ -191,7 +191,7 @@ function _validateFileAndDir(dirName: string, fileName: string) {
  * @param {String} dirName directory name
  * @param {String} fileName file name
  */
-export async function computeFilePathInDir(dirName: string, fileName: string) {
+export function computeFilePathInDir(dirName: string, fileName: string) {
   _validateFileAndDir(dirName, fileName)
 
   const parentDirPath = computeFilePath(dirName)
