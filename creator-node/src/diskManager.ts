@@ -118,8 +118,8 @@ function _getStorageLocationForCID(cid: string) {
  * @param {String} cid file system destination, either filename or directory
  */
 export function computeFilePath(cid: string) {
-  const parentDirPath = _getStorageLocationForCID(cid)
-  return path.join(parentDirPath, cid)
+  const storageLocationForCid = _getStorageLocationForCID(cid)
+  return path.join(storageLocationForCid, cid)
 }
 
 /**
