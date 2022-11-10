@@ -33,9 +33,6 @@ from src.api.v1.helpers import (
     trending_parser_paginated,
 )
 from src.api.v1.models.users import user_model_full
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
 from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_authed_user import get_authed_user
 from src.queries.get_feed import get_feed
@@ -57,6 +54,7 @@ from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_stems_of import get_stems_of
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
+from src.queries.get_track_stream_signature import get_track_stream_signature
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
@@ -440,67 +438,18 @@ class TrackStream(Resource):
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
-        signature = None
-
-        if not track["is_premium"]:
-            signature = get_premium_content_signature(
-                {
-                    "id": track["track_id"],
-                    # todo: use encoding of track cid
-                    # "id": track["track_cid"],
-                    "type": "track",
-                    "is_premium": False,
-                }
-            )
-        else:
-            # if the track is premium, make sure that the requesting user has access
-            user_data = request_args.get("user_data", None)
-            user_signature = request_args.get("user_signature", None)
-            if not user_data:
-                abort_bad_request_param("user_data", ns)
-            if not user_signature:
-                abort_bad_request_param("user_signature", ns)
-
-            auther_user = get_authed_user(user_data, user_signature)
-            if not auther_user:
-                abort_not_found("Could not find user.", ns)
-
-            premium_content_signature = request_args.get(
-                "premium_content_signature", None
-            )
-            # check that authed user is the same as user for whom the premium content signature was signed
-            if premium_content_signature:
-                premium_content_signature_obj = json.loads(
-                    urllib.parse.unquote(premium_content_signature)
-                )
-                signature_data = json.loads(premium_content_signature_obj["data"])
-                if (
-                    signature_data.get("user_wallet", False)
-                    != auther_user["user_wallet"]
-                    or signature_data.get("premium_content_id", False) != decoded_id
-                    # or signature_data.get("premium_content_id", False) != track["track_cid"]
-                    or signature_data.get("premium_content_type", False) != "track"
-                ):
-                    abort_bad_request_param("premium_content_signature", ns)
-            else:
-                access = premium_content_access_checker.check_access(
-                    user_id=auther_user["user_id"],
-                    premium_content_id=decoded_id,
-                    premium_content_type="track",
-                    premium_content_entity=track,
-                )
-                if not access["does_user_have_access"]:
-                    abort_not_found("user does not have access to this track", ns)
-
-            signature = get_premium_content_signature(
-                {
-                    "id": track["track_id"],
-                    # todo: use encoding of track cid
-                    # "id": track["track_cid"],
-                    "type": "track",
-                    "is_premium": True,
-                }
-            )
+        signature = get_track_stream_signature(
+            {
+                "track": track,
+                "user_data": request_args.get("user_data", None),
+                "user_signature": request_args.get("user_signature", None),
+                "premium_content_signature": request_args.get(
+                    "premium_content_signature", None
+                ),
+            }
+        )
+        if not signature:
+            abort_not_found("User does not have access to this track.")
 
         primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
