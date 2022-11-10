@@ -7,10 +7,8 @@ Create Date: 2022-11-09 21:23:20.095764
 """
 from pathlib import Path
 
-from alembic import op
 import sqlalchemy as sa
-
-import time
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'cda3f4983d1e'
