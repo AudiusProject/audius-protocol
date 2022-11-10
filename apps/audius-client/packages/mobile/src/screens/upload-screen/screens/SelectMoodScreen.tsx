@@ -1,3 +1,4 @@
+import { useField } from 'formik'
 import { View, Image } from 'react-native'
 
 import IconMood from 'app/assets/images/iconMood.svg'
@@ -32,6 +33,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const SelectMoodScreen = () => {
   const styles = useStyles()
+  const [{ value, onChange }] = useField('mood')
 
   return (
     <ListSelectionScreen
@@ -47,6 +49,8 @@ export const SelectMoodScreen = () => {
       screenTitle={messages.screenTitle}
       icon={IconMood}
       searchText={messages.searchText}
+      value={value}
+      onChange={onChange('mood')}
     />
   )
 }

@@ -16,15 +16,9 @@ import {
   Button
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 export type ListSelectionData = { label: string; value: string }
-
-export type ListSelectionParams = {
-  onChange: (value: string) => void
-  value: string
-}
 
 export type ListSelectionProps = {
   screenTitle: string
@@ -32,6 +26,8 @@ export type ListSelectionProps = {
   searchText: string
   data: ListSelectionData[]
   renderItem: ListRenderItem<ListSelectionData>
+  onChange: (value: string) => void
+  value: string
 }
 
 const messages = {
@@ -80,10 +76,10 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     icon,
     searchText,
     renderItem: renderItemProp,
-    data
+    data,
+    onChange,
+    value: valueProp
   } = props
-  const { params } = useRoute<'ListSelection'>()
-  const { onChange, value: valueProp } = params
 
   const styles = useStyles()
 
