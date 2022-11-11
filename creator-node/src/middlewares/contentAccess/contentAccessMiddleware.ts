@@ -44,7 +44,6 @@ export const contentAccessMiddleware = async (
     const contentAccessHeaders = req.headers['x-premium-content'] as string
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs, redis } = serviceRegistry
-    // Need to set the type here as the compiler cannot tell what type it is from the serviceRegistry
     const logger = req.logger as Logger
 
     const { doesUserHaveAccess, shouldCache, error } = await checkContentAccess(
