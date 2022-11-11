@@ -1,6 +1,5 @@
 const models = require('../../models')
 const { bulkGetSubscribersFromDiscovery, shouldReadSubscribersFromDiscovery } = require('../utils')
-const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
 const getNotifType = (entityType) => {
