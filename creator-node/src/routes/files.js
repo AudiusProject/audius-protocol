@@ -540,11 +540,13 @@ const getDirCID = async (req, res) => {
     }
     storagePath = DiskManager.computeFilePathInDir(
       dirCID,
-      queryResults.filename
+      queryResults.multihash
     )
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
-    CID = queryResults.multihash
   }
+
+  // CID is the file CID, parse it from the storagePath
+  CID = storagePath.split('/').slice(-1).join('')
 
   // Attempt to stream file to client
   try {

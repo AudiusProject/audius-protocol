@@ -221,6 +221,8 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
   // If file is not found in replica set, check network (remaining registered nodes)
   // this is the replacement for the old findCIDInNetwork call
+  // short circuit calling the rest of the network if env var is not enabled or we've already
+  // checked the network today
   if (!config.get('findCIDInNetworkEnabled')) return false
 
   const attemptedStateFix = await getIfAttemptedStateFix(storageLocation)
