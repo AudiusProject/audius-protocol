@@ -1,18 +1,17 @@
 """store cid
 
 Revision ID: 6adee41cb531
-Revises: 03dbd1b775c5
+Revises: f91c041d1d8d
 Create Date: 2022-10-31 14:08:49.888394
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
-
 
 # revision identifiers, used by Alembic.
 revision = '6adee41cb531'
-down_revision = '03dbd1b775c5'
+down_revision = 'f91c041d1d8d'
 branch_labels = None
 depends_on = None
 
