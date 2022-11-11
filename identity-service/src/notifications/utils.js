@@ -123,7 +123,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
     const response = await axios.post('https://discoveryprovider3.staging.audius.co/v1/full/users/subscribers', { ids: ids })
 
     const userSubscribers = response.data.data
-    logger.info(`users/subscribers response ${JSON.stringify(response)}`)
     logger.info(`users/subscribers userSubscribers ${JSON.stringify(userSubscribers)}`)
 
     for (const entry in userSubscribers) {
