@@ -454,6 +454,8 @@ PODS:
     - React-Core
   - RNCPushNotificationIOS (1.10.1):
     - React-Core
+  - RNDateTimePicker (6.5.4):
+    - React-Core
   - RNFBAnalytics (14.5.1):
     - Firebase/Analytics (= 8.12.1)
     - React-Core
@@ -557,6 +559,7 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
+  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
@@ -710,6 +713,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-masked-view/masked-view"
   RNCPushNotificationIOS:
     :path: "../node_modules/@react-native-community/push-notification-ios"
+  RNDateTimePicker:
+    :path: "../node_modules/@react-native-community/datetimepicker"
   RNFBAnalytics:
     :path: "../node_modules/@react-native-firebase/analytics"
   RNFBApp:
@@ -818,6 +823,7 @@ SPEC CHECKSUMS:
   RNCClipboard: f49f3de56b40d0f4104680dabadc7a1f063f4fd4
   RNCMaskedView: 1f6cd0cb5e38ec01960e12fd8f95ecad809f8fbb
   RNCPushNotificationIOS: 089da3b657e1e3d464f38195fd2e3069608ef5af
+  RNDateTimePicker: 41bf71ec9c20cfe7762eb93b2c26ad2bdb4fc2e6
   RNFBAnalytics: 74cd9c60531ed33e5347b2dccafa172ae1a851a4
   RNFBApp: 5bae3002117e55f3c9aa0fb38175dd16c8046c90
   RNFBCrashlytics: 33615211c6c6c4039ae71849091f6ac38ab65aba

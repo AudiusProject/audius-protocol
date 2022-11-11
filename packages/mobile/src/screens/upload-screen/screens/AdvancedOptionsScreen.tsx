@@ -1,8 +1,10 @@
+import { View } from 'react-native'
+
 import IconIndent from 'app/assets/images/iconIndent.svg'
 import { makeStyles } from 'app/styles'
 
 import { UploadStackScreen } from '../UploadStackScreen'
-import { SubmenuList, TrackVisibilityField } from '../fields'
+import { ReleaseDateField, SubmenuList, TrackVisibilityField } from '../fields'
 
 const useStyles = makeStyles(({ spacing }) => ({
   content: {
@@ -24,9 +26,12 @@ export const AdvancedOptionsScreen = () => {
       bottomSection={null}
       variant='white'
     >
-      <SubmenuList style={styles.content}>
-        <TrackVisibilityField />
-      </SubmenuList>
+      <View style={styles.content}>
+        <SubmenuList>
+          <TrackVisibilityField />
+        </SubmenuList>
+        <ReleaseDateField />
+      </View>
     </UploadStackScreen>
   )
 }
