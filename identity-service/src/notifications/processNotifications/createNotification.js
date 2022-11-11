@@ -37,8 +37,10 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
   // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
   // from discovery for the initiators of create notifications.
   const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
+  logger.info(`processCreateNotifications: shouldReadSubscribersFromDiscovery: ${shouldReadSubscribersFromDiscovery}`)
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(notifications.map((notif) => notif.initiator))
+    logger.info(`processCreateNotifications: userIds: ${userIds}`)
     const userSubscribersMap = (userIds.length > 0 ? bulkGetSubscribersFromDiscovery(userIds) : new Map())
   }
 

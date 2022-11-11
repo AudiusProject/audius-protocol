@@ -100,24 +100,40 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
  * Queries the discovery provider and returns all subscribers for each user in
  * userIds.
  *
+ * @param {Set<number>} userIds to fetch subscribers for
  * @returns Map {userId: Array [subscriberIds]}
  */
 async function bulkGetSubscribersFromDiscovery(userIds) {
   const userSubscribersMap = new Map()
+  if (userIds.length == 0){
+    return userSubscribersMap
+  }
+
   try {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const notificationsFromDN = await discoveryProvider.getSubscribers(
-      userIds,
+    ids = [...userIds].map((id) => encodeHashId(id))
+    ids = JSON.stringify(ids)
+    logger.info(`getting subscribers from discovery for userIds ${ids}`)
+    const subscribersFromDN = await discoveryProvider.getSubscribers(
+      ids,
       timeout
     )
-    const userSubscribers = notificationsFromDN.data
+    logger.info(`users/subscribers response ${subscribersFromDN}`)
+
+    const userSubscribers = subscribersFromDN.data
     for (const entry in userSubscribers) {
-      userSubscribersMap[entry["user_id"]] = entry["subscriber_ids"]
+      encodedUserId = entry["user_id"]
+      encodedSubscriberIds = entry["subscriber_ids"]
+      userId = decodeHashId(encodedUserId)
+      subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
+      userSubscribersMap[userId] = subscriberIds
+      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds}`)
     }
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)
   }
+
   return userSubscribersMap
 }
 
