@@ -363,7 +363,7 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
           libs,
           logger,
           trackFile.multihash,
-          trackFile.storagePath,
+          trackFile.dirMultihash,
           gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
@@ -404,7 +404,7 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
+            nonTrackFile.dirMultihash,
             gatewaysToTry,
             nonTrackFile.fileName
           )
@@ -413,7 +413,7 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
+            nonTrackFile.dirMultihash,
             gatewaysToTry
           )
         }

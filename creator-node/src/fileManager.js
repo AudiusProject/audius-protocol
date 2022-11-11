@@ -412,8 +412,8 @@ async function saveFileForMultihashToFS(
   libs,
   logger,
   multihash,
-  expectedStoragePath,
-  targetGateways,
+  dirCID = null,
+  targetGateways = [],
   fileNameForImage = null,
   trackId = null,
   numRetries = 3
@@ -431,25 +431,16 @@ async function saveFileForMultihashToFS(
     const allContentNodes = (await getAllRegisteredCNodes(logger)).map(
       (gateway) => gateway.endpoint
     )
+
+    // const allContentNodes = ['https://audius-content-11.figment.io']
     // Remove target gateways + this self endpoint from list
     const nonTargetGateways = allContentNodes.filter(
       (c) =>
         !targetGateways.includes(c) && config.get('creatorNodeEndpoint') !== c
     )
 
-    // regex match to check if a directory or just a regular file
-    // if directory will have both outer and inner properties in match.groups
-    // else will have just outer
-    const dirCIDMatchObj =
-      DiskManager.extractCIDsFromFSPath(expectedStoragePath)
-
     // if this is a directory, make it compatible with our dir cid gateway url
-    if (
-      dirCIDMatchObj &&
-      dirCIDMatchObj.isDir &&
-      dirCIDMatchObj.outer &&
-      fileNameForImage
-    ) {
+    if (dirCID && fileNameForImage) {
       // override gateway urls to make it compatible with directory given an endpoint
       // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
       // in the case of a directory, override the gatewayUrlsMapped array to look like
@@ -457,15 +448,11 @@ async function saveFileForMultihashToFS(
       // ..replace(/\/$/, "") removes trailing slashes
       targetGatewayContentRoutes = targetGateways.map(
         (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            dirCIDMatchObj.outer
-          }/${fileNameForImage}`
+          `${endpoint.replace(/\/$/, '')}/ipfs/${dirCID}/${fileNameForImage}`
       )
       nonTargetGatewayContentRoutes = nonTargetGateways.map(
         (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            dirCIDMatchObj.outer
-          }/${fileNameForImage}`
+          `${endpoint.replace(/\/$/, '')}/ipfs/${dirCID}/${fileNameForImage}`
       )
       decisionTree.recordStage({
         name: 'Updated gatewayUrlsMapped'
@@ -473,7 +460,7 @@ async function saveFileForMultihashToFS(
 
       actualStoragePath =
         await DiskManager.computeFilePathInDirAndEnsureItExists(
-          dirCIDMatchObj.outer,
+          dirCID,
           multihash
         )
     } else {
@@ -499,6 +486,12 @@ async function saveFileForMultihashToFS(
         multihash
       )
     }
+
+    logger.debug(
+      'saveFileForMultihashFromFS gateways',
+      targetGatewayContentRoutes,
+      nonTargetGatewayContentRoutes
+    )
 
     const parsedStoragePath = path.parse(actualStoragePath).dir
 

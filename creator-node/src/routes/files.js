@@ -468,8 +468,8 @@ const getCID = async (req, res) => {
       libs,
       req.logger,
       CID,
-      storagePath,
-      [] // no replica set so it will scan the whole network
+      null /* dirCID */,
+      [] /* targetGateways */ // no replica set so it will scan the whole network
     )
     if (error) {
       throw new Error(`Not found in network: ${error.message}`)
@@ -517,8 +517,10 @@ const getDirCID = async (req, res) => {
   const cacheKey = getStoragePathQueryCacheKey(path)
 
   let storagePath = await redisClient.get(cacheKey)
+  let CID
+
   if (!storagePath) {
-    // Don't serve if not found in DB.
+    // We need to lookup the CID so we can correlate with the filename (eg original.jpg, 150x150.jpg)
     // Query for the file based on the dirCID and filename
     const queryResults = await models.File.findOne({
       where: {
@@ -536,8 +538,12 @@ const getDirCID = async (req, res) => {
         )
       )
     }
-    storagePath = queryResults.storagePath
+    storagePath = DiskManager.computeFilePathInDir(
+      dirCID,
+      queryResults.filename
+    )
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+    CID = queryResults.multihash
   }
 
   // Attempt to stream file to client
@@ -552,15 +558,12 @@ const getDirCID = async (req, res) => {
 
   // Attempt to find and stream CID from other content nodes in the network
   try {
-    // CID is the file CID, parse it from the storagePath
-    const CID = storagePath.split('/').slice(-1).join('')
-
     const error = await saveFileForMultihashToFS(
       libs,
       req.logger,
       CID,
-      storagePath,
-      [], // no replica set so it will scan the whole network
+      dirCID,
+      [] /* targetGateways */, // no replica set so it will scan the whole network
       filename
     )
     if (error) {

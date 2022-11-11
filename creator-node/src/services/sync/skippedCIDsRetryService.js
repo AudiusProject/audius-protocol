@@ -121,7 +121,7 @@ class SkippedCIDsRetryQueue {
         libs,
         logger,
         file.multihash,
-        file.storagePath,
+        file.dirMultihash,
         registeredGateways,
         file.fileName,
         file.trackBlockchainId

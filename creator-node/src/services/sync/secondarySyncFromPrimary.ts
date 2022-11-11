@@ -558,7 +558,7 @@ const handleSyncFromPrimary = async ({
               libs,
               logger,
               trackFile.multihash,
-              trackFile.storagePath,
+              trackFile.dirMultihash,
               gatewaysToTry,
               null,
               trackFile.trackBlockchainId
