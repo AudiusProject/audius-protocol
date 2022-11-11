@@ -30,7 +30,7 @@ import {
   computeLicense,
   computeLicenseVariables,
   getDescriptionForType
-} from 'utils/creativeCommonsUtil'
+} from 'utils/creativeCommons'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { moodMap } from 'utils/moods'
 

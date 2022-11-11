@@ -4,7 +4,13 @@ import IconIndent from 'app/assets/images/iconIndent.svg'
 import { makeStyles } from 'app/styles'
 
 import { UploadStackScreen } from '../UploadStackScreen'
-import { ReleaseDateField, SubmenuList, TrackVisibilityField } from '../fields'
+import {
+  IsrcField,
+  LicenseTypeField,
+  ReleaseDateField,
+  SubmenuList,
+  TrackVisibilityField
+} from '../fields'
 
 const useStyles = makeStyles(({ spacing }) => ({
   content: {
@@ -31,6 +37,10 @@ export const AdvancedOptionsScreen = () => {
           <TrackVisibilityField />
         </SubmenuList>
         <ReleaseDateField />
+        <SubmenuList>
+          <IsrcField />
+          <LicenseTypeField />
+        </SubmenuList>
       </View>
     </UploadStackScreen>
   )

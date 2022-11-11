@@ -127,12 +127,23 @@ export const CompleteTrackScreen = () => {
   const { metadata, file } = params
   const navigation = useNavigation<UploadParamList>()
 
-  const initialValues = metadata
+  const initialValues = {
+    ...metadata,
+    licenseType: {
+      allowAttribution: false,
+      commercialUse: false,
+      derivativeWorks: false
+    }
+  }
 
   const handleSubmit = useCallback(
     (values) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { licenseType, ...trackValues } = values
       navigation.push('UploadingTracks', {
-        tracks: [{ file, preview: null, metadata: { ...metadata, ...values } }]
+        tracks: [
+          { file, preview: null, metadata: { ...metadata, ...trackValues } }
+        ]
       })
     },
     [navigation, file, metadata]

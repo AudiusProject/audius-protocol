@@ -10,23 +10,23 @@ import { makeStyles } from 'app/styles'
 // Note, offset is the inner padding of the container div
 const offset = 3
 
-export type Option = {
-  key: string
+export type Option<Value> = {
+  key: Value
   text: string
 }
 
-export type SegmentedControlProps = {
+export type SegmentedControlProps<Value> = {
   // The options to display for the tab slider
-  options: Array<Option>
+  options: Array<Option<Value>>
 
   // Key of selected option
-  selected?: string
+  selected?: Value
 
   // Key of initially selected option
-  defaultSelected?: string
+  defaultSelected?: Value
 
   // Callback fired when new option is selected
-  onSelectOption: (key: string) => void
+  onSelectOption: (key: Value) => void
 
   fullWidth?: boolean
 } & StylesProps<{
@@ -99,7 +99,9 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   }
 }))
 
-export const SegmentedControl = (props: SegmentedControlProps) => {
+export const SegmentedControl = <Value,>(
+  props: SegmentedControlProps<Value>
+) => {
   const {
     options,
     selected: selectedProp,
@@ -117,7 +119,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
   const [selected, setSelected] = useState(defaultSelected)
   const selectedOption = selectedProp ?? selected
 
-  const handleSelectOption = (option: string) => {
+  const handleSelectOption = (option: Value) => {
     light()
     onSelectOption?.(option)
     setSelected(option)
@@ -195,7 +197,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
           selectedOption === options[index + 1].key
 
         return (
-          <Fragment key={option.key}>
+          <Fragment key={option.text}>
             <Pressable
               onLayout={setOptionWidth(index)}
               style={[

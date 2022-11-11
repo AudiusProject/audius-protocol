@@ -117,6 +117,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       value,
       onFocus,
       onBlur,
+      placeholder,
       ...other
     } = props
     const { autoFocus } = other
@@ -242,6 +243,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             value={value}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            placeholder={label && !isFocused ? undefined : placeholder}
             {...other}
           />
           {clearable ? (

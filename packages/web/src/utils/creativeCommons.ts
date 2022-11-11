@@ -1,3 +1,5 @@
+import { Nullable } from '@audius/common'
+
 export const ALL_RIGHTS_RESERVED_TYPE = 'All rights reserved'
 const ALL_RIGHTS_RESERVED_DESC = ''
 const ALL_RIGHTS_RESERVED = {
@@ -51,16 +53,15 @@ const ALL_LICENSES = {
   [BY_SA_TYPE]: BY_SA_DESC
 }
 
+type License = keyof typeof ALL_LICENSES
+
 /**
  * Computes the Create Commons License for provided attribution, commercial use, and derivative works flags.
- * @param {bool} allowAttribution
- * @param {bool} commercialUse
- * @param {?bool} derivativeWorks can be unset.
  */
 export const computeLicense = (
-  allowAttribution,
-  commercialUse,
-  derivativeWorks = null
+  allowAttribution: boolean,
+  commercialUse: boolean,
+  derivativeWorks: Nullable<boolean> = null
 ) => {
   if (allowAttribution && !commercialUse && derivativeWorks === null)
     return BY_NC
@@ -74,7 +75,11 @@ export const computeLicense = (
   return ALL_RIGHTS_RESERVED
 }
 
-const variables = (allowAttribution, commercialUse, derivativeWorks) => ({
+const variables = (
+  allowAttribution: Nullable<boolean>,
+  commercialUse: Nullable<boolean>,
+  derivativeWorks: Nullable<boolean>
+) => ({
   allowAttribution,
   commercialUse,
   derivativeWorks
@@ -82,10 +87,8 @@ const variables = (allowAttribution, commercialUse, derivativeWorks) => ({
 
 /**
  * Computes the Creative Commons license variables from a license type.
- * @param {string} licenseType
- * @return {object} {allowAttribution: bool, commercialUse: bool, derivativeWorks: bool}
  */
-export const computeLicenseVariables = (licenseType) => {
+export const computeLicenseVariables = (licenseType: License) => {
   switch (licenseType) {
     case BY_NC_TYPE:
       return variables(true, false, null)
@@ -106,7 +109,7 @@ export const computeLicenseVariables = (licenseType) => {
   }
 }
 
-export const getDescriptionForType = (licenseType) => {
+export const getDescriptionForType = (licenseType: License) => {
   return licenseType in ALL_LICENSES
     ? ALL_LICENSES[licenseType]
     : ALL_RIGHTS_RESERVED_DESC
