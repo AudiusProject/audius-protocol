@@ -219,6 +219,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     url?: string
     corners?: 'rounded' | 'pill'
     title: ReactNode
+    pressScale?: number
   }
 
 export const Button = (props: ButtonProps) => {
@@ -241,6 +242,7 @@ export const Button = (props: ButtonProps) => {
     url,
     corners = 'rounded',
     disabled,
+    pressScale = 0.97,
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
@@ -254,7 +256,7 @@ export const Button = (props: ButtonProps) => {
     scale,
     handlePressIn: handlePressInScale,
     handlePressOut: handlePressOutScale
-  } = usePressScaleAnimation(0.97, false)
+  } = usePressScaleAnimation(pressScale, false)
 
   const { primaryDark1, neutralLight10, neutralLight7, accentRedDark1 } =
     useThemeColors()
