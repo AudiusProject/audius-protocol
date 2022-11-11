@@ -143,6 +143,7 @@ def delete_playlist(params: ManageEntityParameters):
     deleted_playlist = copy_record(
         existing_playlist, params.block_number, params.event_blockhash, params.txhash
     )
+    deleted_playlist.updated_at = params.block_datetime
     deleted_playlist.is_delete = True
 
     params.new_records[EntityType.PLAYLIST][params.entity_id].append(deleted_playlist)
