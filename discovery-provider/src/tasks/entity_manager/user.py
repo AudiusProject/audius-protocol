@@ -198,6 +198,7 @@ def verify_user(params: ManageEntityParameters):
 
     user_record = validate_user_record(user_record)
     user_record.is_verified = True
+    user_record.updated_at = params.block_datetime
     params.add_user_record(user_id, user_record)
 
     return user_record
