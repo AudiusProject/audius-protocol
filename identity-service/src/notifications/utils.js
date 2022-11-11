@@ -7,7 +7,7 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 const audiusLibsWrapper = require('../audiusLibsInstance')
-const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 // default configs
 const startBlock = config.get('notificationStartBlock')
