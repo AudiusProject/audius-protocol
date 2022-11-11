@@ -113,7 +113,7 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
   try {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    ids = JSON.stringify([...userIds].map((id) => encodeHashId(id)))
+    const ids = JSON.stringify([...userIds].map((id) => encodeHashId(id)))
     logger.info(`getting subscribers from discovery for userIds ${ids}`)
     const subscribersFromDN = await discoveryProvider.getSubscribers(
       ids,
