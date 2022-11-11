@@ -10,14 +10,6 @@ logger = logging.getLogger(__name__)
 
 ns = Namespace("cid_data", description="Metadata related operations")
 
-# metadatas_response = make_response(
-#     "metadata_response", ns, fields.List(fields.Nested(metadata_model))
-# )
-# full_metadatas_response = make_full_response(
-#     "full_metadata_response", full_ns, fields.List(fields.Nested(full_metadata_model))
-# )
-# @ns.marshal_with(metadatas_response)
-
 
 def get_data(cid: str):
     """Returns a single metadata, or None"""
