@@ -291,7 +291,10 @@ export const TracksTable = ({
               className={cn(styles.tableActionButton, {
                 [styles.active]: track.has_current_user_reposted
               })}
-              onClick={() => onClickRepost?.(track)}
+              onClick={(e) => {
+                onClickRepost?.(track)
+                e.stopPropagation()
+              }}
               reposted={track.has_current_user_reposted}
             />
           </div>
