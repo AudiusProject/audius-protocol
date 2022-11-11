@@ -1,5 +1,8 @@
 const models = require('../../models')
-const { bulkGetSubscribersFromDiscovery, shouldReadSubscribersFromDiscovery } = require('../utils')
+const {
+  bulkGetSubscribersFromDiscovery,
+  shouldReadSubscribersFromDiscovery
+} = require('../utils')
 const { logger } = require('../../logging')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
@@ -38,11 +41,19 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
   // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
   // from discovery for the initiators of create notifications.
   const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
-  logger.info(`processCreateNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`)
+
+  logger.info(
+    `processCreateNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`
+  )
+  let userSubscribersMap = new Map()
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(notifications.map((notif) => notif.initiator))
-    logger.info(`processCreateNotifications: userIds: ${JSON.stringify([...userIds])}`)
-    const userSubscribersMap = (userIds.length > 0 ? bulkGetSubscribersFromDiscovery(userIds) : new Map())
+    logger.info(
+      `processCreateNotifications: userIds: ${JSON.stringify([...userIds])}, size: ${userIds.size}`
+    )
+    if (userIds.size > 0) {
+      userSubscribersMap = bulkGetSubscribersFromDiscovery(userIds)
+    }
   }
 
   for (const notification of notifications) {
@@ -58,10 +69,8 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     )
 
     // Notifications go to all users subscribing to this content uploader
-    let subscribers = []
-    if (readSubscribersFromDiscovery) {
-      subscribers = userSubscribersMap.get(notification.initiator) || []
-    } else {
+    let subscribers = userSubscribersMap.get(notification.initiator) || []
+    if (!readSubscribersFromDiscovery) {
       // Query user IDs from subscriptions table
       subscribers = await models.Subscription.findAll({
         where: {
