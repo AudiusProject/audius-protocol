@@ -250,13 +250,15 @@ def get_nft_gated_premium_track_signatures(
         )
         eth_nft_gated_tracks = list(
             filter(
-                lambda track: track["nft_collection"]["chain"] == "eth",
+                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                == "eth",
                 nft_gated_tracks,
             )
         )
         sol_nft_gated_tracks = list(
             filter(
-                lambda track: track["nft_collection"]["chain"] == "sol",
+                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                == "sol",
                 nft_gated_tracks,
             )
         )

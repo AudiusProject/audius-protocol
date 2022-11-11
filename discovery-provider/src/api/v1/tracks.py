@@ -447,11 +447,13 @@ class TrackStream(Resource):
             }
         )
         if not signature:
-            abort_not_found("User does not have access to this track.")
+            abort_not_found(track_id, ns)
 
         primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
         # todo: pass track cid instead of track id in path param
+        # track_cid = track["track_cid"]
+        # path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
         path = f"tracks/stream/{track_id}?signature={signature_param}"
         stream_url = urljoin(primary_node, path)
 

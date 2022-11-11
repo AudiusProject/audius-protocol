@@ -1048,6 +1048,7 @@ describe('test ContentBlacklist', function () {
     )
 
     const {
+      transcodedTrackCID,
       transcodedTrackUUID,
       track_segments: trackSegments,
       source_file: sourceFile
@@ -1057,6 +1058,7 @@ describe('test ContentBlacklist', function () {
     const trackMetadata = {
       test: 'field1',
       owner_id: userId,
+      track_cid: transcodedTrackCID,
       track_segments: trackSegments
     }
     const {
