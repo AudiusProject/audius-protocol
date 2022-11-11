@@ -106,6 +106,7 @@ def get_handle(params: ManageEntityParameters):
 def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict):
     handle = get_handle(params)
     populate_track_record_metadata(track, metadata, handle)
+    track.updated_at = params.block_datetime
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
@@ -187,6 +188,7 @@ def delete_track(params: ManageEntityParameters):
     deleted_track = copy_track_record(
         existing_track, params.block_number, params.event_blockhash, params.txhash
     )
+    deleted_track.updated_at = params.block_datetime
     deleted_track.is_delete = True
     deleted_track.stem_of = null()
     deleted_track.remix_of = null()

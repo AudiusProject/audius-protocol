@@ -174,6 +174,7 @@ def update_user(params: ManageEntityParameters):
         params.web3,
         params.challenge_bus,
     )
+    user_record.updated_at = params.block_datetime
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
