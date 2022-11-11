@@ -1,5 +1,6 @@
 const models = require('../../models')
 const { bulkGetSubscribersFromDiscovery, shouldReadSubscribersFromDiscovery } = require('../utils')
+const { logger } = require('../../logging')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
 const getNotifType = (entityType) => {
@@ -40,7 +41,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
   logger.info(`processCreateNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`)
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(notifications.map((notif) => notif.initiator))
-    logger.info(`processCreateNotifications: userIds: ${userIds}`)
+    logger.info(`processCreateNotifications: userIds: ${JSON.stringify([...userIds])}`)
     const userSubscribersMap = (userIds.length > 0 ? bulkGetSubscribersFromDiscovery(userIds) : new Map())
   }
 

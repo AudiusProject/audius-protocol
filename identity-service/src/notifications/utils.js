@@ -120,6 +120,8 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       timeout
     )
     logger.info(`users/subscribers response ${subscribersFromDN}`)
+    logger.info(`users/subscribers response data ${subscribersFromDN.data}`)
+    logger.info(`users/subscribers response data data ${subscribersFromDN.data.data}`)
 
     const userSubscribers = subscribersFromDN.data
     for (const entry in userSubscribers) {

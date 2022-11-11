@@ -56,7 +56,7 @@ async function formatNotifications(notifications, notificationSettings, tx, opti
       }
       return filtered
     }, []))
-    logger.info(`formatNotifications: userIds: ${userIds}`)
+    logger.info(`formatNotifications: userIds: ${JSON.stringify([...userIds])}`)
     const userSubscribersMap = (userIds.length > 0 ? bulkGetSubscribersFromDiscovery(userIds) : new Map())
   }
 
