@@ -96,6 +96,39 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
 }
 
 /**
+ * Queries the discovery provider and returns all subscribers for each user in
+ * userIds.
+ *
+ * @returns Map {userId: Array [subscriberIds]}
+ */
+async function bulkGetSubscribersFromDiscovery(userIds) {
+  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+  const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
+  const notificationsFromDN = await discoveryProvider.getSubscribers(
+    userIds,
+    timeout
+  )
+  const userSubscribers = notificationsFromDN.data
+  const userSubscribersMap = new Map()
+  for (const entry in userSubscribers) {
+    userSubscribersMap[entry["user_id"]] = entry["subscriber_ids"]
+  }
+  return userSubscribersMap
+}
+
+/** Checks whether to retrieve subscribers from discovery DB using
+  * the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag */
+const shouldReadSubscribersFromDiscovery = (optimizelyClient) => {
+  if (!optimizelyClient) {
+    return false
+  }
+  return getFeatureFlag(
+    optimizelyClient,
+    FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED
+  )
+}
+
+/**
  * For the n most recently listened to tracks, return the all time listen counts for those tracks
  * where n is `trackListenMilestonePollCount
  *
@@ -280,6 +313,8 @@ module.exports = {
   updateBlockchainIds,
   calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
+  bulkGetSubscribersFromDiscovery,
+  shouldReadSubscribersFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
   shouldNotifyUser,

@@ -109,7 +109,7 @@ async function sendNotifications(
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format
   const { notifications: formattedNotifications, users } =
-    await formatNotifications(notifications, userNotificationSettings, tx)
+    await formatNotifications(notifications, userNotificationSettings, tx, optimizelyClient)
 
   // Get the metadata for the notifications - users/tracks/playlists from DP that are in the notification
   const metadata = await fetchNotificationMetadata(
