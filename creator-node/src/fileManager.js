@@ -428,12 +428,13 @@ async function saveFileForMultihashToFS(
     let targetGatewayContentRoutes
     let nonTargetGatewayContentRoutes
 
-    const allContentNodes = await getAllRegisteredCNodes(logger)
+    const allContentNodes = (await getAllRegisteredCNodes(logger)).map(
+      (gateway) => gateway.endpoint
+    )
     // Remove target gateways + this self endpoint from list
     const nonTargetGateways = allContentNodes.filter(
       (c) =>
-        !targetGateways.includes(c.endpoint) &&
-        config.get('creatorNodeEndpoint') !== c.endpoint
+        !targetGateways.includes(c) && config.get('creatorNodeEndpoint') !== c
     )
 
     // regex match to check if a directory or just a regular file
