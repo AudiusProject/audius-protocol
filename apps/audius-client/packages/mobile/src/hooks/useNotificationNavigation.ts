@@ -9,7 +9,11 @@ import type {
   FavoritePushNotification,
   FollowNotification,
   FollowPushNotification,
+  MilestoneFavoritePushNotification,
+  MilestoneFollowPushNotification,
+  MilestoneListenPushNotification,
   MilestoneNotification,
+  MilestoneRepostPushNotification,
   ReactionNotification,
   ReactionPushNotification,
   RemixCosignNotification,
@@ -36,7 +40,8 @@ import {
   tippingActions,
   Achievement,
   Entity,
-  NotificationType
+  NotificationType,
+  PushNotificationType
 } from '@audius/common'
 import type { AppState } from 'audius-client/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
@@ -79,14 +84,70 @@ export const useNotificationNavigation = () => {
             count: userIds.length
           })
         } else if (firstUserId) {
-          navigation.push('Profile', { id: firstUserId })
+          navigation.navigate('Profile', { id: firstUserId })
         }
       } else {
         // TODO: Need to handle the payload from identity when there are multiple users
-        navigation.push('Profile', { id: notification.initiator })
+        navigation.navigate('Profile', { id: notification.initiator })
       }
     },
     [dispatch, navigation]
+  )
+
+  const milestoneHandler = useCallback(
+    (
+      notification:
+        | MilestoneNotification
+        | MilestoneFollowPushNotification
+        | MilestoneListenPushNotification
+        | MilestoneFavoritePushNotification
+        | MilestoneRepostPushNotification
+    ) => {
+      if (notification.type === NotificationType.Milestone) {
+        if (notification.achievement === Achievement.Followers) {
+          navigation.navigate('Profile', { id: notification.entityId })
+        } else {
+          navigation.navigate(
+            notification.entityType === Entity.Track ? 'Track' : 'Collection',
+            { id: notification.entityId }
+          )
+        }
+      } else if (notification.type === PushNotificationType.MilestoneFollow) {
+        navigation.navigate('Profile', { id: notification.initiator })
+      } else {
+        navigation.navigate(
+          notification.actions[0].actionEntityType === Entity.Track
+            ? 'Track'
+            : 'Collection',
+          { id: notification.entityId }
+        )
+      }
+    },
+    [navigation]
+  )
+
+  const profileHandler = useCallback(
+    (
+      notification:
+        | ReactionNotification
+        | ReactionPushNotification
+        | SupporterRankUpNotification
+        | SupporterRankUpPushNotification
+        | SupportingRankUpNotification
+        | SupportingRankUpPushNotification
+        | TipReceiveNotification
+        | TipReceivePushNotification
+        | TipSendNotification
+        | TipSendPushNotification
+    ) => {
+      navigation.navigate('Profile', {
+        id:
+          'entityId' in notification
+            ? notification.entityId
+            : notification.initiator
+      })
+    },
+    [navigation]
   )
 
   const notificationTypeHandlerMap = useMemo(
@@ -113,33 +174,17 @@ export const useNotificationNavigation = () => {
       ) => {
         navigation.navigate('AudioScreen')
       },
-      [NotificationType.Favorite]: (notification: FavoriteNotification) => {
-        socialActionHandler(notification)
-      },
-      [NotificationType.Follow]: (notification: FollowNotification) => {
-        socialActionHandler(notification)
-      },
-      [NotificationType.Milestone]: (notification: MilestoneNotification) => {
-        // TODO: Need to handle the payload from identity
-        if (notification.achievement === Achievement.Followers) {
-          navigation.navigate('Profile', { id: notification.entityId })
-        } else {
-          navigation.navigate(
-            notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityId }
-          )
-        }
-      },
-      [NotificationType.Reaction]: (
-        notification: ReactionNotification | ReactionPushNotification
-      ) => {
-        navigation.navigate('Profile', {
-          id:
-            'entityId' in notification
-              ? notification.entityId
-              : notification.initiator
-        })
-      },
+      [PushNotificationType.FavoriteAlbum]: socialActionHandler,
+      [PushNotificationType.FavoritePlaylist]: socialActionHandler,
+      [PushNotificationType.FavoriteTrack]: socialActionHandler,
+      [NotificationType.Favorite]: socialActionHandler,
+      [NotificationType.Follow]: socialActionHandler,
+      [PushNotificationType.MilestoneFavorite]: milestoneHandler,
+      [PushNotificationType.MilestoneFollow]: milestoneHandler,
+      [PushNotificationType.MilestoneListen]: milestoneHandler,
+      [PushNotificationType.MilestoneRepost]: milestoneHandler,
+      [NotificationType.Milestone]: milestoneHandler,
+      [NotificationType.Reaction]: profileHandler,
       [NotificationType.RemixCosign]: (
         notification: RemixCosignNotification | RemixCosignPushNotification
       ) => {
@@ -160,9 +205,10 @@ export const useNotificationNavigation = () => {
               : notification.entityId
         })
       },
-      [NotificationType.Repost]: (notification: RepostNotification) => {
-        socialActionHandler(notification)
-      },
+      [PushNotificationType.RepostAlbum]: socialActionHandler,
+      [PushNotificationType.RepostPlaylist]: socialActionHandler,
+      [PushNotificationType.RepostTrack]: socialActionHandler,
+      [NotificationType.Repost]: socialActionHandler,
       [NotificationType.SupporterDethroned]: (
         notification: SupporterDethronedNotification
       ) => {
@@ -175,53 +221,13 @@ export const useNotificationNavigation = () => {
         )
         navigation.navigate('TipArtist')
       },
-      [NotificationType.SupporterRankUp]: (
-        notification:
-          | SupporterRankUpNotification
-          | SupporterRankUpPushNotification
-      ) => {
-        navigation.navigate('Profile', {
-          id:
-            'entityId' in notification
-              ? notification.entityId
-              : notification.initiator
-        })
-      },
-      [NotificationType.SupportingRankUp]: (
-        notification:
-          | SupportingRankUpNotification
-          | SupportingRankUpPushNotification
-      ) => {
-        navigation.navigate('Profile', {
-          id:
-            'entityId' in notification
-              ? notification.entityId
-              : notification.initiator
-        })
-      },
+      [NotificationType.SupporterRankUp]: profileHandler,
+      [NotificationType.SupportingRankUp]: profileHandler,
       [NotificationType.TierChange]: (notification: TierChangeNotification) => {
         navigation.navigate('AudioScreen')
       },
-      [NotificationType.TipReceive]: (
-        notification: TipReceiveNotification | TipReceivePushNotification
-      ) => {
-        navigation.navigate('Profile', {
-          id:
-            'entityId' in notification
-              ? notification.entityId
-              : notification.initiator
-        })
-      },
-      [NotificationType.TipSend]: (
-        notification: TipSendNotification | TipSendPushNotification
-      ) => {
-        navigation.navigate('Profile', {
-          id:
-            'entityId' in notification
-              ? notification.entityId
-              : notification.initiator
-        })
-      },
+      [NotificationType.TipReceive]: profileHandler,
+      [NotificationType.TipSend]: profileHandler,
       [NotificationType.TrendingTrack]: (
         notification: TrendingTrackNotification
       ) => {
@@ -243,7 +249,14 @@ export const useNotificationNavigation = () => {
         }
       }
     }),
-    [dispatch, navigation, socialActionHandler, store]
+    [
+      dispatch,
+      milestoneHandler,
+      navigation,
+      profileHandler,
+      socialActionHandler,
+      store
+    ]
   )
 
   const handleNavigate = useCallback(
