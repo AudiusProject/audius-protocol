@@ -7,6 +7,8 @@ import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 import { CompleteTrackForm } from './CompleteTrackScreen'
 import {
   AdvancedOptionsScreen,
+  IsrcIswcScreen,
+  LicenseTypeScreen,
   RemixSettingsScreen,
   SelectGenreScreen,
   SelectMoodScreen,
@@ -30,6 +32,8 @@ export const CompleteTrackStack = (props: FormikProps<TrackMetadata>) => {
       <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
       <Stack.Screen name='AdvancedOptions' component={AdvancedOptionsScreen} />
       <Stack.Screen name='TrackVisibility' component={TrackVisibilityScreen} />
+      <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
+      <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
     </Stack.Navigator>
   )
 }

@@ -35,7 +35,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginTop: spacing(1)
   },
   dateText: {
-    marignTop: spacing(1),
+    marginTop: spacing(1),
     textTransform: 'uppercase'
   },
   datePickerModal: {

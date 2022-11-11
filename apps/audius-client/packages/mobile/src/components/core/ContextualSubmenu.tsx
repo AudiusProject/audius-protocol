@@ -41,7 +41,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   optionPills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: spacing(4)
+    marginTop: spacing(2)
+  },
+  pill: {
+    marginTop: spacing(2),
+    marginRight: spacing(2)
   },
   optionPillText: {
     textTransform: 'uppercase'
@@ -68,15 +72,26 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
     navigation.push(submenuScreenName)
   }, [navigation, submenuScreenName])
 
-  const defaultRenderValue = (value: any) => (
-    <View style={styles.optionPills}>
-      <Pill>
-        <Text fontSize='small' weight='demiBold' style={styles.optionPillText}>
-          {value}
-        </Text>
-      </Pill>
-    </View>
-  )
+  const defaultRenderValue = (value: string | string[]) => {
+    const values = typeof value === 'string' ? [value] : value
+
+    return (
+      <View style={styles.optionPills}>
+        {values.map((value) => (
+          <Pill key={value} style={styles.pill}>
+            <Text
+              fontSize='small'
+              weight='demiBold'
+              style={styles.optionPillText}
+            >
+              {value}
+            </Text>
+          </Pill>
+        ))}
+      </View>
+    )
+  }
+
   const renderValue = renderValueProp ?? defaultRenderValue
 
   return (

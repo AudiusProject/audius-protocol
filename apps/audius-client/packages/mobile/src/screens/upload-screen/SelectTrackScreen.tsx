@@ -16,7 +16,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { TopBarIconButton } from '../app-screen'
 
 import type { UploadParamList } from './ParamList'
-import { processTrackFile } from './processTrackFile'
+import { processTrackFile } from './utils/processTrackFile'
 
 const messages = {
   screenTitle: 'Upload',
