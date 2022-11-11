@@ -124,15 +124,19 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
 
     const userSubscribers = response.data.data
     logger.info(`users/subscribers userSubscribers ${JSON.stringify(userSubscribers)}`)
+    logger.info(`bulkGetSubscribersFromDiscovery userSubscribers is array: ${Array.isArray(userSubscribers)}`)
 
-    for (const entry in userSubscribers) {
-      const encodedUserId = entry["user_id"]
-      const encodedSubscriberIds = entry["subscriber_ids"]
+    userSubscribers.forEach((entry) => {
+      logger.info(`bulkGetSubscribersFromDiscovery entry: ${JSON.stringify(entry)}`)
+      const encodedUserId = entry.user_id
+      const encodedSubscriberIds = entry.subscriber_ids
+      logger.info(`bulkGetSubscribersFromDiscovery encodedUserId: ${encodedUserId}`)
+      logger.info(`bulkGetSubscribersFromDiscovery encodedSubscriberIds: ${encodedSubscriberIds}`)
       const userId = decodeHashId(encodedUserId)
       const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
       userSubscribersMap.set(userId, subscriberIds)
       logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds}`)
-    }
+    })
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)
   }
