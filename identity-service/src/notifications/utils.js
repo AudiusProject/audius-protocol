@@ -112,18 +112,25 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
 
   try {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
+    // const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const ids = JSON.stringify([...userIds].map((id) => encodeHashId(id)))
     logger.info(`getting subscribers from discovery for userIds ${ids}`)
-    const subscribersFromDN = await discoveryProvider.getSubscribers(
-      ids,
-      timeout
-    )
-    logger.info(`users/subscribers response ${subscribersFromDN}`)
-    logger.info(`users/subscribers response data ${subscribersFromDN.data}`)
-    logger.info(`users/subscribers response data data ${subscribersFromDN.data.data}`)
+    // const subscribersFromDN = await discoveryProvider.getSubscribers(
+    //   ids,
+    //   timeout
+    // )
+    const response = await axios({
+      method: 'post',
+      url: `${discoveryProvider.discoveryProviderEndpoint}/users/subscribers`,
+      params: {
+        ids: ids
+      }
+    })
 
-    const userSubscribers = subscribersFromDN.data
+    const userSubscribers = response.data.data
+    logger.info(`users/subscribers response ${response}`)
+    logger.info(`users/subscribers userSubscribers ${userSubscribers}`)
+
     for (const entry in userSubscribers) {
       encodedUserId = entry["user_id"]
       encodedSubscriberIds = entry["subscriber_ids"]
