@@ -23,9 +23,8 @@ def get_track_stream_signature(args: Dict):
     if not track["is_premium"]:
         return get_premium_content_signature(
             {
-                "id": track["track_id"],
                 # todo: use encoding of track cid
-                # "id": track["track_cid"],
+                "id": track["track_cid"],
                 "type": "track",
                 "is_premium": False,
             }
@@ -50,8 +49,7 @@ def get_track_stream_signature(args: Dict):
         signature_data = json.loads(premium_content_signature_obj["data"])
         if (
             signature_data.get("user_wallet", False) != auther_user["user_wallet"]
-            or signature_data.get("premium_content_id", False) != track["track_id"]
-            # or signature_data.get("premium_content_id", False) != track["track_cid"]
+            or signature_data.get("premium_content_id", False) != track["track_cid"]
             or signature_data.get("premium_content_type", False) != "track"
         ):
             return None
@@ -67,9 +65,8 @@ def get_track_stream_signature(args: Dict):
 
     return get_premium_content_signature(
         {
-            "id": track["track_id"],
             # todo: use encoding of track cid
-            # "id": track["track_cid"],
+            "id": track["track_cid"],
             "type": "track",
             "is_premium": True,
         }

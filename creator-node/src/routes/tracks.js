@@ -211,12 +211,13 @@ router.post(
     if (
       !metadataJSON ||
       !metadataJSON.owner_id ||
+      !metadataJSON.track_cid ||
       !metadataJSON.track_segments ||
       !Array.isArray(metadataJSON.track_segments) ||
       !metadataJSON.track_segments.length
     ) {
       return errorResponseBadRequest(
-        'Metadata object must include owner_id and non-empty track_segments array'
+        'Metadata object must include owner_id and track_cid and non-empty track_segments array'
       )
     }
 
