@@ -1,6 +1,5 @@
 const os = require('os')
 const express = require('express')
-const { execSync } = require('child_process')
 const {
   handleResponse,
   successResponse,
@@ -27,12 +26,6 @@ const config = require('../../config')
 const router = express.Router()
 
 const numberOfCPUs = os.cpus().length
-
-const autoUpgradeEnabled = () => {
-  // https://github.com/AudiusProject/audius-docker-compose/blob/ed352216dfa647426fcb85ff1a6cfc53b79b9348/audius-cli#L599
-  try { execSync("crontab -l | grep 'audius-cli upgrade'"); return true }
-  catch { return false }
-}
 
 const MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
   'monitorStateJobLastSuccessfulRunDelayMs'
@@ -67,7 +60,6 @@ const healthCheckController = async (req) => {
     TranscodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
-    autoUpgradeEnabled(),
     randomBytesToSign
   )
 
