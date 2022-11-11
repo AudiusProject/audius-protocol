@@ -1,12 +1,13 @@
-const assert = require('assert')
-const { getRequestRange, formatContentRange } = require('./requestRange')
+import type { Request } from 'express'
+import assert from 'assert'
+import { getRequestRange, formatContentRange } from './requestRange'
 
 describe('Test getRequestRange', () => {
   it('Should calculate start and end', () => {
     const req = {
       header: () => 'bytes=1024-2048'
     }
-    const { start, end } = getRequestRange(req)
+    const { start, end } = getRequestRange(req as unknown as Request)!
     assert.strictEqual(start, 1024)
     assert.strictEqual(end, 2048)
   })
@@ -15,7 +16,7 @@ describe('Test getRequestRange', () => {
     const req = {
       header: () => 'bytes=1024-'
     }
-    const { start, end } = getRequestRange(req)
+    const { start, end } = getRequestRange(req as unknown as Request)!
     assert.strictEqual(start, 1024)
     assert.strictEqual(end, undefined)
   })
@@ -24,7 +25,7 @@ describe('Test getRequestRange', () => {
     const req = {
       header: () => ''
     }
-    const range = getRequestRange(req)
+    const range = getRequestRange(req as unknown as Request)
     assert.strictEqual(range, null)
   })
 
@@ -32,7 +33,7 @@ describe('Test getRequestRange', () => {
     const req = {
       header: () => 'bytes=abc-def'
     }
-    const range = getRequestRange(req)
+    const range = getRequestRange(req as unknown as Request)
     assert.strictEqual(range, null)
   })
 })
