@@ -122,7 +122,7 @@ def _get_eth_nft_gated_track_signatures(
         contract_address = Web3.toChecksumAddress(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
-        erc721_collection_track_map[contract_address].append(track.track_id)
+        erc721_collection_track_map[contract_address].append(track.track_cid)
 
     erc1155_gated_tracks = list(
         filter(
@@ -144,7 +144,7 @@ def _get_eth_nft_gated_track_signatures(
         contract_address = Web3.toChecksumAddress(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
-        erc1155_collection_track_map[contract_address].append(track.track_id)
+        erc1155_collection_track_map[contract_address].append(track.track_cid)
         track_token_id_set = set(map(int, track_token_id_map[track.track_id]))
         contract_address_token_id_map[contract_address] = contract_address_token_id_map[
             contract_address
@@ -167,12 +167,12 @@ def _get_eth_nft_gated_track_signatures(
                 # Generate premium content signatures for tracks whose
                 # nft collection is owned by the user.
                 if future.result():
-                    for track_id in erc721_collection_track_map[contract_address]:
+                    for track_cid in erc721_collection_track_map[contract_address]:
                         track_signature_map[
-                            track_id
+                            track_cid
                         ] = get_premium_content_signature_for_user(
                             {
-                                "id": track_id,
+                                "id": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "is_premium": True,
@@ -202,12 +202,12 @@ def _get_eth_nft_gated_track_signatures(
                 # Generate premium content signatures for tracks whose
                 # nft collection is owned by the user.
                 if future.result():
-                    for track_id in erc1155_collection_track_map[contract_address]:
+                    for track_cid in erc1155_collection_track_map[contract_address]:
                         track_signature_map[
-                            track_id
+                            track_cid
                         ] = get_premium_content_signature_for_user(
                             {
-                                "id": track_id,
+                                "id": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "is_premium": True,

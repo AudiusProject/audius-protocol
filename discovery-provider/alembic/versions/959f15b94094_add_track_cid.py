@@ -25,7 +25,7 @@ def upgrade():
     connection.execute(
         """
         begin;
-            CREATE INDEX tracks_track_cid_idx ON tracks (track_cid, is_current, is_delete);
+            CREATE INDEX IF NOT EXISTS tracks_track_cid_idx ON tracks (track_cid, is_current, is_delete);
         commit;
     """
     )

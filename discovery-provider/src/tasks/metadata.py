@@ -37,6 +37,7 @@ class TrackSegment(TypedDict):
 
 
 class TrackMetadata(TypedDict):
+    track_cid: Optional[str]
     owner_id: Optional[int]
     title: Optional[str]
     route_id: Optional[str]
@@ -65,6 +66,7 @@ class TrackMetadata(TypedDict):
 
 
 track_metadata_format: TrackMetadata = {
+    "track_cid": None,
     "owner_id": None,
     "title": None,
     "route_id": None,
