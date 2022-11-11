@@ -54,6 +54,38 @@ export enum NotificationType {
   SupporterDethroned = 'SupporterDethroned'
 }
 
+export enum PushNotificationType {
+  Follow = 'Follow',
+  FavoriteTrack = 'FavoriteTrack',
+  FavoritePlaylist = 'FavoritePlaylist',
+  FavoriteAlbum = 'FavoriteAlbum',
+  RepostTrack = 'RepostTrack',
+  RepostPlaylist = 'RepostPlaylist',
+  RepostAlbum = 'RepostAlbum',
+  MilestoneListen = 'MilestoneListen',
+  MilestoneRepost = 'MilestoneRepost',
+  MilestoneFavorite = 'MilestoneFavorite',
+  MilestoneFollow = 'MilestoneFollow',
+  CreateTrack = 'CreateTrack',
+  CreatePlaylist = 'CreatePlaylist',
+  CreateAlbum = 'CreateAlbum',
+  Announcement = 'Announcement',
+  RemixCreate = 'RemixCreate',
+  RemixCosign = 'RemixCosign',
+  TrendingTrack = 'TrendingTrack',
+  ChallengeReward = 'ChallengeReward',
+  TierChange = 'TierChange',
+  PlaylistUpdate = 'PlaylistUpdate',
+  Tip = 'Tip',
+  TipReceive = 'TipReceive',
+  TipSend = 'TipSend',
+  Reaction = 'Reaction',
+  SupporterRankUp = 'SupporterRankUp',
+  SupportingRankUp = 'SupportingRankUp',
+  SupporterDethroned = 'SupporterDethroned',
+  AddTrackToPlaylist = 'AddTrackToPlaylist'
+}
+
 export enum Entity {
   Track = 'Track',
   Playlist = 'Playlist',
@@ -100,7 +132,7 @@ export type FollowNotification = BaseNotification & {
 }
 
 export type FollowPushNotification = {
-  type: NotificationType.Follow
+  type: PushNotificationType.Follow
   actions: [
     {
       blocknumber: number
@@ -129,7 +161,10 @@ export type RepostPushNotification = {
   entityId: ID
   initiator: ID
   timestamp: string
-  type: NotificationType.Repost
+  type:
+    | PushNotificationType.RepostAlbum
+    | PushNotificationType.RepostPlaylist
+    | PushNotificationType.RepostTrack
   actions: [
     {
       blocknumber: number
@@ -139,7 +174,7 @@ export type RepostPushNotification = {
   ]
   metadata: {
     entity_owner_id: ID
-    entity_type: Entity
+    entity_type: Entity.Album | Entity.Playlist | Entity.Track
     entity_id: ID
   }
 }
@@ -156,7 +191,10 @@ export type FavoritePushNotification = {
   entityId: ID
   initiator: ID
   timestamp: string
-  type: NotificationType.Favorite
+  type:
+    | PushNotificationType.FavoriteAlbum
+    | PushNotificationType.FavoritePlaylist
+    | PushNotificationType.FavoriteTrack
   actions: [
     {
       blocknumber: number
@@ -166,7 +204,7 @@ export type FavoritePushNotification = {
   ]
   metadata: {
     entity_owner_id: ID
-    entity_type: Entity
+    entity_type: Entity.Album | Entity.Playlist | Entity.Track
     entity_id: ID
   }
 }
@@ -196,6 +234,70 @@ export type MilestoneNotification = BaseNotification &
       }
   )
 
+export type MilestoneFollowPushNotification = {
+  // TODO: Not the full structure. Need to verify the fields that come back from identity
+  initiator: ID
+  slot: number
+  type: PushNotificationType.MilestoneFollow
+}
+
+export type MilestoneListenPushNotification = {
+  actions: [
+    {
+      // NOTE: This is actually the milestone value, not the id
+      actionEntityId: number
+      actionEntityType: Entity.Track | Entity.Album | Entity.Playlist
+    }
+  ]
+  initiator: ID
+  entityId: ID
+  slot: number
+  type: PushNotificationType.MilestoneListen
+  metadata: {
+    threshold: number
+    entity_type: Entity
+    entity_id: ID
+  }
+}
+
+export type MilestoneRepostPushNotification = {
+  actions: [
+    {
+      // NOTE: This is actually the milestone value, not the id
+      actionEntityId: number
+      actionEntityType: Entity.Track | Entity.Album | Entity.Playlist
+    }
+  ]
+  initiator: ID
+  entityId: ID
+  slot: number
+  type: PushNotificationType.MilestoneRepost
+  metadata: {
+    threshold: number
+    entity_type: Entity
+    entity_id: ID
+  }
+}
+
+export type MilestoneFavoritePushNotification = {
+  actions: [
+    {
+      // NOTE: This is actually the milestone value, not the id
+      actionEntityId: number
+      actionEntityType: Entity.Track | Entity.Album | Entity.Playlist
+    }
+  ]
+  initiator: ID
+  entityId: ID
+  slot: number
+  type: PushNotificationType.MilestoneFavorite
+  metadata: {
+    threshold: number
+    entity_type: Entity
+    entity_id: ID
+  }
+}
+
 export type RemixCreateNotification = BaseNotification & {
   type: NotificationType.RemixCreate
   userId: ID
@@ -206,7 +308,7 @@ export type RemixCreateNotification = BaseNotification & {
 }
 
 export type RemixCreatePushNotification = {
-  type: NotificationType.RemixCreate
+  type: PushNotificationType.RemixCreate
   entityId: ID
   actions: [
     // Parent Track User
@@ -240,7 +342,7 @@ export type RemixCosignNotification = BaseNotification & {
 }
 
 export type RemixCosignPushNotification = {
-  type: NotificationType.RemixCosign
+  type: PushNotificationType.RemixCosign
   entityId: ID
   actions: [
     {
@@ -292,10 +394,11 @@ export type ReactionNotification = BaseNotification & {
 }
 
 export type ReactionPushNotification = {
-  type: NotificationType.Reaction
+  type: PushNotificationType.Reaction
   initiator: ID
   slot: number
   metadata: {
+    // TODO: Need to verify camelCase vs snake_case
     reaction_value: number
     reacted_to_entity: {
       tx_signature: string
@@ -316,10 +419,11 @@ export type TipReceiveNotification = BaseNotification & {
 }
 
 export type TipReceivePushNotification = {
-  type: NotificationType.TipReceive
+  type: PushNotificationType.TipReceive
   slot: number
   initiator: ID
   metadata: {
+    // TODO: Need to verify camelCase vs snake_case
     entityId: ID
     entityType: Entity.User
     amount: StringWei
@@ -335,10 +439,11 @@ export type TipSendNotification = BaseNotification & {
 }
 
 export type TipSendPushNotification = {
-  type: NotificationType.TipSend
+  type: PushNotificationType.TipSend
   slot: number
   initiator: ID
   metadata: {
+    // TODO: Need to verify camelCase vs snake_case
     entityId: ID
     entityType: Entity.User
     amount: StringWei
@@ -354,13 +459,13 @@ export type SupporterRankUpNotification = BaseNotification & {
 }
 
 export type SupporterRankUpPushNotification = {
-  type: NotificationType.SupporterRankUp
-  slot: number
   initiator: ID
+  slot: number
+  type: PushNotificationType.SupporterRankUp
   metadata: {
-    entityId: ID
-    entityType: Entity.User
     rank: number
+    entity_type: Entity.User
+    entity_id: ID
   }
 }
 
@@ -372,13 +477,13 @@ export type SupportingRankUpNotification = BaseNotification & {
 }
 
 export type SupportingRankUpPushNotification = {
-  type: NotificationType.SupportingRankUp
-  slot: number
   initiator: ID
+  slot: number
+  type: PushNotificationType.SupportingRankUp
   metadata: {
-    entityId: ID
-    entityType: Entity.User
     rank: number
+    entity_type: Entity.User
+    entity_id: ID
   }
 }
 
@@ -400,9 +505,10 @@ export type AddTrackToPlaylistNotification = BaseNotification & {
 }
 
 export type AddTrackToPlaylistPushNotification = {
-  type: NotificationType.AddTrackToPlaylist
+  type: PushNotificationType.AddTrackToPlaylist
   entityId: ID
   metadata: {
+    // TODO: Need to verify camelCase vs snake_case
     playlistId: ID
     trackOwnerId: ID
     playlistOwnerId: ID
