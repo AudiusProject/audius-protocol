@@ -45,7 +45,7 @@ export const getRequestRange = (req: Request) => {
  */
 export const formatContentRange = (
   start: number,
-  end: number,
+  end: number | undefined,
   size: number
 ) => {
   return `bytes ${start}-${end || size - 1}/${size}`
