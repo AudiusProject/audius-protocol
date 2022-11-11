@@ -114,7 +114,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * @param {string[]} param.targetGatewayContentRoutes list of CN endpoints with /ipfs/<cid>
  * @param {string[]} param.nonTargetGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
  * @param {string} param.multihash the target cid
- * @param {string} param.path the path to save the cid to
+ * @param {string} param.storageLocation the path to save the cid to
  * @param {number} param.numRetries the number of max retries
  * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
  * @param {Object} param.decisionTree instance of DecisionTree
@@ -124,7 +124,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
   targetGatewayContentRoutes = [],
   nonTargetGatewayContentRoutes = [],
   multihash,
-  path,
+  storageLocation,
   numRetries,
   trackId,
   decisionTree,
@@ -151,7 +151,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
               trackId,
               multihash,
               decisionTree,
-              path,
+              storageLocation,
               logger
             })
           } catch (e) {
@@ -223,7 +223,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
   // this is the replacement for the old findCIDInNetwork call
   if (!config.get('findCIDInNetworkEnabled')) return false
 
-  const attemptedStateFix = await getIfAttemptedStateFix(path)
+  const attemptedStateFix = await getIfAttemptedStateFix(storageLocation)
   if (attemptedStateFix) return
 
   for (const contentUrl of nonTargetGatewayContentRoutes) {
@@ -241,7 +241,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
               trackId,
               multihash,
               decisionTree,
-              path,
+              storageLocation,
               logger
             })
           } catch (e) {
@@ -328,7 +328,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
  * @param {string} param.contentUrl the target content node ipfs gateway route
  * @param {number} param.trackId the track id if one is associated with the multihash fetched
  * @param {Object} param.decisionTree an instance of DecisionTree
- * @param {string} param.path the path at which to save the fetched multihash from
+ * @param {string} param.storageLocation the path at which to save the fetched multihash from
  * @param {Object} param.logger
  */
 async function fetchFileFromTargetGatewayAndWriteToDisk({
@@ -336,7 +336,7 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
   trackId,
   multihash,
   decisionTree,
-  path,
+  storageLocation,
   logger
 }) {
   const fetchReqParams = {
@@ -364,25 +364,27 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     data: { url: contentUrl }
   })
 
-  await Utils.writeStreamToFileSystem(response.data, path)
+  await Utils.writeStreamToFileSystem(response.data, storageLocation)
 
   decisionTree.recordStage({
     name: 'Wrote file to file system after fetching from target gateway',
-    data: { storagePath: path }
+    data: { storagePath: storageLocation }
   })
 
   const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
     cid: multihash,
-    path: path,
+    path: storageLocation,
     logger,
     decisionTree
   })
 
   if (!CIDMatchesExpected) {
     try {
-      await fs.unlink(path)
+      await fs.unlink(storageLocation)
     } catch (e) {
-      logger.error(`Could not remove file at path=${path}`)
+      logger.error(
+        `Could not remove file at storageLocation=${storageLocation}`
+      )
     }
     throw new Error('CID does not match what is expected to be')
   }
@@ -468,10 +470,11 @@ async function saveFileForMultihashToFS(
         name: 'Updated gatewayUrlsMapped'
       })
 
-      actualStoragePath = DiskManager.computeFilePathInDirAndEnsureItExists(
-        dirCIDMatchObj.outer,
-        multihash
-      )
+      actualStoragePath =
+        await DiskManager.computeFilePathInDirAndEnsureItExists(
+          dirCIDMatchObj.outer,
+          multihash
+        )
     } else {
       // if it's not a directory, make it a regular gateway route
       // TODO - don't concat url's by hand like this, use module like urljoin
@@ -491,8 +494,9 @@ async function saveFileForMultihashToFS(
         return baseUrl
       })
 
-      actualStoragePath =
-        DiskManager.computeFilePathAndEnsureItExists(multihash)
+      actualStoragePath = await DiskManager.computeFilePathAndEnsureItExists(
+        multihash
+      )
     }
 
     const parsedStoragePath = path.parse(actualStoragePath).dir
@@ -549,12 +553,14 @@ async function saveFileForMultihashToFS(
       targetGatewayContentRoutes,
       nonTargetGatewayContentRoutes,
       multihash,
-      path: actualStoragePath,
+      storageLocation: actualStoragePath,
       numRetries,
       logger,
       decisionTree,
       trackId
     })
+
+    decisionTree.printTree()
   } catch (e) {
     decisionTree.recordStage({
       name: 'saveFileForMultihashToFS Error',
