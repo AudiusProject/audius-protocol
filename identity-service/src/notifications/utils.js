@@ -105,15 +105,15 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
  */
 async function bulkGetSubscribersFromDiscovery(userIds) {
   const userSubscribersMap = new Map()
-  if (userIds.length == 0){
+  if (userIds.size == 0){
+    logger.info("bulkGetSubscribersFromDiscovery: userIds is size 0")
     return userSubscribersMap
   }
 
   try {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    ids = [...userIds].map((id) => encodeHashId(id))
-    ids = JSON.stringify(ids)
+    ids = JSON.stringify([...userIds].map((id) => encodeHashId(id)))
     logger.info(`getting subscribers from discovery for userIds ${ids}`)
     const subscribersFromDN = await discoveryProvider.getSubscribers(
       ids,

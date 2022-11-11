@@ -100,10 +100,8 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
         : notification.metadata.entity_owner_id
 
     // Query all subscribers for a un-viewed notification - is no un-view notification exists a new one is created
-    let subscriberIds = []
-    if (readSubscribersFromDiscovery) {
-      subscriberIds = subscribers
-    } else {
+    let subscriberIds = subscribers
+    if (!readSubscribersFromDiscovery) {
       subscriberIds = subscribers.map((s) => s.subscriberId)
     }
     const unreadSubscribers = await models.Notification.findAll({
