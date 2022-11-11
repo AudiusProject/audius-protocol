@@ -106,7 +106,6 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
 async function bulkGetSubscribersFromDiscovery(userIds) {
   const userSubscribersMap = new Map()
   if (userIds.size == 0){
-    logger.info("bulkGetSubscribersFromDiscovery: userIds is size 0")
     return userSubscribersMap
   }
 
@@ -114,7 +113,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
     // const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const ids = [...userIds].map((id) => encodeHashId(id))
-    logger.info(`getting subscribers from discovery for userIds ${JSON.stringify(ids)}`)
     // const subscribersFromDN = await discoveryProvider.getSubscribers(
     //   ids,
     //   timeout
@@ -123,9 +121,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
     const response = await axios.post('https://discoveryprovider3.staging.audius.co/v1/full/users/subscribers', { ids: ids })
 
     const userSubscribers = response.data.data
-    logger.info(`users/subscribers userSubscribers ${JSON.stringify(userSubscribers)}`)
-    logger.info(`bulkGetSubscribersFromDiscovery userSubscribers is array: ${Array.isArray(userSubscribers)}`)
-
     userSubscribers.forEach((entry) => {
       logger.info(`bulkGetSubscribersFromDiscovery entry: ${JSON.stringify(entry)}`)
       const encodedUserId = entry.user_id
@@ -134,8 +129,9 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       logger.info(`bulkGetSubscribersFromDiscovery encodedSubscriberIds: ${encodedSubscriberIds}`)
       const userId = decodeHashId(encodedUserId)
       const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
+      logger.info(`subscriberIds isArray ${Arrays.isArray(subscriberIds)}`)
       userSubscribersMap.set(userId, subscriberIds)
-      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds}`)
+      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds.toString()}`)
     })
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)

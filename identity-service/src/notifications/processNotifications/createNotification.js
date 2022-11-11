@@ -70,6 +70,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
 
     // Notifications go to all users subscribing to this content uploader
     let subscribers = userSubscribersMap.get(notification.initiator) || []
+    logger.info(`processCreateNotifications: subscribers from map: ${subscribers.toString()}`)
     if (!readSubscribersFromDiscovery) {
       // Query user IDs from subscriptions table
       subscribers = await models.Subscription.findAll({
@@ -104,6 +105,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     if (!readSubscribersFromDiscovery) {
       subscriberIds = subscribers.map((s) => s.subscriberId)
     }
+    logger.info(`processCreateNotifications: subscriberIds: ${subscriberIds.toString()}`)
     const unreadSubscribers = await models.Notification.findAll({
       where: {
         isViewed: false,

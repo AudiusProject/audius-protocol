@@ -57,9 +57,6 @@ async function formatNotifications(
   // from discovery for the initiators of create notifications.
   const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
 
-  logger.info(
-    `formatNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`
-  )
   let userSubscribersMap = new Map()
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(
@@ -70,7 +67,6 @@ async function formatNotifications(
         return filtered
       }, [])
     )
-    logger.info(`formatNotifications: userIds: ${JSON.stringify([...userIds])}, size: ${userIds.size}`)
     if (userIds.size > 0) {
       userSubscribersMap = bulkGetSubscribersFromDiscovery(userIds)
     }
