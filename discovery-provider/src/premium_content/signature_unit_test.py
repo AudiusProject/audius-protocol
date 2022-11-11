@@ -44,7 +44,7 @@ def test_signature():
     signature_data = result["data"]
     signature_data_obj = json.loads(signature_data)
 
-    assert "cache" not in signature_data_obj["cache"]
+    assert "cache" not in signature_data_obj
 
 
 def test_signature_for_user():
@@ -96,4 +96,4 @@ def test_signature_for_user():
     signature_data = result["data"]
     signature_data_obj = json.loads(signature_data)
 
-    assert "cache" not in signature_data_obj["cache"]
+    assert "cache" not in signature_data_obj

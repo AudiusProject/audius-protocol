@@ -180,6 +180,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         metadata: {
           test: 'field1',
           owner_id: 1,
+          track_cid: transcodedTrackCID,
           track_segments: trackSegments
         },
         source_file: sourceFile

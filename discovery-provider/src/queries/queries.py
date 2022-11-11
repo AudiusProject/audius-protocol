@@ -118,6 +118,9 @@ def get_tracks_route():
     args["skip_unlisted_filter"] = True
     args["skip_stem_of_filter"] = True
     tracks = get_tracks(args)
+    # Remove track_cid from tracks response
+    for track in tracks:
+        track.pop("track_cid", None)
     return api_helpers.success_response(tracks)
 
 

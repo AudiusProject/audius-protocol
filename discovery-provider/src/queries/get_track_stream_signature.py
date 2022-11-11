@@ -23,7 +23,6 @@ def get_track_stream_signature(args: Dict):
     if not track["is_premium"]:
         return get_premium_content_signature(
             {
-                # todo: use encoding of track cid
                 "id": track["track_cid"],
                 "type": "track",
                 "is_premium": False,
@@ -36,8 +35,8 @@ def get_track_stream_signature(args: Dict):
     if not user_data or not user_signature:
         return None
 
-    auther_user = get_authed_user(user_data, user_signature)
-    if not auther_user:
+    authed_user = get_authed_user(user_data, user_signature)
+    if not authed_user:
         return None
 
     premium_content_signature = args["premium_content_signature"]
@@ -48,24 +47,30 @@ def get_track_stream_signature(args: Dict):
         )
         signature_data = json.loads(premium_content_signature_obj["data"])
         if (
-            signature_data.get("user_wallet", False) != auther_user["user_wallet"]
+            signature_data.get("user_wallet", False) != authed_user["user_wallet"]
             or signature_data.get("premium_content_id", False) != track["track_cid"]
             or signature_data.get("premium_content_type", False) != "track"
         ):
             return None
     else:
+        # build a track instance from the track dict
+        track_entity = Track(
+            track_id=track["track_id"],
+            is_premium=track["is_premium"],
+            premium_conditions=track["premium_conditions"],
+            owner_id=track["owner_id"],
+        )
         access = premium_content_access_checker.check_access(
-            user_id=auther_user["user_id"],
-            premium_content_id=track["track_id"],
+            user_id=authed_user["user_id"],
+            premium_content_id=track_entity.track_id,
             premium_content_type="track",
-            premium_content_entity=track,
+            premium_content_entity=track_entity,
         )
         if not access["does_user_have_access"]:
             return None
 
     return get_premium_content_signature(
         {
-            # todo: use encoding of track cid
             "id": track["track_cid"],
             "type": "track",
             "is_premium": True,

@@ -748,17 +748,19 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
 
       // Upload track metadata
       const {
+        transcodedTrackCID,
         track_segments: trackSegments,
         source_file: sourceFile,
         transcodedTrackUUID
       } = trackContentResp
       const trackMetadata = {
         test: 'field1',
+        track_cid: transcodedTrackCID,
         track_segments: trackSegments,
         owner_id: userId
       }
       const expectedTrackMetadataMultihash =
-        'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+        'QmUfa46MXZHMNSKM1chnZSsQJM7VdLDbtoei8XDGyrBFR3'
       const trackMetadataResp = await request(app)
         .post('/tracks/metadata')
         .set('X-Session-ID', session.sessionToken)
