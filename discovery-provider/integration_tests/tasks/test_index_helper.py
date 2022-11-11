@@ -31,15 +31,15 @@ def test_save_cid_metadata(app):
                 .all()
             )
             assert len(users) == 2
-            assert users[0]['data'] == {"user_id": 2}
-            assert users[1]['data'] == {"user_id": 1}
+            assert users[0].data == {"user_id": 2}
+            assert users[1].data == {"user_id": 1}
 
             tracks = session.query(CIDData).filter(CIDData.type == "track").all()
             assert len(tracks) == 1
-            assert tracks[0]['data'] == {"track_id": 2}
+            assert tracks[0].data == {"track_id": 2}
 
             playlists = (
                 session.query(CIDData).filter(CIDData.type == "playlist_data").all()
             )
             assert len(playlists) == 1
-            assert playlists[0]['data'] == {"playlist_id": 2}
+            assert playlists[0].data == {"playlist_id": 3}
