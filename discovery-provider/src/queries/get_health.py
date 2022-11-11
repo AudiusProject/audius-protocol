@@ -313,7 +313,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     url = shared_config["discprov"]["url"]
     final_poa_block = helpers.get_final_poa_block(shared_config)
-    
+
     auto_upgrade_enabled = True if os.getenv("audius_auto_upgrade_enabled") == 'true' else False
     database_is_localhost = os.getenv("audius_db_url").find('localhost') > 0
 
