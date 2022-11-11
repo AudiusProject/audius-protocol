@@ -102,16 +102,20 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
  * @returns Map {userId: Array [subscriberIds]}
  */
 async function bulkGetSubscribersFromDiscovery(userIds) {
-  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-  const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-  const notificationsFromDN = await discoveryProvider.getSubscribers(
-    userIds,
-    timeout
-  )
-  const userSubscribers = notificationsFromDN.data
   const userSubscribersMap = new Map()
-  for (const entry in userSubscribers) {
-    userSubscribersMap[entry["user_id"]] = entry["subscriber_ids"]
+  try {
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
+    const notificationsFromDN = await discoveryProvider.getSubscribers(
+      userIds,
+      timeout
+    )
+    const userSubscribers = notificationsFromDN.data
+    for (const entry in userSubscribers) {
+      userSubscribersMap[entry["user_id"]] = entry["subscriber_ids"]
+    }
+  } catch (e) {
+    logger.error('Error when fetching subscribers from discovery', e)
   }
   return userSubscribersMap
 }
