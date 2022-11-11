@@ -66,9 +66,9 @@ class PremiumContentAccessChecker:
             )
             return {"is_premium": False, "does_user_have_access": True}
 
-        is_premium = premium_content_entity["is_premium"]
-        premium_conditions = premium_content_entity["premium_conditions"]
-        content_owner_id = premium_content_entity["owner_id"]
+        is_premium = premium_content_entity["is_premium"]  # type: ignore
+        premium_conditions = premium_content_entity["premium_conditions"]  # type: ignore
+        content_owner_id = premium_content_entity["owner_id"]  # type: ignore
 
         if not is_premium:
             # premium_conditions should always be null here as it makes
