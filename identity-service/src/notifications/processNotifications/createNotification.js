@@ -3,7 +3,6 @@ const {
   bulkGetSubscribersFromDiscovery,
   shouldReadSubscribersFromDiscovery
 } = require('../utils')
-const { logger } = require('../../logging')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
 const getNotifType = (entityType) => {
@@ -42,18 +41,11 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
   // from discovery for the initiators of create notifications.
   const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
 
-  logger.info(
-    `processCreateNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`
-  )
   let userSubscribersMap = {}
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(notifications.map((notif) => notif.initiator))
-    logger.info(
-      `processCreateNotifications: userIds: ${JSON.stringify([...userIds])}, size: ${userIds.size}`
-    )
     if (userIds.size > 0) {
       userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
-      logger.info(`processCreateNotifications: userSubscribersMap: ${JSON.stringify(userSubscribersMap)}`)
     }
   }
 
@@ -70,9 +62,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     )
 
     // Notifications go to all users subscribing to this content uploader
-    logger.info(`processCreateNotifications: typeof notif initiator: ${typeof notification.initiator}`)
     let subscribers = userSubscribersMap[notification.initiator] || []
-    logger.info(`processCreateNotifications: subscribers from map for notif initiator ${notification.initiator}: ${subscribers.toString()}`)
     if (!readSubscribersFromDiscovery) {
       // Query user IDs from subscriptions table
       subscribers = await models.Subscription.findAll({
@@ -107,7 +97,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     if (!readSubscribersFromDiscovery) {
       subscriberIds = subscribers.map((s) => s.subscriberId)
     }
-    logger.info(`processCreateNotifications: subscriberIds: ${subscriberIds.toString()}`)
     const unreadSubscribers = await models.Notification.findAll({
       where: {
         isViewed: false,

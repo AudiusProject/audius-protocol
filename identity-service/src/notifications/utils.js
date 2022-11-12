@@ -111,28 +111,26 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
 
   try {
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    // const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const ids = [...userIds].map((id) => encodeHashId(id))
+    const response = await axios.post(
+      `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/subscribers`,
+      { ids: ids }
+    )
+
+    // const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     // const subscribersFromDN = await discoveryProvider.getSubscribers(
     //   ids,
     //   timeout
     // )
 
-    const response = await axios.post('https://discoveryprovider3.staging.audius.co/v1/full/users/subscribers', { ids: ids })
-
     const userSubscribers = response.data.data
     userSubscribers.forEach((entry) => {
-      logger.info(`bulkGetSubscribersFromDiscovery entry: ${JSON.stringify(entry)}`)
       const encodedUserId = entry.user_id
       const encodedSubscriberIds = entry.subscriber_ids
-      logger.info(`bulkGetSubscribersFromDiscovery encodedUserId: ${encodedUserId}`)
-      logger.info(`bulkGetSubscribersFromDiscovery encodedSubscriberIds: ${encodedSubscriberIds}`)
       const userId = decodeHashId(encodedUserId)
       const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
-      logger.info(`bulkGetSubscribersFromDiscovery decodedUserId: ${userId}, type: ${typeof userId}`)
-      logger.info(`bulkGetSubscribersFromDiscovery decodedSubscriberIds: ${subscriberIds.toString()}, type: ${typeof subscriberIds}`)
+
       userSubscribersMap[userId] = subscriberIds
-      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${userSubscribersMap[userId].toString()}`)
     })
 
     return userSubscribersMap
