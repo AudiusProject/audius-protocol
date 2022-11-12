@@ -118,7 +118,7 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
     )
 
     // const timeout = 1 /* min */ * 60 /* sec */ * 1000 /* ms */
-    // const subscribersFromDN = await discoveryProvider.getSubscribers(
+    // const subscribersFromDN = await discoveryProvider.bulkGetSubscribers(
     //   ids,
     //   timeout
     // )
