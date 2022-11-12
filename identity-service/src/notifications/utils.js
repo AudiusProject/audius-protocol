@@ -105,7 +105,7 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
  */
 async function bulkGetSubscribersFromDiscovery(userIds) {
   const userSubscribersMap = {}
-  if (userIds.size == 0){
+  if (userIds.size === 0) {
     return userSubscribersMap
   }
 
@@ -141,7 +141,7 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
 }
 
 /** Checks whether to retrieve subscribers from discovery DB using
-  * the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag */
+* the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag */
 const shouldReadSubscribersFromDiscovery = (optimizelyClient) => {
   if (!optimizelyClient) {
     return false

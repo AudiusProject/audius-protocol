@@ -55,12 +55,12 @@ async function formatNotifications(
 ) {
   // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
   // from discovery for the initiators of create notifications.
-  const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
-
+  const readSubscribersFromDiscovery =
+    shouldReadSubscribersFromDiscovery(optimizelyClient)
   let userSubscribersMap = {}
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(
-      notifications.reduce(function(filtered, notif) {
+      notifications.reduce((filtered, notif) => {
         if (notif.type === notificationTypes.Create.base) {
           filtered.push(notif.initiator)
         }
