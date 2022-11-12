@@ -129,7 +129,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       logger.info(`bulkGetSubscribersFromDiscovery encodedSubscriberIds: ${encodedSubscriberIds}`)
       const userId = decodeHashId(encodedUserId)
       const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
-      logger.info(`subscriberIds isArray ${Array.isArray(subscriberIds)}`)
       userSubscribersMap.set(userId, subscriberIds)
       logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds.toString()}`)
       return userSubscribersMap

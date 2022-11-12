@@ -271,7 +271,7 @@ async function formatNotifications(
 
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
-      const subscribers = userSubscribersMap.get(notif.initiator) || []
+      const subscribers = userSubscribersMap[notif.initiator] || []
       await _processCreateNotifications(
         notif,
         tx,
