@@ -133,8 +133,9 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       logger.info(`bulkGetSubscribersFromDiscovery decodedSubscriberIds: ${subscriberIds.toString()}, type: ${typeof subscriberIds}`)
       userSubscribersMap[userId] = subscriberIds
       logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${userSubscribersMap[userId].toString()}`)
-      return userSubscribersMap
     })
+
+    return userSubscribersMap
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)
     return {}
