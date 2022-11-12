@@ -101,10 +101,10 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
  * userIds.
  *
  * @param {Set<number>} userIds to fetch subscribers for
- * @returns Map {userId: Array [subscriberIds]}
+ * @returns Object {userId: Array[subscriberIds]}
  */
 async function bulkGetSubscribersFromDiscovery(userIds) {
-  const userSubscribersMap = new Map()
+  const userSubscribersMap = {}
   if (userIds.size == 0){
     return userSubscribersMap
   }
@@ -129,13 +129,15 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       logger.info(`bulkGetSubscribersFromDiscovery encodedSubscriberIds: ${encodedSubscriberIds}`)
       const userId = decodeHashId(encodedUserId)
       const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
-      userSubscribersMap.set(userId, subscriberIds)
-      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds.toString()}`)
+      logger.info(`bulkGetSubscribersFromDiscovery decodedUserId: ${userId}`)
+      logger.info(`bulkGetSubscribersFromDiscovery decodedSubscriberIds: ${subscriberIds.toString()}`)
+      userSubscribersMap[userId] = subscriberIds
+      logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${userSubscribersMap[userId].toString()}`)
       return userSubscribersMap
     })
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)
-    return new Map()
+    return {}
   }
 }
 

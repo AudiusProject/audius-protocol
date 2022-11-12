@@ -57,7 +57,7 @@ async function formatNotifications(
   // from discovery for the initiators of create notifications.
   const readSubscribersFromDiscovery = shouldReadSubscribersFromDiscovery(optimizelyClient)
 
-  let userSubscribersMap = new Map()
+  let userSubscribersMap = {}
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(
       notifications.reduce(function(filtered, notif) {

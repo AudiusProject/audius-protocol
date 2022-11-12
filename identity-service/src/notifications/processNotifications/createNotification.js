@@ -45,7 +45,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
   logger.info(
     `processCreateNotifications: readSubscribersFromDiscovery: ${readSubscribersFromDiscovery}`
   )
-  let userSubscribersMap = new Map()
+  let userSubscribersMap = {}
   if (readSubscribersFromDiscovery) {
     const userIds = new Set(notifications.map((notif) => notif.initiator))
     logger.info(
