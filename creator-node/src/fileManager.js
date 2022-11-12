@@ -430,11 +430,11 @@ async function saveFileForMultihashToFS(
     let targetGatewayContentRoutes
     let nonTargetGatewayContentRoutes
 
-    const allContentNodes = (await getAllRegisteredCNodes(logger)).map(
-      (gateway) => gateway.endpoint
-    )
+    // const allContentNodes = (await getAllRegisteredCNodes(logger)).map(
+    //   (gateway) => gateway.endpoint
+    // )
 
-    // const allContentNodes = ['https://audius-content-11.figment.io']
+    const allContentNodes = ['https://audius-content-11.figment.io']
     // Remove target gateways + this self endpoint from list
     const nonTargetGateways = allContentNodes.filter(
       (c) =>

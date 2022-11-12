@@ -65,11 +65,14 @@ const streamFromFileSystem = async (
   fsStats = null
 ) => {
   try {
+    genericLogger.info("in streamFromFileSystem", path)
     if (checkExistence) {
       // If file cannot be found on disk, throw error
       if (!(await fs.pathExists(path))) {
+        genericLogger.info("in streamFromFileSystem - couldn't find on disk", path)
         throw new Error(`File could not be found on disk, path=${path}`)
       }
+      genericLogger.info("in streamFromFileSystem - FOUND PATH", path)
     }
 
     // Stream file from file system
@@ -110,6 +113,7 @@ const streamFromFileSystem = async (
       res.status(206)
     } else {
       fileStream = fs.createReadStream(path)
+      genericLogger.info("filestream for streamFromFileSystem", fileStream)
       res.set('Content-Length', stat.size)
     }
 
@@ -125,11 +129,12 @@ const streamFromFileSystem = async (
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
     // The premiumContentMiddleware sets the req.premiumContent object so that we do not
     // have to make another database round trip to get this info.
-    if (req.premiumContent?.isPremium) {
-      res.setHeader('cache-control', 'no-cache')
-    } else {
-      res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-    }
+    // if (req.premiumContent?.isPremium) {
+    //   res.setHeader('cache-control', 'no-cache')
+    // } else {
+    //   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    // }
+    // res.setHeader('cache-control', 'no-cache')
 
     await new Promise((resolve, reject) => {
       fileStream
@@ -139,6 +144,7 @@ const streamFromFileSystem = async (
           resolve()
         })
         .on('error', (e) => {
+          genericLogger.error("streamFromFileSystem - error trying to stream from disk", e)
           reject(e)
         })
     })
@@ -538,6 +544,7 @@ const getDirCID = async (req, res) => {
         )
       )
     }
+    console.log("computing DiskManager.computeFilePathInDir", dirCID, queryResults.multihash, queryResults)
     storagePath = DiskManager.computeFilePathInDir(
       dirCID,
       queryResults.multihash
@@ -569,6 +576,7 @@ const getDirCID = async (req, res) => {
       filename
     )
     if (error) {
+      genericLogger.info("its actually an error", error)
       throw new Error(`Not found in network: ${error.message}`)
     }
 
