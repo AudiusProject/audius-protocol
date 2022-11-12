@@ -68,7 +68,7 @@ async function formatNotifications(
       }, [])
     )
     if (userIds.size > 0) {
-      userSubscribersMap = bulkGetSubscribersFromDiscovery(userIds)
+      userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
     }
   }
 

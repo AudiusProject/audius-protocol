@@ -52,7 +52,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       `processCreateNotifications: userIds: ${JSON.stringify([...userIds])}, size: ${userIds.size}`
     )
     if (userIds.size > 0) {
-      userSubscribersMap = bulkGetSubscribersFromDiscovery(userIds)
+      userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
     }
   }
 
@@ -69,9 +69,10 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     )
 
     // Notifications go to all users subscribing to this content uploader
-    logger.info(`processCreateNotifications: type of map: ${typeof userSubscribersMap}`)
     let subscribers = userSubscribersMap[notification.initiator] || []
-    logger.info(`processCreateNotifications: subscribers from map: ${subscribers.toString()}`)
+    logger.info(`processCreateNotifications: userSubscribersMap: ${JSON.stringify(userSubscribersMap)}`)
+    logger.info(`processCreateNotifications: typeof notif initiator: ${typeof notification.initiator}`)
+    logger.info(`processCreateNotifications: subscribers from map for notif initiator ${notification.initiator}: ${subscribers.toString()}`)
     if (!readSubscribersFromDiscovery) {
       // Query user IDs from subscriptions table
       subscribers = await models.Subscription.findAll({
