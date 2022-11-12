@@ -69,6 +69,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     )
 
     // Notifications go to all users subscribing to this content uploader
+    logger.info(`processCreateNotifications: type of map: ${typeof userSubscribersMap}`)
     let subscribers = userSubscribersMap.get(notification.initiator) || []
     logger.info(`processCreateNotifications: subscribers from map: ${subscribers.toString()}`)
     if (!readSubscribersFromDiscovery) {

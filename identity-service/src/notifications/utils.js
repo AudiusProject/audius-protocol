@@ -132,12 +132,12 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       logger.info(`subscriberIds isArray ${Array.isArray(subscriberIds)}`)
       userSubscribersMap.set(userId, subscriberIds)
       logger.info(`user -> subscribers entry in map: user id ${userId}: subscriber ids ${subscriberIds.toString()}`)
+      return userSubscribersMap
     })
   } catch (e) {
     logger.error('Error when fetching subscribers from discovery', e)
+    return new Map()
   }
-
-  return userSubscribersMap
 }
 
 /** Checks whether to retrieve subscribers from discovery DB using
