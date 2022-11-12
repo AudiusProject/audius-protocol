@@ -140,8 +140,12 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
   }
 }
 
-/** Checks whether to retrieve subscribers from discovery DB using
-* the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag */
+/**
+ * Checks whether to retrieve subscribers from discovery DB using
+ * the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag.
+ *
+ * @returns Boolean
+ */
 const shouldReadSubscribersFromDiscovery = (optimizelyClient) => {
   if (!optimizelyClient) {
     return false
