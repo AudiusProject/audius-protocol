@@ -647,6 +647,25 @@ export const getNotifications = (
   }
 }
 
+export const getUserSubscribers = (encodedUserId: string, timeout: number) => {
+  return {
+    endpoint: `v1/full/users/${encodedUserId}/subscribers`,
+    method: 'get',
+    timeout
+  }
+}
+
+export const bulkGetUserSubscribers = (encodedUserIds: string, timeout: number) => {
+  return {
+    endpoint: 'v1/full/users/subscribers',
+    method: 'post',
+    queryParams: {
+      ids: encodedUserIds
+    },
+    timeout
+  }
+}
+
 export const getSolanaNotifications = (
   minSlotNumber: number,
   timeout: number

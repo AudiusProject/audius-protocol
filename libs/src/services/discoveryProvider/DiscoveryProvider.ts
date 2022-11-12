@@ -871,6 +871,30 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  /**
+   * Retrieves subscribers for a given user.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.timeout timeout in ms
+   * @returns Array of User metadata objects for each subscriber
+   */
+  async getUserSubscribers(encodedUserId: string, timeout: number) {
+    const req = Requests.getUserSubscribers(encodedUserId, timeout)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Retrieves subscribers for the given users.
+   * @param params.encodedUserIds JSON stringified array of
+   *   encoded user ids
+   * @param params.timeout timeout in ms
+   * @returns Array of {user_id: <encoded user id>,
+   *   subscriber_ids: Array[<encoded subscriber ids>]} objects
+   */
+  async bulkGetUserSubscribers(encodedUserIds: string, timeout: number) {
+    const req = Requests.bulkGetUserSubscribers(encodedUserIds, timeout)
+    return await this._makeRequest(req)
+  }
+
   async getSolanaNotifications(minSlotNumber: number, timeout: number) {
     const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
     return await this._makeRequest(req)
