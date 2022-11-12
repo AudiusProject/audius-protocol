@@ -445,7 +445,7 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CID_FOUND`
       })
-      storagePath = queryResults.storagePath
+      storagePath = DiskManager.computeFilePath(queryResults.multihash)
     }
   } catch (e) {
     decisionTree.push({
