@@ -102,6 +102,8 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
 /**
  * Fetches a file from the target gateways (usually the replica set of a user),
  * then the network if it is not found on the target gateways.
+ * 
+ * This is an internal function, not intended to be called directly outside FileManager
  *
  * Retries occur when:
  * - fetching from the target gateways result in 500s or 404s
@@ -109,8 +111,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * - verifying cids fails
  * - fetching from network gateways result in 500s
  *
- * @param {Object} param
- * @param {Object} param.libs instance of audiusLibs
+ * @param {Object} param Object passed into function
  * @param {string[]} param.targetGatewayContentRoutes list of CN endpoints with /ipfs/<cid>
  * @param {string[]} param.nonTargetGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
  * @param {string} param.multihash the target cid
@@ -221,8 +222,8 @@ async function fetchFileFromNetworkAndWriteToDisk({
 
   // If file is not found in replica set, check network (remaining registered nodes)
   // this is the replacement for the old findCIDInNetwork call
-  // short circuit calling the rest of the network if env var is not enabled or we've already
-  // checked the network today
+  // short circuit calling the rest of the network if env var is not enabled or
+  // the rest of the network has already been checked the network today
   if (!config.get('findCIDInNetworkEnabled')) return false
 
   const attemptedStateFix = await getIfAttemptedStateFix(storageLocation)
@@ -326,6 +327,8 @@ async function fetchFileFromNetworkAndWriteToDisk({
 /**
  * Fetches a multihash via the /ipfs route, writes to disk, and verifies that the CID is what we
  * expect it to be with retries
+ * 
+ * This is an internal function, not intended to be called directly outside FileManager
  * @param {Object} param
  * @param {string} param.contentUrl the target content node ipfs gateway route
  * @param {number} param.trackId the track id if one is associated with the multihash fetched

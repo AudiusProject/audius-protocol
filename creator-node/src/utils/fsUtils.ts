@@ -53,6 +53,7 @@ export async function _streamFileToDiskHelper(
 /**
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
+ * @returns Boolean false if has not attempted state fix before, true if it has
  */
 export async function getIfAttemptedStateFix(filePath: string) {
   // key is `attempted_fs_fixes:<today's date>`

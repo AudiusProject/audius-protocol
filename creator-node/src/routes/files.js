@@ -65,14 +65,11 @@ const streamFromFileSystem = async (
   fsStats = null
 ) => {
   try {
-    genericLogger.info("in streamFromFileSystem", path)
     if (checkExistence) {
       // If file cannot be found on disk, throw error
       if (!(await fs.pathExists(path))) {
-        genericLogger.info("in streamFromFileSystem - couldn't find on disk", path)
         throw new Error(`File could not be found on disk, path=${path}`)
       }
-      genericLogger.info("in streamFromFileSystem - FOUND PATH", path)
     }
 
     // Stream file from file system
@@ -113,7 +110,6 @@ const streamFromFileSystem = async (
       res.status(206)
     } else {
       fileStream = fs.createReadStream(path)
-      genericLogger.info("filestream for streamFromFileSystem", fileStream)
       res.set('Content-Length', stat.size)
     }
 
@@ -144,7 +140,10 @@ const streamFromFileSystem = async (
           resolve()
         })
         .on('error', (e) => {
-          genericLogger.error("streamFromFileSystem - error trying to stream from disk", e)
+          genericLogger.error(
+            'streamFromFileSystem - error trying to stream from disk',
+            e
+          )
           reject(e)
         })
     })
@@ -523,7 +522,7 @@ const getDirCID = async (req, res) => {
   const cacheKey = getStoragePathQueryCacheKey(path)
 
   let storagePath = await redisClient.get(cacheKey)
-  let CID
+  let CID = null // this gets assigned later after the correct storagePath is set
 
   if (!storagePath) {
     // We need to lookup the CID so we can correlate with the filename (eg original.jpg, 150x150.jpg)
@@ -544,7 +543,7 @@ const getDirCID = async (req, res) => {
         )
       )
     }
-    console.log("computing DiskManager.computeFilePathInDir", dirCID, queryResults.multihash, queryResults)
+
     storagePath = DiskManager.computeFilePathInDir(
       dirCID,
       queryResults.multihash
@@ -576,7 +575,6 @@ const getDirCID = async (req, res) => {
       filename
     )
     if (error) {
-      genericLogger.info("its actually an error", error)
       throw new Error(`Not found in network: ${error.message}`)
     }
 
