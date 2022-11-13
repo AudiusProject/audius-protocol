@@ -102,7 +102,7 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
 /**
  * Fetches a file from the target gateways (usually the replica set of a user),
  * then the network if it is not found on the target gateways.
- * 
+ *
  * This is an internal function, not intended to be called directly outside FileManager
  *
  * Retries occur when:
@@ -327,7 +327,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
 /**
  * Fetches a multihash via the /ipfs route, writes to disk, and verifies that the CID is what we
  * expect it to be with retries
- * 
+ *
  * This is an internal function, not intended to be called directly outside FileManager
  * @param {Object} param
  * @param {string} param.contentUrl the target content node ipfs gateway route
