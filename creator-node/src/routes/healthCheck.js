@@ -5,7 +5,6 @@ const {
   errorResponseServerError
 } = require('../apiHelpers')
 const config = require('../config.js')
-const models = require('../models')
 
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
@@ -112,17 +111,12 @@ router.get(
 
     const usagePercent = Math.round((used * 100) / total)
 
-    const numberOfNonFileStoragePathsInDB = await models.sequelize.query(
-      `select COUNT(*) from "Files" where "storagePath" not like '/file_storage/%';`
-    )[0]
-
     const resp = {
       available: _formatBytes(available),
       total: _formatBytes(total),
       usagePercent: `${usagePercent}%`,
       maxUsagePercent: `${maxUsagePercent}%`,
-      storagePath,
-      numberOfNonFileStoragePathsInDB
+      storagePath
     }
 
     if (maxUsageBytes) {

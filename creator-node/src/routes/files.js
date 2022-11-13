@@ -125,12 +125,11 @@ const streamFromFileSystem = async (
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
     // The premiumContentMiddleware sets the req.premiumContent object so that we do not
     // have to make another database round trip to get this info.
-    // if (req.premiumContent?.isPremium) {
-    //   res.setHeader('cache-control', 'no-cache')
-    // } else {
-    //   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-    // }
-    // res.setHeader('cache-control', 'no-cache')
+    if (req.premiumContent?.isPremium) {
+      res.setHeader('cache-control', 'no-cache')
+    } else {
+      res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    }
 
     await new Promise((resolve, reject) => {
       fileStream

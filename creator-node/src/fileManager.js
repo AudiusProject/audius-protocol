@@ -144,61 +144,14 @@ async function fetchFileFromNetworkAndWriteToDisk({
     })
 
     try {
-      await asyncRetry({
-        asyncFn: async (bail, num) => {
-          try {
-            await fetchFileFromTargetGatewayAndWriteToDisk({
-              contentUrl,
-              trackId,
-              multihash,
-              decisionTree,
-              storageLocation,
-              logger
-            })
-          } catch (e) {
-            /**
-             * Abort retries if fetch fails with 403, 401, or 400 status code
-             *
-             * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
-             */
-            if (
-              e.response?.status === 403 || // delist
-              e.response?.status === 401 || // unauth
-              e.response?.status === 400 // bad request
-            ) {
-              decisionTree.recordStage({
-                name: 'Could not fetch content from target gateway',
-                data: {
-                  statusCode: e.response.status,
-                  url: contentUrl
-                }
-              })
-              bail(
-                new Error(
-                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-                )
-              )
-              return
-            }
-
-            // Re-throw any other error to continue with retry logic
-            if (num === numRetries + 1) {
-              // Final error thrown
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
-              )
-            } else {
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
-              )
-            }
-          }
-        },
+      await _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+        contentUrl,
+        trackId,
+        multihash,
+        decisionTree,
+        storageLocation,
         logger,
-        log: false,
-        options: {
-          retries: numRetries
-        }
+        numRetries
       })
 
       decisionTree.recordStage({
@@ -236,61 +189,14 @@ async function fetchFileFromNetworkAndWriteToDisk({
     })
 
     try {
-      await asyncRetry({
-        asyncFn: async (bail, num) => {
-          try {
-            await fetchFileFromTargetGatewayAndWriteToDisk({
-              contentUrl,
-              trackId,
-              multihash,
-              decisionTree,
-              storageLocation,
-              logger
-            })
-          } catch (e) {
-            /**
-             * Abort retries if fetch fails with 403, 401, or 400 status code
-             *
-             * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
-             */
-            if (
-              e.response?.status === 403 || // delist
-              e.response?.status === 401 || // unauth
-              e.response?.status === 400 // bad request
-            ) {
-              decisionTree.recordStage({
-                name: 'Could not fetch content from target gateway',
-                data: {
-                  statusCode: e.response.status,
-                  url: contentUrl
-                }
-              })
-              bail(
-                new Error(
-                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-                )
-              )
-              return
-            }
-
-            // Re-throw any other error to continue with retry logic
-            if (num === numRetries + 1) {
-              // Final error thrown
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
-              )
-            } else {
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
-              )
-            }
-          }
-        },
+      await _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+        contentUrl,
+        trackId,
+        multihash,
+        decisionTree,
+        storageLocation,
         logger,
-        log: false,
-        options: {
-          retries: numRetries
-        }
+        numRetries
       })
 
       decisionTree.recordStage({
@@ -322,6 +228,85 @@ async function fetchFileFromNetworkAndWriteToDisk({
     name: errorMsg
   })
   throw new Error(errorMsg)
+}
+
+/**
+ * Helper for fetchFileFromNetworkAndWriteToDisk() that wrapes asyncRetry logic
+ * and parsing response and error codes
+ * @param {Object} param0
+ * @param {string} param.contentUrl content gateway url eg example.io/ipfs/Qmxyz
+ * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
+ * @param {string} param.multihash the target cid
+ * @param {Object} param.decisionTree instance of DecisionTree
+ * @param {string} param.storageLocation the path to save the cid to
+ * @param {Object} param.logger
+ * @param {number} param.numRetries the number of max retries
+ */
+async function _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+  contentUrl,
+  trackId,
+  multihash,
+  decisionTree,
+  storageLocation,
+  logger,
+  numRetries
+}) {
+  await asyncRetry({
+    asyncFn: async (bail, num) => {
+      try {
+        await fetchFileFromTargetGatewayAndWriteToDisk({
+          contentUrl,
+          trackId,
+          multihash,
+          decisionTree,
+          storageLocation,
+          logger
+        })
+      } catch (e) {
+        /**
+         * Abort retries if fetch fails with 403, 401, or 400 status code
+         *
+         * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
+         */
+        if (
+          e.response?.status === 403 || // delist
+          e.response?.status === 401 || // unauth
+          e.response?.status === 400 // bad request
+        ) {
+          decisionTree.recordStage({
+            name: 'Could not fetch content from target gateway',
+            data: {
+              statusCode: e.response.status,
+              url: contentUrl
+            }
+          })
+          bail(
+            new Error(
+              `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+            )
+          )
+          return
+        }
+
+        // Re-throw any other error to continue with retry logic
+        if (num === numRetries + 1) {
+          // Final error thrown
+          throw new Error(
+            `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+          )
+        } else {
+          throw new Error(
+            `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+          )
+        }
+      }
+    },
+    logger,
+    log: false,
+    options: {
+      retries: numRetries
+    }
+  })
 }
 
 /**
