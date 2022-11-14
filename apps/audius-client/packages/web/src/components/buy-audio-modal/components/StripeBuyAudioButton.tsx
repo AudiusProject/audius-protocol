@@ -18,8 +18,12 @@ import {
 import styles from './StripeBuyAudioButton.module.css'
 
 const { getAudioPurchaseInfo } = buyAudioSelectors
-const { onRampOpened, onRampSucceeded, stripeSessionStatusChanged } =
-  buyAudioActions
+const {
+  onRampOpened,
+  onRampSucceeded,
+  onRampCanceled,
+  stripeSessionStatusChanged
+} = buyAudioActions
 
 const STRIPE_PUBLISHABLE_KEY =
   process.env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
@@ -64,17 +68,22 @@ export const StripeBuyAudioButton = () => {
       return
     }
     dispatch(onRampOpened(purchaseInfo))
-    const res = await createStripeSession({
-      amount,
-      destinationWallet: (await getRootSolanaAccount()).publicKey.toString()
-    })
-    const stripeOnRampInstance = StripeOnRamp(STRIPE_PUBLISHABLE_KEY)
-    const session = stripeOnRampInstance.createSession({
-      clientSecret: res.client_secret
-    })
-    session.mount('#stripe-onramp-modal')
-    session.addEventListener('onramp_session_updated', handleSessionUpdate)
-    setIsStripeModalVisible(true)
+    try {
+      const res = await createStripeSession({
+        amount,
+        destinationWallet: (await getRootSolanaAccount()).publicKey.toString()
+      })
+      const stripeOnRampInstance = StripeOnRamp(STRIPE_PUBLISHABLE_KEY)
+      const session = stripeOnRampInstance.createSession({
+        clientSecret: res.client_secret
+      })
+      session.mount('#stripe-onramp-modal')
+      session.addEventListener('onramp_session_updated', handleSessionUpdate)
+      setIsStripeModalVisible(true)
+    } catch (e) {
+      dispatch(onRampCanceled())
+      console.error(e)
+    }
   }, [
     dispatch,
     setIsStripeModalVisible,
