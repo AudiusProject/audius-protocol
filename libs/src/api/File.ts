@@ -79,7 +79,8 @@ export class File extends Base {
         callback,
         responseType,
         trackId,
-        premiumContentHeaders
+        premiumContentHeaders,
+        0
       )
       return allNodesAttempt
     }
@@ -91,7 +92,8 @@ export class File extends Base {
     callback: Nullable<(url: string) => void> = null,
     responseType: ResponseType = 'blob',
     trackId = null,
-    premiumContentHeaders = {}
+    premiumContentHeaders = {},
+    retries = 3
   ) {
     const urls: string[] = []
 
@@ -169,7 +171,7 @@ export class File extends Base {
         minTimeout: 500,
         maxTimeout: 4000,
         factor: 3,
-        retries: 3,
+        retries,
         onRetry: (err: any, i) => {
           // eslint-disable-next-line no-console
           console.log(`FetchCID attempt ${i} error: ${err}`)
