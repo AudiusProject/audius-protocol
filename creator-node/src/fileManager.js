@@ -396,7 +396,7 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Error || String} error object or storagePath string
+ * @return {error?: Error, storagePath?: String} object with nested fields containing error object or storagePath string
  */
 async function fetchFileFromNetworkAndSaveToFS(
   libs,
