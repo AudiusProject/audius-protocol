@@ -396,9 +396,9 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Error?} error object or null if no error
+ * @return {Error || String} error object or storagePath string
  */
-async function saveFileForMultihashToFS(
+async function fetchFileFromNetworkAndSaveToFS(
   libs,
   logger,
   multihash,
@@ -409,12 +409,12 @@ async function saveFileForMultihashToFS(
   numRetries = 3
 ) {
   const decisionTree = new DecisionTree({
-    name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
+    name: `fetchFileFromNetworkAndSaveToFS() [multihash: ${multihash}]`,
     logger
   })
 
+  let storageLocation
   try {
-    let storageLocation
     let targetGatewayContentRoutes
     let nonTargetGatewayContentRoutes
 
@@ -478,38 +478,14 @@ async function saveFileForMultihashToFS(
       })
     }
 
-    const storageLocationParentDir = path.parse(storageLocation).dir
-
     decisionTree.recordStage({
-      name: 'About to start running saveFileForMultihashToFS()',
+      name: 'About to start running fetchFileFromNetworkAndSaveToFS()',
       data: {
         multihash,
-        storageLocation,
-        storageLocationParentDir
+        storageLocation
       },
       logLevel: 'debug'
     })
-
-    // Create dir at expected storage path in which to store retrieved data
-    try {
-      // calling this on an existing directory doesn't overwrite the existing data or throw an error
-      // the mkdir recursive is equivalent to `mkdir -p`
-      await fs.mkdir(storageLocationParentDir, { recursive: true })
-      decisionTree.recordStage({
-        name: 'Successfully called mkdir on local file system',
-        data: {
-          storageLocationParentDir
-        }
-      })
-    } catch (e) {
-      decisionTree.recordStage({
-        name: 'Error calling mkdir on local file system',
-        data: { storageLocationParentDir }
-      })
-      throw new Error(
-        `Error making directory at ${storageLocationParentDir} - ${e.message}`
-      )
-    }
 
     /**
      * Attempts to fetch CID:
@@ -524,7 +500,7 @@ async function saveFileForMultihashToFS(
         data: { storageLocation }
       })
 
-      return
+      return { storagePath: storageLocation }
     }
 
     await fetchFileFromNetworkAndWriteToDisk({
@@ -539,16 +515,16 @@ async function saveFileForMultihashToFS(
     })
   } catch (e) {
     decisionTree.recordStage({
-      name: 'saveFileForMultihashToFS Error',
+      name: 'fetchFileFromNetworkAndSaveToFS Error',
       data: { errorMsg: e.message }
     })
 
-    return e
+    return { error: e }
   } finally {
     decisionTree.printTree({ logLevel: 'debug' })
   }
 
-  // If no error, return nothing
+  return { storagePath: storageLocation }
 }
 
 /**
@@ -836,7 +812,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToDisk,
-  saveFileForMultihashToFS,
+  fetchFileFromNetworkAndSaveToFS,
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,
