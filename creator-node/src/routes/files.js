@@ -233,6 +233,7 @@ const getCID = async (req, res) => {
   startMs = Date.now()
   let fileFoundOnFS = false
   let fsStats
+  let queryResults
   try {
     /**
      * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
@@ -406,7 +407,7 @@ const getCID = async (req, res) => {
    */
   startMs = Date.now()
   try {
-    const queryResults = await models.File.findOne({
+    queryResults = await models.File.findOne({
       where: {
         multihash: CID
       },
@@ -443,7 +444,6 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CID_FOUND`
       })
-      storagePath = DiskManager.computeFilePath(queryResults.multihash)
     }
   } catch (e) {
     decisionTree.push({
@@ -457,6 +457,31 @@ const getCID = async (req, res) => {
       res,
       errorResponseServerError(`${logPrefix} DB query failed`)
     )
+  }
+
+  // try to stream file from storagePath location in db
+  startMs = Date.now()
+  try {
+    // optimization to only try to stream from db storagePath if it's different than computed storagePath
+    if (storagePath !== queryResults.storagePath) {
+      decisionTree.push({
+        stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM`,
+        time: `${Date.now() - startMs}ms`,
+        data: { storagePath }
+      })
+      const fsStream = await streamFromFileSystem(req, res, storagePath, false)
+      decisionTree.push({
+        stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM_COMPLETE`,
+        time: `${Date.now() - startMs}ms`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return fsStream
+    }
+  } catch (e) {
+    decisionTree.push({
+      stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM_FAILED`,
+      time: `${Date.now() - startMs}ms`
+    })
   }
 
   /**
@@ -478,6 +503,11 @@ const getCID = async (req, res) => {
     if (error) {
       throw new Error(`Not found in network: ${error.message}`)
     }
+
+    // need to recompute the storagePath to stream the file because
+    // saveFileForMultihashFromFS recomputes storagePath
+    storagePath = DiskManager.computeFilePath(CID)
+
     decisionTree.push({
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
       time: `${Date.now() - startMs}ms`
@@ -520,13 +550,14 @@ const getDirCID = async (req, res) => {
 
   const cacheKey = getStoragePathQueryCacheKey(path)
 
-  let storagePath = await redisClient.get(cacheKey)
+  let storagePath = await redisClient.get(cacheKey) // can be overridden later by computed storage location if cache doesn't exist
   let CID = null // this gets assigned later after the correct storagePath is set
+  let queryResults
 
   if (!storagePath) {
     // We need to lookup the CID so we can correlate with the filename (eg original.jpg, 150x150.jpg)
     // Query for the file based on the dirCID and filename
-    const queryResults = await models.File.findOne({
+    queryResults = await models.File.findOne({
       where: {
         dirMultihash: dirCID,
         fileName: filename
@@ -553,12 +584,25 @@ const getDirCID = async (req, res) => {
   // CID is the file CID, parse it from the storagePath
   CID = storagePath.split('/').slice(-1).join('')
 
-  // Attempt to stream file to client
+  // Attempt to stream file from computed storagePath
   try {
     req.logger.info(
       `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
     )
     return await streamFromFileSystem(req, res, storagePath)
+  } catch (e) {
+    req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
+  }
+
+  // If streaming from computed storagePath fails, Attempt to stream file from db storagePath
+  try {
+    // optimization to only try to stream from db storagePath if it's different than computed storagePath
+    if (queryResults.storagePath !== storagePath) {
+      req.logger.info(
+        `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
+      )
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
+    }
   } catch (e) {
     req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
   }
