@@ -1967,11 +1967,6 @@ workflows:
           filters:
             branches:
               only: /(^main$)/
-      - schedule:
-          cron: '0 23 * * 6'
-          filters:
-            branches:
-              only: /(^main$)/
 
   cut-release-cron:
     jobs:
