@@ -602,7 +602,7 @@ const handleSyncFromPrimary = async ({
                   libs,
                   logger,
                   multihash,
-                  nonTrackFile.storagePath,
+                  nonTrackFile.dirMultihash,
                   gatewaysToTry,
                   nonTrackFile.fileName
                 )
@@ -611,13 +611,14 @@ const handleSyncFromPrimary = async ({
                   libs,
                   logger,
                   multihash,
-                  nonTrackFile.storagePath,
+                  nonTrackFile.dirMultihash,
                   gatewaysToTry
                 )
               }
 
               // If saveFile op failed, record CID for later processing
               if (error) {
+                console.error('secondarySyncFromPrimary error', error)
                 CIDsThatFailedSaveFileOp.add(multihash)
               }
             }
