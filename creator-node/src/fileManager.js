@@ -231,8 +231,8 @@ async function fetchFileFromNetworkAndWriteToDisk({
 }
 
 /**
- * Helper for fetchFileFromNetworkAndWriteToDisk() that wrapes asyncRetry logic
- * and parsing response and error codes
+ * Helper for fetchFileFromNetworkAndWriteToDisk() that wraps asyncRetry logic
+ * and parses response and error codes
  * @param {Object} param0
  * @param {string} param.contentUrl content gateway url eg example.io/ipfs/Qmxyz
  * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
@@ -358,7 +358,7 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
 
   decisionTree.recordStage({
     name: 'Wrote file to file system after fetching from target gateway',
-    data: { storagePath: storageLocation }
+    data: { storageLocation }
   })
 
   const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
@@ -384,19 +384,19 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
  *    creating directories
- * 2. attempt to fetch the CID from a variety of sources
+ * 2. attempt to fetch the CID from user's replica set nodes followed by
+ *    all other nodes in the network
  * 3. return boolean failure content retrieval or content verification failure
  * @param {Object} libs
  * @param {Object} logger
  * @param {String} multihash CID
- * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
- *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
- * @param {Array} targetGateways List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
+ * @param {String?} dirCID image dir CID if applicable
+ * @param {Array?} targetGateways List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
  * @param {String?} fileNameForImage file name if the CID is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Error?} error object or null
+ * @return {Error?} error object or null if no error
  */
 async function saveFileForMultihashToFS(
   libs,
@@ -414,7 +414,7 @@ async function saveFileForMultihashToFS(
   })
 
   try {
-    let actualStoragePath
+    let storageLocation
     let targetGatewayContentRoutes
     let nonTargetGatewayContentRoutes
 
@@ -444,7 +444,7 @@ async function saveFileForMultihashToFS(
         data: { nonTargetGatewayContentRoutes, targetGatewayContentRoutes }
       })
 
-      actualStoragePath =
+      storageLocation =
         await DiskManager.computeFilePathInDirAndEnsureItExists(
           dirCID,
           multihash
@@ -469,7 +469,7 @@ async function saveFileForMultihashToFS(
         return baseUrl
       })
 
-      actualStoragePath = await DiskManager.computeFilePathAndEnsureItExists(
+      storageLocation = await DiskManager.computeFilePathAndEnsureItExists(
         multihash
       )
 
@@ -479,14 +479,14 @@ async function saveFileForMultihashToFS(
       })
     }
 
-    const parsedStoragePath = path.parse(actualStoragePath).dir
+    const storageLocationParentDir = path.parse(storageLocation).dir
 
     decisionTree.recordStage({
       name: 'About to start running saveFileForMultihashToFS()',
       data: {
         multihash,
-        actualStoragePath,
-        parsedStoragePath
+        storageLocation,
+        storageLocationParentDir
       },
       logLevel: 'debug'
     })
@@ -495,20 +495,20 @@ async function saveFileForMultihashToFS(
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
-      await fs.mkdir(parsedStoragePath, { recursive: true })
+      await fs.mkdir(storageLocationParentDir, { recursive: true })
       decisionTree.recordStage({
         name: 'Successfully called mkdir on local file system',
         data: {
-          parsedStoragePath
+          storageLocationParentDir
         }
       })
     } catch (e) {
       decisionTree.recordStage({
         name: 'Error calling mkdir on local file system',
-        data: { parsedStoragePath }
+        data: { storageLocationParentDir }
       })
       throw new Error(
-        `Error making directory at ${parsedStoragePath} - ${e.message}`
+        `Error making directory at ${storageLocationParentDir} - ${e.message}`
       )
     }
 
@@ -519,10 +519,10 @@ async function saveFileForMultihashToFS(
      *  - If file does not exist on user's replca set, try the network and write to disk if file exists
      */
 
-    if (await fs.pathExists(actualStoragePath)) {
+    if (await fs.pathExists(storageLocation)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
-        data: { actualStoragePath }
+        data: { storageLocation }
       })
 
       return
@@ -532,7 +532,7 @@ async function saveFileForMultihashToFS(
       targetGatewayContentRoutes,
       nonTargetGatewayContentRoutes,
       multihash,
-      storageLocation: actualStoragePath,
+      storageLocation,
       numRetries,
       logger,
       decisionTree,
