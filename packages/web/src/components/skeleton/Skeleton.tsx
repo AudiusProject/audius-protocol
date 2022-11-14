@@ -15,6 +15,7 @@ const Skeleton = ({ width, height, className }: SkeletonProps) => {
   return (
     <div
       className={cn(styles.skeleton, className)}
+      aria-busy
       style={{
         width,
         height

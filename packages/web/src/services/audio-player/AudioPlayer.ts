@@ -212,6 +212,10 @@ export class AudioPlayer {
       this.stop()
       const prevVolume = this.audio.volume
       this.audio = new Audio()
+
+      // Connect this.audio to the window so that 3P's can interact with it.
+      window.audio = this.audio
+
       this.gainNode = null
       this.source = null
       this.audioCtx = null
