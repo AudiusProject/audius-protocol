@@ -655,10 +655,16 @@ export const getUserSubscribers = (encodedUserId: string, timeout: number) => {
   }
 }
 
-export const bulkGetUserSubscribers = (encodedUserIds: string, timeout: number) => {
+export const bulkGetUserSubscribers = (
+  encodedUserIds: string,
+  timeout: number
+) => {
   return {
     endpoint: 'v1/full/users/subscribers',
     method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
     queryParams: {
       ids: encodedUserIds
     },
