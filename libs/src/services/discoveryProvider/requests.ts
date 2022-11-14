@@ -665,7 +665,7 @@ export const bulkGetUserSubscribers = (
     headers: {
       'Content-Type': 'application/json'
     },
-    queryParams: {
+    data: {
       ids: encodedUserIds
     },
     timeout

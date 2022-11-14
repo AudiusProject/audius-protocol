@@ -1141,6 +1141,7 @@ export class DiscoveryProvider {
    *  queryParams: object
    *  method: string
    *  headers: object
+   *  data: object
    * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
