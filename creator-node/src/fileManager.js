@@ -444,11 +444,10 @@ async function saveFileForMultihashToFS(
         data: { nonTargetGatewayContentRoutes, targetGatewayContentRoutes }
       })
 
-      storageLocation =
-        await DiskManager.computeFilePathInDirAndEnsureItExists(
-          dirCID,
-          multihash
-        )
+      storageLocation = await DiskManager.computeFilePathInDirAndEnsureItExists(
+        dirCID,
+        multihash
+      )
     } else {
       // if it's not a directory, make it a regular gateway route
       // eg [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
