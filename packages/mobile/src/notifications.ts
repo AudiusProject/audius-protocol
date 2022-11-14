@@ -62,7 +62,11 @@ class PushNotifications {
 
   onNotification = (notification: any) => {
     console.info(`Received notification ${JSON.stringify(notification)}`)
-    if (Platform.OS === 'android' || !notification.foreground) {
+    if (
+      Platform.OS === 'android' ||
+      notification.userInteration ||
+      !notification.foreground
+    ) {
       track(
         make({
           eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION,
@@ -77,6 +81,16 @@ class PushNotifications {
 
       this.navigation?.navigate(notification.data.data)
     }
+  }
+
+  // Method used to open the push notification that the user pressed while the app was closed
+  openInitialNotification = () => {
+    PushNotification.popInitialNotification((notification) => {
+      if (notification) {
+        console.log('Opening initial notification')
+        this.onNotification(notification)
+      }
+    })
   }
 
   async onRegister(token: Token) {

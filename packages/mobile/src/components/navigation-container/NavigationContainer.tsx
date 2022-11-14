@@ -3,9 +3,9 @@ import { useRef } from 'react'
 
 import { accountSelectors } from '@audius/common'
 import {
-  useNavigationContainerRef,
   getStateFromPath,
-  NavigationContainer as RNNavigationContainer
+  NavigationContainer as RNNavigationContainer,
+  createNavigationContainerRef
 } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 
@@ -20,6 +20,9 @@ const { getAccountUser } = accountSelectors
 type NavigationContainerProps = {
   children: ReactNode
 }
+
+export const navigationRef = createNavigationContainerRef()
+
 /**
  * NavigationContainer contains the react-navigation context
  * and configures linking
@@ -29,7 +32,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
   const theme = useThemeVariant()
   const account = useSelector(getAccountUser)
 
-  const navigationRef = useNavigationContainerRef()
   const routeNameRef = useRef<string>()
 
   const linking = {
