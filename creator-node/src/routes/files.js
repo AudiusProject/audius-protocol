@@ -469,7 +469,12 @@ const getCID = async (req, res) => {
         time: `${Date.now() - startMs}ms`,
         data: { storagePath: queryResults.storagePath }
       })
-      const fsStream = await streamFromFileSystem(req, res, queryResults.storagePath, false)
+      const fsStream = await streamFromFileSystem(
+        req,
+        res,
+        queryResults.storagePath,
+        false
+      )
       decisionTree.push({
         stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM_COMPLETE`,
         time: `${Date.now() - startMs}ms`
