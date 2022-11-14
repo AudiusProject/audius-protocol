@@ -84,29 +84,34 @@ const handleSyncFromPrimary = async ({
     }
 
     // Ensure this node is syncing from the user's primary
-    let userReplicaSet
-    try {
-      userReplicaSet = await getReplicaSetEndpointsByWallet({
-        libs,
-        wallet,
-        parentLogger: logger
-      })
-    } catch (e: any) {
-      error = new Error(`Error fetching user replica set: ${e.message}`)
-      errorResponse = {
-        error,
-        result: 'failure_fetching_user_replica_set'
-      }
-
-      throw error
+    const userReplicaSet = {
+      primary: 'https://audius-content-1.figment.io',
+      secondary1: 'https://audius-content-2.figment.io',
+      secondary2: 'https://blockdaemon-audius-content-05.bdnodes.net'
     }
 
-    if (userReplicaSet.primary !== creatorNodeEndpoint) {
-      return {
-        abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
-        result: 'abort_current_node_is_not_user_primary'
-      }
-    }
+    // try {
+    //   userReplicaSet = await getReplicaSetEndpointsByWallet({
+    //     libs,
+    //     wallet,
+    //     parentLogger: logger
+    //   })
+    // } catch (e: any) {
+    //   error = new Error(`Error fetching user replica set: ${e.message}`)
+    //   errorResponse = {
+    //     error,
+    //     result: 'failure_fetching_user_replica_set'
+    //   }
+
+    //   throw error
+    // }
+
+    // if (userReplicaSet.primary !== creatorNodeEndpoint) {
+    //   return {
+    //     abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
+    //     result: 'abort_current_node_is_not_user_primary'
+    //   }
+    // }
 
     /**
      * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
@@ -239,15 +244,15 @@ const handleSyncFromPrimary = async ({
 
     // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
     // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
-    if (
-      thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
-      thisContentNodeEndpoint !== userReplicaSet.secondary2
-    ) {
-      return {
-        abort: `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`,
-        result: 'abort_current_node_is_not_user_secondary'
-      }
-    }
+    // if (
+    //   thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
+    //   thisContentNodeEndpoint !== userReplicaSet.secondary2
+    // ) {
+    //   return {
+    //     abort: `This node is not one of the user's secondaries. This node: ${thisContentNodeEndpoint} Secondaries: [${userReplicaSet.secondary1},${userReplicaSet.secondary2}]`,
+    //     result: 'abort_current_node_is_not_user_secondary'
+    //   }
+    // }
 
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
