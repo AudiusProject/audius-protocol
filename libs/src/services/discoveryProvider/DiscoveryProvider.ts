@@ -837,8 +837,8 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getLatest(type: string) {
-    const req = Requests.getLatest(type)
+  async getLatest(type: string, limit = 1, offset = 0) {
+    const req = Requests.getLatest(type, limit, offset)
     return await this._makeRequest(req)
   }
 

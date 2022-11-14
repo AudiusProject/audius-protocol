@@ -19,13 +19,15 @@ def get_latest_entities(type, args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         base_query = None
+
         if type == "track":
             base_query = (
                 session.query(Track.track_id)
                 .filter(Track.is_unlisted == False)
                 .filter(Track.is_current == True)
                 .filter(Track.is_premium == False)
-                .order_by(desc(Track.created_at))
+                # order must be deterministic
+                .order_by(desc(Track.created_at), desc(Track.track_id))
             )
 
         if type == "playlist":
@@ -33,7 +35,7 @@ def get_latest_entities(type, args):
                 session.query(Playlist.playlist_id)
                 .filter(Playlist.is_private == False)
                 .filter(Playlist.is_current == True)
-                .order_by(desc(Playlist.created_at))
+                .order_by(desc(Playlist.created_at), desc(Playlist.playlist_id))
             )
 
         # user
@@ -41,7 +43,7 @@ def get_latest_entities(type, args):
             base_query = (
                 session.query(User.user_id)
                 .filter(User.is_current == True)
-                .order_by(desc(User.created_at))
+                .order_by(desc(User.created_at), desc(User.user_id))
             )
 
         query_results = add_query_pagination(base_query, limit, offset).all()
