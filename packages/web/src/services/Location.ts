@@ -21,10 +21,24 @@ export type Location = {
   utc_offset: string
 }
 
+type CachedLocation = {
+  location: Location
+  expires: number
+}
+const CACHED_LOCATION_TTL_MS = 5000
+let cachedLocation: CachedLocation | null = null
 export const getLocation = async (): Promise<Location | null> => {
   try {
+    if (cachedLocation && cachedLocation.expires < Date.now()) {
+      return cachedLocation.location
+    }
     const res = await fetch('https://ipapi.co/json/')
-    return res.json()
+    const json = await res.json()
+    cachedLocation = {
+      location: json,
+      expires: Date.now() + CACHED_LOCATION_TTL_MS
+    }
+    return json
   } catch (e) {
     console.error(
       `Got error during getLocation call: ${e} | Error message is: ${
