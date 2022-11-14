@@ -8,9 +8,10 @@ import { chunk } from 'lodash'
 import DbManager from './dbManager'
 import redisClient from './redis'
 import config from './config'
-import { logger as genericLogger } from './logging'
+import { logger as genericLogger, createChildLogger, logInfoWithDuration, logErrorWithDuration, getStartTime } from './logging'
 import { tracing } from './tracer'
 import { execShellCommand } from './utils'
+import { saveFileForMultihashToFS } from './fileManager'
 
 const models = require('./models')
 
@@ -560,4 +561,34 @@ export async function sweepSubdirectoriesInFiles(
 
   // keep calling this function recursively without an await so the original function scope can close
   if (redoJob) return sweepSubdirectoriesInFiles()
+}
+
+export async function fixFileStoragePaths(): Promise<void> {
+  const logger: any = createChildLogger(genericLogger, { function: 'fixFileStoragePaths' })
+
+  // Wrap in a try-catch to retry
+  try {
+    let startTime = getStartTime()
+    const misplacedFileRecords = await models.sequelize.query(
+      `select * from "Files" where "storagePath" not like '${getConfigStoragePath()}%';`
+    )
+
+    logInfoWithDuration({ logger, startTime }, 'asdf')
+
+    for await (const fileRecord of misplacedFileRecords) {
+      await saveFileForMultihashToFS(
+        {},
+        logger,
+        fileRecord.multihash,
+        fileRecord.dirMultihash,
+        [] /** targetGateways */,
+        fileRecord.fileName,
+        fileRecord.trackBlockchainId
+      )
+    }
+
+  } catch (e) {
+    // Redo everything on any error
+    await fixFileStoragePaths()
+  }
 }
