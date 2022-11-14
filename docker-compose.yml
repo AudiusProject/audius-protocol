@@ -348,7 +348,6 @@ services:
       audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
 
       audius_discprov_dev_mode: "true"
-      audius_auto_upgrade_enabled: "false"
     volumes:
       - ./discovery-provider/alembic:/audius-discovery-provider/alembic
       - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
@@ -402,8 +401,6 @@ services:
 
       dataProviderUrl: "http://poa-ganache:8545"
       dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
-
-      autoUpgradeEnabled: "false"
     volumes:
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs

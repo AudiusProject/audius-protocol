@@ -131,6 +131,10 @@ const healthCheck = async (
   } catch (_) {}
 
   const healthy = !config.get('considerNodeUnhealthy')
+  const databaseIsLocalhost =
+    config.get('dbUrl') ===
+      'postgres://postgres:postgres@db:5432/audius_creator_node' ||
+    config.get('dbUrl').includes('localhost')
 
   const response = {
     ...versionInfo,
@@ -152,7 +156,7 @@ const healthCheck = async (
     longitude,
     databaseConnections,
     databaseSize,
-    databaseIsLocalhost: config.get('dbUrl').search('localhost') > 1,
+    databaseIsLocalhost: databaseIsLocalhost,
     usedMemory,
     usedTCPMemory,
     storagePathUsed,
