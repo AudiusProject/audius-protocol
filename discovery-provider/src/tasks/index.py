@@ -1,12 +1,14 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -386,7 +388,7 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata
+    return cid_metadata, cid_type
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -526,6 +528,28 @@ def process_state_changes(
         )
 
 
+cid_types = ["track", "user", "playlist_data"]
+UPSERT_CID_METADATA_QUERY = """
+    INSERT INTO cid_data (cid, type, data)
+    VALUES (:cid, :type, :data)
+    ON CONFLICT DO NOTHING;
+"""
+
+
+def save_cid_metadata(
+    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
+):
+
+    if not cid_metadata:
+        return
+
+    vals = []
+    for cid, val in cid_metadata.items():
+        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+
+    session.execute(UPSERT_CID_METADATA_QUERY, vals)
+
+
 def create_and_raise_indexing_error(err, redis):
     logger.info(
         f"index.py | Error in the indexing task at"
@@ -645,7 +669,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata = fetch_cid_metadata(
+                    cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
@@ -703,6 +727,23 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    if is_save_cid_enabled:
+                        """
+                        Add CID Metadata to db (cid -> json blob, etc.)
+                        """
+                        save_cid_metadata_time = time.time()
+                        # bulk process operations once all tx's for block have been parsed
+                        # and get changed entity IDs for cache clearing
+                        # after session commit
+                        save_cid_metadata(session, cid_metadata, cid_type)
+                        metric.save_time(
+                            {"scope": "save_cid_metadata"},
+                            start_time=save_cid_metadata_time,
+                        )
+                        logger.info(
+                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                        )
 
                 except Exception as e:
 

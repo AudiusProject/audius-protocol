@@ -200,9 +200,8 @@ def entity_manager_update(
                 for record in records:
                     record.is_current = False
 
-                if "updated_at" in record[-1]:
-                    logger.info("asdf updating updated_at")
-                    record.updated_at = params.block_datetime
+                    if "updated_at" in record.__dict__:
+                        record.updated_at = params.block_datetime
                 records[-1].is_current = True
                 records_to_save.extend(records)
 
