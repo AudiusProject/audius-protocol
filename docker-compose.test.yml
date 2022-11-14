@@ -79,17 +79,54 @@ services:
       mode: global
       replicas: 1
 
+  discovery-provider-db:
+    image: postgres:11.4
+    user: postgres
+    environment:
+      POSTGRES_DB: "discovery_provider"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  discovery-provider-redis:
+    image: redis:5.0.5
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
   test-discovery-provider:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: scripts/test_entrypoint.sh
+    entrypoint: pytest
     command: ""
+    environment:
+      audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_redis_url: "redis://discovery-provider-redis:6379/00"
+      audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
+      audius_elasticsearch_run_indexer: "true"
+    volumes:
+      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
+      discovery-provider-db:
+        condition: service_healthy
+      discovery-provider-redis:
+        condition: service_healthy
     deploy:
       mode: global
+    profiles:
+      - tests
 
 volumes:
   poa-contracts-abis:

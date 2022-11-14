@@ -17,8 +17,11 @@ from src.utils import helpers
 from src.utils.redis_connection import get_redis
 from web3 import HTTPProvider, Web3
 
-DB_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery"
-TEST_BROKER_URL = "redis://localhost:5379/0"
+DB_URL = os.getenv(
+    "audius_db_url",
+    "postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery",
+)
+TEST_BROKER_URL = os.getenv("audius_redis_url", "redis://localhost:5379/0")
 ENGINE_ARGS_LITERAL = '{ \
     "pool_size": 10, \
     "max_overflow": 0, \
