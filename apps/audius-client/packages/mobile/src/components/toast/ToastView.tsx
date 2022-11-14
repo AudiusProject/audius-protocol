@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef } from 'react'
 
 import { StyleSheet, Animated, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
@@ -67,6 +68,7 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
   const styles = useThemedStyles(createStyles(type))
   const translationAnim = useRef(new Animated.Value(0)).current
   const opacityAnim = useRef(new Animated.Value(0)).current
+  const insets = useSafeAreaInsets()
 
   const animOut = useCallback(() => {
     Animated.spring(opacityAnim, {
@@ -94,10 +96,10 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
     }).start()
     Animated.spring(translationAnim, {
       ...springConfig,
-      toValue: DISTANCE_DOWN,
+      toValue: Math.max(DISTANCE_DOWN, insets.top + 20),
       useNativeDriver: true
     }).start(callback)
-  }, [translationAnim, opacityAnim, animOut, timeout])
+  }, [translationAnim, opacityAnim, animOut, timeout, insets])
 
   useEffect(() => {
     animIn()
