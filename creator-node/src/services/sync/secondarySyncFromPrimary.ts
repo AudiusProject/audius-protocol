@@ -622,7 +622,6 @@ const handleSyncFromPrimary = async ({
 
               // If saveFile op failed, record CID for later processing
               if (error) {
-                console.error('secondarySyncFromPrimary error', error)
                 CIDsThatFailedSaveFileOp.add(multihash)
               }
             }
