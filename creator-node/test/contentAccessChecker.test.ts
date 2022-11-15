@@ -21,7 +21,7 @@ describe('Test content access', function () {
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
   const signedDataFromDiscoveryNode = {
     cid: cid,
-    cache: true,
+    shouldCache: true,
     timestamp: Date.now()
   }
 
@@ -128,7 +128,7 @@ describe('Test content access', function () {
       const tenDays = 1_000 * 60 * 60 * 24 * 10
       const expiredTimestampData = {
         cid: cid,
-        cache: true,
+        shouldCache: true,
         timestamp: Date.now() - tenDays // ten days old
       }
       const signatureFromDiscoveryNode = generateSignature(

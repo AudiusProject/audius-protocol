@@ -56,7 +56,7 @@ export async function checkContentAccess({
   const {
     cid: copy320CID,
     timestamp: signedTimestamp,
-    cache
+    shouldCache
   } = signedDataFromDiscoveryNode
 
   if (copy320CID !== cid) {
@@ -83,6 +83,6 @@ export async function checkContentAccess({
   return {
     doesUserHaveAccess: true,
     error: null,
-    shouldCache: !!cache
+    shouldCache: !!shouldCache
   }
 }
