@@ -51,6 +51,7 @@ const DEFAULT_EMAIL_FREQUENCY = EmailFrequency.LIVE
 
 const Results = Object.freeze({
   USER_TURNED_OFF: 'USER_TURNED_OFF',
+  USER_BLOCKED: 'USER_BLOCKED',
   SHOULD_SKIP: 'SHOULD_SKIP',
   ERROR: 'ERROR',
   SENT: 'SENT'
@@ -294,7 +295,19 @@ async function processEmailNotifications(expressApp, audiusLibs) {
       const chunkResults = await Promise.all(
         userInfo.slice(start, end).map(async (user) => {
           try {
-            let { email: userEmail, blockchainUserId: userId, timezone } = user
+            let {
+              email: userEmail,
+              blockchainUserId: userId,
+              timezone,
+              isBlockedFromEmails
+            } = user
+            if (isBlockedFromEmails) {
+              return {
+                result: Results.USER_BLOCKED,
+                error: `User with id ${userId} and email ${userEmail} is blocked from receiving emails`
+              }
+            }
+
             if (timezone === null) {
               timezone = DEFAULT_TIMEZONE
             }
