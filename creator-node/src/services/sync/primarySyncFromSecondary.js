@@ -8,7 +8,7 @@ const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
 const { computeFilePath, computeFilePathInDir } = require('../../diskManager')
 const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
@@ -330,7 +330,7 @@ const primarySyncFromSecondary = instrumentTracing({
 /**
  * Fetch data for all files & save to disk
  *
- * - `saveFileForMultihashToFS` will short-circuit if file already exists on disk
+ * - `fetchFileFromNetworkAndSaveToFS` will short-circuit if file already exists on disk
  * - Performed in batches to limit concurrent load
  */
 async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
@@ -355,15 +355,15 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
      * Fetch content for each CID + save to FS
      * Record any CIDs that failed retrieval/saving for later use
      *
-     * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+     * - `fetchFileFromNetworkAndSaveToFS()` should never reject - it will return error indicator for post processing
      */
     await Promise.all(
       trackFilesSlice.map(async (trackFile) => {
-        const error = await saveFileForMultihashToFS(
+        const { error } = await fetchFileFromNetworkAndSaveToFS(
           libs,
           logger,
           trackFile.multihash,
-          trackFile.storagePath,
+          trackFile.dirMultihash,
           gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
@@ -400,22 +400,24 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
         // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
         let error
         if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-          error = await saveFileForMultihashToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
+            nonTrackFile.dirMultihash,
             gatewaysToTry,
             nonTrackFile.fileName
           )
+          error = fetchError
         } else {
-          error = await saveFileForMultihashToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
+            nonTrackFile.dirMultihash,
             gatewaysToTry
           )
+          error = fetchError
         }
 
         // If saveFile op failed, record CID for later processing

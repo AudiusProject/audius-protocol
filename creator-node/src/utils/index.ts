@@ -17,17 +17,14 @@ import {
   validateMetadata,
   validateAssociatedWallets
 } from './validateAudiusUserMetadata'
-import {
-  findCIDInNetwork,
-  verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
-} from './cidUtils'
+import { verifyCIDMatchesExpected, EMPTY_FILE_CID } from './cidUtils'
 import {
   createDirForFile,
   writeStreamToFileSystem,
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
-  _streamFileToDiskHelper
+  _streamFileToDiskHelper,
+  deleteAttemptedStateFixes
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
@@ -41,7 +38,7 @@ export {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
+  deleteAttemptedStateFixes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -61,7 +58,7 @@ module.exports = {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
+  deleteAttemptedStateFixes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
