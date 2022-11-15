@@ -4,13 +4,11 @@ import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import type {
   UpdateReplicaSetUser,
   ReplicaToUserInfoMap,
-  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes,
-  WalletToSecondaryToShouldContinueActions
+  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes
 } from '../stateReconciliation/types'
 import type {
   FindReplicaSetUpdateJobParams,
   ReplicaToAllUserInfoMaps,
-  UserSecondarySyncMetrics,
   FindReplicaSetUpdatesJobReturnValue,
   StateMonitoringUser
 } from './types'
@@ -18,6 +16,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { stringifyMap } from '../../../utils'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { CNodeHealthManager } from '../CNodeHealthManager'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const _: LoDashStatic = require('lodash')
 
@@ -38,14 +37,14 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
- * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
+ * @param {SecondarySyncHealthTracker} param.secondarySyncHealthTracker instance of SeconarySyncHealthTracker. used to determine if secondary is unhealthy for wallet
  */
 async function findReplicaSetUpdates({
   logger,
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  walletToSecondaryToShouldContinueAction
+  secondarySyncHealthTracker
 }: DecoratedJobParams<FindReplicaSetUpdateJobParams>): Promise<
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
 > {
@@ -70,17 +69,7 @@ async function findReplicaSetUpdates({
             user,
             thisContentNodeEndpoint,
             unhealthyPeersSet,
-            shouldReenqueueSyncBySecondaries: {
-              // Check if the wallet on the secondary should re-enqueue sync
-              [user.secondary1]:
-                walletToSecondaryToShouldContinueAction[user.wallet][
-                  user.secondary1
-                ] || false,
-              [user.secondary2]:
-                walletToSecondaryToShouldContinueAction[user.wallet][
-                  user.secondary2
-                ] || false
-            },
+            secondarySyncHealthTracker,
             cNodeEndpointToSpIdMap,
             logger
           })
@@ -164,16 +153,14 @@ const _findReplicaSetUpdatesForUser = async ({
   user,
   thisContentNodeEndpoint,
   unhealthyPeersSet,
-  shouldReenqueueSyncBySecondaries,
+  secondarySyncHealthTracker,
   cNodeEndpointToSpIdMap,
   logger
 }: {
   user: StateMonitoringUser
   thisContentNodeEndpoint: string
   unhealthyPeersSet: Set<string>
-  shouldReenqueueSyncBySecondaries: {
-    [secondary: string]: boolean
-  }
+  secondarySyncHealthTracker: SecondarySyncHealthTracker
   cNodeEndpointToSpIdMap: Map<string, number>
   logger: Logger
 }): Promise<UpdateReplicaSetOp[]> => {
@@ -226,7 +213,10 @@ const _findReplicaSetUpdatesForUser = async ({
       const secondary = secondaryInfo.endpoint
 
       const shouldReenqueue =
-        shouldReenqueueSyncBySecondaries[secondary] || false
+        secondarySyncHealthTracker.shouldWalletOnSecondaryContinueAction(
+          wallet,
+          secondary
+        )
 
       // Error case 1 - mismatched spID
       const spIdFromChain = cNodeEndpointToSpIdMap.get(secondary)

@@ -1,13 +1,9 @@
 import type {
   ReplicaSetNodesToUserWalletsMap,
-  StateMonitoringUser,
-  UserSecondarySyncMetricsMap
+  StateMonitoringUser
 } from './types'
-import type { WalletsToSecondariesMapping } from '../types'
 
-import { determineIfWalletOnSecondaryShouldContinueActions } from '../stateReconciliation/SecondarySyncHealthTracker'
 import { asyncRetry } from '../../../utils/asyncRetry'
-import { WalletToSecondaryToShouldContinueActions } from '../stateReconciliation/types'
 
 const _ = require('lodash')
 const axios = require('axios')
@@ -283,6 +279,5 @@ module.exports = {
   getLatestUserIdFromDiscovery,
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
   computeSyncModeForUserAndReplica
 }

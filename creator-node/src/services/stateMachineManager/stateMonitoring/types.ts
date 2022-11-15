@@ -1,8 +1,6 @@
-import type {
-  IssueSyncRequestJobParams,
-  WalletToSecondaryToShouldContinueActions
-} from '../stateReconciliation/types'
+import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 import type { SpanContext } from '@opentelemetry/api'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 export type StateMonitoringUser = {
   primary: string
@@ -23,19 +21,7 @@ export type ReplicaToAllUserInfoMaps = {
     [wallet: string]: UserInfo
   }
 }
-// TODO: this needs fixing? not sure how
-export type UserSecondarySyncMetrics = {
-  // successRate: number
-  // successCount: number
-  // failureCount: number
-  inexplicitErrors: number
-}
 
-export type UserSecondarySyncMetricsMap = {
-  [wallet: string]: {
-    [secondary: string]: UserSecondarySyncMetrics
-  }
-}
 export type ReplicaSetNodesToUserWalletsMap = {
   [node: string]: string[]
 }
@@ -64,7 +50,7 @@ export type FindSyncRequestsJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  WalletToSecondaryToShouldContinueActions: WalletToSecondaryToShouldContinueActions
+  secondarySyncHealthTracker: SecondarySyncHealthTracker
   parentSpanContext?: SpanContext
 }
 export type FindSyncRequestsJobReturnValue = {
@@ -82,7 +68,7 @@ export type FindReplicaSetUpdateJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  WalletToSecondaryToShouldContinueActions: WalletToSecondaryToShouldContinueActions
+  secondarySyncHealthTracker: SecondarySyncHealthTracker
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {

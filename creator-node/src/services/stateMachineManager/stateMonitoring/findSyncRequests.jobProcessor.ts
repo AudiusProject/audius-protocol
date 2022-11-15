@@ -5,8 +5,7 @@ import type {
   FindSyncRequestsJobReturnValue,
   OutcomeCountsMap,
   ReplicaToAllUserInfoMaps,
-  StateMonitoringUser,
-  UserSecondarySyncMetrics
+  StateMonitoringUser
 } from './types'
 import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 
@@ -14,6 +13,7 @@ import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const _: LoDashStatic = require('lodash')
 
@@ -29,11 +29,6 @@ const {
 const { computeSyncModeForUserAndReplica } = require('./stateMonitoringUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
-const minSecondaryUserSyncSuccessPercent =
-  config.get('minimumSecondaryUserSyncSuccessPercent') / 100
-const minFailedSyncRequestsBeforeReconfig = config.get(
-  'minimumFailedSyncRequestsBeforeReconfig'
-)
 
 type FindSyncsForUserResult = {
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
@@ -61,7 +56,7 @@ async function findSyncRequests({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  userSecondarySyncMetricsMap,
+  secondarySyncHealthTracker,
   logger
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
   DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
@@ -78,19 +73,7 @@ async function findSyncRequests({
   let duplicateSyncReqs: IssueSyncRequestJobParams[] = []
   let errors: string[] = []
   for (const user of users) {
-    const { wallet, primary, secondary1, secondary2 } = user
-
-    const userSecondarySyncMetrics = {
-      [secondary1]: { successRate: 1, failureCount: 0, successCount: 0 },
-      [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
-      ...userSecondarySyncMetricsMap[wallet]
-    }
-    logger.debug(
-      `Finding sync requests for user ${JSON.stringify(
-        user
-      )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`
-    )
-
+    const { wallet, primary } = user
     const {
       syncReqsToEnqueue: userSyncReqsToEnqueue,
       duplicateSyncReqs: userDuplicateSyncReqs,
@@ -99,9 +82,7 @@ async function findSyncRequests({
     } = await _findSyncsForUser(
       user,
       unhealthyPeersSet,
-      userSecondarySyncMetrics,
-      minSecondaryUserSyncSuccessPercent,
-      minFailedSyncRequestsBeforeReconfig,
+      secondarySyncHealthTracker,
       replicaToAllUserInfoMaps,
       cNodeEndpointToSpIdMap
     )
@@ -177,11 +158,7 @@ async function findSyncRequests({
 async function _findSyncsForUser(
   user: StateMonitoringUser,
   unhealthyPeers: Set<string>,
-  userSecondarySyncMetricsMap: {
-    [secondary: string]: UserSecondarySyncMetrics
-  },
-  minSecondaryUserSyncSuccessPercent: number,
-  minFailedSyncRequestsBeforeReconfig: number,
+  secondarySyncHealthTracker: SecondarySyncHealthTracker,
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
   cNodeEndpointToSpIdMap: Map<string, number>
 ): Promise<FindSyncsForUserResult> {
@@ -227,8 +204,6 @@ async function _findSyncsForUser(
   for (const secondaryInfo of secondariesInfo) {
     const secondary = secondaryInfo.endpoint
 
-    const { successRate, failureCount } = userSecondarySyncMetricsMap[secondary]
-
     // Secondary is unhealthy if we already marked it as unhealthy previously -- don't sync to it
     if (unhealthyPeers.has(secondary)) {
       outcomesBySecondary[secondary].result = 'no_sync_already_marked_unhealthy'
@@ -244,8 +219,10 @@ async function _findSyncsForUser(
 
     // Secondary has too low of a success rate -- don't sync to it
     if (
-      failureCount >= minFailedSyncRequestsBeforeReconfig &&
-      successRate < minSecondaryUserSyncSuccessPercent
+      secondarySyncHealthTracker.shouldWalletOnSecondaryContinueAction(
+        wallet,
+        secondary
+      )
     ) {
       outcomesBySecondary[secondary].result = 'no_sync_success_rate_too_low'
       continue

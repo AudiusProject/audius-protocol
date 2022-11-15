@@ -15,8 +15,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { CNodeHealthManager } from '../CNodeHealthManager'
 import config from '../../../config'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import { WalletToSecondaryToShouldContinueActions } from '../stateReconciliation/types'
-import { determineIfWalletOnSecondaryShouldContinueActions } from '../stateReconciliation/SecondarySyncHealthTracker'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const {
   getNodeUsers,
@@ -69,8 +68,10 @@ async function monitorState({
   let users: StateMonitoringUser[] = []
   let unhealthyPeers = new Set<string>()
   let replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps = {}
-  let walletToSecondaryToShouldContinueActions: WalletToSecondaryToShouldContinueActions =
-    {}
+
+  const secondarySyncHealthTracker: SecondarySyncHealthTracker =
+    new SecondarySyncHealthTracker()
+
   try {
     try {
       users = await getNodeUsers(
@@ -182,21 +183,20 @@ async function monitorState({
 
     // Retrieve success metrics for all users syncing to their secondaries
     try {
-      walletToSecondaryToShouldContinueActions =
-        await determineIfWalletOnSecondaryShouldContinueActions(
-          users.map((user) => ({
-            wallet: user.wallet,
-            secondary1: user.secondary1,
-            secondary2: user.secondary2
-          }))
-        )
+      await secondarySyncHealthTracker.computeIfWalletOnSecondaryShouldContinueActions(
+        users.map((user) => ({
+          wallet: user.wallet,
+          secondary1: user.secondary1,
+          secondary2: user.secondary2
+        }))
+      )
       _addToDecisionTree(
         decisionTree,
         'computeUserSecondarySyncSuccessRatesMap Success',
         logger,
         {
           walletToSecondaryToShouldContinueActions: Object.keys(
-            walletToSecondaryToShouldContinueActions
+            secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction()
           )?.length
         }
       )
@@ -231,14 +231,14 @@ async function monitorState({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToShouldContinueActions,
+    secondarySyncHealthTracker,
     parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToShouldContinueActions,
+    secondarySyncHealthTracker,
     parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {

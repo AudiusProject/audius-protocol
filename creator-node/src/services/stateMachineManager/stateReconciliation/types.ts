@@ -105,6 +105,6 @@ export type RecoverOrphanedDataJobReturnValue = {
   numWalletsWithOrphanedData: number
 }
 
-export type WalletToSecondaryToShouldContinueActions = {
+export type WalletToSecondaryToShouldContinueAction = {
   [wallet: string]: { [secondary: string]: boolean }
 }
