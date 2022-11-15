@@ -32,5 +32,3 @@ export const SYNC_ERRORS = [
   'failure_inconsistent_clock',
   'default'
 ]
-
-export const MAX_SCAN_ATTEMPTS = 10

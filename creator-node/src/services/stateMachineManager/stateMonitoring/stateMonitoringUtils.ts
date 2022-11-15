@@ -5,8 +5,9 @@ import type {
 } from './types'
 import type { WalletsToSecondariesMapping } from '../types'
 
-import { computeUsersSecondarySyncSuccessRatesForToday } from '../stateReconciliation/SecondarySyncHealthTracker'
+import { determineIfWalletOnSecondaryShouldContinueActions } from '../stateReconciliation/SecondarySyncHealthTracker'
 import { asyncRetry } from '../../../utils/asyncRetry'
+import { WalletToSecondaryToShouldContinueActions } from '../stateReconciliation/types'
 
 const _ = require('lodash')
 const axios = require('axios')
@@ -172,25 +173,6 @@ const buildReplicaSetNodesToUserWalletsMap = (
   })
 
   return replicaSetNodesToUserWalletsMap
-}
-
-const computeUserSecondarySyncSuccessRatesMap = async (
-  users: StateMonitoringUser[] = []
-): Promise<UserSecondarySyncMetricsMap> => {
-  // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
-  const walletsToSecondariesMapping: WalletsToSecondariesMapping = {}
-  for (const user of users) {
-    const { wallet, secondary1, secondary2 } = user
-    const secondaries = [secondary1, secondary2].filter(Boolean)
-    walletsToSecondariesMapping[wallet] = secondaries
-  }
-
-  const userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap =
-    await computeUsersSecondarySyncSuccessRatesForToday(
-      walletsToSecondariesMapping
-    )
-
-  return userSecondarySyncMetricsMap
 }
 
 /**

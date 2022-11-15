@@ -1,4 +1,7 @@
-import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+import type {
+  IssueSyncRequestJobParams,
+  WalletToSecondaryToShouldContinueActions
+} from '../stateReconciliation/types'
 import type { SpanContext } from '@opentelemetry/api'
 
 export type StateMonitoringUser = {
@@ -20,11 +23,14 @@ export type ReplicaToAllUserInfoMaps = {
     [wallet: string]: UserInfo
   }
 }
+// TODO: this needs fixing? not sure how
 export type UserSecondarySyncMetrics = {
-  successRate: number
-  successCount: number
-  failureCount: number
+  // successRate: number
+  // successCount: number
+  // failureCount: number
+  inexplicitErrors: number
 }
+
 export type UserSecondarySyncMetricsMap = {
   [wallet: string]: {
     [secondary: string]: UserSecondarySyncMetrics
@@ -58,7 +64,7 @@ export type FindSyncRequestsJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
+  WalletToSecondaryToShouldContinueActions: WalletToSecondaryToShouldContinueActions
   parentSpanContext?: SpanContext
 }
 export type FindSyncRequestsJobReturnValue = {
@@ -76,9 +82,15 @@ export type FindReplicaSetUpdateJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap
+  WalletToSecondaryToShouldContinueActions: WalletToSecondaryToShouldContinueActions
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
   cNodeEndpointToSpIdMap: string
+}
+
+export type ComputeWalletOnSecondaryUserInfo = {
+  wallet: string
+  secondary1: string
+  secondary2: string
 }

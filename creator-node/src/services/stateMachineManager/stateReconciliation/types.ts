@@ -105,6 +105,6 @@ export type RecoverOrphanedDataJobReturnValue = {
   numWalletsWithOrphanedData: number
 }
 
-export type WalletToSecondaryToShouldReenqueueSync = {
-  [wallet: string]: { [secondary: string]: [shouldReenqueue: boolean] }
+export type WalletToSecondaryToShouldContinueActions = {
+  [wallet: string]: { [secondary: string]: boolean }
 }
