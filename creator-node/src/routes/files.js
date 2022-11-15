@@ -113,11 +113,11 @@ const streamFromFileSystem = async (
       )
     }
 
-    // If content is premium, set cache-control to no-cache.
+    // If content is gated, set cache-control to no-cache.
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
-    // The premiumContentMiddleware sets the req.premiumContent object so that we do not
+    // The contentAccessMiddleware sets the req.contentAccess object so that we do not
     // have to make another database round trip to get this info.
-    if (req.premiumContent?.isPremium) {
+    if (req.contentAccess?.isPremium) {
       res.setHeader('cache-control', 'no-cache')
     } else {
       res.setHeader('cache-control', 'public, max-age=2592000, immutable')
@@ -740,10 +740,6 @@ router.post(
  * Serve data hosted by creator node and create download route using query string pattern
  * `...?filename=<file_name.mp3>`.
  * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
- *
- * This route uses the premium content middleware to check if content requested is premium.
- * If so, the middleware ensures that the user does have access to the content before
- * proceeding to the getCID logic that returns the premium content.
  *
  * @param req
  * @param req.query

@@ -2,10 +2,10 @@ import { isRegisteredDiscoveryNode } from './helpers'
 import { CheckAccessArgs, CheckAccessResponse } from './types'
 import { recoverWallet, signatureHasExpired } from '../apiSigning'
 
-const PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
 /**
- * Checks that all premium content headers are passed in.
+ * Checks that all content headers are passed in.
  * Checks that discovery node that generated signature is registered.
  * Checks that signature is not too old.
  * Checks that user requesting the content has access.
@@ -69,7 +69,7 @@ export async function checkContentAccess({
 
   const hasSignatureExpired = signatureHasExpired(
     signedTimestamp,
-    PREMIUM_CONTENT_SIGNATURE_MAX_TTL_MS
+    CONTENT_SIGNATURE_MAX_TTL_MS
   )
   if (hasSignatureExpired) {
     logger.info(`Premium content signature for cid ${copy320CID} is too old.`)

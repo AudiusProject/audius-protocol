@@ -499,10 +499,10 @@ const config = convict({
     env: 'entityManagerReplicaSetEnabled',
     default: false
   },
-  premiumContentEnabled: {
-    doc: 'whether or not to enable premium content',
+  contentAccessEnabled: {
+    doc: 'whether or not to enable content access middleware',
     format: Boolean,
-    env: 'premiumContentEnabled',
+    env: 'contentAccessEnabled',
     default: false
   },
 

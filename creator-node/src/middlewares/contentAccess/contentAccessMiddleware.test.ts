@@ -64,9 +64,9 @@ describe('Test content access middleware', () => {
     mockRes = resFactory()
   })
 
-  describe('when premium content is enabled', () => {
+  describe('when content access is enabled', () => {
     beforeEach(() => {
-      config.set('premiumContentEnabled', true)
+      config.set('contentAccessEnabled', true)
     })
 
     it('returns bad request when missing the CID param', async () => {
@@ -136,9 +136,9 @@ describe('Test content access middleware', () => {
     })
   })
 
-  describe('when premium content is disabled', () => {
+  describe('when content access is disabled', () => {
     it('moves on to the next middleware', async () => {
-      config.set('premiumContentEnabled', false)
+      config.set('contentAccessEnabled', false)
 
       let nextCalled = false
       await contentAccessMiddlewareProxy({}).contentAccessMiddleware(
