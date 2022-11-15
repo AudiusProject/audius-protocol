@@ -3,7 +3,7 @@ import { getLibsMock } from './lib/libsMock'
 import { loggerFactory } from './lib/reqMock'
 import assert from 'assert'
 import { getApp } from './lib/app'
-import { checkContentAccess } from '../src/contentAccess/contentAccessChecker'
+import { checkCIDAccess } from '../src/contentAccess/contentAccessChecker'
 
 describe('Test content access', function () {
   let server: any
@@ -51,7 +51,7 @@ describe('Test content access', function () {
 
   describe('content access', () => {
     it('fails when there are missing headers', async () => {
-      const accessWithoutHeaders = await checkContentAccess({
+      const accessWithoutHeaders = await checkCIDAccess({
         cid,
         contentAccessHeaders: null as unknown as string,
         libs: libsMock,
@@ -64,7 +64,7 @@ describe('Test content access', function () {
         shouldCache: false
       })
 
-      const accessWithMissingHeaders = await checkContentAccess({
+      const accessWithMissingHeaders = await checkCIDAccess({
         cid,
         contentAccessHeaders: JSON.stringify({}),
         libs: libsMock,
@@ -87,7 +87,7 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
-      const access = await checkContentAccess({
+      const access = await checkCIDAccess({
         cid,
         contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,
@@ -110,7 +110,7 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
-      const access = await checkContentAccess({
+      const access = await checkCIDAccess({
         cid: 'incorrectCID',
         contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,
@@ -139,7 +139,7 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode: expiredTimestampData,
         signatureFromDiscoveryNode
       }
-      const access = await checkContentAccess({
+      const access = await checkCIDAccess({
         cid,
         contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,
@@ -162,7 +162,7 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         signatureFromDiscoveryNode
       }
-      const access = await checkContentAccess({
+      const access = await checkCIDAccess({
         cid,
         contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
         libs: libsMock,

@@ -26,7 +26,7 @@ describe('Test content access middleware', () => {
     ) {
       return proxyquire('./contentAccessMiddleware', {
         '../../contentAccess/contentAccessChecker': {
-          checkContentAccess: async () => accessCheckReturnsWith
+          checkCIDAccess: async () => accessCheckReturnsWith
         }
       })
     }

@@ -10,7 +10,7 @@ const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
  * Checks that signature is not too old.
  * Checks that user requesting the content has access.
  */
-export async function checkContentAccess({
+export async function checkCIDAccess({
   cid,
   contentAccessHeaders,
   libs,
@@ -40,7 +40,7 @@ export async function checkContentAccess({
     signatureFromDiscoveryNode
   )
   const isRegisteredDN = await isRegisteredDiscoveryNode({
-    wallet: discoveryNodeWallet,
+    discoveryNodeDelegateOwnerWallet: discoveryNodeWallet,
     libs,
     logger,
     redis

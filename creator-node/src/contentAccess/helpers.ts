@@ -3,12 +3,12 @@ import { Redis } from 'ioredis'
 import type Logger from 'bunyan'
 
 export async function isRegisteredDiscoveryNode({
-  wallet,
+  discoveryNodeDelegateOwnerWallet,
   libs,
   logger,
   redis
 }: {
-  wallet: string
+  discoveryNodeDelegateOwnerWallet: string
   libs: any
   logger: Logger
   redis: Redis
@@ -19,6 +19,6 @@ export async function isRegisteredDiscoveryNode({
     redis
   })
   return allRegisteredDiscoveryNodes.some(
-    (node) => node.delegateOwnerWallet === wallet
+    (node) => node.delegateOwnerWallet === discoveryNodeDelegateOwnerWallet
   )
 }

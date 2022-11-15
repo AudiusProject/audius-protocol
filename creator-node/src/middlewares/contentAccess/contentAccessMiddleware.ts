@@ -8,7 +8,7 @@ import {
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
-import { checkContentAccess } from '../../contentAccess/contentAccessChecker'
+import { checkCIDAccess } from '../../contentAccess/contentAccessChecker'
 import { tracing } from '../../tracer'
 
 /**
@@ -41,7 +41,7 @@ export const contentAccessMiddleware = async (
     const { libs, redis } = serviceRegistry
     const logger = req.logger as Logger
 
-    const { isValidRequest, shouldCache, error } = await checkContentAccess({
+    const { isValidRequest, shouldCache, error } = await checkCIDAccess({
       cid,
       contentAccessHeaders,
       libs,
