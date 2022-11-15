@@ -22,7 +22,7 @@ export type CheckAccessArgs = {
 
 export type SignedDataFromDiscoveryNode = {
   cid: string
-  timestamp: string
+  timestamp: number
   shouldCache: boolean
 }
 

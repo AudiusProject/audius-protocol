@@ -20,7 +20,7 @@ describe('Test content access', function () {
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
   const signedDataFromDiscoveryNode = {
-    cid: cid,
+    cid,
     shouldCache: true,
     timestamp: Date.now()
   }
@@ -78,13 +78,10 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         dummyDNPrivateKey
       )
-      const contentAccessHeadersObj = {
-        signedDataFromDiscoveryNode,
-        signatureFromDiscoveryNode
-      }
       const access = await checkCIDAccess({
         cid: 'incorrectCID',
-        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        signedDataFromDiscoveryNode,
+        signatureFromDiscoveryNode,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -107,13 +104,11 @@ describe('Test content access', function () {
         expiredTimestampData,
         dummyDNPrivateKey
       )
-      const contentAccessHeadersObj = {
-        signedDataFromDiscoveryNode: expiredTimestampData,
-        signatureFromDiscoveryNode
-      }
+
       const access = await checkCIDAccess({
         cid,
-        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        signatureFromDiscoveryNode,
+        signedDataFromDiscoveryNode: expiredTimestampData,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -130,13 +125,10 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         dummyDNPrivateKey
       )
-      const contentAccessHeadersObj = {
-        signedDataFromDiscoveryNode,
-        signatureFromDiscoveryNode
-      }
       const access = await checkCIDAccess({
         cid,
-        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        signatureFromDiscoveryNode,
+        signedDataFromDiscoveryNode,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
