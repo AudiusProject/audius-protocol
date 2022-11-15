@@ -400,22 +400,24 @@ async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
         // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
         let error
         if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-          ;({ error } = await fetchFileFromNetworkAndSaveToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
             nonTrackFile.dirMultihash,
             gatewaysToTry,
             nonTrackFile.fileName
-          ))
+          )
+          error = fetchError
         } else {
-          ;({ error } = await fetchFileFromNetworkAndSaveToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
             nonTrackFile.dirMultihash,
             gatewaysToTry
-          ))
+          )
+          error = fetchError
         }
 
         // If saveFile op failed, record CID for later processing

@@ -598,22 +598,24 @@ const handleSyncFromPrimary = async ({
                 nonTrackFile.type === 'image' &&
                 nonTrackFile.fileName !== null
               ) {
-                ;({ error } = await fetchFileFromNetworkAndSaveToFS(
+                const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
                   libs,
                   logger,
                   multihash,
                   nonTrackFile.dirMultihash,
                   gatewaysToTry,
                   nonTrackFile.fileName
-                ))
+                )
+                error = fetchError
               } else {
-                ;({ error } = await fetchFileFromNetworkAndSaveToFS(
+                const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
                   libs,
                   logger,
                   multihash,
                   nonTrackFile.dirMultihash,
                   gatewaysToTry
-                ))
+                )
+                error = fetchError
               }
 
               // If saveFile op failed, record CID for later processing
