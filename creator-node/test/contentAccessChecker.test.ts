@@ -55,13 +55,11 @@ describe('Test content access', function () {
         signedDataFromDiscoveryNode,
         badDNPrivateKey
       )
-      const contentAccessHeadersObj = {
-        signedDataFromDiscoveryNode,
-        signatureFromDiscoveryNode
-      }
+
       const access = await checkCIDAccess({
         cid,
-        contentAccessHeaders: JSON.stringify(contentAccessHeadersObj),
+        signedDataFromDiscoveryNode,
+        signatureFromDiscoveryNode,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
