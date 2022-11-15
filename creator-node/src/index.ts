@@ -23,7 +23,7 @@ import { sequelize } from './models'
 import {
   emptyTmpTrackUploadArtifacts,
   sweepSubdirectoriesInFiles,
-  fixFileStoragePaths
+  fixMisplacedFiles
 } from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
@@ -203,7 +203,7 @@ const startAppForPrimary = async () => {
   }
 
   // not awaited since it can run in background
-  fixFileStoragePaths()
+  fixMisplacedFiles()
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry

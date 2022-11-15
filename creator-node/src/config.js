@@ -532,6 +532,24 @@ const config = convict({
     env: 'backgroundDiskCleanupDeleteEnabled',
     default: false
   },
+  misplacedFileRecordCount: {
+    doc: 'fixMisplacedFiles - misplacedFileRecordCount',
+    format: 'nat',
+    env: 'misplacedFileRecordCount',
+    default: null
+  },
+  lastJobSuccessfulFixMisplacedFileCount: {
+    doc: 'fixMisplacedFiles - lastJobSuccessfulFixMisplacedFileCount',
+    format: 'nat',
+    env: 'lastJobSuccessfulFixMisplacedFileCount',
+    default: null
+  },
+  lastJobFailedFixMisplacedFileCount: {
+    doc: 'fixMisplacedFiles - lastJobFailedFixMisplacedFileCount',
+    format: 'nat',
+    env: 'lastJobFailedFixMisplacedFileCount',
+    default: null
+  },
   fetchCNodeEndpointToSpIdMapIntervalMs: {
     doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
     format: 'nat',

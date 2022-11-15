@@ -8,10 +8,15 @@ import { chunk } from 'lodash'
 import DbManager from './dbManager'
 import redisClient from './redis'
 import config from './config'
-import { logger as genericLogger, createChildLogger, logInfoWithDuration, logErrorWithDuration, getStartTime } from './logging'
+import {
+  logger as genericLogger,
+  createChildLogger,
+  logInfoWithDuration,
+  getStartTime
+} from './logging'
 import { tracing } from './tracer'
-import { execShellCommand } from './utils'
-import { saveFileForMultihashToFS } from './fileManager'
+import { execShellCommand, timeout } from './utils'
+import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
 
 const models = require('./models')
 
@@ -564,57 +569,90 @@ export async function sweepSubdirectoriesInFiles(
 }
 
 /**
- * Fixes storagePaths that aren't stored at config storagePath
- * TODO - can also be used to fix storagePaths that are stored at legacy storagePath
+ * Some files have been saved outside the expected `storagePath` location
+ * This job:
+ *  - fetches every file DB record that is not in expected `storagePath`
+ *  - sequentially fetches each file from network and saves to expected `storagePath`, and corrects DB record
+ *  - fetches from network since all files in this scenario are not stored on mounted volume, and so will be cleared on server restart
+ *  - on failure to fetch and store, marks DB record as skipped for later processing
  */
-export async function fixFileStoragePaths(): Promise<void> {
-  const logger: any = createChildLogger(genericLogger, { function: 'fixFileStoragePaths' })
+export async function fixMisplacedFiles(): Promise<void> {
+  const logger: any = createChildLogger(genericLogger, {
+    function: 'fixMisplacedFiles'
+  })
 
   // Wrap in a try-catch to retry
   try {
-    let startTime = getStartTime()
+    const startTime = getStartTime()
     const misplacedFileRecords = await models.sequelize.query(
       `select * from "Files" where "storagePath" not like '${getConfigStoragePath()}%';`
     )
-    config.set('deviatedPathCount')
+    const misplacedFileRecordCount = misplacedFileRecords.length
+    logInfoWithDuration(
+      { logger, startTime },
+      `fixMisplacedFiles(): misplacedFileRecordCount = ${misplacedFileRecordCount}`
+    )
 
-    logInfoWithDuration({ logger, startTime }, 'asdf')
+    // Set in config for quick investigation
+    config.set('misplacedFileRecordCount', misplacedFileRecordCount)
 
     const transaction = await models.sequelize.transaction()
 
-    // go through sequentially to minimize load since this is not time-sensitive op
+    // Process sequentially to minimize load since this is not time-sensitive
+    let lastJobSuccessfulFixMisplacedFileCount = 0
+    let lastJobFailedFixMisplacedFileCount = 0
     for await (const fileRecord of misplacedFileRecords) {
-      // TODO - wrap all internal logic inside asyncRetry (?)
-      const { error, storagePath } = await saveFileForMultihashToFS(
-        {},
+      // Will retry internally
+      const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
+        {}, // libs param is unused, so empty object is sufficient
         logger,
         fileRecord.multihash,
         fileRecord.dirMultihash,
         [] /** targetGateways */,
         fileRecord.fileName,
-        fileRecord.trackBlockchainId
+        fileRecord.trackBlockchainId,
+        2 /** numRetries */
       )
 
-      // handle errors
+      // If failure to fetch file content, mark DB entry as skipped
       if (error) {
-        // TODO
+        await models.File.update(
+          { skipped: true },
+          {
+            where: { fileUUID: fileRecord.fileUUID },
+            transaction
+          }
+        )
+        lastJobFailedFixMisplacedFileCount++
+      } else {
+        // update file's storagePath in DB to newly saved location, and ensure not marked as skipped
+        await models.File.update(
+          { storagePath, skipped: true },
+          {
+            where: { fileUUID: fileRecord.fileUUID },
+            transaction
+          }
+        )
+        lastJobSuccessfulFixMisplacedFileCount++
       }
 
-      // update DB storage path
-      await models.File.update(
-        { storagePath },
-        {
-          where: { fileUUID: fileRecord.fileUUID },
-          transaction
-        }
-      )
+      // Add delay between calls, since each call will make an internal request to every node in the network
+      await timeout(1000)
     }
 
-    await transaction.comit()
+    await transaction.commit()
 
+    config.set(
+      'lastJobSuccessfulFixMisplacedFileCount',
+      lastJobSuccessfulFixMisplacedFileCount
+    )
+    config.set(
+      'lastJobFailedFixMisplacedFileCount',
+      lastJobFailedFixMisplacedFileCount
+    )
   } catch (e) {
     logger.error()
     // Redo everything on any error
-    await fixFileStoragePaths()
+    await fixMisplacedFiles()
   }
 }
