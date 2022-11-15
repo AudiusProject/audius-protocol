@@ -499,12 +499,6 @@ const config = convict({
     env: 'entityManagerReplicaSetEnabled',
     default: false
   },
-  contentAccessEnabled: {
-    doc: 'whether or not to enable content access middleware',
-    format: Boolean,
-    env: 'contentAccessEnabled',
-    default: false
-  },
 
   /** sync / snapback configs */
 

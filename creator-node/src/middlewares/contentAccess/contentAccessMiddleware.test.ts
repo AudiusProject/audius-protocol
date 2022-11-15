@@ -3,7 +3,6 @@ import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 import { Request, Response } from 'express'
 import Logger from 'bunyan'
 import { Redis } from 'ioredis'
-import config from '../../config'
 import proxyquire from 'proxyquire' // eslint-disable-line node/no-unpublished-import
 
 describe('Test content access middleware', () => {
@@ -26,16 +25,13 @@ describe('Test content access middleware', () => {
       accessCheckReturnsWith !== null
     ) {
       return proxyquire('./contentAccessMiddleware', {
-        './../../config': config,
         '../../contentAccess/contentAccessChecker': {
           checkContentAccess: async () => accessCheckReturnsWith
         }
       })
     }
 
-    return proxyquire('./contentAccessMiddleware', {
-      './../../config': config
-    })
+    return require('./contentAccessMiddleware')
   }
 
   beforeEach(() => {
@@ -65,10 +61,6 @@ describe('Test content access middleware', () => {
   })
 
   describe('when content access is enabled', () => {
-    beforeEach(() => {
-      config.set('contentAccessEnabled', true)
-    })
-
     it('returns bad request when missing the CID param', async () => {
       let nextCalled = false
       await contentAccessMiddlewareProxy({}).contentAccessMiddleware(
@@ -126,22 +118,6 @@ describe('Test content access middleware', () => {
           error: null
         }
       }).contentAccessMiddleware(
-        mockReq as unknown as Request,
-        mockRes as unknown as Response,
-        () => {
-          nextCalled = true
-        }
-      )
-      assert.deepStrictEqual(nextCalled, true)
-    })
-  })
-
-  describe('when content access is disabled', () => {
-    it('moves on to the next middleware', async () => {
-      config.set('contentAccessEnabled', false)
-
-      let nextCalled = false
-      await contentAccessMiddlewareProxy({}).contentAccessMiddleware(
         mockReq as unknown as Request,
         mockRes as unknown as Response,
         () => {

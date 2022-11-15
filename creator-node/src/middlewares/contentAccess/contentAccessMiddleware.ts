@@ -9,7 +9,6 @@ import {
 import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
 import { checkContentAccess } from '../../contentAccess/contentAccessChecker'
-import config from '../../config'
 import { tracing } from '../../tracer'
 
 /**
@@ -34,10 +33,6 @@ export const contentAccessMiddleware = async (
       res,
       errorResponseBadRequest(`Invalid request, no CID provided.`)
     )
-  }
-
-  if (!config.get('contentAccessEnabled')) {
-    return next()
   }
 
   try {
