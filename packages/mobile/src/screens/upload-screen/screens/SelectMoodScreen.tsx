@@ -41,7 +41,7 @@ export const SelectMoodScreen = () => {
       renderItem={({ item }) => (
         <View style={styles.item}>
           <Image source={moodMap[item.label]} style={styles.emoji} />
-          <Text fontSize='large' weight='bold' color='neutralLight4'>
+          <Text fontSize='large' weight='demiBold'>
             {item.label}
           </Text>
         </View>

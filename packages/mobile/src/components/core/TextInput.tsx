@@ -128,13 +128,25 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const labelY = useRef(
       new Animated.Value(isLabelActive ? activeLabelY : inactiveLabelY)
     )
-
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
+    const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
 
     const handleFocus = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         onFocus?.(e)
         setIsFocused(true)
+
+        let animations: Animated.CompositeAnimation[] = []
+
+        const borderFocusCompositeAnim = Animated.spring(
+          borderFocusAnimation.current,
+          {
+            toValue: 1,
+            useNativeDriver: false
+          }
+        )
+
+        animations.push(borderFocusCompositeAnim)
 
         if (!isLabelActive) {
           const labelYAnimation = Animated.spring(labelY.current, {
@@ -150,7 +162,12 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             }
           )
 
-          Animated.parallel([labelYAnimation, labelFontSizeAnimation]).start()
+          animations = animations.concat([
+            labelYAnimation,
+            labelFontSizeAnimation
+          ])
+
+          Animated.parallel(animations).start()
         }
       },
       [onFocus, isLabelActive]
@@ -160,6 +177,18 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         onBlur?.(e)
         setIsFocused(false)
+
+        let animations: Animated.CompositeAnimation[] = []
+
+        const borderFocusCompositeAnim = Animated.spring(
+          borderFocusAnimation.current,
+          {
+            toValue: 0,
+            useNativeDriver: false
+          }
+        )
+
+        animations.push(borderFocusCompositeAnim)
 
         if (isFocused && !value) {
           const labelYAnimation = Animated.spring(labelY.current, {
@@ -175,8 +204,12 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             }
           )
 
-          Animated.parallel([labelYAnimation, labelFontSizeAnimation]).start()
+          animations = animations.concat([
+            labelYAnimation,
+            labelFontSizeAnimation
+          ])
         }
+        Animated.parallel(animations).start()
       },
       [onBlur, isFocused, value]
     )
@@ -191,16 +224,23 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       onClear?.()
     }, [onClear])
 
-    const { neutral, neutralLight4 } = useThemeColors()
+    const { neutral, neutralLight4, secondary, neutralLight7 } =
+      useThemeColors()
 
     return (
       <Pressable onPress={handlePressRoot}>
-        <View
+        <Animated.View
           style={[
             styles.root,
             label ? styles.labelRoot : undefined,
             style,
-            stylesProp?.root
+            stylesProp?.root,
+            {
+              borderColor: borderFocusAnimation.current.interpolate({
+                inputRange: [0, 1],
+                outputRange: [neutralLight7, secondary].map(convertHexToRGBA)
+              })
+            }
           ]}
         >
           {label ? (
@@ -218,8 +258,8 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                     fontSize: labelAnimation.current,
                     color: labelAnimation.current.interpolate({
                       inputRange: [16, 18],
-                      outputRange: [neutralLight4, neutral].map((color) =>
-                        convertHexToRGBA(color)
+                      outputRange: [neutralLight4, neutral].map(
+                        convertHexToRGBA
                       )
                     })
                   }
@@ -239,6 +279,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             autoComplete='off'
             autoCorrect={false}
             returnKeyType='search'
+            selectionColor={secondary}
             placeholderTextColor={styles.placeholderText.color}
             value={value}
             onFocus={handleFocus}
@@ -281,7 +322,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
           {endAdornment ? (
             <View style={styles.endAdornment}>{endAdornment}</View>
           ) : null}
-        </View>
+        </Animated.View>
       </Pressable>
     )
   }

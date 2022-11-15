@@ -13,7 +13,8 @@ type TextFieldProps = FieldProps & TextInputProps
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
-    marginVertical: spacing(2)
+    marginVertical: spacing(2),
+    paddingHorizontal: spacing(4)
   },
   label: { marginBottom: spacing(2) },
   input: {
@@ -41,7 +42,9 @@ export const TextField = (props: TextFieldProps) => {
   const [{ value, onChange, onBlur }, { touched, error }] = useField(name)
   const label = required ? `${labelProp} *` : labelProp
   const errorMessage =
-    errorMessageProp ?? error ? `${capitalize(name)} ${error}` : undefined
+    errorMessageProp || (error ? `${capitalize(name)} ${error}` : undefined)
+
+  console.log('touched?', touched, error)
 
   return (
     <View style={styles.root}>
@@ -58,7 +61,7 @@ export const TextField = (props: TextFieldProps) => {
         returnKeyType='done'
         {...other}
       />
-      {errorMessage && touched ? (
+      {error && touched && errorMessage ? (
         <InputErrorMessage message={errorMessage} />
       ) : null}
     </View>

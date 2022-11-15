@@ -7,6 +7,7 @@ import { View } from 'react-native'
 import type { ContextualSubmenuProps } from 'app/components/core'
 import { ContextualSubmenu, Pill } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
@@ -20,6 +21,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   licenseIcons: {
     marginTop: spacing(4),
     alignItems: 'flex-start'
+  },
+  pill: {
+    paddingVertical: 2
   },
   licenseIcon: {
     marginRight: spacing(1)
@@ -52,14 +56,14 @@ export const LicenseTypeField = (props: LicenseTypeFieldProps) => {
 
     return licenseIcons ? (
       <View style={styles.licenseIcons}>
-        <Pill>
+        <Pill style={styles.pill}>
           {licenseIcons.map(([Icon, key]) => (
             <Icon
               key={key}
               fill={neutral}
               style={styles.licenseIcon}
-              height={20}
-              width={20}
+              height={spacing(6)}
+              width={spacing(6)}
             />
           ))}
         </Pill>

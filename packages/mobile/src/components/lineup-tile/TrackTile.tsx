@@ -26,6 +26,8 @@ import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
+import type { TileProps } from '../core'
+
 import { LineupTile } from './LineupTile'
 
 const { getUid } = playerSelectors
@@ -58,9 +60,10 @@ export const TrackTile = (props: LineupItemProps) => {
 type TrackTileProps = LineupItemProps & {
   track: Track
   user: User
+  TileProps?: Partial<TileProps>
 }
 
-const TrackTileComponent = ({
+export const TrackTileComponent = ({
   togglePlay,
   track,
   user,

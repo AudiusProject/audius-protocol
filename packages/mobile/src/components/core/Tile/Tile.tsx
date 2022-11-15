@@ -41,7 +41,7 @@ const defaultElement = View
 
 type TilePressableProps = Pick<
   PressableProps,
-  'onPress' | 'onPressIn' | 'onPressOut'
+  'onPress' | 'onPressIn' | 'onPressOut' | 'pointerEvents'
 >
 
 type TileOwnProps<TileComponentType extends ComponentType = ComponentType> =
@@ -81,6 +81,7 @@ export const Tile = <
     style,
     styles: stylesProp,
     scaleTo,
+    pointerEvents,
     ...other
   } = props
 
@@ -116,6 +117,7 @@ export const Tile = <
     >
       <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
         <Pressable
+          pointerEvents={pointerEvents}
           style={[styles.content, stylesProp?.content, { borderRadius: 4 }]}
           onPress={onPress}
           onPressIn={handlePressIn}

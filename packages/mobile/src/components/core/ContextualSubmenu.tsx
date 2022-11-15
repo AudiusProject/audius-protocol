@@ -32,11 +32,17 @@ export type ContextualSubmenuProps = {
 
 const useStyles = makeStyles(({ spacing }) => ({
   content: {
-    marginVertical: spacing(4)
+    marginVertical: spacing(4),
+    paddingHorizontal: spacing(4)
   },
   select: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: spacing(2)
+  },
+  value: {
+    marginHorizontal: spacing(2)
   },
   optionPills: {
     flexDirection: 'row',
@@ -94,6 +100,12 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
 
   const renderValue = renderValueProp ?? defaultRenderValue
 
+  const hasValue = !value
+    ? false
+    : typeof value === 'string'
+    ? value
+    : value.length !== 0
+
   return (
     <TouchableOpacity onPress={handlePress} style={stylesProp?.root}>
       <Divider style={stylesProp?.divider} />
@@ -108,7 +120,9 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
             width={spacing(4)}
           />
         </View>
-        {value ? renderValue(value) : null}
+        {hasValue ? (
+          <View style={styles.value}>{renderValue(value)}</View>
+        ) : null}
         {error && errorMessage ? (
           <InputErrorMessage message={errorMessage} />
         ) : null}
