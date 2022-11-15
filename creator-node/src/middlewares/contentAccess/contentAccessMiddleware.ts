@@ -10,6 +10,7 @@ import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
 import { checkCIDAccess } from '../../contentAccess/contentAccessChecker'
 import { tracing } from '../../tracer'
+import { IncomingHttpHeaders } from 'http'
 
 /**
  * Middleware to validate requests to get content.
@@ -36,9 +37,19 @@ export const contentAccessMiddleware = async (
   }
 
   try {
-    const contentAccessHeader = req.headers['x-content-access'] as string
-    const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
-      JSON.parse(contentAccessHeader)
+    const {
+      signedDataFromDiscoveryNode,
+      signatureFromDiscoveryNode,
+      error: parseError
+    } = parseHeaders(req.headers)
+
+    if (parseError) {
+      sendResponse(
+        req,
+        res,
+        errorResponseUnauthorized('Missing request headers for content.')
+      )
+    }
 
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs, redis } = serviceRegistry
@@ -99,5 +110,25 @@ export const contentAccessMiddleware = async (
     const error = `Could not validate content access: ${e.message}`
     req.logger.error(`${error}.\nError: ${JSON.stringify(e, null, 2)}`)
     return sendResponse(req, res, errorResponseServerError(error))
+  }
+}
+
+const parseHeaders = (headers: IncomingHttpHeaders) => {
+  try {
+    const contentAccessHeader = headers['x-content-access'] as string
+    const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
+      JSON.parse(contentAccessHeader)
+
+    return {
+      signatureFromDiscoveryNode,
+      signedDataFromDiscoveryNode,
+      error: false
+    }
+  } catch (e: any) {
+    return {
+      signatureFromDiscoveryNode: null,
+      signedDataFromDiscoveryNode: null,
+      error: true
+    }
   }
 }
