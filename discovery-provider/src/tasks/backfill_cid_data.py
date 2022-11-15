@@ -1,6 +1,6 @@
+import csv
 import json
 import logging
-import re
 import tempfile
 from itertools import islice
 
@@ -36,16 +36,16 @@ def backfill_cid_data(db: SessionManager):
             # Load cid data from csv in chunks...
             with open(tmp.name, "r") as file:
                 while True:
-                    lines = list(islice(file, chunk_size))
+                    csv_reader = csv.reader(file, delimiter='\t')
+                    lines = list(islice(csv_reader, chunk_size))
                     cid_metadata = {}
                     cid_type = {}
                     if not lines:
                         break
                     for line in lines:
-                        items = re.split(r"\t+", line.rstrip())
-                        if len(items) != 3:
+                        if len(line) != 3:
                             continue
-                        [cid, type, data] = items
+                        [cid, type, data] = line
                         cid_metadata[cid] = json.loads(data)
                         cid_type[cid] = type
                     # Write chunk to db

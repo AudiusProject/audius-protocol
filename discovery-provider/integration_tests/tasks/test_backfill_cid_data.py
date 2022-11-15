@@ -9,9 +9,9 @@ from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
-csv = """cid_1\tuser\t{"user_id": 1}
-cid_2\tuser\t{"user_id": 2}
-cid_3\ttrack\t{"name": "ray"}
+csv = """cid_1\tuser\t"{""user_id"": 1}"
+cid_2\tuser\t"{""user_id"": 2}"
+cid_3\ttrack\t"{""name"": ""ray""}"
 """
 
 
