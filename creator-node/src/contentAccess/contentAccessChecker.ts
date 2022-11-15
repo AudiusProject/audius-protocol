@@ -72,7 +72,7 @@ export async function checkContentAccess({
     CONTENT_SIGNATURE_MAX_TTL_MS
   )
   if (hasSignatureExpired) {
-    logger.info(`Premium content signature for cid ${copy320CID} is too old.`)
+    logger.info(`content signature for cid ${copy320CID} is too old.`)
     return {
       doesUserHaveAccess: false,
       error: 'ExpiredTimestamp',

@@ -117,10 +117,10 @@ const streamFromFileSystem = async (
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
     // The contentAccessMiddleware sets the req.contentAccess object so that we do not
     // have to make another database round trip to get this info.
-    if (req.contentAccess?.isPremium) {
-      res.setHeader('cache-control', 'no-cache')
-    } else {
+    if (req.shouldCache) {
       res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    } else {
+      res.setHeader('cache-control', 'no-cache')
     }
 
     await new Promise((resolve, reject) => {
