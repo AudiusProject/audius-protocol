@@ -73,24 +73,6 @@ describe('Test content access middleware', () => {
     assert.deepStrictEqual(nextCalled, false)
   })
 
-  it('returns unauthorized when it fails because of missing headers', async () => {
-    let nextCalled = false
-    await contentAccessMiddlewareProxy({
-      accessCheckReturnsWith: {
-        isValidRequest: false,
-        error: 'MissingHeaders'
-      }
-    }).contentAccessMiddleware(
-      mockReq as unknown as Request,
-      mockRes as unknown as Response,
-      () => {
-        nextCalled = true
-      }
-    )
-    assert.deepStrictEqual(mockRes.statusCode, 401)
-    assert.deepStrictEqual(nextCalled, false)
-  })
-
   it('returns forbidden when it fails because of invalid discovery node', async () => {
     let nextCalled = false
     await contentAccessMiddlewareProxy({
