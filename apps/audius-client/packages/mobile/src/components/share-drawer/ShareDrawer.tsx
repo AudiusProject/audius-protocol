@@ -3,6 +3,7 @@ import React, { useCallback, useContext } from 'react'
 import path from 'path'
 
 import {
+  encodeHashId,
   FeatureFlags,
   accountSelectors,
   collectionsSocialActions,
@@ -28,6 +29,7 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Text from 'app/components/text'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { apiClient } from 'app/services/audius-api-client'
 import { makeStyles } from 'app/styles'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -123,12 +125,16 @@ export const ShareDrawer = () => {
   // nkang: WIP, will probably be moved:
   const handleShareToInstagramStory = useCallback(async () => {
     if (content?.type === 'track') {
+      const encodedTrackId = encodeHashId(content.track.track_id)
+      const streamMp3Url = apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
       const storyVideoPath = path.join(
         RNFS.TemporaryDirectoryPath,
         `storyVideo-${uuid()}.mp4`
       )
+      const audioStartOffsetConfig =
+        content.track.duration && content.track.duration >= 20 ? '-ss 10 ' : ''
       const session = await FFmpegKit.execute(
-        `-f lavfi -i gradients=n=2:type=linear:s=270x480:duration=10:speed=0.05:c0=#AA1F3B:c1=#671525:x0=0:x1=0:y0=0:y1=280,format=rgb0 -t 10 ${storyVideoPath}`
+        `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=n=2:type=linear:s=270x480:duration=10:speed=0.05:c0=#AA1F3B:c1=#671525:x0=0:x1=0:y0=0:y1=280,format=rgb0" -t 10 ${storyVideoPath}`
       )
       // TODO(nkang): Add loading state
       const returnCode = await session.getReturnCode()
@@ -155,7 +161,7 @@ export const ShareDrawer = () => {
         console.error('Error sharing story: ', error)
       }
     }
-  }, [content?.type])
+  }, [content.track.duration, content.track.track_id, content?.type])
 
   const handleCopyLink = useCallback(() => {
     if (!content) return
