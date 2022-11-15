@@ -576,11 +576,13 @@ export async function fixFileStoragePaths(): Promise<void> {
     const misplacedFileRecords = await models.sequelize.query(
       `select * from "Files" where "storagePath" not like '${getConfigStoragePath()}%';`
     )
+    config.set('deviatedPathCount')
 
     logInfoWithDuration({ logger, startTime }, 'asdf')
 
     const transaction = await models.sequelize.transaction()
 
+    // go through sequentially to minimize load since this is not time-sensitive op
     for await (const fileRecord of misplacedFileRecords) {
       // TODO - wrap all internal logic inside asyncRetry (?)
       const { error, storagePath } = await saveFileForMultihashToFS(
@@ -611,6 +613,7 @@ export async function fixFileStoragePaths(): Promise<void> {
     await transaction.comit()
 
   } catch (e) {
+    logger.error()
     // Redo everything on any error
     await fixFileStoragePaths()
   }
