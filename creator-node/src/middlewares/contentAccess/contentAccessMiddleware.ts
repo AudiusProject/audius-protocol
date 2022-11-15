@@ -36,7 +36,7 @@ export const contentAccessMiddleware = async (
     )
   }
 
-  if (!config.get('contentAccessMiddleware')) {
+  if (!config.get('contentAccessEnabled')) {
     return next()
   }
 
