@@ -48,10 +48,6 @@ module.exports = function (app) {
       const hasSignedInNativeMobile = !!req.body.hasSignedInNativeMobile
       try {
         if (hasSignedInNativeMobile) {
-          await models.UserEvents.upsert({
-            walletAddress,
-            hasSignedInNativeMobile
-          })
           await models.sequelize.query(
             `
             INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
