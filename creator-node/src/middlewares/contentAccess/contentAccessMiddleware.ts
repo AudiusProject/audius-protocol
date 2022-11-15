@@ -36,8 +36,9 @@ export const contentAccessMiddleware = async (
   }
 
   try {
+    const contentAccessHeader = req.headers['x-content-access'] as string
     const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
-      JSON.parse(req.headers['x-content-access'] as string)
+      JSON.parse(contentAccessHeader)
 
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs, redis } = serviceRegistry
