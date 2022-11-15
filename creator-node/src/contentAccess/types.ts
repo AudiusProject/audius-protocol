@@ -21,9 +21,9 @@ export type CheckAccessArgs = {
 }
 
 export type CheckAccessResponse =
-  | { doesUserHaveAccess: true; shouldCache: boolean; error: null }
+  | { isValidRequest: true; shouldCache: boolean; error: null }
   | {
-      doesUserHaveAccess: false
+      isValidRequest: false
       shouldCache: false
       error: ContentAccessError
     }

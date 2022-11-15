@@ -46,16 +46,14 @@ export const contentAccessMiddleware = async (
     const { libs, redis } = serviceRegistry
     const logger = req.logger as Logger
 
-    const { doesUserHaveAccess, shouldCache, error } = await checkContentAccess(
-      {
-        cid,
-        contentAccessHeaders,
-        libs,
-        logger,
-        redis
-      }
-    )
-    if (!doesUserHaveAccess) {
+    const { isValidRequest, shouldCache, error } = await checkContentAccess({
+      cid,
+      contentAccessHeaders,
+      libs,
+      logger,
+      redis
+    })
+    if (!isValidRequest) {
       switch (error) {
         case 'MissingHeaders':
           return sendResponse(

@@ -59,7 +59,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(accessWithoutHeaders, {
-        doesUserHaveAccess: false,
+        isValidRequest: false,
         error: 'MissingHeaders',
         shouldCache: false
       })
@@ -72,7 +72,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(accessWithMissingHeaders, {
-        doesUserHaveAccess: false,
+        isValidRequest: false,
         error: 'MissingHeaders',
         shouldCache: false
       })
@@ -95,7 +95,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(access, {
-        doesUserHaveAccess: false,
+        isValidRequest: false,
         error: 'InvalidDiscoveryNode',
         shouldCache: false
       })
@@ -118,7 +118,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(access, {
-        doesUserHaveAccess: false,
+        isValidRequest: false,
         error: 'IncorrectCID',
         shouldCache: false
       })
@@ -147,7 +147,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(access, {
-        doesUserHaveAccess: false,
+        isValidRequest: false,
         error: 'ExpiredTimestamp',
         shouldCache: false
       })
@@ -170,7 +170,7 @@ describe('Test content access', function () {
         redis: redisMock
       })
       assert.deepStrictEqual(access, {
-        doesUserHaveAccess: true,
+        isValidRequest: true,
         error: null,
         shouldCache: true
       })

@@ -86,7 +86,7 @@ describe('Test content access middleware', () => {
       let nextCalled = false
       await contentAccessMiddlewareProxy({
         accessCheckReturnsWith: {
-          doesUserHaveAccess: false,
+          isValidRequest: false,
           error: 'MissingHeaders'
         }
       }).contentAccessMiddleware(
@@ -104,7 +104,7 @@ describe('Test content access middleware', () => {
       let nextCalled = false
       await contentAccessMiddlewareProxy({
         accessCheckReturnsWith: {
-          doesUserHaveAccess: false,
+          isValidRequest: false,
           error: 'InvalidDiscoveryNode'
         }
       }).contentAccessMiddleware(
@@ -122,7 +122,7 @@ describe('Test content access middleware', () => {
       let nextCalled = false
       await contentAccessMiddlewareProxy({
         accessCheckReturnsWith: {
-          doesUserHaveAccess: true,
+          isValidRequest: true,
           error: null
         }
       }).contentAccessMiddleware(

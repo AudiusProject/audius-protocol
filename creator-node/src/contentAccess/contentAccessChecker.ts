@@ -19,7 +19,7 @@ export async function checkContentAccess({
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
   if (!contentAccessHeaders) {
     return {
-      doesUserHaveAccess: false,
+      isValidRequest: false,
       error: 'MissingHeaders',
       shouldCache: false
     }
@@ -29,7 +29,7 @@ export async function checkContentAccess({
     JSON.parse(contentAccessHeaders)
   if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
     return {
-      doesUserHaveAccess: false,
+      isValidRequest: false,
       error: 'MissingHeaders',
       shouldCache: false
     }
@@ -47,7 +47,7 @@ export async function checkContentAccess({
   })
   if (!isRegisteredDN) {
     return {
-      doesUserHaveAccess: false,
+      isValidRequest: false,
       error: 'InvalidDiscoveryNode',
       shouldCache: false
     }
@@ -61,7 +61,7 @@ export async function checkContentAccess({
 
   if (copy320CID !== cid) {
     return {
-      doesUserHaveAccess: false,
+      isValidRequest: false,
       error: 'IncorrectCID',
       shouldCache: false
     }
@@ -74,14 +74,14 @@ export async function checkContentAccess({
   if (hasSignatureExpired) {
     logger.info(`content signature for cid ${copy320CID} is too old.`)
     return {
-      doesUserHaveAccess: false,
+      isValidRequest: false,
       error: 'ExpiredTimestamp',
       shouldCache: false
     }
   }
 
   return {
-    doesUserHaveAccess: true,
+    isValidRequest: true,
     error: null,
     shouldCache: !!shouldCache
   }
