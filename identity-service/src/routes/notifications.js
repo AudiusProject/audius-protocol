@@ -808,7 +808,20 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const userId = req.user.blockchainUserId
       try {
-        const [settings] = await models.UserNotificationSettings.findOrCreate({
+
+        await models.sequelize.query(
+          `
+          INSERT INTO "UserNotificationSettings" ("userId", "updatedAt", "createdAt")
+          VALUES (:userId, now(), now())
+          ON CONFLICT
+          DO NOTHING;
+        `,
+          {
+            replacements: { userId }
+          }
+        )
+
+        const settings = await models.UserNotificationSettings.findOne({
           where: { userId },
           attributes: [
             'favorites',
