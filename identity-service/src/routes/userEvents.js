@@ -52,10 +52,32 @@ module.exports = function (app) {
             walletAddress,
             hasSignedInNativeMobile
           })
+          await models.sequelize.query(
+            `
+            INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
+            VALUES (:walletAddress, :hasSignedInNativeMobile)
+            ON CONFLICT
+            DO
+              UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
+          `,
+            {
+              replacements: { walletAddress, hasSignedInNativeMobile }
+            }
+          )
         } else {
           // Note: The field `hasSignedInNativeMobile` defaults to false on create, but if already
           // true, do not convert to false.
-          await models.UserEvents.findOrCreate({ where: { walletAddress } })
+          await models.sequelize.query(
+            `
+            INSERT INTO "UserEvents" ("walletAddress")
+            VALUES (:walletAddress)
+            ON CONFLICT
+            DO NOTHING;
+          `,
+            {
+              replacements: { walletAddress }
+            }
+          )
         }
         return successResponse({})
       } catch (e) {
