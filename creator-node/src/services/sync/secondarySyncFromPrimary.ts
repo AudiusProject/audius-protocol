@@ -598,23 +598,25 @@ const handleSyncFromPrimary = async ({
                 nonTrackFile.type === 'image' &&
                 nonTrackFile.fileName !== null
               ) {
-                const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.dirMultihash,
-                  gatewaysToTry,
-                  nonTrackFile.fileName
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry,
+                    nonTrackFile.fileName
+                  )
                 error = fetchError
               } else {
-                const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.dirMultihash,
-                  gatewaysToTry
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry
+                  )
                 error = fetchError
               }
 
