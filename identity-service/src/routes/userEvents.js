@@ -50,8 +50,8 @@ module.exports = function (app) {
         if (hasSignedInNativeMobile) {
           await models.sequelize.query(
             `
-            INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
-            VALUES (:walletAddress, :hasSignedInNativeMobile)
+            INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile", "createdAt", "updatedAt")
+            VALUES (:walletAddress, :hasSignedInNativeMobile, now(), now())
             ON CONFLICT ("walletAddress")
             DO
               UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
@@ -65,8 +65,8 @@ module.exports = function (app) {
           // true, do not convert to false.
           await models.sequelize.query(
             `
-            INSERT INTO "UserEvents" ("walletAddress")
-            VALUES (:walletAddress)
+            INSERT INTO "UserEvents" ("walletAddress", "createdAt", "updatedAt")
+            VALUES (:walletAddress, now(), now())
             ON CONFLICT
             DO NOTHING;
           `,

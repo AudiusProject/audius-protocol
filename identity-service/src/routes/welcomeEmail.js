@@ -88,8 +88,8 @@ module.exports = function (app) {
         await sg.send(emailParams)
         await models.sequelize.query(
           `
-          INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
-          VALUES (:walletAddress, :hasSignedInNativeMobile)
+          INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile", "createdAt", "updatedAt")
+          VALUES (:walletAddress, :hasSignedInNativeMobile, now(), now())
           ON CONFLICT ("walletAddress")
           DO
             UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
