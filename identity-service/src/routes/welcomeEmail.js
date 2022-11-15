@@ -87,15 +87,37 @@ module.exports = function (app) {
       try {
         await sg.send(emailParams)
         if (isNativeMobile) {
-          await models.UserEvents.upsert({
-            walletAddress,
-            hasSignedInNativeMobile: true
-          })
+          await models.sequelize.query(
+            `
+            INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
+            VALUES (:walletAddress, :hasSignedInNativeMobile)
+            ON CONFLICT
+            DO
+              UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
+          `,
+            {
+              replacements: {
+                walletAddress,
+                hasSignedInNativeMobile: true
+              }
+            }
+          )
         } else {
-          await models.UserEvents.upsert({
-            walletAddress,
-            hasSignedInNativeMobile: false
-          })
+          await models.sequelize.query(
+            `
+            INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
+            VALUES (:walletAddress, :hasSignedInNativeMobile)
+            ON CONFLICT
+            DO
+              UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
+          `,
+            {
+              replacements: {
+                walletAddress,
+                hasSignedInNativeMobile: false
+              }
+            }
+          )
         }
         return successResponse({ status: true })
       } catch (e) {

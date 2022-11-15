@@ -808,7 +808,6 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const userId = req.user.blockchainUserId
       try {
-
         await models.sequelize.query(
           `
           INSERT INTO "UserNotificationSettings" ("userId", "updatedAt", "createdAt")

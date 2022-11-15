@@ -99,7 +99,6 @@ module.exports = function (app) {
         return errorResponseBadRequest(`Did not pass in a valid userId`)
 
       try {
-
         // pseudo-upsert without sequlize magic
         try {
           await models.UserNotificationMobileSettings.update({
