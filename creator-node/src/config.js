@@ -587,7 +587,7 @@ const config = convict({
     default: 10000
   },
   nodeSyncFileSaveMaxConcurrency: {
-    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    doc: 'Max concurrency of fetchFileFromNetworkAndSaveToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
     default: 10

@@ -7,7 +7,7 @@ const { clusterUtils } = require('../../utils')
 const {
   getAllRegisteredCNodes
 } = require('../../services/ContentNodeInfoManager')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
@@ -117,7 +117,7 @@ class SkippedCIDsRetryQueue {
     const savedFileUUIDs = []
     for await (const file of skippedFiles) {
       // Returns boolean success indicator
-      const error = await saveFileForMultihashToFS(
+      const { error } = await fetchFileFromNetworkAndSaveToFS(
         libs,
         logger,
         file.multihash,

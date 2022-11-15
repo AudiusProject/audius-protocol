@@ -33,6 +33,7 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
+from src.tasks.index import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
@@ -318,7 +319,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
     logger.info(
         f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata
+    return cid_metadata, cid_type
 
 
 def get_tx_hash_to_skip(session, redis):
@@ -544,7 +545,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata = fetch_cid_metadata(
+                    cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[ENTITY_MANAGER],
                     )
@@ -603,6 +604,23 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    if is_save_cid_enabled:
+                        """
+                        Add CID Metadata to db (cid -> json blob, etc.)
+                        """
+                        save_cid_metadata_time = time.time()
+                        # bulk process operations once all tx's for block have been parsed
+                        # and get changed entity IDs for cache clearing
+                        # after session commit
+                        save_cid_metadata(session, cid_metadata, cid_type)
+                        metric.save_time(
+                            {"scope": "save_cid_metadata"},
+                            start_time=save_cid_metadata_time,
+                        )
+                        logger.info(
+                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                        )
 
                 except Exception as e:
 

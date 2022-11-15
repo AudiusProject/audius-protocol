@@ -289,14 +289,17 @@ async function _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
         }
 
         // Re-throw any other error to continue with retry logic
+        const errorMsgStr = e.response?.status
+          ? `statusCode=${e.response?.status}`
+          : `error=${e.message}`
         if (num === numRetries + 1) {
           // Final error thrown
           throw new Error(
-            `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+            `Failed to fetch content with ${errorMsgStr} after ${num} retries`
           )
         } else {
           throw new Error(
-            `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+            `Failed to fetch content with ${errorMsgStr}. Retrying..`
           )
         }
       }
@@ -396,9 +399,9 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Error?} error object or null if no error
+ * @return {error?: Error, storagePath?: String} object with nested fields containing error object or storagePath string
  */
-async function saveFileForMultihashToFS(
+async function fetchFileFromNetworkAndSaveToFS(
   libs,
   logger,
   multihash,
@@ -409,12 +412,12 @@ async function saveFileForMultihashToFS(
   numRetries = 3
 ) {
   const decisionTree = new DecisionTree({
-    name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
+    name: `fetchFileFromNetworkAndSaveToFS() [multihash: ${multihash}][dirCID: ${dirCID}][fileNameForImage: ${fileNameForImage}][trackId: ${trackId}]`,
     logger
   })
 
+  let storageLocation
   try {
-    let storageLocation
     let targetGatewayContentRoutes
     let nonTargetGatewayContentRoutes
 
@@ -478,19 +481,33 @@ async function saveFileForMultihashToFS(
       })
     }
 
-    const storageLocationParentDir = path.parse(storageLocation).dir
-
     decisionTree.recordStage({
-      name: 'About to start running saveFileForMultihashToFS()',
+      name: 'About to start running fetchFileFromNetworkAndSaveToFS()',
       data: {
         multihash,
-        storageLocation,
-        storageLocationParentDir
+        storageLocation
       },
       logLevel: 'debug'
     })
 
+    /**
+     * Attempts to fetch CID:
+     *  - If file already stored on disk, return immediately
+     *  - If file not already stored, request from user's replica set gateways in parallel and write to disk if file exists
+     *  - If file does not exist on user's replca set, try the network and write to disk if file exists
+     */
+
+    if (await fs.pathExists(storageLocation)) {
+      decisionTree.recordStage({
+        name: 'Success - File already stored on disk',
+        data: { storageLocation }
+      })
+
+      return { storagePath: storageLocation }
+    }
+
     // Create dir at expected storage path in which to store retrieved data
+    const storageLocationParentDir = path.parse(storageLocation).dir
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
@@ -511,22 +528,6 @@ async function saveFileForMultihashToFS(
       )
     }
 
-    /**
-     * Attempts to fetch CID:
-     *  - If file already stored on disk, return immediately
-     *  - If file not already stored, request from user's replica set gateways in parallel and write to disk if file exists
-     *  - If file does not exist on user's replca set, try the network and write to disk if file exists
-     */
-
-    if (await fs.pathExists(storageLocation)) {
-      decisionTree.recordStage({
-        name: 'Success - File already stored on disk',
-        data: { storageLocation }
-      })
-
-      return
-    }
-
     await fetchFileFromNetworkAndWriteToDisk({
       targetGatewayContentRoutes,
       nonTargetGatewayContentRoutes,
@@ -539,16 +540,16 @@ async function saveFileForMultihashToFS(
     })
   } catch (e) {
     decisionTree.recordStage({
-      name: 'saveFileForMultihashToFS Error',
+      name: 'fetchFileFromNetworkAndSaveToFS Error',
       data: { errorMsg: e.message }
     })
 
-    return e
+    return { error: e }
   } finally {
     decisionTree.printTree({ logLevel: 'debug' })
   }
 
-  // If no error, return nothing
+  return { storagePath: storageLocation }
 }
 
 /**
@@ -836,7 +837,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToDisk,
-  saveFileForMultihashToFS,
+  fetchFileFromNetworkAndSaveToFS,
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,

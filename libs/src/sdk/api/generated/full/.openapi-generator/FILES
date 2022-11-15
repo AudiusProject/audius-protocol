@@ -1,3 +1,4 @@
+apis/CidDataApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
 apis/SearchApi.ts
