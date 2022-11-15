@@ -433,6 +433,28 @@ class DBManager {
       (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
     )?.length
   }
+
+  static async getNonDirLegacyStoragePaths(cursor, batchSize) {
+    const queryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        multihash: { [sequelize.Op.gte]: cursor },
+        type: { [sequelize.Op.ne]: 'dir' },
+        storagePath: {
+          [sequelize.Op.notLike]: '/file_storage/files/%',
+          [sequelize.Op.like]: '/file_storage/%'
+        }
+      },
+      limit: batchSize
+    })
+    logger.debug(
+      `queryResult for legacyStoragePaths with cursor ${cursor}: ${JSON.stringify(
+        queryResult || {}
+      )}`
+    )
+    if (isEmpty(queryResult)) return []
+    return queryResult.map((result) => result.storagePath)
+  }
 }
 
 /**

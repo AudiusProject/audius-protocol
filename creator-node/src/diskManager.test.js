@@ -149,9 +149,35 @@ describe('Test DiskManager', function () {
     )
   })
 
+  it('Should pass if extractCIDsFromFSPath is passed in a directory and file with a legacy path', function () {
+    const path =
+      '/file_storage/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grouter/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
+    const matchObj = DiskManager.extractCIDsFromFSPath(path)
+    assert.deepStrictEqual(matchObj.isDir, true)
+    assert.deepStrictEqual(
+      matchObj.outer,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grouter'
+    )
+    assert.deepStrictEqual(
+      matchObj.inner,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
+    )
+  })
+
   it('Should pass if extractCIDsFromFSPath is passed in just a file', function () {
     const path =
       '/file_storage/files/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
+    const matchObj = DiskManager.extractCIDsFromFSPath(path)
+    assert.deepStrictEqual(matchObj.isDir, false)
+    assert.deepStrictEqual(
+      matchObj.outer,
+      'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
+    )
+    assert.deepStrictEqual(matchObj.inner, null)
+  })
+
+  it('Should pass if extractCIDsFromFSPath is passed in just a file with legacy path', function () {
+    const path = '/file_storage/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
     const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj.isDir, false)
     assert.deepStrictEqual(

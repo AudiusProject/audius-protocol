@@ -3,7 +3,7 @@ import type Logger from 'bunyan'
 import path from 'path'
 import fs from 'fs-extra'
 import CID from 'cids'
-import { chunk } from 'lodash'
+import { chunk, range } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
@@ -560,4 +560,140 @@ export async function sweepSubdirectoriesInFiles(
 
   // keep calling this function recursively without an await so the original function scope can close
   if (redoJob) return sweepSubdirectoriesInFiles()
+}
+
+async function _copyLegacyFiles(
+  legacyPaths: string[],
+  deleteLegacyFiles: boolean
+): Promise<
+  {
+    legacyPath: string
+    nonLegacyPath: string
+  }[]
+> {
+  const erroredPaths: { [path: string]: [error: string] } = {}
+  const copiedPaths: {
+    legacyPath: string
+    nonLegacyPath: string
+  }[] = []
+  for (const legacyPath of legacyPaths) {
+    try {
+      // Compute new path
+      // TODO: Verify this function works for legacy files (I added tests in diskManager.test.js to check)
+      const nonLegacyPathInfo = extractCIDsFromFSPath(legacyPath)
+      if (!nonLegacyPathInfo) throw new Error('Unable to extract CID from path')
+      if (nonLegacyPathInfo.isDir) throw new Error('Path is a directory')
+      if (!nonLegacyPathInfo.inner && !nonLegacyPathInfo.outer) {
+        throw new Error('Extracted empty CID from path')
+      }
+
+      // Mkdir of parent
+      let nonLegacyPath
+      if (nonLegacyPathInfo.inner) {
+        nonLegacyPath = await computeFilePathInDirAndEnsureItExists(
+          nonLegacyPathInfo.outer,
+          nonLegacyPathInfo.inner
+        )
+      } else {
+        nonLegacyPath = await computeFilePathAndEnsureItExists(
+          nonLegacyPathInfo.outer
+        )
+      }
+
+      // Write to new path
+      if (await fs.pathExists(nonLegacyPath)) {
+        copiedPaths.push({ legacyPath, nonLegacyPath })
+        continue
+      }
+      // TODO: Something similar to FileManager.fetchFileFromTargetGatewayAndWriteToDisk()
+
+      // Optionally delete legacy file now that it was moved
+      if (deleteLegacyFiles) {
+        await fs.unlink(legacyPath)
+      }
+    } catch (e: any) {
+      erroredPaths[legacyPath] = e.toString()
+    }
+  }
+
+  // TODO: Increment filesMigratedFromLegacyPath Prometheus metric (success and failure labels)
+  //       Use erroredPaths.length and copiedPaths.length
+
+  return copiedPaths
+}
+
+function _getCharsInRange(startChar: string, endChar: string): string[] {
+  // Long way for reference. TODO: Remove after confirming the shorter way isn't too confusing
+
+  // const charsInRange = []
+  // for (
+  //   let char = endChar.charCodeAt(0) + 1;
+  //   char > startChar.charCodeAt(0);
+  //   char--
+  // ) {
+  //   charsInRange.push(String.fromCharCode(char))
+  // }
+  // return charsInRange
+
+  return range(endChar.charCodeAt(0), startChar.charCodeAt(0) - 1, -1).map(
+    (charCode) => String.fromCharCode(charCode)
+  )
+}
+
+function _getCharsInRanges(...ranges: string[]): string[] {
+  const charsInRanges = []
+  for (const range of ranges) {
+    charsInRanges.push(..._getCharsInRange(range.charAt(0), range.charAt(2)))
+  }
+  return charsInRanges
+}
+
+async function _migrateLegacyPathDbRows(
+  _copiedFilePaths: {
+    legacyPath: string
+    nonLegacyPath: string
+  }[]
+) {
+  // TODO: Transaction to find where storagePath=legacyPath and update it to nonLegacyPath
+}
+
+/**
+ * 1. Finds rows in the Files table that have a legacy storagePath (/file_storage/<CID or dirCID>)
+ * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
+ * 3. Updates the row in the Files table to reflect the new storagePath
+ * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
+ * @param logger logger to print errors to
+ * @param deleteLegacyFiles whether or not to delete the file at the legacy path after it's copied to the new path
+ */
+export async function migrateFilesWithLegacyStoragePaths(
+  logger: Logger,
+  deleteLegacyFiles: boolean
+): Promise<void> {
+  const BATCH_SIZE = 100
+  try {
+    // Paginate at each character in range [QmZ, ..., QmA, Qmz, ..., Qma, Qm9, ..., Qm0]
+    for (const char of _getCharsInRanges('a-z', 'A-Z', '0-9')) {
+      const cursor = 'Qm' + char
+
+      // Query for legacy storagePaths in the pagination range until no more results are returned
+      let legacyStoragePaths = []
+      do {
+        legacyStoragePaths = await DbManager.getNonDirLegacyStoragePaths(
+          cursor,
+          BATCH_SIZE
+        )
+
+        const copiedFilePaths = await _copyLegacyFiles(
+          legacyStoragePaths,
+          deleteLegacyFiles
+        )
+        await _migrateLegacyPathDbRows(copiedFilePaths)
+      } while (legacyStoragePaths.length === BATCH_SIZE)
+    }
+  } catch (e: any) {
+    logger.error(`Error migrating legacy storagePaths: ${e}`)
+  }
+
+  // Keep calling this function recursively without an await so the original function scope can close
+  return migrateFilesWithLegacyStoragePaths(logger, deleteLegacyFiles)
 }
