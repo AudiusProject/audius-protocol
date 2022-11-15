@@ -10,7 +10,7 @@ import {
   getStartTime,
   logInfoWithDuration
 } from '../../logging'
-import { saveFileForMultihashToFS } from '../../fileManager'
+import { fetchFileFromNetworkAndSaveToFS } from '../../fileManager'
 import {
   gatherCNodeUserDataToDelete,
   clearFilePathsToDelete,
@@ -311,7 +311,7 @@ const handleSyncFromPrimary = async ({
      * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    // Use user's replica set as gateways for content fetching in saveFileForMultihashToFS.
+    // Use user's replica set as gateways for content fetching in fetchFileFromNetworkAndSaveToFS.
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
     let gatewaysToTry: string[] = []
     try {
@@ -332,11 +332,11 @@ const handleSyncFromPrimary = async ({
     } catch (e: any) {
       tracing.recordException(e)
       logger.error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
 
       error = new Error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
       errorResponse = {
         error,
@@ -542,7 +542,7 @@ const handleSyncFromPrimary = async ({
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
         logger.debug(
-          `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
+          `TrackFiles fetchFileFromNetworkAndSaveToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
         )
@@ -550,15 +550,15 @@ const handleSyncFromPrimary = async ({
         /**
          * Fetch content for each CID + save to FS
          * Record any CIDs that failed retrieval/saving for later use
-         * @notice `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+         * @notice `fetchFileFromNetworkAndSaveToFS()` should never reject - it will return error indicator for post processing
          */
         await Promise.all(
           trackFilesSlice.map(async (trackFile: any) => {
-            const error = await saveFileForMultihashToFS(
+            const { error } = await fetchFileFromNetworkAndSaveToFS(
               libs,
               logger,
               trackFile.multihash,
-              trackFile.storagePath,
+              trackFile.dirMultihash,
               gatewaysToTry,
               null,
               trackFile.trackBlockchainId
@@ -580,7 +580,7 @@ const handleSyncFromPrimary = async ({
           i + FileSaveMaxConcurrency
         )
         logger.debug(
-          `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
+          `NonTrackFiles fetchFileFromNetworkAndSaveToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
         )
@@ -598,22 +598,26 @@ const handleSyncFromPrimary = async ({
                 nonTrackFile.type === 'image' &&
                 nonTrackFile.fileName !== null
               ) {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry,
-                  nonTrackFile.fileName
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry,
+                    nonTrackFile.fileName
+                  )
+                error = fetchError
               } else {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry
+                  )
+                error = fetchError
               }
 
               // If saveFile op failed, record CID for later processing
