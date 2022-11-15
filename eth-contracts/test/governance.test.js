@@ -2557,6 +2557,15 @@ contract('Governance.sol', async (accounts) => {
       { from: guardianAddress }
     )
 
+    // Increase undelegate lockup duration
+    await governance.guardianExecuteTransaction(
+      delegateManagerKey,
+      callValue0,
+      'updateUndelegateLockupDuration(uint256)',
+      _lib.abiEncode(['uint256'], [newMaxInProgressProposals + 30]),
+      { from: guardianAddress }
+    )
+
     // Increase votingPeriod so evaluatable checks succeed and new proposals can be submitted
     await governance.guardianExecuteTransaction(
       governanceKey,
