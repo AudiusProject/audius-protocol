@@ -289,14 +289,17 @@ async function _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
         }
 
         // Re-throw any other error to continue with retry logic
+        const errorMsgStr = e.response?.status
+          ? `statusCode=${e.response?.status}`
+          : `error=${e.message}`
         if (num === numRetries + 1) {
           // Final error thrown
           throw new Error(
-            `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
+            `Failed to fetch content with ${errorMsgStr} after ${num} retries`
           )
         } else {
           throw new Error(
-            `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
+            `Failed to fetch content with ${errorMsgStr}. Retrying..`
           )
         }
       }
@@ -409,7 +412,7 @@ async function fetchFileFromNetworkAndSaveToFS(
   numRetries = 3
 ) {
   const decisionTree = new DecisionTree({
-    name: `fetchFileFromNetworkAndSaveToFS() [multihash: ${multihash}]`,
+    name: `fetchFileFromNetworkAndSaveToFS() [multihash: ${multihash}][dirCID: ${dirCID}][fileNameForImage: ${fileNameForImage}][trackId: ${trackId}]`,
     logger
   })
 
@@ -501,6 +504,28 @@ async function fetchFileFromNetworkAndSaveToFS(
       })
 
       return { storagePath: storageLocation }
+    }
+
+    // Create dir at expected storage path in which to store retrieved data
+    const storageLocationParentDir = path.parse(storageLocation).dir
+    try {
+      // calling this on an existing directory doesn't overwrite the existing data or throw an error
+      // the mkdir recursive is equivalent to `mkdir -p`
+      await fs.mkdir(storageLocationParentDir, { recursive: true })
+      decisionTree.recordStage({
+        name: 'Successfully called mkdir on local file system',
+        data: {
+          storageLocationParentDir
+        }
+      })
+    } catch (e) {
+      decisionTree.recordStage({
+        name: 'Error calling mkdir on local file system',
+        data: { storageLocationParentDir }
+      })
+      throw new Error(
+        `Error making directory at ${storageLocationParentDir} - ${e.message}`
+      )
     }
 
     await fetchFileFromNetworkAndWriteToDisk({
