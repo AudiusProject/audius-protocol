@@ -65,7 +65,7 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
           `
           INSERT INTO "UserEvents" ("walletAddress", "hasSentDownloadAppEmail")
           VALUES (:walletAddress, :hasSentDownloadAppEmail)
-          ON CONFLICT
+          ON CONFLICT ("walletAddress")
           DO
             UPDATE SET "hasSentDownloadAppEmail" = :hasSentDownloadAppEmail;
         `,

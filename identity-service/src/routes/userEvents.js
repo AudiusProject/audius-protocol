@@ -52,7 +52,7 @@ module.exports = function (app) {
             `
             INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile")
             VALUES (:walletAddress, :hasSignedInNativeMobile)
-            ON CONFLICT
+            ON CONFLICT ("walletAddress")
             DO
               UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
           `,
