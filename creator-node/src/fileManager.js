@@ -548,8 +548,7 @@ async function saveFileForMultihashToFS(
     decisionTree.printTree({ logLevel: 'debug' })
   }
 
-  // If no error, return storageLocation where file was saved
-  return storageLocation
+  // If no error, return nothing
 }
 
 /**
