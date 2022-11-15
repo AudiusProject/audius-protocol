@@ -12,21 +12,12 @@ const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
  */
 export async function checkCIDAccess({
   cid,
-  contentAccessHeaders,
+  signedDataFromDiscoveryNode,
+  signatureFromDiscoveryNode,
   libs,
   logger,
   redis
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
-  if (!contentAccessHeaders) {
-    return {
-      isValidRequest: false,
-      error: 'MissingHeaders',
-      shouldCache: false
-    }
-  }
-
-  const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
-    JSON.parse(contentAccessHeaders)
   if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
     return {
       isValidRequest: false,

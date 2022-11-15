@@ -14,10 +14,17 @@ export type ContentAccessError =
 
 export type CheckAccessArgs = {
   cid: string
-  contentAccessHeaders: string
+  signedDataFromDiscoveryNode: SignedDataFromDiscoveryNode
+  signatureFromDiscoveryNode: string
   libs: any
   logger: Logger
   redis: Redis
+}
+
+export type SignedDataFromDiscoveryNode = {
+  cid: string
+  timestamp: string
+  shouldCache: boolean
 }
 
 export type CheckAccessResponse =

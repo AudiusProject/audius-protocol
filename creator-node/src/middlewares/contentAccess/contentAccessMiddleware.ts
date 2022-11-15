@@ -36,14 +36,17 @@ export const contentAccessMiddleware = async (
   }
 
   try {
-    const contentAccessHeaders = req.headers['x-content-access'] as string
+    const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
+      JSON.parse(req.headers['x-content-access'] as string)
+
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs, redis } = serviceRegistry
     const logger = req.logger as Logger
 
     const { isValidRequest, shouldCache, error } = await checkCIDAccess({
       cid,
-      contentAccessHeaders,
+      signedDataFromDiscoveryNode,
+      signatureFromDiscoveryNode,
       libs,
       logger,
       redis
