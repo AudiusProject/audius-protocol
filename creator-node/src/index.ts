@@ -202,6 +202,7 @@ const startAppForPrimary = async () => {
     }, 60_000)
   }
 
+  // not awaited since it can run in background
   fixFileStoragePaths()
 }
 

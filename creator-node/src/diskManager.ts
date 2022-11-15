@@ -563,6 +563,10 @@ export async function sweepSubdirectoriesInFiles(
   if (redoJob) return sweepSubdirectoriesInFiles()
 }
 
+/**
+ * Fixes storagePaths that aren't stored at config storagePath
+ * TODO - can also be used to fix storagePaths that are stored at legacy storagePath
+ */
 export async function fixFileStoragePaths(): Promise<void> {
   const logger: any = createChildLogger(genericLogger, { function: 'fixFileStoragePaths' })
 
@@ -575,8 +579,11 @@ export async function fixFileStoragePaths(): Promise<void> {
 
     logInfoWithDuration({ logger, startTime }, 'asdf')
 
+    const transaction = await models.sequelize.transaction()
+
     for await (const fileRecord of misplacedFileRecords) {
-      await saveFileForMultihashToFS(
+      // TODO - wrap all internal logic inside asyncRetry (?)
+      const { error, storagePath } = await saveFileForMultihashToFS(
         {},
         logger,
         fileRecord.multihash,
@@ -585,7 +592,23 @@ export async function fixFileStoragePaths(): Promise<void> {
         fileRecord.fileName,
         fileRecord.trackBlockchainId
       )
+
+      // handle errors
+      if (error) {
+        // TODO
+      }
+
+      // update DB storage path
+      await models.File.update(
+        { storagePath },
+        {
+          where: { fileUUID: fileRecord.fileUUID },
+          transaction
+        }
+      )
     }
+
+    await transaction.comit()
 
   } catch (e) {
     // Redo everything on any error
