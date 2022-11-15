@@ -44,6 +44,9 @@ def _does_user_own_erc721_nft_collection(
         try:
             contract = eth_web3.eth.contract(address=contract_address, abi=erc721_abi)
             nft_balance = contract.functions.balanceOf(wallet).call()
+            logger.info(
+                f"nft_balance: {nft_balance} for wallet: {wallet} and contract_address: {contract_address}"
+            )
             if int(nft_balance) > 0:
                 return True
         except Exception as e:
@@ -64,6 +67,9 @@ def _does_user_own_erc1155_nft_collection(
             ).call()
             positive_nft_balances = list(
                 filter(lambda nft_balance: int(nft_balance) > 0, nft_balances)
+            )
+            logger.info(
+                f"nft_balances: {nft_balances} for wallet: {wallet} and contract_address: {contract_address} and token_ids: {token_ids}"
             )
             if len(positive_nft_balances) > 0:
                 return True
@@ -105,6 +111,7 @@ def _get_eth_nft_gated_track_signatures(
     user_eth_wallets = list(
         map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
     )
+    logger.info(f"user_eth_wallets: {user_eth_wallets}")
 
     erc721_gated_tracks = list(
         filter(
@@ -113,6 +120,7 @@ def _get_eth_nft_gated_track_signatures(
             tracks,
         )
     )
+    logger.info(f"erc721_gated_tracks: {erc721_gated_tracks}")
 
     # Build a map of ERC721 collection address -> track ids
     # so that only one chain call will be made for premium tracks
@@ -123,6 +131,7 @@ def _get_eth_nft_gated_track_signatures(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc721_collection_track_map[contract_address].append(track.track_id)
+    logger.info(f"erc721_collection_track_map: {erc721_collection_track_map}")
 
     erc1155_gated_tracks = list(
         filter(
@@ -131,6 +140,7 @@ def _get_eth_nft_gated_track_signatures(
             tracks,
         )
     )
+    logger.info(f"erc1155_gated_tracks: {erc1155_gated_tracks}")
 
     # Build a map of ERC1155 collection address -> track ids
     # so that only one chain call will be made for premium tracks
@@ -149,6 +159,8 @@ def _get_eth_nft_gated_track_signatures(
         contract_address_token_id_map[contract_address] = contract_address_token_id_map[
             contract_address
         ].union(track_token_id_set)
+    logger.info(f"erc1155_collection_track_map: {erc1155_collection_track_map}")
+    logger.info(f"contract_address_token_id_map: {contract_address_token_id_map}")
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Check ownership of nfts from erc721 collections from given contract addresses,
@@ -233,6 +245,9 @@ def get_nft_gated_premium_track_signatures(
     with db.scoped_session() as session:
         user_wallet = _get_user_wallet(user_id, session)
         associated_wallets = get_associated_user_wallet({"user_id": user_id})
+        logger.info(
+            f"user_wallet: {user_wallet} associated_wallets: {associated_wallets}"
+        )
         if not user_wallet:
             logger.warn(
                 f"get_premium_track_signatures.py | get_nft_gated_premium_track_signatures | no wallet for user_id {user_id}"
@@ -244,15 +259,20 @@ def get_nft_gated_premium_track_signatures(
         )
         eth_nft_gated_tracks = list(
             filter(
-                lambda track: track["nft_collection"]["chain"] == "eth",
+                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                == "eth",
                 nft_gated_tracks,
             )
         )
         sol_nft_gated_tracks = list(
             filter(
-                lambda track: track["nft_collection"]["chain"] == "sol",
+                lambda track: track.premium_conditions["nft_collection"]["chain"]
+                == "sol",
                 nft_gated_tracks,
             )
+        )
+        logger.info(
+            f"nft_gated_tracks: {nft_gated_tracks} eth_nft_gated_tracks: {eth_nft_gated_tracks} sol_nft_gated_tracks: {sol_nft_gated_tracks}"
         )
         eth_nft_gated_track_signatures = _get_eth_nft_gated_track_signatures(
             user_wallet=user_wallet,
@@ -264,6 +284,9 @@ def get_nft_gated_premium_track_signatures(
             user_wallet=user_wallet,
             sol_associated_wallets=associated_wallets["sol"],
             tracks=sol_nft_gated_tracks,
+        )
+        logger.info(
+            f"eth_nft_gated_track_signatures: {eth_nft_gated_track_signatures} sol_nft_gated_track_signatures: {sol_nft_gated_track_signatures}"
         )
 
         result = {}

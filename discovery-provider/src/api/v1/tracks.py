@@ -1232,6 +1232,7 @@ class NFTGatedPremiumTrackSignatures(Resource):
         request_args = track_signatures_parser.parse_args()
         track_ids = request_args.get("track_ids")
         token_ids = request_args.get("token_ids")
+        logger.info(f"tracks ids: {track_ids} token ids: {token_ids}")
 
         # Track ids and token ids should have the same length.
         # If a track id does not have token ids, then we should still receive an empty string for its token ids.
@@ -1245,6 +1246,9 @@ class NFTGatedPremiumTrackSignatures(Resource):
                 token_ids[i].split("-") if token_ids[i] else []
             )
 
+        import json
+
+        logger.info(f"track_token_id_map: {json.dumps(track_token_id_map)}")
         premium_track_signatures = get_nft_gated_premium_track_signatures(
             decoded_user_id, track_token_id_map
         )
