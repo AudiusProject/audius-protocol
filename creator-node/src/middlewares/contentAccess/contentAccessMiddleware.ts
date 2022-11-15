@@ -65,12 +65,6 @@ export const contentAccessMiddleware = async (
     })
     if (!isValidRequest) {
       switch (error) {
-        case 'MissingHeaders':
-          return sendResponse(
-            req,
-            res,
-            errorResponseUnauthorized('Missing request headers for content.')
-          )
         case 'InvalidDiscoveryNode':
           return sendResponse(
             req,

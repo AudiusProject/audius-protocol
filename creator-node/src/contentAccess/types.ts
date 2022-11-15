@@ -7,7 +7,6 @@ export type ContentSignatureData = {
 }
 
 export type ContentAccessError =
-  | 'MissingHeaders'
   | 'InvalidDiscoveryNode'
   | 'IncorrectCID'
   | 'ExpiredTimestamp'

@@ -18,14 +18,6 @@ export async function checkCIDAccess({
   logger,
   redis
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
-  if (!signedDataFromDiscoveryNode || !signatureFromDiscoveryNode) {
-    return {
-      isValidRequest: false,
-      error: 'MissingHeaders',
-      shouldCache: false
-    }
-  }
-
   const discoveryNodeWallet = recoverWallet(
     signedDataFromDiscoveryNode,
     signatureFromDiscoveryNode

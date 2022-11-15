@@ -50,34 +50,6 @@ describe('Test content access', function () {
   })
 
   describe('content access', () => {
-    it('fails when there are missing headers', async () => {
-      const accessWithoutHeaders = await checkCIDAccess({
-        cid,
-        contentAccessHeaders: null as unknown as string,
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
-      })
-      assert.deepStrictEqual(accessWithoutHeaders, {
-        isValidRequest: false,
-        error: 'MissingHeaders',
-        shouldCache: false
-      })
-
-      const accessWithMissingHeaders = await checkCIDAccess({
-        cid,
-        contentAccessHeaders: JSON.stringify({}),
-        libs: libsMock,
-        logger: loggerMock,
-        redis: redisMock
-      })
-      assert.deepStrictEqual(accessWithMissingHeaders, {
-        isValidRequest: false,
-        error: 'MissingHeaders',
-        shouldCache: false
-      })
-    })
-
     it('fails when recovered DN wallet is not from registered DN', async () => {
       const signatureFromDiscoveryNode = generateSignature(
         signedDataFromDiscoveryNode,
