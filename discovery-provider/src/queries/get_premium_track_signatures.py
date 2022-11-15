@@ -74,24 +74,27 @@ def _does_user_own_erc1155_nft_collection(
     return False
 
 
-# Returns premium tracks from given track ids with an nft collection as the premium conditions.
-def _get_nft_gated_tracks(track_ids: List[int], session: Session):
-    premium_tracks = (
+def _get_tracks(track_ids: List[int], session: Session):
+    return (
         session.query(Track)
         .filter(
-            Track.is_premium == True,
             Track.track_id.in_(track_ids),
             Track.is_current == True,
             Track.is_delete == False,
         )
         .all()
     )
-    nft_gated_tracks = list(
+
+
+# Returns premium tracks from given track ids with an nft collection as the premium conditions.
+def _get_nft_gated_tracks(track_ids: List[int], session: Session):
+    return list(
         filter(
-            lambda track: "nft_collection" in track.premium_conditions, premium_tracks  # type: ignore
+            lambda track: track.is_premium  # type: ignore
+            and "nft_collection" in track.premium_conditions,  # type: ignore
+            _get_tracks(track_ids, session),
         )
     )
-    return nft_gated_tracks
 
 
 def _get_eth_nft_gated_track_signatures(
@@ -295,6 +298,9 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
             )
             return {}
 
+        tracks = _get_tracks(track_ids, session)
+        tracks_map = {track.track_id: track for track in tracks}
+
         args = list(
             map(
                 lambda track_id: {
@@ -328,7 +334,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
         for track_id in track_ids_with_access:
             track_signature_map[track_id] = get_premium_content_signature_for_user(
                 {
-                    "id": track_id,
+                    "id": tracks_map[track_id].track_cid,
                     "type": "track",
                     "user_wallet": user_wallet,
                     "is_premium": track_id in premium_track_ids,

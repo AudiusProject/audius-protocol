@@ -1036,7 +1036,7 @@ describe('test Polling Tracks with real files', function () {
 
     assert.deepStrictEqual(
       resp.body.error,
-      'Metadata object must include owner_id and track_cid and non-empty track_segments array'
+      'Metadata object must include owner_id and non-empty track_segments array'
     )
   })
 
