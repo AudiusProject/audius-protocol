@@ -608,7 +608,7 @@ export const getTopFolloweeSaves = (
 export const getLatest = (type: string, limit = 1, offset = 0) => {
   return {
     endpoint: `/latest/${type}`,
-    queryParams: {limit, offset}
+    queryParams: { limit, offset }
   }
 }
 
