@@ -12,6 +12,7 @@ import {
   logger as genericLogger,
   createChildLogger,
   logInfoWithDuration,
+  logErrorWithDuration,
   getStartTime
 } from './logging'
 import { tracing } from './tracer'
@@ -582,15 +583,15 @@ export async function fixMisplacedFiles(): Promise<void> {
   })
 
   // Wrap in a try-catch to retry
+  const startTime = getStartTime()
   try {
-    const startTime = getStartTime()
     const misplacedFileRecords = await models.sequelize.query(
       `select * from "Files" where "storagePath" not like '${getConfigStoragePath()}%';`
     )
     const misplacedFileRecordCount = misplacedFileRecords.length
     logInfoWithDuration(
       { logger, startTime },
-      `fixMisplacedFiles(): misplacedFileRecordCount = ${misplacedFileRecordCount}`
+      `misplacedFileRecordCount = ${misplacedFileRecordCount}`
     )
 
     // Set in config for quick investigation
@@ -603,6 +604,7 @@ export async function fixMisplacedFiles(): Promise<void> {
     let lastJobFailedFixMisplacedFileCount = 0
     for await (const fileRecord of misplacedFileRecords) {
       // Will retry internally
+      const fetchStartTime = getStartTime()
       const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
         {}, // libs param is unused, so empty object is sufficient
         logger,
@@ -624,6 +626,10 @@ export async function fixMisplacedFiles(): Promise<void> {
           }
         )
         lastJobFailedFixMisplacedFileCount++
+        logErrorWithDuration(
+          { logger, startTime: fetchStartTime },
+          `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
+        )
       } else {
         // update file's storagePath in DB to newly saved location, and ensure not marked as skipped
         await models.File.update(
@@ -651,7 +657,10 @@ export async function fixMisplacedFiles(): Promise<void> {
       lastJobFailedFixMisplacedFileCount
     )
   } catch (e) {
-    logger.error()
+    logErrorWithDuration(
+      { logger, startTime },
+      `Error: ${(e as Error).message}`
+    )
     // Redo everything on any error
     await fixMisplacedFiles()
   }
