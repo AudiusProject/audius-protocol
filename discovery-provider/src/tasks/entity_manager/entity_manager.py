@@ -199,6 +199,9 @@ def entity_manager_update(
                 # invalidate all new records except the last
                 for record in records:
                     record.is_current = False
+
+                    if "updated_at" in record.__dict__:
+                        record.updated_at = params.block_datetime
                 records[-1].is_current = True
                 records_to_save.extend(records)
 
