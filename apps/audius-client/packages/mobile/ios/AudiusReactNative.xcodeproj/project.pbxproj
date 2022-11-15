@@ -376,10 +376,26 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks.sh",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/ffmpegkit.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavcodec.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavdevice.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavfilter.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavformat.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavutil.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libswresample.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https/libswscale.framework",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/FingerprintPro/FingerprintPro.framework/FingerprintPro",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ffmpegkit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libavcodec.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libavdevice.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libavfilter.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libavformat.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libavutil.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libswresample.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libswscale.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FingerprintPro.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;

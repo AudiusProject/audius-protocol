@@ -1,4 +1,6 @@
-import { useCallback, useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
+
+import path from 'path'
 
 import {
   FeatureFlags,
@@ -7,11 +9,14 @@ import {
   tracksSocialActions,
   usersSocialActions,
   shareModalUISelectors,
-  shareSoundToTiktokModalActions
+  shareSoundToTiktokModalActions,
+  uuid
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
+import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native'
 import { Linking, View } from 'react-native'
 import Config from 'react-native-config'
+import RNFS from 'react-native-fs'
 import Share from 'react-native-share'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -38,14 +43,6 @@ const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
 
-const shareOptions = {
-  backgroundVideo: '', // TODO(nkang): Base64 video goes here
-  stickerImage: '', // TODO(nkang): Base64 sticker image goes here
-  attributionURL: Config.AUDIUS_URL,
-  social: Share.Social.INSTAGRAM_STORIES,
-  appId: Config.INSTAGRAM_APP_ID
-}
-
 const useStyles = makeStyles(({ palette }) => ({
   shareToTwitterAction: {
     color: palette.staticTwitterBlue
@@ -58,6 +55,9 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   copyLinkAction: {
     color: palette.secondary
+  },
+  shareToInstagramStoryAction: {
+    color: palette.primary
   },
   title: {
     display: 'flex',
@@ -90,7 +90,7 @@ export const ShareDrawer = () => {
   const { isEnabled: isShareToInstagramStoryEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_TO_STORY
   )
-  const { secondary, neutral, staticTwitterBlue } = useThemeColors()
+  const { primary, secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
   const dispatch = useDispatch()
@@ -123,9 +123,35 @@ export const ShareDrawer = () => {
   // nkang: WIP, will probably be moved:
   const handleShareToInstagramStory = useCallback(async () => {
     if (content?.type === 'track') {
+      const storyVideoPath = path.join(
+        RNFS.TemporaryDirectoryPath,
+        `storyVideo-${uuid()}.mp4`
+      )
+      const session = await FFmpegKit.execute(
+        `-f lavfi -i gradients=n=2:type=linear:s=270x480:duration=10:speed=0.05:c0=#AA1F3B:c1=#671525:x0=0:x1=0:y0=0:y1=280,format=rgb0 -t 10 ${storyVideoPath}`
+      )
+      // TODO(nkang): Add loading state
+      const returnCode = await session.getReturnCode()
+
+      if (ReturnCode.isSuccess(returnCode)) {
+      } else {
+        const output = await session.getOutput()
+        // TODO(nkang): Make this a toast?
+        console.error('Error sharing story: ', output)
+        return
+      }
+
+      const shareOptions = {
+        backgroundVideo: storyVideoPath,
+        // stickerImage: image, TODO(nkang): Base64 sticker image goes here
+        attributionURL: Config.AUDIUS_URL,
+        social: Share.Social.INSTAGRAM_STORIES,
+        appId: Config.INSTAGRAM_APP_ID
+      }
       try {
         await Share.shareSingle(shareOptions)
       } catch (error) {
+        // TODO (nkang): Make this a toast?
         console.error('Error sharing story: ', error)
       }
     }
@@ -208,20 +234,26 @@ export const ShareDrawer = () => {
 
     const shareToInstagramStoriesAction = {
       text: messages.instagramStory,
-      icon: <IconInstagram fill={secondary} height={26} width={26} />,
-      // TODO(nkang) Replace with style from pending design
-      style: styles.copyLinkAction,
+      icon: <IconInstagram fill={primary} height={26} width={26} />,
+      style: styles.shareToInstagramStoryAction,
       callback: handleShareToInstagramStory
     }
 
-    const result = [shareToTwitterAction, copyLinkAction, shareSheetAction]
+    const result: {
+      text: string
+      icon: React.ReactElement
+      style: Record<string, string>
+      callback: (() => void) | (() => Promise<void>)
+    }[] = [shareToTwitterAction]
 
     if (shouldIncludeTikTokAction) {
-      result.splice(1, 0, shareToTikTokAction)
+      result.push(shareToTikTokAction)
     }
     if (shouldIncludeInstagramStoryAction) {
-      result.splice(2, 0, shareToInstagramStoriesAction)
+      result.push(shareToInstagramStoriesAction)
     }
+
+    result.push(copyLinkAction, shareSheetAction)
 
     return result
   }, [
@@ -230,6 +262,7 @@ export const ShareDrawer = () => {
     styles.shareToTikTokAction,
     styles.shareToTikTokActionDark,
     styles.copyLinkAction,
+    styles.shareToInstagramStoryAction,
     handleShareToTwitter,
     isLightMode,
     handleShareToTikTok,
@@ -237,6 +270,7 @@ export const ShareDrawer = () => {
     secondary,
     handleCopyLink,
     handleOpenShareSheet,
+    primary,
     handleShareToInstagramStory,
     shouldIncludeTikTokAction,
     shouldIncludeInstagramStoryAction

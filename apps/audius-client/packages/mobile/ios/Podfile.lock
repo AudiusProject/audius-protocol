@@ -15,6 +15,10 @@ PODS:
     - React-Core (= 0.66.3)
     - React-jsi (= 0.66.3)
     - ReactCommon/turbomodule/core (= 0.66.3)
+  - ffmpeg-kit-ios-https (5.1.LTS)
+  - ffmpeg-kit-react-native/https-lts (5.1.0):
+    - ffmpeg-kit-ios-https (= 5.1.LTS)
+    - React-Core
   - FingerprintPro (2.1.3)
   - Firebase/Analytics (8.12.1):
     - Firebase/Core
@@ -506,6 +510,7 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
+  - ffmpeg-kit-react-native/https-lts (from `../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - lottie-ios (from `../node_modules/lottie-ios`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
@@ -580,6 +585,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Amplitude
+    - ffmpeg-kit-ios-https
     - FingerprintPro
     - Firebase
     - FirebaseAnalytics
@@ -611,6 +617,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   FBReactNativeSpec:
     :path: "../node_modules/react-native/React/FBReactNativeSpec"
+  ffmpeg-kit-react-native:
+    :podspec: "../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   lottie-ios:
@@ -756,6 +764,8 @@ SPEC CHECKSUMS:
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
   FBLazyVector: de148e8310b8b878db304ceea2fec13f2c02e3a0
   FBReactNativeSpec: 6192956c9e346013d5f1809ba049af720b11c6a4
+  ffmpeg-kit-ios-https: 9e50ffa7eaa6272a0021829e054ef241f2ecffb2
+  ffmpeg-kit-react-native: a8ba22b56048e8449372ba307f6bfc4f263c8445
   FingerprintPro: 4c5fafa1f42648a6d0fb8eda63fa4a9e0eed8229
   Firebase: 580d09e8edafc3073ebf09c03fd42e4d80d35fe9
   FirebaseAnalytics: bd10d7706ba8d6e01ea2816f8fe9e9b881cb0918
@@ -842,6 +852,6 @@ SPEC CHECKSUMS:
   SRSRadialGradient: 71378a83e52b616c40367c37ee7cb6865f9f7c6e
   Yoga: 32a18c0e845e185f4a2a66ec76e1fd1f958f22fa
 
-PODFILE CHECKSUM: 5b3673b9ec4477000fe1c9c3090d7b84553eeb1f
+PODFILE CHECKSUM: c9b95587012acb2b0b533d3c6d6b8cd587bc5b55
 
 COCOAPODS: 1.11.3
