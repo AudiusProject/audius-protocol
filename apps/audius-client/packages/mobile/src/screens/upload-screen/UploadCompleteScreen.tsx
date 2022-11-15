@@ -1,16 +1,26 @@
 import { useCallback, useContext } from 'react'
 
 import type { CommonState } from '@audius/common'
-import { uploadSelectors } from '@audius/common'
+import {
+  cacheTracksSelectors,
+  accountSelectors,
+  trackPageActions,
+  uploadSelectors
+} from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { View, Image } from 'react-native'
-import { useSelector } from 'react-redux'
+import { View, Image, Pressable } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
+import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import IconShare from 'app/assets/images/iconShare.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Text, TextButton, Tile, Button } from 'app/components/core'
-import { LineupTileSkeleton } from 'app/components/lineup-tile'
+import {
+  LineupTileSkeleton,
+  TrackTileComponent
+} from 'app/components/lineup-tile'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { TwitterButton } from 'app/components/twitter-button'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -19,6 +29,9 @@ import { getTrackRoute } from 'app/utils/routes'
 
 import { UploadStackScreen } from './UploadStackScreen'
 const { getTracks } = uploadSelectors
+const { getAccountUser } = accountSelectors
+const { fetchTrack } = trackPageActions
+const { getTrack } = cacheTracksSelectors
 
 const messages = {
   title: 'Upload',
@@ -62,12 +75,27 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const UploadCompleteScreen = () => {
   const styles = useStyles()
+  // const track = { title: 'test title', permalink: '/dylan/test-track-6' }
   const track = useSelector(
     (state: CommonState) => getTracks(state)?.[0]?.metadata
   )
-  const { title } = track!
+  const { title, permalink } = track!
   const { toast } = useContext(ToastContext)
   const navigation = useNavigation()
+  const dispatch = useDispatch()
+  const accountUser = useSelector(getAccountUser)
+  const uploadedTrack = useSelector((state) => getTrack(state, { permalink }))
+
+  console.log('uploaded track?', uploadedTrack)
+
+  useEffectOnce(() => {
+    const params = parseTrackRoute(permalink)
+    console.log('params!', params)
+    if (params) {
+      const { slug, handle } = params
+      dispatch(fetchTrack(null, slug!, handle!))
+    }
+  })
 
   const handleCopyLink = useCallback(() => {
     const link = ''
@@ -78,6 +106,16 @@ export const UploadCompleteScreen = () => {
   const handleClose = useCallback(() => {
     navigation.navigate('Feed')
   }, [navigation])
+
+  const handlePressTrack = useCallback(() => {
+    handleClose()
+    navigation.push('Track', { id: uploadedTrack?.track_id })
+  }, [handleClose, navigation, uploadedTrack])
+
+  const handleDone = useCallback(() => {
+    handleClose()
+    navigation.push('Profile', { handle: 'accountUser' })
+  }, [handleClose, navigation])
 
   return (
     <UploadStackScreen
@@ -90,7 +128,7 @@ export const UploadCompleteScreen = () => {
           size='large'
           title={messages.close}
           fullWidth
-          onPress={handleClose}
+          onPress={handleDone}
         />
       }
     >
@@ -127,7 +165,23 @@ export const UploadCompleteScreen = () => {
             IconProps={{ height: 14, width: 14 }}
           />
         </Tile>
-        <LineupTileSkeleton />
+        {accountUser && uploadedTrack ? (
+          <Pressable>
+            <TrackTileComponent
+              uid={''}
+              index={0}
+              togglePlay={() => {}}
+              track={uploadedTrack}
+              user={accountUser}
+              TileProps={{
+                pointerEvents: 'box-only',
+                onPress: handlePressTrack
+              }}
+            />
+          </Pressable>
+        ) : (
+          <LineupTileSkeleton />
+        )}
       </View>
     </UploadStackScreen>
   )

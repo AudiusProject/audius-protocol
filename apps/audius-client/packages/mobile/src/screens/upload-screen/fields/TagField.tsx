@@ -7,6 +7,7 @@ import { makeStyles } from 'app/styles'
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     marginVertical: spacing(2),
+    marginHorizontal: spacing(4),
     paddingVertical: spacing(6)
   }
 }))

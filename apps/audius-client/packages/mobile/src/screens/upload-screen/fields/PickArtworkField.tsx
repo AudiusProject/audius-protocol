@@ -21,6 +21,8 @@ type Error = {
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
+    marginTop: spacing(4),
+    marginHorizontal: spacing(4),
     marginBottom: spacing(2)
   },
   image: {

@@ -45,7 +45,8 @@ export const LineupTile = ({
   item,
   uid,
   user,
-  isPlayingUid
+  isPlayingUid,
+  TileProps
 }: LineupTileProps) => {
   const {
     has_current_user_reposted,
@@ -76,7 +77,7 @@ export const LineupTile = ({
   }, [onLoad, isLoaded, index, opacity, title])
 
   return (
-    <LineupTileRoot onPress={onPress}>
+    <LineupTileRoot onPress={onPress} {...TileProps}>
       {showArtistPick && _artist_pick === id ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}

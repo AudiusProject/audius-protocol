@@ -4,13 +4,13 @@ import type { TrackMetadata, UploadTrack } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import { KeyboardAvoidingView } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import * as Yup from 'yup'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
-import { Button, ScrollView, Tile } from 'app/components/core'
+import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -36,7 +36,8 @@ const messages = {
   screenTitle: 'Complete Track',
   name: 'Track Name',
   continue: 'Continue',
-  fixErrors: 'Fix Errors To Continue'
+  fixErrors: 'Fix Errors To Continue',
+  trackNameError: 'Track Name Required'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -46,8 +47,10 @@ const useStyles = makeStyles(({ spacing }) => ({
   tile: {
     margin: spacing(3)
   },
-  tileContent: {
-    padding: spacing(4)
+  errorText: {
+    alignSelf: 'center',
+    marginTop: 0,
+    marginBottom: spacing(4)
   }
 }))
 
@@ -57,7 +60,7 @@ const CompleteTrackSchema = Yup.object().shape({
     url: Yup.string().nullable().required('Required')
   }),
   genre: Yup.string().required('Required'),
-  description: Yup.string().nullable()
+  description: Yup.string().max(1000).nullable()
 })
 
 export type CompleteTrackParams = UploadTrack
@@ -84,7 +87,10 @@ export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
       bottomSection={
         <>
           {hasErrors ? (
-            <InputErrorMessage message={messages.fixErrors} />
+            <InputErrorMessage
+              message={messages.fixErrors}
+              style={styles.errorText}
+            />
           ) : null}
           <Button
             variant='primary'
@@ -100,24 +106,27 @@ export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
         </>
       }
     >
-      <ScrollView>
-        <KeyboardAvoidingView behavior='position'>
-          <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
-            <PickArtworkField />
-            <TextField name='title' label={messages.name} required />
-            <SubmenuList>
-              <SelectGenreField />
-              <SelectMoodField />
-            </SubmenuList>
-            <TagField />
-            <DescriptionField />
-            <SubmenuList removeBottomDivider>
-              <RemixSettingsField />
-              <AdvancedOptionsField />
-            </SubmenuList>
-          </Tile>
-        </KeyboardAvoidingView>
-      </ScrollView>
+      <KeyboardAwareScrollView>
+        <Tile style={styles.tile}>
+          <PickArtworkField />
+          <TextField
+            name='title'
+            label={messages.name}
+            required
+            errorMessage={messages.trackNameError}
+          />
+          <SubmenuList>
+            <SelectGenreField />
+            <SelectMoodField />
+          </SubmenuList>
+          <TagField />
+          <DescriptionField />
+          <SubmenuList removeBottomDivider>
+            <RemixSettingsField />
+            <AdvancedOptionsField />
+          </SubmenuList>
+        </Tile>
+      </KeyboardAwareScrollView>
     </UploadStackScreen>
   )
 }

@@ -19,7 +19,7 @@ export const SelectGenreScreen = () => {
     <ListSelectionScreen
       data={genres}
       renderItem={({ item }) => (
-        <Text fontSize='large' weight='bold' color='neutralLight4'>
+        <Text fontSize='large' weight='demiBold'>
           {item.label}
         </Text>
       )}

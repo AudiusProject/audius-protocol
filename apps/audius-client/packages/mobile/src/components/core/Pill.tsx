@@ -7,7 +7,8 @@ import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   optionPill: {
-    padding: spacing(2),
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(1),
     backgroundColor: palette.neutralLight8,
     borderWidth: 1,
     borderColor: palette.neutralLight7,

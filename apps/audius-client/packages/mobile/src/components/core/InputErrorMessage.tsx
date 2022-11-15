@@ -1,3 +1,4 @@
+import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import IconInfo from 'app/assets/images/iconInfo.svg'
@@ -14,25 +15,23 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   icon: {
     marginRight: spacing(2)
-  },
-  text: { lineHeight: 14, marginTop: 2 }
+  }
 }))
 
 type InputErrorMessageProps = {
   message: string
+  style?: StyleProp<ViewStyle>
 }
 
 export const InputErrorMessage = (props: InputErrorMessageProps) => {
-  const { message } = props
+  const { message, style } = props
   const styles = useStyles()
   const { accentRed } = useThemeColors()
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       <IconInfo fill={accentRed} style={styles.icon} height={14} width={14} />
-      <ErrorText fontSize='small' style={styles.text}>
-        {message}
-      </ErrorText>
+      <ErrorText fontSize='small'>{message}</ErrorText>
     </View>
   )
 }

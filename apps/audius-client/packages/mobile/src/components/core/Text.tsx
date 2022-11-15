@@ -5,6 +5,7 @@ import { Text as RNText } from 'react-native'
 
 import type { FontSize, FontWeight, typography } from 'app/styles'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 export type TextProps = RNTextProps & {
   variant?: keyof typeof typography
@@ -39,7 +40,18 @@ const useStyles = makeStyles(
                 ? palette.accentOrange
                 : palette[color]
           }),
-      ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
+      ...(weight
+        ? {
+            fontFamily: typography.fontByWeight[weight],
+            // Fix for demibold's weird positioning
+            marginTop:
+              weight === 'demiBold'
+                ? spacing(
+                    fontSize === 'large' ? 1 : fontSize === 'small' ? 0.5 : 0
+                  )
+                : undefined
+          }
+        : null),
       ...(fontSize && fontSize !== 'inherit'
         ? { fontSize: typography.fontSize[fontSize] }
         : null),

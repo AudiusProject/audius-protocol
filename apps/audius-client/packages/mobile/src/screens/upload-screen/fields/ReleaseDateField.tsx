@@ -27,9 +27,8 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing(2),
-    paddingTop: spacing(2),
-    paddingBottom: spacing(4)
+    paddingHorizontal: spacing(6),
+    paddingVertical: spacing(2)
   },
   label: {
     marginTop: spacing(1)

@@ -54,6 +54,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginBottom: spacing(6)
   },
   licenseSectionLabel: {
+    lineHeight: 22,
     marginBottom: spacing(2)
   },
   divider: {
