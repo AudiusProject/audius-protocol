@@ -63,8 +63,8 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
       if (sent) {
         await models.sequelize.query(
           `
-          INSERT INTO "UserEvents" ("walletAddress", "hasSentDownloadAppEmail")
-          VALUES (:walletAddress, :hasSentDownloadAppEmail)
+          INSERT INTO "UserEvents" ("walletAddress", "hasSentDownloadAppEmail", "createdAt", "updatedAt")
+          VALUES (:walletAddress, :hasSentDownloadAppEmail, now(), now())
           ON CONFLICT ("walletAddress")
           DO
             UPDATE SET "hasSentDownloadAppEmail" = :hasSentDownloadAppEmail;
