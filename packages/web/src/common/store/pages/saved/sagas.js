@@ -26,13 +26,13 @@ function* fetchTracksLineup() {
 }
 
 function* watchFetchSaves() {
-  yield waitForBackendAndAccount()
-  const apiClient = yield getContext('apiClient')
   let currentQuery = ''
   let currentSortMethod = ''
   let currentSortDirection = ''
 
   yield takeLatest(actions.FETCH_SAVES, function* (props) {
+    yield waitForBackendAndAccount()
+    const apiClient = yield getContext('apiClient')
     const account = yield call(waitForValue, getAccountUser)
     const userId = account.user_id
     const offset = props.offset ?? 0
