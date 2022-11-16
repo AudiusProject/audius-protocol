@@ -11,11 +11,9 @@ import { isElectron } from 'utils/clientUtil'
 const { getHasAccount } = accountSelectors
 
 function* notificationPollingDaemon() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(waitForBackendSetup)
   yield* call(waitForValue, getHasAccount, {})
-  yield* call(audiusBackendInstance.getEmailNotificationSettings)
 
   // Set up daemon that will watch for browser into focus and refetch notifications
   // as soon as it goes into focus
