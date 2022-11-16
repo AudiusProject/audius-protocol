@@ -10,7 +10,7 @@ import type {
 import { notificationsUserListActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { useNotificationNavigation } from 'app/screens/app-drawer-screen'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 const { setNotificationId } = notificationsUserListActions
 
@@ -26,7 +26,7 @@ export const useSocialActionHandler = (
   const firstUser = users?.[0]
   const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
-  const navigation = useNotificationNavigation()
+  const navigation = useNavigation()
 
   return useCallback(() => {
     if (isMultiUser) {

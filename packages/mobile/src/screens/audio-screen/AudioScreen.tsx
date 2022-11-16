@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type { BNWei, StringWei, Nullable, CommonState } from '@audius/common'
 import {
-  FeatureFlags,
   vipDiscordModalActions,
   formatWei,
   tokenDashboardPageSelectors,
@@ -34,10 +33,8 @@ import {
   Button,
   GradientText,
   Text,
-  Tile,
-  ScreenHeader
+  Tile
 } from 'app/components/core'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -165,9 +162,6 @@ export const AudioScreen = () => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
   const dispatch = useDispatch()
-  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
-    FeatureFlags.MOBILE_NAV_OVERHAUL
-  )
 
   const totalBalance: Nullable<BNWei> =
     useSelector(getAccountTotalBalance) ?? null
@@ -443,7 +437,6 @@ export const AudioScreen = () => {
       icon={IconCrown}
       title={messages.title}
     >
-      {isNavOverhaulEnabled ? null : <ScreenHeader text={messages.title} />}
       <ScrollView style={styles.tiles}>
         {renderAudioTile()}
         {renderWalletTile()}
