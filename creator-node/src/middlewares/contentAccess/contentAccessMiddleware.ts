@@ -10,7 +10,6 @@ import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'
 import { checkCIDAccess } from '../../contentAccess/contentAccessChecker'
 import { tracing } from '../../tracer'
-import { IncomingHttpHeaders } from 'http'
 
 /**
  * Middleware to validate requests to get content.
@@ -37,17 +36,13 @@ export const contentAccessMiddleware = async (
   }
 
   try {
-    const {
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode,
-      error: parseError
-    } = parseHeaders(req.headers)
+    const { data, signature, error: parseError } = parseQueryParams(req.headers)
 
     if (parseError) {
       sendResponse(
         req,
         res,
-        errorResponseUnauthorized('Missing request headers for content.')
+        errorResponseUnauthorized('Invalid query parameter for content.')
       )
     }
 
@@ -57,8 +52,8 @@ export const contentAccessMiddleware = async (
 
     const { isValidRequest, shouldCache, error } = await checkCIDAccess({
       cid,
-      signedDataFromDiscoveryNode,
-      signatureFromDiscoveryNode,
+      data,
+      signature,
       libs,
       logger,
       redis
@@ -107,21 +102,21 @@ export const contentAccessMiddleware = async (
   }
 }
 
-const parseHeaders = (headers: IncomingHttpHeaders) => {
+const parseQueryParams = (params: any) => {
   try {
-    const contentAccessHeader = headers['x-content-access'] as string
-    const { signedDataFromDiscoveryNode, signatureFromDiscoveryNode } =
-      JSON.parse(contentAccessHeader)
+    const encodedSignature = params.signature
+    const decodedSignature = decodeURIComponent(encodedSignature)
+    const { data, signature } = JSON.parse(decodedSignature)
 
     return {
-      signatureFromDiscoveryNode,
-      signedDataFromDiscoveryNode,
+      signature,
+      data,
       error: false
     }
   } catch (e: any) {
     return {
-      signatureFromDiscoveryNode: null,
-      signedDataFromDiscoveryNode: null,
+      signature: null,
+      data: null,
       error: true
     }
   }

@@ -19,7 +19,7 @@ describe('Test content access', function () {
     '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
-  const signedDataFromDiscoveryNode = {
+  const data = {
     cid,
     shouldCache: true,
     timestamp: Date.now()
@@ -51,15 +51,15 @@ describe('Test content access', function () {
 
   describe('content access', () => {
     it('fails when recovered DN wallet is not from registered DN', async () => {
-      const signatureFromDiscoveryNode = generateSignature(
-        signedDataFromDiscoveryNode,
+      const signature = generateSignature(
+        data,
         badDNPrivateKey
       )
 
       const access = await checkCIDAccess({
         cid,
-        signedDataFromDiscoveryNode,
-        signatureFromDiscoveryNode,
+        data,
+        signature,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -72,14 +72,14 @@ describe('Test content access', function () {
     })
 
     it('failed when the cid does not match what is signed', async () => {
-      const signatureFromDiscoveryNode = generateSignature(
-        signedDataFromDiscoveryNode,
+      const signature = generateSignature(
+        data,
         dummyDNPrivateKey
       )
       const access = await checkCIDAccess({
         cid: 'incorrectCID',
-        signedDataFromDiscoveryNode,
-        signatureFromDiscoveryNode,
+        data,
+        signature,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -98,15 +98,15 @@ describe('Test content access', function () {
         shouldCache: true,
         timestamp: Date.now() - tenDays // ten days old
       }
-      const signatureFromDiscoveryNode = generateSignature(
+      const signature = generateSignature(
         expiredTimestampData,
         dummyDNPrivateKey
       )
 
       const access = await checkCIDAccess({
         cid,
-        signatureFromDiscoveryNode,
-        signedDataFromDiscoveryNode: expiredTimestampData,
+        signature,
+        data: expiredTimestampData,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
@@ -119,14 +119,14 @@ describe('Test content access', function () {
     })
 
     it('passes when everything matches', async () => {
-      const signatureFromDiscoveryNode = generateSignature(
-        signedDataFromDiscoveryNode,
+      const signature = generateSignature(
+        data,
         dummyDNPrivateKey
       )
       const access = await checkCIDAccess({
         cid,
-        signatureFromDiscoveryNode,
-        signedDataFromDiscoveryNode,
+        signature,
+        data,
         libs: libsMock,
         logger: loggerMock,
         redis: redisMock
