@@ -767,7 +767,9 @@ def index_rewards_manager_backfill(self):
             return
 
         if check_if_backfilling_complete(session, solana_client_manager, redis):
-            logger.info("index_rewards_manager_backfill.py | Backfill indexing complete!")
+            logger.info(
+                "index_rewards_manager_backfill.py | Backfill indexing complete!"
+            )
             return
 
     try:
