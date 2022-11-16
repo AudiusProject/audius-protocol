@@ -1,6 +1,5 @@
 import type { Track, UserMetadata, UserTrackMetadata } from '@audius/common'
 import {
-  FeatureFlags,
   Kind,
   makeUid,
   cacheActions,
@@ -10,23 +9,29 @@ import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { loadTracks } from 'app/store/offline-downloads/slice'
+import { completeDownload, loadTracks } from 'app/store/offline-downloads/slice'
 
 import {
+  getOfflineCollections,
   getTrackJson,
   listTracks,
   verifyTrack
 } from '../services/offline-downloader/offline-storage'
 
+import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
+
 export const useLoadOfflineTracks = (collection: string) => {
-  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  )
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+
   const dispatch = useDispatch()
 
   useAsync(async () => {
     if (!isOfflineModeEnabled) return
+
+    const offlineCollections = await getOfflineCollections()
+    offlineCollections?.forEach((collection) => {
+      dispatch(completeDownload(collection))
+    })
 
     const trackIds = await listTracks()
     const savesLineupTracks: (Track & UserTrackMetadata & { uid: string })[] =
@@ -36,7 +41,7 @@ export const useLoadOfflineTracks = (collection: string) => {
 
     for (const trackId of trackIds) {
       try {
-        const verified = await verifyTrack(trackId)
+        const verified = await verifyTrack(trackId, true)
         if (!verified) continue
         getTrackJson(trackId)
           .then((track: Track & UserTrackMetadata) => {

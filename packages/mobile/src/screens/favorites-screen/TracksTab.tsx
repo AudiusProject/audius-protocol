@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
-  FeatureFlags,
   useProxySelector,
   savedPageActions,
   playerSelectors,
@@ -24,8 +23,8 @@ import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
@@ -68,9 +67,8 @@ export const TracksTab = () => {
   const dispatch = useDispatch()
   const styles = useStyles()
   const isReachable = useSelector(getIsReachable)
-  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  )
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+
   const handleFetchSaves = useCallback(() => {
     dispatch(fetchSaves())
   }, [dispatch])

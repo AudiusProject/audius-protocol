@@ -1,4 +1,3 @@
-import { FeatureFlags } from '@audius/common'
 import { useAsync } from 'react-use'
 
 import {
@@ -6,12 +5,11 @@ import {
   isAudioAvailableOffline
 } from 'app/services/offline-downloader'
 
-import { useFeatureFlag } from './useRemoteConfig'
+import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
 
 export const useOfflineTrackUri = (trackId?: string) => {
-  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  )
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+
   return useAsync(async () => {
     if (!trackId || !isOfflineModeEnabled) return
     if (!(await isAudioAvailableOffline(trackId))) return
