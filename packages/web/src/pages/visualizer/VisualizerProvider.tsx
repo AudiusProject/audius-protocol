@@ -98,7 +98,15 @@ const Visualizer = ({
 
   // Rebind audio
   useEffect(() => {
-    if (audioPlayer.audioCtx && playing) Visualizer1?.bind(audioPlayer)
+    if (playing) {
+      if (audioPlayer.audioCtx) {
+        Visualizer1?.bind(audioPlayer)
+      } else {
+        audioPlayer.audio.addEventListener('canplay', () => {
+          Visualizer1?.bind(audioPlayer)
+        })
+      }
+    }
   }, [isVisible, playing, currentQueueItem])
 
   useEffect(() => {
