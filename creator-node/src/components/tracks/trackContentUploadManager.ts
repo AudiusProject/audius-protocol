@@ -1,4 +1,4 @@
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import { libs } from '@audius/sdk'
 import path from 'path'
