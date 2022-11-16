@@ -48,7 +48,8 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils
+  clusterUtils,
+  verifyCIDMatchesExpected
 }
 
 module.exports = {

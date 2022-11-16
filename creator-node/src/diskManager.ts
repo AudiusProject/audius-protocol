@@ -10,7 +10,11 @@ import redisClient from './redis'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { tracing } from './tracer'
-import { execShellCommand } from './utils'
+import {
+  execShellCommand,
+  runShellCommand,
+  verifyCIDMatchesExpected
+} from './utils'
 
 const models = require('./models')
 
@@ -563,8 +567,9 @@ export async function sweepSubdirectoriesInFiles(
 }
 
 async function _copyLegacyFiles(
-  legacyPaths: string[],
-  deleteLegacyFiles: boolean
+  legacyPathsAndCids: { storagePath: string; cid: string }[],
+  deleteLegacyFiles: boolean,
+  logger: Logger
 ): Promise<
   {
     legacyPath: string
@@ -576,40 +581,70 @@ async function _copyLegacyFiles(
     legacyPath: string
     nonLegacyPath: string
   }[] = []
-  for (const legacyPath of legacyPaths) {
+  for (const { storagePath: legacyPath, cid } of legacyPathsAndCids) {
     try {
       // Compute new path
-      // TODO: Verify this function works for legacy files (I added tests in diskManager.test.js to check)
       const nonLegacyPathInfo = extractCIDsFromFSPath(legacyPath)
       if (!nonLegacyPathInfo) throw new Error('Unable to extract CID from path')
-      if (nonLegacyPathInfo.isDir) throw new Error('Path is a directory')
       if (!nonLegacyPathInfo.inner && !nonLegacyPathInfo.outer) {
         throw new Error('Extracted empty CID from path')
       }
 
-      // Mkdir of parent
-      let nonLegacyPath
-      if (nonLegacyPathInfo.inner) {
-        nonLegacyPath = await computeFilePathInDirAndEnsureItExists(
-          nonLegacyPathInfo.outer,
-          nonLegacyPathInfo.inner
-        )
-      } else {
-        nonLegacyPath = await computeFilePathAndEnsureItExists(
-          nonLegacyPathInfo.outer
-        )
-      }
+      // Ensure new path's parent exists
+      const nonLegacyPath = await (nonLegacyPathInfo.isDir
+        ? computeFilePathInDirAndEnsureItExists(
+            nonLegacyPathInfo.outer,
+            nonLegacyPathInfo.inner!
+          )
+        : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
 
-      // Write to new path
+      // Copy to new path if it doesn't already exist
       if (await fs.pathExists(nonLegacyPath)) {
         copiedPaths.push({ legacyPath, nonLegacyPath })
-        continue
+      } else {
+        try {
+          await fs.copyFile(legacyPath, nonLegacyPath)
+        } catch (e: any) {
+          // If we see a ENOSPC error, log out the disk space and inode details from the system
+          if (e.message.includes('ENOSPC')) {
+            await Promise.all([
+              runShellCommand(`df`, ['-h'], logger),
+              runShellCommand(`df`, ['-ih'], logger)
+            ])
+          }
+          throw e
+        }
       }
-      // TODO: Something similar to FileManager.fetchFileFromTargetGatewayAndWriteToDisk()
+
+      // Verify that the correct contents were copied
+      const cidMatchesExpected = await verifyCIDMatchesExpected({
+        cid,
+        path: nonLegacyPath,
+        logger
+      })
+
+      if (cidMatchesExpected) {
+        copiedPaths.push({ legacyPath, nonLegacyPath })
+      } else {
+        try {
+          await fs.unlink(nonLegacyPath)
+        } catch (e) {
+          logger.error(
+            `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
+          )
+        }
+        throw new Error('CID does not match what is expected to be')
+      }
 
       // Optionally delete legacy file now that it was moved
       if (deleteLegacyFiles) {
-        await fs.unlink(legacyPath)
+        try {
+          await fs.unlink(nonLegacyPath)
+        } catch (e) {
+          logger.error(
+            `_copyLegacyFiles() could not remove legacy file at storageLocation=${nonLegacyPath}`
+          )
+        }
       }
     } catch (e: any) {
       erroredPaths[legacyPath] = e.toString()
@@ -648,15 +683,6 @@ function _getCharsInRanges(...ranges: string[]): string[] {
   return charsInRanges
 }
 
-async function _migrateLegacyPathDbRows(
-  _copiedFilePaths: {
-    legacyPath: string
-    nonLegacyPath: string
-  }[]
-) {
-  // TODO: Transaction to find where storagePath=legacyPath and update it to nonLegacyPath
-}
-
 /**
  * 1. Finds rows in the Files table that have a legacy storagePath (/file_storage/<CID or dirCID>)
  * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
@@ -676,19 +702,18 @@ export async function migrateFilesWithLegacyStoragePaths(
       const cursor = 'Qm' + char
 
       // Query for legacy storagePaths in the pagination range until no more results are returned
-      let legacyStoragePaths = []
+      let legacyStoragePathsAndCids = []
       do {
-        legacyStoragePaths = await DbManager.getNonDirLegacyStoragePaths(
-          cursor,
-          BATCH_SIZE
-        )
+        legacyStoragePathsAndCids =
+          await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
 
         const copiedFilePaths = await _copyLegacyFiles(
-          legacyStoragePaths,
-          deleteLegacyFiles
+          legacyStoragePathsAndCids,
+          deleteLegacyFiles,
+          logger
         )
-        await _migrateLegacyPathDbRows(copiedFilePaths)
-      } while (legacyStoragePaths.length === BATCH_SIZE)
+        await DbManager.updateLegacyPathDbRows(copiedFilePaths)
+      } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
     }
   } catch (e: any) {
     logger.error(`Error migrating legacy storagePaths: ${e}`)

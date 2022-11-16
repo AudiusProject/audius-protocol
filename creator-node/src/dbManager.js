@@ -434,12 +434,12 @@ class DBManager {
     )?.length
   }
 
-  static async getNonDirLegacyStoragePaths(cursor, batchSize) {
+  static async getNonDirLegacyStoragePathsAndCids(cursor, batchSize) {
     const queryResult = await models.File.findAll({
-      attributes: ['storagePath'],
+      attributes: ['storagePath', 'multihash'],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },
-        type: { [sequelize.Op.ne]: 'dir' },
+        type: { [sequelize.Op.ne]: 'dir' }, // TODO: We also need to do something to move over the dir rows. Maybe a separate query/function that runs first
         storagePath: {
           [sequelize.Op.notLike]: '/file_storage/files/%',
           [sequelize.Op.like]: '/file_storage/%'
@@ -448,12 +448,35 @@ class DBManager {
       limit: batchSize
     })
     logger.debug(
-      `queryResult for legacyStoragePaths with cursor ${cursor}: ${JSON.stringify(
+      `queryResult for non-dir legacyStoragePaths with cursor ${cursor}: ${JSON.stringify(
         queryResult || {}
       )}`
     )
     if (isEmpty(queryResult)) return []
-    return queryResult.map((result) => result.storagePath)
+    return queryResult.map((result) => {
+      return { storagePath: result.storagePath, cid: result.multihash }
+    })
+  }
+
+  static async updateLegacyPathDbRows(copiedFilePaths, logger) {
+    const transaction = await models.sequelize.transaction()
+    try {
+      for (const { legacyPath, nonLegacyPath } of copiedFilePaths) {
+        await models.File.update({
+          storagePath: nonLegacyPath,
+          where: {
+            storagePath: {
+              [sequelize.Op.eq]: legacyPath
+            }
+          },
+          transaction
+        })
+      }
+      await transaction.commit()
+    } catch (e) {
+      logger.error(`Error updating legacy path db rows: ${e}`)
+      await transaction.rollback()
+    }
   }
 }
 
