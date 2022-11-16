@@ -130,6 +130,8 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const clusterWorkersCount = utils.clusterUtils.getNumWorkers()
+
   const healthy = !config.get('considerNodeUnhealthy')
 
   const response = {
@@ -209,7 +211,8 @@ const healthCheck = async (
     trustedNotifier: {
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
-    }
+    },
+    clusterWorkersCount,
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
