@@ -34,7 +34,7 @@ export type DetailsTileProps = {
   hasSaved?: boolean
 
   /** Label to be displayed at the top of the tile */
-  headerText: string
+  headerText?: string
 
   /** Hide the favorite button */
   hideFavorite?: boolean

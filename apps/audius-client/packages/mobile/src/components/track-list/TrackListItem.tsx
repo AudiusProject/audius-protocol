@@ -16,11 +16,10 @@ import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { IconButton } from 'app/components/core'
+import { DownloadStatusIndicator } from 'app/components/offline-downloads'
 import UserBadges from 'app/components/user-badges'
 import { font, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
-
-import { TrackDownloadIndicator } from '../offline-downloads/TrackDownloadIndicator'
 
 import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
@@ -235,7 +234,7 @@ export const TrackListItem = ({
             <UserBadges user={track.user} badgeSize={12} hideName />
           </Text>
         </View>
-        <TrackDownloadIndicator trackId={track_id} />
+        <DownloadStatusIndicator itemId={track_id} />
         {trackItemAction === 'save' ? (
           <IconButton
             icon={IconHeart}

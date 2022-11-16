@@ -21,6 +21,7 @@ import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
@@ -82,9 +83,7 @@ export const Audio = () => {
   )
   const currentUserId = useSelector(getUserId)
   const isReachable = useSelector(getIsReachable)
-  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  )
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const dispatch = useDispatch()
 

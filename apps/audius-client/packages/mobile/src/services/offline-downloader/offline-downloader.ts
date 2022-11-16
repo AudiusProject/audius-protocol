@@ -20,6 +20,7 @@ import {
   completeDownload,
   errorDownload,
   loadTrack,
+  removeDownload,
   startDownload
 } from 'app/store/offline-downloads/slice'
 
@@ -29,7 +30,11 @@ import {
   getLocalAudioPath,
   getLocalCoverArtPath,
   getLocalTrackJsonPath,
-  verifyTrack
+  getTrackJson,
+  markCollectionDownloaded,
+  purgeDownloadedTrack,
+  verifyTrack,
+  writeTrackJson
 } from './offline-storage'
 const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
@@ -37,8 +42,25 @@ const { getUser } = cacheUsersSelectors
 
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
-/** Main entrypoint - perform all steps required to complete a download */
-export const downloadTrack = async (trackId: number, collection: string) => {
+/** Main entrypoint - perform all steps required to complete a download for each track */
+export const downloadCollection = async (
+  collection: string,
+  trackIds: number[]
+) => {
+  store.dispatch(startDownload(collection))
+  markCollectionDownloaded(collection, true)
+
+  try {
+    await Promise.allSettled(
+      trackIds.map((trackId) => downloadTrack(trackId, collection))
+    )
+    store.dispatch(completeDownload(collection))
+  } catch (e) {
+    store.dispatch(errorDownload(collection))
+  }
+}
+
+const downloadTrack = async (trackId: number, collection: string) => {
   const state = store.getState()
   const track = getTrack(state, { id: trackId })
   const user = getUser(state, { id: track?.owner_id })
@@ -51,10 +73,33 @@ export const downloadTrack = async (trackId: number, collection: string) => {
 
   store.dispatch(startDownload(trackIdString))
   try {
+    if (await verifyTrack(trackIdString, false)) {
+      // Track already downloaded, so rewrite the json
+      // to include this collection in the downloaded_from_collection list
+      const trackJson = await getTrackJson(trackIdString)
+      const trackToWrite: UserTrackMetadata = {
+        ...trackJson,
+        offline: {
+          download_completed_time:
+            trackJson.offline?.download_completed_time ?? Date.now(),
+          last_verified_time:
+            trackJson.offline?.last_verified_time ?? Date.now(),
+          downloaded_from_collection:
+            trackJson.offline?.downloaded_from_collection?.concat(
+              collection
+            ) ?? [collection]
+        }
+      }
+      await writeTrackJson(trackIdString, trackToWrite)
+      store.dispatch(loadTrack(track))
+      store.dispatch(completeDownload(trackIdString))
+      return
+    }
+
     await downloadCoverArt(track)
     await tryDownloadTrackFromEachCreatorNode(track)
-    await writeTrackJson(track, user, collection)
-    const verified = await verifyTrack(trackIdString)
+    await writeUserTrackJson(track, user, collection)
+    const verified = await verifyTrack(trackIdString, true)
     if (verified) {
       store.dispatch(loadTrack(track))
       store.dispatch(completeDownload(trackIdString))
@@ -69,8 +114,43 @@ export const downloadTrack = async (trackId: number, collection: string) => {
   }
 }
 
+export const removeCollectionDownload = async (
+  collection: string,
+  trackIds: number[]
+) => {
+  store.dispatch(removeDownload(collection))
+  markCollectionDownloaded(collection, false)
+  trackIds.forEach(async (trackId) => {
+    const trackIdStr = trackId.toString()
+    const diskTrack = await getTrackJson(trackIdStr)
+    const collections = diskTrack.offline?.downloaded_from_collection ?? []
+    const otherCollections = collections.filter(
+      (downloadReasonCollection) => downloadReasonCollection !== collection
+    )
+    if (otherCollections.length === 0) {
+      purgeDownloadedTrack(trackIdStr)
+    } else {
+      const trackToWrite = {
+        ...diskTrack,
+        offline: {
+          download_completed_time:
+            diskTrack.offline?.download_completed_time ?? Date.now(),
+          last_verified_time:
+            diskTrack.offline?.last_verified_time ?? Date.now(),
+          downloaded_from_collection: otherCollections
+        }
+      }
+      await writeTrackJson(trackIdStr, trackToWrite)
+    }
+  })
+}
+
 /** Unlike mp3 and album art, here we overwrite even if the file exists to ensure we have the latest */
-const writeTrackJson = async (track: Track, user: User, collection: string) => {
+const writeUserTrackJson = async (
+  track: Track,
+  user: User,
+  collection: string
+) => {
   const trackToWrite: UserTrackMetadata = {
     ...track,
     offline: {

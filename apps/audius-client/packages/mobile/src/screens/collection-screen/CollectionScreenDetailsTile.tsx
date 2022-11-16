@@ -14,20 +14,27 @@ import {
   collectionPageSelectors
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type {
   DetailsTileDetail,
   DetailsTileProps
 } from 'app/components/details-tile/types'
+import { DownloadToggle } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
-const { getCollectionTracksLineup, getCollectionUid, getUserUid } =
-  collectionPageSelectors
+const {
+  getCollectionTracksLineup,
+  getCollectionId,
+  getCollectionUid,
+  getUserUid
+} = collectionPageSelectors
 const { resetCollection } = collectionPageActions
 const { makeGetTableMetadatas } = lineupSelectors
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
@@ -88,7 +95,10 @@ export const CollectionScreenDetailsTile = ({
   const styles = useStyles()
   const dispatch = useDispatch()
 
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+
   const collectionUid = useSelector(getCollectionUid)
+  const collectionId = useSelector(getCollectionId)
   const userUid = useSelector(getUserUid)
   const { entries, status } = useProxySelector(getTracksLineup, [])
   const tracksLoading = status === Status.LOADING
@@ -178,6 +188,16 @@ export const CollectionScreenDetailsTile = ({
     return messages.playlist
   }, [isAlbum, isPrivate, isPublishing])
 
+  const renderHeader = useCallback(() => {
+    return (
+      <DownloadToggle
+        collection={collectionId?.toString()}
+        tracks={entries}
+        labelText={headerText}
+      />
+    )
+  }, [collectionId, entries, headerText])
+
   const renderTrackList = () => {
     if (tracksLoading)
       return (
@@ -208,10 +228,11 @@ export const CollectionScreenDetailsTile = ({
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}
-      headerText={headerText}
       hideListenCount={true}
       isPlaying={isPlaying && isQueued}
       renderBottomContent={renderTrackList}
+      headerText={!isOfflineModeEnabled ? headerText : undefined}
+      renderHeader={isOfflineModeEnabled ? renderHeader : undefined}
       onPressPlay={handlePressPlay}
     />
   )

@@ -1,6 +1,7 @@
 import path from 'path'
 
 import type { UserTrackMetadata } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import RNFS, { exists, readDir, readFile } from 'react-native-fs'
 
 import { store } from 'app/store'
@@ -70,21 +71,42 @@ export const getTrackJson = async (
   }
 }
 
-export const verifyTrack = async (trackId: string): Promise<boolean> => {
+export const writeTrackJson = async (
+  trackId: string,
+  trackToWrite: UserTrackMetadata
+) => {
+  const pathToWrite = getLocalTrackJsonPath(trackId)
+  if (await exists(pathToWrite)) {
+    await RNFS.unlink(pathToWrite)
+  }
+  await RNFS.write(pathToWrite, JSON.stringify(trackToWrite))
+}
+
+export const verifyTrack = async (
+  trackId: string,
+  expectTrue?: boolean
+): Promise<boolean> => {
   const audioFile = exists(getLocalAudioPath(trackId))
   // TODO: check for all required art
-  // const artFile = exists(path.join(getLocalTrackDir(trackId), '150x150.jpg'))
+  // const artFile = exists(
+  //   path.join(getLocalTrackDir(trackId), '150x150.jpg')
+  // )
   const artFile = true
   const jsonFile = exists(getLocalTrackJsonPath(trackId))
 
   const results = await Promise.allSettled([audioFile, artFile, jsonFile])
-  const [audioExists, artExists, jsonExists] = results
+  const booleanResults = results.map(
+    (result) => result.status === 'fulfilled' && !!result.value
+  )
+  const [audioExists, artExists, jsonExists] = booleanResults
 
-  !audioExists && console.warn(`Missing audio for ${trackId}`)
-  !artExists && console.warn(`Missing art for ${trackId}`)
-  !jsonExists && console.warn(`Missing json for ${trackId}`)
+  if (expectTrue) {
+    !audioExists && console.warn(`Missing audio for ${trackId}`)
+    !artExists && console.warn(`Missing art for ${trackId}`)
+    !jsonExists && console.warn(`Missing json for ${trackId}`)
+  }
 
-  return results.every((exists) => !!exists)
+  return booleanResults.every((result) => result)
 }
 
 /** Debugging method to clear all downloaded content */
@@ -99,6 +121,45 @@ export const purgeAllDownloads = async () => {
   trackIds.forEach((trackId) => {
     store.dispatch(unloadTrack(trackId))
   })
+}
+
+export const markCollectionDownloaded = async (
+  collection: string,
+  downloaded: boolean
+) => {
+  try {
+    await AsyncStorage.mergeItem(
+      '@offline_collections',
+      JSON.stringify({
+        [collection]: downloaded
+      })
+    )
+  } catch (e) {
+    console.warn('Error writing offline collections', e)
+  }
+}
+
+export const getOfflineCollections = async () => {
+  try {
+    const offlineCollectionsAsync = await AsyncStorage.getItem(
+      '@offline_collections'
+    )
+
+    if (!offlineCollectionsAsync) return []
+
+    return Object.entries(JSON.parse(offlineCollectionsAsync))
+      .filter(([collection, downloaded]) => downloaded)
+      .map(([collection, downloaded]) => collection)
+  } catch (e) {
+    console.warn('Error reading offline collections', e)
+  }
+}
+
+export const purgeDownloadedTrack = async (trackId: string) => {
+  const trackDir = getLocalTrackDir(trackId)
+  if (!(await exists(trackDir))) return
+  await RNFS.unlink(trackDir)
+  store.dispatch(unloadTrack(trackId))
 }
 
 /** Debugging method to read cached files */
@@ -120,3 +181,5 @@ export const readDirRec = async (path: string) => {
     })
   )
 }
+
+export const readDirRoot = async () => await readDirRec(downloadsRoot)

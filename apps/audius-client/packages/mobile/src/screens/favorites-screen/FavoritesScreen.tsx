@@ -1,8 +1,7 @@
 import {
   useProxySelector,
   savedPageSelectors,
-  lineupSelectors,
-  FeatureFlags
+  lineupSelectors
 } from '@audius/common'
 
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
@@ -10,10 +9,10 @@ import IconFavorite from 'app/assets/images/iconFavorite.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { DownloadToggle } from 'app/components/offline-downloads/DownloadToggle'
+import { DownloadToggle } from 'app/components/offline-downloads'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
 import { AlbumsTab } from './AlbumsTab'
@@ -49,9 +48,7 @@ const favoritesScreens = [
 
 export const FavoritesScreen = () => {
   usePopToTopOnDrawerOpen()
-  const { isEnabled: isOfflineModeEnabled } = useFeatureFlag(
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  )
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const savedTracks = useProxySelector(getTracks, [])
 

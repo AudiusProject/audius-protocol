@@ -7,11 +7,10 @@ import IconNoWifi from 'app/assets/images/iconNoWifi.svg'
 import IconRefresh from 'app/assets/images/iconRefresh.svg'
 import { Button, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { messages } from './messages'
 
-const useStyles = makeStyles(({ typography }) => ({
+const useStyles = makeStyles(({ typography, spacing }) => ({
   button: {
     marginVertical: spacing(4)
   },
