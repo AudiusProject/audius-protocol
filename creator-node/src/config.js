@@ -46,12 +46,6 @@ const config = convict({
     env: 'migrateFilesWithLegacyStoragePath',
     default: true
   },
-  deleteOnLegacyStoragePathMigration: {
-    doc: 'True to delete the file at the legacy path after copying it. Only applicable if migrateFilesWithLegacyStoragePath is also true',
-    format: Boolean,
-    env: 'deleteOnLegacyStoragePathMigration',
-    default: true
-  },
   redisHost: {
     doc: 'Redis host name',
     format: String,
@@ -297,7 +291,7 @@ const config = convict({
     doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
     format: Boolean,
     env: 'clusterModeEnabled',
-    default: true
+    default: false
   },
 
   /** Upload settings */

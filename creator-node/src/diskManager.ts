@@ -568,7 +568,6 @@ export async function sweepSubdirectoriesInFiles(
 
 async function _copyLegacyFiles(
   legacyPathsAndCids: { storagePath: string; cid: string }[],
-  deleteLegacyFiles: boolean,
   logger: Logger
 ): Promise<
   {
@@ -622,7 +621,6 @@ async function _copyLegacyFiles(
         path: nonLegacyPath,
         logger
       })
-
       if (cidMatchesExpected) {
         copiedPaths.push({ legacyPath, nonLegacyPath })
       } else {
@@ -635,17 +633,6 @@ async function _copyLegacyFiles(
         }
         throw new Error('CID does not match what is expected to be')
       }
-
-      // Optionally delete legacy file now that it was moved
-      if (deleteLegacyFiles) {
-        try {
-          await fs.unlink(nonLegacyPath)
-        } catch (e) {
-          logger.error(
-            `_copyLegacyFiles() could not remove legacy file at storageLocation=${nonLegacyPath}`
-          )
-        }
-      }
     } catch (e: any) {
       erroredPaths[legacyPath] = e.toString()
     }
@@ -657,19 +644,18 @@ async function _copyLegacyFiles(
   return copiedPaths
 }
 
+async function _deleteFiles(filePaths: string[], logger: Logger) {
+  for (const filePath of filePaths) {
+    try {
+      await fs.unlink(filePath)
+    } catch (e) {
+      logger.error(`Failed to delete file at ${filePath}`)
+    }
+  }
+}
+
+// TODO: Move to unit tested util functions
 function _getCharsInRange(startChar: string, endChar: string): string[] {
-  // Long way for reference. TODO: Remove after confirming the shorter way isn't too confusing
-
-  // const charsInRange = []
-  // for (
-  //   let char = endChar.charCodeAt(0) + 1;
-  //   char > startChar.charCodeAt(0);
-  //   char--
-  // ) {
-  //   charsInRange.push(String.fromCharCode(char))
-  // }
-  // return charsInRange
-
   return range(endChar.charCodeAt(0), startChar.charCodeAt(0) - 1, -1).map(
     (charCode) => String.fromCharCode(charCode)
   )
@@ -678,7 +664,7 @@ function _getCharsInRange(startChar: string, endChar: string): string[] {
 function _getCharsInRanges(...ranges: string[]): string[] {
   const charsInRanges = []
   for (const range of ranges) {
-    charsInRanges.push(..._getCharsInRange(range.charAt(0), range.charAt(2)))
+    charsInRanges.push(..._getCharsInRange(range.charAt(0), range.charAt(1)))
   }
   return charsInRanges
 }
@@ -689,16 +675,14 @@ function _getCharsInRanges(...ranges: string[]): string[] {
  * 3. Updates the row in the Files table to reflect the new storagePath
  * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
  * @param logger logger to print errors to
- * @param deleteLegacyFiles whether or not to delete the file at the legacy path after it's copied to the new path
  */
 export async function migrateFilesWithLegacyStoragePaths(
-  logger: Logger,
-  deleteLegacyFiles: boolean
+  logger: Logger
 ): Promise<void> {
   const BATCH_SIZE = 100
   try {
-    // Paginate at each character in range [QmZ, ..., QmA, Qmz, ..., Qma, Qm9, ..., Qm0]
-    for (const char of _getCharsInRanges('a-z', 'A-Z', '0-9')) {
+    // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+    for (const char of _getCharsInRanges('az', 'AZ', '09')) {
       const cursor = 'Qm' + char
 
       // Query for legacy storagePaths in the pagination range until no more results are returned
@@ -706,13 +690,20 @@ export async function migrateFilesWithLegacyStoragePaths(
       do {
         legacyStoragePathsAndCids =
           await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-
         const copiedFilePaths = await _copyLegacyFiles(
           legacyStoragePathsAndCids,
-          deleteLegacyFiles,
           logger
         )
-        await DbManager.updateLegacyPathDbRows(copiedFilePaths)
+        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
+          copiedFilePaths,
+          logger
+        )
+        if (dbUpdateSuccessful) {
+          await _deleteFiles(
+            copiedFilePaths.map((file) => file.legacyPath),
+            logger
+          )
+        }
       } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
     }
   } catch (e: any) {
@@ -720,5 +711,5 @@ export async function migrateFilesWithLegacyStoragePaths(
   }
 
   // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithLegacyStoragePaths(logger, deleteLegacyFiles)
+  return migrateFilesWithLegacyStoragePaths(logger)
 }

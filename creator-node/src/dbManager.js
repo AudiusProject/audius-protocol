@@ -464,19 +464,17 @@ class DBManager {
       for (const { legacyPath, nonLegacyPath } of copiedFilePaths) {
         await models.File.update({
           storagePath: nonLegacyPath,
-          where: {
-            storagePath: {
-              [sequelize.Op.eq]: legacyPath
-            }
-          },
+          where: { storagePath: legacyPath },
           transaction
         })
       }
       await transaction.commit()
+      return true
     } catch (e) {
       logger.error(`Error updating legacy path db rows: ${e}`)
       await transaction.rollback()
     }
+    return false
   }
 }
 
