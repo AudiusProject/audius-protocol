@@ -6,7 +6,7 @@ export function removeNullable<T>(
 }
 
 export type NestedNonNullable<T> = {
-  [P in keyof T]: NestedNonNullable<NonNullable<T[P]>>
+  [P in keyof T]-?: NestedNonNullable<NonNullable<T[P]>>
 }
 
 export type Nullable<T> = T | null

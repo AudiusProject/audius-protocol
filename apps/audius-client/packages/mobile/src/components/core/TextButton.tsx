@@ -16,34 +16,37 @@ import { makeStyles } from 'app/styles'
 
 import type { TextProps } from './Text'
 
-const useStyles = makeStyles(({ palette, spacing }, { variant }) => {
-  const variantStyles = {
-    primary: {
-      icon: {
-        fill: palette.primary
-      }
-    },
-    secondary: {
-      icon: {
-        fill: palette.secondary
-      }
-    },
-    neutralLight4: {
-      icon: {
-        fill: palette.neutralLight4
+const useStyles = makeStyles<Pick<TextButtonProps, 'variant'>>(
+  // @ts-ignore need support for IconStyles in NamedStyles<T>
+  ({ palette, spacing }, { variant }) => {
+    const variantStyles = {
+      primary: {
+        icon: {
+          fill: palette.primary
+        }
+      },
+      secondary: {
+        icon: {
+          fill: palette.secondary
+        }
+      },
+      neutralLight4: {
+        icon: {
+          fill: palette.neutralLight4
+        }
       }
     }
-  }
 
-  const baseStyles = {
-    root: { flexDirection: 'row', alignItems: 'center' },
-    iconLeft: { marginRight: spacing(1) },
-    iconRight: { marginLeft: spacing(1) },
-    disabled: { color: palette.neutralLight7 }
-  }
+    const baseStyles = {
+      root: { flexDirection: 'row' as const, alignItems: 'center' as const },
+      iconLeft: { marginRight: spacing(1) },
+      iconRight: { marginLeft: spacing(1) },
+      disabled: { color: palette.neutralLight7 }
+    }
 
-  return merge(baseStyles, variantStyles[variant])
-})
+    return merge(baseStyles, variantStyles[variant])
+  }
+)
 
 export type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
@@ -79,6 +82,7 @@ export const TextButton = (props: TextButtonProps) => {
     <Icon
       height={18}
       width={18}
+      // @ts-ignored currently restricted to react-native style interfaces
       fill={showDisabledColor ? styles.disabled.color : styles.icon.fill}
       style={[
         iconPosition === 'left' ? styles.iconLeft : styles.iconRight,

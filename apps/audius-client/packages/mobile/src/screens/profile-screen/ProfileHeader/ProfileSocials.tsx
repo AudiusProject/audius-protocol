@@ -15,22 +15,24 @@ import {
   TwitterSocialLink
 } from './SocialLink'
 
-const useStyles = makeStyles(({ spacing }, { socialsCount }) => ({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing(3)
-  },
-  socials: {
-    flexDirection: 'row',
-    flex: 4,
-    marginVertical: spacing(3)
-  },
-  divider: {
-    marginVertical: spacing(1),
-    marginHorizontal: spacing(socialsCount === 2 ? 6 : 4)
-  }
-}))
+const useStyles = makeStyles<{ socialsCount: number }>(
+  ({ spacing }, { socialsCount }) => ({
+    root: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing(3)
+    },
+    socials: {
+      flexDirection: 'row',
+      flex: 4,
+      marginVertical: spacing(3)
+    },
+    divider: {
+      marginVertical: spacing(1),
+      marginHorizontal: spacing(socialsCount === 2 ? 6 : 4)
+    }
+  })
+)
 
 export const ProfileSocials = () => {
   const { user_id, twitter_handle, instagram_handle, tiktok_handle } =

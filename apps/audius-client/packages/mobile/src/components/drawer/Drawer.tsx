@@ -35,7 +35,9 @@ const BACKGROUND_OPACITY = 0.5
 // Controls the amount of friction in swiping when overflowing up or down
 const OVERFLOW_FRICTION = 4
 
-export const useStyles = makeStyles(
+type MakeStylesProps = Pick<DrawerProps, 'zIndex' | 'shouldAnimateShadow'>
+
+export const useStyles = makeStyles<MakeStylesProps>(
   ({ palette }, { zIndex = 5, shouldAnimateShadow = true }) => ({
     drawer: {
       backgroundColor: palette.neutralLight10,

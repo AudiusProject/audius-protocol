@@ -43,19 +43,27 @@ type Theme = {
   type: ThemeType
 }
 
+// TODO: This doesn't cover style props for icons
 type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle }
 
 type Styles<T extends NamedStyles<T>, PropsT> = (
   theme: Theme,
-  props?: PropsT
+  props: PropsT
 ) => T | NamedStyles<T>
+
+type UseStyles<T, PropsT> = PropsT extends undefined
+  ? () => T
+  : (props: PropsT) => T
 
 const styleCache = {}
 
-export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
+export const makeStyles = <
+  PropsT = undefined,
+  T extends NamedStyles<T> = NamedStyles<any>
+>(
   styles: Styles<T, PropsT>
-) => {
-  const useStyles = (props?: PropsT): T => {
+): UseStyles<T, PropsT> => {
+  return ((props?: PropsT): T => {
     const themeVariant = useThemeVariant()
     const palette = useThemeColors()
 
@@ -63,7 +71,7 @@ export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
 
     const stylesheet = useMemo(() => {
       const theme = { palette, typography, spacing, type: themeVariant }
-      const namedStyles = styles(theme, memoizedProps)
+      const namedStyles = styles(theme, memoizedProps!)
       const namedStylesHash = hash(namedStyles)
       const cachedStyle = styleCache[namedStylesHash]
       if (cachedStyle) {
@@ -75,7 +83,5 @@ export const makeStyles = <PropsT, T extends NamedStyles<T> = NamedStyles<any>>(
     }, [palette, themeVariant, memoizedProps])
 
     return stylesheet
-  }
-
-  return useStyles
+  }) as UseStyles<T, PropsT>
 }
