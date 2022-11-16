@@ -106,7 +106,8 @@ const parseQueryParams = (params: any) => {
   try {
     const encodedSignature = params.signature
     const decodedSignature = decodeURIComponent(encodedSignature)
-    const { data, signature } = JSON.parse(decodedSignature)
+    const { data: dataStr, signature } = JSON.parse(decodedSignature)
+    const data = JSON.parse(dataStr)
 
     return {
       signature,
