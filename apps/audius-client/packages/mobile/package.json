@@ -71,7 +71,7 @@
     "bn.js": "5.2.0",
     "color": "3.2.1",
     "expo-crypto": "9.2.0",
-    "ffmpeg-kit-react-native": "5.1.0",
+    "ffmpeg-kit-react-native": "4.5.2",
     "formik": "2.2.9",
     "fxa-common-password-list": "0.0.4",
     "hermes-engine": "0.9.0",
