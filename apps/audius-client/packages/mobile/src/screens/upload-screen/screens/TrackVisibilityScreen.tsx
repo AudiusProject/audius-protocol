@@ -4,7 +4,7 @@ import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Divider, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { UploadStackScreen } from '../UploadStackScreen'
+import { UploadStackScreen } from '../components'
 import { SwitchField } from '../fields'
 
 const messages = {

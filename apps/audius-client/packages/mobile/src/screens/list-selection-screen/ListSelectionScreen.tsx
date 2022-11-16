@@ -130,6 +130,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
           placeholder={searchText}
           styles={{ root: styles.search, input: styles.searchInput }}
           onChangeText={setFilterInput}
+          returnKeyType='search'
         />
         <FlatList
           renderItem={renderItem}

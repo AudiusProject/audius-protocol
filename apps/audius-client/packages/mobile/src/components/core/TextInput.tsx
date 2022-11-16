@@ -278,7 +278,6 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             underlineColorAndroid='transparent'
             autoComplete='off'
             autoCorrect={false}
-            returnKeyType='search'
             selectionColor={secondary}
             placeholderTextColor={styles.placeholderText.color}
             value={value}

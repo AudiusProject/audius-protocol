@@ -14,8 +14,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import type { UploadRouteProp } from './ParamList'
-import { UploadingTrackTile } from './UploadingTrackTile'
+import { UploadingTrackTile } from '../components'
+import type { UploadRouteProp } from '../types'
 const { uploadTracks } = uploadActions
 const { getUploadProgress, getUploadSuccess } = uploadSelectors
 

@@ -25,6 +25,7 @@ export const FilterInput = (props: FilterInputProps) => {
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
+        returnKeyType='search'
         Icon={IconFilter}
       />
     </Tile>

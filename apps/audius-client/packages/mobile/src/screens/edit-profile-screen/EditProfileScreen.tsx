@@ -77,11 +77,7 @@ const EditProfileForm = (props: FormikProps<ProfileValues>) => {
   }, [editStatus, navigation])
 
   return (
-    <FormScreen
-      variant='secondary'
-      onReset={handleReset}
-      onSubmit={handleSubmit}
-    >
+    <FormScreen variant='white' onReset={handleReset} onSubmit={handleSubmit}>
       <FormImageInput
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}

@@ -13,10 +13,9 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { TopBarIconButton } from '../app-screen'
-
-import type { UploadParamList } from './ParamList'
-import { processTrackFile } from './utils/processTrackFile'
+import { TopBarIconButton } from '../../app-screen'
+import type { UploadParamList } from '../types/ParamList'
+import { processTrackFile } from '../utils/processTrackFile'
 
 const messages = {
   screenTitle: 'Upload',
@@ -50,7 +49,7 @@ export const SelectTrackScreen = () => {
   const navigation = useNavigation<UploadParamList>()
   const [navigatedBack, setNavigatedBack] = useState(false)
 
-  const [{ value: track, loading, error }, handlePickTrack] =
+  const [{ value: track, loading, error }, handleSelectTrack] =
     useAsyncFn(async () => {
       try {
         const trackFile = await DocumentPicker.pickSingle({
@@ -83,10 +82,6 @@ export const SelectTrackScreen = () => {
     }
   }, [loading])
 
-  const handleBack = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
-
   const isLoading = loading || (track && !navigatedBack)
 
   return (
@@ -94,7 +89,9 @@ export const SelectTrackScreen = () => {
       title={messages.title}
       icon={IconUpload}
       variant='secondary'
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleBack} />}
+      topbarLeft={
+        <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
+      }
     >
       <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
         <IconUpload
@@ -115,7 +112,7 @@ export const SelectTrackScreen = () => {
           size='large'
           icon={isLoading ? LoadingSpinner : undefined}
           disabled={isLoading}
-          onPress={handlePickTrack}
+          onPress={handleSelectTrack}
         />
         {error && !loading ? (
           <ErrorText style={styles.errorText}>{error.message}</ErrorText>

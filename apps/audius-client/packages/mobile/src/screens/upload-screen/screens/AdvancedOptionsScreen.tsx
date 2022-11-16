@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import IconIndent from 'app/assets/images/iconIndent.svg'
 
-import { UploadStackScreen } from '../UploadStackScreen'
+import { UploadStackScreen } from '../components'
 import {
   IsrcField,
   LicenseTypeField,

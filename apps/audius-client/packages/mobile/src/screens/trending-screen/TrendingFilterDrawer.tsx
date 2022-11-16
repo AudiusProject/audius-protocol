@@ -91,6 +91,7 @@ export const TrendingFilterDrawer = () => {
           style={styles.search}
           value={searchValue}
           onChangeText={setSearchValue}
+          returnKeyType='search'
         />
         <FlatList
           keyboardShouldPersistTaps='handled'

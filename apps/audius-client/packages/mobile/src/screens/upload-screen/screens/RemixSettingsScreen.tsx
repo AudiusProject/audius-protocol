@@ -20,8 +20,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { UploadStackScreen } from '../UploadStackScreen'
-import { RemixTrackPill } from '../components'
+import { UploadStackScreen, RemixTrackPill } from '../components'
 
 const { getTrack, getUser, getStatus } = remixSettingsSelectors
 const { fetchTrack, reset } = remixSettingsActions
@@ -171,7 +170,7 @@ export const RemixSettingsScreen = () => {
                 styles={{ root: styles.inputRoot, input: styles.input }}
                 value={remixOfInput}
                 onChangeText={handleLinkInput}
-                returnKeyType='default'
+                returnKeyType='done'
               />
               {parentTrack && parentTrackArtist && !isInvalidParentTrack ? (
                 <RemixTrackPill track={parentTrack} user={parentTrackArtist} />

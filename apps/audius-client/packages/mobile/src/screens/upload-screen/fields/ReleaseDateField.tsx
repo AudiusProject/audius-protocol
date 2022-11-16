@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
 import { Theme } from '@audius/common'
@@ -77,6 +77,7 @@ export const ReleaseDateField = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { primary } = useThemeColors()
   const theme = useThemeVariant()
+  const maximumDate = useRef(new Date())
 
   const releaseDate = useMemo(
     () => (value ? new Date(value) : new Date()),
@@ -126,7 +127,7 @@ export const ReleaseDateField = () => {
         themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
         isDarkModeEnabled={theme !== Theme.DEFAULT}
         accentColor={primary}
-        maximumDate={new Date()}
+        maximumDate={maximumDate.current}
         modalStyleIOS={styles.datePickerModal}
         customConfirmButtonIOS={ConfirmDateButton}
         customCancelButtonIOS={CancelDateButton}
