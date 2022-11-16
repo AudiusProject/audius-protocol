@@ -37,11 +37,9 @@ export function* markedAllNotificationsViewed() {
 }
 
 function* notificationPollingDaemon() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(waitForBackendSetup)
   yield* call(waitForValue, getHasAccount, {})
-  yield* call(audiusBackendInstance.getEmailNotificationSettings)
 
   yield* takeEvery(ENTER_FOREGROUND, getNotifications, false)
 
