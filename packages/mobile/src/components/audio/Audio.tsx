@@ -269,13 +269,13 @@ export const Audio = () => {
     (seek = 0) => {
       if (videoRef.current) {
         progressInvalidator.current = true
-        videoRef.current.seek(0)
-        elapsedTime.current = 0
+        videoRef.current.seek(seek)
+        elapsedTime.current = seek
 
         // If we are casting, don't update the internal
         // seek clock
         if (!isCasting) {
-          global.progress.currentTime = 0
+          global.progress.currentTime = seek
         }
 
         MusicControl.updatePlayback({
