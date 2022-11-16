@@ -4,6 +4,7 @@ const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
 const utils = require('../../utils')
+const { clusterUtils } = require('../../utils/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -130,7 +131,7 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
-  const clusterWorkersCount = utils.clusterUtils.getNumWorkers()
+  const clusterWorkersCount = clusterUtils.getNumWorkers()
 
   const healthy = !config.get('considerNodeUnhealthy')
 
