@@ -1,5 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 /**
  * Enqueues sync operation into syncQueue for provided walletPublicKeys against provided creatorNodeEndpoint

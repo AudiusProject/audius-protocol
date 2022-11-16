@@ -1,5 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
