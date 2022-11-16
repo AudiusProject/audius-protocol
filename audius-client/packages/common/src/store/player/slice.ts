@@ -106,6 +106,7 @@ const slice = createSlice({
       state.uid = uid || state.uid
       state.trackId = trackId || state.trackId
       state.collectible = null
+      state.counter = state.counter + 1
     },
     playCollectible: (
       _state,
@@ -140,7 +141,7 @@ const slice = createSlice({
       state.trackId = trackId
     },
     reset: (_state, _action: PayloadAction<ResetPayload>) => {},
-    resetSuceeded: (state, action: PayloadAction<ResetSucceededPayload>) => {
+    resetSucceeded: (state, action: PayloadAction<ResetSucceededPayload>) => {
       const { shouldAutoplay } = action.payload
       state.playing = shouldAutoplay
       state.counter = state.counter + 1
@@ -166,7 +167,7 @@ export const {
   setBuffering,
   set,
   reset,
-  resetSuceeded,
+  resetSucceeded,
   seek,
   error,
   incrementCount
