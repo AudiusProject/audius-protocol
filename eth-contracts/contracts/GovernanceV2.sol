@@ -596,8 +596,8 @@ contract GovernanceV2 is InitializableV2 {
     function setStakingAddress(address _stakingAddress) external {
         _requireIsInitialized();
 
-        require(stakingAddress == address(0), "Governance: Staking address already set");
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(stakingAddress == address(0), "Governance: Staking address already set");
         require(_stakingAddress != address(0x00), "Governance: Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
     }

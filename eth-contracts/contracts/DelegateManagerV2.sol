@@ -868,6 +868,7 @@ contract DelegateManagerV2 is InitializableV2 {
         _requireIsInitialized();
 
         require(stakingAddress == address(0), "DelegateManager: Staking address already set");
+        require(_stakingAddress != address(0x00), "DelegateManager: Requires non-zero _stakingAddress");
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         stakingAddress = _stakingAddress;
         emit StakingAddressUpdated(_stakingAddress);

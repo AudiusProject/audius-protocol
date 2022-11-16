@@ -1928,7 +1928,7 @@ contract('DelegateManagerV2', async (accounts) => {
       )
       await _lib.assertRevert(
         delegateManager.setStakingAddress(_lib.addressZero),
-        'Staking already set'
+        'Staking address already set'
       )
     })
 
