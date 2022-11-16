@@ -177,12 +177,16 @@ async function fetchFileFromNetworkAndWriteToDisk({
   // this is the replacement for the old findCIDInNetwork call
   // short circuit calling the rest of the network if env var is not enabled or
   // the rest of the network has already been checked the network today
-  if (!config.get('findCIDInNetworkEnabled')) return false
+  if (!config.get('findCIDInNetworkEnabled'))
+    throw new Error(`findCIDInNetworkEnabled = false`)
 
   const attemptedStateFix = await getIfAttemptedStateFix(storageLocation)
-  if (attemptedStateFix) return
+  if (attemptedStateFix)
+    throw new Error(
+      `Already attempted to find from network; Currently cannot try again`
+    )
 
-  for (const contentUrl of nonTargetGatewayContentRoutes) {
+  for (const contentUrl of nonTargetGatewayContentRoutes.reverse()) {
     decisionTree.recordStage({
       name: 'Fetching from non-replica set gateways from the rest of the network',
       data: { gateway: contentUrl }
@@ -529,6 +533,7 @@ async function fetchFileFromNetworkAndSaveToFS(
       )
     }
 
+    // This function will throw error in any scenario where the file was not successfully saved to disk at expected `storageLocation`
     await fetchFileFromNetworkAndWriteToDisk({
       targetGatewayContentRoutes,
       nonTargetGatewayContentRoutes,
