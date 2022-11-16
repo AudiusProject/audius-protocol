@@ -23,7 +23,8 @@ import {
   SearchApi as SearchApiFull,
   TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
-  TipsApi as TipsApiFull
+  TipsApi as TipsApiFull,
+  TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
 
 import {
@@ -192,7 +193,8 @@ const initializeApis = ({
     search: new SearchApiFull(generatedApiClientConfigFull),
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
-    tips: new TipsApiFull(generatedApiClientConfigFull)
+    tips: new TipsApiFull(generatedApiClientConfigFull),
+    transactions: new TransactionsApiFull(generatedApiClientConfigFull)
   }
 
   return {
