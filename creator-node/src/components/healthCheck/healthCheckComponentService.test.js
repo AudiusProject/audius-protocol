@@ -632,7 +632,8 @@ describe('Test Health Check Verbose', function () {
         wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
         endpoint: 'default.trustednotifier',
         id: 12
-      }
+      },
+      clusterWorkersCount: clusterUtils.getNumWorkers()
     })
   })
 
