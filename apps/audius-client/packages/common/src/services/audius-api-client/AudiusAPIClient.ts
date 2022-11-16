@@ -1,6 +1,6 @@
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
-import { ID, TimeRange, StemTrackMetadata } from 'models'
+import { ID, TimeRange, StemTrackMetadata, Chain } from 'models'
 import { AuthHeaders } from 'services/audius-backend'
 import {
   IntKeys,
@@ -28,6 +28,7 @@ import {
   APIStem,
   APITrack,
   APIUser,
+  GetPremiumContentSignaturesResponse,
   GetTipsResponse,
   OpaqueID,
   SupporterResponse,
@@ -100,7 +101,9 @@ const FULL_ENDPOINT_MAP = {
   getReaction: '/reactions',
   getSupporting: (userId: OpaqueID) => `/users/${userId}/supporting`,
   getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
-  getTips: '/tips'
+  getTips: '/tips',
+  getPremiumContentSignatures: (userId: OpaqueID) =>
+    `/tracks/${userId}/nft-gated-signatures`
 }
 
 const ENDPOINT_MAP = {
@@ -422,6 +425,16 @@ export type GetTipsArgs = {
   minSlot?: number
   maxSlot?: number
   txSignatures?: string[]
+}
+
+export type GetPremiumContentSignaturesArgs = {
+  userId: ID
+  trackMap: {
+    [id: ID]: {
+      chain: Chain
+      tokenIds?: string[]
+    }
+  }
 }
 
 type InitializationState =
@@ -1541,6 +1554,43 @@ export class AudiusAPIClient {
 
     const response: Nullable<APIResponse<GetTipsResponse[]>> =
       await this._getResponse(FULL_ENDPOINT_MAP.getTips, params)
+    return response ? response.data : null
+  }
+
+  async getPremiumContentSignatures({
+    userId,
+    trackMap
+  }: GetPremiumContentSignaturesArgs) {
+    if (!Object.keys(trackMap).length) return null
+
+    const encodedUserId = this._encodeOrThrow(userId)
+    this._assertInitialized()
+
+    // To avoid making a POST request and thereby introducing a new pattern in the DN,
+    // we build a param string that represents the info we need to verify nft collection ownership.
+    // The trackMap is a map of track ids -> token ids.
+    // If the nft collection is not ERC1155, then there are no token ids.
+    // We append the track ids and token ids as query params, making sure they're the same length
+    // so that DN knows which token ids belong to which track ids.
+    // Example:
+    // trackMap: { 1: [1, 2], 2: [], 3: [1]}
+    // query params: '?track_ids=1&token_ids=1-2&track_ids=2&token_ids=&track_ids=3&token_ids=1'
+    const trackIdParams: string[] = []
+    const tokenIdParams: string[] = []
+    Object.keys(trackMap).forEach((trackId) => {
+      trackIdParams.push(trackId)
+      tokenIdParams.push(trackMap[trackId].join('-'))
+    })
+    const params = {
+      track_ids: trackIdParams,
+      token_ids: tokenIdParams
+    }
+
+    const response: Nullable<APIResponse<GetPremiumContentSignaturesResponse>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getPremiumContentSignatures(encodedUserId),
+        params
+      )
     return response ? response.data : null
   }
 

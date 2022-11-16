@@ -1,3 +1,5 @@
+import { Chain } from 'models'
+
 import { Nullable } from '../utils/typeUtils'
 
 import { Favorite } from './Favorite'
@@ -51,8 +53,23 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
+type TokenStandard = 'ERC721' | 'ERC1155'
+
+type PremiumConditionsEthNFTCollection = {
+  chain: Chain.Eth
+  standard: TokenStandard
+  address: string
+}
+
+type PremiumConditionsSolNFTCollection = {
+  chain: Chain.Sol
+  name: string
+}
+
 export type PremiumConditions = {
-  nft_collection?: string
+  nft_collection?:
+    | PremiumConditionsEthNFTCollection
+    | PremiumConditionsSolNFTCollection
   follow_user_id?: number
 }
 
