@@ -208,6 +208,7 @@ export const Lineup = ({
   disableTopTabScroll,
   fetchPayload,
   header,
+  LineupEmptyComponent,
   isTrending,
   isFeed,
   leadingElementId,
@@ -514,6 +515,7 @@ export const Lineup = ({
         onScroll={handleScroll}
         ListHeaderComponent={header}
         ListFooterComponent={<View style={{ height: 16 }} />}
+        ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
         sections={sections}

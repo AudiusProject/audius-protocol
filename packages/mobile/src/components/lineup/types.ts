@@ -69,6 +69,12 @@ export type LineupProps = {
    */
   header?: SectionListProps<unknown>['ListHeaderComponent']
 
+  /**
+   * An optional component to render when the lineup has no contents
+   * in it.
+   */
+  LineupEmptyComponent?: SectionListProps<unknown>['ListEmptyComponent']
+
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 

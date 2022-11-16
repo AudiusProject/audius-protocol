@@ -8,7 +8,7 @@ import styles from './EmptyFeed.module.css'
 import FollowArtists from './FollowUsers'
 
 const messages = {
-  noFollowers: 'Awkward. It looks like you’re not following anyone!'
+  noFollowers: `Oops! There's nothing here.`
 }
 
 const EmptyFeed = (props) => {
