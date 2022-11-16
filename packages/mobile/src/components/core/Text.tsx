@@ -23,7 +23,10 @@ export type TextProps = RNTextProps & {
   fontSize?: FontSize | 'inherit'
 }
 
-const useStyles = makeStyles(
+const useStyles = makeStyles<
+  Pick<TextProps, 'noGutter' | 'weight' | 'fontSize'> &
+    Required<Pick<TextProps, 'variant' | 'color'>>
+>(
   (
     { typography, palette },
     { variant, noGutter, color, weight, fontSize }

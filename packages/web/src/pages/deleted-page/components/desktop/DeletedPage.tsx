@@ -78,7 +78,11 @@ export type DeletedPageProps = {
 const g = withNullGuard(
   ({ playable, user, ...p }: DeletedPageProps) =>
     playable?.metadata &&
-    user && { ...p, playable: playable as NestedNonNullable<Playable>, user }
+    user && {
+      ...p,
+      playable: playable as NestedNonNullable<Playable>,
+      user
+    }
 )
 
 const DeletedPage = g(
