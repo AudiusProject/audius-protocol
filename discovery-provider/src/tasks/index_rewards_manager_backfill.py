@@ -760,15 +760,17 @@ def index_rewards_manager_backfill(self):
         else:
             stop_sig = stop_sig[0]
 
-    if not stop_sig:
-        logger.info(
-            f"index_rewards_manager_backfill.py | No stop_sig found: {stop_sig}"
-        )
-        return
+        if not stop_sig:
+            logger.info(
+                f"index_rewards_manager_backfill.py | No stop_sig found: {stop_sig}"
+            )
+            return
 
-    if check_if_backfilling_complete(session, solana_client_manager, redis):
-        logger.info("index_rewards_manager_backfill.py | Backfill indexing complete!")
-        return
+        if check_if_backfilling_complete(session, solana_client_manager, redis):
+            logger.info(
+                "index_rewards_manager_backfill.py | Backfill indexing complete!"
+            )
+            return
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
