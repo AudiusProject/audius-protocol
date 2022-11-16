@@ -669,7 +669,41 @@ function _getCharsInRanges(...ranges: string[]): string[] {
   return charsInRanges
 }
 
+async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
+  const BATCH_SIZE = 100
+  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+  for (const char of _getCharsInRanges('az', 'AZ', '09')) {
+    const cursor = 'Qm' + char
+
+    // Query for legacy storagePaths in the pagination range until no more results are returned
+    let legacyStoragePathsAndCids = []
+    do {
+      legacyStoragePathsAndCids =
+        await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
+      const copiedFilePaths = await _copyLegacyFiles(
+        legacyStoragePathsAndCids,
+        logger
+      )
+      const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
+        copiedFilePaths,
+        logger
+      )
+      if (dbUpdateSuccessful) {
+        await _deleteFiles(
+          copiedFilePaths.map((file) => file.legacyPath),
+          logger
+        )
+      }
+    } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
+  }
+}
+
+async function _migrateDirsWithLegacyStoragePaths(_logger: Logger) {
+  // TODO
+}
+
 /**
+ * For non-directory files and then later for files, this:
  * 1. Finds rows in the Files table that have a legacy storagePath (/file_storage/<CID or dirCID>)
  * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
  * 3. Updates the row in the Files table to reflect the new storagePath
@@ -679,33 +713,9 @@ function _getCharsInRanges(...ranges: string[]): string[] {
 export async function migrateFilesWithLegacyStoragePaths(
   logger: Logger
 ): Promise<void> {
-  const BATCH_SIZE = 100
   try {
-    // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
-    for (const char of _getCharsInRanges('az', 'AZ', '09')) {
-      const cursor = 'Qm' + char
-
-      // Query for legacy storagePaths in the pagination range until no more results are returned
-      let legacyStoragePathsAndCids = []
-      do {
-        legacyStoragePathsAndCids =
-          await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-        const copiedFilePaths = await _copyLegacyFiles(
-          legacyStoragePathsAndCids,
-          logger
-        )
-        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
-          copiedFilePaths,
-          logger
-        )
-        if (dbUpdateSuccessful) {
-          await _deleteFiles(
-            copiedFilePaths.map((file) => file.legacyPath),
-            logger
-          )
-        }
-      } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
-    }
+    await _migrateNonDirFilesWithLegacyStoragePaths(logger)
+    await _migrateDirsWithLegacyStoragePaths(logger)
   } catch (e: any) {
     logger.error(`Error migrating legacy storagePaths: ${e}`)
   }

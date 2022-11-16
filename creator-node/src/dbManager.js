@@ -439,12 +439,13 @@ class DBManager {
       attributes: ['storagePath', 'multihash'],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },
-        type: { [sequelize.Op.ne]: 'dir' }, // TODO: We also need to do something to move over the dir rows. Maybe a separate query/function that runs first
+        type: { [sequelize.Op.ne]: 'dir' },
         storagePath: {
           [sequelize.Op.notLike]: '/file_storage/files/%',
           [sequelize.Op.like]: '/file_storage/%'
         }
       },
+      order: [['multihash', 'ASC']],
       limit: batchSize
     })
     logger.debug(
