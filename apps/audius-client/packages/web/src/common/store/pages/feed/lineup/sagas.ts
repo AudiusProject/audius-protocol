@@ -19,11 +19,7 @@ import { select, all } from 'redux-saga/effects'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import {
-  getAccountReady,
-  getFollowIds,
-  getStartedSignOnProcess
-} from 'common/store/pages/signon/selectors'
+import { getFollowIds } from 'common/store/pages/signon/selectors'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 const { getFeedFilter } = feedPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
@@ -58,21 +54,18 @@ function* getTracks({
     current_user_id: currentUser.user_id
   }
 
-  // If the user just signed up, we might not have a feed ready.
-  // Optimistically load the feed as though the follows are all confirmed.
-  const startedSignOn = yield select(getStartedSignOnProcess)
-  if (startedSignOn) {
-    const isAccountReady = yield select(getAccountReady)
-    if (!isAccountReady) {
-      // Get the artists the user selected in signup:
-      const followeeUserIds = yield select(getFollowIds)
-      params.followee_user_ids = followeeUserIds
-    }
+  // If the user has followee user ids set, use those to fetch the feed.
+  // It implies that the feed is otherwise going to be empty so we give a
+  // hint to the API.
+  const followeeUserIds = yield select(getFollowIds)
+  if (followeeUserIds && followeeUserIds.length > 0) {
+    // Get the artists the user selected in signup or on their empty feed
+    params.followee_user_ids = followeeUserIds
   }
 
   const feed: (UserTrackMetadata | UserCollectionMetadata)[] =
     yield apiClient.getSocialFeed(params)
-  if (!feed.length) return []
+
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
   const trackIds = tracks.map((t) => t.track_id)
