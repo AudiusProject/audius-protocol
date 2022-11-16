@@ -186,7 +186,7 @@ async function fetchFileFromNetworkAndWriteToDisk({
       `Already attempted to find from network; Currently cannot try again`
     )
 
-  for (const contentUrl of nonTargetGatewayContentRoutes.reverse()) {
+  for (const contentUrl of nonTargetGatewayContentRoutes) {
     decisionTree.recordStage({
       name: 'Fetching from non-replica set gateways from the rest of the network',
       data: { gateway: contentUrl }
