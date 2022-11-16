@@ -1,7 +1,7 @@
 """Create playlist_routes table
 
 Revision ID: bead88b41a20
-Revises: f91c041d1d8d
+Revises: 6adee41cb531
 Create Date: 2022-10-28 18:08:50.677819
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = "bead88b41a20"
-down_revision = "f91c041d1d8d"
+down_revision = "6adee41cb531"
 branch_labels = None
 depends_on = None
 
