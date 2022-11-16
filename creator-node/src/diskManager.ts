@@ -13,7 +13,8 @@ import { tracing } from './tracer'
 import {
   execShellCommand,
   runShellCommand,
-  verifyCIDMatchesExpected
+  verifyCIDMatchesExpected,
+  timeout
 } from './utils'
 
 const models = require('./models')
@@ -560,10 +561,15 @@ export async function sweepSubdirectoriesInFiles(
         `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
       )
     }
+
+    // Wait 10sec between batches to reduce server load
+    await timeout(10000)
   }
 
   // keep calling this function recursively without an await so the original function scope can close
-  if (redoJob) return sweepSubdirectoriesInFiles()
+  // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
+  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled'))
+    return sweepSubdirectoriesInFiles()
 }
 
 async function _copyLegacyFiles(

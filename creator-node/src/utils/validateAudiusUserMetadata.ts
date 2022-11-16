@@ -1,5 +1,5 @@
 import type { Request } from 'express'
-import { CustomRequest } from '../apiHelpers'
+import { CustomRequest } from '../utils'
 
 const Web3 = require('web3')
 const web3 = new Web3()

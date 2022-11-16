@@ -30,7 +30,7 @@ import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
 import { clusterUtils } from './clusterUtils'
 
-export type { ValuesOf } from './utils'
+export * from './types'
 export {
   isFqdn,
   timeout,

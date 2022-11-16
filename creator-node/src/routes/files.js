@@ -173,6 +173,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
 const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
+  const localOnly = req.query.localOnly === 'true'
 
   const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
   const logPrefix = `[getCID] [CID=${CID}]`
@@ -486,6 +487,16 @@ const getCID = async (req, res) => {
     })
   }
 
+  if (localOnly) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseNotFound(
+        `${logPrefix} No valid file found locally for provided CID`
+      )
+    )
+  }
+
   /**
    * If found in DB (means not found in FS):
    * 1. Attempt to retrieve file from network and save to file system
@@ -546,6 +557,7 @@ const getDirCID = async (req, res) => {
   // Do not act as a public gateway. Only serve files that are tracked by this creator node.
   const dirCID = req.params.dirCID
   const filename = req.params.filename
+  const localOnly = req.query.localOnly === 'true'
   const logPrefix = `[getDirCID][dirCID: ${dirCID}][fileName: ${filename}]`
 
   // We need to lookup the CID so we can correlate with the filename (eg original.jpg, 150x150.jpg)
@@ -593,6 +605,14 @@ const getDirCID = async (req, res) => {
         `${logPrefix} - Failed to retrieve ${queryResults.storagePath} from FS`
       )
     }
+  }
+
+  if (localOnly) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseNotFound(`${logPrefix} No valid file found locally`)
+    )
   }
 
   // CID is the file CID, parse it from the storagePath
