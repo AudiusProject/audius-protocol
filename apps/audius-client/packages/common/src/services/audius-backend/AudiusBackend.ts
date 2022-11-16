@@ -62,8 +62,10 @@ import {
   uuid,
   Maybe,
   encodeHashId,
+  decodeHashId,
   Timer
 } from '../../utils'
+import { APIUser } from '../audius-api-client/types'
 
 import { MonitoringCallbacks } from './types'
 
@@ -2775,29 +2777,55 @@ export const audiusBackend = ({
     }
   }
 
+  /**
+   * Returns whether the current user is subscribed to userId.
+   */
   async function getUserSubscribed(userId: ID) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
-    try {
-      const { data, signature } = await signData()
-      return await fetch(
-        `${identityServiceUrl}/notifications/subscription?userId=${userId}`,
-        {
-          headers: {
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          }
-        }
-      )
-        .then((res) => res.json())
-        .then((res) =>
-          res.users && res.users[userId.toString()]
-            ? res.users[userId.toString()].isSubscribed
-            : false
+
+    const isreadSubscribersFromDiscoveryEnabled =
+      (await getFeatureEnabled(
+        FeatureFlags.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED
+      )) ?? false
+
+    if (isreadSubscribersFromDiscoveryEnabled) {
+      // Read subscribers from discovery
+      try {
+        const subscribers: APIUser[] = await audiusLibs.User.getUserSubscribers(
+          encodeHashId(userId)
         )
-    } catch (e) {
-      console.error(e)
+        const subscriberIds = subscribers.map((subscriber) =>
+          decodeHashId(subscriber.id)
+        )
+        return subscriberIds.includes(account.user_id)
+      } catch (e) {
+        console.error(getErrorMessage(e))
+        return false
+      }
+    } else {
+      // Read subscribers from identity
+      try {
+        const { data, signature } = await signData()
+        return await fetch(
+          `${identityServiceUrl}/notifications/subscription?userId=${userId}`,
+          {
+            headers: {
+              [AuthHeaders.Message]: data,
+              [AuthHeaders.Signature]: signature
+            }
+          }
+        )
+          .then((res) => res.json())
+          .then((res) =>
+            res.users && res.users[userId.toString()]
+              ? res.users[userId.toString()].isSubscribed
+              : false
+          )
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 

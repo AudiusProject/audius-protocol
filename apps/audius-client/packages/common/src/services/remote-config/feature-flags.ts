@@ -30,7 +30,8 @@ export enum FeatureFlags {
   MOBILE_UPLOAD = 'mobile_upload',
   STREAM_MP3 = 'stream_mp3',
   READ_ARTIST_PICK_FROM_DISCOVERY = 'read_artist_pick_from_discovery',
-  SHARE_TO_STORY = 'share_to_story'
+  SHARE_TO_STORY = 'share_to_story',
+  READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED = 'read_subscribers_from_discovery_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -76,5 +77,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.MOBILE_UPLOAD]: false,
   [FeatureFlags.STREAM_MP3]: false,
   [FeatureFlags.READ_ARTIST_PICK_FROM_DISCOVERY]: false,
-  [FeatureFlags.SHARE_TO_STORY]: false
+  [FeatureFlags.SHARE_TO_STORY]: false,
+  [FeatureFlags.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED]: false
 }
