@@ -4,6 +4,7 @@ from typing import Dict, List, Set, Tuple, TypedDict
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -94,6 +95,7 @@ class ManageEntityParameters:
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
+        pending_playlist_routes: List[PlaylistRoute],
         metadata: Dict[str, Dict[str, Dict]],
         eth_manager: EthManager,
         web3: Web3,
@@ -117,6 +119,7 @@ class ManageEntityParameters:
         self.web3 = web3
         self.eth_manager = eth_manager
         self.pending_track_routes = pending_track_routes
+        self.pending_playlist_routes = pending_playlist_routes
 
         self.event = event
         self.metadata = metadata

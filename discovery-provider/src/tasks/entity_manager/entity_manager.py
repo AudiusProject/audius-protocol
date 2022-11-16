@@ -8,6 +8,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -93,6 +94,7 @@ def entity_manager_update(
         new_records: RecordDict = defaultdict(lambda: defaultdict(list))
 
         pending_track_routes: List[TrackRoute] = []
+        pending_playlist_routes: List[PlaylistRoute] = []
 
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
@@ -111,6 +113,7 @@ def entity_manager_update(
                         new_records,  # actions below populate these records
                         existing_records,
                         pending_track_routes,
+                        pending_playlist_routes,
                         metadata,
                         update_task.eth_manager,
                         update_task.web3,
