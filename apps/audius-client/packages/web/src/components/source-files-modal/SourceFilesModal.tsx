@@ -23,7 +23,7 @@ import { Dropzone } from 'components/upload/Dropzone'
 
 import styles from './SourceFilesModal.module.css'
 
-const MAX_ROWS = 5
+const MAX_ROWS = 10
 
 const messages = {
   title: 'DOWNLOADS & SOURCE FILES',
@@ -32,7 +32,7 @@ const messages = {
   allowDownloads: 'Allow Downloads',
   requireFollowToDownload: 'Require Follow to Download',
   done: 'DONE',
-  maxCapacity: 'Reached upload limit of 5 files.'
+  maxCapacity: 'Reached upload limit of 10 files.'
 }
 
 const defaultDownloadSettings: Download = {
