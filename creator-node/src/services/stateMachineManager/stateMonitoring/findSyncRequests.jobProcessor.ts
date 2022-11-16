@@ -149,9 +149,7 @@ async function findSyncRequests({
  *
  * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the user has had syncing to it
- * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
- * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
+ * @param {SecondarySyncHealthTracker} secondarySyncHealthTracker instance of secondarySyncHealthTracker
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
  * @param {Map<string, number>} cNodeEndpointToSpIdMap map of cnode endpoints to SP IDs
  */

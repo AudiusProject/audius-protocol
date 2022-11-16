@@ -9,7 +9,10 @@ import {
   SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES,
   SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP
 } from './SecondarySyncHealthTrackerConstants'
-import { WalletToSecondaryToShouldContinueAction } from './types'
+import {
+  WalletToSecondaryAndMaxErrorReached,
+  WalletToSecondaryToShouldContinueAction
+} from './types'
 
 const { logger: genericLogger } = require('../../../logging')
 const redisClient = require('../../../redis')
@@ -22,9 +25,11 @@ const PROCESS_USERS_BATCH_SIZE = 30
 
 export class SecondarySyncHealthTracker {
   walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
+  walletsToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
   constructor() {
     this.walletToSecondaryToShouldContinueAction = {}
+    this.walletsToSecondaryAndMaxErrorReached = {}
   }
 
   /**
@@ -98,9 +103,6 @@ export class SecondarySyncHealthTracker {
     userInfo: ComputeWalletOnSecondaryUserInfo[]
   ) {
     // For each secondary-wallet-date
-    const walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction =
-      {}
-
     for (let i = 0; i < userInfo.length; i += PROCESS_USERS_BATCH_SIZE) {
       // Get batch slice of users
       const userInfoSlice = userInfo.slice(i, i + PROCESS_USERS_BATCH_SIZE)
@@ -121,16 +123,23 @@ export class SecondarySyncHealthTracker {
           this._determineIfSyncShouldReenqueue({
             wallet: info.wallet,
             secondary: info.secondary,
-            errorToErrorCount,
-            mapToStoreResultsIn: walletToSecondaryToShouldContinueAction
+            errorToErrorCount
           })
         }
       }
     }
 
-    this._setWalletToSecondaryToShouldContinueAction(
-      walletToSecondaryToShouldContinueAction
-    )
+    if (Object.keys(this.walletsToSecondaryAndMaxErrorReached).length) {
+      genericLogger.warn(
+        {
+          SecondarySyncHealthTracker:
+            'computeIfWalletOnSecondaryShouldContinueActions'
+        },
+        `Wallets on secondaries have exceeded the allowed error capacity for today: ${JSON.stringify(
+          this.walletsToSecondaryAndMaxErrorReached
+        )}`
+      )
+    }
   }
 
   getWalletToSecondaryToShouldContinueAction(): WalletToSecondaryToShouldContinueAction {
@@ -169,50 +178,49 @@ export class SecondarySyncHealthTracker {
   _determineIfSyncShouldReenqueue({
     wallet,
     secondary,
-    errorToErrorCount,
-    mapToStoreResultsIn
+    errorToErrorCount
   }: {
     wallet: string
     secondary: string
     errorToErrorCount: { [error: string]: number /* the error count */ }
-    mapToStoreResultsIn: WalletToSecondaryToShouldContinueAction
   }) {
     // Get the error and number of times the error occurred
     for (const [error, errorCount] of Object.entries(errorToErrorCount)) {
       // Compare the above number to the max retry attempts
-      let shouldReenqueue = false
-      if (this._shouldContinueAction(error, errorCount)) {
-        shouldReenqueue = true
+      const shouldContinueAction = this._shouldContinueAction(error, errorCount)
+
+      if (!shouldContinueAction) {
+        this._updateWalletToSecondaryAndMaxErrorReached({
+          wallet,
+          secondary,
+          error
+        })
       }
 
-      // TODO: add which err made the user go kaput
-
       // If under, record retry to 'true'. Else, record retry as 'false'.
-      this._updateResult({
-        resultMap: mapToStoreResultsIn,
-        shouldReenqueue,
+      this._updateWalletToSecondaryToShouldContinueAction({
+        shouldContinueAction,
         wallet,
         secondary
       })
     }
   }
 
-  _updateResult({
-    resultMap,
-    shouldReenqueue,
+  _updateWalletToSecondaryToShouldContinueAction({
+    shouldContinueAction,
     wallet,
     secondary
   }: {
     wallet: string
     secondary: string
-    shouldReenqueue: boolean
-    resultMap: WalletToSecondaryToShouldContinueAction
+    shouldContinueAction: boolean
   }) {
-    if (!resultMap[wallet]) {
-      resultMap[wallet] = {}
+    if (!this.walletToSecondaryToShouldContinueAction[wallet]) {
+      this.walletToSecondaryToShouldContinueAction[wallet] = {}
     }
 
-    resultMap[wallet][secondary] = shouldReenqueue
+    this.walletToSecondaryToShouldContinueAction[wallet][secondary] =
+      shouldContinueAction
   }
 
   _shouldContinueAction(error: string, errorCount: number) {
@@ -256,10 +264,20 @@ export class SecondarySyncHealthTracker {
     }
   }
 
-  _setWalletToSecondaryToShouldContinueAction(
-    map: WalletToSecondaryToShouldContinueAction
-  ) {
-    this.walletToSecondaryToShouldContinueAction = map
+  _updateWalletToSecondaryAndMaxErrorReached({
+    wallet,
+    secondary,
+    error
+  }: {
+    wallet: string
+    secondary: string
+    error: string
+  }) {
+    if (!this.walletsToSecondaryAndMaxErrorReached[wallet]) {
+      this.walletsToSecondaryAndMaxErrorReached[wallet] = {}
+    }
+
+    this.walletsToSecondaryAndMaxErrorReached[wallet][secondary] = error
   }
 }
 

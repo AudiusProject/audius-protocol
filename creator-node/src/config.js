@@ -683,12 +683,6 @@ const config = convict({
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
-  minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
-    format: 'nat',
-    env: 'minimumSecondaryUserSyncSuccessPercent',
-    default: 50
-  },
   minimumFailedSyncRequestsBeforeReconfig: {
     doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
     format: 'nat',

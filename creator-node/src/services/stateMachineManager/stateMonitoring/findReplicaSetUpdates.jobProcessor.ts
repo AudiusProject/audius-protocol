@@ -138,15 +138,16 @@ async function findReplicaSetUpdates({
 type UpdateReplicaSetOp = UpdateReplicaSetUser & {
   nodesToReconfigOffOf: Set<string>
 }
+
 /**
  * Determines which replica set update operations should be performed for a given user.
  *
- * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
- * @param {string} thisContentNodeEndpoint URL or IP address of this Content Node
- * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsBySecondary mapping of each secondary to the success metrics the nodeUser has had syncing to it
- * * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
- * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
+ * @param {Object} param
+ * @param {Object} param.user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
+ * @param {string} param.thisContentNodeEndpoint URL or IP address of this Content Node
+ * @param {Set<string>} param.unhealthyPeers set of unhealthy peers
+ * @param {SecondarySyncHealthTracker} param.secondarySyncHealthTracker instance of secondarySyncHealthTracker
+ * @param {Object} param.cNodeEndpointToSpIdMap map of content node endpoint to sp id
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
 const _findReplicaSetUpdatesForUser = async ({
