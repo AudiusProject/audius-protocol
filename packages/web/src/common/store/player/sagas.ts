@@ -41,7 +41,7 @@ const {
   stop,
   setBuffering,
   reset,
-  resetSuceeded,
+  resetSucceeded,
   seek,
   error: errorAction
 } = playerActions
@@ -230,7 +230,7 @@ export function* watchReset() {
         )
       }
     }
-    yield* put(resetSuceeded({ shouldAutoplay }))
+    yield* put(resetSucceeded({ shouldAutoplay }))
   })
 }
 
