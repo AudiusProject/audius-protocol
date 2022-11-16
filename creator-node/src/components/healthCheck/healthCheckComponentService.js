@@ -212,7 +212,7 @@ const healthCheck = async (
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
     },
-    clusterWorkersCount,
+    clusterWorkersCount
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
