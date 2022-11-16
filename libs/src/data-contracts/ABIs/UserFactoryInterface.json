@@ -5,10 +5,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_caller",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_userId",
           "type": "uint256"
         }
@@ -23,6 +25,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -30,10 +33,12 @@
       "name": "getUser",
       "outputs": [
         {
+          "internalType": "address",
           "name": "wallet",
           "type": "address"
         },
         {
+          "internalType": "bytes16",
           "name": "handle",
           "type": "bytes16"
         }
@@ -46,6 +51,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -53,6 +59,7 @@
       "name": "userExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }

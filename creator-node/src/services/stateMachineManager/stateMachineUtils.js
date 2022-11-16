@@ -1,4 +1,4 @@
-const { Queue, Worker, QueueScheduler } = require('bullmq')
+const { Queue, Worker } = require('bullmq')
 
 const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
@@ -293,9 +293,6 @@ const makeQueue = ({
     concurrency: clusterUtils.getConcurrencyPerWorker(globalConcurrency),
     limiter
   })
-  if (limiter) {
-    const _scheduler = new QueueScheduler(name, { connection })
-  }
 
   _registerQueueEvents(worker, logger)
 

@@ -1,5 +1,5 @@
 import type { Response, NextFunction, IRoute } from 'express'
-import type { CustomRequest } from './apiHelpers'
+import type { CustomRequest } from './utils'
 
 import express from 'express'
 import bodyParser from 'body-parser'

@@ -143,7 +143,7 @@ module.exports = async (job) => {
   // return the CIDs and storage paths to write to db
   // in the main thread
   const dirCID = multihashes[multihashes.length - 1].cid
-  const dirDestPath = await DiskManager.computeFilePath(dirCID)
+  const dirDestPath = await DiskManager.computeFilePathAndEnsureItExists(dirCID)
 
   const resp = {
     dir: { dirCID, dirDestPath },
@@ -161,10 +161,11 @@ module.exports = async (job) => {
     await Promise.all(
       multihashesMinusDir.map(async (multihash, i) => {
         // Save file to disk
-        const destPath = await DiskManager.computeFilePathInDir(
-          dirCID,
-          multihash.cid
-        )
+        const destPath =
+          await DiskManager.computeFilePathInDirAndEnsureItExists(
+            dirCID,
+            multihash.cid
+          )
         await fs.writeFile(destPath, resizes[i])
 
         // Append saved file info to response object

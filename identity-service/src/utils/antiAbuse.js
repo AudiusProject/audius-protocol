@@ -7,7 +7,7 @@ const aaoEndpoint =
   config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
 const allowRules = new Set([14])
-const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13])
+const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13, 15])
 const blockNotificationsErrorCodes = new Set([7, 9])
 
 /**

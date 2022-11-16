@@ -67,6 +67,8 @@ export class Users extends Base {
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
     this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
+    this.getUserSubscribers = this.getUserSubscribers.bind(this)
+    this.bulkGetUserSubscribers = this.bulkGetUserSubscribers.bind(this)
 
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
@@ -253,6 +255,62 @@ export class Users extends Base {
       limit,
       offset,
       withUsers
+    )
+  }
+
+  /**
+   * Gets listen count data for a user's tracks grouped by month
+   * @returns Dictionary of listen count data where keys are requested months
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
+    )
+  }
+
+  /**
+   * Gets the clock status for user in userStateManager across replica set.
+   */
+  async getClockValuesFromReplicaSet() {
+    return await this.creatorNode.getClockValuesFromReplicaSet()
+  }
+
+  /**
+   * Gets a user's subscribers.
+   * @param params.encodedUserId string of the encoded user id
+   * @returns Array of User metadata objects for each subscriber
+   */
+  async getUserSubscribers(encodedUserId: string) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    // 1 min timeout
+    const timeoutMs = 60000
+    return await this.discoveryProvider.getUserSubscribers(
+      encodedUserId,
+      timeoutMs
+    )
+  }
+
+  /**
+   * Bulk gets users' subscribers.
+   * @param params.encodedUserIds JSON stringified array of
+   *   encoded user ids
+   * @returns Array of {user_id: <encoded user id>,
+   *   subscriber_ids: Array[<encoded subscriber ids>]} objects
+   */
+  async bulkGetUserSubscribers(encodedUserIds: string) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    // 1 min timeout
+    const timeoutMs = 60000
+    return await this.discoveryProvider.bulkGetUserSubscribers(
+      encodedUserIds,
+      timeoutMs
     )
   }
 
@@ -815,30 +873,6 @@ export class Users extends Base {
         error: (e as Error).message
       }
     }
-  }
-
-  /**
-   * Gets listen count data for a user's tracks grouped by month
-   * @returns Dictionary of listen count data where keys are requested months
-   */
-  async getUserListenCountsMonthly(
-    encodedUserId: string,
-    startTime: string,
-    endTime: string
-  ) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return await this.discoveryProvider.getUserListenCountsMonthly(
-      encodedUserId,
-      startTime,
-      endTime
-    )
-  }
-
-  /**
-   * Gets the clock status for user in userStateManager across replica set.
-   */
-  async getClockValuesFromReplicaSet() {
-    return await this.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /* ------- PRIVATE  ------- */

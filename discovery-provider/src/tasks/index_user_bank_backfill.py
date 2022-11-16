@@ -4,7 +4,7 @@ import logging
 import re
 import time
 from decimal import Decimal
-from typing import List, Optional, TypedDict
+from typing import Any, List, Optional, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
@@ -601,6 +601,50 @@ def find_true_stop_sig(
         f"index_user_bank_backfill.py | Added new stop_sig to indexing_checkpoints: {stop_sig}"
     )
     return stop_sig
+
+
+def check_progress(session: Session):
+    stop_row = (
+        session.query(IndexingCheckpoint)
+        .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
+        .first()
+    )
+    if not stop_row:
+        return None
+    ret: Any = {}
+    ret["stop_slot"] = stop_row.last_checkpoint
+    ret["stop_sig"] = stop_row.signature
+    latest_processed_row = (
+        session.query(UserBankBackfillTx)
+        .order_by(desc(UserBankBackfillTx.slot))
+        .first()
+    )
+    if not latest_processed_row:
+        return ret
+    ret["latest_processed_sig"] = latest_processed_row.signature
+    ret["latest_processed_slot"] = latest_processed_row.slot
+    min_row = (
+        session.query(AudioTransactionsHistory)
+        .filter(
+            and_(
+                or_(
+                    AudioTransactionsHistory.transaction_type == TransactionType.tip,
+                    and_(
+                        AudioTransactionsHistory.transaction_type
+                        == TransactionType.transfer,
+                        AudioTransactionsHistory.method == TransactionMethod.send,
+                    ),
+                ),
+                AudioTransactionsHistory.slot < ret["stop_slot"],
+            )
+        )
+        .order_by(asc(AudioTransactionsHistory.slot))
+    ).first()
+    if not min_row:
+        return ret
+    ret["min_slot"] = min_row.slot
+    ret["min_sig"] = min_row.signature
+    return ret
 
 
 # ####### CELERY TASKS ####### #

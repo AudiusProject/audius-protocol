@@ -605,9 +605,10 @@ export const getTopFolloweeSaves = (
   }
 }
 
-export const getLatest = (type: string) => {
+export const getLatest = (type: string, limit = 1, offset = 0) => {
   return {
-    endpoint: `/latest/${type}`
+    endpoint: `/latest/${type}`,
+    queryParams: { limit, offset }
   }
 }
 
@@ -642,6 +643,31 @@ export const getNotifications = (
     queryParams: {
       min_block_number: minBlockNumber,
       track_id: trackIds
+    },
+    timeout
+  }
+}
+
+export const getUserSubscribers = (encodedUserId: string, timeout: number) => {
+  return {
+    endpoint: `v1/full/users/${encodedUserId}/subscribers`,
+    method: 'get',
+    timeout
+  }
+}
+
+export const bulkGetUserSubscribers = (
+  encodedUserIds: string,
+  timeout: number
+) => {
+  return {
+    endpoint: 'v1/full/users/subscribers',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: {
+      ids: encodedUserIds
     },
     timeout
   }
