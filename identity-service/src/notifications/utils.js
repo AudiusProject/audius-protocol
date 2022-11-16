@@ -116,13 +116,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
       `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/subscribers`,
       { ids: ids }
     )
-
-    // const timeout = 1 /* min */ * 60 /* sec */ * 1000 /* ms */
-    // const subscribersFromDN = await discoveryProvider.bulkGetSubscribers(
-    //   ids,
-    //   timeout
-    // )
-
     const userSubscribers = response.data.data
     userSubscribers.forEach((entry) => {
       const encodedUserId = entry.user_id
