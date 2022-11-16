@@ -1,4 +1,8 @@
 const models = require('../../models')
+const {
+  bulkGetSubscribersFromDiscovery,
+  shouldReadSubscribersFromDiscovery
+} = require('../utils')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
 const getNotifType = (entityType) => {
@@ -28,9 +32,23 @@ const getNotifType = (entityType) => {
  * set of subscribers and dedpupe tracks in collections.
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transcation to attach to DB requests
+ * @param {*} optimizelyClient Optimizely client for feature flags
  */
-async function processCreateNotifications(notifications, tx) {
+async function processCreateNotifications(notifications, tx, optimizelyClient) {
   const validNotifications = []
+
+  // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
+  // from discovery for the initiators of create notifications.
+  const readSubscribersFromDiscovery =
+    shouldReadSubscribersFromDiscovery(optimizelyClient)
+  let userSubscribersMap = {}
+  if (readSubscribersFromDiscovery) {
+    const userIds = new Set(notifications.map((notif) => notif.initiator))
+    if (userIds.size > 0) {
+      userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
+    }
+  }
+
   for (const notification of notifications) {
     // If the initiator is the main audius account, skip the notification
     // NOTE: This is a temp fix to not stall identity service
@@ -43,14 +61,17 @@ async function processCreateNotifications(notifications, tx) {
       notification.metadata.entity_type
     )
 
-    // Query user IDs from subscriptions table
     // Notifications go to all users subscribing to this content uploader
-    const subscribers = await models.Subscription.findAll({
-      where: {
-        userId: notification.initiator
-      },
-      transaction: tx
-    })
+    let subscribers = userSubscribersMap[notification.initiator] || []
+    if (!readSubscribersFromDiscovery) {
+      // Query user IDs from subscriptions table
+      subscribers = await models.Subscription.findAll({
+        where: {
+          userId: notification.initiator
+        },
+        transaction: tx
+      })
+    }
 
     // No operation if no users subscribe to this creator
     if (subscribers.length === 0) continue
@@ -72,7 +93,10 @@ async function processCreateNotifications(notifications, tx) {
         : notification.metadata.entity_owner_id
 
     // Query all subscribers for a un-viewed notification - is no un-view notification exists a new one is created
-    const subscriberIds = subscribers.map((s) => s.subscriberId)
+    let subscriberIds = subscribers
+    if (!readSubscribersFromDiscovery) {
+      subscriberIds = subscribers.map((s) => s.subscriberId)
+    }
     const unreadSubscribers = await models.Notification.findAll({
       where: {
         isViewed: false,
