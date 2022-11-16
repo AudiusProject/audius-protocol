@@ -336,7 +336,8 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     method: 'get',
     url: contentUrl,
     responseType: 'stream',
-    timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+    timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */,
+    params: { localOnly: true }
   }
 
   if (trackId) {
