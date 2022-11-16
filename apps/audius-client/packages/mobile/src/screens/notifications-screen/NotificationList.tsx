@@ -7,6 +7,7 @@ import {
   notificationsSelectors,
   notificationsActions
 } from '@audius/common'
+import { useIsFocused } from '@react-navigation/native'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -58,6 +59,7 @@ const getNotifications = makeGetAllNotifications()
  * Returns a function to check the visibility for an index, and a callback for the Flatlist.
  */
 const useIsViewable = () => {
+  const isFocused = useIsFocused()
   const [viewableMap, setViewableMap] = useState<{ [index: number]: boolean }>(
     {}
   )
@@ -96,7 +98,7 @@ const useIsViewable = () => {
   )
 
   return [
-    (index: number) => viewableMap[index] !== undefined,
+    (index: number) => isFocused && viewableMap[index] !== undefined,
     onViewableItemsChanged
   ] as [(index: number) => boolean, typeof onViewableItemsChanged]
 }

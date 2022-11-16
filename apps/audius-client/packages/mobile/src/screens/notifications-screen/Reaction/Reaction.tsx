@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
-import { useDrawerStatus } from '@react-navigation/drawer'
 import type { AnimatedLottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type { StyleProp, View, ViewProps, ViewStyle } from 'react-native'
@@ -9,7 +7,6 @@ import { Animated } from 'react-native'
 import { usePrevious } from 'react-use'
 
 import { light, medium } from 'app/haptics'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -47,38 +44,25 @@ export const Reaction = (props: ReactionProps) => {
   const ref = useRef<View | null>(null)
   const scale = useRef(new Animated.Value(1)).current
   const previousStatus = usePrevious(status)
-  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
-    FeatureFlags.MOBILE_NAV_OVERHAUL
-  )
-
-  const drawerStatus = useDrawerStatus()
-  const isFocused = isNavOverhaulEnabled ? true : drawerStatus === 'open'
 
   useEffect(() => {
     setStatus(statusProp)
   }, [statusProp])
 
   useEffect(() => {
-    if (status === 'unselected' || !isVisible || !isFocused) {
-      // Pause if off screen or unselected
+    if (status === 'unselected' || !isVisible) {
       animationRef.current?.pause()
     } else if (isVisible && autoPlay) {
       animationRef.current?.play()
     }
-  }, [status, autoPlay, isVisible, isFocused])
+  }, [status, autoPlay, isVisible])
 
   useEffect(() => {
-    if (ref.current && isFocused) {
-      // We need to wait until screen is focused before calculating
-      // layout, otherwise we calculate off-screen values
-      setTimeout(() => {
-        ref.current?.measureInWindow((x, _, width) => {
-          onMeasure?.({ x, width })
-        })
-      }, 500)
-    }
+    ref.current?.measureInWindow((x, _, width) => {
+      onMeasure?.({ x, width })
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onMeasure changes too much
-  }, [ref, isFocused])
+  }, [])
 
   useEffect(() => {
     if (previousStatus !== 'interacting' && status === 'interacting') {

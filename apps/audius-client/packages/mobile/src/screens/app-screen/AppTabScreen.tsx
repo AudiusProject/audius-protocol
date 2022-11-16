@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import type {
   ID,
@@ -7,13 +7,10 @@ import type {
   NotificationType,
   RepostType
 } from '@audius/common'
-import { FeatureFlags } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useDrawer } from 'app/hooks/useDrawer'
-import type { ContextualParams } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
@@ -123,8 +120,21 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const { isEnabled: isNavOverhaulEnabled } = useFeatureFlag(
-    FeatureFlags.MOBILE_NAV_OVERHAUL
+
+  const handleChangeState = useCallback(
+    (event: NavigationStateEvent) => {
+      const stackRoutes = event?.data?.state?.routes
+      const isStackUnopened = stackRoutes.length === 1
+      const isStackOpened = stackRoutes.length === 2
+
+      if (isStackUnopened) {
+        drawerNavigation?.setOptions({ swipeEnabled: true })
+      }
+      if (isStackOpened) {
+        drawerNavigation?.setOptions({ swipeEnabled: false })
+      }
+    },
+    [drawerNavigation]
   )
 
   useEffect(() => {
@@ -134,28 +144,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   return (
     <Stack.Navigator
       screenOptions={screenOptions}
-      screenListeners={{
-        state: (e: NavigationStateEvent) => {
-          const stackRoutes = e?.data?.state?.routes
-          const isStackOpen = stackRoutes.length > 1
-          if (isStackOpen) {
-            const isFromNotifs =
-              !isNavOverhaulEnabled &&
-              stackRoutes.length === 2 &&
-              (stackRoutes[1].params as ContextualParams)?.fromNotifications
-
-            // If coming from notifs allow swipe to open notifs drawer
-            drawerNavigation?.setOptions({ swipeEnabled: !!isFromNotifs })
-          } else {
-            // If on the first tab (or the first stack screen isn't a tab navigator),
-            // enable the drawer
-            const isOnFirstTab = !e?.data?.state.routes[0].state?.index
-            drawerNavigation?.setOptions({
-              swipeEnabled: isOnFirstTab
-            })
-          }
-        }
-      }}
+      screenListeners={{ state: handleChangeState }}
     >
       {baseScreen(Stack)}
       <Stack.Screen
