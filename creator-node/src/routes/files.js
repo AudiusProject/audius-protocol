@@ -6,7 +6,11 @@ const contentDisposition = require('content-disposition')
 
 const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
+const {
+  fetchFileFromNetworkAndSaveToFS,
+  uploadTempDiskStorage,
+  EMPTY_FILE_CID
+} = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -31,13 +35,12 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { findCIDInNetwork, timeout } = require('../utils')
+const { timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
 
@@ -131,6 +134,10 @@ const streamFromFileSystem = async (
           resolve()
         })
         .on('error', (e) => {
+          genericLogger.error(
+            'streamFromFileSystem - error trying to stream from disk',
+            e
+          )
           reject(e)
         })
     })
@@ -142,8 +149,6 @@ const streamFromFileSystem = async (
     throw e
   }
 }
-
-const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
@@ -196,7 +201,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = await DiskManager.computeFilePath(CID, false)
+    storagePath = DiskManager.computeFilePath(CID)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
@@ -221,6 +226,7 @@ const getCID = async (req, res) => {
   startMs = Date.now()
   let fileFoundOnFS = false
   let fsStats
+  let queryResults
   try {
     /**
      * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
@@ -394,7 +400,7 @@ const getCID = async (req, res) => {
    */
   startMs = Date.now()
   try {
-    const queryResults = await models.File.findOne({
+    queryResults = await models.File.findOne({
       where: {
         multihash: CID
       },
@@ -431,7 +437,6 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CID_FOUND`
       })
-      storagePath = queryResults.storagePath
     }
   } catch (e) {
     decisionTree.push({
@@ -447,6 +452,36 @@ const getCID = async (req, res) => {
     )
   }
 
+  // try to stream file from storagePath location in db
+  startMs = Date.now()
+  try {
+    // optimization to only try to stream from db storagePath if it's different than computed storagePath
+    if (storagePath !== queryResults.storagePath) {
+      decisionTree.push({
+        stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM`,
+        time: `${Date.now() - startMs}ms`,
+        data: { storagePath: queryResults.storagePath }
+      })
+      const fsStream = await streamFromFileSystem(
+        req,
+        res,
+        queryResults.storagePath,
+        false
+      )
+      decisionTree.push({
+        stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM_COMPLETE`,
+        time: `${Date.now() - startMs}ms`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return fsStream
+    }
+  } catch (e) {
+    decisionTree.push({
+      stage: `STREAM_FROM_STORAGE_PATH_DB_LOCATION_FROM_FILE_SYSTEM_FAILED`,
+      time: `${Date.now() - startMs}ms`
+    })
+  }
+
   /**
    * If found in DB (means not found in FS):
    * 1. Attempt to retrieve file from network and save to file system
@@ -456,10 +491,20 @@ const getCID = async (req, res) => {
   const blockStartMs = Date.now()
   try {
     startMs = Date.now()
-    const found = await findCIDInNetwork(storagePath, CID, req.logger, trackId)
-    if (!found) {
-      throw new Error('Not found in network')
+    const { error, storagePath: newStoragePath } =
+      await fetchFileFromNetworkAndSaveToFS(
+        libs,
+        req.logger,
+        CID,
+        null /* dirCID */,
+        [] /* targetGateways */ // no replica set so it will scan the whole network
+      )
+    if (error) {
+      throw new Error(`Not found in network: ${error.message}`)
     }
+
+    storagePath = newStoragePath
+
     decisionTree.push({
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
       time: `${Date.now() - startMs}ms`
@@ -497,36 +542,32 @@ const getDirCID = async (req, res) => {
   // Do not act as a public gateway. Only serve files that are tracked by this creator node.
   const dirCID = req.params.dirCID
   const filename = req.params.filename
-  const path = `${dirCID}/${filename}`
-  const logPrefix = '[getDirCID]'
+  const logPrefix = `[getDirCID][dirCID: ${dirCID}][fileName: ${filename}]`
 
-  const cacheKey = getStoragePathQueryCacheKey(path)
-
-  let storagePath = await redisClient.get(cacheKey)
-  if (!storagePath) {
-    // Don't serve if not found in DB.
-    // Query for the file based on the dirCID and filename
-    const queryResults = await models.File.findOne({
-      where: {
-        dirMultihash: dirCID,
-        fileName: filename
-      },
-      order: [['clock', 'DESC']]
-    })
-    if (!queryResults) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseNotFound(
-          `No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`
-        )
-      )
-    }
-    storagePath = queryResults.storagePath
-    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  // We need to lookup the CID so we can correlate with the filename (eg original.jpg, 150x150.jpg)
+  // Query for the file based on the dirCID and filename
+  const queryResults = await models.File.findOne({
+    where: {
+      dirMultihash: dirCID,
+      fileName: filename
+    },
+    order: [['clock', 'DESC']]
+  })
+  if (!queryResults) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseNotFound(`${logPrefix} No valid file found in DB`)
+    )
   }
 
-  // Attempt to stream file to client
+  // Compute expected storagePath to minimize reliance on DB storagePath (which will eventually be removed)
+  const storagePath = DiskManager.computeFilePathInDir(
+    dirCID,
+    queryResults.multihash
+  )
+
+  // Attempt to stream file from computed storagePath
   try {
     req.logger.info(
       `${logPrefix} - Retrieving ${storagePath} directly from filesystem`
@@ -536,18 +577,43 @@ const getDirCID = async (req, res) => {
     req.logger.error(`${logPrefix} - Failed to retrieve ${storagePath} from FS`)
   }
 
+  // If streaming from computed storagePath fails and DB storagePath is different, attempt to stream file from DB storagePath
+  if (queryResults.storagePath !== storagePath) {
+    try {
+      req.logger.info(
+        `${logPrefix} - Retrieving ${queryResults.storagePath} directly from filesystem`
+      )
+      return await streamFromFileSystem(req, res, queryResults.storagePath)
+    } catch (e) {
+      req.logger.error(
+        `${logPrefix} - Failed to retrieve ${queryResults.storagePath} from FS`
+      )
+    }
+  }
+
+  // CID is the file CID, parse it from the storagePath
+  const CID = storagePath.split('/').slice(-1).join('')
+
   // Attempt to find and stream CID from other content nodes in the network
   try {
-    // CID is the file CID, parse it from the storagePath
-    const CID = storagePath.split('/').slice(-1).join('')
-    const found = await findCIDInNetwork(storagePath, CID, req.logger)
-    if (!found) throw new Error(`CID=${CID} not found in network`)
+    const { error, storagePath: newStoragePath } =
+      await fetchFileFromNetworkAndSaveToFS(
+        libs,
+        req.logger,
+        CID,
+        dirCID,
+        [] /* targetGateways */, // no replica set so it will scan the whole network
+        filename
+      )
+    if (error) {
+      throw new Error(`Not found in network: ${error.message}`)
+    }
 
-    return await streamFromFileSystem(req, res, storagePath)
+    return await streamFromFileSystem(req, res, newStoragePath)
   } catch (e) {
     req.logger.error(
-      `${logPrefix} - Error calling findCIDInNetwork for path ${storagePath}`,
-      e
+      `${logPrefix} - Error fetching and streaming file from network for CID ${CID}`,
+      e.message
     )
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
@@ -883,6 +949,7 @@ router.post(
  * allow calls from cnodes with delegateWallets registered on chain
  * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
  * same as the /ipfs route
+ * @deprecated - Remove once all nodes stop calling as part of findCIDInNetwork, leaving in for backwards compatibility
  * @param req.query.filePath the fs path for the file. should be full path including leading /file_storage
  * @param req.query.delegateWallet the wallet address that signed this request
  * @param req.query.timestamp the timestamp when the request was made

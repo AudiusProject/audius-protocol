@@ -74,7 +74,7 @@ describe('Test AudiusUsers', function () {
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -102,7 +102,7 @@ describe('Test AudiusUsers', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified

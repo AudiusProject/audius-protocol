@@ -1,10 +1,10 @@
+import type { CustomRequest } from '../../utils'
 import {
   sendResponse,
   errorResponseServerError,
   errorResponseForbidden,
   errorResponseUnauthorized,
-  errorResponseBadRequest,
-  CustomRequest
+  errorResponseBadRequest
 } from '../../apiHelpers'
 import { NextFunction, Request, Response } from 'express'
 import type Logger from 'bunyan'

@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Dict, KeysView, Set, Tuple
+from typing import Any, Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -160,7 +160,7 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
-                    metadata_format = None
+                    metadata_format: Any = None
                     if cid_type[cid] == "track":
                         metadata_format = track_metadata_format
                     elif cid_type[cid] == "user":

@@ -4,7 +4,7 @@ import type {
   ForceResyncSigningData,
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import {
   getContentNodeInfoFromEndpoint,

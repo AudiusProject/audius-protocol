@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 from hexbytes import HexBytes
 from src.models.indexing.block import Block
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.queries.get_health import get_health
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
@@ -469,6 +470,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
                 is_current=True,
             )
         )
+        IndexingCheckpoint.__table__.create(db_mock._engine)
 
     args = {"verbose": True}
     health_results, error = get_health(args)

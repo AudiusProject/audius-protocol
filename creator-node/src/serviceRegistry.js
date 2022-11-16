@@ -91,31 +91,6 @@ class ServiceRegistry {
 
     this.synchronousServicesInitialized = true
 
-    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
-    // Retries indefinitely
-    await this._recoverNodeL1Identity()
-
-    // Init StateMachineManager
-    this.stateMachineManager = new StateMachineManager()
-    const {
-      monitorStateQueue,
-      findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue,
-      manualSyncQueue,
-      recurringSyncQueue,
-      updateReplicaSetQueue,
-      recoverOrphanedDataQueue
-    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.monitorStateQueue = monitorStateQueue
-    this.findSyncRequestsQueue = findSyncRequestsQueue
-    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
-    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = recurringSyncQueue
-    this.updateReplicaSetQueue = updateReplicaSetQueue
-    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
-
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized synchronous services'
@@ -315,9 +290,38 @@ class ServiceRegistry {
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
+   *
+   * The server will be in read only mode at the beginning of this function. Once the L1 identity
+   * has been recovered, it will be in read + write mode
    */
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
+
+    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    // because some queues and write routes depend on spID
+    // Retries indefinitely
+    await this._recoverNodeL1Identity()
+
+    // Init StateMachineManager
+    this.stateMachineManager = new StateMachineManager()
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue,
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue
+    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
+    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
