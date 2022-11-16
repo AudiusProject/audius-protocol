@@ -351,6 +351,12 @@ async function _processCreateNotifications(notif, tx) {
       throw new Error('Invalid create type')
   }
 
+  // If the initiator is the main audius account, skip the notification
+  // NOTE: This is a temp fix to not stall identity service
+  if (notif.initiator === 51) {
+    return []
+  }
+
   // Query user IDs from subscriptions table
   // Notifications go to all users subscribing to this track uploader
   const subscribers = await models.Subscription.findAll({

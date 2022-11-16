@@ -32,6 +32,11 @@ const getNotifType = (entityType) => {
 async function processCreateNotifications(notifications, tx) {
   const validNotifications = []
   for (const notification of notifications) {
+    // If the initiator is the main audius account, skip the notification
+    // NOTE: This is a temp fix to not stall identity service
+    if (notification.initiator === 51) {
+      continue
+    }
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const { createType, actionEntityType } = getNotifType(
