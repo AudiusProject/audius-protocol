@@ -1,8 +1,10 @@
 import type { RouteProp } from '@react-navigation/native'
 
-import type { CompleteTrackParams } from './CompleteTrackScreen'
-import type { UploadingTracksParams } from './UploadingTracksScreen'
-import type { RemixSettingsParams } from './screens'
+import type {
+  UploadingTracksParams,
+  CompleteTrackParams,
+  RemixSettingsParams
+} from '../screens'
 
 export type UploadParamList = {
   SelectTrack: undefined

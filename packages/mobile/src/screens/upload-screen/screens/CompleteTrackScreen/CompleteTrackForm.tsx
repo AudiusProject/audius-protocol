@@ -1,11 +1,6 @@
-import { useCallback } from 'react'
-
-import type { TrackMetadata, UploadTrack } from '@audius/common'
-import { useRoute } from '@react-navigation/native'
+import type { UploadTrack } from '@audius/common'
 import type { FormikProps } from 'formik'
-import { Formik } from 'formik'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import * as Yup from 'yup'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
@@ -15,11 +10,8 @@ import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
-import { TopBarIconButton } from '../app-screen'
-
-import { CompleteTrackStack } from './CompleteTrackStack'
-import type { UploadParamList, UploadRouteProp } from './ParamList'
-import { UploadStackScreen } from './UploadStackScreen'
+import { TopBarIconButton } from '../../../app-screen'
+import { UploadStackScreen } from '../../components'
 import {
   PickArtworkField,
   SelectGenreField,
@@ -30,14 +22,15 @@ import {
   SubmenuList,
   RemixSettingsField,
   AdvancedOptionsField
-} from './fields'
+} from '../../fields'
+import type { FormValues } from '../../types'
 
 const messages = {
   screenTitle: 'Complete Track',
-  name: 'Track Name',
+  trackName: 'Tcrack Name',
+  trackNameError: 'Track Name Required',
   continue: 'Continue',
-  fixErrors: 'Fix Errors To Continue',
-  trackNameError: 'Track Name Required'
+  fixErrors: 'Fix Errors To Continue'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -54,18 +47,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const CompleteTrackSchema = Yup.object().shape({
-  title: Yup.string().required('Required'),
-  artwork: Yup.object({
-    url: Yup.string().nullable().required('Required')
-  }),
-  genre: Yup.string().required('Required'),
-  description: Yup.string().max(1000).nullable()
-})
-
 export type CompleteTrackParams = UploadTrack
 
-export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
+export const CompleteTrackForm = (props: FormikProps<FormValues>) => {
   const { handleSubmit, isSubmitting, errors, touched } = props
   const errorsKeys = Object.keys(errors)
   const hasErrors =
@@ -111,7 +95,7 @@ export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
           <PickArtworkField />
           <TextField
             name='title'
-            label={messages.name}
+            label={messages.trackName}
             required
             errorMessage={messages.trackNameError}
           />
@@ -128,42 +112,5 @@ export const CompleteTrackForm = (props: FormikProps<TrackMetadata>) => {
         </Tile>
       </KeyboardAwareScrollView>
     </UploadStackScreen>
-  )
-}
-
-export const CompleteTrackScreen = () => {
-  const { params } = useRoute<UploadRouteProp<'CompleteTrack'>>()
-  const { metadata, file } = params
-  const navigation = useNavigation<UploadParamList>()
-
-  const initialValues = {
-    ...metadata,
-    licenseType: {
-      allowAttribution: false,
-      commercialUse: false,
-      derivativeWorks: false
-    }
-  }
-
-  const handleSubmit = useCallback(
-    (values) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { licenseType, ...trackValues } = values
-      navigation.push('UploadingTracks', {
-        tracks: [
-          { file, preview: null, metadata: { ...metadata, ...trackValues } }
-        ]
-      })
-    },
-    [navigation, file, metadata]
-  )
-
-  return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      component={CompleteTrackStack}
-      validationSchema={CompleteTrackSchema}
-    />
   )
 }

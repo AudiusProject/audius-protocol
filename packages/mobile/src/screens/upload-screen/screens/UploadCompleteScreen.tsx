@@ -27,7 +27,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { UploadStackScreen } from './UploadStackScreen'
+import { UploadStackScreen } from '../components'
 const { getTracks } = uploadSelectors
 const { getAccountUser } = accountSelectors
 const { fetchTrack } = trackPageActions

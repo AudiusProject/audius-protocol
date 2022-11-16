@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
 import { useField } from 'formik'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { computeLicense } from 'utils/creativeCommons'
 
 import IconCreativeCommons from 'app/assets/images/creativeCommons/cc.svg'
@@ -12,7 +12,7 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { UploadStackScreen } from '../UploadStackScreen'
+import { UploadStackScreen } from '../components'
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
 
 const messages = {
@@ -120,61 +120,63 @@ export const LicenseTypeScreen = () => {
       icon={IconCreativeCommons}
       variant='white'
     >
-      <View style={styles.content}>
-        <View style={styles.licenseSection}>
-          <Text {...labelProps}>{messages.allowAttributionLabel}</Text>
-          <SegmentedControl
-            fullWidth
-            defaultSelected={allowAttribution}
-            options={allowAttributionValues}
-            onSelectOption={setAllowAttribution}
-          />
+      <ScrollView>
+        <View style={styles.content}>
+          <View style={styles.licenseSection}>
+            <Text {...labelProps}>{messages.allowAttributionLabel}</Text>
+            <SegmentedControl
+              fullWidth
+              defaultSelected={allowAttribution}
+              options={allowAttributionValues}
+              onSelectOption={setAllowAttribution}
+            />
+          </View>
+          <Divider style={styles.divider} />
+          <View style={styles.licenseSection}>
+            <Text {...labelProps}>{messages.commercialUseLabel}</Text>
+            <SegmentedControl
+              fullWidth
+              defaultSelected={commercialUse}
+              options={commercialUseValues}
+              onSelectOption={setCommercialUse}
+            />
+          </View>
+          <Divider style={styles.divider} />
+          <View style={styles.licenseSection}>
+            <Text {...labelProps}>{messages.derivativeWorksLabel}</Text>
+            <SegmentedControl
+              fullWidth
+              defaultSelected={derivativeWorks}
+              options={derivativeWorksValues}
+              onSelectOption={setDerivateWorks}
+            />
+          </View>
+          <Divider style={styles.divider} />
+          <View>
+            {licenseIcons ? (
+              <View style={styles.licenseIcons}>
+                {licenseIcons.map(([Icon, key]) => (
+                  <Icon
+                    key={key}
+                    fill={neutral}
+                    style={styles.licenseIcon}
+                    height={spacing(7)}
+                    width={spacing(7)}
+                  />
+                ))}
+              </View>
+            ) : null}
+            <Text {...labelProps}>{licenseType}</Text>
+            {licenseDescription ? (
+              <View style={styles.licenseDescription}>
+                <Text variant='body' style={styles.descriptionText}>
+                  {licenseDescription}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
-        <Divider style={styles.divider} />
-        <View style={styles.licenseSection}>
-          <Text {...labelProps}>{messages.commercialUseLabel}</Text>
-          <SegmentedControl
-            fullWidth
-            defaultSelected={commercialUse}
-            options={commercialUseValues}
-            onSelectOption={setCommercialUse}
-          />
-        </View>
-        <Divider style={styles.divider} />
-        <View style={styles.licenseSection}>
-          <Text {...labelProps}>{messages.derivativeWorksLabel}</Text>
-          <SegmentedControl
-            fullWidth
-            defaultSelected={derivativeWorks}
-            options={derivativeWorksValues}
-            onSelectOption={setDerivateWorks}
-          />
-        </View>
-        <Divider style={styles.divider} />
-        <View>
-          {licenseIcons ? (
-            <View style={styles.licenseIcons}>
-              {licenseIcons.map(([Icon, key]) => (
-                <Icon
-                  key={key}
-                  fill={neutral}
-                  style={styles.licenseIcon}
-                  height={spacing(7)}
-                  width={spacing(7)}
-                />
-              ))}
-            </View>
-          ) : null}
-          <Text {...labelProps}>{licenseType}</Text>
-          {licenseDescription ? (
-            <View style={styles.licenseDescription}>
-              <Text variant='body' style={styles.descriptionText}>
-                {licenseDescription}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-      </View>
+      </ScrollView>
     </UploadStackScreen>
   )
 }

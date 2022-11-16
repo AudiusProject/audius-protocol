@@ -1,10 +1,8 @@
-import type { TrackMetadata } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import type { FormikProps } from 'formik'
 
-import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
-import { CompleteTrackForm } from './CompleteTrackScreen'
 import {
   AdvancedOptionsScreen,
   IsrcIswcScreen,
@@ -13,13 +11,16 @@ import {
   SelectGenreScreen,
   SelectMoodScreen,
   TrackVisibilityScreen
-} from './screens'
+} from '..'
+import type { FormValues } from '../../types'
+
+import { CompleteTrackForm } from './CompleteTrackForm'
 
 const Stack = createNativeStackNavigator()
 
 const screenOptionOverrides = { headerRight: () => null }
 
-export const CompleteTrackStack = (props: FormikProps<TrackMetadata>) => {
+export const CompleteTrackStack = (props: FormikProps<FormValues>) => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (

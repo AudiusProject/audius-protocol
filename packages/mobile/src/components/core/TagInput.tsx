@@ -17,7 +17,9 @@ import { Text } from './Text'
 import type { TextInputProps } from './TextInput'
 import { TextInput } from './TextInput'
 
-type TagInputProps = TextInputProps
+type TagInputProps = TextInputProps & {
+  maxTags: number
+}
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   tags: {
@@ -54,7 +56,15 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 const emptyTags = []
 
 export const TagInput = (props: TagInputProps) => {
-  const { value, onChangeText, placeholder, onFocus, onBlur, ...other } = props
+  const {
+    value,
+    onChangeText,
+    placeholder,
+    onFocus,
+    onBlur,
+    maxTags,
+    ...other
+  } = props
   const [inputValue, setInputValue] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const { staticWhite } = useThemeColors()
@@ -82,11 +92,29 @@ export const TagInput = (props: TagInputProps) => {
     </View>
   ) : null
 
-  const handleChangeText = useCallback((value: string) => {
-    if (!value.includes(' ')) {
-      setInputValue(value)
-    }
-  }, [])
+  const tagCount = tags.length
+  const nearLimit = (7.0 / 8.0) * maxTags
+  const tagCountColor =
+    tagCount < nearLimit
+      ? 'neutralLight4'
+      : tagCount < maxTags
+      ? 'warning'
+      : 'error'
+
+  const endAdornment = (
+    <Text variant='body' color={tagCountColor}>
+      {tagCount}/10
+    </Text>
+  )
+
+  const handleChangeText = useCallback(
+    (value: string) => {
+      if (!value.includes(' ') && tagCount !== maxTags) {
+        setInputValue(value)
+      }
+    },
+    [tagCount, maxTags]
+  )
 
   const handleAddTag = useCallback(() => {
     onChangeText?.(uniq([...tags, trimToAlphaNumeric(inputValue)]).join(','))
@@ -131,7 +159,8 @@ export const TagInput = (props: TagInputProps) => {
       onChangeText={handleChangeText}
       onKeyPress={handleKeyPress}
       startAdornment={startAdornment}
-      returnKeyType='default'
+      endAdornment={endAdornment}
+      returnKeyType='done'
       onFocus={handleFocus}
       onBlur={handleBlur}
       styles={{ input: styles.input }}

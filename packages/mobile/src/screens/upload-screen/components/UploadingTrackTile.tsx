@@ -11,7 +11,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   tile: {
     marginBottom: spacing(4)
   },
-  tileContent: { padding: spacing(4) },
+  tileContent: {
+    padding: spacing(4)
+  },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -22,6 +24,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     width: spacing(12),
     marginRight: spacing(4),
     backgroundColor: palette.neutralLight6
+  },
+  title: {
+    flex: 1,
+    width: 1
   }
 }))
 
@@ -47,7 +53,7 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
             />
           )}
         </DynamicImage>
-        <Text fontSize='large' weight='demiBold'>
+        <Text weight='demiBold' style={styles.title}>
           {title}
         </Text>
       </View>

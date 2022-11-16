@@ -44,8 +44,6 @@ export const TextField = (props: TextFieldProps) => {
   const errorMessage =
     errorMessageProp || (error ? `${capitalize(name)} ${error}` : undefined)
 
-  console.log('touched?', touched, error)
-
   return (
     <View style={styles.root}>
       <TextInput

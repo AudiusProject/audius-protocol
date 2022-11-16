@@ -85,6 +85,7 @@ export const SearchBar = () => {
       clearable={!isLoading && clearable}
       onClear={onClear}
       onSubmitEditing={handleSubmit}
+      returnKeyType='search'
     />
   )
 }

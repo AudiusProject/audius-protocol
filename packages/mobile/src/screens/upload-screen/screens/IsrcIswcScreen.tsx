@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import { makeStyles } from 'app/styles'
 
-import { UploadStackScreen } from '../UploadStackScreen'
+import { UploadStackScreen } from '../components'
 import { TextField } from '../fields'
 
 const messages = {
