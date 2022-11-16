@@ -34,7 +34,7 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
-from src.queries.get_max_id import get_max_id
+from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
     get_nft_gated_premium_track_signatures,
 )
@@ -1298,5 +1298,5 @@ class LatestTrack(Resource):
         description="""Gets the most recent track on Audius""",
     )
     def get(self):
-        latest = get_max_id("track")
+        latest = get_latest_entities("track")
         return success_response(latest)

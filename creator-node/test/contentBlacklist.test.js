@@ -6,9 +6,6 @@ const _ = require('lodash')
 
 const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
-const {
-  StubPremiumContentAccessChecker
-} = require('../src/premiumContent/stubPremiumContentAccessChecker')
 const models = require('../src/models')
 const redis = require('../src/redis')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
@@ -40,12 +37,7 @@ const trustedNotifierConfig = {
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
-  let app,
-    server,
-    libsMock,
-    mockServiceRegistry,
-    userId,
-    stubPremiumContentAccessChecker
+  let app, server, libsMock, mockServiceRegistry, userId
 
   beforeEach(async () => {
     libsMock = setupLibsMock(libsMock)
@@ -61,16 +53,6 @@ describe('test ContentBlacklist', function () {
     app = appInfo.app
     server = appInfo.server
     mockServiceRegistry = appInfo.mockServiceRegistry
-
-    stubPremiumContentAccessChecker = new StubPremiumContentAccessChecker()
-    stubPremiumContentAccessChecker.accessCheckReturnsWith = {
-      doesUserHaveAccess: true,
-      trackId: null,
-      isPremium: false,
-      error: null
-    }
-    mockServiceRegistry.premiumContentAccessChecker =
-      stubPremiumContentAccessChecker
   })
 
   afterEach(async () => {

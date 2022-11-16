@@ -1238,7 +1238,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     dominant_mood_subquery = (
         session.query(
             Track.mood.label("mood"),
-            func.max(Track.track_id).label("latest"),
+            func.max(Track.created_at).label("latest"),
             func.count(Track.mood).label("cnt"),
         )
         .filter(

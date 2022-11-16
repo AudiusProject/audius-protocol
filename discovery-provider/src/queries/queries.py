@@ -8,7 +8,7 @@ from src.queries.get_feed import get_feed
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_max_id import get_max_id
+from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
 )
@@ -411,9 +411,19 @@ def get_users_account_route():
 # Gets the max id for tracks, playlists, or users.
 @bp.route("/latest/<type>", methods=("GET",))
 @record_metrics
-def get_max_id_route(type):
+def get_latest_entities_route(type):
     try:
-        latest = get_max_id(type)
+        args = to_dict(request.args)
+        if "limit" in request.args:
+            args["limit"] = min(request.args.get("limit", type=int), 100)
+        else:
+            args["limit"] = 1
+        if "offset" in request.args:
+            args["offset"] = request.args.get("offset", type=int)
+        else:
+            args["offset"] = 0
+
+        latest = get_latest_entities(type, args)
         return api_helpers.success_response(latest)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

@@ -37,6 +37,9 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
+const {
+  contentAccessMiddleware
+} = require('../middlewares/contentAccess/contentAccessMiddleware')
 
 const router = express.Router()
 
@@ -931,5 +934,11 @@ router.get(
   },
   getCID
 )
+
+/**
+ * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
+ * @dev - Wrapper around getCID, which retrieves track given its CID.
+ **/
+router.get('/tracks/cidstream/:cid', contentAccessMiddleware, getCID)
 
 module.exports = router
