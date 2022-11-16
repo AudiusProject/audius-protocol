@@ -37,6 +37,7 @@ import trendingUndergroundSagas from 'common/store/pages/trending-underground/sa
 import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
+import premiumContentSagas from 'common/store/premiumContent/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
@@ -180,6 +181,9 @@ export default function* rootSaga() {
 
     // Tipping
     tippingSagas(),
+
+    // Premium content
+    premiumContentSagas(),
 
     // Error
     errorSagas()

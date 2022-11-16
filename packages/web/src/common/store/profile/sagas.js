@@ -44,6 +44,10 @@ import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
+  ethNFTsFetched,
+  solNFTsFetched
+} from 'common/store/premiumContent/actions'
+import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
@@ -132,6 +136,11 @@ export function* fetchOpenSeaAssets(user) {
       }
     ])
   )
+
+  const currentUserId = yield select(getUserId)
+  if (currentUserId === user.user_id) {
+    yield put(ethNFTsFetched())
+  }
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
@@ -166,6 +175,11 @@ export function* fetchSolanaCollectibles(user) {
       }
     ])
   )
+
+  const currentUserId = yield select(getUserId)
+  if (currentUserId === user.user_id) {
+    yield put(solNFTsFetched())
+  }
 }
 
 function* fetchSupportersAndSupporting(userId) {

@@ -14,7 +14,8 @@ import {
   Supporting,
   UserTip,
   PremiumConditions,
-  PremiumContentSignature
+  PremiumContentSignature,
+  ID
 } from 'models'
 import { Nullable } from 'utils'
 
@@ -251,4 +252,8 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
   sender: APIUser
   receiver: APIUser
   followee_supporters: APIUser[]
+}
+
+export type GetPremiumContentSignaturesResponse = {
+  [id: ID]: PremiumContentSignature
 }
