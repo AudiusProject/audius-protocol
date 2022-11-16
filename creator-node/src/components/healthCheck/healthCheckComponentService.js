@@ -132,6 +132,7 @@ const healthCheck = async (
   } catch (_) {}
 
   const clusterWorkersCount = clusterUtils.getNumWorkers()
+  const isClusterEnabled = clusterUtils.isClusterEnabled()
 
   const healthy = !config.get('considerNodeUnhealthy')
 
@@ -213,7 +214,8 @@ const healthCheck = async (
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
     },
-    clusterWorkersCount
+    clusterWorkersCount,
+    isClusterEnabled
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
