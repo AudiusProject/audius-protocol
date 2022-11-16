@@ -35,7 +35,9 @@
         android:label="@string/app_name"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
         android:screenOrientation="portrait"
-        android:windowSoftInputMode="adjustPan">
+        android:windowSoftInputMode="adjustPan"
+        android:exported="true"
+        >
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -69,7 +71,9 @@
       <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
       <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
+      <receiver
+        android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
+        android:exported="true" >
           <intent-filter>
               <action android:name="android.intent.action.BOOT_COMPLETED" />
           </intent-filter>
@@ -79,7 +83,7 @@
       <!-- < Only if you're using GCM or localNotificationSchedule() > -->
       <service
           android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm"
-          android:exported="false" >
+          android:exported="true" >
           <intent-filter>
               <action android:name="com.google.android.c2dm.intent.RECEIVE" />
           </intent-filter>
@@ -89,7 +93,7 @@
       <!-- < Else > -->
       <service
           android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
-          android:exported="false" >
+          android:exported="true" >
           <intent-filter>
               <action android:name="com.google.firebase.MESSAGING_EVENT" />
           </intent-filter>
