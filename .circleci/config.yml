@@ -1927,7 +1927,7 @@ workflows:
             - governance
           filters:
             branches:
-              only: /(^main$)/
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - release-week
 
