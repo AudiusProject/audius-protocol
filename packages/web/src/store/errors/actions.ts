@@ -8,6 +8,11 @@ import { ERROR_PAGE } from 'utils/route'
 
 export const HANDLE_ERROR = 'ERROR/HANDLE_ERROR'
 
+export enum UiErrorCode {
+  UNKNOWN,
+  RELAY_BLOCKED
+}
+
 export type HandleErrorAction = {
   type: typeof HANDLE_ERROR
   name?: string
@@ -21,6 +26,7 @@ export type HandleErrorAction = {
 
   additionalInfo?: AdditionalErrorReportInfo
   level?: ErrorLevel
+  uiErrorCode: UiErrorCode
 }
 
 type HandleActions = HandleErrorAction
@@ -31,6 +37,7 @@ type HandleErrorArgs = {
   shouldReport?: boolean
   shouldToast?: boolean
   message: string
+  uiErrorCode?: UiErrorCode
 } & Omit<ReportToSentryArgs, 'error'>
 
 export const handleError = ({
@@ -41,7 +48,8 @@ export const handleError = ({
   shouldReport = true,
   shouldToast,
   additionalInfo = {},
-  level
+  level,
+  uiErrorCode = UiErrorCode.UNKNOWN
 }: HandleErrorArgs): HandleActions => ({
   type: HANDLE_ERROR,
   name,
@@ -51,5 +59,6 @@ export const handleError = ({
   shouldReport,
   shouldToast,
   additionalInfo,
-  level
+  level,
+  uiErrorCode
 })

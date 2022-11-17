@@ -51,7 +51,8 @@ function* handleSignOnError(
       redirectRoute,
       shouldReport,
       shouldToast,
-      additionalInfo: { errorMessage: action.error }
+      additionalInfo: { errorMessage: action.error },
+      uiErrorCode: action.uiErrorCode
     })
   )
 }

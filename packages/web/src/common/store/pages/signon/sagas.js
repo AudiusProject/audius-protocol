@@ -42,6 +42,7 @@ import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { getCityAndRegion } from 'services/Location'
+import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
@@ -364,17 +365,29 @@ function* signUp() {
           // We are including 0 status code here to indicate rate limit,
           // which appears to be happening for some devices.
           const rateLimited = errorStatus === 429 || errorStatus === 0
+          const blocked = errorStatus === 403
           const params = {
             error,
             phase,
             redirectRoute: rateLimited ? SIGN_UP_PAGE : ERROR_PAGE,
-            shouldReport: !rateLimited,
+            shouldReport: !rateLimited && !blocked,
             shouldToast: rateLimited
           }
           if (rateLimited) {
             params.message = 'Please try again later'
             yield put(
               make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
+                handle,
+                email,
+                location
+              })
+            )
+          }
+          if (blocked) {
+            params.message = 'User was blocked'
+            params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
+            yield put(
+              make(Name.CREATE_ACCOUNT_BLOCKED, {
                 handle,
                 email,
                 location

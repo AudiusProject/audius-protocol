@@ -40,6 +40,8 @@ export enum Name {
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
   // When the user gets rate limited during signup auth
   CREATE_ACCOUNT_RATE_LIMIT = 'Create Account: Rate Limit',
+  // When the user gets blocked by AAO during the signup path
+  CREATE_ACCOUNT_BLOCKED = 'Create Account: Blocked',
 
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
