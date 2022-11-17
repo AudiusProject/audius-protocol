@@ -925,7 +925,7 @@ router.post(
 
     // make query
     const queryResults = await models.File.findAll({
-      attributes: ['multihash', 'storagePath'],
+      attributes: ['multihash'],
       raw: true,
       where: {
         trackBlockchainId: {
