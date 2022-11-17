@@ -5,7 +5,12 @@ from .common import ns
 
 class TransactionType(fields.String):
     def format(self, value: str):
-        return value.lower()
+        return value
+
+
+class TransactionMethod(fields.String):
+    def format(self, value: str):
+        return value
 
 
 transaction_details = ns.model(
@@ -13,6 +18,7 @@ transaction_details = ns.model(
     {
         "transaction_date": fields.String(required=True),
         "transaction_type": TransactionType(required=True, discriminator=True),
+        "method": TransactionMethod(required=True, discriminator=True),
         "signature": fields.String(required=True),
         "user_bank": fields.String(required=True),
         "change": fields.String(required=True),
