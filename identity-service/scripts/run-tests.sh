@@ -27,6 +27,7 @@ export logLevel='debug' #should be error
 export solanaTrackListenCountAddress=''
 export solanaAudiusEthRegistryAddress=''
 export solanaValidSigner=''
+export environment='test'
 
 # Locally, the docker-compose files set up a database named audius_identity_service. For
 # tests, we use audius_identity_service_test. The below block checks if

@@ -3,6 +3,7 @@ import json
 import logging
 
 from eth_account.messages import encode_defunct
+from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -55,6 +56,7 @@ from src.api.v1.models.users import (
     user_model,
     user_model_full,
     user_replica_set,
+    user_subscribers,
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
@@ -67,6 +69,10 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
+from src.queries.get_subscribers import (
+    get_subscribers_for_user,
+    get_subscribers_for_users,
+)
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
     get_support_sent_by_user,
@@ -805,7 +811,153 @@ class UserSearchResult(Resource):
         return success_response(response["users"])
 
 
-followers_response = make_full_response(
+subscribers_response = make_response(
+    "subscribers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_subscribers_response = make_full_response(
+    "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+USER_SUBSCRIBERS_ROUTE = "/<string:id>/subscribers"
+
+
+@full_ns.route(USER_SUBSCRIBERS_ROUTE)
+class FullUserSubscribers(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        args = {
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        users = get_subscribers_for_user(args)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_subscribers_response)
+    def get(self, id):
+        return self._get(id)
+
+
+@ns.route(USER_SUBSCRIBERS_ROUTE)
+class UserSubscribers(FullUserSubscribers):
+    @ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(subscribers_response)
+    def get(self, id):
+        return super()._get(id)
+
+
+bulk_subscribers_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+bulk_subscribers_parser.add_argument(
+    "ids",
+    required=True,
+    action="split",
+    description="User IDs to fetch subscribers for",
+)
+bulk_subscribers_response = make_response(
+    "bulk_subscribers_response", ns, fields.List(fields.Nested(user_subscribers))
+)
+full_bulk_subscribers_response = make_full_response(
+    "full_bulk_subscribers_response",
+    full_ns,
+    fields.List(fields.Nested(user_subscribers)),
+)
+
+BULK_USERS_SUBSCRIBERS_ROUTE = "/subscribers"
+
+
+@full_ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class FullBulkUsersSubscribers(Resource):
+    def _get_subscribers(self, args):
+        decoded_user_ids = list(
+            map(lambda id: decode_with_abort(id, full_ns), args.get("ids", []))
+        )
+        subscribers = get_subscribers_for_users(
+            {
+                "user_ids": decoded_user_ids,
+            }
+        )
+        return success_response(subscribers)
+
+    @record_metrics
+    @cache(ttl_sec=5)
+    # Use POST to request subscribers for the user IDs in the JSON body.
+    # Does not actually write any data.
+    def _post(self):
+        args = request.json
+        return self._get_subscribers(args)
+
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self):
+        args = bulk_subscribers_parser.parse_args()
+        return self._get_subscribers(args)
+
+    @full_ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(bulk_subscribers_parser)
+    @full_ns.marshal_with(full_bulk_subscribers_response)
+    def get(self):
+        return self._get()
+
+    @full_ns.doc(
+        id="""Bulk Get Subscribers via JSON request""",
+        description="""Get all users that subscribe to the users listed in the JSON request""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(bulk_subscribers_parser)
+    @full_ns.marshal_with(full_bulk_subscribers_response)
+    def post(self):
+        return self._post()
+
+
+@ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class BulkUsersSubscribers(FullBulkUsersSubscribers):
+    @ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_subscribers_parser)
+    @ns.marshal_with(bulk_subscribers_response)
+    def get(self):
+        return super()._get()
+
+    @ns.doc(
+        id="""Bulk Get Subscribers via JSON request""",
+        description="""Get all users that subscribe to the users listed in the JSON request""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_subscribers_parser)
+    @ns.marshal_with(bulk_subscribers_response)
+    def post(self):
+        return super()._post()
+
+
+followers_response = make_response(
     "followers_response", ns, fields.List(fields.Nested(user_model))
 )
 full_followers_response = make_full_response(
@@ -861,7 +1013,7 @@ class FollowerUsers(FullFollowerUsers):
         return super()._get(id)
 
 
-following_response = make_full_response(
+following_response = make_response(
     "following_response", ns, fields.List(fields.Nested(user_model))
 )
 following_response_full = make_full_response(

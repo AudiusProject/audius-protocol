@@ -5,10 +5,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_caller",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -23,6 +25,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -30,6 +33,7 @@
       "name": "playlistExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }

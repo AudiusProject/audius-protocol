@@ -39,6 +39,12 @@ const config = convict({
     env: 'web3Provider',
     default: null
   },
+  nethermindWeb3Provider: {
+    doc: 'nethermind web3 provider url',
+    format: String,
+    env: 'nethermindWeb3Provider',
+    default: null
+  },
   secondaryWeb3Provider: {
     doc: 'secondary web3 provider url',
     format: String,

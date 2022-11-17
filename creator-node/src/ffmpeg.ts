@@ -1,9 +1,14 @@
-const config = require('./config')
-const fs = require('fs-extra')
-const path = require('path')
-const ffmpeg = require('ffmpeg-static').path
-const spawn = require('child_process').spawn
-const { logger: genericLogger } = require('./logging')
+import type { LogContext } from './utils'
+
+import config from './config'
+import fs from 'fs-extra'
+import path from 'path'
+import { logger as genericLogger } from './logging'
+import { spawn } from 'child_process'
+import ffmpegPath from 'ffmpeg-static'
+// The typing for the ffmpeg-static model is incorrect
+// so this line is here to fix that
+const ffmpeg = (ffmpegPath as unknown as { path: string }).path
 
 /**
  * Segments file into equal size chunks without re-encoding.
@@ -22,7 +27,11 @@ const { logger: genericLogger } = require('./logging')
     m3u8FilePath {string}: the m3u8 file path 
   }
  */
-function segmentFile(fileDir, fileName, { logContext }) {
+export function segmentFile(
+  fileDir: string,
+  fileName: string,
+  { logContext }: { logContext: LogContext }
+) {
   const logger = genericLogger.child(logContext)
 
   return new Promise((resolve, reject) => {
@@ -95,10 +104,14 @@ function segmentFile(fileDir, fileName, { logContext }) {
  * @param {Object} params
  * @param {string} params.fileDir the directory of the uploaded track artifact
  * @param {string} params.fileName the uploaded track artifact filename
- * @param {Object} params.logContext the log context used to instantiate a logger
+ * @param {LogContext} params.logContext the log context used to instantiate a logger
  * @returns {Promise<string>} the path to the transcode
  */
-async function transcodeFileTo320(fileDir, fileName, { logContext }) {
+export async function transcodeFileTo320(
+  fileDir: string,
+  fileName: string,
+  { logContext }: { logContext: LogContext }
+) {
   const logger = genericLogger.child(logContext)
 
   const sourcePath = path.resolve(fileDir, fileName)
@@ -155,5 +168,3 @@ async function transcodeFileTo320(fileDir, fileName, { logContext }) {
     })
   })
 }
-
-module.exports = { segmentFile, transcodeFileTo320 }

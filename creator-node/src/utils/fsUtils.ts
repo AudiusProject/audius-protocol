@@ -53,6 +53,7 @@ export async function _streamFileToDiskHelper(
 /**
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
+ * @returns Boolean false if has not attempted state fix before, true if it has
  */
 export async function getIfAttemptedStateFix(filePath: string) {
   // key is `attempted_fs_fixes:<today's date>`
@@ -63,6 +64,13 @@ export async function getIfAttemptedStateFix(filePath: string) {
 
   // if firstTime is 1, it's a new key. existing key returns 0
   return !firstTime
+}
+
+export async function deleteAttemptedStateFixes() {
+  // key is `attempted_fs_fixes:<today's date>`
+  // the date function just generates the ISOString and removes the timestamp component
+  const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
+  await redis.del(key)
 }
 
 /**

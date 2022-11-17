@@ -103,7 +103,7 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
 
         # Order and limit the playlist query by score
         playlist_query = playlist_query.order_by(
-            desc("score"), desc(playlists_to_query.c.playlist_id)
+            desc("score"), desc(playlists_to_query.c.created_at)
         ).limit(limit)
 
         playlist_results = playlist_query.all()

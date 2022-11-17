@@ -4,6 +4,7 @@ const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
 const utils = require('../../utils')
+const { clusterUtils } = require('../../utils/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -130,6 +131,8 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const clusterWorkersCount = clusterUtils.getNumWorkers()
+
   const healthy = !config.get('considerNodeUnhealthy')
 
   const response = {
@@ -209,7 +212,8 @@ const healthCheck = async (
     trustedNotifier: {
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
-    }
+    },
+    clusterWorkersCount
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -279,8 +283,19 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+const configCheck = () => {
+  /**
+   * Docs: https://github.com/mozilla/node-convict/tree/master/packages/convict#configtostring
+   *
+   * This roundabout approach can be removed once the PR to add a .toJson() is merged: https://github.com/mozilla/node-convict/pull/407
+   */
+  const data = JSON.parse(config.toString())
+  return data
+}
+
 module.exports = {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 }

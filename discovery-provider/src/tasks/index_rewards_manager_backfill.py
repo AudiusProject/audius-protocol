@@ -3,11 +3,11 @@ import datetime
 import logging
 import time
 from decimal import Decimal
-from typing import Callable, Dict, List, Optional, TypedDict
+from typing import Any, Callable, Dict, List, Optional, TypedDict
 
 import base58
 from redis import Redis
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.rewards.challenge import Challenge, ChallengeType
@@ -493,6 +493,50 @@ def get_transaction_signatures(
     return transaction_signatures
 
 
+def check_progress(session: Session):
+    stop_row = (
+        session.query(IndexingCheckpoint)
+        .filter(
+            IndexingCheckpoint.tablename == index_rewards_manager_backfill_tablename
+        )
+        .first()
+    )
+    if not stop_row:
+        return None
+    ret: Any = {}
+    ret["stop_slot"] = stop_row.last_checkpoint
+    ret["stop_sig"] = stop_row.signature
+    latest_processed_row = (
+        session.query(RewardsManagerBackfillTransaction)
+        .order_by(desc(RewardsManagerBackfillTransaction.slot))
+        .first()
+    )
+    if not latest_processed_row:
+        return ret
+    ret["latest_processed_sig"] = latest_processed_row.signature
+    ret["latest_processed_slot"] = latest_processed_row.slot
+    min_row = (
+        session.query(AudioTransactionsHistory)
+        .filter(
+            and_(
+                or_(
+                    AudioTransactionsHistory.transaction_type
+                    == TransactionType.user_reward,
+                    AudioTransactionsHistory.transaction_type
+                    == TransactionType.trending_reward,
+                ),
+                AudioTransactionsHistory.slot < ret["stop_slot"],
+            )
+        )
+        .order_by(asc(AudioTransactionsHistory.slot))
+    ).first()
+    if not min_row:
+        return ret
+    ret["min_slot"] = min_row.slot
+    ret["min_sig"] = min_row.signature
+    return ret
+
+
 def process_transaction_signatures(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
@@ -505,9 +549,7 @@ def process_transaction_signatures(
         last_tx_sig = transaction_signatures[-1][0]
 
     for tx_sig_batch in transaction_signatures:
-        logger.info(
-            f"index_rewards_manager_backfill.py | considering for processing: past {tx_sig_batch}"
-        )
+        logger.info(f"index_rewards_manager_backfill.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
@@ -718,15 +760,17 @@ def index_rewards_manager_backfill(self):
         else:
             stop_sig = stop_sig[0]
 
-    if not stop_sig:
-        logger.info(
-            f"index_rewards_manager_backfill.py | No stop_sig found: {stop_sig}"
-        )
-        return
+        if not stop_sig:
+            logger.info(
+                f"index_rewards_manager_backfill.py | No stop_sig found: {stop_sig}"
+            )
+            return
 
-    if check_if_backfilling_complete(session, solana_client_manager, redis):
-        logger.info("index_rewards_manager_backfill.py | Backfill indexing complete!")
-        return
+        if check_if_backfilling_complete(session, solana_client_manager, redis):
+            logger.info(
+                "index_rewards_manager_backfill.py | Backfill indexing complete!"
+            )
+            return
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire

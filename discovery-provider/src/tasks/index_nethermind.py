@@ -2,12 +2,12 @@
 import asyncio
 import concurrent.futures
 import logging
+import os
 import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
-from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -33,6 +33,7 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
+from src.tasks.index import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
@@ -71,7 +72,7 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
-
+web3 = web3_provider.get_nethermind_web3()
 
 # HELPER FUNCTIONS
 
@@ -84,18 +85,11 @@ default_config_start_hash = "0x0"
 zero_address = "0x0000000000000000000000000000000000000000"
 
 
-def get_contract_info_if_exists(self, address):
-    for contract_name, contract_address in get_contract_addresses().items():
-        if update_task.web3.toChecksumAddress(contract_address) == address:
-            return (contract_name, contract_address)
-    return None
-
-
 def initialize_blocks_table_if_necessary(db: SessionManager):
     redis = update_task.redis
 
     target_blockhash = None
-    target_block = update_task.web3.eth.get_block(0, True)
+    target_block = web3_provider.get_nethermind_web3().eth.get_block(0, True)
     target_blockhash = target_block.hash.hex()
 
     with db.scoped_session() as session:
@@ -159,7 +153,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
+        latest_block_from_chain = web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -169,16 +163,14 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         logger.info(
             f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = dict(
-            update_task.web3.eth.get_block(target_latest_block_number, True)
-        )
+        latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
 
 def update_latest_block_redis():
-    latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
+    latest_block_from_chain = web3.eth.get_block("latest", True)
     default_indexing_interval_seconds = int(
         update_task.shared_config["discprov"]["block_processing_interval_sec"]
     )
@@ -207,7 +199,7 @@ def fetch_tx_receipt(transaction):
 
 
 def fetch_tx_receipts(self, block):
-    block_hash = self.web3.toHex(block.hash)
+    block_hash = web3.toHex(block.hash)
     block_number = block.number
     block_transactions = block.transactions
     block_tx_with_receipts = {}
@@ -255,7 +247,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            txhash = web3.toHex(tx_receipt.transactionHash)
             for event_type in entity_manager_event_types_arr:
                 entity_manager_events_tx = getattr(
                     entity_manager_contract.events, event_type
@@ -327,7 +319,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
     logger.info(
         f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata
+    return cid_metadata, cid_type
 
 
 def get_tx_hash_to_skip(session, redis):
@@ -359,10 +351,13 @@ def save_skipped_tx(session, redis):
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
+    entity_manager_address = os.getenv(
+        "audius_contracts_nethermind_entity_manager_address"
+    )
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
-        tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
+        tx_is_type = tx_target_contract_address == entity_manager_address
         if tx_is_type:
             contract_type = tx_type
             logger.info(
@@ -550,7 +545,7 @@ def index_blocks(self, db, blocks_list):
                     fetch_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata = fetch_cid_metadata(
+                    cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[ENTITY_MANAGER],
                     )
@@ -609,10 +604,27 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    if is_save_cid_enabled:
+                        """
+                        Add CID Metadata to db (cid -> json blob, etc.)
+                        """
+                        save_cid_metadata_time = time.time()
+                        # bulk process operations once all tx's for block have been parsed
+                        # and get changed entity IDs for cache clearing
+                        # after session commit
+                        save_cid_metadata(session, cid_metadata, cid_type)
+                        metric.save_time(
+                            {"scope": "save_cid_metadata"},
+                            start_time=save_cid_metadata_time,
+                        )
+                        logger.info(
+                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                        )
 
                 except Exception as e:
 
-                    blockhash = update_task.web3.toHex(block_hash)
+                    blockhash = web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
                     )
@@ -629,7 +641,7 @@ def index_blocks(self, db, blocks_list):
                 # Use 'commit' as the tx hash here.
                 # We're at a point where the whole block can't be added to the database, so
                 # we should skip it in favor of making progress
-                blockhash = update_task.web3.toHex(block_hash)
+                blockhash = web3.toHex(block_hash)
                 indexing_error = IndexingError(
                     "session.commit", block_number, blockhash, "commit", str(e)
                 )
@@ -972,7 +984,7 @@ def update_task(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    web3 = web3_provider.get_web3()
+    web3 = web3_provider.get_nethermind_web3()
     redis = update_task.redis
 
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
@@ -991,11 +1003,11 @@ def update_task(self):
 
     # Initialize contracts and attach to the task singleton
     entity_manager_address = web3.toChecksumAddress(
-        update_task.shared_config["contracts"]["nethermind_entity_manager_address"]
+        os.getenv("audius_contracts_nethermind_entity_manager_address")
     )
 
     entity_manager_contract_abi = helpers.load_abi_values()["EntityManager"]["abi"]
-    entity_manager_contract = update_task.web3.eth.contract(
+    entity_manager_contract = web3.eth.contract(
         address=entity_manager_address,
         abi=entity_manager_contract_abi,
     )
