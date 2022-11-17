@@ -399,6 +399,10 @@ export class Users extends Base {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
       throw new Error(errorMsg)
     }
 
@@ -550,6 +554,10 @@ export class Users extends Base {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
       throw new Error(errorMsg)
     }
   }
@@ -1041,6 +1049,10 @@ export class Users extends Base {
       const errorMsg = `updateAndUploadMetadata() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
       throw new Error(errorMsg)
     }
   }
@@ -1060,9 +1072,12 @@ export class Users extends Base {
     try {
       await this.assignReplicaSet({ userId: user.user_id })
     } catch (e) {
-      throw new Error(
-        `assignReplicaSetIfNecessary error - ${(e as any).toString()}`
-      )
+      const errorMsg = `assignReplicaSetIfNecessary error - ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
     }
   }
 
