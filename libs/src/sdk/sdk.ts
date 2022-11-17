@@ -154,18 +154,19 @@ const initializeApis = ({
 }) => {
   const initializationPromise = discoveryProvider.init()
 
-  const fetchApi = async (url: string) => {
+  const fetchApi = async (url: string, context?: RequestInit) => {
     // Ensure discovery node is initialized
     await initializationPromise
 
     // Append the appName to the query params
     const urlWithAppName =
       url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
-
+    const requestParams: Record<string, unknown> = {
+      ...context,
+      endpoint: urlWithAppName
+    }
     return await discoveryProvider._makeRequest(
-      {
-        endpoint: urlWithAppName
-      },
+      requestParams,
       undefined,
       undefined,
       // Throw errors instead of returning null
