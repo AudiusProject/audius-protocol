@@ -163,7 +163,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
             .one_or_none()
         )
 
-    if prev_playlist_route_record is not None:
+    if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
             return
