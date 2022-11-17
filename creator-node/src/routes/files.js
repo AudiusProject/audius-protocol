@@ -936,7 +936,7 @@ router.post(
     })
 
     const response = {
-      cids: queryResults
+      cids: queryResults.map(({ multihash }) => multihash)
     }
 
     // return results
