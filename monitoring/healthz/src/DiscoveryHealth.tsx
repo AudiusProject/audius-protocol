@@ -25,8 +25,8 @@ export function DiscoveryHealth() {
           <tr>
             <th>host</th>
             <th>ver</th>
-            <th>compose?</th>
             <th>git sha</th>
+            <th>compose?</th>
             {isContent && <th>selectedDiscoveryProvider</th>}
             <th>blockdiff</th>
             <th>storage</th>
@@ -62,7 +62,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const fsUsed = bytesToGb(health.filesystem_used)
   const fsSize = bytesToGb(health.filesystem_size)
-  const storageUsage = `${fsUsed / fsSize * 100} (${fsUsed}/${fsSize}GB)`
+  const storageUsage = `${Math.floor(fsUsed / fsSize * 100)} (${fsUsed}/${fsSize} GB)`
   const dbSize = bytesToGb(health.database_size)
 
   return (
@@ -73,7 +73,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </a>
       </td>
       <td>{health.version}</td>
-      <td>{isCompose && 'Yes'}</td>
       <td>
         <a
           href={`https://github.com/AudiusProject/audius-protocol/commits/${health.git}`}
@@ -82,6 +81,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {health.git.substring(0, 8)}
         </a>
       </td>
+      <td>{isCompose && 'Yes'}</td>
       {isContent && (
         <td>
           <a
@@ -94,7 +94,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       )}
       <td>{health.block_difference}</td>
       <td>{storageUsage}</td>
-      <td>{dbSize}</td>
+      <td>{`${dbSize} GB`}</td>
     </tr>
   )
 }
