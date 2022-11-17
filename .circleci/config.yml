@@ -49,75 +49,49 @@ jobs:
           name: build
           command: CI=false npm run build:stage
       - run:
-          name: zip build
-          command: zip -r build.zip ./build
+          name: armada bundle
+          command: |
+            timestamp=$(date +%s)
+            filename="$(npx armada-cli bundle create build${timestamp} build)"
+            hash="$(npx armada-cli bundle checksum $filename)"
+            echo "export FILENAME='$filename'" >> tmp.env
+            echo "export HASH='$hash'" >> tmp.env
       - persist_to_workspace:
           root: ./
           paths:
             - ./*
 
+  pin-staging:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: deploy to s3
+          command: |
+            source tmp.env
+            aws s3 cp ${FILENAME} s3://dashboard.staging.audius.org/${FILENAME} --cache-control max-age=0
+
   deploy-staging:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/python:2.7-jessie
-    steps:
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Deploy to S3
-          command: |
-            aws s3 sync build s3://dashboard.staging.audius.org --delete --cache-control max-age=0
-            aws s3 cp build.zip s3://dashboard.staging.audius.org/build.zip --cache-control max-age=0
-
-  update-staging-ga-build:
-    working_directory: ~/protocol-dashboard
-    docker:
       - image: circleci/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
       - run:
-          name: update build in ga
-          command: npm run update-build:stage
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - ./build_cid.txt
-
-  publish-staging-build-cids:
-    working_directory: ~/protocol-dashboard
-    docker:
-      - image: circleci/python:2.7-jessie
-    steps:
+          name: install deps
+          command: sudo apt install libsecret-1-0
       - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Push to S3
-          command: aws s3 cp build_cid.txt s3://dashboard.staging.audius.org/build_cid.txt
-
-  update-staging-records:
-    working_directory: ~/protocol-dashboard
-    docker:
-      - image: circleci/ruby:2.6-node
-    steps:
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Update Cloudflare records
+          name: armada publish
           command: |
-            DNS_NAME=_dnslink.dashboard.staging.audius.org
-            CID=$(cat ./build_cid.txt)
-            curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/dns_records/${CLOUDFLARE_STAGE_DASHBOARD_DNS_ID}" \
-              -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
-              -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
-              -H "Content-Type: application/json" \
-              --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
+            source tmp.env
+            npx armada-cli project publish 0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
   build-prod:
     working_directory: ~/protocol-dashboard
@@ -211,40 +185,19 @@ workflows:
       - build-staging:
           requires:
             - init
-      - deploy-staging:
-          context: Audius Client
+      - pin-staging:
+          context:
+            - Audius Client
           requires:
             - build-staging
           filters:
             branches:
               only: /^main$/
-      - update-staging-ga-build:
-          context: Pinata
-          requires:
-            - deploy-staging
-          filters:
-            branches:
-              only: /^main$/
-      - publish-staging-build-cids:
-          context: Audius Client
-          requires:
-            - update-staging-ga-build
-          filters:
-            branches:
-              only: /^main$/
-      - hold-update-staging-records:
-          type: approval
-          requires:
-            - update-staging-ga-build
-          filters:
-            branches:
-              only: /^main$/
-      - update-staging-records:
+      - deploy-staging:
           context:
-            - Audius Client
-            - Cloudflare API
+            - Armada
           requires:
-            - hold-update-staging-records
+            - pin-staging
           filters:
             branches:
               only: /^main$/
