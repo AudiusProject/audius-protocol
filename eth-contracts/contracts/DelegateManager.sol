@@ -615,7 +615,7 @@ contract DelegateManager is InitializableV2 {
 
         // Update lockup
         removeDelegatorRequests[_serviceProvider][_delegator] = (
-            block.number + removeDelegatorLockupDuration
+            block.number.add(removeDelegatorLockupDuration)
         );
 
         emit RemoveDelegatorRequested(
@@ -672,7 +672,7 @@ contract DelegateManager is InitializableV2 {
 
         // Enforce evaluation window for request
         require(
-            block.number < removeDelegatorRequests[_serviceProvider][_delegator] + removeDelegatorEvalDuration,
+            block.number < (removeDelegatorRequests[_serviceProvider][_delegator].add(removeDelegatorEvalDuration)),
             "DelegateManager: RemoveDelegator evaluation window expired"
         );
 

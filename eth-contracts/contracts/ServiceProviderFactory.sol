@@ -665,7 +665,7 @@ contract ServiceProviderFactory is InitializableV2 {
             "ServiceProviderFactory: Service Provider cut cannot exceed base value"
         );
 
-        uint256 expiryBlock = block.number + deployerCutLockupDuration;
+        uint256 expiryBlock = block.number.add(deployerCutLockupDuration);
         updateDeployerCutRequests[_serviceProvider] = UpdateDeployerCutRequest({
             lockupExpiryBlock: expiryBlock,
             newDeployerCut: _cut
@@ -1084,7 +1084,7 @@ contract ServiceProviderFactory is InitializableV2 {
     {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "ServiceProviderFactory: decreaseStakeLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         decreaseStakeLockupDuration = _duration;
