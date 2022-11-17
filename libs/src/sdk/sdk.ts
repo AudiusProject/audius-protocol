@@ -160,13 +160,10 @@ const initializeApis = ({
     // Append the appName to the query params
     const urlWithAppName =
       url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
-
-    const requestParams: Record<string, unknown> = {}
-    if (!!context) {
-      Object.assign(requestParams, context)
+    const requestParams: Record<string, unknown> = {
+      ...context,
+      endpoint: urlWithAppName
     }
-    requestParams['endpoint'] = urlWithAppName
-
     return await discoveryProvider._makeRequest(
       requestParams,
       undefined,
