@@ -3,7 +3,8 @@ import { useField } from 'formik'
 
 import IconGenre from 'app/assets/images/iconGenre.svg'
 import { Text } from 'app/components/core'
-import { ListSelectionScreen } from 'app/screens/list-selection-screen'
+
+import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
   screenTitle: 'Select Genre',
@@ -13,7 +14,7 @@ const messages = {
 const genres = GENRES.map((genre) => ({ value: genre, label: genre }))
 
 export const SelectGenreScreen = () => {
-  const [{ value, onChange }] = useField('genre')
+  const [{ value }, , { setValue }] = useField('genre')
 
   return (
     <ListSelectionScreen
@@ -27,7 +28,7 @@ export const SelectGenreScreen = () => {
       icon={IconGenre}
       searchText={messages.searchText}
       value={value}
-      onChange={onChange('genre')}
+      onChange={setValue}
     />
   )
 }

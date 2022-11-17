@@ -143,15 +143,23 @@ export const TagInput = (props: TagInputProps) => {
   const handleKeyPress = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
       const { key: keyValue } = e.nativeEvent
+      const removeTagKeys = ['Backspace']
+      const addTagKeys = [' ', ',']
 
-      if (!inputValue && keyValue === 'Backspace') {
+      if (!inputValue && removeTagKeys.includes(keyValue)) {
         onChangeText?.(tags.slice(0, -1).join(','))
-      } else if (inputValue && (keyValue === ' ' || keyValue === ',')) {
+      } else if (inputValue && addTagKeys.includes(keyValue)) {
         handleAddTag()
       }
     },
     [inputValue, tags, onChangeText, handleAddTag]
   )
+
+  const handleSubmitEditing = useCallback(() => {
+    if (inputValue) {
+      handleAddTag()
+    }
+  }, [inputValue, handleAddTag])
 
   return (
     <TextInput
@@ -160,7 +168,9 @@ export const TagInput = (props: TagInputProps) => {
       onKeyPress={handleKeyPress}
       startAdornment={startAdornment}
       endAdornment={endAdornment}
-      returnKeyType='done'
+      returnKeyType='next'
+      blurOnSubmit={false}
+      onSubmitEditing={handleSubmitEditing}
       onFocus={handleFocus}
       onBlur={handleBlur}
       styles={{ input: styles.input }}

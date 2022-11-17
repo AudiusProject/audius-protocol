@@ -30,12 +30,14 @@ const remixLinkInputDebounceMs = 1000
 const messages = {
   screenTitle: 'Remix Settings',
   isRemixLabel: 'This Track is a Remix',
-  isRemixLinkDescription: 'Paste the link to the Audius track you’ve remixed',
+  isRemixLinkDescription: 'Paste the link to the Audius track you’ve remixed.',
   hideRemixLabel: 'Hide Remixes on Track Page',
   hideRemixDescription:
-    'Hide remixes of this track to prevent them showing on your track page.',
+    'Hide remixes of this track to prevent them from showing on your track page.',
   done: 'Done',
-  invalidRemixLink: 'Please paste a valid Audius track URL'
+  invalidRemixUrl: 'Please paste a valid Audius track URL',
+  missingRemixUrl: 'Must include a link to the original track',
+  remixUrlPlaceholder: 'Track URL'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -55,8 +57,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingLeft: spacing(4)
   },
   input: {
-    fontSize: typography.fontSize.large,
-    color: palette.neutralLight4
+    fontSize: typography.fontSize.large
   }
 }))
 
@@ -88,6 +89,7 @@ export const RemixSettingsScreen = () => {
     useField<boolean>('field_visibility.remixes')
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(remixOf))
   const [remixOfInput, setRemixOfInput] = useState(remixOf ?? '')
+  const [isRemixUrlMissing, setIsRemixUrlMissing] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const parentTrack = useSelector(getTrack)
@@ -119,18 +121,30 @@ export const RemixSettingsScreen = () => {
 
   useFocusEffect(handleFocus)
 
-  const handleLinkInput = useCallback(
+  const handleChangeLink = useCallback(
     (value: string) => {
       setRemixOfInput(value)
       handleFetchParentTrack(value)
+      setIsRemixUrlMissing(false)
     },
     [handleFetchParentTrack]
   )
 
+  const handleChangeIsRemix = useCallback((isRemix: boolean) => {
+    setIsTrackRemix(isRemix)
+    if (!isRemix) {
+      setIsRemixUrlMissing(false)
+    }
+  }, [])
+
   const handleSubmit = useCallback(() => {
-    navigation.goBack()
-    dispatch(reset())
-  }, [navigation, dispatch])
+    if (isTrackRemix && !remixOf) {
+      setIsRemixUrlMissing(true)
+    } else {
+      navigation.goBack()
+      dispatch(reset())
+    }
+  }, [navigation, dispatch, isTrackRemix, remixOf])
 
   useEffect(() => {
     setRemixOf(
@@ -138,6 +152,8 @@ export const RemixSettingsScreen = () => {
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentTrack, isTrackRemix])
+
+  const hasErrors = isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
 
   return (
     <UploadStackScreen
@@ -151,7 +167,7 @@ export const RemixSettingsScreen = () => {
           fullWidth
           title={messages.done}
           onPress={handleSubmit}
-          disabled={isInvalidParentTrack}
+          disabled={hasErrors}
         />
       }
     >
@@ -159,7 +175,7 @@ export const RemixSettingsScreen = () => {
         <View style={styles.setting}>
           <View style={styles.option}>
             <Text {...labelProps}>{messages.isRemixLabel}</Text>
-            <Switch value={isTrackRemix} onValueChange={setIsTrackRemix} />
+            <Switch value={isTrackRemix} onValueChange={handleChangeIsRemix} />
           </View>
           {isTrackRemix ? (
             <View>
@@ -169,14 +185,21 @@ export const RemixSettingsScreen = () => {
               <TextInput
                 styles={{ root: styles.inputRoot, input: styles.input }}
                 value={remixOfInput}
-                onChangeText={handleLinkInput}
+                onChangeText={handleChangeLink}
+                placeholder={messages.remixUrlPlaceholder}
                 returnKeyType='done'
               />
               {parentTrack && parentTrackArtist && !isInvalidParentTrack ? (
                 <RemixTrackPill track={parentTrack} user={parentTrackArtist} />
               ) : null}
-              {isInvalidParentTrack ? (
-                <InputErrorMessage message={messages.invalidRemixLink} />
+              {hasErrors ? (
+                <InputErrorMessage
+                  message={
+                    isInvalidParentTrack
+                      ? messages.invalidRemixUrl
+                      : messages.missingRemixUrl
+                  }
+                />
               ) : null}
             </View>
           ) : null}
