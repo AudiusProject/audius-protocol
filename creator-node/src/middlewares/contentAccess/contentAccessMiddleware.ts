@@ -36,7 +36,7 @@ export const contentAccessMiddleware = async (
   }
 
   try {
-    const { data, signature, error: parseError } = parseQueryParams(req.headers)
+    const { data, signature, error: parseError } = parseQueryParams(req.query)
 
     if (parseError) {
       sendResponse(
