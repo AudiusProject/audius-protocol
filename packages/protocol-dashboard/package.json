@@ -103,6 +103,7 @@
     "@types/url-join": "4.0.0",
     "@types/webpack-bundle-analyzer": "4.4.1",
     "abort-controller": "3.0.0",
+    "armada-cli": "0.2.4",
     "assert": "2.0.0",
     "browserify-zlib": "0.2.0",
     "constants-browserify": "1.0.0",
