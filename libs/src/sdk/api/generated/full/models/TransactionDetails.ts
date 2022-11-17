@@ -40,6 +40,12 @@ export interface TransactionDetails
         * @type {string}
         * @memberof TransactionDetails
         */
+        method: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TransactionDetails
+        */
         signature: string;
         /**
         * 
