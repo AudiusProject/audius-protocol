@@ -12,16 +12,13 @@ const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
  */
 export async function checkCIDAccess({
   cid,
-  signedDataFromDiscoveryNode,
-  signatureFromDiscoveryNode,
+  data,
+  signature,
   libs,
   logger,
   redis
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
-  const discoveryNodeWallet = recoverWallet(
-    signedDataFromDiscoveryNode,
-    signatureFromDiscoveryNode
-  )
+  const discoveryNodeWallet = recoverWallet(data, signature)
   const isRegisteredDN = await isRegisteredDiscoveryNode({
     discoveryNodeDelegateOwnerWallet: discoveryNodeWallet,
     libs,
@@ -36,11 +33,7 @@ export async function checkCIDAccess({
     }
   }
 
-  const {
-    cid: copy320CID,
-    timestamp: signedTimestamp,
-    shouldCache
-  } = signedDataFromDiscoveryNode
+  const { cid: copy320CID, timestamp: signedTimestamp, shouldCache } = data
 
   if (copy320CID !== cid) {
     return {
