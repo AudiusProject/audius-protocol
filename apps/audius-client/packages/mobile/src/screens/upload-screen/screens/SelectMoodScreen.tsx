@@ -3,9 +3,10 @@ import { View, Image } from 'react-native'
 
 import IconMood from 'app/assets/images/iconMood.svg'
 import { Text } from 'app/components/core'
-import { ListSelectionScreen } from 'app/screens/list-selection-screen'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
+
+import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
   screenTitle: 'Select Mood',
@@ -33,7 +34,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const SelectMoodScreen = () => {
   const styles = useStyles()
-  const [{ value, onChange }] = useField('mood')
+  const [{ value }, , { setValue }] = useField('mood')
 
   return (
     <ListSelectionScreen
@@ -50,7 +51,7 @@ export const SelectMoodScreen = () => {
       icon={IconMood}
       searchText={messages.searchText}
       value={value}
-      onChange={onChange('mood')}
+      onChange={setValue}
     />
   )
 }

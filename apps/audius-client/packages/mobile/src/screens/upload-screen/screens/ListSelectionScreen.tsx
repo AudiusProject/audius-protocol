@@ -1,21 +1,16 @@
 import type { ComponentType } from 'react'
 import { useState, useCallback } from 'react'
 
+import type { Nullable } from '@audius/common'
 import type { ListRenderItem } from 'react-native'
 import { FlatList, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
-import {
-  Screen,
-  TextInput,
-  Text,
-  RadioButton,
-  Divider,
-  Button
-} from 'app/components/core'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { TextInput, Text, RadioButton, Divider } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+
+import { UploadStackScreen } from '../components'
 
 export type ListSelectionData = { label: string; value: string }
 
@@ -25,7 +20,7 @@ export type ListSelectionProps = {
   searchText: string
   data: ListSelectionData[]
   renderItem: ListRenderItem<ListSelectionData>
-  onChange: (value: string) => void
+  onChange: (value: Nullable<string>) => void
   value: string
 }
 
@@ -34,7 +29,7 @@ const messages = {
   done: 'Done'
 }
 
-const useStyles = makeStyles(({ spacing, typography, palette }) => ({
+const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
     justifyContent: 'space-between'
   },
@@ -61,14 +56,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   radio: {
     marginRight: spacing(4)
-  },
-  confirmSelection: {
-    paddingHorizontal: spacing(4),
-    paddingTop: spacing(6),
-    paddingBottom: spacing(12),
-    backgroundColor: palette.white,
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight6
   }
 }))
 
@@ -80,32 +67,25 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     renderItem: renderItemProp,
     data,
     onChange,
-    value: valueProp
+    value
   } = props
 
   const styles = useStyles()
 
-  const [value, setValue] = useState(valueProp)
   const [filterInput, setFilterInput] = useState('')
   const filterRegexp = new RegExp(filterInput, 'i')
-
-  const navigation = useNavigation()
-
-  const handleSubmit = useCallback(() => {
-    onChange(value)
-    navigation.goBack()
-  }, [onChange, value, navigation])
 
   const renderItem: ListRenderItem<ListSelectionData> = useCallback(
     (info) => {
       const { value: itemValue } = info.item
       const isSelected = value === itemValue
 
+      const handleChange = () => {
+        onChange(isSelected ? null : itemValue)
+      }
+
       return (
-        <TouchableOpacity
-          style={styles.listItem}
-          onPress={() => setValue(itemValue)}
-        >
+        <TouchableOpacity style={styles.listItem} onPress={handleChange}>
           <View style={styles.listItemContent}>
             <RadioButton checked={isSelected} style={styles.radio} />
             {renderItemProp(info)}
@@ -118,13 +98,18 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
         </TouchableOpacity>
       )
     },
-    [renderItemProp, value, styles]
+    [renderItemProp, value, styles, onChange]
   )
 
   const filteredData = data.filter(({ label }) => label.match(filterRegexp))
 
   return (
-    <Screen title={screenTitle} icon={icon} variant='white' style={styles.root}>
+    <UploadStackScreen
+      title={screenTitle}
+      icon={icon}
+      variant='white'
+      style={styles.root}
+    >
       <View style={styles.content}>
         <TextInput
           placeholder={searchText}
@@ -138,17 +123,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
           ItemSeparatorComponent={Divider}
           data={filteredData}
         />
-        <View style={styles.confirmSelection}>
-          <Button
-            variant='primary'
-            size='large'
-            title={messages.done}
-            onPress={handleSubmit}
-            fullWidth
-            disabled={!value}
-          />
-        </View>
       </View>
-    </Screen>
+    </UploadStackScreen>
   )
 }

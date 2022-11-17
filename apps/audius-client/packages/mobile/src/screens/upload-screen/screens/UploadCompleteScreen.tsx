@@ -36,7 +36,7 @@ const { getTrack } = cacheTracksSelectors
 const messages = {
   title: 'Upload',
   complete: 'Upload Complete',
-  share: 'Spread the work and share it with your fans!',
+  share: 'Spread the word and share it with your fans!',
   twitterShareText: (title: string) =>
     `Check out my new track, ${title} on @AudiusProject #Audius`,
   copyLink: 'Copy Link',
@@ -85,12 +85,10 @@ export const UploadCompleteScreen = () => {
   const dispatch = useDispatch()
   const accountUser = useSelector(getAccountUser)
   const uploadedTrack = useSelector((state) => getTrack(state, { permalink }))
-
-  console.log('uploaded track?', uploadedTrack)
+  const trackRoute = getTrackRoute(track!, true)
 
   useEffectOnce(() => {
     const params = parseTrackRoute(permalink)
-    console.log('params!', params)
     if (params) {
       const { slug, handle } = params
       dispatch(fetchTrack(null, slug!, handle!))
@@ -98,10 +96,9 @@ export const UploadCompleteScreen = () => {
   })
 
   const handleCopyLink = useCallback(() => {
-    const link = ''
-    Clipboard.setString(link)
+    Clipboard.setString(trackRoute)
     toast({ content: messages.shareToast, type: 'info' })
-  }, [toast])
+  }, [trackRoute, toast])
 
   const handleClose = useCallback(() => {
     navigation.navigate('Feed')
