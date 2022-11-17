@@ -7,6 +7,7 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 const audiusLibsWrapper = require('../audiusLibsInstance')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 // default configs
 const startBlock = config.get('notificationStartBlock')
@@ -93,6 +94,59 @@ async function calculateTrackListenMilestonesFromDiscovery(discoveryProvider) {
     })
   }
   return parsedListenCounts
+}
+
+/**
+ * Queries the discovery provider and returns all subscribers for each user in
+ * userIds.
+ *
+ * @param {Set<number>} userIds to fetch subscribers for
+ * @returns Object {userId: Array[subscriberIds]}
+ */
+async function bulkGetSubscribersFromDiscovery(userIds) {
+  const userSubscribersMap = {}
+  if (userIds.size === 0) {
+    return userSubscribersMap
+  }
+
+  try {
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    const ids = [...userIds].map((id) => encodeHashId(id))
+    const response = await axios.post(
+      `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/subscribers`,
+      { ids: ids }
+    )
+    const userSubscribers = response.data.data
+    userSubscribers.forEach((entry) => {
+      const encodedUserId = entry.user_id
+      const encodedSubscriberIds = entry.subscriber_ids
+      const userId = decodeHashId(encodedUserId)
+      const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
+
+      userSubscribersMap[userId] = subscriberIds
+    })
+
+    return userSubscribersMap
+  } catch (e) {
+    logger.error('Error when fetching subscribers from discovery', e)
+    return {}
+  }
+}
+
+/**
+ * Checks whether to retrieve subscribers from discovery DB using
+ * the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag.
+ *
+ * @returns Boolean
+ */
+const shouldReadSubscribersFromDiscovery = (optimizelyClient) => {
+  if (!optimizelyClient) {
+    return false
+  }
+  return getFeatureFlag(
+    optimizelyClient,
+    FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED
+  )
 }
 
 /**
@@ -280,6 +334,8 @@ module.exports = {
   updateBlockchainIds,
   calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
+  bulkGetSubscribersFromDiscovery,
+  shouldReadSubscribersFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
   shouldNotifyUser,
