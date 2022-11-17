@@ -113,10 +113,16 @@ module.exports = function (app) {
       const { blockchainUserId } = req.user
       if (timezone) {
         try {
+          // Associate the blockchain id with this user
           await models.User.update(
             { IP, timezone },
             { where: { blockchainUserId } }
           )
+          // Create a user notification setting so the user can receive notifications
+          await models.UserNotificationSettings.create({
+            userId: blockchainUserId
+          })
+
           return successResponse()
         } catch (err) {
           req.logger.error('Error signing up a user', err)
