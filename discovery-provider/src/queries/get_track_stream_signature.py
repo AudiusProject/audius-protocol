@@ -49,9 +49,10 @@ def get_track_stream_signature(args: Dict):
         )
         signature_data = json.loads(premium_content_signature_obj["data"])
         if (
-            signature_data.get("user_wallet", False) != authed_user["user_wallet"]
-            or signature_data.get("premium_content_id", False) != track["track_cid"]
-            or signature_data.get("premium_content_type", False) != "track"
+            signature_data.get("user_wallet", False)
+            != authed_user["user_wallet"].lower()
+            or signature_data.get("cid", False) != track["track_cid"]
+            or signature_data.get("shouldCache", False)
         ):
             return None
     else:
