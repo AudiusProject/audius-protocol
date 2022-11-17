@@ -262,8 +262,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers(),
-      isClusterEnabled: clusterUtils.isClusterEnabled()
+      clusterWorkersCount: clusterUtils.getNumWorkers()
     })
   })
 
@@ -381,8 +380,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers(),
-      isClusterEnabled: clusterUtils.isClusterEnabled()
+      clusterWorkersCount: clusterUtils.getNumWorkers()
     })
   })
 
@@ -487,8 +485,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers(),
-      isClusterEnabled: clusterUtils.isClusterEnabled()
+      clusterWorkersCount: clusterUtils.getNumWorkers()
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -636,8 +633,7 @@ describe('Test Health Check Verbose', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers(),
-      isClusterEnabled: clusterUtils.isClusterEnabled()
+      clusterWorkersCount: clusterUtils.getNumWorkers()
     })
   })
 
