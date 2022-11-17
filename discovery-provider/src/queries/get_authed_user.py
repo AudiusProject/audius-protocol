@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def get_authed_user(data: str, signature: str):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        web3 = web3_provider.get_web3()
+        web3 = web3_provider.get_eth_web3()
         message_hash = defunct_hash_message(text=data)
         user_wallet = web3.eth.account.recoverHash(message_hash, signature=signature)
         result = (
