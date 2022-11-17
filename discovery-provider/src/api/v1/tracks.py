@@ -52,7 +52,10 @@ from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_stems_of import get_stems_of
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
-from src.queries.get_track_stream_signature import get_track_stream_signature
+from src.queries.get_track_stream_signature import (
+    CID_STREAM_ENABLED,
+    get_track_stream_signature,
+)
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
@@ -452,7 +455,10 @@ class TrackStream(Resource):
         primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
-        path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+        if CID_STREAM_ENABLED:
+            path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+        else:
+            path = f"tracks/stream/{track_id}"
         stream_url = urljoin(primary_node, path)
 
         return stream_url
