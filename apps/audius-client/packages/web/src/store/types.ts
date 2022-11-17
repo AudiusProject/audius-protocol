@@ -32,6 +32,7 @@ import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
+import { ErrorState } from 'store/errors/reducers'
 
 import { BackendState } from '../common/store/backend/types'
 import { ConfirmerState } from '../common/store/confirmer/types'
@@ -108,6 +109,9 @@ export type AppState = CommonState & {
 
   // Remote Config + Flags
   remoteConfig: ReturnType<typeof RemoteConfigReducer>
+
+  // Error Page
+  error: ErrorState
 
   // Premium content
   premiumContent: ReturnType<typeof PremiumContentReducer>

@@ -7,6 +7,8 @@ import {
   NativeAccountImage
 } from '@audius/common'
 
+import { UiErrorCode } from 'store/errors/actions'
+
 import { FollowArtistsCategory, Pages } from './types'
 
 export const SET_FIELD = 'SIGN_ON/SET_FIELD'
@@ -176,6 +178,7 @@ type SignUpFailedParams = {
   shouldReport: boolean
   shouldToast: boolean
   message?: string
+  uiErrorCode?: UiErrorCode
 }
 
 export const signUpFailed = ({
@@ -184,7 +187,8 @@ export const signUpFailed = ({
   redirectRoute,
   shouldReport,
   shouldToast,
-  message
+  message,
+  uiErrorCode
 }: SignUpFailedParams) => ({
   type: SIGN_UP_FAILED,
   error,
@@ -192,7 +196,8 @@ export const signUpFailed = ({
   redirectRoute,
   shouldReport,
   shouldToast,
-  message
+  message,
+  uiErrorCode
 })
 
 /**
@@ -208,12 +213,14 @@ export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
 export const signInFailed = (
   error: string,
   phase: string,
-  shouldReport = true
+  shouldReport = true,
+  uiErrorCode?: UiErrorCode
 ) => ({
   type: SIGN_IN_FAILED,
   error,
   phase,
-  shouldReport
+  shouldReport,
+  uiErrorCode
 })
 
 /**
