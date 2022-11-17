@@ -434,12 +434,14 @@ class DBManager {
     )?.length
   }
 
-  static async getNonDirLegacyStoragePathsAndCids(cursor, batchSize) {
+  static async _getLegacyStoragePathsAndCids(cursor, batchSize, dir) {
     const queryResult = await models.File.findAll({
       attributes: ['storagePath', 'multihash'],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },
-        type: { [sequelize.Op.ne]: models.File.Types.dir },
+        type: {
+          [dir ? sequelize.Op.eq : sequelize.Op.ne]: models.File.Types.dir
+        },
         storagePath: {
           [sequelize.Op.notLike]: '/file_storage/files/%',
           [sequelize.Op.like]: '/file_storage/%'
@@ -449,7 +451,7 @@ class DBManager {
       limit: batchSize
     })
     logger.debug(
-      `queryResult for non-dir legacyStoragePaths with cursor ${cursor}: ${JSON.stringify(
+      `queryResult for legacyStoragePaths (dir=${dir}) with cursor ${cursor}: ${JSON.stringify(
         queryResult || {}
       )}`
     )
@@ -457,6 +459,14 @@ class DBManager {
     return queryResult.map((result) => {
       return { storagePath: result.storagePath, cid: result.multihash }
     })
+  }
+
+  static async getNonDirLegacyStoragePathsAndCids(cursor, batchSize) {
+    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, false)
+  }
+
+  static async getDirLegacyStoragePathsAndCids(cursor, batchSize) {
+    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, true)
   }
 
   static async updateLegacyPathDbRows(copiedFilePaths, logger) {

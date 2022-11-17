@@ -682,7 +682,7 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
     const cursor = 'Qm' + char
 
     // Query for legacy storagePaths in the pagination range until no more results are returned
-    let legacyStoragePathsAndCids = []
+    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
     do {
       legacyStoragePathsAndCids =
         await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
@@ -704,8 +704,28 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
   }
 }
 
-async function _migrateDirsWithLegacyStoragePaths(_logger: Logger) {
-  // TODO
+async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
+  const BATCH_SIZE = 100
+  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+  for (const char of _getCharsInRanges('az', 'AZ', '09')) {
+    const cursor = 'Qm' + char
+
+    // Query for legacy storagePaths in the pagination range until no more results are returned
+    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
+    do {
+      legacyStoragePathsAndCids =
+        await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
+      const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
+        (storagePathAndCid) => {
+          return {
+            legacyPath: storagePathAndCid.storagePath,
+            nonLegacyPath: computeFilePath(storagePathAndCid.cid)
+          }
+        }
+      )
+      await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+    } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
+  }
 }
 
 /**
