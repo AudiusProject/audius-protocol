@@ -4,6 +4,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import stream from 'stream'
 import { promisify } from 'util'
+import { computeFilePathInDir } from '../diskManager'
 
 const redis = require('../redis')
 const models = require('../models')
@@ -90,7 +91,7 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
     `Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
   )
 
-  // Ensure file exists for dirCID
+  // Ensure db row exists for dirCID
   const dirFile = await models.File.findOne({
     where: {
       multihash: imageDirCID,
@@ -102,20 +103,14 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
     throw new Error(`No file stored in DB for imageDirCID ${imageDirCID}`)
   }
 
-  // Ensure dir exists on disk
-  if (!(await fs.pathExists(dirFile.storagePath))) {
-    throw new Error(
-      `No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`
-    )
-  }
-
-  const imageFiles = await models.File.findAll({
-    where: {
-      dirMultihash: imageDirCID,
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      type: 'image'
-    }
-  })
+  const imageFiles: { storagePath: string; multihash: string }[] =
+    await models.File.findAll({
+      where: {
+        dirMultihash: imageDirCID,
+        cnodeUserUUID: req.session.cnodeUserUUID,
+        type: 'image'
+      }
+    })
   if (!imageFiles) {
     throw new Error(
       `No image file records found in DB for imageDirCID ${imageDirCID}`
@@ -124,10 +119,17 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
 
   // Ensure every file exists on disk
   await Promise.all(
-    imageFiles.map(async function (imageFile: { storagePath: string }) {
-      if (!(await fs.pathExists(imageFile.storagePath))) {
+    imageFiles.map(async function (imageFile) {
+      const computedFilePath = computeFilePathInDir(
+        imageDirCID,
+        imageFile.multihash
+      )
+      if (
+        !(await fs.pathExists(computedFilePath)) &&
+        !(await fs.pathExists(imageFile.storagePath))
+      ) {
         throw new Error(
-          `No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.storagePath}`
+          `No file found on disk for imageDirCID ${imageDirCID} image file at computedFilePath ${computedFilePath} or fallback db storagePath ${imageFile.storagePath}`
         )
       }
     })

@@ -439,7 +439,7 @@ class DBManager {
       attributes: ['storagePath', 'multihash'],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },
-        type: { [sequelize.Op.ne]: 'dir' },
+        type: { [sequelize.Op.ne]: models.File.Types.dir },
         storagePath: {
           [sequelize.Op.notLike]: '/file_storage/files/%',
           [sequelize.Op.like]: '/file_storage/%'
