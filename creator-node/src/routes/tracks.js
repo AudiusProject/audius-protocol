@@ -38,7 +38,6 @@ const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
 
-
 const router = express.Router()
 
 /**
