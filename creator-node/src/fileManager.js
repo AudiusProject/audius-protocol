@@ -37,7 +37,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   )
 
   // Write file to disk by cid for future retrieval
-  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(cid)
+  const dstPath = await Utils.computeFilePathAndEnsureItExists(cid)
   await fs.writeFile(dstPath, buffer)
 
   // verify that the contents of the file match the file's cid
@@ -81,7 +81,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
  */
 async function copyMultihashToFs(multihash, srcPath, logContext) {
   const logger = genericLogger.child(logContext)
-  const dstPath = await DiskManager.computeFilePathAndEnsureItExists(multihash)
+  const dstPath = await Utils.computeFilePathAndEnsureItExists(multihash)
 
   try {
     await fs.copyFile(srcPath, dstPath)
@@ -452,7 +452,7 @@ async function fetchFileFromNetworkAndSaveToFS(
         data: { nonTargetGatewayContentRoutes, targetGatewayContentRoutes }
       })
 
-      storageLocation = await DiskManager.computeFilePathInDirAndEnsureItExists(
+      storageLocation = await Utils.computeFilePathInDirAndEnsureItExists(
         dirCID,
         multihash
       )
@@ -476,9 +476,7 @@ async function fetchFileFromNetworkAndSaveToFS(
         return baseUrl
       })
 
-      storageLocation = await DiskManager.computeFilePathAndEnsureItExists(
-        multihash
-      )
+      storageLocation = await Utils.computeFilePathAndEnsureItExists(multihash)
 
       decisionTree.recordStage({
         name: 'Set targetGatewayContentRoutes and nonTargetGatewayContentRoutes for non-dir file',

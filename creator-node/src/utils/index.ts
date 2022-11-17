@@ -24,7 +24,12 @@ import {
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
   _streamFileToDiskHelper,
-  deleteAttemptedStateFixes
+  deleteAttemptedStateFixes,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
@@ -49,7 +54,12 @@ export {
   validateMetadata,
   stringifyMap,
   clusterUtils,
-  verifyCIDMatchesExpected
+  verifyCIDMatchesExpected,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 }
 
 module.exports = {
@@ -71,5 +81,10 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils
+  clusterUtils,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 }

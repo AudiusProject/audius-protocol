@@ -23,6 +23,7 @@ const {
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
+const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(
@@ -111,7 +112,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         '../../fileManager': {
           copyMultihashToFs: sinon
             .stub(FileManager, 'copyMultihashToFs')
-            .returns(await DiskManager.computeFilePathAndEnsureItExists(mockCid)),
+            .returns(await computeFilePathAndEnsureItExists(mockCid)),
           '@global': true
         }
       }
@@ -988,7 +989,7 @@ describe('test Polling Tracks with real files', function () {
       'testTranscoded320Track.mp3'
     )
     const transcodedTrackAssetBuf = await fs.readFile(transcodedTrackAssetPath)
-    const transcodedTrackPath = await DiskManager.computeFilePathAndEnsureItExists(transcodedTrackCID)
+    const transcodedTrackPath = await computeFilePathAndEnsureItExists(transcodedTrackCID)
     const transcodedTrackTestBuf = await fs.readFile(transcodedTrackPath)
     assert.deepStrictEqual(
       transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
@@ -1001,7 +1002,7 @@ describe('test Polling Tracks with real files', function () {
     //    This test may break in the future but at that point we should re-generate the reference segment files.
     assert.deepStrictEqual(trackSegments.length, TestAudiusTrackFileNumSegments)
     trackSegments.map(async function (cid, index) {
-      const cidPath = await DiskManager.computeFilePathAndEnsureItExists(cid.multihash)
+      const cidPath = await computeFilePathAndEnsureItExists(cid.multihash)
 
       // Ensure file exists
       assert.ok(await fs.pathExists(cidPath))
@@ -1076,7 +1077,7 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(
+    const metadataPath = await computeFilePathAndEnsureItExists(
       resp.body.data.metadataMultihash
     )
     assert.ok(await fs.pathExists(metadataPath))

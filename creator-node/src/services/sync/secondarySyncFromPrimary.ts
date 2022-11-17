@@ -14,9 +14,7 @@ import { fetchFileFromNetworkAndSaveToFS } from '../../fileManager'
 import {
   gatherCNodeUserDataToDelete,
   clearFilePathsToDelete,
-  deleteAllCNodeUserDataFromDisk,
-  computeFilePath,
-  computeFilePathInDir
+  deleteAllCNodeUserDataFromDisk
 } from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
@@ -28,6 +26,7 @@ import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
+import { computeFilePath, computeFilePathInDir } from '../../utils'
 
 const models = require('../../models')
 const config = require('../../config')

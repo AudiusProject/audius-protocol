@@ -1,10 +1,14 @@
-const DiskManager = require('./diskManager')
+const fs = require('fs-extra')
 const assert = require('assert')
 const config = require('./config')
 const path = require('path')
 const sinon = require('sinon')
-const fs = require('fs-extra')
 const utils = require('./utils')
+const DiskManager = require('./diskManager')
+const {
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
+} = require('../src/utils/fsUtils')
 
 describe('Test DiskManager', function () {
   let sandbox
@@ -22,7 +26,7 @@ describe('Test DiskManager', function () {
 
   before(function () {
     // stub out this function which ensures the directory path exists to return true
-    DiskManager.ensureDirPathExists = async () => true
+    utils.ensureDirPathExists = async () => true
   })
 
   /**
@@ -54,7 +58,7 @@ describe('Test DiskManager', function () {
    * computeFilePathAndEnsureItExists
    */
   it('Should pass if computeFilePathAndEnsureItExists returns the correct path', async function () {
-    const fullPath = await DiskManager.computeFilePathAndEnsureItExists(
+    const fullPath = await computeFilePathAndEnsureItExists(
       'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     )
     const validPath = path.join(
@@ -68,7 +72,7 @@ describe('Test DiskManager', function () {
 
   it('Should fail if fileName is not passed into computeFilePathAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePathAndEnsureItExists()
+      await computeFilePathAndEnsureItExists()
     } catch (e) {
       assert.ok(e.message.includes('Please pass in a valid cid'))
     }
@@ -76,7 +80,7 @@ describe('Test DiskManager', function () {
 
   it(`Should fail if fileName doesn't contain the appropriate amount of characters`, async function () {
     try {
-      await DiskManager.computeFilePathAndEnsureItExists('asd')
+      await computeFilePathAndEnsureItExists('asd')
     } catch (e) {
       assert.ok(e.message.includes('Please pass in a valid cid'))
     }
@@ -84,7 +88,7 @@ describe('Test DiskManager', function () {
 
   it(`Should fail if fileName contains a slash`, async function () {
     try {
-      await DiskManager.computeFilePathAndEnsureItExists('/file_storage/asdf')
+      await computeFilePathAndEnsureItExists('/file_storage/asdf')
     } catch (e) {
       assert.ok(e.message.includes('Please pass in a valid cid'))
     }
@@ -94,7 +98,7 @@ describe('Test DiskManager', function () {
    * computeFilePathInDirAndEnsureItExists
    */
   it('Should pass if computeFilePathInDirAndEnsureItExists returns the correct path', async function () {
-    const fullPath = await DiskManager.computeFilePathInDirAndEnsureItExists(
+    const fullPath = await computeFilePathInDirAndEnsureItExists(
       'QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4',
       'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     )
@@ -110,7 +114,7 @@ describe('Test DiskManager', function () {
 
   it('Should fail if dirName and fileName are not passed into computeFilePathInDirAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePathInDirAndEnsureItExists()
+      await computeFilePathInDirAndEnsureItExists()
     } catch (e) {
       assert.ok(e.message.includes('Must pass in valid dirName and fileName'))
     }
@@ -118,7 +122,7 @@ describe('Test DiskManager', function () {
 
   it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDirAndEnsureItExists', async function () {
     try {
-      await DiskManager.computeFilePathInDirAndEnsureItExists(
+      await computeFilePathInDirAndEnsureItExists(
         'Qmdirhash',
         'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       )

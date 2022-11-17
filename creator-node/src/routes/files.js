@@ -35,7 +35,7 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { timeout } = require('../utils')
+const { timeout, computeFilePath, computeFilePathInDir } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -206,7 +206,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = DiskManager.computeFilePath(CID)
+    storagePath = computeFilePath(CID)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
@@ -578,10 +578,7 @@ const getDirCID = async (req, res) => {
   }
 
   // Compute expected storagePath to minimize reliance on DB storagePath (which will eventually be removed)
-  const storagePath = DiskManager.computeFilePathInDir(
-    dirCID,
-    queryResults.multihash
-  )
+  const storagePath = computeFilePathInDir(dirCID, queryResults.multihash)
 
   // Attempt to stream file from computed storagePath
   try {
