@@ -191,6 +191,9 @@ export const AnimatedButton = ({
           <View style={wrapperStyle}>
             {/* The key is needed for animations to work on android  */}
             <LottieView
+              style={
+                !hasMultipleStates ? { opacity: isActive ? 1 : 0 } : undefined
+              }
               key={hasMultipleStates ? iconIndex : undefined}
               ref={(animation) => (animationRef.current = animation)}
               onAnimationFinish={handleAnimationFinish}
@@ -199,6 +202,21 @@ export const AnimatedButton = ({
               source={source}
               resizeMode={resizeMode}
             />
+            {/**
+             * Secondary animation that is visible when inactive. This ensures
+             * active->inactive transition is smooth, since Lottie onAnimationFinish
+             * does not do this smoothly and results in partially inactive states.
+             */}
+            {!hasMultipleStates ? (
+              <LottieView
+                key={isActive ? 'active' : 'inactive'}
+                style={{ opacity: isActive ? 0 : 1 }}
+                progress={0}
+                loop={false}
+                source={source}
+                resizeMode={resizeMode}
+              />
+            ) : null}
           </View>
           {children}
         </>
