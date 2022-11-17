@@ -652,13 +652,15 @@ def index_spl_token_backfill(self):
         else:
             stop_sig = stop_sig[0]
 
-    if not stop_sig:
-        logger.info(f"index_spl_token_backfill.py | Error with stop_sig: {stop_sig}")
-        return
+        if not stop_sig:
+            logger.info(
+                f"index_spl_token_backfill.py | Error with stop_sig: {stop_sig}"
+            )
+            return
 
-    if check_if_backfilling_complete(session, solana_client_manager, redis):
-        logger.info("index_spl_token_backfill.py | Backfill indexing complete!")
-        return
+        if check_if_backfilling_complete(session, solana_client_manager, redis):
+            logger.info("index_spl_token_backfill.py | Backfill indexing complete!")
+            return
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
