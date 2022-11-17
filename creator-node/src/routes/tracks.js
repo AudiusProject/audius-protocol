@@ -939,6 +939,6 @@ router.get(
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.
  **/
-router.get('/tracks/cidstream/:cid', contentAccessMiddleware, getCID)
+router.get('/tracks/cidstream/:CID', contentAccessMiddleware, getCID)
 
 module.exports = router
