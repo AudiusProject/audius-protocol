@@ -8,6 +8,8 @@ import { useNavigation as useNativeNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { isEqual } from 'lodash'
 
+import { getNearestStackNavigator } from 'app/utils/navigation'
+
 export type ContextualParams = {
   fromNotifications?: boolean
 }
@@ -48,16 +50,21 @@ export function useNavigation<
   const performCustomPush = useCallback(
     (...config: PerformNavigationConfig<ParamList>) => {
       if (!isEqual(lastNavAction.current, config)) {
-        ;(navigation as NativeStackNavigationProp<any>).push(...config)
-        lastNavAction.current = config
+        const stackNavigator = getNearestStackNavigator(navigation)
 
-        // Reset lastNavAction when the transition ends
-        const unsubscribe = (
-          navigation as NativeStackNavigationProp<any>
-        ).addListener('transitionEnd', (e) => {
-          lastNavAction.current = undefined
-          unsubscribe()
-        })
+        if (stackNavigator) {
+          // Reset lastNavAction when the transition ends
+          const unsubscribe = stackNavigator.addListener(
+            'transitionEnd',
+            (e) => {
+              lastNavAction.current = undefined
+              unsubscribe()
+            }
+          )
+
+          stackNavigator.push(...config)
+          lastNavAction.current = config
+        }
       }
     },
     [navigation, lastNavAction]
