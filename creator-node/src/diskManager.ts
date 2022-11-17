@@ -19,6 +19,7 @@ import {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists
 } from './utils'
+import { serviceRegistry } from './serviceRegistry'
 
 const models = require('./models')
 
@@ -493,8 +494,14 @@ async function _copyLegacyFiles(
     }
   }
 
-  // TODO: Increment filesMigratedFromLegacyPath Prometheus metric (success and failure labels)
-  //       Use erroredPaths.length and copiedPaths.length
+  // Record results in Prometheus metric
+  // TODO: Can the primary process record a metric? Idk if it'll get aggregated so double-check or else send to a worker process
+  const { prometheusRegistry } = serviceRegistry
+  const metric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  )
+  metric.inc('success', copiedPaths.length)
+  metric.inc('failure', erroredPaths.length)
 
   return copiedPaths
 }

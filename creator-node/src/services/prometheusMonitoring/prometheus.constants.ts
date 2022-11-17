@@ -60,7 +60,8 @@ const metricNames: Record<string, string> = {
   RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE:
     'recover_orphaned_data_wallet_counts',
   RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
-  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes'
+  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes',
+  FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE: 'files_migrated_from_legacy_path'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -222,6 +223,16 @@ export const METRIC_LABELS = Object.freeze({
       'failed_uncaught_error', // Failed due to some uncaught exception. This should never happen
       'failed_sync' // Failed to reach 2/3 quorum because no syncs were successful
     ]
+  },
+  [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
+    result: ['success', 'failure']
+  },
+  [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
+    sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
+    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
+      snakeCase
+    ),
+    result: []
   }
 })
 
@@ -430,6 +441,16 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       ]
     })
   ),
+  [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      help: 'Number of total files migrated from a legacy storage path to a non legacy storage path',
+      labelNames:
+        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE],
+      aggregator: 'max' as AggregatorType // Only runs on primary process
+    }
+  },
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
