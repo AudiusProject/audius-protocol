@@ -31,7 +31,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     premium_tracks = list(
         filter(
-            lambda track: track["is_premium"],
+            lambda track: track.is_premium,
             params.existing_records[EntityType.TRACK].values(),
         )
     )
