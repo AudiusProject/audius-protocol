@@ -797,6 +797,7 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
+  syncOverride = false,
   blockNumber = null,
   syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
@@ -830,6 +831,7 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     secondarySyncFromPrimaryLogger
   })

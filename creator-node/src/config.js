@@ -847,10 +847,10 @@ const config = convict({
     default: true
   },
   syncOverridePassword: {
-    doc: 'asdf',
+    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
     format: String,
-    env: 'syncOverride',
-    default: null,
+    env: 'syncOverridePassword',
+    default: '',
     sensitive: true
   }
 })
