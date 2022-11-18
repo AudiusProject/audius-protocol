@@ -923,7 +923,6 @@ router.post(
       )
     }
 
-    // make query
     const queryResults = await models.File.findAll({
       attributes: ['multihash', 'trackBlockchainId'],
       raw: true,
