@@ -103,7 +103,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    entrypoint: npx mocha --require ts-node/register
+    entrypoint: npx mocha --require ts-node/register --exit --recursive --timeout 30000
     command: ""
     environment:
       storagePath: "./test_file_storage"
