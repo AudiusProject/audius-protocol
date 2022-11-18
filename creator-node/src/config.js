@@ -683,12 +683,6 @@ const config = convict({
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
-  minimumFailedSyncRequestsBeforeReconfig: {
-    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
-    format: 'nat',
-    env: 'minimumFailedSyncRequestsBeforeReconfig',
-    default: 20
-  },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
