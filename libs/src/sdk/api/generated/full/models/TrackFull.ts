@@ -323,6 +323,12 @@ export interface TrackFull
         is_available?: boolean;
         /**
         * 
+        * @type {string}
+        * @memberof TrackFull
+        */
+        track_cid?: string;
+        /**
+        * 
         * @type {boolean}
         * @memberof TrackFull
         */
