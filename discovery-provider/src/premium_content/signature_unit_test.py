@@ -10,13 +10,13 @@ from src.utils.config import shared_config
 
 
 def test_signature():
-    premium_content_id = 1
+    track_cid = "some-track-cid"
     premium_content_type = "track"
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
     # for a non-premium track
     result = get_premium_content_signature(
-        {"id": premium_content_id, "type": premium_content_type, "is_premium": False}
+        {"id": track_cid, "type": premium_content_type, "is_premium": False}
     )
     signature = result["signature"]
     signature_data = result["data"]
@@ -24,8 +24,7 @@ def test_signature():
 
     after_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    assert signature_data_obj["premium_content_id"] == premium_content_id
-    assert signature_data_obj["premium_content_type"] == premium_content_type
+    assert signature_data_obj["cid"] == track_cid
     assert signature_data_obj["shouldCache"] == 1
     assert before_ms <= signature_data_obj["timestamp"] <= after_ms
     assert len(signature) == 132
@@ -39,7 +38,7 @@ def test_signature():
 
     # make sure that "shouldCache" is included in the signature for a premium track
     result = get_premium_content_signature(
-        {"id": premium_content_id, "type": premium_content_type, "is_premium": True}
+        {"id": track_cid, "type": premium_content_type, "is_premium": True}
     )
     signature_data = result["data"]
     signature_data_obj = json.loads(signature_data)
@@ -48,7 +47,7 @@ def test_signature():
 
 
 def test_signature_for_user():
-    premium_content_id = 1
+    track_cid = "some-track-cid"
     premium_content_type = "track"
     user_wallet = (
         "0x954221ddae7ddf40871d57b98ce97c82782886d3"  # some staging user wallet
@@ -58,7 +57,7 @@ def test_signature_for_user():
     # for a non-premium track
     result = get_premium_content_signature_for_user(
         {
-            "id": premium_content_id,
+            "id": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "is_premium": False,
@@ -70,8 +69,7 @@ def test_signature_for_user():
 
     after_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    assert signature_data_obj["premium_content_id"] == premium_content_id
-    assert signature_data_obj["premium_content_type"] == premium_content_type
+    assert signature_data_obj["cid"] == track_cid
     assert signature_data_obj["user_wallet"] == user_wallet
     assert signature_data_obj["shouldCache"] == 1
     assert before_ms <= signature_data_obj["timestamp"] <= after_ms
@@ -87,7 +85,7 @@ def test_signature_for_user():
     # make sure that "shouldCache" is included in the signature for a premium track
     result = get_premium_content_signature_for_user(
         {
-            "id": premium_content_id,
+            "id": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "is_premium": True,
