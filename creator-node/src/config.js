@@ -845,6 +845,13 @@ const config = convict({
     format: Boolean,
     env: 'processSyncResults',
     default: true
+  },
+  syncOverridePassword: {
+    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+    format: String,
+    env: 'syncOverridePassword',
+    default: '',
+    sensitive: true
   }
 })
 
