@@ -850,7 +850,8 @@ const config = convict({
     doc: 'asdf',
     format: String,
     env: 'syncOverride',
-    default: null
+    default: null,
+    sensitive: true
   }
 })
 
