@@ -1,4 +1,4 @@
-import { ID, PremiumContentSignature } from '@audius/common'
+import { ID, PremiumContentSignature } from 'models'
 import { createCustomAction } from 'typesafe-actions'
 
 export const ETH_NFTS_FETCHED = 'PREMIUM_CONTENT/ETH_NFTS_FETCHED'
