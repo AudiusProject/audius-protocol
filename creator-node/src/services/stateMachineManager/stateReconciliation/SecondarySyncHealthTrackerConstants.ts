@@ -11,6 +11,7 @@ export const SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES = Object.freeze({
   failure_import_not_consistent: 3,
   failure_import_not_contiguous: 3,
   failure_inconsistent_clock: 10,
+  failure_undefined_sync_status: 3,
   default: 5
 })
 

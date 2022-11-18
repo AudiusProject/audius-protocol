@@ -597,7 +597,12 @@ const _additionalSyncIsRequired = async (
     await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
   }
 
-  if (syncStatus === 'waiting') syncStatus = 'failure_polling_timed_out'
+  if (!syncStatus) {
+    syncStatus = 'failure_undefined_sync_status'
+  } else if (syncStatus === 'waiting') {
+    syncStatus = 'failure_polling_timed_out'
+  }
+
   const response: AdditionalSyncIsRequiredResponse = { outcome: syncStatus }
   // Retry if the error was something that could be intermittent (e.g., network-related issues)
   if (

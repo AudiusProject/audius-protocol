@@ -104,7 +104,8 @@ export const SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS = [
   'failure_export_wallet',
   'failure_import_not_consistent',
   'failure_import_not_contiguous',
-  'failure_inconsistent_clock'
+  'failure_inconsistent_clock',
+  'failure_undefined_sync_status'
 ] as const
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
