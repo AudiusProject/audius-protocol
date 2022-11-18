@@ -82,7 +82,6 @@ class DBManager {
         where: cnodeUserWhereFilter,
         transaction
       })
-      log('cnodeUser', cnodeUser)
 
       // Throw if no cnodeUser found
       if (!cnodeUser) {
