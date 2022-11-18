@@ -272,7 +272,7 @@ export const Audio = () => {
         elapsedTime.current = seek
 
         // If we are casting, don't update the internal
-        // seek clock
+        // seek clock. This is already handled by the effect in GoogleCast.tsx
         if (!isCasting) {
           global.progress.currentTime = seek
         }
@@ -350,14 +350,23 @@ export const Audio = () => {
           setListenLoggedForTrack(false)
         )
       }
-      global.progress = progress
+
+      if (!isCasting) {
+        // If we aren't casting, update the progress
+        global.progress = progress
+      } else {
+        // If we are casting, only update the seekableDuration
+        // The currentTime is set via the effect in GoogleCast.tsx
+        global.progress.seekableDuration = progress.seekableDuration
+      }
     },
     [
       track,
       currentUserId,
       listenLoggedForTrack,
       isOfflineModeEnabled,
-      isReachable
+      isReachable,
+      isCasting
     ]
   )
   const { value: offlineTrackUri, loading } = useOfflineTrackUri(
