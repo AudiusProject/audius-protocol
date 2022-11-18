@@ -50,6 +50,7 @@ from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_stems_of import get_stems_of
+from src.queries.get_subsequent_tracks import get_subsequent_tracks
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_track_stream_signature import (
@@ -1306,3 +1307,23 @@ class LatestTrack(Resource):
     def get(self):
         latest = get_latest_entities("track")
         return success_response(latest)
+
+
+subsequent_tracks_parser = pagination_parser.copy()
+subsequent_tracks_parser.remove_argument("offset")
+
+
+@ns.route("/<string:track_id>/subsequent", doc=False)
+class SubsequentTrack(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get subsequent tracks""",
+        description="""Gets the next tracks by upload date""",
+    )
+    def get(self, track_id):
+        request_args = subsequent_tracks_parser.parse_args()
+        decoded_track_id = decode_with_abort(track_id, ns)
+        limit = format_limit(request_args)
+
+        subsequent_tracks = get_subsequent_tracks(decoded_track_id, limit)
+        return success_response(subsequent_tracks)
