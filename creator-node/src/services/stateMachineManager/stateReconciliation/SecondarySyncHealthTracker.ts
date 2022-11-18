@@ -42,18 +42,15 @@ export class SecondarySyncHealthTracker {
   async recordFailure({
     secondary,
     wallet,
-    syncType,
     prometheusError
   }: {
     secondary: string
     wallet: string
-    syncType: string
     prometheusError: string
   }) {
     const redisKey = this._getSyncFailureRedisKey({
       secondary,
-      wallet,
-      syncType
+      wallet
     })
 
     try {
@@ -161,14 +158,12 @@ export class SecondarySyncHealthTracker {
     for (const { wallet, secondary1, secondary2 } of userInfo) {
       const redisKeyWalletToSecondary1 = this._getSyncFailureRedisKey({
         secondary: secondary1,
-        wallet,
-        syncType: '*'
+        wallet
       })
 
       const redisKeyWalletToSecondary2 = this._getSyncFailureRedisKey({
         secondary: secondary2,
-        wallet,
-        syncType: '*'
+        wallet
       })
 
       syncFailureKeys.push(redisKeyWalletToSecondary1)
@@ -227,43 +222,37 @@ export class SecondarySyncHealthTracker {
   }
 
   _shouldContinueAction(error: string, errorCount: number) {
-    const maxRetries = SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP.get(error)
-
-    if (maxRetries === undefined) {
-      return errorCount <= SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES.default
-    }
+    const maxRetries =
+      SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP.get(error) ??
+      SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES.default
 
     return errorCount <= maxRetries
   }
 
   _getSyncFailureRedisKey({
     secondary,
-    wallet,
-    syncType
+    wallet
   }: {
     secondary: string
     wallet: string
-    syncType: string
   }) {
     // format: YYYY-MM-DD
     const date = new Date().toISOString().split('T')[0]
 
-    return `${REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE}::${date}::${secondary}::${wallet}::${syncType}`
+    return `${REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE}::${date}::${secondary}::${wallet}`
   }
 
   _getInfoFromRedisKey(redisKey: string): {
     date: string
     secondary: string
     wallet: string
-    syncType: string
   } {
     const info = redisKey.split('::')
 
     return {
       date: info[1],
       secondary: info[2],
-      wallet: info[3],
-      syncType: info[4]
+      wallet: info[3]
     }
   }
 

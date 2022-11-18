@@ -542,7 +542,6 @@ const _deprecatedAdditionalSyncIsRequired = async (
     await SecondarySyncHealthTracker.recordFailure({
       secondaryUrl,
       userWallet,
-      syncType,
       outcome
     })
     additionalSyncIsRequired = true
@@ -614,11 +613,10 @@ const _additionalSyncIsRequired = async (
     }
   }
 
-  if (!syncStatus.startsWith('success')) {
+  if (!syncStatus?.startsWith('success')) {
     await SecondarySyncHealthTracker.recordFailure({
       targetNode,
       userWallet,
-      syncType,
       outcome: syncStatus
     })
   }
