@@ -925,7 +925,7 @@ router.post(
 
     // make query
     const queryResults = await models.File.findAll({
-      attributes: ['multihash'],
+      attributes: ['multihash', 'trackBlockchainId'],
       raw: true,
       where: {
         trackBlockchainId: {
@@ -935,12 +935,15 @@ router.post(
       }
     })
 
-    const response = {
-      cids: queryResults.map(({ multihash }) => multihash)
-    }
+    const trackIdMapping = Object.fromEntries(
+      queryResults.map(({ trackBlockchainId, multihash }) => [
+        trackBlockchainId,
+        multihash
+      ])
+    )
 
     // return results
-    return successResponse(response)
+    return successResponse(trackIdMapping)
   })
 )
 
