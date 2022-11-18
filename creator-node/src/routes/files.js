@@ -35,7 +35,6 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { timeout } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -45,8 +44,7 @@ const {
   premiumContentMiddleware
 } = require('../middlewares/premiumContent/premiumContentMiddleware')
 
-const BATCH_CID_ROUTE_LIMIT = 500
-const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const BATCH_CID_ROUTE_LIMIT = 250_000
 
 const router = express.Router()
 
@@ -882,33 +880,11 @@ router.post(
       }
     })
 
-    const cidExists = {}
-
-    // Check if hash exists in disk in batches (to limit concurrent load)
-    for (
-      let i = 0;
-      i < queryResults.length;
-      i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT
-    ) {
-      const batch = queryResults.slice(
-        i,
-        i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT
-      )
-      const exists = await Promise.all(
-        batch.map(({ storagePath }) => fs.pathExists(storagePath))
-      )
-      batch.map(({ multihash }, idx) => {
-        cidExists[multihash] = exists[idx]
-      })
-
-      await timeout(250)
+    const response = {
+      cids: queryResults.map(({ multihash }) => multihash)
     }
 
-    const cidExistanceMap = {
-      cids: cids.map((cid) => ({ cid, exists: cidExists[cid] || false }))
-    }
-
-    return successResponse(cidExistanceMap)
+    return successResponse(response)
   })
 )
 
@@ -941,33 +917,11 @@ router.post(
       }
     })
 
-    const cidExists = {}
-
-    // Check if hash exists in disk in batches (to limit concurrent load)
-    for (
-      let i = 0;
-      i < queryResults.length;
-      i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT
-    ) {
-      const batch = queryResults.slice(
-        i,
-        i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT
-      )
-      const exists = await Promise.all(
-        batch.map(({ storagePath }) => fs.pathExists(storagePath))
-      )
-      batch.map(({ dirMultihash }, idx) => {
-        cidExists[dirMultihash] = exists[idx]
-      })
-
-      await timeout(250)
+    const response = {
+      cids: queryResults.map(({ dirMultihash }) => dirMultihash)
     }
 
-    const cidExistanceMap = {
-      cids: cids.map((cid) => ({ cid, exists: cidExists[cid] || false }))
-    }
-
-    return successResponse(cidExistanceMap)
+    return successResponse(response)
   })
 )
 
