@@ -115,6 +115,7 @@ export type TrackMetadata = {
   activity_timestamp?: string
   is_delete: boolean
   track_id: number
+  track_cid: string
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
