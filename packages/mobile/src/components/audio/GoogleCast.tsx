@@ -1,6 +1,12 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { castActions, playerSelectors } from '@audius/common'
+import {
+  castActions,
+  encodeHashId,
+  playerSelectors,
+  cacheUsersSelectors,
+  SquareSizes
+} from '@audius/common'
 import {
   CastState,
   useCastState,
@@ -8,46 +14,76 @@ import {
   useStreamPosition
 } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
+
+import { apiClient } from 'app/services/audius-api-client'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 const { setIsCasting } = castActions
-const { getCurrentTrack, getPlaying, getSeek } = playerSelectors
+const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
+
+const { getUser } = cacheUsersSelectors
 
 export const useChromecast = () => {
   const dispatch = useDispatch()
 
   // Data hooks
+  const counter = useSelector(getCounter)
   const track = useSelector(getCurrentTrack)
+  const prevTrack = usePrevious(track)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
+
+  const owner = useSelector((state) =>
+    getUser(state, {
+      id: track?.owner_id
+    })
+  )
 
   // Cast hooks
   const client = useRemoteMediaClient()
   const castState = useCastState()
   const streamPosition = useStreamPosition(0.5)
 
+  const [internalCounter, setInternalCounter] = useState(0)
+  const streamingUri = useMemo(() => {
+    return track
+      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
+      : null
+  }, [track])
+
   const loadCast = useCallback(
-    (track, startTime) => {
-      if (client && track) {
+    async (track, startTime) => {
+      if (client && track && owner && streamingUri) {
+        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+          owner.creator_node_endpoint
+        )
+
+        const imageUrl = await audiusBackendInstance.getImageUrl(
+          track.cover_art_sizes,
+          SquareSizes.SIZE_1000_BY_1000,
+          gateways
+        )
+
         client.loadMedia({
           mediaInfo: {
-            contentUrl: track.uri,
-            contentType: 'application/vnd.apple.mpegurl',
+            contentUrl: streamingUri,
             metadata: {
               type: 'musicTrack',
               images: [
                 {
-                  url: track.largeArtwork
+                  url: imageUrl
                 }
               ],
               title: track.title,
-              artist: track.artist
+              artist: owner.name
             }
           },
           startTime
         })
       }
     },
-    [client]
+    [client, streamingUri, owner]
   )
 
   const playCast = useCallback(() => {
@@ -70,12 +106,21 @@ export const useChromecast = () => {
     }
   }, [castState, dispatch])
 
+  // Ensure that the progress gets reset to 0
+  // when a new track is played
+  useEffect(() => {
+    if (prevTrack && prevTrack !== track && counter !== internalCounter) {
+      global.progress.currentTime = 0
+      setInternalCounter(0)
+    }
+  }, [prevTrack, track, counter, internalCounter, setInternalCounter])
+
   // Load media when the cast connects
   useEffect(() => {
     if (castState === CastState.CONNECTED) {
       loadCast(track, global.progress.currentTime ?? 0)
     }
-  }, [loadCast, track, castState])
+  }, [loadCast, track, prevTrack, castState])
 
   // Play & pause the cast device
   useEffect(() => {
@@ -88,7 +133,7 @@ export const useChromecast = () => {
     }
   }, [playing, playCast, pauseCast, castState])
 
-  // Update the audius seek with the stream position from
+  // Update the currentTime with the stream position from
   // the cast device
   useEffect(() => {
     if (streamPosition !== null) {
