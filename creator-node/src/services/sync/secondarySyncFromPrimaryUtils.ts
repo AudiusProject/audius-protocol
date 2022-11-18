@@ -40,7 +40,8 @@ const generateDataForSignatureRecovery = (
  */
 const shouldForceResync = async (
   { libs, logContext }: { libs: any; logContext: LogContext },
-  forceResyncConfig: ForceResyncConfig
+  forceResyncConfig: ForceResyncConfig,
+  syncOverride = false
 ) => {
   if (!forceResyncConfig) return false
 
@@ -53,6 +54,10 @@ const shouldForceResync = async (
   logger.debug(
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
   )
+
+  if (forceResync && syncOverride) {
+    return true
+  }
 
   if (!forceResync || !signatureData) {
     return false

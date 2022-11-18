@@ -845,6 +845,12 @@ const config = convict({
     format: Boolean,
     env: 'processSyncResults',
     default: true
+  },
+  syncOverridePassword: {
+    doc: 'asdf',
+    format: String,
+    env: 'syncOverride',
+    default: null
   }
 })
 
