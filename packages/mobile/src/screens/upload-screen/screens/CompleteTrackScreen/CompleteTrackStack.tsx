@@ -25,7 +25,7 @@ export const CompleteTrackStack = (props: FormikProps<FormValues>) => {
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name='CompleteTrack'>
+      <Stack.Screen name='CompleteTrackForm'>
         {() => <CompleteTrackForm {...props} />}
       </Stack.Screen>
       <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />

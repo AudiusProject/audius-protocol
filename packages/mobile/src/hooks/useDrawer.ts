@@ -11,6 +11,7 @@ export const useDrawer = (drawerName: Drawer) => {
   const visibleState = useSelector(getVisibility(drawerName))
 
   const isOpen = visibleState === true
+
   const onClose = useCallback(() => {
     dispatch(setVisibility({ drawer: drawerName, visible: 'closing' }))
   }, [dispatch, drawerName])

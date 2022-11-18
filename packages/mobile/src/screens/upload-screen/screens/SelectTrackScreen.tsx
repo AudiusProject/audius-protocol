@@ -14,7 +14,7 @@ import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { TopBarIconButton } from '../../app-screen'
-import type { UploadParamList } from '../types/ParamList'
+import type { UploadParamList } from '../types'
 import { processTrackFile } from '../utils/processTrackFile'
 
 const messages = {
@@ -53,7 +53,8 @@ export const SelectTrackScreen = () => {
     useAsyncFn(async () => {
       try {
         const trackFile = await DocumentPicker.pickSingle({
-          type: DocumentPicker.types.audio
+          type: DocumentPicker.types.audio,
+          copyTo: 'cachesDirectory'
         })
         return processTrackFile(trackFile)
       } catch (error) {

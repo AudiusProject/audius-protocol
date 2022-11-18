@@ -28,7 +28,10 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   image: {
     aspectRatio: 1,
     backgroundColor: palette.neutralLight6,
-    borderRadius: 8
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: palette.neutralLight9,
+    overflow: 'hidden'
   },
   iconPicture: {
     position: 'absolute',
