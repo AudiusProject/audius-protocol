@@ -23,8 +23,7 @@ async function processJob(
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
-  prometheusRegistry: any,
-  ...additionalProperties: any[]
+  prometheusRegistry: any
 ) {
   // Make sure logger has `queue` property
   const queueName = parentLogger?.fields?.queue
@@ -51,8 +50,7 @@ async function processJob(
     await redis.set(`latestJobStart_${queueName}`, Date.now())
     result = await jobProcessor({
       logger: jobLogger,
-      ...jobData,
-      ...additionalProperties
+      ...jobData
     })
     metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
