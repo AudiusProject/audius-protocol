@@ -597,6 +597,7 @@ function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
   const userTips = yield* call([apiClient, apiClient.getTips], params)
 
   if (!userTips) {
+    yield put(hideTip())
     return
   }
 
