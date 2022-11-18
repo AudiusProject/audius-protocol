@@ -231,14 +231,16 @@ async function monitorState({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    secondarySyncHealthTracker,
+    walletToSecondaryToShouldContinueAction:
+      secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    secondarySyncHealthTracker,
+    walletToSecondaryToShouldContinueAction:
+      secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {

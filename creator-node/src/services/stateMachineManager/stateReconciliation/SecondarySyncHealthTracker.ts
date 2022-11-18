@@ -27,8 +27,11 @@ export class SecondarySyncHealthTracker {
   walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
   walletsToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
-  constructor() {
-    this.walletToSecondaryToShouldContinueAction = {}
+  constructor(
+    walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction = {}
+  ) {
+    this.walletToSecondaryToShouldContinueAction =
+      walletToSecondaryToShouldContinueAction
     this.walletsToSecondaryAndMaxErrorReached = {}
   }
 

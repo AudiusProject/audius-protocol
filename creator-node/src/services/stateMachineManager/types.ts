@@ -37,6 +37,7 @@ export type WalletsToSecondariesMapping = {
 export type DecoratedJobParams<JobParams> = JobParams & {
   logger: Logger
   enqueuedBy?: string
+  additionalProperties?: any[]
 }
 
 export type AnyJobParams =

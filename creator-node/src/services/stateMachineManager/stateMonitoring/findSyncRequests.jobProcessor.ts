@@ -7,7 +7,10 @@ import type {
   ReplicaToAllUserInfoMaps,
   StateMonitoringUser
 } from './types'
-import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+import type {
+  IssueSyncRequestJobParams,
+  WalletToSecondaryToShouldContinueAction
+} from '../stateReconciliation/types'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
@@ -50,13 +53,13 @@ type FindSyncsForUserResult = {
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {WalletToSecondaryToShouldContinueAction} param.walletToSecondaryToShouldContinueAction used to determine if wallet should continue action on secondary
  */
 async function findSyncRequests({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  secondarySyncHealthTracker,
+  walletToSecondaryToShouldContinueAction,
   logger
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
   DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
@@ -82,7 +85,7 @@ async function findSyncRequests({
     } = await _findSyncsForUser(
       user,
       unhealthyPeersSet,
-      secondarySyncHealthTracker,
+      walletToSecondaryToShouldContinueAction,
       replicaToAllUserInfoMaps,
       cNodeEndpointToSpIdMap
     )
@@ -149,14 +152,14 @@ async function findSyncRequests({
  *
  * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {SecondarySyncHealthTracker} secondarySyncHealthTracker instance of secondarySyncHealthTracker
+ * @param {WalletToSecondaryToShouldContinueAction} walletToSecondaryToShouldContinueAction instance of secondarySyncHealthTracker
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
  * @param {Map<string, number>} cNodeEndpointToSpIdMap map of cnode endpoints to SP IDs
  */
 async function _findSyncsForUser(
   user: StateMonitoringUser,
   unhealthyPeers: Set<string>,
-  secondarySyncHealthTracker: SecondarySyncHealthTracker,
+  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction,
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
   cNodeEndpointToSpIdMap: Map<string, number>
 ): Promise<FindSyncsForUserResult> {
@@ -197,6 +200,10 @@ async function _findSyncsForUser(
   const syncReqsToEnqueue = []
   const duplicateSyncReqs = []
   const errors: string[] = []
+
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker(
+    walletToSecondaryToShouldContinueAction
+  )
 
   // For each secondary, add a potential sync request if healthy
   for (const secondaryInfo of secondariesInfo) {

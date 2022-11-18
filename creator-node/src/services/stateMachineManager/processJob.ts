@@ -16,13 +16,15 @@ const redis = require('../../redis')
  * @param {Function<logger, args>} jobProcessor the processor function that takes a logger and then the contents `job.data` as its args
  * @param {Object} parentLogger the base logger so that queries can filter by its properties as well
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
+ * @param {Object} additionalProperties any additional properties job processors need that cannot be serialized
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
 async function processJob(
   job: { id: string; data: AnyJobParams },
   jobProcessor: (job: AnyDecoratedJobParams) => AnyDecoratedJobReturnValue,
   parentLogger: Logger,
-  prometheusRegistry: any
+  prometheusRegistry: any,
+  ...additionalProperties: any[]
 ) {
   // Make sure logger has `queue` property
   const queueName = parentLogger?.fields?.queue
@@ -47,7 +49,11 @@ async function processJob(
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
   try {
     await redis.set(`latestJobStart_${queueName}`, Date.now())
-    result = await jobProcessor({ logger: jobLogger, ...jobData })
+    result = await jobProcessor({
+      logger: jobLogger,
+      ...jobData,
+      ...additionalProperties
+    })
     metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {

@@ -1,6 +1,8 @@
-import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+import type {
+  IssueSyncRequestJobParams,
+  WalletToSecondaryToShouldContinueAction
+} from '../stateReconciliation/types'
 import type { SpanContext } from '@opentelemetry/api'
-import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 export type StateMonitoringUser = {
   primary: string
@@ -50,7 +52,7 @@ export type FindSyncRequestsJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  secondarySyncHealthTracker: SecondarySyncHealthTracker
+  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
   parentSpanContext?: SpanContext
 }
 export type FindSyncRequestsJobReturnValue = {
@@ -68,7 +70,7 @@ export type FindReplicaSetUpdateJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  secondarySyncHealthTracker: SecondarySyncHealthTracker
+  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {
