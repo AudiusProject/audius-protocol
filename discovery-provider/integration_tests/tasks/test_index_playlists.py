@@ -13,6 +13,7 @@ from src.models.indexing.skipped_transaction import (
     SkippedTransactionLevel,
 )
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.playlists import (
     lookup_playlist_record,
     parse_playlist_event,
@@ -27,11 +28,11 @@ block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e252
 
 
 # event_type: PlaylistCreated
-def get_playlist_created_event():
+def get_playlist_created_event(playlist_id):
     event_type = playlist_event_types_lookup["playlist_created"]
     playlist_created_event = AttrDict(
         {
-            "_playlistId": 1,
+            "_playlistId": playlist_id,
             "_playlistOwnerId": 1,
             "_isPrivate": True,
             "_isAlbum": False,
@@ -44,10 +45,10 @@ def get_playlist_created_event():
 
 
 # event_type: PlaylistNameUpdated
-def get_playlist_name_updated_event():
+def get_playlist_name_updated_event(updated_playlist_name):
     event_type = playlist_event_types_lookup["playlist_name_updated"]
     playlist_name_updated_event = AttrDict(
-        {"_playlistId": 1, "_updatedPlaylistName": "asdfg"}
+        {"_playlistId": 1, "_updatedPlaylistName": updated_playlist_name}
     )
     return event_type, AttrDict(
         {"blockHash": block_hash, "args": playlist_name_updated_event}
@@ -147,9 +148,11 @@ def test_index_playlist(app):
         challenge_event_bus = setup_challenge_bus()
         update_task = UpdateTask(cid_metadata_client, web3, challenge_event_bus)
 
+    pending_playlist_routes = []
+
     with db.scoped_session() as session:
         # ================= Test playlist_created Event =================
-        event_type, entry = get_playlist_created_event()
+        event_type, entry = get_playlist_created_event(1)
 
         block_number = random.randint(1, 10000)
         block_timestamp = 1585336422
@@ -167,6 +170,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert playlist_record.playlist_owner_id == entry.args._playlistOwnerId
@@ -187,9 +191,8 @@ def test_index_playlist(app):
         assert playlist_record.created_at == block_datetime
 
         # ================= Test playlist_name_updated Event =================
-        event_type, entry = get_playlist_name_updated_event()
+        event_type, entry = get_playlist_name_updated_event("asdfg")
 
-        assert playlist_record.playlist_name == None
         parse_playlist_event(
             None,  # self - not used
             None,  # update_task - not used
@@ -198,8 +201,170 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
+        event_type, entry = get_playlist_name_updated_event("my playlist")
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+
+        event_type, entry = get_playlist_name_updated_event("my playlist’~!")
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+
+        # Check that track routes are updated appropriately
+        playlist_routes = (
+            session.query(PlaylistRoute).filter(PlaylistRoute.playlist_id == 1).all()
+        )
+        assert len(playlist_routes) == 2
+        old_route = next(
+            route for route in playlist_routes if route.is_current is False
+        )
+        current_route = next(
+            route for route in playlist_routes if route.is_current is True
+        )
+        assert old_route.is_current == False
+        assert old_route.slug == "asdfg"
+        assert old_route.title_slug == "asdfg"
+        assert old_route.collision_id == 0
+        assert old_route.owner_id == 1
+        assert current_route.is_current == True
+        assert current_route.slug == "my-playlist"
+        assert current_route.title_slug == "my-playlist"
+        assert current_route.collision_id == 0
+        assert current_route.owner_id == 1
+
         assert playlist_record.playlist_name == entry.args._updatedPlaylistName
+
+        # ================= Test playlist_route collisions =================
+        # Create a 'my playlist 2' with id 2, which should create
+        # a 'my-playlist-2' slug with no collisions
+        event_type, entry = get_playlist_created_event(2)
+        block_number = random.randint(1, 10000)
+        block_timestamp = 1585336422
+        playlist_record = lookup_playlist_record(
+            update_task, session, entry, block_number, "0x"  # txhash
+        )
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+        event_type, entry = get_playlist_name_updated_event("my playlist 2")
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+
+        # Create a 'my playlist' with id 3
+        # This should cause a collision with the 'my playlist' made in the above test
+        # So should result in a slug of 'my-playlist-1'
+        event_type, entry = get_playlist_created_event(3)
+
+        block_number = random.randint(1, 10000)
+        block_timestamp = 1585336422
+        playlist_record = lookup_playlist_record(
+            update_task, session, entry, block_number, "0x"  # txhash
+        )
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+        event_type, entry = get_playlist_name_updated_event("my playlist")
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+        new_route = (
+            session.query(PlaylistRoute).filter(PlaylistRoute.playlist_id == 3).all()
+        )
+        assert len(new_route) == 1
+        assert new_route[0].slug == "my-playlist-1"
+        assert new_route[0].title_slug == "my-playlist"
+        assert new_route[0].collision_id == 1
+        assert new_route[0].owner_id == 1
+        assert new_route[0].is_current == True
+
+        # Create ANOTHER new 'my playlist' with id 4
+        # This should cause a collision with the 'my playlist'
+        # and should also collide with 'my-playlist-1'
+        # AND also collide with the 'my-playlist-2'
+        # made in the beginning of this block
+        # So should result in a slug of 'my-playlist-3'
+        event_type, entry = get_playlist_created_event(4)
+        block_number = random.randint(1, 10000)
+        block_timestamp = 1585336422
+        playlist_record = lookup_playlist_record(
+            update_task, session, entry, block_number, "0x"  # txhash
+        )
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+        event_type, entry = get_playlist_name_updated_event("my playlist")
+        parse_playlist_event(
+            None,  # self - not used
+            None,  # update_task - not used
+            entry,
+            event_type,
+            playlist_record,
+            block_timestamp,
+            session,
+            pending_playlist_routes,
+        )
+        new_route = (
+            session.query(PlaylistRoute).filter(PlaylistRoute.playlist_id == 4).all()
+        )
+        assert len(new_route) == 1
+        assert new_route[0].slug == "my-playlist-3"
+        assert new_route[0].title_slug == "my-playlist"
+        assert new_route[0].collision_id == 3
+        assert new_route[0].owner_id == 1
+        assert new_route[0].is_current == True
 
         # ================= Test playlist_cover_photo_updated Event =================
         event_type, entry = get_playlist_cover_photo_updated_event()
@@ -211,6 +376,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
         assert playlist_record.playlist_image_sizes_multihash == (
             helpers.multihash_digest_to_cid(entry.args._playlistImageMultihashDigest)
@@ -228,6 +394,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
         assert playlist_record.description == entry.args._playlistDescription
 
@@ -242,6 +409,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
         assert playlist_record.is_private == entry.args._updatedIsPrivate
 
@@ -256,6 +424,7 @@ def test_index_playlist(app):
             playlist_record,
             12,  # block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert len(playlist_record.playlist_contents["track_ids"]) == 1
@@ -273,6 +442,7 @@ def test_index_playlist(app):
             playlist_record,
             13,  # block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert len(playlist_record.playlist_contents["track_ids"]) == 2
@@ -289,6 +459,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert playlist_record.playlist_contents["track_ids"] == [
@@ -307,6 +478,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert len(playlist_record.playlist_contents["track_ids"]) == 1
@@ -327,6 +499,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
 
         assert len(playlist_record.playlist_contents["track_ids"]) == 1
@@ -345,6 +518,7 @@ def test_index_playlist(app):
             playlist_record,
             block_timestamp,
             session,
+            pending_playlist_routes,
         )
         assert playlist_record.is_delete == True
 
