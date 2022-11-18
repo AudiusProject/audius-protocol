@@ -22,8 +22,14 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   artwork: {
     height: spacing(12),
     width: spacing(12),
-    marginRight: spacing(4),
-    backgroundColor: palette.neutralLight6
+    marginRight: spacing(4)
+  },
+  image: {
+    backgroundColor: palette.neutralLight6,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: palette.neutralLight9,
+    overflow: 'hidden'
   },
   title: {
     flex: 1,
@@ -44,7 +50,10 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
   return (
     <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
       <View style={styles.content}>
-        <DynamicImage uri={artwork.url} style={styles.artwork}>
+        <DynamicImage
+          uri={artwork.url}
+          styles={{ root: styles.artwork, imageContainer: styles.image }}
+        >
           {artwork.url ? null : (
             <IconImage
               fill={neutralLight8}

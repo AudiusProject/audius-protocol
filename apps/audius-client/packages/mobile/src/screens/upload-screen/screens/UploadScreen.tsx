@@ -20,7 +20,7 @@ export const UploadScreen = () => {
       <Stack.Screen
         name='CompleteTrack'
         component={CompleteTrackScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen name='UploadingTracks' component={UploadingTracksScreen} />
       <Stack.Screen name='UploadComplete' component={UploadCompleteScreen} />

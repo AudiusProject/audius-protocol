@@ -169,7 +169,7 @@ export const TagInput = (props: TagInputProps) => {
       startAdornment={startAdornment}
       endAdornment={endAdornment}
       returnKeyType='next'
-      blurOnSubmit={false}
+      blurOnSubmit={!inputValue}
       onSubmitEditing={handleSubmitEditing}
       onFocus={handleFocus}
       onBlur={handleBlur}

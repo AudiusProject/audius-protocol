@@ -7,6 +7,7 @@ export type Drawer =
   | 'DownloadTrackProgress'
   | 'ForgotPassword'
   | 'NowPlaying'
+  | 'CancelUpload'
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' }
 
@@ -15,7 +16,8 @@ const initialState: DrawersState = {
   DeactivateAccountConfirmation: false,
   DownloadTrackProgress: false,
   ForgotPassword: false,
-  NowPlaying: false
+  NowPlaying: false,
+  CancelUpload: false
 }
 
 const slice = createSlice({
