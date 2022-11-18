@@ -10,19 +10,24 @@ import {
   PremiumContentSignature,
   ID,
   Chain,
-  FeatureFlags
+  FeatureFlags,
+  premiumContentSelectors,
+  premiumContentActions,
+  TrackMetadata,
 } from '@audius/common'
 import { takeLatest, select, call, put } from 'typed-redux-saga'
 
-import {
-  ethNFTsFetched,
-  ETH_NFTS_FETCHED,
-  solNFTsFetched,
-  SOL_NFTS_FETCHED,
-  updatePremiumContentSignatures
-} from 'common/store/premiumContent/actions'
-import { getPremiumTrackSignatureMap } from 'common/store/premiumContent/selectors'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
+const {
+  updatePremiumContentSignatures,
+  ethNFTsFetched,
+  solNFTsFetched,
+  ETH_NFTS_FETCHED,
+  SOL_NFTS_FETCHED
+} = premiumContentActions
+
+const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 const { getAccountUser } = accountSelectors
 const { getTracks } = cacheTracksSelectors
@@ -182,7 +187,7 @@ function* updateNFTGatedTrackAccess(
     'kind' in action && action.kind === Kind.TRACKS && !!action.entries.length
   if (areTracksAdded) {
     yield* call(updateNewPremiumContentSignatures, {
-      tracks: action.entries,
+      tracks: action.entries.map(({ metadata }: { metadata : TrackMetadata }) => metadata),
       premiumTrackSignatureIdSet
     })
   }
@@ -256,7 +261,7 @@ function* updateNFTGatedTrackAccess(
   }
 }
 
-function* watchNFTTracks() {
+function* watchNFTGatedTracks() {
   yield takeLatest(
     [cacheActions.ADD, ETH_NFTS_FETCHED, SOL_NFTS_FETCHED],
     updateNFTGatedTrackAccess
@@ -264,7 +269,7 @@ function* watchNFTTracks() {
 }
 
 const sagas = () => {
-  return [watchNFTTracks]
+  return [watchNFTGatedTracks]
 }
 
 export default sagas

@@ -18,7 +18,8 @@ import {
   dataURLtoFile,
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_SUPPORTING_TILES,
-  MAX_PROFILE_TOP_SUPPORTERS
+  MAX_PROFILE_TOP_SUPPORTERS,
+  premiumContentActions
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -44,10 +45,6 @@ import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
-  ethNFTsFetched,
-  solNFTsFetched
-} from 'common/store/premiumContent/actions'
-import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
@@ -58,6 +55,8 @@ const { getProfileUserId, getProfileFollowers, getProfileUser } =
   profilePageSelectors
 
 const { getUserId, getAccountUser } = accountSelectors
+
+const { ethNFTsFetched, solNFTsFetched } = premiumContentActions
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)

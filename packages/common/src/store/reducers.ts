@@ -101,6 +101,7 @@ import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
+import premiumContentReducer from './premiumContent/reducer'
 
 /**
  * A function that creates common reducers. The function takes
@@ -208,6 +209,9 @@ export const reducers = () => ({
   // Tipping
   tipping: tippingReducer,
 
+  // Premium content
+  premiumContent: premiumContentReducer,
+
   upload
 })
 
@@ -304,6 +308,9 @@ export type CommonState = {
 
   // Tipping
   tipping: ReturnType<typeof tippingReducer>
+
+  // Premium content
+  premiumContent: ReturnType<typeof premiumContentReducer>,
 
   upload: UploadState
 }

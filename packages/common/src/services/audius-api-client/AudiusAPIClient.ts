@@ -115,7 +115,7 @@ const ENDPOINT_MAP = {
 
 const TRENDING_LIMIT = 100
 
-type QueryParams = {
+export type QueryParams = {
   [key: string]: string | number | undefined | boolean | string[] | null
 }
 
