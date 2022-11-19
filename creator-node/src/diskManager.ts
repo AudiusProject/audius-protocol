@@ -493,13 +493,11 @@ async function _copyLegacyFiles(
   }
 
   // Record results in Prometheus metric
-  // TODO: Can the primary process record a metric? Idk if it'll get aggregated so double-check or else send to a worker process
-  // TODO: This throws TypeError: Cannot read property 'FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE' of undefined"
-  // const metric = prometheusRegistry.getMetric(
-  //   prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
-  // )
-  // metric.inc('success', copiedPaths.length)
-  // metric.inc('failure', erroredPaths.length)
+  const metric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  )
+  metric.inc({ result: 'success' }, copiedPaths.length)
+  metric.inc({ result: 'failure' }, erroredPaths.length)
 
   return copiedPaths
 }
@@ -542,20 +540,22 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(
     do {
       legacyStoragePathsAndCids =
         await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      const copiedFilePaths = await _copyLegacyFiles(
-        legacyStoragePathsAndCids,
-        prometheusRegistry,
-        logger
-      )
-      const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
-        copiedFilePaths,
-        logger
-      )
-      if (dbUpdateSuccessful) {
-        await _deleteFiles(
-          copiedFilePaths.map((file) => file.legacyPath),
+      if (legacyStoragePathsAndCids.length) {
+        const copiedFilePaths = await _copyLegacyFiles(
+          legacyStoragePathsAndCids,
+          prometheusRegistry,
           logger
         )
+        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
+          copiedFilePaths,
+          logger
+        )
+        if (dbUpdateSuccessful) {
+          await _deleteFiles(
+            copiedFilePaths.map((file) => file.legacyPath),
+            logger
+          )
+        }
       }
       await timeout(1000) // Avoid spamming fast queries
     } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
@@ -573,15 +573,17 @@ async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
     do {
       legacyStoragePathsAndCids =
         await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
-        (storagePathAndCid) => {
-          return {
-            legacyPath: storagePathAndCid.storagePath,
-            nonLegacyPath: computeFilePath(storagePathAndCid.cid)
+      if (legacyStoragePathsAndCids.length) {
+        const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
+          (storagePathAndCid) => {
+            return {
+              legacyPath: storagePathAndCid.storagePath,
+              nonLegacyPath: computeFilePath(storagePathAndCid.cid)
+            }
           }
-        }
-      )
-      await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+        )
+        await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      }
       await timeout(1000) // Avoid spamming fast queries
     } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
   }
