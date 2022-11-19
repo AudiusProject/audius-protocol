@@ -22,9 +22,24 @@ async function processAddTrackToPlaylistNotification(notifications, tx) {
       .add(1, 's')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    const [addTrackToPlaylistNotification] =
-      await models.Notification.findOrCreate({
-        where: {
+    let addTrackToPlaylistNotification = await models.Notification.findOne({
+      where: {
+        type: notificationTypes.AddTrackToPlaylist,
+        userId: trackOwnerId,
+        entityId: trackId,
+        metadata: {
+          playlistOwnerId: notification.initiator,
+          playlistId,
+          trackId
+        },
+        blocknumber: notification.blocknumber,
+        timestamp: updatedTimestamp
+      },
+      transaction: tx
+    })
+    if (addTrackToPlaylistNotification == null) {
+      addTrackToPlaylistNotification = models.Notification.create(
+        {
           type: notificationTypes.AddTrackToPlaylist,
           userId: trackOwnerId,
           entityId: trackId,
@@ -36,10 +51,13 @@ async function processAddTrackToPlaylistNotification(notifications, tx) {
           blocknumber: notification.blocknumber,
           timestamp: updatedTimestamp
         },
-        transaction: tx
-      })
+        {
+          transaction: tx
+        }
+      )
+    }
 
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId: addTrackToPlaylistNotification.id,
         actionEntityType: actionEntityTypes.Track,
@@ -48,6 +66,19 @@ async function processAddTrackToPlaylistNotification(notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId: addTrackToPlaylistNotification.id,
+          actionEntityType: actionEntityTypes.Track,
+          actionEntityId: trackId,
+          blocknumber: notification.blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
     validNotifications.push(addTrackToPlaylistNotification)
   }

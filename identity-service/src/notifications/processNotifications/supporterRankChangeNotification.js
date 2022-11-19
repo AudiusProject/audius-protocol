@@ -12,35 +12,6 @@ async function processSupporterRankChangeNotification(notifications, tx) {
       metadata: { entity_id: senderUserId, rank }
     } = notification
 
-    const promises = [
-      // SupportingRankUp sent to the user who is supporting
-      models.SolanaNotification.findOrCreate({
-        where: {
-          slot,
-          type: notificationTypes.SupportingRankUp,
-          userId: senderUserId,
-          entityId: rank,
-          metadata: {
-            supportedUserId: receiverUserId
-          }
-        },
-        transaction: tx
-      }),
-      // SupporterRankUp sent to the user being supported
-      models.SolanaNotification.findOrCreate({
-        where: {
-          slot,
-          type: notificationTypes.SupporterRankUp,
-          userId: receiverUserId,
-          entityId: rank,
-          metadata: {
-            supportingUserId: senderUserId
-          }
-        },
-        transaction: tx
-      })
-    ]
-
     // If this is a new top supporter, see who just became dethroned
     if (rank === 1) {
       const supporters = await getSupporters(receiverUserId)
@@ -56,7 +27,8 @@ async function processSupporterRankChangeNotification(notifications, tx) {
         const isTie = topSupporterId === dethronedUserId
 
         if (isDiscoveryUpToDate && !isTie) {
-          const dethronedNotif = models.SolanaNotification.findOrCreate({
+          // Create the notif model for the DB
+          const dethronedNotification = await models.SolanaNotification.findOne({
             where: {
               slot,
               type: notificationTypes.SupporterDethroned,
@@ -71,9 +43,25 @@ async function processSupporterRankChangeNotification(notifications, tx) {
             },
             transaction: tx
           })
-
-          // Create the notif model for the DB
-          promises.push(dethronedNotif)
+          if (dethronedNotification == null) {
+            await models.SolanaNotification.create(
+              {
+                slot,
+                type: notificationTypes.SupporterDethroned,
+                userId: dethronedUserId, // Notif goes to the dethroned user
+                entityId: 2, // Rank 2
+                metadata: {
+                  supportedUserId: receiverUserId, // The user originally tipped
+                  newTopSupporterUserId: topSupporterId, // The usurping user
+                  oldAmount: supporters[1].amount,
+                  newAmount: supporters[0].amount
+                }
+              },
+              {
+                transaction: tx
+              }
+            )
+          }
 
           // Create a fake notif from discovery for further processing down the pipeline
           notifications.push({
@@ -91,7 +79,65 @@ async function processSupporterRankChangeNotification(notifications, tx) {
       }
     }
 
-    await Promise.all(promises)
+    // SupportingRankUp sent to the user who is supporting
+    const senderNotification = await models.SolanaNotification.findOne({
+      where: {
+        slot,
+        type: notificationTypes.SupportingRankUp,
+        userId: senderUserId,
+        entityId: rank,
+        metadata: {
+          supportedUserId: receiverUserId
+        }
+      },
+      transaction: tx
+    })
+    if (senderNotification == null) {
+      await models.SolanaNotification.create(
+        {
+          slot,
+          type: notificationTypes.SupportingRankUp,
+          userId: senderUserId,
+          entityId: rank,
+          metadata: {
+            supportedUserId: receiverUserId
+          }
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
+
+    // SupporterRankUp sent to the user being supported
+    const receiverNotification = await models.SolanaNotification.findOrCreate({
+      where: {
+        slot,
+        type: notificationTypes.SupporterRankUp,
+        userId: receiverUserId,
+        entityId: rank,
+        metadata: {
+          supportingUserId: senderUserId
+        }
+      },
+      transaction: tx
+    })
+    if (receiverNotification == null) {
+      await models.SolanaNotification.create(
+        {
+          slot,
+          type: notificationTypes.SupporterRankUp,
+          userId: receiverUserId,
+          entityId: rank,
+          metadata: {
+            supportingUserId: senderUserId
+          }
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
   }
   return notifications
 }

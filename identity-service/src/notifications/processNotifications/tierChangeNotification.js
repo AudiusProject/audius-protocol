@@ -21,7 +21,7 @@ async function processTierChangeNotifications(notifications, tx) {
       .add(1, 's')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    const [notificationObj] = await models.Notification.findOrCreate({
+    let notificationObj = await models.Notification.findOne({
       where: {
         blocknumber,
         tier,
@@ -31,8 +31,22 @@ async function processTierChangeNotifications(notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationObj == null) {
+      notificationObj = await models.Notification.create(
+        {
+          blocknumber,
+          tier,
+          timestamp: updatedTimestamp,
+          type: notificationTypes.TierChange,
+          userId: notification.initiator
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = models.NotificationAction.findOne({
       where: {
         notificationId: notificationObj.id,
         actionEntityType: actionEntityTypes.User,
@@ -41,6 +55,19 @@ async function processTierChangeNotifications(notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId: notificationObj.id,
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notification.initiator,
+          blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
   }
   return notifications
 }
