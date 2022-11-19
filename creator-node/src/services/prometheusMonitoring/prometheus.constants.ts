@@ -441,7 +441,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: 'Number of total files migrated from a legacy storage path to a non legacy storage path',
       labelNames:
         METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE],
-      aggregator: 'max' as AggregatorType // Only runs on primary process
+      aggregator: 'sum' as AggregatorType // Only runs on primary process
     }
   },
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {

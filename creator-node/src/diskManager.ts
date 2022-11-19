@@ -494,7 +494,7 @@ async function _copyLegacyFiles(
 
   // Record results in Prometheus metric
   // TODO: Can the primary process record a metric? Idk if it'll get aggregated so double-check or else send to a worker process
-  // TODO: This throws error: TypeError: Cannot read property 'FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE' of undefined","time":"2022-11-19T00:05:49.097Z","v":0,"logLevel":"error"}
+  // TODO: This throws TypeError: Cannot read property 'FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE' of undefined"
   // const metric = prometheusRegistry.getMetric(
   //   prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
   // )
@@ -514,7 +514,6 @@ async function _deleteFiles(filePaths: string[], logger: Logger) {
   }
 }
 
-// TODO: Move to unit tested util functions
 function _getCharsInRange(startChar: string, endChar: string): string[] {
   return range(endChar.charCodeAt(0), startChar.charCodeAt(0) - 1, -1).map(
     (charCode) => String.fromCharCode(charCode)
