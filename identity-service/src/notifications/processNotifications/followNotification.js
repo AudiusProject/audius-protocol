@@ -69,8 +69,7 @@ async function processFollowNotifications(notifications, tx) {
       const blocknumber = notification.blocknumber
       const timestamp = Date.parse(notification.timestamp.slice(0, -2))
 
-      // Insertion into the NotificationActions table
-      let notifActionCreateTx = await models.NotificationAction.findOne({
+      const notifActionCreateTx = await models.NotificationAction.findOne({
         where: {
           notificationId,
           actionEntityType: actionEntityTypes.User,
@@ -80,7 +79,8 @@ async function processFollowNotifications(notifications, tx) {
         transaction: tx
       })
       if (notifActionCreateTx == null) {
-        notifActionCreateTx = await models.NotificationAction.create(
+        // Insertion into the NotificationActions table
+        await models.NotificationAction.create(
           {
             notificationId,
             actionEntityType: actionEntityTypes.User,
@@ -91,9 +91,6 @@ async function processFollowNotifications(notifications, tx) {
             transaction: tx
           }
         )
-      }
-      const updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
         // Update Notification table timestamp
         await models.Notification.update(
           {

@@ -121,10 +121,7 @@ async function processBaseRepostNotifications(notifications, tx) {
             transaction: tx
           }
         )
-      }
-      // Update Notification table timestamp
-      const updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
+        // Update Notification table timestamp
         await models.Notification.update(
           {
             timestamp

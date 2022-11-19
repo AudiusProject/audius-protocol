@@ -25,7 +25,6 @@ async function processRemixCreateNotifications(notifications, tx) {
       .add(1, 's')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    // Manually find or create to avoid sequelize findOrCreate implementation
     let notificationObj = await models.Notification.findOne({
       where: {
         type: notificationTypes.RemixCreate,
@@ -43,7 +42,7 @@ async function processRemixCreateNotifications(notifications, tx) {
           userId: parentTrackUserId,
           entityId: childTrackId,
           blocknumber,
-          timestamp: updatedTimestamp,
+          timestamp: updatedTimestamp
         },
         {
           transaction: tx

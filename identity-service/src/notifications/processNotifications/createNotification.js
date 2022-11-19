@@ -136,18 +136,17 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     await Promise.all(
       notificationIds.map(async (notificationId) => {
         // Action entity id can be one of album/playlist/track
-        let notifActionCreateTx =
-          await models.NotificationAction.findOne({
-            where: {
-              notificationId,
-              actionEntityType: actionEntityType,
-              actionEntityId: createdActionEntityId,
-              blocknumber
-            },
-            transaction: tx
-          })
+        const notifActionCreateTx = await models.NotificationAction.findOne({
+          where: {
+            notificationId,
+            actionEntityType: actionEntityType,
+            actionEntityId: createdActionEntityId,
+            blocknumber
+          },
+          transaction: tx
+        })
         if (notifActionCreateTx == null) {
-          notifActionCreateTx = await models.NotificationAction.create(
+          await models.NotificationAction.create(
             {
               notificationId,
               actionEntityType: actionEntityType,
@@ -158,11 +157,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
               transcation: tx
             }
           )
-        }
-
-        // Update Notification table timestamp
-        const updatePerformed = notifActionCreateTx[1]
-        if (updatePerformed) {
+          // Update Notification table timestamp
           await models.Notification.update(
             {
               timestamp
