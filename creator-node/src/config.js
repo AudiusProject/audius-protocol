@@ -291,7 +291,7 @@ const config = convict({
     doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
     format: Boolean,
     env: 'clusterModeEnabled',
-    default: false
+    default: true
   },
 
   /** Upload settings */
