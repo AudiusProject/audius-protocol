@@ -46,7 +46,7 @@ async function processTierChangeNotifications(notifications, tx) {
       )
     }
 
-    const notificationAction = models.NotificationAction.findOne({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId: notificationObj.id,
         actionEntityType: actionEntityTypes.User,
