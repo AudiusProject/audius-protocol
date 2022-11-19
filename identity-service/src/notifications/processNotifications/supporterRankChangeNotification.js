@@ -28,21 +28,23 @@ async function processSupporterRankChangeNotification(notifications, tx) {
 
         if (isDiscoveryUpToDate && !isTie) {
           // Create the notif model for the DB
-          const dethronedNotification = await models.SolanaNotification.findOne({
-            where: {
-              slot,
-              type: notificationTypes.SupporterDethroned,
-              userId: dethronedUserId, // Notif goes to the dethroned user
-              entityId: 2, // Rank 2
-              metadata: {
-                supportedUserId: receiverUserId, // The user originally tipped
-                newTopSupporterUserId: topSupporterId, // The usurping user
-                oldAmount: supporters[1].amount,
-                newAmount: supporters[0].amount
-              }
-            },
-            transaction: tx
-          })
+          const dethronedNotification = await models.SolanaNotification.findOne(
+            {
+              where: {
+                slot,
+                type: notificationTypes.SupporterDethroned,
+                userId: dethronedUserId, // Notif goes to the dethroned user
+                entityId: 2, // Rank 2
+                metadata: {
+                  supportedUserId: receiverUserId, // The user originally tipped
+                  newTopSupporterUserId: topSupporterId, // The usurping user
+                  oldAmount: supporters[1].amount,
+                  newAmount: supporters[0].amount
+                }
+              },
+              transaction: tx
+            }
+          )
           if (dethronedNotification == null) {
             await models.SolanaNotification.create(
               {
