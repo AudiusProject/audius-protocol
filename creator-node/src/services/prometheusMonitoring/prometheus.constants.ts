@@ -226,13 +226,6 @@ export const METRIC_LABELS = Object.freeze({
   },
   [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
     result: ['success', 'failure']
-  },
-  [METRIC_NAMES.ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM]: {
-    sync_type: Object.values(SyncType as Record<string, string>).map(snakeCase),
-    sync_mode: Object.values(SYNC_MODES as Record<string, string>).map(
-      snakeCase
-    ),
-    result: []
   }
 })
 

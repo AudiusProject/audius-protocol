@@ -19,7 +19,6 @@ import {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists
 } from './utils'
-import { serviceRegistry } from './serviceRegistry'
 
 const models = require('./models')
 
@@ -424,6 +423,7 @@ export async function sweepSubdirectoriesInFiles(
 
 async function _copyLegacyFiles(
   legacyPathsAndCids: { storagePath: string; cid: string }[],
+  prometheusRegistry: any,
   logger: Logger
 ): Promise<
   {
@@ -454,9 +454,7 @@ async function _copyLegacyFiles(
         : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
 
       // Copy to new path if it doesn't already exist
-      if (await fs.pathExists(nonLegacyPath)) {
-        copiedPaths.push({ legacyPath, nonLegacyPath })
-      } else {
+      if (!(await fs.pathExists(nonLegacyPath))) {
         try {
           await fs.copyFile(legacyPath, nonLegacyPath)
         } catch (e: any) {
@@ -496,12 +494,12 @@ async function _copyLegacyFiles(
 
   // Record results in Prometheus metric
   // TODO: Can the primary process record a metric? Idk if it'll get aggregated so double-check or else send to a worker process
-  const { prometheusRegistry } = serviceRegistry
-  const metric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
-  )
-  metric.inc('success', copiedPaths.length)
-  metric.inc('failure', erroredPaths.length)
+  // TODO: This throws error: TypeError: Cannot read property 'FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE' of undefined","time":"2022-11-19T00:05:49.097Z","v":0,"logLevel":"error"}
+  // const metric = prometheusRegistry.getMetric(
+  //   prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  // )
+  // metric.inc('success', copiedPaths.length)
+  // metric.inc('failure', erroredPaths.length)
 
   return copiedPaths
 }
@@ -531,7 +529,10 @@ function _getCharsInRanges(...ranges: string[]): string[] {
   return charsInRanges
 }
 
-async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
+async function _migrateNonDirFilesWithLegacyStoragePaths(
+  prometheusRegistry: any,
+  logger: Logger
+) {
   const BATCH_SIZE = 100
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
   for (const char of _getCharsInRanges('az', 'AZ', '09')) {
@@ -544,6 +545,7 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
         await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
       const copiedFilePaths = await _copyLegacyFiles(
         legacyStoragePathsAndCids,
+        prometheusRegistry,
         logger
       )
       const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
@@ -556,6 +558,7 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(logger: Logger) {
           logger
         )
       }
+      await timeout(1000) // Avoid spamming fast queries
     } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
   }
 }
@@ -580,6 +583,7 @@ async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
         }
       )
       await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      await timeout(1000) // Avoid spamming fast queries
     } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
   }
 }
@@ -593,15 +597,16 @@ async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
  * @param logger logger to print errors to
  */
 export async function migrateFilesWithLegacyStoragePaths(
+  prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
   try {
-    await _migrateNonDirFilesWithLegacyStoragePaths(logger)
+    await _migrateNonDirFilesWithLegacyStoragePaths(prometheusRegistry, logger)
     await _migrateDirsWithLegacyStoragePaths(logger)
   } catch (e: any) {
     logger.error(`Error migrating legacy storagePaths: ${e}`)
   }
 
   // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithLegacyStoragePaths(logger)
+  return migrateFilesWithLegacyStoragePaths(prometheusRegistry, logger)
 }

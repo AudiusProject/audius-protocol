@@ -469,14 +469,15 @@ class DBManager {
   }
 
   static async updateLegacyPathDbRows(copiedFilePaths, logger) {
+    if (!copiedFilePaths?.length) return true
     const transaction = await models.sequelize.transaction()
     try {
       for (const { legacyPath, nonLegacyPath } of copiedFilePaths) {
-        await models.File.update({
-          storagePath: nonLegacyPath,
-          where: { storagePath: legacyPath },
-          transaction
-        })
+        await models.File.update(
+          { storagePath: nonLegacyPath },
+          { where: { storagePath: legacyPath } },
+          { transaction }
+        )
       }
       await transaction.commit()
       return true
