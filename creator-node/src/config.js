@@ -40,6 +40,12 @@ const config = convict({
     env: 'storagePath',
     default: '/file_storage'
   },
+  migrateFilesWithLegacyStoragePath: {
+    doc: 'True to copy files with a legacy storage to the new storage path',
+    format: Boolean,
+    env: 'migrateFilesWithLegacyStoragePath',
+    default: true
+  },
   redisHost: {
     doc: 'Redis host name',
     format: String,
