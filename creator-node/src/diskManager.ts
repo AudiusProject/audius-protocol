@@ -2,7 +2,7 @@ import type Logger from 'bunyan'
 
 import path from 'path'
 import fs from 'fs-extra'
-import { chunk, range } from 'lodash'
+import { chunk, reverse, isEqual } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
@@ -17,7 +17,8 @@ import {
   ensureDirPathExists,
   computeFilePath,
   computeFilePathAndEnsureItExists,
-  computeFilePathInDirAndEnsureItExists
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRanges
 } from './utils'
 
 const models = require('./models')
@@ -512,32 +513,21 @@ async function _deleteFiles(filePaths: string[], logger: Logger) {
   }
 }
 
-function _getCharsInRange(startChar: string, endChar: string): string[] {
-  return range(endChar.charCodeAt(0), startChar.charCodeAt(0) - 1, -1).map(
-    (charCode) => String.fromCharCode(charCode)
-  )
-}
-
-function _getCharsInRanges(...ranges: string[]): string[] {
-  const charsInRanges = []
-  for (const range of ranges) {
-    charsInRanges.push(..._getCharsInRange(range.charAt(0), range.charAt(1)))
-  }
-  return charsInRanges
-}
-
 async function _migrateNonDirFilesWithLegacyStoragePaths(
+  queryDelayMs: number,
   prometheusRegistry: any,
   logger: Logger
 ) {
-  const BATCH_SIZE = 100
+  const BATCH_SIZE = 1000
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
-  for (const char of _getCharsInRanges('az', 'AZ', '09')) {
+  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
     const cursor = 'Qm' + char
 
-    // Query for legacy storagePaths in the pagination range until no more results are returned
+    // Query for legacy storagePaths in the pagination range until no new results are returned
+    let prevLegacyStoragePathsAndCids
     let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    do {
+    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
+      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
       legacyStoragePathsAndCids =
         await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
       if (legacyStoragePathsAndCids.length) {
@@ -557,20 +547,24 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(
           )
         }
       }
-      await timeout(1000) // Avoid spamming fast queries
-    } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
   }
 }
 
-async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
-  const BATCH_SIZE = 100
+async function _migrateDirsWithLegacyStoragePaths(
+  queryDelayMs: number,
+  logger: Logger
+) {
+  const BATCH_SIZE = 1000
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
-  for (const char of _getCharsInRanges('az', 'AZ', '09')) {
+  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
     const cursor = 'Qm' + char
 
-    // Query for legacy storagePaths in the pagination range until no more results are returned
+    // Query for legacy storagePaths in the pagination range until no new results are returned
+    let prevLegacyStoragePathsAndCids
     let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    do {
+    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
       legacyStoragePathsAndCids =
         await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
       if (legacyStoragePathsAndCids.length) {
@@ -584,8 +578,8 @@ async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
         )
         await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
       }
-      await timeout(1000) // Avoid spamming fast queries
-    } while (legacyStoragePathsAndCids.length === BATCH_SIZE)
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
   }
 }
 
@@ -595,19 +589,26 @@ async function _migrateDirsWithLegacyStoragePaths(logger: Logger) {
  * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
  * 3. Updates the row in the Files table to reflect the new storagePath
  * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
+ * @param queryDelayMs millis to wait between SQL queries
+ * @param prometheusRegistry registry to record Prometheus metrics
  * @param logger logger to print errors to
  */
 export async function migrateFilesWithLegacyStoragePaths(
+  queryDelayMs: number,
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
   try {
-    await _migrateNonDirFilesWithLegacyStoragePaths(prometheusRegistry, logger)
-    await _migrateDirsWithLegacyStoragePaths(logger)
+    await _migrateNonDirFilesWithLegacyStoragePaths(
+      queryDelayMs,
+      prometheusRegistry,
+      logger
+    )
+    await _migrateDirsWithLegacyStoragePaths(queryDelayMs, logger)
   } catch (e: any) {
     logger.error(`Error migrating legacy storagePaths: ${e}`)
   }
 
   // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithLegacyStoragePaths(prometheusRegistry, logger)
+  return migrateFilesWithLegacyStoragePaths(10_000, prometheusRegistry, logger)
 }

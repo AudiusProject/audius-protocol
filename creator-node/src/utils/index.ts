@@ -11,7 +11,9 @@ import {
   getRandomInt,
   verifySignature,
   stringifyMap,
-  isFqdn
+  isFqdn,
+  getCharsInRange,
+  getCharsInRanges
 } from './utils'
 import {
   validateMetadata,
@@ -59,7 +61,9 @@ export {
   computeFilePath,
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
-  computeFilePathInDirAndEnsureItExists
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }
 
 module.exports = {
@@ -86,5 +90,7 @@ module.exports = {
   computeFilePath,
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
-  computeFilePathInDirAndEnsureItExists
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }

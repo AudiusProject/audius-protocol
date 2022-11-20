@@ -128,6 +128,7 @@ const runAsyncBackgroundTasks = async () => {
   if (config.get('migrateFilesWithLegacyStoragePath')) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     migrateFilesWithLegacyStoragePaths(
+      1000,
       serviceRegistry.prometheusRegistry,
       logger
     )
