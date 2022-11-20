@@ -432,6 +432,61 @@ class DBManager {
       (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
     )?.length
   }
+
+  static async _getLegacyStoragePathsAndCids(cursor, batchSize, dir) {
+    const queryResult = await models.File.findAll({
+      attributes: ['storagePath', 'multihash'],
+      where: {
+        multihash: { [sequelize.Op.gte]: cursor },
+        type: {
+          [dir ? sequelize.Op.eq : sequelize.Op.ne]: models.File.Types.dir
+        },
+        storagePath: {
+          [sequelize.Op.notLike]: '/file_storage/files/%',
+          [sequelize.Op.like]: '/file_storage/%'
+        }
+      },
+      order: [['multihash', 'ASC']],
+      limit: batchSize
+    })
+    logger.debug(
+      `queryResult for legacyStoragePaths (dir=${dir}) with cursor ${cursor}: ${JSON.stringify(
+        queryResult || {}
+      )}`
+    )
+    if (isEmpty(queryResult)) return []
+    return queryResult.map((result) => {
+      return { storagePath: result.storagePath, cid: result.multihash }
+    })
+  }
+
+  static async getNonDirLegacyStoragePathsAndCids(cursor, batchSize) {
+    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, false)
+  }
+
+  static async getDirLegacyStoragePathsAndCids(cursor, batchSize) {
+    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, true)
+  }
+
+  static async updateLegacyPathDbRows(copiedFilePaths, logger) {
+    if (!copiedFilePaths?.length) return true
+    const transaction = await models.sequelize.transaction()
+    try {
+      for (const { legacyPath, nonLegacyPath } of copiedFilePaths) {
+        await models.File.update(
+          { storagePath: nonLegacyPath },
+          { where: { storagePath: legacyPath } },
+          { transaction }
+        )
+      }
+      await transaction.commit()
+      return true
+    } catch (e) {
+      logger.error(`Error updating legacy path db rows: ${e}`)
+      await transaction.rollback()
+    }
+    return false
+  }
 }
 
 /**

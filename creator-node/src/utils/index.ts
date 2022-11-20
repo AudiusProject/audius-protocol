@@ -11,7 +11,9 @@ import {
   getRandomInt,
   verifySignature,
   stringifyMap,
-  isFqdn
+  isFqdn,
+  getCharsInRange,
+  getCharsInRanges
 } from './utils'
 import {
   validateMetadata,
@@ -24,7 +26,12 @@ import {
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
   _streamFileToDiskHelper,
-  deleteAttemptedStateFixes
+  deleteAttemptedStateFixes,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
@@ -48,7 +55,15 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils
+  clusterUtils,
+  verifyCIDMatchesExpected,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }
 
 module.exports = {
@@ -70,5 +85,12 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils
+  clusterUtils,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }

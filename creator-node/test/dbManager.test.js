@@ -733,7 +733,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
           '../../fileManager': {
             copyMultihashToFs: sinon
               .stub(FileManager, 'copyMultihashToFs')
-              .returns(await DiskManager.computeFilePathAndEnsureItExists(mockCid)),
+              .returns(await utils.computeFilePathAndEnsureItExists(mockCid)),
             '@global': true
           }
         }
@@ -1204,7 +1204,7 @@ describe('Test fixInconsistentUser()', async function () {
         sourceFile: null,
         fileName: null,
         dirMultihash: null,
-        storagePath: await DiskManager.computeFilePath(metadataCID),
+        storagePath: await utils.computeFilePath(metadataCID),
         type: "metadata",
         clock: 1,
         skipped: false
@@ -1252,7 +1252,7 @@ describe('Test fixInconsistentUser()', async function () {
         sourceFile: null,
         fileName: null,
         dirMultihash: null,
-        storagePath: await DiskManager.computeFilePath(metadataCID),
+        storagePath: await utils.computeFilePath(metadataCID),
         type: "metadata",
         clock: 1,
         skipped: false
@@ -1319,7 +1319,7 @@ describe('Test fixInconsistentUser()', async function () {
         sourceFile: null,
         fileName: null,
         dirMultihash: null,
-        storagePath: await DiskManager.computeFilePath(metadataCID),
+        storagePath: await utils.computeFilePath(metadataCID),
         type: "metadata",
         clock: 1,
         skipped: false
@@ -1367,7 +1367,7 @@ describe('Test fixInconsistentUser()', async function () {
         sourceFile: null,
         fileName: null,
         dirMultihash: null,
-        storagePath: await DiskManager.computeFilePath(metadataCID),
+        storagePath: await utils.computeFilePath(metadataCID),
         type: "metadata",
         clock: 1,
         skipped: false

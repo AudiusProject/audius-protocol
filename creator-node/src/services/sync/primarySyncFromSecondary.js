@@ -6,12 +6,12 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { computeFilePath, computeFilePathInDir } = require('../../diskManager')
 const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
+const { computeFilePath, computeFilePathInDir } = require('../../utils/fsUtils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const { fetchExportFromNode } = require('./syncUtil')
 const {
