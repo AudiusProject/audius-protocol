@@ -115,7 +115,7 @@ describe('test asyncRetry', function () {
         options: {
           minTimeout: 0,
           maxTimeout: 100,
-          maxRetryTime: 401
+          maxRetryTime: 420
         }
       })
 

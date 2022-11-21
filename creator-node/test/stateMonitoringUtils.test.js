@@ -398,7 +398,7 @@ it('returns expected counts and percentages after recording successes and failur
     },
     {
       user_id: 2,
-      wallet: 'wallet2',
+      wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9adaaaa',
       primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
       secondary1: 'http://cnWithSpId2.co',
       secondary2: 'http://cnWithSpId3.co',
@@ -408,49 +408,43 @@ it('returns expected counts and percentages after recording successes and failur
     }
   ]
 
-  await SecondarySyncHealthTracker.recordFailure(
-    [nodeUsers[0].secondary1],
-    [nodeUsers[0].wallet],
-    SyncType.Recurring
-  )
-  await SecondarySyncHealthTracker.recordFailure(
-    [nodeUsers[0].secondary2],
-    [nodeUsers[0].wallet],
-    SyncType.Recurring
+  const usersInfoSlice = nodeUsers.map((user) => {
+    return {
+      wallet: user.wallet,
+      secondary1: user.secondary1,
+      secondary2: user.secondary2
+    }
+  })
+
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
+
+  await secondarySyncHealthTracker.recordFailure({
+    secondary: [nodeUsers[0].secondary1],
+    wallet: [nodeUsers[0].wallet],
+    prometheusError: 'failure_fetching_user_replica_set'
+  })
+  await secondarySyncHealthTracker.recordFailure({
+    secondary: [nodeUsers[0].secondary2],
+    wallet: [nodeUsers[0].wallet],
+    prometheusError: 'failure_fetching_user_replica_set'
+  })
+
+  await secondarySyncHealthTracker.computeIfWalletOnSecondaryShouldContinueActions(
+    usersInfoSlice
   )
 
-  const expectedUserSecondarySyncMetricsMap = {
+  const expectedWalletToSecondaryToShouldContinueAction = {
     [nodeUsers[0].wallet]: {
-      [nodeUsers[0].secondary1]: {
-        successRate: 0,
-        successCount: 0,
-        failureCount: 1
-      },
-      [nodeUsers[0].secondary2]: {
-        successRate: 0,
-        successCount: 0,
-        failureCount: 1
-      }
-    },
-    [nodeUsers[1].wallet]: {
-      [nodeUsers[1].secondary1]: {
-        successRate: 1,
-        successCount: 0,
-        failureCount: 0
-      },
-      [nodeUsers[1].secondary2]: {
-        successRate: 1,
-        successCount: 0,
-        failureCount: 0
-      }
+      [nodeUsers[0].secondary1]: true,
+      [nodeUsers[0].secondary2]: true
     }
   }
 
-  const userSecondarySyncMetricsMap =
-    await computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+  const walletToSecondaryToShouldContinueAction =
+    await secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction()
 
-  expect(userSecondarySyncMetricsMap).to.deep.equal(
-    expectedUserSecondarySyncMetricsMap
+  expect(walletToSecondaryToShouldContinueAction).to.deep.equal(
+    expectedWalletToSecondaryToShouldContinueAction
   )
 })
 
