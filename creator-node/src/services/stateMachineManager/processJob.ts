@@ -16,7 +16,6 @@ const redis = require('../../redis')
  * @param {Function<logger, args>} jobProcessor the processor function that takes a logger and then the contents `job.data` as its args
  * @param {Object} parentLogger the base logger so that queries can filter by its properties as well
  * @param {Object} prometheusRegistry the registry for prometheus to log metrics
- * @param {Object} additionalProperties any additional properties job processors need that cannot be serialized
  * @returns the result of the completed job, or an object with an error property if the job throws
  */
 async function processJob(
