@@ -189,6 +189,39 @@ services:
     profiles:
       - tests
 
+  # identity-service
+
+  identity-service-db:
+    image: postgres:11.4
+    user: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  identity-service-redis:
+    image: redis:5.0.5
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  test-identity-service:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
+    entrypoint: npx mocha --timeout 12000 --exit test/index.js
+    command: ""
+    environment:
+      isTestRun: "true"
+      environment: "test"
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
