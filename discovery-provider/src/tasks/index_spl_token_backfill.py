@@ -320,8 +320,8 @@ def parse_sol_tx_batch(
             user_bank_set = {user[1] for user in user_result}
 
             audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
-            session.bulk_save_objects(audio_txs)
-            if audio_txs[0]:
+            if audio_txs:
+                session.bulk_save_objects(audio_txs)
                 logger.info(
                     f"index_spl_token_backfill.py | added txs to audio_tx_hist table: {audio_txs[0]}"
                 )
@@ -506,7 +506,6 @@ def check_if_backfilling_complete(
             return False
         stop_sig = stop_sig_tuple[0]
 
-        logger.info(f"REED about to call get_signatures_for_address on: {stop_sig}")
         one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM, before=stop_sig, limit=1, retries=20
         )
