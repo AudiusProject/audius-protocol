@@ -516,14 +516,10 @@ def get_solana_tx_token_balances(meta, idx):
 
 
 def get_solana_tx_owner(meta, idx) -> str:
-    return next(
-        (
-            balance["owner"]
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == idx
-        ),
-        "",
-    )
+    for balance in meta["preTokenBalances"]:
+        if "owner" in balance and balance["accountIndex"] == idx:
+            return balance["owner"]
+    return ""
 
 
 def get_final_poa_block(shared_config) -> Optional[int]:

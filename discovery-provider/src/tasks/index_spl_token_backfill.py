@@ -44,6 +44,7 @@ SPL_TOKEN_PUBKEY = PublicKey(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_PUBKEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+MIN_SIG = str(shared_config["solana"]["spl_token_backfill_min_sig"])
 
 # Number of signatures that are fetched from RPC and written at once
 # For example, in a batch of 1000 only 100 will be fetched and written in parallel
@@ -80,7 +81,6 @@ class SplTokenTransactionInfo(TypedDict):
     prebalance: int
     postbalance: int
     sender_wallet: str
-    root_accounts: List[str]
     token_accounts: List[str]
 
 
@@ -143,7 +143,7 @@ def parse_spl_token_transaction(
     try:
         if tx_sig["err"]:
             return None
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"])
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"], retries=10)
         result = tx_info["result"]
         meta = result["meta"]
         error = meta["err"]
@@ -154,7 +154,6 @@ def parse_spl_token_transaction(
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
         sender_root_account = get_solana_tx_owner(meta, SENDER_ACCOUNT_INDEX)
-        receiver_root_account = get_solana_tx_owner(meta, RECEIVER_ACCOUNT_INDEX)
         account_keys = result["transaction"]["message"]["accountKeys"]
         receiver_token_account = account_keys[RECEIVER_ACCOUNT_INDEX]
         sender_token_account = account_keys[SENDER_ACCOUNT_INDEX]
@@ -173,7 +172,6 @@ def parse_spl_token_transaction(
             "prebalance": prebalance,
             "postbalance": postbalance,
             "sender_wallet": sender_root_account,
-            "root_accounts": [sender_root_account, receiver_root_account],
             "token_accounts": [sender_token_account, receiver_token_account],
         }
         return receiver_spl_tx_info
@@ -278,6 +276,10 @@ def parse_sol_tx_batch(
     updated_token_accounts: Set[str] = set()
     spl_token_txs: List[ConfirmedTransaction] = []
     # Process each batch in parallel
+    if tx_sig_batch_records[0]:
+        logger.info(
+            f"index_spl_token_backfill.py | parsing slot {tx_sig_batch_records[0]['slot']}"
+        )
     with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
             executor.submit(
@@ -295,6 +297,7 @@ def parse_sol_tx_batch(
                 if not tx_info:
                     continue
                 updated_token_accounts.update(tx_info["token_accounts"])
+
                 spl_token_txs.append(tx_info)
 
         except Exception as exc:
@@ -318,13 +321,17 @@ def parse_sol_tx_batch(
 
             audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
             session.bulk_save_objects(audio_txs)
+            if audio_txs[0]:
+                logger.info(
+                    f"index_spl_token_backfill.py | added txs to audio_tx_hist table: {audio_txs[0]}"
+                )
 
         if tx_sig_batch_records:
             last_tx = tx_sig_batch_records[0]
 
             last_scanned_slot = last_tx["slot"]
             last_scanned_signature = last_tx["signature"]
-            solana_logger.add_log(
+            logger.info(
                 f"Updating last_scanned_slot to {last_scanned_slot} and signature to {last_scanned_signature}"
             )
 
@@ -341,9 +348,7 @@ def parse_sol_tx_batch(
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
-    solana_logger.add_log(
-        f"processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
-    )
+    logger.info(f"processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s")
 
     return updated_token_accounts
 
@@ -371,7 +376,7 @@ def process_spl_token_tx(
 
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
-    solana_logger.add_log(f"latest used slot: {latest_processed_slot}")
+    logger.info(f"latest used slot: {latest_processed_slot}")
 
     # The 'before' value from where we start querying transactions
     last_tx_signature = stop_sig
@@ -390,20 +395,32 @@ def process_spl_token_tx(
 
     # Traverse recent records until an intersection is found with latest slot
     while not intersection_found:
-        solana_logger.add_log(f"Requesting transactions before {last_tx_signature}")
+        logger.info(f"Requesting transactions before {last_tx_signature}")
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            retries=20,
         )
-        solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
+        logger.info(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
             # really represents the end of known history for this ProgramId
             intersection_found = True
-            solana_logger.add_log(f"No transactions found before {last_tx_signature}")
+            logger.info(
+                f"No transactions found before {last_tx_signature}, got {transactions_array}"
+            )
+            if last_tx_signature != MIN_SIG:
+                raise Exception(
+                    f"No transactions found before {last_tx_signature} due to Solana flakiness"
+                )
+
         else:
+            if transactions_array[0]:
+                logger.info(
+                    f"index_spl_token_backfill.py | adding to batch {transactions_array[0]['slot']}"
+                )
             # handle initial case where no there is no stored latest processed slot and start from current
             if latest_processed_slot is None:
                 logger.debug("index_spl_token_backfill.py | setting from none")
@@ -425,7 +442,7 @@ def process_spl_token_tx(
 
             # Ensure processing does not grow unbounded
             if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                solana_logger.add_log(
+                logger.info(
                     f"slicing tx_sigs from {len(transaction_signatures)} entries"
                 )
                 transaction_signatures = transaction_signatures[
@@ -435,7 +452,7 @@ def process_spl_token_tx(
             # Reset batch state
             transaction_signature_batch = []
 
-        solana_logger.add_log(
+        logger.info(
             f"intersection_found={intersection_found},\
             last_tx_signature={last_tx_signature},\
             page_count={page_count}"
@@ -489,10 +506,9 @@ def check_if_backfilling_complete(
             return False
         stop_sig = stop_sig_tuple[0]
 
+        logger.info(f"REED about to call get_signatures_for_address on: {stop_sig}")
         one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
-            SPL_TOKEN_PROGRAM,
-            before=stop_sig,
-            limit=1,
+            SPL_TOKEN_PROGRAM, before=stop_sig, limit=1, retries=20
         )
         if not one_sig_before_stop_result:
             logger.error("index_spl_token_backfill.py | No sigs before stop_sig")
@@ -546,9 +562,7 @@ def find_true_stop_sig(
     count = 100
     while count:
         tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
-            SPL_TOKEN_PROGRAM,
-            before=stop_sig,
-            limit=1,
+            SPL_TOKEN_PROGRAM, before=stop_sig, limit=1, retries=20
         )
         if tx_before_stop_sig:
             tx_before_stop_sig = tx_before_stop_sig["result"][0]
@@ -632,40 +646,40 @@ def index_spl_token_backfill(self):
     have_lock = False
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
-    update_lock = redis.lock(
-        index_spl_token_backfill_lock, blocking_timeout=25, timeout=14400
-    )
-
-    with db.scoped_session() as session:
-        stop_sig = (
-            session.query(IndexingCheckpoint.signature)
-            .filter(IndexingCheckpoint.tablename == index_spl_token_backfill_tablename)
-            .first()
-        )
-        if not stop_sig:
-            stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
-            if not stop_sig:
-                logger.info(
-                    "index_spl_token_backfill.py | Failed to find true stop signature"
-                )
-                return
-            logger.info(
-                f"index_spl_token_backfill.py | Found true stop_sig: {stop_sig}"
-            )
-        else:
-            stop_sig = stop_sig[0]
-
-        if not stop_sig:
-            logger.info(
-                f"index_spl_token_backfill.py | Error with stop_sig: {stop_sig}"
-            )
-            return
-
-        if check_if_backfilling_complete(session, solana_client_manager, redis):
-            logger.info("index_spl_token_backfill.py | Backfill indexing complete!")
-            return
+    update_lock = redis.lock(index_spl_token_backfill_lock)
 
     try:
+        with db.scoped_session() as session:
+            stop_sig = (
+                session.query(IndexingCheckpoint.signature)
+                .filter(
+                    IndexingCheckpoint.tablename == index_spl_token_backfill_tablename
+                )
+                .first()
+            )
+            if not stop_sig:
+                stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
+                if not stop_sig:
+                    logger.info(
+                        "index_spl_token_backfill.py | Failed to find true stop signature"
+                    )
+                    return
+                logger.info(
+                    f"index_spl_token_backfill.py | Found true stop_sig: {stop_sig}"
+                )
+            else:
+                stop_sig = stop_sig[0]
+
+            if not stop_sig:
+                logger.info(
+                    f"index_spl_token_backfill.py | Error with stop_sig: {stop_sig}"
+                )
+                return
+
+            if check_if_backfilling_complete(session, solana_client_manager, redis):
+                logger.info("index_spl_token_backfill.py | Backfill indexing complete!")
+                return
+
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
