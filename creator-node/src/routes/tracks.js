@@ -37,6 +37,9 @@ const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 const { tracing } = require('../tracer')
+const {
+  contentAccessMiddleware
+} = require('../middlewares/contentAccess/contentAccessMiddleware')
 
 const router = express.Router()
 
@@ -211,11 +214,15 @@ router.post(
     if (
       !metadataJSON ||
       !metadataJSON.owner_id ||
+      // todo: add the below check once all tracks have track cid
+      // !metadataJSON.track_cid ||
       !metadataJSON.track_segments ||
       !Array.isArray(metadataJSON.track_segments) ||
       !metadataJSON.track_segments.length
     ) {
       return errorResponseBadRequest(
+        // todo: update below message once all tracks have track cid
+        // 'Metadata object must include owner_id and track_cid and non-empty track_segments array'
         'Metadata object must include owner_id and non-empty track_segments array'
       )
     }
@@ -927,5 +934,11 @@ router.get(
   },
   getCID
 )
+
+/**
+ * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
+ * @dev - Wrapper around getCID, which retrieves track given its CID.
+ **/
+router.get('/tracks/cidstream/:CID', contentAccessMiddleware, getCID)
 
 module.exports = router

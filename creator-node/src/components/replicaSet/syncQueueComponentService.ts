@@ -19,6 +19,7 @@ export const enqueueSync = async (params: {
     wallet: string
   }
   forceWipe: boolean
+  syncOverride: boolean
   logContext: LogContext
   parentSpanContext: SpanContext
   serviceRegistry: any
@@ -46,6 +47,7 @@ export const processManualImmediateSync = async (params: {
     wallet: string
   }
   forceWipe: boolean
+  syncOverride: boolean
   logContext: LogContext
   parentSpanContext: SpanContext
   serviceRegistry: any

@@ -80,7 +80,9 @@ def entity_manager_update(
         )
 
         # collect events by entity type and action
-        entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
+        entities_to_fetch = collect_entities_to_fetch(
+            update_task, entity_manager_txs, metadata
+        )
 
         # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
@@ -244,10 +246,7 @@ def copy_original_records(existing_records):
 entity_types_to_fetch = set([EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST])
 
 
-def collect_entities_to_fetch(
-    update_task,
-    entity_manager_txs,
-):
+def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
@@ -261,11 +260,23 @@ def collect_entities_to_fetch(
             entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
 
-            # Query follow operations as needed
+            # Query social operations as needed
             if action in action_to_record_type.keys():
                 record_type = action_to_record_type[action]
                 entity_key = get_record_key(user_id, entity_type, entity_id)
                 entities_to_fetch[record_type].add(entity_key)
+
+            # Add playlist track ids in entities to fetch
+            # to prevent playlists from including premium tracks
+            metadata_cid = helpers.get_tx_arg(event, "_metadata")
+            if metadata_cid in metadata:
+                tracks = (
+                    metadata[metadata_cid]
+                    .get("playlist_contents", {})
+                    .get("track_ids", [])
+                )
+                for track in tracks:
+                    entities_to_fetch[EntityType.TRACK].add(track["track"])
 
     return entities_to_fetch
 

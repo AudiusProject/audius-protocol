@@ -23,6 +23,7 @@ const {
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
+const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(
@@ -111,7 +112,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
         '../../fileManager': {
           copyMultihashToFs: sinon
             .stub(FileManager, 'copyMultihashToFs')
-            .returns(await DiskManager.computeFilePathAndEnsureItExists(mockCid)),
+            .returns(await computeFilePathAndEnsureItExists(mockCid)),
           '@global': true
         }
       }
@@ -519,7 +520,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       getReqObj(fileUUID, fileDir, session)
     )
 
-    const { track_segments: trackSegments, source_file: sourceFile } = resp
+    const { transcodedTrackCID, track_segments: trackSegments, source_file: sourceFile } = resp
     assert.deepStrictEqual(
       trackSegments[0].multihash,
       'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
@@ -531,6 +532,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const metadata = {
       test: 'field1',
       owner_id: 1,
+      track_cid: transcodedTrackCID,
       track_segments: trackSegments
     }
 
@@ -544,7 +546,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     assert.deepStrictEqual(
       trackMetadataResp.body.data.metadataMultihash,
-      'QmYhusD7qFv7gxNqi9nyaoiqaRXYQvoCvVgXY75nSoydmy'
+      'QmS3x9ysRe4GwAsJ2tdHxkcr8uRVswiaWb7kNMtoxJBZW8'
     )
   })
 
@@ -653,6 +655,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID,
       track_segments: trackSegments,
       source_file: sourceFile,
       transcodedTrackUUID
@@ -663,6 +666,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const metadata = {
       test: 'field1',
+      track_cid: transcodedTrackCID,
       track_segments: trackSegments,
       owner_id: 1
     }
@@ -677,7 +681,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     assert.deepStrictEqual(
       trackMetadataResp.body.data.metadataMultihash,
-      'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+      'QmUfa46MXZHMNSKM1chnZSsQJM7VdLDbtoei8XDGyrBFR3'
     )
 
     // Make chain recognize wallet as owner of track
@@ -719,6 +723,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID,
       track_segments: trackSegments,
       source_file: sourceFile,
       transcodedTrackUUID
@@ -729,6 +734,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const metadata = {
       test: 'field1',
+      track_cid: transcodedTrackCID,
       track_segments: trackSegments,
       owner_id: 1
     }
@@ -743,7 +749,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     assert.deepStrictEqual(
       trackMetadataResp.body.data.metadataMultihash,
-      'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs'
+      'QmUfa46MXZHMNSKM1chnZSsQJM7VdLDbtoei8XDGyrBFR3'
     )
 
     // Make chain NOT recognize wallet as owner of track
@@ -821,6 +827,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID,
       track_segments: trackSegments,
       source_file: sourceFile,
       transcodedTrackUUID
@@ -839,6 +846,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // needs debugging as to why this 'cid' key is needed for test to work
     const metadata = {
       test: 'field1',
+      track_cid: transcodedTrackCID,
       track_segments: trackSegments,
       owner_id: 1,
       download: {
@@ -858,7 +866,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     assert.deepStrictEqual(
       trackMetadataResp.body.data.metadataMultihash,
-      'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49'
+      'QmQNutuijkV5DrzvVmCUcGNsr8r4dtPFX6aEHGcPPM6Jde'
     )
 
     // Make chain recognize wallet as owner of track
@@ -988,7 +996,7 @@ describe('test Polling Tracks with real files', function () {
       'testTranscoded320Track.mp3'
     )
     const transcodedTrackAssetBuf = await fs.readFile(transcodedTrackAssetPath)
-    const transcodedTrackPath = await DiskManager.computeFilePathAndEnsureItExists(transcodedTrackCID)
+    const transcodedTrackPath = await computeFilePathAndEnsureItExists(transcodedTrackCID)
     const transcodedTrackTestBuf = await fs.readFile(transcodedTrackPath)
     assert.deepStrictEqual(
       transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
@@ -1001,7 +1009,7 @@ describe('test Polling Tracks with real files', function () {
     //    This test may break in the future but at that point we should re-generate the reference segment files.
     assert.deepStrictEqual(trackSegments.length, TestAudiusTrackFileNumSegments)
     trackSegments.map(async function (cid, index) {
-      const cidPath = await DiskManager.computeFilePathAndEnsureItExists(cid.multihash)
+      const cidPath = await computeFilePathAndEnsureItExists(cid.multihash)
 
       // Ensure file exists
       assert.ok(await fs.pathExists(cidPath))
@@ -1037,6 +1045,7 @@ describe('test Polling Tracks with real files', function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
+      track_cid: 'some-track-cid',
       track_segments: [
         {
           multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
@@ -1058,6 +1067,7 @@ describe('test Polling Tracks with real files', function () {
   it('successfully adds metadata file to filesystem and db', async function () {
     const metadata = sortKeys({
       test: 'field1',
+      track_cid: 'some-track-cid',
       track_segments: [
         {
           multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
@@ -1076,7 +1086,7 @@ describe('test Polling Tracks with real files', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePathAndEnsureItExists(
+    const metadataPath = await computeFilePathAndEnsureItExists(
       resp.body.data.metadataMultihash
     )
     assert.ok(await fs.pathExists(metadataPath))
@@ -1102,6 +1112,7 @@ describe('test Polling Tracks with real files', function () {
     // Upload track content
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID,
       track_segments: trackSegments,
       transcodedTrackUUID,
       source_file: sourceFile
@@ -1114,6 +1125,7 @@ describe('test Polling Tracks with real files', function () {
     const trackMetadata = {
       metadata: {
         owner_id: userId,
+        track_cid: transcodedTrackCID,
         track_segments: trackSegments
       },
       source_file: sourceFile
@@ -1160,6 +1172,7 @@ describe('test Polling Tracks with real files', function () {
     // Upload track content
     const { fileUUID, fileDir } = await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID,
       track_segments: trackSegments,
       transcodedTrackUUID,
       source_file: sourceFile
@@ -1172,6 +1185,7 @@ describe('test Polling Tracks with real files', function () {
     const { fileUUID: fileUUID2, fileDir: fileDir2 } =
       await saveFileToStorage(testAudioFilePath)
     const {
+      transcodedTrackCID: track2CID,
       track_segments: track2Segments,
       transcodedTrackUUID: transcodedTrack2UUID,
       source_file: sourceFile2
@@ -1184,6 +1198,7 @@ describe('test Polling Tracks with real files', function () {
     const trackMetadata = {
       metadata: {
         owner_id: userId,
+        track_cid: transcodedTrackCID,
         track_segments: trackSegments
       },
       source_file: sourceFile
@@ -1201,6 +1216,7 @@ describe('test Polling Tracks with real files', function () {
     const track2Metadata = {
       metadata: {
         owner_id: userId,
+        track_cid: track2CID,
         track_segments: track2Segments
       },
       source_file: sourceFile

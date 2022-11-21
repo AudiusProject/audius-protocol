@@ -7,88 +7,107 @@ from src.utils.db_session import get_db_read_replica
 
 
 def test_access(app):
-    non_premium_track_entity = {
-        "track_id": 1,
-        "owner_id": 3,
-        "is_premium": False,
-        "premium_conditions": None,
-    }
-    premium_track_entity_1 = {
-        "track_id": 2,
-        "owner_id": 3,
-        "is_premium": True,
-        "premium_conditions": {
-            "nft_collection": {
-                "chain": "eth",
-                "standard": "ERC721",
-                "address": "some-nft-collection",
-            }
-        },
-    }
-    premium_track_entity_2 = {
-        "track_id": 3,
-        "owner_id": 2,
-        "is_premium": True,
-        "premium_conditions": {
-            "nft_collection": {
-                "chain": "eth",
-                "standard": "ERC721",
-                "address": "some-nft-collection",
-            }
-        },
-    }
-    track_entities = [
-        non_premium_track_entity,
-        premium_track_entity_1,
-        premium_track_entity_2,
-    ]
-    tracks = []
-    for entity in track_entities:
-        tracks.append(
-            Track(
-                blockhash=hex(0),
-                blocknumber=0,
-                txhash=str(0),
-                track_id=entity.get("track_id"),
-                owner_id=entity.get("owner_id", 1),
-                is_premium=entity.get("is_premium", False),
-                premium_conditions=entity.get("premium_conditions", None),
-                is_current=True,
-                is_delete=False,
+    with app.app_context():
+        db = get_db_read_replica()
+        non_premium_track_entity = {
+            "track_id": 1,
+            "owner_id": 3,
+            "is_premium": False,
+            "premium_conditions": None,
+        }
+        premium_track_entity_1 = {
+            "track_id": 2,
+            "owner_id": 3,
+            "is_premium": True,
+            "premium_conditions": {
+                "nft_collection": {
+                    "chain": "eth",
+                    "standard": "ERC721",
+                    "address": "some-nft-collection",
+                }
+            },
+        }
+        premium_track_entity_2 = {
+            "track_id": 3,
+            "owner_id": 2,
+            "is_premium": True,
+            "premium_conditions": {
+                "nft_collection": {
+                    "chain": "eth",
+                    "standard": "ERC721",
+                    "address": "some-nft-collection",
+                }
+            },
+        }
+        premium_track_entity_3 = {
+            "track_id": 4,
+            "owner_id": 1,
+            "is_premium": True,
+            "premium_conditions": {"follow_user_id": 1},
+        }
+        track_entities = [
+            non_premium_track_entity,
+            premium_track_entity_1,
+            premium_track_entity_2,
+            premium_track_entity_3,
+        ]
+        tracks = []
+        for entity in track_entities:
+            tracks.append(
+                Track(
+                    blockhash=hex(0),
+                    blocknumber=0,
+                    txhash=str(0),
+                    track_id=entity.get("track_id"),
+                    owner_id=entity.get("owner_id", 1),
+                    is_premium=entity.get("is_premium", False),
+                    premium_conditions=entity.get("premium_conditions", None),
+                    is_current=True,
+                    is_delete=False,
+                )
             )
+
+        populate_mock_db(
+            db, {"follows": [{"follower_user_id": 2, "followee_user_id": 1}]}
         )
 
-    premium_content_access_checker = PremiumContentAccessChecker()
+        premium_content_access_checker = PremiumContentAccessChecker()
 
-    # test non-premium content
-    result = premium_content_access_checker.check_access(
-        user_id=1,
-        premium_content_id=non_premium_track_entity["track_id"],
-        premium_content_type="track",
-        premium_content_entity=tracks[0],
-    )
-    assert not result["is_premium"] and result["does_user_have_access"]
+        # test non-premium content
+        result = premium_content_access_checker.check_access(
+            user_id=1,
+            premium_content_id=non_premium_track_entity["track_id"],
+            premium_content_type="track",
+            premium_content_entity=tracks[0],
+        )
+        assert not result["is_premium"] and result["does_user_have_access"]
 
-    # test premium content with user who has access
-    result = premium_content_access_checker.check_access(
-        user_id=2,
-        premium_content_id=premium_track_entity_1["track_id"],
-        premium_content_type="track",
-        premium_content_entity=tracks[1],
-    )
-    assert result["is_premium"] and result["does_user_have_access"]
+        # test premium content with user who has no access
+        result = premium_content_access_checker.check_access(
+            user_id=2,
+            premium_content_id=premium_track_entity_1["track_id"],
+            premium_content_type="track",
+            premium_content_entity=tracks[1],
+        )
+        assert result["is_premium"] and not result["does_user_have_access"]
 
-    # test premium content with user who owns the track
-    result = premium_content_access_checker.check_access(
-        user_id=2,
-        premium_content_id=premium_track_entity_2["track_id"],
-        premium_content_type="track",
-        premium_content_entity=tracks[2],
-    )
-    assert result["is_premium"] and result["does_user_have_access"]
+        # test premium content with user who owns the track
+        result = premium_content_access_checker.check_access(
+            user_id=2,
+            premium_content_id=premium_track_entity_2["track_id"],
+            premium_content_type="track",
+            premium_content_entity=tracks[2],
+        )
+        assert result["is_premium"] and result["does_user_have_access"]
 
-    # todo: test premium content with user who has no access
-    # after we implement nft infexing
+        # test premium content with user who has access
+        result = premium_content_access_checker.check_access(
+            user_id=2,
+            premium_content_id=premium_track_entity_3["track_id"],
+            premium_content_type="track",
+            premium_content_entity=tracks[3],
+        )
+        assert result["is_premium"] and result["does_user_have_access"]
 
 
 def test_batch_access(app):
@@ -130,13 +149,25 @@ def test_batch_access(app):
                 }
             },
         }
+        premium_track_entity_3 = {
+            "track_id": 5,
+            "owner_id": 1,
+            "is_premium": True,
+            "premium_conditions": {"follow_user_id": 1},
+        }
         track_entities = [
             non_premium_track_entity,
             premium_track_entity_1,
             premium_track_entity_2,
+            premium_track_entity_3,
         ]
+        follow_entities = [{"follower_user_id": 2, "followee_user_id": 1}]
 
-        entities = {"users": user_entities, "tracks": track_entities}
+        entities = {
+            "users": user_entities,
+            "tracks": track_entities,
+            "follows": follow_entities,
+        }
 
         populate_mock_db(db, entities)
 
@@ -166,6 +197,11 @@ def test_batch_access(app):
                         "premium_content_id": premium_track_entity_2["track_id"],
                         "premium_content_type": "track",
                     },
+                    {
+                        "user_id": user_entity_2["user_id"],
+                        "premium_content_id": premium_track_entity_3["track_id"],
+                        "premium_content_type": "track",
+                    },
                 ],
             )
 
@@ -183,13 +219,13 @@ def test_batch_access(app):
                 and user_2_non_premium_track_access_result["does_user_have_access"]
             )
 
-            # test premium track with user who has access
+            # test premium track with user who has no access
             user_2_premium_track_access_result = track_access_result[
                 user_entity_2["user_id"]
             ][premium_track_entity_1["track_id"]]
             assert (
                 user_2_premium_track_access_result["is_premium"]
-                and user_2_premium_track_access_result["does_user_have_access"]
+                and not user_2_premium_track_access_result["does_user_have_access"]
             )
 
             # test premium track with user who owns the track
@@ -201,5 +237,11 @@ def test_batch_access(app):
                 and user_3_premium_track_access_result["does_user_have_access"]
             )
 
-            # todo: test premium track with user who has no access
-            # after we implement nft infexing
+            # test premium track with user who has access
+            user_2_premium_track_access_result_2 = track_access_result[
+                user_entity_2["user_id"]
+            ][premium_track_entity_3["track_id"]]
+            assert (
+                user_2_premium_track_access_result_2["is_premium"]
+                and user_2_premium_track_access_result_2["does_user_have_access"]
+            )

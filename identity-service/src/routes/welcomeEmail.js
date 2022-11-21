@@ -63,6 +63,12 @@ module.exports = function (app) {
         )
         return successResponse({ msg: 'Welcome email forbidden', status: true })
       }
+      if (existingUser.isBlockedFromEmails) {
+        req.logger.info(
+          `User with handle ${existingUser.handle} and email ${existingUser.email} is blocked from receiving emails`
+        )
+        return successResponse({ msg: 'Welcome email forbidden', status: true })
+      }
 
       const walletAddress = existingUser.walletAddress
       const htmlTemplate = isNativeMobile
