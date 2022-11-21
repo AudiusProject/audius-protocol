@@ -597,7 +597,10 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete("index_user_bank_backfill_complete")
+    redis_inst.delete("index_rewards_manager_backfill_complete")
     redis_inst.delete("spl_token_backfill_lock")
+    redis_inst.delete("index_spl_token_backfill_complete")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
