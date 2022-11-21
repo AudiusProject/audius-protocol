@@ -50,6 +50,7 @@ import {
   playlistLibraryReducer,
   PlaylistLibraryState
 } from './playlist-library'
+import premiumContentReducer from './premium-content/reducer'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
@@ -101,7 +102,6 @@ import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
-import premiumContentReducer from './premiumContent/reducer'
 
 /**
  * A function that creates common reducers. The function takes
@@ -310,7 +310,7 @@ export type CommonState = {
   tipping: ReturnType<typeof tippingReducer>
 
   // Premium content
-  premiumContent: ReturnType<typeof premiumContentReducer>,
+  premiumContent: ReturnType<typeof premiumContentReducer>
 
   upload: UploadState
 }

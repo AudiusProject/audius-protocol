@@ -11,7 +11,6 @@ import {
   actionChannelDispatcher,
   playerActions,
   playerSelectors,
-  reachabilitySelectors,
   Nullable,
   FeatureFlags,
   premiumContentSelectors,
@@ -31,7 +30,6 @@ import {
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-const { getIsReachable } = reachabilitySelectors
 
 const {
   play,
@@ -67,8 +65,6 @@ export function* watchPlay() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const isNativeMobile = yield* getContext('isNativeMobile')
-  const isReachable = yield* select(getIsReachable)
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const streamMp3IsEnabled = yield* call(
     getFeatureEnabled,
@@ -99,7 +95,9 @@ export function* watchPlay() {
       const track = yield* select(getTrack, { id: trackId })
       if (!track) return
       if (track.is_premium && !track.premium_content_signature) {
-        console.warn('Should have signature for premium track to reduce potential DN latency')
+        console.warn(
+          'Should have signature for premium track to reduce potential DN latency'
+        )
       }
 
       const owner = yield* select(getUser, {
@@ -120,14 +118,18 @@ export function* watchPlay() {
       if (isPremiumContentEnabled && track.is_premium) {
         const data = `Premium content user signature at ${Date.now()}`
         const signature = yield* call(audiusBackendInstance.getSignature, data)
-        const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
+        const premiumTrackSignatureMap = yield* select(
+          getPremiumTrackSignatureMap
+        )
         const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
         queryParams = {
           user_data: data,
           user_signature: signature
         }
         if (premiumContentSignature) {
-          queryParams['premium_content_signature'] = JSON.stringify(premiumContentSignature)
+          queryParams.premium_content_signature = JSON.stringify(
+            premiumContentSignature
+          )
         }
       }
       const forceStreamMp3Url = forceStreamMp3

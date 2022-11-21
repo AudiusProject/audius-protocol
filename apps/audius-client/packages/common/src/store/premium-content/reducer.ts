@@ -1,5 +1,6 @@
-import { ID, PremiumContentSignature } from 'models'
 import { createReducer, ActionType } from 'typesafe-actions'
+
+import { ID, PremiumContentSignature } from 'models'
 
 import * as actions from './actions'
 import { UPDATE_PREMIUM_CONTENT_SIGNATURES } from './actions'
@@ -14,7 +15,10 @@ const initialState = {
   premiumTrackSignatureMap: {}
 }
 
-const premiumContentReducer = createReducer<PremiumContentState, PremiumContentActions>(initialState, {
+const premiumContentReducer = createReducer<
+  PremiumContentState,
+  PremiumContentActions
+>(initialState, {
   [UPDATE_PREMIUM_CONTENT_SIGNATURES](state, action) {
     return {
       ...state,

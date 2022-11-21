@@ -13,7 +13,7 @@ import {
   FeatureFlags,
   premiumContentSelectors,
   premiumContentActions,
-  TrackMetadata,
+  TrackMetadata
 } from '@audius/common'
 import { takeLatest, select, call, put } from 'typed-redux-saga'
 
@@ -187,7 +187,9 @@ function* updateNFTGatedTrackAccess(
     'kind' in action && action.kind === Kind.TRACKS && !!action.entries.length
   if (areTracksAdded) {
     yield* call(updateNewPremiumContentSignatures, {
-      tracks: action.entries.map(({ metadata }: { metadata : TrackMetadata }) => metadata),
+      tracks: action.entries.map(
+        ({ metadata }: { metadata: TrackMetadata }) => metadata
+      ),
       premiumTrackSignatureIdSet
     })
   }
