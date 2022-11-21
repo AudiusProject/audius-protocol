@@ -52,6 +52,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
+MIN_SIG = str(shared_config["solana"]["user_bank_backfill_min_sig"])
 
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
@@ -348,7 +349,7 @@ def parse_user_bank_transaction(
     solana_client_manager: SolanaClientManager,
     tx_sig,
 ):
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig, retries=10)
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
@@ -397,14 +398,22 @@ def process_user_bank_txs(stop_sig: str):
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
                 limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+                retries=20,
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
                 intersection_found = True
                 logger.info(
-                    f"index_user_bank_backfill.py | No transactions found before {last_tx_signature}"
+                    f"index_user_bank_backfill.py | No transactions found before {last_tx_signature}, got {transactions_array}"
                 )
+                if last_tx_signature != MIN_SIG:
+                    raise Exception(
+                        f"No transactions found before {last_tx_signature} due to Solana flakiness"
+                    )
             else:
+                logger.info(
+                    f"index_user_bank_backfill.py | Adding to batch slot: {transactions_array[0]['slot']}"
+                )
                 # Current batch of transactions
                 transaction_signature_batch = []
                 for tx_info in transactions_array:
@@ -519,9 +528,7 @@ def check_if_backfilling_complete(
         stop_sig = stop_sig_tuple[0]
 
         one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
-            USER_BANK_ADDRESS,
-            before=stop_sig,
-            limit=1,
+            USER_BANK_ADDRESS, before=stop_sig, limit=1, retries=20
         )
         if not one_sig_before_stop_result:
             logger.error("index_user_bank_backfill.py | No sigs before stop_sig")
@@ -575,9 +582,7 @@ def find_true_stop_sig(
     count = 100
     while count:
         tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
-            USER_BANK_ADDRESS,
-            before=stop_sig,
-            limit=1,
+            USER_BANK_ADDRESS, before=stop_sig, limit=1, retries=20
         )
         if tx_before_stop_sig:
             tx_before_stop_sig = tx_before_stop_sig["result"][0]
@@ -659,40 +664,43 @@ def index_user_bank_backfill(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("user_bank_backfill_lock", timeout=10 * 60)
+    update_lock = redis.lock("user_bank_backfill_lock")
 
     db = index_user_bank_backfill.db
     solana_client_manager = index_user_bank_backfill.solana_client_manager
 
-    with db.scoped_session() as session:
+    try:
+        with db.scoped_session() as session:
+            stop_sig = (
+                session.query(IndexingCheckpoint.signature)
+                .filter(
+                    IndexingCheckpoint.tablename == index_user_bank_backfill_tablename
+                )
+                .first()
+            )
+            if not stop_sig:
+                stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
+                if not stop_sig:
+                    logger.info(
+                        "index_user_bank_backfill.py | Failed to find true stop signature"
+                    )
+                    return
+                logger.info(
+                    f"index_user_bank_backfill.py | Found true stop_sig: {stop_sig}"
+                )
+            else:
+                stop_sig = stop_sig[0]
 
-        stop_sig = (
-            session.query(IndexingCheckpoint.signature)
-            .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
-            .first()
-        )
-        if not stop_sig:
-            stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
             if not stop_sig:
                 logger.info(
-                    "index_user_bank_backfill.py | Failed to find true stop signature"
+                    f"index_user_bank_backfill.py | No stop_sig found: {stop_sig}"
                 )
                 return
-            logger.info(
-                f"index_user_bank_backfill.py | Found true stop_sig: {stop_sig}"
-            )
-        else:
-            stop_sig = stop_sig[0]
 
-        if not stop_sig:
-            logger.info(f"index_user_bank_backfill.py | No stop_sig found: {stop_sig}")
-            return
+            if check_if_backfilling_complete(session, solana_client_manager, redis):
+                logger.info("index_user_bank_backfill.py | Backfill indexing complete!")
+                return
 
-        if check_if_backfilling_complete(session, solana_client_manager, redis):
-            logger.info("index_user_bank_backfill.py | Backfill indexing complete!")
-            return
-
-    try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
