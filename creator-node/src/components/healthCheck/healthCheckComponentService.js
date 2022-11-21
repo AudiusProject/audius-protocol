@@ -134,6 +134,10 @@ const healthCheck = async (
   const clusterWorkersCount = clusterUtils.getNumWorkers()
 
   const healthy = !config.get('considerNodeUnhealthy')
+  const databaseIsLocalhost =
+    config.get('dbUrl') ===
+      'postgres://postgres:postgres@db:5432/audius_creator_node' ||
+    config.get('dbUrl').includes('localhost')
 
   const response = {
     ...versionInfo,
@@ -146,6 +150,7 @@ const healthCheck = async (
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
+    autoUpgradeEnabled: config.get('autoUpgradeEnabled'),
     numberOfCPUs,
     totalMemory,
     storagePathSize,
@@ -154,6 +159,7 @@ const healthCheck = async (
     longitude,
     databaseConnections,
     databaseSize,
+    databaseIsLocalhost: databaseIsLocalhost,
     usedMemory,
     usedTCPMemory,
     storagePathUsed,

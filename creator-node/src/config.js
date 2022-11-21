@@ -858,6 +858,12 @@ const config = convict({
     env: 'syncOverridePassword',
     default: '',
     sensitive: true
+  },
+  autoUpgradeEnabled: {
+    doc: 'Is the audius-cli cron job for auto upgrade enabled on the host machine.',
+    format: Boolean,
+    env: 'autoUpgradeEnabled',
+    default: false
   }
 })
 

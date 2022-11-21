@@ -314,6 +314,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     url = shared_config["discprov"]["url"]
     final_poa_block = helpers.get_final_poa_block(shared_config)
 
+    auto_upgrade_enabled = (
+        True if os.getenv("audius_auto_upgrade_enabled") == "true" else False
+    )
+    database_is_localhost = os.getenv(
+        "audius_db_url"
+    ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
+        "audius_db_url", ""
+    )
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -324,6 +333,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "blockhash": latest_indexed_block_hash,
         },
         "git": os.getenv("GIT_SHA"),
+        "auto_upgrade_enabled": auto_upgrade_enabled,
+        "database_is_localhost": database_is_localhost,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
