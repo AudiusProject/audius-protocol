@@ -1,6 +1,7 @@
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useState, useRef, forwardRef, useCallback } from 'react'
 
+import { BlurView } from '@react-native-community/blur'
 import type {
   NativeSyntheticEvent,
   TextInputFocusEventData,
@@ -9,6 +10,8 @@ import type {
   ViewStyle
 } from 'react-native'
 import {
+  Keyboard,
+  InputAccessoryView,
   Animated,
   TextInput as RNTextInput,
   View,
@@ -24,7 +27,13 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { convertHexToRGBA } from 'app/utils/convertHexToRGBA'
 import { mergeRefs } from 'app/utils/mergeRefs'
-import { useThemeColors } from 'app/utils/theme'
+import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
+
+import { TextButton } from './TextButton'
+
+const messages = {
+  done: 'Done'
+}
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
@@ -69,6 +78,14 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   startAdornment: {},
   endAdornment: {
     alignSelf: 'flex-end'
+  },
+  inputAccessory: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
+  },
+  doneButton: {
+    marginRight: spacing(4),
+    marginVertical: spacing(3)
   }
 }))
 
@@ -93,12 +110,14 @@ export type TextInputProps = RNTextInputProps & {
     input: TextStyle
     labelText: TextStyle
   }>
+  hideInputAccessory?: boolean
 }
 
 export type TextInputRef = RNTextInput
 
 const activeLabelY = 0
 const inactiveLabelY = spacing(3)
+const inputAccessoryViewID = 'audiusInputAccessoryView'
 
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(
   (props, ref) => {
@@ -118,9 +137,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       onFocus,
       onBlur,
       placeholder,
+      hideInputAccessory: hideInputAccessoryProp,
       ...other
     } = props
-    const { autoFocus } = other
+    const { autoFocus, returnKeyType } = other
     const styles = useStyles()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
@@ -130,6 +150,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     )
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
     const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
+
+    const hideInputAccessory =
+      hideInputAccessoryProp ?? returnKeyType === 'search'
 
     const handleFocus = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
@@ -227,6 +250,8 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const { neutral, neutralLight4, secondary, neutralLight7 } =
       useThemeColors()
 
+    const themeVariant = useThemeVariant()
+
     return (
       <Pressable onPress={handlePressRoot}>
         <Animated.View
@@ -284,6 +309,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={label && !isFocused ? undefined : placeholder}
+            inputAccessoryViewID={
+              hideInputAccessory ? undefined : inputAccessoryViewID
+            }
             {...other}
           />
           {clearable ? (
@@ -322,6 +350,27 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             <View style={styles.endAdornment}>{endAdornment}</View>
           ) : null}
         </Animated.View>
+        {hideInputAccessory ? null : (
+          <InputAccessoryView nativeID={inputAccessoryViewID}>
+            <BlurView
+              blurType={
+                themeVariant === Theme.DEFAULT
+                  ? 'thinMaterialLight'
+                  : 'thinMaterialDark'
+              }
+              blurAmount={20}
+              style={styles.inputAccessory}
+            >
+              <TextButton
+                variant='secondary'
+                title={messages.done}
+                TextProps={{ fontSize: 'large', weight: 'demiBold' }}
+                style={styles.doneButton}
+                onPress={Keyboard.dismiss}
+              />
+            </BlurView>
+          </InputAccessoryView>
+        )}
       </Pressable>
     )
   }
