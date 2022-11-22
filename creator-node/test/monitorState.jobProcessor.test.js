@@ -161,8 +161,7 @@ describe('test monitorState job processor', function () {
     lastProcessedUserId,
     users = USERS,
     unhealthyPeers = UNHEALTHY_PEERS,
-    replicaToAllUserInfoMaps = REPLICA_TO_USER_INFO_MAP,
-    userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
+    replicaToAllUserInfoMaps = REPLICA_TO_USER_INFO_MAP
   }) {
     const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.MONITOR_STATE].map(
       (job) => {
@@ -194,19 +193,20 @@ describe('test monitorState job processor', function () {
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
       replicaToAllUserInfoMaps,
-      userSecondarySyncMetricsMap
+      walletToSecondaryToExceedsMaxErrorsAllowed: {}
     })
+
     // Verify jobResult enqueues the correct findReplicaSetUpdates job
     expect(findReplicaSetUpdatesJobs).to.have.lengthOf(1)
     expect(findReplicaSetUpdatesJobs).to.deep.include({
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
       replicaToAllUserInfoMaps,
-      userSecondarySyncMetricsMap
+      walletToSecondaryToExceedsMaxErrorsAllowed: {}
     })
   }
 
-  it('should process the correct number of users and resolve successfully', async function () {
+  it.only('should process the correct number of users and resolve successfully', async function () {
     // Set constants and generate the users to process
     const lastProcessedUserId = 200
     const numUsersToProcess = 100
