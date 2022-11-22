@@ -43,6 +43,7 @@ const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const BATCH_TRACKID_ROUTE_LIMIT = 250_000
 
 const router = express.Router()
 
@@ -898,6 +899,39 @@ router.post(
     }
 
     return successResponse(cidExistanceMap)
+  })
+)
+
+router.post(
+  '/batch_id_to_cid',
+  handleResponse(async (req, _res) => {
+    const { trackIds } = req.body
+    if (trackIds && trackIds.length > BATCH_TRACKID_ROUTE_LIMIT) {
+      return errorResponseBadRequest(
+        `Too many track IDs passed in, limit is ${BATCH_TRACKID_ROUTE_LIMIT}`
+      )
+    }
+
+    const queryResults = await models.File.findAll({
+      attributes: ['multihash', 'trackBlockchainId'],
+      raw: true,
+      where: {
+        trackBlockchainId: {
+          [models.Sequelize.Op.in]: trackIds
+        },
+        type: 'copy320'
+      }
+    })
+
+    const trackIdMapping = Object.fromEntries(
+      queryResults.map(({ trackBlockchainId, multihash }) => [
+        trackBlockchainId,
+        multihash
+      ])
+    )
+
+    // return results
+    return successResponse(trackIdMapping)
   })
 )
 
