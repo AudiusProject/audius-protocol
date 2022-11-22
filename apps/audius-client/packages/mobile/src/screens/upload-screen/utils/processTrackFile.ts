@@ -19,7 +19,7 @@ export const processTrackFile = (
     preview: null,
     metadata: newTrackMetadata({
       title,
-      artwork: { url: '' }
+      artwork: null
     })
   }
 }

@@ -4,7 +4,7 @@ import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Divider, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { UploadStackScreen } from '../components'
+import { FormScreen } from '../components'
 import { SwitchField } from '../fields'
 
 const messages = {
@@ -33,7 +33,7 @@ export const TrackVisibilityScreen = () => {
   const styles = useStyles()
 
   return (
-    <UploadStackScreen title={messages.title} icon={IconHidden} variant='white'>
+    <FormScreen title={messages.title} icon={IconHidden} variant='white'>
       <View style={styles.content}>
         <Text fontSize='large'>{messages.description}</Text>
         <Divider style={styles.divider} />
@@ -51,6 +51,6 @@ export const TrackVisibilityScreen = () => {
           label={messages.showPlayCount}
         />
       </View>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

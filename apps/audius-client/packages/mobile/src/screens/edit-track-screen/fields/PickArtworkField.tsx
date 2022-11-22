@@ -67,8 +67,8 @@ export const PickArtworkField = () => {
   const { neutralLight8 } = useThemeColors()
   const name = 'artwork'
   const [{ value }, { error, touched }, { setValue }] = useField(name)
-  const { url } = value
-  const uri = url === null || url === '' ? ' ' : url
+  const [{ value: existingTrackArtwork }] = useField('trackArtwork')
+  const trackArtworkUrl = value?.url ?? existingTrackArtwork
   const { secondary } = useThemeColors()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -92,14 +92,14 @@ export const PickArtworkField = () => {
   return (
     <View style={styles.root}>
       <DynamicImage
-        uri={uri}
+        uri={trackArtworkUrl ?? ' '}
         onLoad={() => setIsLoading(false)}
         style={styles.image}
       >
         <View style={styles.iconPicture}>
           {isLoading ? (
             <LoadingSpinner style={styles.loading} />
-          ) : url ? null : (
+          ) : trackArtworkUrl ? null : (
             <IconImage height={128} width={128} fill={neutralLight8} />
           )}
         </View>
@@ -107,7 +107,9 @@ export const PickArtworkField = () => {
           <Button
             variant='commonAlt'
             styles={{ root: { zIndex: 1000 }, icon: styles.buttonIcon }}
-            title={url ? messages.changeArtwork : messages.addArtwork}
+            title={
+              trackArtworkUrl ? messages.changeArtwork : messages.addArtwork
+            }
             icon={IconCamera}
             iconPosition='left'
             onPress={handlePress}
@@ -116,7 +118,7 @@ export const PickArtworkField = () => {
       </DynamicImage>
       {error && touched ? (
         <InputErrorMessage
-          message={`${capitalize(name)} ${(error as unknown as Error).url}`}
+          message={`${capitalize(name)} ${error as unknown as Error}`}
         />
       ) : null}
     </View>

@@ -24,10 +24,10 @@ export interface UploadTrack {
 }
 
 export interface ExtendedTrackMetadata extends TrackMetadata {
-  artwork: {
+  artwork: Nullable<{
     file: Blob | NativeFile
     url: string
-  }
+  }>
 }
 
 export interface ExtendedCollectionMetadata extends CollectionMetadata {

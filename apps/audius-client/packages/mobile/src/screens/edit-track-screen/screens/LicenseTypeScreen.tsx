@@ -12,7 +12,7 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { UploadStackScreen } from '../components'
+import { FormScreen } from '../components'
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
 
 const messages = {
@@ -115,7 +115,7 @@ export const LicenseTypeScreen = () => {
   }
 
   return (
-    <UploadStackScreen
+    <FormScreen
       title={messages.title}
       icon={IconCreativeCommons}
       variant='white'
@@ -177,6 +177,6 @@ export const LicenseTypeScreen = () => {
           </View>
         </View>
       </ScrollView>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

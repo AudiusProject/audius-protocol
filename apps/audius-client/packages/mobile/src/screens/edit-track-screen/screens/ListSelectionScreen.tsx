@@ -10,7 +10,7 @@ import type { SvgProps } from 'react-native-svg'
 import { TextInput, Text, RadioButton, Divider } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { UploadStackScreen } from '../components'
+import { FormScreen } from '../components'
 
 export type ListSelectionData = { label: string; value: string }
 
@@ -104,7 +104,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
   const filteredData = data.filter(({ label }) => label.match(filterRegexp))
 
   return (
-    <UploadStackScreen
+    <FormScreen
       title={screenTitle}
       icon={icon}
       variant='white'
@@ -124,6 +124,6 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
           data={filteredData}
         />
       </View>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

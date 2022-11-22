@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Track, User, CommonState } from '@audius/common'
 import {
+  accountSelectors,
   removeNullable,
   PlaybackSource,
   FavoriteSource,
@@ -37,6 +38,7 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
+const { getUserId } = accountSelectors
 
 export const TrackTile = (props: LineupItemProps) => {
   const { uid } = props
@@ -72,9 +74,14 @@ export const TrackTileComponent = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const currentScreen = useNavigationState((state) => state.history?.[0])
+  // @ts-expect-error -- history returning unknown[]
+  const isOnArtistsTracksTab = currentScreen?.key.includes('Tracks')
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === lineupTileProps.uid
   )
+
+  const currentUserId = useSelector(getUserId)
+  const isOwner = currentUserId === track.owner_id
 
   const {
     _cover_art_sizes,
@@ -87,9 +94,6 @@ export const TrackTileComponent = ({
     title,
     track_id
   } = track
-
-  // @ts-expect-error -- history returning unknown[]
-  const isOnArtistsTracksTab = currentScreen?.key.includes('Tracks')
 
   const imageUrl = useTrackCoverArt({
     id: track_id,
@@ -116,7 +120,9 @@ export const TrackTileComponent = ({
     const overflowActions = [
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
-      isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE
+      isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
+      isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
     dispatch(
@@ -126,7 +132,7 @@ export const TrackTileComponent = ({
         overflowActions
       })
     )
-  }, [track_id, dispatch, isOnArtistsTracksTab])
+  }, [track_id, dispatch, isOnArtistsTracksTab, isOwner])
 
   const handlePressShare = useCallback(() => {
     if (track_id === undefined) {

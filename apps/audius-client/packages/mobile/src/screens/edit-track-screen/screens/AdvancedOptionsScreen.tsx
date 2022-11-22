@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import IconIndent from 'app/assets/images/iconIndent.svg'
 
-import { UploadStackScreen } from '../components'
+import { FormScreen } from '../components'
 import {
   IsrcField,
   LicenseTypeField,
@@ -17,7 +17,7 @@ const messages = {
 
 export const AdvancedOptionsScreen = () => {
   return (
-    <UploadStackScreen
+    <FormScreen
       title={messages.screenTitle}
       icon={IconIndent}
       bottomSection={null}
@@ -33,6 +33,6 @@ export const AdvancedOptionsScreen = () => {
           <LicenseTypeField />
         </SubmenuList>
       </View>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

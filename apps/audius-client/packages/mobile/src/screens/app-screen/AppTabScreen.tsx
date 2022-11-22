@@ -35,6 +35,7 @@ import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { EditProfileScreen } from '../edit-profile-screen'
+import { EditExistingTrackScreen } from '../edit-track-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -91,6 +92,7 @@ export type AppTabScreenParamList = {
   NotificationSettingsScreen: undefined
   AudioScreen: undefined
   Upload: undefined
+  EditTrack: { id: ID }
 }
 
 const forFade = ({ current }) => ({
@@ -272,6 +274,14 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen
         name='Upload'
         component={UploadScreen}
+        options={{
+          headerShown: false,
+          presentation: 'fullScreenModal'
+        }}
+      />
+      <Stack.Screen
+        name='EditTrack'
+        component={EditExistingTrackScreen}
         options={{
           headerShown: false,
           presentation: 'fullScreenModal'

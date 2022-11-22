@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import { makeStyles } from 'app/styles'
 
-import { UploadStackScreen } from '../components'
+import { FormScreen } from '../components'
 import { TextField } from '../fields'
 
 const messages = {
@@ -22,7 +22,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const IsrcIswcScreen = () => {
   const styles = useStyles()
   return (
-    <UploadStackScreen title={messages.title} icon={IconInfo} variant='white'>
+    <FormScreen title={messages.title} icon={IconInfo} variant='white'>
       <View style={styles.content}>
         <TextField
           name='isrc'
@@ -35,6 +35,6 @@ export const IsrcIswcScreen = () => {
           placeholder='T-34524688-1'
         />
       </View>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

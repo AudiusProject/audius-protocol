@@ -20,7 +20,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
-import { UploadStackScreen, RemixTrackPill } from '../components'
+import { FormScreen, RemixTrackPill } from '../components'
 
 const { getTrack, getUser, getStatus } = remixSettingsSelectors
 const { fetchTrack, reset } = remixSettingsActions
@@ -156,7 +156,7 @@ export const RemixSettingsScreen = () => {
   const hasErrors = isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
 
   return (
-    <UploadStackScreen
+    <FormScreen
       title={messages.screenTitle}
       icon={IconRemix}
       variant='white'
@@ -217,6 +217,6 @@ export const RemixSettingsScreen = () => {
         </View>
         <Divider />
       </View>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

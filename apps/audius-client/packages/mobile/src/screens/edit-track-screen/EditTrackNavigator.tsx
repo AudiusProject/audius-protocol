@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import type { FormikProps } from 'formik'
 
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
+import { EditTrackForm } from './EditTrackForm'
 import {
   AdvancedOptionsScreen,
   IsrcIswcScreen,
@@ -11,22 +11,22 @@ import {
   SelectGenreScreen,
   SelectMoodScreen,
   TrackVisibilityScreen
-} from '..'
-import type { FormValues } from '../../types'
-
-import { CompleteTrackForm } from './CompleteTrackForm'
+} from './screens'
+import type { EditTrackFormProps } from './types'
 
 const Stack = createNativeStackNavigator()
 
 const screenOptionOverrides = { headerRight: () => null }
 
-export const CompleteTrackStack = (props: FormikProps<FormValues>) => {
+type EditTrackNavigatorProps = EditTrackFormProps
+
+export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name='CompleteTrackForm'>
-        {() => <CompleteTrackForm {...props} />}
+        {() => <EditTrackForm {...props} />}
       </Stack.Screen>
       <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
       <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
