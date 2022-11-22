@@ -3,8 +3,6 @@
 import json
 import os
 import pathlib
-import random
-import string
 import subprocess
 
 import click
@@ -19,6 +17,7 @@ def generate_env(
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer_enabled,
+    discovery_environment=None
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -99,6 +98,10 @@ def generate_env(
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
 
+    if discovery_environment == "stage":
+        for key, value in config.get("discovery-stage-overrides", {}).items():
+            env[key] = value
+
     # generate config.env used by startup scripts
     env_file = protocol_dir / ".env"
     env_file.touch()
@@ -168,6 +171,7 @@ def build(
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.option("-de", "--discovery-environment", type=str, help="Run against an existing DN environment: prod/stage")
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -177,14 +181,27 @@ def up(
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
+    discovery_environment,
     services,
 ):
+    if discovery_environment == "stage":
+        completed = subprocess.run(["node", "/Users/michaelpiazza/development/scratch/hackathon"])
+        out = completed.stdout
+        print("db_ip is")
+        print(out)
+
+    if discovery_environment == "prod":
+        print("prod it not yet supported")
+        return
+
+
     generate_env(
         protocol_dir,
         creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
         block_explorer,
+        discovery_environment
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))

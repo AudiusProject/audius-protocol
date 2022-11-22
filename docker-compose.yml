@@ -328,16 +328,18 @@ services:
     env_file: .env # used by the startup script
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
+      audius_db_url: "${DISCOVERY_DB_URL}"
+      audius_db_url_read_replica: "${DISCOVERY_DB_URL}"
 
-      audius_web3_host: "poa-ganache"
-      audius_web3_port: "8545"
-      audius_web3_eth_provider_url: "http://eth-ganache:8545"
+      audius_web3_host: "${DISCOVERY_WEB3_HOST}"
+      audius_web3_port: "${DISCOVERY_WEB3_PORT}"
+      audius_web3_eth_provider_url: "${DISCOVERY_WEB3_ETH_PROVIDER_URL}"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
       audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 
-      audius_solana_endpoint: "http://solana-test-validator:8899"
+      audius_solana_endpoint: "${DISCOVERY_SOLANA_ENDPOINT}"
       audius_solana_track_listen_count_address: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
       audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
       audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
