@@ -23,7 +23,7 @@ import {
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } from '../stateMachineConstants'
 import { getReplicaSetEndpointsByWallet } from '../../ContentNodeInfoManager'
-import SecondarySyncHealthTracker from './SecondarySyncHealthTracker'
+import { SecondarySyncHealthTracker } from './SecondarySyncHealthTracker'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')

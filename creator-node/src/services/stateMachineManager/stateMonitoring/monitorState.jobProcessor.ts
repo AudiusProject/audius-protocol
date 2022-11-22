@@ -15,7 +15,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { CNodeHealthManager } from '../CNodeHealthManager'
 import config from '../../../config'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const {
   getNodeUsers,

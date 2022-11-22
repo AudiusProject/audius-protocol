@@ -16,7 +16,7 @@ import type {
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
-import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const _: LoDashStatic = require('lodash')
 

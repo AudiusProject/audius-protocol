@@ -23,7 +23,7 @@ const REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE =
 const REDIS_KEY_EXPIRY_SECONDS = 259_200 // 3 days -- small range of buffer time to delete keys by
 const PROCESS_USERS_BATCH_SIZE = 30
 
-class SecondarySyncHealthTracker {
+export class SecondarySyncHealthTracker {
   walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
   walletsToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
@@ -277,5 +277,4 @@ class SecondarySyncHealthTracker {
   }
 }
 
-export default SecondarySyncHealthTracker
-module.exports = SecondarySyncHealthTracker
+module.exports = { SecondarySyncHealthTracker }

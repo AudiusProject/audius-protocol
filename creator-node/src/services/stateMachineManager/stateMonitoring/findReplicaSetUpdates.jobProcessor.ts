@@ -17,7 +17,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { stringifyMap } from '../../../utils'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { CNodeHealthManager } from '../CNodeHealthManager'
-import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const _: LoDashStatic = require('lodash')
 
