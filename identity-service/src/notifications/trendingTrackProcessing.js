@@ -80,7 +80,7 @@ async function getTrendingTracks(trendingExperiment, discoveryNodes) {
             userId: decodeHashId(track.user.id)
           })
         )
-        const blocknumber = trendingTracksResponse.data.latest_indexed_block
+        const blocknumber = await models.NotificationAction.max('blocknumber')
         return { trendingTracks, blocknumber }
       } catch (err) {
         logger.error(`Unable to fetch trending tracks: ${err}`)
