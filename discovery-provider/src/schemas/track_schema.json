@@ -57,6 +57,20 @@
                     ],
                     "default": null
                 },
+                "key": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "bpm": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "default": null
+                },
                 "credits_splits": {
                     "type": [
                         "string",
@@ -213,7 +227,9 @@
                 "title",
                 "track_segments",
                 "is_premium",
-                "premium_conditions"
+                "premium_conditions",
+                "key",
+                "bpm"
             ],
             "title": "Track"
         },

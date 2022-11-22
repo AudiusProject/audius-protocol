@@ -15,6 +15,8 @@ const TRACK_PROPS = [
   'tags',
   'genre',
   'mood',
+  'key',
+  'bpm',
   'credits_splits',
   'release_date',
   'file_type',

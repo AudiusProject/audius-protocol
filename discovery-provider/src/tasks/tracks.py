@@ -491,6 +491,8 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_segments = track_metadata["track_segments"]
     track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
+    track_record.key = track_metadata["key"]
+    track_record.bpm = track_metadata["bpm"]
 
     track_record.is_premium = track_metadata["is_premium"]
     if is_valid_json_field(track_metadata, "premium_conditions"):
