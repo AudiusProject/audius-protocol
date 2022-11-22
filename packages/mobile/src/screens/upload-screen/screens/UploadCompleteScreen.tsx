@@ -123,6 +123,7 @@ export const UploadCompleteScreen = () => {
       icon={IconUpload}
       variant='secondary'
       topbarLeft={null}
+      url='/upload-complete'
       bottomSection={
         <Button
           variant='primary'

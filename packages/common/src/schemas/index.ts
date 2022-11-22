@@ -127,7 +127,11 @@ export const newUserMetadata = (fields?: any, validate = false) => {
   }
 }
 
-export const createRemixOfMetadata = ({ parentTrackId }) => {
+export const createRemixOfMetadata = ({
+  parentTrackId
+}: {
+  parentTrackId: number
+}) => {
   return {
     tracks: [
       {

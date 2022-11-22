@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { Nullable } from '@audius/common'
 import {
+  createRemixOfMetadata,
   remixSettingsActions,
   remixSettingsSelectors,
   Status
@@ -21,9 +21,10 @@ import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
 import { FormScreen, RemixTrackPill } from '../components'
+import type { RemixOfField } from '../types'
 
 const { getTrack, getUser, getStatus } = remixSettingsSelectors
-const { fetchTrack, reset } = remixSettingsActions
+const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
 
 const remixLinkInputDebounceMs = 1000
 
@@ -40,7 +41,7 @@ const messages = {
   remixUrlPlaceholder: 'Track URL'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, typography }) => ({
   setting: {
     paddingHorizontal: spacing(6),
     paddingVertical: spacing(8)
@@ -71,25 +72,17 @@ const descriptionProps: TextProps = {
   weight: 'medium'
 }
 
-export type RemixSettingsValue = {
-  remixOf: Nullable<string>
-  remixesVisible: boolean
-}
-
-export type RemixSettingsParams = {
-  value: RemixSettingsValue
-  onChange: (value: Partial<RemixSettingsValue>) => void
-}
-
 export const RemixSettingsScreen = () => {
   const styles = useStyles()
   const [{ value: remixOf }, , { setValue: setRemixOf }] =
-    useField<Nullable<string>>('remix_of')
+    useField<RemixOfField>('remix_of')
   const [{ value: remixesVisible }, , { setValue: setRemixesVisible }] =
     useField<boolean>('field_visibility.remixes')
-  const [isTrackRemix, setIsTrackRemix] = useState(Boolean(remixOf))
-  const [remixOfInput, setRemixOfInput] = useState(remixOf ?? '')
+  const parentTrackId = remixOf?.tracks[0].parent_track_id
+  const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
+  const [remixOfInput, setRemixOfInput] = useState('')
   const [isRemixUrlMissing, setIsRemixUrlMissing] = useState(false)
+  const [isTouched, setIsTouched] = useState(false)
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const parentTrack = useSelector(getTrack)
@@ -109,9 +102,10 @@ export const RemixSettingsScreen = () => {
     [dispatch]
   )
 
-  const handleFocus = useCallback(() => {
-    if (remixOfInput) {
-      handleFetchParentTrack(remixOfInput)
+  const handleFocusScreen = useCallback(() => {
+    const initialParentTrackId = parentTrackId
+    if (initialParentTrackId) {
+      dispatch(fetchTrackSucceeded({ trackId: initialParentTrackId }))
     }
     return () => {
       dispatch(reset())
@@ -119,7 +113,7 @@ export const RemixSettingsScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleFetchParentTrack, dispatch])
 
-  useFocusEffect(handleFocus)
+  useFocusEffect(handleFocusScreen)
 
   const handleChangeLink = useCallback(
     (value: string) => {
@@ -147,13 +141,27 @@ export const RemixSettingsScreen = () => {
   }, [navigation, dispatch, isTrackRemix, remixOf])
 
   useEffect(() => {
-    setRemixOf(
-      parentTrack && isTrackRemix ? getTrackRoute(parentTrack, true) : null
-    )
+    if (isTrackRemix && parentTrack && parentTrack.track_id !== parentTrackId) {
+      setRemixOf(createRemixOfMetadata({ parentTrackId: parentTrack.track_id }))
+    } else if (!isTrackRemix) {
+      setRemixOf(null)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentTrack, isTrackRemix])
 
-  const hasErrors = isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
+  const handleFocus = useCallback(() => {
+    setIsTouched(true)
+  }, [])
+
+  useEffect(() => {
+    if (!remixOfInput && !isTouched && parentTrack) {
+      setRemixOfInput(getTrackRoute(parentTrack, true))
+    }
+  }, [remixOfInput, isTouched, parentTrack])
+
+  const hasErrors = Boolean(
+    isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
+  )
 
   return (
     <FormScreen
@@ -187,6 +195,7 @@ export const RemixSettingsScreen = () => {
                 value={remixOfInput}
                 onChangeText={handleChangeLink}
                 placeholder={messages.remixUrlPlaceholder}
+                onFocus={handleFocus}
                 returnKeyType='done'
               />
               {parentTrack && parentTrackArtist && !isInvalidParentTrack ? (

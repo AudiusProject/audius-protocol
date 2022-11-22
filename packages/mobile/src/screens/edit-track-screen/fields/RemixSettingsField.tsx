@@ -1,4 +1,3 @@
-import type { Nullable } from '@audius/common'
 import { cacheUsersSelectors, cacheTracksSelectors } from '@audius/common'
 import { useField } from 'formik'
 import { View } from 'react-native'
@@ -9,6 +8,7 @@ import { Text, ContextualSubmenu } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { RemixTrackPill } from '../components'
+import type { RemixOfField } from '../types'
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
@@ -30,13 +30,15 @@ type SelectMoodFieldProps = Partial<ContextualSubmenuProps>
 
 export const RemixSettingsField = (props: SelectMoodFieldProps) => {
   const styles = useStyles()
-  const [{ value: remixOf }] = useField<Nullable<string>>('remix_of')
+  const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const [{ value: remixesVisible }] = useField<boolean>(
     'field_visibility.remixes'
   )
 
+  const parentTrackId = remixOf?.tracks[0].parent_track_id
+
   const parentTrack = useSelector((state) =>
-    getTrack(state, { permalink: remixOf ? new URL(remixOf).pathname : null })
+    getTrack(state, { id: parentTrackId })
   )
 
   const parentTrackUser = useSelector((state) =>

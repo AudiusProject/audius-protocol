@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import type { ExtendedTrackMetadata } from '@audius/common'
 import {
   cacheTracksActions,
   cacheTracksSelectors,
@@ -12,7 +13,6 @@ import { useRoute } from 'app/hooks/useRoute'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
 import { EditTrackScreen } from './EditTrackScreen'
-import type { FormValues } from './types'
 
 const { getTrack } = cacheTracksSelectors
 const { editTrack } = cacheTracksActions
@@ -36,8 +36,8 @@ export const EditExistingTrackScreen = () => {
   })
 
   const handleSubmit = useCallback(
-    (values: FormValues) => {
-      dispatch(editTrack(id, values))
+    (metadata: ExtendedTrackMetadata) => {
+      dispatch(editTrack(id, metadata))
       navigation.goBack()
     },
     [dispatch, id, navigation]

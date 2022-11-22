@@ -90,6 +90,7 @@ export const UploadingTracksScreen = () => {
       icon={IconUpload}
       style={styles.root}
       topbarLeft={null}
+      url='/uploading-track'
     >
       <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
         <View style={styles.title}>
