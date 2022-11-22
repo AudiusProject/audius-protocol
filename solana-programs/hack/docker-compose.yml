@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  alpine:
+    image: alpine
+    command: sh -c "tail -f /dev/null"
+    volumes:
+      - ./hostpipe.txt:/hostpipe.txt
+      - ./m1shim.sh:/m1shim.sh
+      - ./build.sh:/build.sh

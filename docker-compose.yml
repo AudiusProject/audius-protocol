@@ -125,30 +125,48 @@ services:
   solana-test-validator:
     build:
       context: solana-programs
-      dockerfile: Dockerfile.dev
-      args:
-        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
-        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
-        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
-        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
-        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
-        owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
-        feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
-        token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
-        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
-        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
-        signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
-        valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
-        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
-        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
-        valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+      dockerfile: Dockerfile.m1
+    command: sh -c "tail -f /dev/null"  
     ports:
-      - "8899:8899"
-    logging: *default-logging
-    deploy:
-      mode: global
+     - "8899:8899"
+    volumes:
+      - ./solana-programs/scripts:/usr/src/app/scripts
+      # - ./solana-programs/hack/hostpipe.txt:/hostpipe.txt
+      #- /private/var/orion/.config/solana/id.json:/root/.config/solana/id.json
+
+  # solana-test-validator:
+  #   build:
+  #     context: solana-programs
+  #     # dockerfile: Dockerfile.dev
+  #     dockerfile: Dockerfile.m1
+  #     args:
+  #       AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
+  #       TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
+  #       CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
+  #       REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
+  #       AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
+  #       owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
+  #       feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
+  #       token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
+  #       admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
+  #       admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
+  #       signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
+  #       valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
+  #       reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
+  #       reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
+  #       valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
+  #   command: sh -c "tail -f /dev/null"
+  #   volumes:
+  #     - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+  #     - ./solana-programs:/usr/src/app
+  #     # - ./solana-programs/scripts:/usr/src/app/scripts
+  #     # - ./solana-programs/hack:/usr/src/app/hack
+  #     - ./solana-programs/hack/hostpipe.txt:/hostpipe.txt
+  #   # ports:
+  #   #   - "8899:8899"
+  #   logging: *default-logging
+  #   deploy:
+  #     mode: global
 
   # build libs
 
@@ -185,7 +203,7 @@ services:
       ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
       POA_PROVIDER_URL: "http://poa-ganache:8545"
 
-      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
+      SOLANA_ENDPOINT: "http://host.docker.internal:8899"
       SOLANA_OWNER_SECRET_KEY: "${SOLANA_OWNER_SECRET_KEY}"
       SOLANA_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
       SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
@@ -204,7 +222,7 @@ services:
         condition: service_started
     logging: *default-logging
 
-  # identity-service
+  # # identity-service
 
   identity-service-db:
     image: postgres:11.4
@@ -268,7 +286,7 @@ services:
       ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
       ethOwnerWallet: "${ETH_OWNER_WALLET}"
 
-      solanaEndpoint: "http://solana-test-validator:8899"
+      solanaEndpoint: "http://host.docker.internal:8899"
       solanaTrackListenCountAddress: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
       solanaAudiusEthRegistryAddress: "${SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY}"
       solanaValidSigner: "${SOLANA_VALID_SIGNER_PUBLIC_KEY}"
@@ -337,7 +355,7 @@ services:
       audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
       audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
 
-      audius_solana_endpoint: "http://solana-test-validator:8899"
+      audius_solana_endpoint: "http://host.docker.internal:8899"
       audius_solana_track_listen_count_address: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
       audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
       audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
@@ -419,35 +437,35 @@ services:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
 
-  # port forwarder
-  # required for getting consistent port mappings
+  # # port forwarder
+  # # required for getting consistent port mappings
 
-  port-forwarder:
-    image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/port-forwarder.sh
-    ports:
-      - "4000-4010:4000-4010"
-      - "5000-5010:5000-5010"
-    volumes:
-      - ./dev-tools:/tmp/dev-tools
-    logging: *default-logging
-    deploy:
-      mode: global
+  # port-forwarder:
+  #   image: alpine:3.16.0
+  #   command: sh /tmp/dev-tools/startup/port-forwarder.sh
+  #   ports:
+  #     - "4000-4010:4000-4010"
+  #     - "5000-5010:5000-5010"
+  #   volumes:
+  #     - ./dev-tools:/tmp/dev-tools
+  #   logging: *default-logging
+  #   deploy:
+  #     mode: global
 
-  # SSH server for sshuttle
-  # we use separate container instead of host machine for dns/auto-hosts functionality
+  # # SSH server for sshuttle
+  # # we use separate container instead of host machine for dns/auto-hosts functionality
 
-  sshuttle-server:
-    image: linuxserver/openssh-server:latest # don't pin
-    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
-    environment:
-      PASSWORD_ACCESS: "true"
-      USER_NAME: "sshuttle"
-      USER_PASSWORD: "sshuttle"
-    ports:
-      - "2222:2222"
-    volumes:
-      - ./dev-tools/:/tmp/dev-tools
+  # sshuttle-server:
+  #   image: linuxserver/openssh-server:latest # don't pin
+  #   command: bash /tmp/dev-tools/startup/sshuttle-server.sh
+  #   environment:
+  #     PASSWORD_ACCESS: "true"
+  #     USER_NAME: "sshuttle"
+  #     USER_PASSWORD: "sshuttle"
+  #   ports:
+  #     - "2222:2222"
+  #   volumes:
+  #     - ./dev-tools/:/tmp/dev-tools
 
 volumes:
   poa-contracts-abis:

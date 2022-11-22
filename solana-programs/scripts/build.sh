@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 function replace_address {
     current_address=$(grep -Po '(?<=declare_id!\(").*(?=")' $1)
@@ -11,7 +11,7 @@ function replace_address {
     if [[ "$current_address" != "$new_address" ]]; then
         for file in "${@:1:$#-1}"; do
             echo "Replacing $current_address with $new_address in $file"
-            sed -i "s/$current_address/$new_address/g" $1
+            sed -i".rs" "s/$current_address/$new_address/g" $1
         done
     fi
 }
@@ -26,6 +26,10 @@ function generate_key {
 
 # cd into solana-programs
 cd $(dirname "$(readlink -f "$0")")/..
+
+# IF DARWIN
+# source ./hack/m1shim.sh
+# ENDIF
 
 mkdir -p ${CARGO_TARGET_DIR:-target}/deploy anchor/audius-data/target/deploy
 
@@ -47,10 +51,10 @@ replace_address \
     anchor/audius-data/Anchor.toml \
     ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
 
-cargo build-bpf
+# cargo build-bpf
 cargo install --debug --target-dir ./target --path cli
 cargo install --debug --target-dir ./target --path reward-manager/cli
 cargo install --debug --target-dir ./target --path claimable-tokens/cli
 
 cd anchor/audius-data
-anchor build
+anchor build -- --bpf-sdk=/workspace/solana/sdk/bpf
