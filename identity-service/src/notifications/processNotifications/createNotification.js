@@ -40,7 +40,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
 
   // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
   // from discovery for the initiators of create notifications.
-  logger.info(`start`)
   const readSubscribersFromDiscovery =
     shouldReadSubscribersFromDiscovery(optimizelyClient)
   let userSubscribersMap = {}
@@ -77,7 +76,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
 
     // No operation if no users subscribe to this creator
     if (subscribers.length === 0) continue
-    logger.info(`start`)
 
     // The notification entity id is the uploader id for tracks
     // Each track will added to the notification actions table
@@ -94,7 +92,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       actionEntityType === actionEntityTypes.Track
         ? notification.metadata.entity_id
         : notification.metadata.entity_owner_id
-    logger.info(`start`)
 
     // Query all subscribers for a un-viewed notification - is no un-view notification exists a new one is created
     let subscriberIds = subscribers
@@ -110,7 +107,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       },
       transaction: tx
     })
-    logger.info(`got unread`)
     const unreadSubscribersUserIds = new Set(
       unreadSubscribers.map((s) => s.userId)
     )
@@ -206,7 +202,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
         }
       }
     }
-    logger.info(`del album playlist`)
 
     validNotifications.push(notification)
   }
