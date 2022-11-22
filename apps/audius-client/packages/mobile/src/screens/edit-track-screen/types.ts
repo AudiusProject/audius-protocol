@@ -1,4 +1,4 @@
-import type { ExtendedTrackMetadata } from '@audius/common'
+import type { ExtendedTrackMetadata, Nullable } from '@audius/common'
 import type { FormikProps } from 'formik'
 
 import type { ScreenProps } from 'app/components/core'
@@ -18,3 +18,5 @@ export type EditTrackScreenProps = {
 } & Partial<ScreenProps>
 
 export type EditTrackFormProps = FormikProps<FormValues> & Partial<ScreenProps>
+
+export type RemixOfField = Nullable<{ tracks: { parent_track_id }[] }>

@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import type { UploadTrack } from '@audius/common'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
@@ -34,10 +36,22 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
     }
   }
 
+  const handleSubmit = useCallback(
+    (values: FormValues) => {
+      const {
+        licenseType: ignoredLicenseType,
+        trackArtwork: ignoredTrackArtwork,
+        ...metadata
+      } = values
+      onSubmit(metadata)
+    },
+    [onSubmit]
+  )
+
   return (
     <Formik<FormValues>
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validationSchema={EditTrackSchema}
     >
       {(formikProps) => (

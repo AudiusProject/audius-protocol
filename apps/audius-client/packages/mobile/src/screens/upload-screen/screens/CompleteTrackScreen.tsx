@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import type { UploadTrack } from '@audius/common'
+import type { ExtendedTrackMetadata, UploadTrack } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 
 import { useNavigation } from 'app/hooks/useNavigation'
-import type { FormValues } from 'app/screens/edit-track-screen/types'
 
 import { EditTrackScreen } from '../../edit-track-screen'
 import type { UploadParamList, UploadRouteProp } from '../types'
@@ -21,9 +20,9 @@ export const CompleteTrackScreen = () => {
   const navigation = useNavigation<UploadParamList>()
 
   const handleSubmit = useCallback(
-    (values: FormValues) => {
+    (metadata: ExtendedTrackMetadata) => {
       navigation.push('UploadingTracks', {
-        tracks: [{ file, preview: null, metadata: values }]
+        tracks: [{ file, preview: null, metadata }]
       })
     },
     [navigation, file]
@@ -34,6 +33,7 @@ export const CompleteTrackScreen = () => {
       initialValues={metadata}
       onSubmit={handleSubmit}
       title={messages.title}
+      url='/complete-track'
     />
   )
 }

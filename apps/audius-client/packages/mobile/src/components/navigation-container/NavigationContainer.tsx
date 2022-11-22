@@ -65,7 +65,10 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         Reposts: 'reposts',
                         Collectibles: 'collectibles'
                       }
-                    } as any // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
+                    } as any, // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
+                    Upload: {
+                      path: 'upload'
+                    }
                   }
                 },
                 trending: {
