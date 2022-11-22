@@ -11,7 +11,7 @@ const messages = {
   done: 'Done'
 }
 
-type UploadStackScreenProps = Omit<ScreenProps, 'children'> & {
+type FormScreenProps = Omit<ScreenProps, 'children'> & {
   bottomSection?: ReactNode
   children: ReactElement
 }
@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-export const UploadStackScreen = (props: UploadStackScreenProps) => {
+export const FormScreen = (props: FormScreenProps) => {
   const { children, bottomSection, style: styleProp, ...other } = props
   const styles = useStyles()
   const navigation = useNavigation()

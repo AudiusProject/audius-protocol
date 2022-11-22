@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
+import { setVisibility } from 'app/store/drawers/slice'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
@@ -80,7 +81,19 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.FOLLOW_ARTIST]: () =>
       dispatch(followUser(owner_id, FollowSource.OVERFLOW)),
     [OverflowAction.UNFOLLOW_ARTIST]: () =>
-      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW))
+      dispatch(unfollowUser(owner_id, FollowSource.OVERFLOW)),
+    [OverflowAction.EDIT_TRACK]: () => {
+      navigation?.push('EditTrack', { id })
+    },
+    [OverflowAction.DELETE_TRACK]: () => {
+      dispatch(
+        setVisibility({
+          drawer: 'DeleteConfirmation',
+          visible: true,
+          data: { id }
+        })
+      )
+    }
   }
 
   return render(callbacks)

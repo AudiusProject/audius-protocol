@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import type { UploadTrack } from '@audius/common'
-import type { FormikProps } from 'formik'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -15,8 +14,9 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
-import { TopBarIconButton } from '../../../app-screen'
-import { CancelUploadDrawer, UploadStackScreen } from '../../components'
+import { TopBarIconButton } from '../app-screen'
+
+import { CancelEditTrackDrawer, FormScreen } from './components'
 import {
   PickArtworkField,
   SelectGenreField,
@@ -27,11 +27,10 @@ import {
   SubmenuList,
   RemixSettingsField,
   AdvancedOptionsField
-} from '../../fields'
-import type { FormValues } from '../../types'
+} from './fields'
+import type { EditTrackFormProps } from './types'
 
 const messages = {
-  screenTitle: 'Complete Track',
   trackName: 'Track Name',
   trackNameError: 'Track Name Required',
   continue: 'Continue',
@@ -53,10 +52,10 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export type CompleteTrackParams = UploadTrack
+export type EditTrackParams = UploadTrack
 
-export const CompleteTrackForm = (props: FormikProps<FormValues>) => {
-  const { handleSubmit, isSubmitting, errors, touched, dirty } = props
+export const EditTrackForm = (props: EditTrackFormProps) => {
+  const { handleSubmit, isSubmitting, errors, touched, dirty, title } = props
   const errorsKeys = Object.keys(errors)
   const hasErrors =
     errorsKeys.length > 0 && errorsKeys.every((errorKey) => touched[errorKey])
@@ -71,7 +70,7 @@ export const CompleteTrackForm = (props: FormikProps<FormValues>) => {
       Keyboard.dismiss()
       dispatch(
         setVisibility({
-          drawer: 'CancelUpload',
+          drawer: 'CancelEditTrack',
           visible: true
         })
       )
@@ -79,8 +78,8 @@ export const CompleteTrackForm = (props: FormikProps<FormValues>) => {
   }, [dirty, navigation, dispatch])
 
   return (
-    <UploadStackScreen
-      title={messages.screenTitle}
+    <FormScreen
+      title={title}
       icon={IconUpload}
       topbarLeft={
         <TopBarIconButton
@@ -133,8 +132,8 @@ export const CompleteTrackForm = (props: FormikProps<FormValues>) => {
             </SubmenuList>
           </Tile>
         </KeyboardAwareScrollView>
-        <CancelUploadDrawer />
+        <CancelEditTrackDrawer />
       </>
-    </UploadStackScreen>
+    </FormScreen>
   )
 }

@@ -44,10 +44,10 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const CancelUploadDrawer = () => {
+export const CancelEditTrackDrawer = () => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
-  const { onClose } = useDrawer('CancelUpload')
+  const { onClose } = useDrawer('CancelEditTrack')
   const navigation = useNavigation()
 
   const handlePressConfirm = useCallback(() => {
@@ -56,7 +56,7 @@ export const CancelUploadDrawer = () => {
   }, [navigation, onClose])
 
   return (
-    <NativeDrawer drawerName='CancelUpload' drawerStyle={styles.root}>
+    <NativeDrawer drawerName='CancelEditTrack' drawerStyle={styles.root}>
       <View style={styles.header}>
         <IconInfo
           style={styles.headerIcon}

@@ -16,7 +16,7 @@ import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
 
 export const LineupTile = ({
   children,

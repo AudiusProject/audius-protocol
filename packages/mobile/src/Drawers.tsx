@@ -27,6 +27,7 @@ import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from './components/drawer'
+import { DeleteConfirmationDrawer } from './components/drawers/DeleteConfirmationDrawer'
 import { VipDiscordDrawer } from './components/vip-discord-drawer'
 import { useDrawer } from './hooks/useDrawer'
 import type { Drawer } from './store/drawers/slice'
@@ -90,7 +91,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   EnablePushNotifications: EnablePushNotificationsDrawer,
   DownloadTrackProgress: DownloadTrackProgressDrawer,
-  ForgotPassword: ForgotPasswordDrawer
+  ForgotPassword: ForgotPasswordDrawer,
+  DeleteConfirmation: DeleteConfirmationDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

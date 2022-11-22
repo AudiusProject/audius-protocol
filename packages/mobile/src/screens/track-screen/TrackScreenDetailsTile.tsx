@@ -262,7 +262,9 @@ export const TrackScreenDetailsTile = ({
       user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
-      OverflowAction.VIEW_ARTIST_PAGE
+      OverflowAction.VIEW_ARTIST_PAGE,
+      isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
     dispatch(
