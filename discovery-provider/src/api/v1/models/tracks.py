@@ -84,6 +84,8 @@ track = ns.model(
         "genre": fields.String,
         "id": fields.String(required=True),
         "mood": fields.String,
+        "key": fields.String,
+        "bpm": fields.Integer,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
