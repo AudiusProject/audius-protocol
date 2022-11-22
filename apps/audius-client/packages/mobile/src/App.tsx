@@ -5,7 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
+import {
+  SafeAreaProvider,
+  initialWindowMetrics
+} from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { useAsync, useEffectOnce } from 'react-use'
 
@@ -70,7 +73,7 @@ const App = () => {
   })
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <Provider store={store}>
         <PortalProvider>
           <ToastContextProvider>

@@ -120,6 +120,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const AccountDrawer = (props: AccountDrawerProps) => {
+  const accountUser = useSelector(getAccountUser) as User
+  if (!accountUser) return null
+  return <WrappedAccountDrawer {...props} />
+}
+
+const WrappedAccountDrawer = (props: AccountDrawerProps) => {
   const { navigation: drawerHelpers } = props
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User

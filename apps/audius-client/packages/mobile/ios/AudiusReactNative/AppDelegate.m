@@ -6,6 +6,7 @@
  */
 
 #import "AppDelegate.h"
+#import "RNBootSplash.h"
 
 #import <GoogleCast/GoogleCast.h>
 #import <React/RCTBridge.h>
@@ -68,10 +69,7 @@
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
 
-  // https://facebook.github.io/react-native/docs/running-on-device.html#3-build-app-for-release
-  UIView* launchScreenView = [[[NSBundle mainBundle] loadNibNamed:@"LaunchScreen" owner:self options:nil] objectAtIndex:0];
-  launchScreenView.frame = self.window.bounds;
-  rootView.loadingView = launchScreenView;
+  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:rootView];
 
   [FIRApp configure];
 

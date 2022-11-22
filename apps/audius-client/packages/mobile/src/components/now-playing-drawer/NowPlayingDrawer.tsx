@@ -109,7 +109,8 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   const insets = useSafeAreaInsets()
   const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const staticTopInset = useRef(insets.top)
-  const bottomBarHeight = BOTTOM_BAR_HEIGHT + insets.bottom
+  const bottomBarHeight =
+    BOTTOM_BAR_HEIGHT + (Platform.OS === 'ios' ? insets.bottom : 0)
   const styles = useStyles()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')

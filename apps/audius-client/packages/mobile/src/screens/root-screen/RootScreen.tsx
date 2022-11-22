@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
@@ -10,13 +10,13 @@ import useAppState from 'app/hooks/useAppState'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import type { AppScreenParamList } from 'app/screens/app-screen'
 import { SignOnScreen } from 'app/screens/signon'
+import { SplashScreen } from 'app/screens/splash-screen'
 import { UpdateRequiredScreen } from 'app/screens/update-required-screen/UpdateRequiredScreen'
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
-import { SplashScreen } from '../splash-screen'
 
-const { getHasAccount, getAccountStatus } = accountSelectors
+const { getAccountStatus, getHasAccount } = accountSelectors
 
 export type RootScreenParamList = {
   HomeStack: NavigatorScreenParams<{
@@ -36,10 +36,9 @@ type RootScreenProps = {
  */
 export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const dispatch = useDispatch()
-  const hasAccount = useSelector(getHasAccount)
   const accountStatus = useSelector(getAccountStatus)
-  const [isInitting, setIsInittng] = useState(true)
   const { updateRequired } = useUpdateRequired()
+  const hasAccount = useSelector(getHasAccount)
 
   useEffect(() => {
     // Setup the backend when ready
@@ -53,28 +52,24 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
     () => dispatch(enterBackground())
   )
 
-  useEffect(() => {
-    if (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR) {
-      setIsInittng(false)
-    }
-  }, [accountStatus])
-
   return (
     <>
-      <SplashScreen />
-      {isInitting && !hasAccount ? null : (
-        <Stack.Navigator
-          screenOptions={{ gestureEnabled: false, headerShown: false }}
-        >
-          {updateRequired ? (
-            <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
-          ) : !hasAccount ? (
-            <Stack.Screen name='SignOnStack' component={SignOnScreen} />
-          ) : (
-            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
-          )}
-        </Stack.Navigator>
-      )}
+      <SplashScreen
+        canDismiss={
+          accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
+        }
+      />
+      <Stack.Navigator
+        screenOptions={{ gestureEnabled: false, headerShown: false }}
+      >
+        {updateRequired ? (
+          <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
+        ) : !hasAccount ? (
+          <Stack.Screen name='SignOnStack' component={SignOnScreen} />
+        ) : (
+          <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
+        )}
+      </Stack.Navigator>
     </>
   )
 }
