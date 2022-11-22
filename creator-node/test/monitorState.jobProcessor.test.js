@@ -206,7 +206,7 @@ describe('test monitorState job processor', function () {
     })
   }
 
-  it.only('should process the correct number of users and resolve successfully', async function () {
+  it('should process the correct number of users and resolve successfully', async function () {
     // Set constants and generate the users to process
     const lastProcessedUserId = 200
     const numUsersToProcess = 100
