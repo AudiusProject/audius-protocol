@@ -80,5 +80,5 @@ export type FindReplicaSetUpdatesJobReturnValue = {
 export type ComputeWalletOnSecondaryUserInfo = {
   wallet: string
   secondary1: string
-  secondary2: string
+  secondary2?: string /* When manual syncs are triggered, only 1 secondary is passed */
 }

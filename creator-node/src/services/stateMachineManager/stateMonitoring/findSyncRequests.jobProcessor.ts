@@ -223,12 +223,12 @@ async function _findSyncsForUser(
     }
 
     // Secondary has too low of a success rate -- don't sync to it
-    if (
+    const walletOnSecondaryExceedsMaxErrorsAllowed =
       secondarySyncHealthTracker.doesWalletOnSecondaryExceedMaxErrorsAllowed(
         wallet,
         secondary
       )
-    ) {
+    if (walletOnSecondaryExceedsMaxErrorsAllowed) {
       outcomesBySecondary[secondary].result = 'no_sync_success_rate_too_low'
       continue
     }

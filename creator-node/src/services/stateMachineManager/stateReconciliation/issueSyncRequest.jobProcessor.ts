@@ -23,6 +23,7 @@ import {
   MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
 } from '../stateMachineConstants'
 import { getReplicaSetEndpointsByWallet } from '../../ContentNodeInfoManager'
+import SecondarySyncHealthTracker from './SecondarySyncHealthTracker'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -37,8 +38,6 @@ const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord
 } = require('../stateMachineUtils')
-const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {
@@ -48,12 +47,11 @@ const { getSyncStatusByUuid } = require('./stateReconciliationUtils')
 const initAudiusLibs = require('../../initAudiusLibs')
 const { generateTimestampAndSignature } = require('../../../apiSigning')
 
-const secondaryUserSyncDailyFailureCountThreshold = config.get(
-  'secondaryUserSyncDailyFailureCountThreshold'
-)
 const mergePrimaryAndSecondaryEnabled = config.get(
   'mergePrimaryAndSecondaryEnabled'
 )
+
+const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
 
 type HandleIssueSyncReqParams = {
   syncType: string
@@ -204,19 +202,20 @@ async function _handleIssueSyncRequest({
   /**
    * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
    */
-  const secondaryUserSyncFailureCountForToday =
-    await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountForToday(
-      secondaryEndpoint,
+  await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
+    [{ wallet: userWallet, secondary1: secondaryEndpoint }]
+  )
+
+  const walletOnSecondaryExceedsMaxErrorsAllowed =
+    await secondarySyncHealthTracker.doesWalletOnSecondaryExceedMaxErrorsAllowed(
       userWallet,
-      syncType
+      secondaryEndpoint
     )
-  if (
-    secondaryUserSyncFailureCountForToday >
-    secondaryUserSyncDailyFailureCountThreshold
-  ) {
+
+  if (walletOnSecondaryExceedsMaxErrorsAllowed) {
     return {
       result: 'failure_secondary_failure_count_threshold_met',
-      error: `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`,
+      error: `${logMsgString} || Wallet=${userWallet} on secondary=${secondaryEndpoint} exceeded max errors allowed. Will not issue further syncRequests today.`,
       syncReqsToEnqueue
     }
   }
@@ -539,10 +538,10 @@ const _deprecatedAdditionalSyncIsRequired = async (
     // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
   } else {
     outcome = 'failure_secondary_failed_to_progress'
-    await SecondarySyncHealthTracker.recordFailure({
-      secondaryUrl,
-      userWallet,
-      outcome
+    await secondarySyncHealthTracker.recordFailure({
+      secondary: secondaryUrl,
+      wallet: userWallet,
+      prometheusError: outcome
     })
     additionalSyncIsRequired = true
     logger.error(
@@ -619,10 +618,10 @@ const _additionalSyncIsRequired = async (
   }
 
   if (!syncStatus?.startsWith('success')) {
-    await SecondarySyncHealthTracker.recordFailure({
-      targetNode,
-      userWallet,
-      outcome: syncStatus
+    await secondarySyncHealthTracker.recordFailure({
+      secondary: targetNode,
+      wallet: userWallet,
+      prometheusError: syncStatus
     })
   }
 

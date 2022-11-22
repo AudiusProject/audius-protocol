@@ -183,7 +183,7 @@ async function monitorState({
 
     // Retrieve success metrics for all users syncing to their secondaries
     try {
-      await secondarySyncHealthTracker.computeIfWalletOnSecondaryShouldContinueActions(
+      await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
         users.map((user) => ({
           wallet: user.wallet,
           secondary1: user.secondary1,
@@ -192,10 +192,10 @@ async function monitorState({
       )
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Success',
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Success',
         logger,
         {
-          walletToSecondaryToShouldContinueActions: Object.keys(
+          walletToSecondaryToExceedsMaxErrorsAllowed: Object.keys(
             secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
           )?.length
         }

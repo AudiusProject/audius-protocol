@@ -77,7 +77,7 @@ class SecondarySyncHealthTracker {
    * error was encountered. Else, return what is in the map
    * @param wallet
    * @param secondary
-   * @returns flag on whether action should continue
+   * @returns flag on whether wallet on secondary exceeded the max attempts allowed
    */
   doesWalletOnSecondaryExceedMaxErrorsAllowed(
     wallet: string,
@@ -99,7 +99,7 @@ class SecondarySyncHealthTracker {
    * wallet should engage. Currently used for determining if a sync should reenqueue and if a
    * replica set update should be issued.
    */
-  async computeIfWalletOnSecondaryShouldContinueActions(
+  async computeWalletOnSecondaryExceedsMaxErrorsAllowed(
     userInfo: ComputeWalletOnSecondaryUserInfo[]
   ) {
     // For each secondary-wallet-date
@@ -133,7 +133,7 @@ class SecondarySyncHealthTracker {
       genericLogger.warn(
         {
           SecondarySyncHealthTracker:
-            'computeIfWalletOnSecondaryShouldContinueActions'
+            'computeWalletOnSecondaryExceedsMaxErrorsAllowed'
         },
         `Wallets on secondaries have exceeded the allowed error capacity for today: ${JSON.stringify(
           this.walletsToSecondaryAndMaxErrorReached
@@ -160,14 +160,15 @@ class SecondarySyncHealthTracker {
         secondary: secondary1,
         wallet
       })
-
-      const redisKeyWalletToSecondary2 = this._getSyncFailureRedisKey({
-        secondary: secondary2,
-        wallet
-      })
-
       syncFailureKeys.push(redisKeyWalletToSecondary1)
-      syncFailureKeys.push(redisKeyWalletToSecondary2)
+
+      if (secondary2) {
+        const redisKeyWalletToSecondary2 = this._getSyncFailureRedisKey({
+          secondary: secondary2,
+          wallet
+        })
+        syncFailureKeys.push(redisKeyWalletToSecondary2)
+      }
     }
 
     return syncFailureKeys
@@ -185,9 +186,12 @@ class SecondarySyncHealthTracker {
     // Get the error and number of times the error occurred
     for (const [error, errorCount] of Object.entries(errorToErrorCount)) {
       // Compare the above number to the max retry attempts
-      const shouldContinueAction = this._shouldContinueAction(error, errorCount)
+      const exceedsMaxErrorsAllowed = this._didErrorExceedMaxRetries(
+        error,
+        errorCount
+      )
 
-      if (!shouldContinueAction) {
+      if (!exceedsMaxErrorsAllowed) {
         this._updateWalletToSecondaryAndMaxErrorReached({
           wallet,
           secondary,
@@ -196,32 +200,32 @@ class SecondarySyncHealthTracker {
       }
 
       // If under, record retry to 'true'. Else, record retry as 'false'.
-      this._updateWalletToSecondaryToShouldContinueAction({
-        shouldContinueAction,
+      this._updateWalletToSecondaryToExceedsMaxErrorsAllowed({
+        exceedsMaxErrorsAllowed,
         wallet,
         secondary
       })
     }
   }
 
-  _updateWalletToSecondaryToShouldContinueAction({
-    shouldContinueAction,
+  _updateWalletToSecondaryToExceedsMaxErrorsAllowed({
+    exceedsMaxErrorsAllowed,
     wallet,
     secondary
   }: {
     wallet: string
     secondary: string
-    shouldContinueAction: boolean
+    exceedsMaxErrorsAllowed: boolean
   }) {
     if (!this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet]) {
       this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet] = {}
     }
 
     this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary] =
-      shouldContinueAction
+      exceedsMaxErrorsAllowed
   }
 
-  _shouldContinueAction(error: string, errorCount: number) {
+  _didErrorExceedMaxRetries(error: string, errorCount: number) {
     const maxRetries =
       SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP.get(error) ??
       SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES.default

@@ -429,11 +429,11 @@ it('returns expected counts and percentages after recording successes and failur
     prometheusError: 'failure_fetching_user_replica_set'
   })
 
-  await secondarySyncHealthTracker.computeIfWalletOnSecondaryShouldContinueActions(
+  await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
     usersInfoSlice
   )
 
-  const expectedWalletToSecondaryToShouldContinueAction = {
+  const expectedWalletToSecondaryToExceedsMaxErrorsAllowed = {
     [nodeUsers[0].wallet]: {
       [nodeUsers[0].secondary1]: true,
       [nodeUsers[0].secondary2]: true
@@ -441,10 +441,10 @@ it('returns expected counts and percentages after recording successes and failur
   }
 
   const walletToSecondaryToExceedsMaxErrorsAllowed =
-    await secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction()
+    await secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
 
   expect(walletToSecondaryToExceedsMaxErrorsAllowed).to.deep.equal(
-    expectedWalletToSecondaryToShouldContinueAction
+    expectedWalletToSecondaryToExceedsMaxErrorsAllowed
   )
 })
 

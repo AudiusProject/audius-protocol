@@ -804,10 +804,9 @@ describe('test findSyncRequests job processor', function () {
     }
 
     // Make sync success rate lower than threshold for secondary1
-    const userSecondarySyncMetricsMap = {
+    const walletToSecondaryToExceedsMaxErrorsAllowed = {
       [wallet]: {
-        [secondary1]: { successRate: 0, failureCount: 100 },
-        [secondary2]: { successRate: 1, failureCount: 0 }
+        [secondary1]: true
       }
     }
 
@@ -886,7 +885,7 @@ describe('test findSyncRequests job processor', function () {
       users,
       unhealthyPeers,
       replicaToAllUserInfoMaps,
-      userSecondarySyncMetricsMap,
+      walletToSecondaryToExceedsMaxErrorsAllowed,
       logger
     })
     expect(actualOutput).to.deep.equal(expectedOutput)

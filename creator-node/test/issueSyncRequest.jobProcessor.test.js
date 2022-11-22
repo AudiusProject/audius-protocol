@@ -398,11 +398,11 @@ describe('test issueSyncRequest job processor', function () {
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
-    expect(recordFailureStub).to.have.been.calledOnceWithExactly(
+    expect(recordFailureStub).to.have.been.calledOnceWithExactly({
       secondary,
       wallet,
-      syncType
-    )
+      prometheusError: 'failure_secondary_failed_to_progress'
+    })
   })
 
   it('requires additional sync when secondary returns failure for syncUuid', async function () {
@@ -472,8 +472,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(recordFailureStub).to.have.been.calledOnceWithExactly(
       secondary,
-      wallet,
-      syncType
+      wallet
     )
   })
 
