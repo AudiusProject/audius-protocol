@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
-import { Animated } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Animated, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
@@ -104,10 +104,9 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
     <Animated.View
       style={[styles.root, interpolatePostion(translationAnim, insets.bottom)]}
     >
-      <SafeAreaView
-        style={styles.bottomBar}
-        edges={['bottom']}
+      <View
         pointerEvents='auto'
+        style={[styles.bottomBar, { paddingBottom: insets.bottom }]}
       >
         {routes.map(({ name, key }, index) => {
           const BottomButton = bottomTabBarButtons[name]
@@ -122,7 +121,7 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
             />
           )
         })}
-      </SafeAreaView>
+      </View>
     </Animated.View>
   )
 }

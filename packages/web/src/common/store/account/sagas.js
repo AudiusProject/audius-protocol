@@ -245,7 +245,6 @@ export function* fetchLocalAccountAsync() {
       cachedAccountUser,
       cachedAccountUser.orderedPlaylists
     )
-    yield put(fetchAccountSucceeded(cachedAccount))
   } else if (!currentUserExists) {
     yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND' }))
   }

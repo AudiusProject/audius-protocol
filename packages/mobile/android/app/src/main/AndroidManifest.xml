@@ -28,7 +28,7 @@
       android:resource="@mipmap/ic_notification"
       android:allowBackup="false"
       android:largeHeap="true"
-      android:theme="@style/AppTheme">
+      android:theme="@style/BootTheme">
       <activity
         android:name=".MainActivity"
         android:launchMode="singleTask"
