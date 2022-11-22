@@ -273,10 +273,9 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   it('issues update for low sync success when this node is primary', async function () {
     // Make sync success rate lower than threshold
-    const userSecondarySyncMetricsMap = {
+    const walletToSecondaryToExceedsMaxErrorsAllowed = {
       [wallet]: {
-        [secondary1]: { successRate: 0, successCount: 0, failureCount: 100 },
-        [secondary2]: { successRate: 1, successCount: 0, failureCount: 0 }
+        [secondary1]: true
       }
     }
 
@@ -286,7 +285,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     // Verify job outputs the correct results: secondary1 should be removed from replica set because its sync success rate is too low
     return runAndVerifyJobProcessor({
       jobProcessorArgs: {
-        userSecondarySyncMetricsMap
+        walletToSecondaryToExceedsMaxErrorsAllowed
       },
       expectedUnhealthyReplicas: [secondary1]
     })
