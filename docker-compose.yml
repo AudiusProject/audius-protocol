@@ -329,7 +329,7 @@ services:
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
       audius_db_url: "${DISCOVERY_DB_URL}"
-      audius_db_url_read_replica: "${DISCOVERY_DB_URL}"
+      audius_db_url_read_replica: "${DISCOVERY_DB_URL_READ_REPLICA}"
 
       audius_web3_host: "${DISCOVERY_WEB3_HOST}"
       audius_web3_port: "${DISCOVERY_WEB3_PORT}"
