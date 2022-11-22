@@ -11,7 +11,7 @@ import {
 } from './SecondarySyncHealthTrackerConstants'
 import {
   WalletToSecondaryAndMaxErrorReached,
-  WalletToSecondaryToShouldContinueAction
+  WalletToSecondaryToExceedsMaxErrorsAllowed
 } from './types'
 
 const { logger: genericLogger } = require('../../../logging')
@@ -23,15 +23,15 @@ const REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE =
 const REDIS_KEY_EXPIRY_SECONDS = 259_200 // 3 days -- small range of buffer time to delete keys by
 const PROCESS_USERS_BATCH_SIZE = 30
 
-export class SecondarySyncHealthTracker {
-  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
+class SecondarySyncHealthTracker {
+  walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
   walletsToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
   constructor(
-    walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction = {}
+    walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed = {}
   ) {
-    this.walletToSecondaryToShouldContinueAction =
-      walletToSecondaryToShouldContinueAction
+    this.walletToSecondaryToExceedsMaxErrorsAllowed =
+      walletToSecondaryToExceedsMaxErrorsAllowed
     this.walletsToSecondaryAndMaxErrorReached = {}
   }
 
@@ -79,19 +79,19 @@ export class SecondarySyncHealthTracker {
    * @param secondary
    * @returns flag on whether action should continue
    */
-  shouldWalletOnSecondaryContinueAction(
+  doesWalletOnSecondaryExceedMaxErrorsAllowed(
     wallet: string,
     secondary: string
   ): boolean {
     if (
-      !this.walletToSecondaryToShouldContinueAction ||
-      !this.walletToSecondaryToShouldContinueAction[wallet] ||
-      !this.walletToSecondaryToShouldContinueAction[wallet][secondary]
+      !this.walletToSecondaryToExceedsMaxErrorsAllowed ||
+      !this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet] ||
+      !this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary]
     ) {
-      return true
+      return false
     }
 
-    return this.walletToSecondaryToShouldContinueAction[wallet][secondary]
+    return this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary]
   }
 
   /**
@@ -142,8 +142,8 @@ export class SecondarySyncHealthTracker {
     }
   }
 
-  getWalletToSecondaryToShouldContinueAction(): WalletToSecondaryToShouldContinueAction {
-    return this.walletToSecondaryToShouldContinueAction
+  getWalletToSecondaryToExceedsMaxErrorsAllowed(): WalletToSecondaryToExceedsMaxErrorsAllowed {
+    return this.walletToSecondaryToExceedsMaxErrorsAllowed
   }
 
   /**
@@ -213,11 +213,11 @@ export class SecondarySyncHealthTracker {
     secondary: string
     shouldContinueAction: boolean
   }) {
-    if (!this.walletToSecondaryToShouldContinueAction[wallet]) {
-      this.walletToSecondaryToShouldContinueAction[wallet] = {}
+    if (!this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet]) {
+      this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet] = {}
     }
 
-    this.walletToSecondaryToShouldContinueAction[wallet][secondary] =
+    this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary] =
       shouldContinueAction
   }
 
@@ -273,4 +273,5 @@ export class SecondarySyncHealthTracker {
   }
 }
 
+export default SecondarySyncHealthTracker
 module.exports = SecondarySyncHealthTracker

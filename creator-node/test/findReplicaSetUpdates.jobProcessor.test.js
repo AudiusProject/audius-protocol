@@ -119,7 +119,7 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   async function runJobProcessor({
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
-    userSecondarySyncMetricsMap = {},
+    walletToSecondaryToExceedsMaxErrorsAllowed = {},
     unhealthyPeers = [],
     isPrimaryHealthyInExtraHealthCheck = false
   }) {
@@ -141,7 +141,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       users,
       unhealthyPeers,
       replicaToAllUserInfoMaps: DEFAULT_REPLICA_TO_USER_INFO_MAP,
-      userSecondarySyncMetricsMap
+      walletToSecondaryToExceedsMaxErrorsAllowed
     })
   }
 

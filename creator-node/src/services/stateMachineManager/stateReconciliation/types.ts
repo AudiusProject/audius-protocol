@@ -105,7 +105,7 @@ export type RecoverOrphanedDataJobReturnValue = {
   numWalletsWithOrphanedData: number
 }
 
-export type WalletToSecondaryToShouldContinueAction = {
+export type WalletToSecondaryToExceedsMaxErrorsAllowed = {
   [wallet: string]: {
     [secondary: string]: boolean /* flag to continue action or not */
   }

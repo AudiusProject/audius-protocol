@@ -1,6 +1,6 @@
 import type {
   IssueSyncRequestJobParams,
-  WalletToSecondaryToShouldContinueAction
+  WalletToSecondaryToExceedsMaxErrorsAllowed
 } from '../stateReconciliation/types'
 import type { SpanContext } from '@opentelemetry/api'
 
@@ -52,7 +52,7 @@ export type FindSyncRequestsJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
+  walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
   parentSpanContext?: SpanContext
 }
 export type FindSyncRequestsJobReturnValue = {
@@ -70,7 +70,7 @@ export type FindReplicaSetUpdateJobParams = {
   users: StateMonitoringUser[]
   unhealthyPeers: string[]
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps
-  walletToSecondaryToShouldContinueAction: WalletToSecondaryToShouldContinueAction
+  walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
   parentSpanContext?: SpanContext
 }
 export type FindReplicaSetUpdatesJobReturnValue = {

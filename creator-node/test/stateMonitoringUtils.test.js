@@ -440,10 +440,10 @@ it('returns expected counts and percentages after recording successes and failur
     }
   }
 
-  const walletToSecondaryToShouldContinueAction =
+  const walletToSecondaryToExceedsMaxErrorsAllowed =
     await secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction()
 
-  expect(walletToSecondaryToShouldContinueAction).to.deep.equal(
+  expect(walletToSecondaryToExceedsMaxErrorsAllowed).to.deep.equal(
     expectedWalletToSecondaryToShouldContinueAction
   )
 })

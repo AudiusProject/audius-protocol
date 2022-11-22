@@ -15,7 +15,7 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { CNodeHealthManager } from '../CNodeHealthManager'
 import config from '../../../config'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
-import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
+import SecondarySyncHealthTracker from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const {
   getNodeUsers,
@@ -196,7 +196,7 @@ async function monitorState({
         logger,
         {
           walletToSecondaryToShouldContinueActions: Object.keys(
-            secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction()
+            secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
           )?.length
         }
       )
@@ -231,16 +231,16 @@ async function monitorState({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToShouldContinueAction:
-      secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction(),
+    walletToSecondaryToExceedsMaxErrorsAllowed:
+      secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToShouldContinueAction:
-      secondarySyncHealthTracker.getWalletToSecondaryToShouldContinueAction(),
+    walletToSecondaryToExceedsMaxErrorsAllowed:
+      secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {
