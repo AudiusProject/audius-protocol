@@ -57,7 +57,9 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
             "bpm_range": bpm_range,
-            "filter_keys": args.get("filter_keys")
+            "filter_keys": args.get("filter_keys"),
+            "mood": args.get("mood"),
+            "genre": args.get("genre")
         }
         resp = search(search_args)
         return success_response(resp)

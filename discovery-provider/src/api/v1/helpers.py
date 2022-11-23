@@ -600,7 +600,13 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "bpm_max", required=False, description="Filters tracks to a maximum beats-per-minute", type=int)
 full_search_parser.add_argument(
-    "filter_keys", required=False, description="Filters tracks to a certain key", type=str)
+    "filter_keys", required=False, description="Filters tracks to a certain key", type=str, action='append')
+full_search_parser.add_argument(
+    "genre", required=False, description="Filters tracks to a certain genre", type=str
+)
+full_search_parser.add_argument(
+    "mood", required=False, description="Filters tracks to a certain mood", type=str
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -426,19 +427,25 @@ def track_dsl(
 
     filters = []
     if filter_keys:
-        filters.append({"terms": {"key": filter_keys}})
+        logger.info(f'search filter_keys {filter_keys}')
+        if isinstance(filter_keys, list):
+            filters.append({"terms": {"key": filter_keys}})
+        else:
+            filters.append({"term", {"key": filter_keys}})
 
     if bpm_range:
         filters.append({"range": {"bpm": {"gte": bpm_range[0], "lte": bpm_range[1]}}})
 
     if genre:
-        dsl["filter"].append({"term": {"genre": {"value": genre}}})
+        filters.append({"term": {"genre": {"value": genre}}})
 
     if mood:
-        dsl["filter"].append({"term": {"mood": {"value": mood}}})
+        filters.append({"term": {"mood": {"value": mood}}})
 
     if filters:
         dsl["filter"] = filters
+
+    logger.info(f'search dsl {json.dumps(dsl)}')
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
