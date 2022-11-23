@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { ParallaxProvider } from 'react-scroll-parallax'
 
-import AppRedirectPopover from 'components/app-redirect-popover/components/AppRedirectPopover'
 import FanburstBanner from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'components/public-site/Footer'
@@ -24,8 +22,6 @@ import PlatformFeatures from './components/PlatformFeatures'
 import PlatformTagline from './components/PlatformTagline'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
-
-const root = document.querySelector('#root')
 
 type LandingPageProps = {
   isMobile: boolean
@@ -73,14 +69,6 @@ const LandingPage = (props: LandingPageProps) => {
   }, [setShowFanburstBanner])
   const onDismissFanburstBanner = () => setShowFanburstBanner(false)
 
-  const lockBodyScroll = useCallback(() => {
-    root && disableBodyScroll(root)
-  }, [])
-
-  const unlockBodyScroll = useCallback(() => {
-    clearAllBodyScrollLocks()
-  }, [])
-
   const [hasImageLoaded, setHasImageLoaded] = useState(false)
   const onImageLoad = useCallback(() => {
     setHasImageLoaded(true)
@@ -101,13 +89,6 @@ const LandingPage = (props: LandingPageProps) => {
             dismiss={onDismissCookiePolicy}
           />
         )}
-        <AppRedirectPopover
-          enablePopover
-          onBeforeClickApp={props.onClickAppRedirect}
-          onBeforeClickDismissed={props.onDismissAppRedirect}
-          incrementScroll={lockBodyScroll}
-          decrementScroll={unlockBodyScroll}
-        />
         {showFanburstBanner && (
           <FanburstBanner
             isMobile={props.isMobile}
