@@ -44,7 +44,9 @@ def search_full():
         "only_downloadable": False,
         "exclude_premium": True,
         "filter_keys": args.get("filter_keys", None),
-        "bpm_range": args.get("bpm_range", None)
+        "bpm_range": args.get("bpm_range", None),
+        "genre": args.get("genre", None),
+        "mood": args.get("mood", None)
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -74,7 +76,9 @@ def search_autocomplete():
         "only_downloadable": False,
         "exclude_premium": True,
         "keys": args.get("keys", None),
-        "bpm_range": args.get("bpm_range", None)
+        "bpm_range": args.get("bpm_range", None),
+        "genre": args.get("genre", None),
+        "mood": args.get("mood", None)
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)

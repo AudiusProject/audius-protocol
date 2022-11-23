@@ -31,6 +31,8 @@ def search_es_full(args: dict):
     exclude_premium = args.get("exclude_premium", False)
     filter_keys = args.get("filter_keys", None)
     bpm_range = args.get("bpm_range", None)
+    genre = args.get("genre", None)
+    mood = args.get("mood", None)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -55,7 +57,9 @@ def search_es_full(args: dict):
                     only_downloadable=only_downloadable,
                     exclude_premium=exclude_premium,
                     filter_keys=filter_keys,
-                    bpm_range=bpm_range
+                    bpm_range=bpm_range,
+                    genre=genre,
+                    mood=mood
                 ),
             ]
         )
@@ -72,7 +76,9 @@ def search_es_full(args: dict):
                         only_downloadable=only_downloadable,
                         exclude_premium=exclude_premium,
                         filter_keys=filter_keys,
-                        bpm_range=bpm_range
+                        bpm_range=bpm_range,
+                        genre=genre,
+                        mood=mood
                     ),
                 ]
             )
@@ -386,7 +392,9 @@ def track_dsl(
     only_downloadable=False,
     exclude_premium=False,
     filter_keys=[],
-    bpm_range: Union[None, Tuple[int, int]] = None
+    bpm_range: Union[None, Tuple[int, int]] = None,
+    genre=None,
+    mood=None
 ):
     dsl = {
         "must": [
@@ -431,6 +439,20 @@ def track_dsl(
                     }
                 }
             })
+
+    if genre:
+        dsl["filter"].append(
+            {
+                "term": {"genre": genre}
+            }
+        )
+
+    if mood:
+        dsl["filter"].append(
+            {
+                "term": {"mood": mood}
+            }
+        )
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
