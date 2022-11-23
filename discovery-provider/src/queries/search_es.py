@@ -60,7 +60,7 @@ def search_es_full(args: dict):
                     filter_keys=filter_keys,
                     bpm_range=bpm_range,
                     genre=genre,
-                    mood=mood
+                    mood=mood,
                 ),
             ]
         )
@@ -79,7 +79,7 @@ def search_es_full(args: dict):
                         filter_keys=filter_keys,
                         bpm_range=bpm_range,
                         genre=genre,
-                        mood=mood
+                        mood=mood,
                     ),
                 ]
             )
@@ -395,7 +395,7 @@ def track_dsl(
     filter_keys=[],
     bpm_range: Union[None, Tuple[int, int]] = None,
     genre=None,
-    mood=None
+    mood=None,
 ):
     dsl = {
         "must": [
@@ -427,34 +427,16 @@ def track_dsl(
 
     filters = []
     if filter_keys:
-        filters.append({
-            "terms": {"key": filter_keys}
-        })
+        filters.append({"terms": {"key": filter_keys}})
 
     if bpm_range:
-        filters.append(
-            {
-                "range": {
-                    "bpm": {
-                        "gte": bpm_range[0],
-                        "lte": bpm_range[1]
-                    }
-                }
-            })
+        filters.append({"range": {"bpm": {"gte": bpm_range[0], "lte": bpm_range[1]}}})
 
     if genre:
-        dsl["filter"].append(
-            {
-                "term": {"genre": {"value": genre}}
-            }
-        )
+        dsl["filter"].append({"term": {"genre": {"value": genre}}})
 
     if mood:
-        dsl["filter"].append(
-            {
-                "term": {"mood": {"value": mood}}
-            }
-        )
+        dsl["filter"].append({"term": {"mood": {"value": mood}}})
 
     if filters:
         dsl["filter"] = filters

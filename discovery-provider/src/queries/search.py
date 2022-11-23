@@ -34,7 +34,9 @@ def search_full():
     current_user_id = get_current_user_id(required=False)
     limit, offset = get_pagination_vars()
     bpm_range = (args.get("bpm_min", None), args.get("bpm_max", None))
-    bpm_range = bpm_range if bpm_range[0] is not None or bpm_range[1] is not None else None
+    bpm_range = (
+        bpm_range if bpm_range[0] is not None or bpm_range[1] is not None else None
+    )
     search_args = {
         "is_auto_complete": False,
         "kind": args.get("kind", "all"),
@@ -48,7 +50,7 @@ def search_full():
         "filter_keys": args.get("filter_keys", None),
         "bpm_range": bpm_range,
         "genre": args.get("genre", None),
-        "mood": args.get("mood", None)
+        "mood": args.get("mood", None),
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -80,7 +82,7 @@ def search_autocomplete():
         "keys": args.get("keys", None),
         "bpm_range": args.get("bpm_range", None),
         "genre": args.get("genre", None),
-        "mood": args.get("mood", None)
+        "mood": args.get("mood", None),
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
