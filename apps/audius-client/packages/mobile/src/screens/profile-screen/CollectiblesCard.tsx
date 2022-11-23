@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from 'react'
+import type { ReactNode } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
 import type { ID, Collectible } from '@audius/common'
 import {
@@ -6,8 +7,9 @@ import {
   collectibleDetailsUIActions,
   modalsActions
 } from '@audius/common'
-import type { StyleProp, ViewStyle } from 'react-native'
+import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
+import { SvgUri } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
 import LogoEth from 'app/assets/images/logoEth.svg'
@@ -72,6 +74,45 @@ type CollectiblesCardProps = {
   style?: StyleProp<ViewStyle>
 }
 
+type CollectibleImageProps = {
+  uri: string
+  style: StyleProp<ImageStyle>
+  children?: ReactNode
+}
+
+const CollectibleImage = (props: CollectibleImageProps) => {
+  const { children, style, uri } = props
+
+  const isSvg = uri.match(/.*\.svg$/)
+  const [size, setSize] = useState(0)
+
+  return isSvg ? (
+    <View
+      onLayout={(e) => {
+        setSize(e.nativeEvent.layout.width)
+      }}
+    >
+      <SvgUri
+        height={size}
+        width={size}
+        uri={uri}
+        style={{ borderRadius: 8, overflow: 'hidden' }}
+      >
+        {children}
+      </SvgUri>
+    </View>
+  ) : (
+    <ImageBackground
+      style={style}
+      source={{
+        uri
+      }}
+    >
+      {children}
+    </ImageBackground>
+  )
+}
+
 export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const { collectible, style, ownerId } = props
   const { name, frameUrl, isOwned, mediaType, gifUrl, chain } = collectible
@@ -102,7 +143,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
     >
       {url ? (
         <View>
-          <ImageBackground style={styles.image} source={{ uri: url }}>
+          <CollectibleImage style={styles.image} uri={url}>
             {mediaType === 'VIDEO' ? (
               <View style={styles.iconPlay}>
                 <IconPlay
@@ -120,7 +161,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
                 <LogoSol height={16} />
               )}
             </View>
-          </ImageBackground>
+          </CollectibleImage>
         </View>
       ) : null}
       <Text style={styles.title}>{name}</Text>
