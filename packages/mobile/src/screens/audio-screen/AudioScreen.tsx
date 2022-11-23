@@ -8,7 +8,8 @@ import {
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions
+  modalsActions,
+  FeatureFlags
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import BN from 'bn.js'
@@ -35,6 +36,8 @@ import {
   Text,
   Tile
 } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -162,6 +165,10 @@ export const AudioScreen = () => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
   const dispatch = useDispatch()
+  const navigation = useNavigation()
+  const { isEnabled: isMobileWalletConnectEnabled } = useFeatureFlag(
+    FeatureFlags.MOBILE_WALLET_CONNECT
+  )
 
   const totalBalance: Nullable<BNWei> =
     useSelector(getAccountTotalBalance) ?? null
@@ -237,10 +244,14 @@ export const AudioScreen = () => {
   }, [dispatch])
 
   const handlePressConnectWallets = useCallback(() => {
-    dispatch(
-      setVisibility({ modal: 'MobileConnectWalletsDrawer', visible: true })
-    )
-  }, [dispatch])
+    if (isMobileWalletConnectEnabled) {
+      navigation.navigate('WalletConnect')
+    } else {
+      dispatch(
+        setVisibility({ modal: 'MobileConnectWalletsDrawer', visible: true })
+      )
+    }
+  }, [isMobileWalletConnectEnabled, dispatch, navigation])
 
   const renderWalletTile = () => {
     return (
