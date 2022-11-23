@@ -107,7 +107,7 @@ export const EditPlaylistScreen = () => {
   const dispatch = useDispatch()
   const tracks = useSelector(getTracks)
 
-  const coverArt = useCollectionImage(playlist)
+  const { source: coverArt } = useCollectionImage(playlist)
 
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
