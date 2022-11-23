@@ -12,11 +12,11 @@ const initialState = {
 const reducer = createReducer<ReachabilityState, ReachabilityActions>(
   initialState,
   {
-    [actions.SET_REACHABLE]() {
-      return { networkReachable: true }
+    [actions.SET_REACHABLE](state: ReachabilityState) {
+      return { ...state, networkReachable: true }
     },
-    [actions.SET_UNREACHABLE]() {
-      return { networkReachable: false }
+    [actions.SET_UNREACHABLE](state: ReachabilityState) {
+      return { ...state, networkReachable: false }
     }
   }
 )

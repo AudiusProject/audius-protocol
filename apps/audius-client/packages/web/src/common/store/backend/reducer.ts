@@ -1,4 +1,4 @@
-import { SETUP_BACKEND_SUCCEEDED, SETUP_BACKEND_FAILED } from './actions'
+import { SETUP, SETUP_BACKEND_SUCCEEDED, SETUP_BACKEND_FAILED } from './actions'
 
 type BackendState = {
   isSetup: boolean
@@ -11,6 +11,12 @@ const initialState: BackendState = {
 }
 
 const actionsMap = {
+  [SETUP](state: BackendState) {
+    return {
+      ...state,
+      isSetup: false
+    }
+  },
   [SETUP_BACKEND_SUCCEEDED](
     state: BackendState,
     action: { web3Error: boolean }
