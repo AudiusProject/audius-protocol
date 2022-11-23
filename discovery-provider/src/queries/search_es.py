@@ -443,14 +443,14 @@ def track_dsl(
     if genre:
         dsl["filter"].append(
             {
-                "term": {"genre": genre}
+                "term": {"genre": {"value": genre}}
             }
         )
 
     if mood:
         dsl["filter"].append(
             {
-                "term": {"mood": mood}
+                "term": {"mood": {"value": mood}}
             }
         )
 
