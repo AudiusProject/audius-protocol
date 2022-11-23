@@ -46,7 +46,9 @@ const rowMessageMap = {
   [OverflowAction.FOLLOW_ARTIST]: 'Follow Artist',
   [OverflowAction.UNFOLLOW_ARTIST]: 'Unfollow Artist',
   [OverflowAction.FOLLOW]: 'Follow',
-  [OverflowAction.UNFOLLOW]: 'Unfollow'
+  [OverflowAction.UNFOLLOW]: 'Unfollow',
+  [OverflowAction.EDIT_TRACK]: 'Edit Track',
+  [OverflowAction.DELETE_TRACK]: 'Delete Track'
 }
 
 // A modal for displaying overflow options on mobile.
@@ -93,7 +95,11 @@ const MobileOverflowModal = ({
     [OverflowAction.FOLLOW_ARTIST]: onFollow,
     [OverflowAction.UNFOLLOW_ARTIST]: onUnfollow,
     [OverflowAction.FOLLOW]: onFollow,
-    [OverflowAction.UNFOLLOW]: onUnfollow
+    [OverflowAction.UNFOLLOW]: onUnfollow,
+    // These are implement in native mobile,
+    // but not mobile web
+    [OverflowAction.EDIT_TRACK]: () => {},
+    [OverflowAction.DELETE_TRACK]: () => {}
   }
 
   const didSelectRow = (index: number) => {
