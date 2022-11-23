@@ -40,7 +40,7 @@ export const EditExistingTrackScreen = () => {
   const initialValues = {
     ...track,
     artwork: null,
-    trackArtwork: imageSource[0].uri
+    trackArtwork: imageSource[2].uri
   }
 
   return (

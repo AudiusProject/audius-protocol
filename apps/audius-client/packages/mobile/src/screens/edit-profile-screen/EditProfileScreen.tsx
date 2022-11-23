@@ -172,8 +172,8 @@ export const EditProfileScreen = () => {
     tiktok_handle,
     website,
     donation,
-    cover_photo: { url: coverPhotoSource[0].uri },
-    profile_picture: { url: imageSource[0].uri }
+    cover_photo: { url: coverPhotoSource[1].uri },
+    profile_picture: { url: imageSource[2].uri }
   }
 
   return (
