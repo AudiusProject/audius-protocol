@@ -1,5 +1,6 @@
-import { useCallback, useContext, useRef } from 'react'
+import { useCallback, useContext, useMemo, useRef } from 'react'
 
+import type { Collectible } from '@audius/common'
 import { accountSelectors, useProxySelector } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
@@ -8,6 +9,7 @@ import { useSelector } from 'react-redux'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import UserBadges from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -64,6 +66,12 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   collectibleListItem: {
     marginHorizontal: spacing(4),
     paddingVertical: spacing(2)
+  },
+  loadingSpinner: {
+    marginTop: spacing(4),
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 }))
 
@@ -94,11 +102,30 @@ export const CollectiblesTab = () => {
     }
   }, [profile, toast])
 
+  const collectibles = useMemo(() => {
+    if (!profile) return []
+
+    const { collectibleList = [], solanaCollectibleList = [] } = profile
+    const allCollectibles = [...collectibleList, ...solanaCollectibleList]
+
+    if (!profile?.collectibles?.order) {
+      return allCollectibles
+    }
+
+    const collectibleMap: {
+      [key: string]: Collectible
+    } = allCollectibles.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
+
+    const collectibleKeySet = new Set(Object.keys(collectibleMap))
+
+    const visible = profile.collectibles.order
+      .filter((id) => collectibleKeySet.has(id))
+      .map((id) => collectibleMap[id])
+
+    return visible || []
+  }, [profile])
+
   if (!profile) return null
-
-  const { collectibleList = [], solanaCollectibleList = [], user_id } = profile
-
-  const collectibles = [...collectibleList, ...solanaCollectibleList]
 
   return (
     <FlatList
@@ -128,9 +155,14 @@ export const CollectiblesTab = () => {
         </Tile>
       }
       data={collectibles}
+      ListEmptyComponent={
+        <View style={styles.loadingSpinner}>
+          <LoadingSpinner />
+        </View>
+      }
       renderItem={({ item }) => (
         <View style={styles.collectibleListItem}>
-          <CollectiblesCard collectible={item} ownerId={user_id} />
+          <CollectiblesCard collectible={item} ownerId={profile.user_id} />
         </View>
       )}
     />
