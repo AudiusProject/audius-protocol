@@ -1,26 +1,55 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import type { Remix } from '@audius/common'
-import { useLoadImageWithTimeout } from '@audius/common'
+import { useInstanceVar } from '@audius/common'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import CoSign, { Size } from 'app/components/co-sign'
-import { DynamicImage } from 'app/components/core'
 
 import { useStyles as useTrackTileStyles } from './styles'
+import type { LineupTileProps } from './types'
 
 type LineupTileArtProps = {
   coSign?: Remix | null
-  imageUrl?: string
   onLoad: () => void
+  renderImage: LineupTileProps['renderImage']
   style?: StyleProp<ViewStyle>
+}
+
+const ARTWORK_HAS_LOADED_TIMEOUT = 1000
+
+// We don't want to indefinitely delay tile loading
+// waiting for the image, so set a timeout before
+// we call callback().
+export const useLoadImageWithTimeout = (
+  callback: () => void,
+  timeout: number = ARTWORK_HAS_LOADED_TIMEOUT
+) => {
+  const [getDidCallback, setDidCallback] = useInstanceVar(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!getDidCallback()) {
+        callback()
+        setDidCallback(true)
+      }
+    }, timeout)
+    return () => clearTimeout(t)
+  }, [callback, timeout, setDidCallback, getDidCallback])
+
+  return useCallback(() => {
+    if (!getDidCallback()) {
+      callback()
+      setDidCallback(true)
+    }
+  }, [callback, setDidCallback, getDidCallback])
 }
 
 export const LineupTileArt = ({
   coSign,
-  imageUrl,
   onLoad,
+  renderImage,
   style
 }: LineupTileArtProps) => {
   const trackTileStyles = useTrackTileStyles()
@@ -32,9 +61,12 @@ export const LineupTileArt = ({
     [trackTileStyles]
   )
 
-  useLoadImageWithTimeout(imageUrl, onLoad)
+  const onLoadWithTimeout = useLoadImageWithTimeout(onLoad)
 
-  const imageElement = <DynamicImage uri={imageUrl} styles={imageStyles} />
+  const imageElement = renderImage({
+    styles: imageStyles,
+    onLoad: onLoadWithTimeout
+  })
 
   return coSign ? (
     <CoSign size={Size.SMALL} style={[style, trackTileStyles.image]}>

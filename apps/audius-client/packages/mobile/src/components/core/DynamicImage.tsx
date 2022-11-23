@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, memo, useCallback, useRef, useState } from 'react'
 
-import type { Maybe } from '@audius/common'
 import { useInstanceVar } from '@audius/common'
+import type { Maybe } from '@audius/common'
 import type {
   ImageProps,
+  ImageSourcePropType,
   ImageStyle,
   LayoutChangeEvent,
   StyleProp,
@@ -16,8 +17,7 @@ import Skeleton from 'app/components/skeleton'
 import type { StylesProp } from 'app/styles'
 
 export type DynamicImageProps = Omit<ImageProps, 'source'> & {
-  // Image uri
-  uri?: string
+  source?: ImageSourcePropType
   styles?: StylesProp<{
     root: ViewStyle
     imageContainer: ViewStyle
@@ -51,21 +51,75 @@ const styles = StyleSheet.create({
   }
 })
 
-type ImageWithPlaceholderProps = {
-  uri?: string
-  style: StyleProp<ImageStyle>
-}
-
-const ImageWithPlaceholder = ({
-  uri,
+/*
+ * Displays a skeleton while loading an image
+ * then fades in the image
+ */
+const ImageLoader = ({
+  source,
   style,
-  ...other
-}: ImageWithPlaceholderProps) => {
-  if (uri) {
-    return <Image source={{ uri }} style={style} {...other} />
-  }
+  styles: stylesProp,
+  immediate,
+  children,
+  onLoad,
+  animatedValue,
+  ...imageProps
+}: DynamicImageProps) => {
+  const [size, setSize] = useState(0)
+  const skeletonOpacity = useRef(new Animated.Value(1)).current
+  const [isAnimationFinished, setIsAnimationFinished] = useState(false)
 
-  return <Skeleton style={style} />
+  const handleSetSize = useCallback((event: LayoutChangeEvent) => {
+    setSize(event.nativeEvent.layout.width)
+  }, [])
+
+  const handleLoad = useCallback(() => {
+    Animated.timing(skeletonOpacity, {
+      toValue: 0,
+      duration: immediate ? 100 : 500,
+      useNativeDriver: true
+    }).start(() => {
+      onLoad?.()
+      setIsAnimationFinished(true)
+    })
+  }, [skeletonOpacity, onLoad, immediate])
+
+  useEffect(() => {
+    // Reset the animation when the source changes
+    if (source) {
+      setIsAnimationFinished(false)
+      skeletonOpacity.setValue(1)
+    }
+  }, [source, skeletonOpacity])
+
+  return (
+    <View onLayout={handleSetSize}>
+      {source ? (
+        <Image
+          source={source}
+          style={[{ width: size, height: size }, stylesProp?.image]}
+          {...imageProps}
+          onLoad={handleLoad}
+        />
+      ) : null}
+      {!isAnimationFinished ? (
+        <Animated.View
+          style={[
+            stylesProp?.imageContainer,
+            styles.imageContainer,
+            { opacity: skeletonOpacity }
+          ]}
+        >
+          <Skeleton
+            width={size}
+            height={size}
+            style={[{ width: size, height: size }, stylesProp?.image]}
+          />
+        </Animated.View>
+      ) : null}
+      {children ? <View style={styles.children}>{children}</View> : null}
+    </View>
+  )
 }
 
 const interpolateImageScale = (animatedValue: Animated.Value) =>
@@ -88,26 +142,26 @@ const interpolateImageTranslate = (animatedValue: Animated.Value) =>
  * A dynamic image that transitions between changes to the `uri` prop.
  */
 export const DynamicImage = memo(function DynamicImage({
-  uri,
+  source,
   style,
   styles: stylesProp,
   immediate,
   children,
   onLoad,
   animatedValue,
-  firstOpacity: firstOpacityProp = 0.5,
   ...imageProps
 }: DynamicImageProps) {
-  const [size, setSize] = useState(0)
-  const [firstImage, setFirstImage] = useState<string>()
-  const [secondImage, setSecondImage] = useState<string>()
+  const [firstImage, setFirstImage] =
+    useState<Maybe<ImageSourcePropType>>(source)
+  const [secondImage, setSecondImage] = useState<Maybe<ImageSourcePropType>>()
 
-  const firstOpacity = useRef(new Animated.Value(firstOpacityProp)).current
-  const secondOpacity = useRef(new Animated.Value(0.5)).current
+  const firstOpacity = useRef(new Animated.Value(1)).current
+  const secondOpacity = useRef(new Animated.Value(0)).current
 
   const [isFirstImageActive, setIsFirstImageActive] = useState(true)
 
-  const [getPrevImage, setPrevImage] = useInstanceVar<Maybe<string>>(undefined)
+  const [getPrevImage, setPrevImage] =
+    useInstanceVar<Maybe<ImageSourcePropType>>(source)
 
   const animateTo = useCallback(
     (anim: Animated.Value, toValue: number, callback?: () => void) =>
@@ -122,38 +176,42 @@ export const DynamicImage = memo(function DynamicImage({
   useEffect(() => {
     // Skip animation for subsequent loads where the image hasn't changed
     const previousImage = getPrevImage()
-    if (previousImage === uri) {
+    if (previousImage === source) {
       return
     }
 
-    setPrevImage(uri)
+    setPrevImage(source)
 
     if (isFirstImageActive) {
       setIsFirstImageActive(false)
-      setFirstImage(uri)
-      firstOpacity.setValue(1)
-      animateTo(secondOpacity, 0, onLoad)
+      setSecondImage(source)
+      animateTo(secondOpacity, 1, () => {
+        onLoad?.()
+        firstOpacity.setValue(0)
+        setFirstImage(undefined)
+      })
     } else {
       setIsFirstImageActive(true)
-      setSecondImage(uri)
-      secondOpacity.setValue(1)
-      animateTo(firstOpacity, 0, onLoad)
+      setFirstImage(source)
+      firstOpacity.setValue(1)
+      animateTo(secondOpacity, 0, () => {
+        onLoad?.()
+        setSecondImage(undefined)
+      })
     }
   }, [
     animateTo,
     firstOpacity,
     getPrevImage,
-    uri,
+    source,
     isFirstImageActive,
     secondOpacity,
     setIsFirstImageActive,
     setPrevImage,
-    onLoad
+    onLoad,
+    firstImage,
+    secondImage
   ])
-
-  const handleSetSize = useCallback((event: LayoutChangeEvent) => {
-    setSize(event.nativeEvent.layout.width)
-  }, [])
 
   return (
     <Animated.View
@@ -181,27 +239,24 @@ export const DynamicImage = memo(function DynamicImage({
           styles.imageContainer,
           { opacity: firstOpacity }
         ]}
-        onLayout={handleSetSize}
       >
-        <ImageWithPlaceholder
-          uri={firstImage}
-          style={[{ width: size, height: size }, stylesProp?.image]}
-          {...imageProps}
-        />
+        <ImageLoader source={firstImage} styles={stylesProp} {...imageProps} />
       </Animated.View>
-      <Animated.View
-        style={[
-          stylesProp?.imageContainer,
-          styles.imageContainer,
-          { opacity: secondOpacity, zIndex: isFirstImageActive ? -1 : 0 }
-        ]}
-      >
-        <ImageWithPlaceholder
-          uri={secondImage}
-          style={[{ width: size, height: size }, stylesProp?.image]}
-          {...imageProps}
-        />
-      </Animated.View>
+      {secondImage ? (
+        <Animated.View
+          style={[
+            stylesProp?.imageContainer,
+            styles.imageContainer,
+            { opacity: secondOpacity }
+          ]}
+        >
+          <ImageLoader
+            source={secondImage}
+            styles={stylesProp}
+            {...imageProps}
+          />
+        </Animated.View>
+      ) : null}
       {children ? <View style={styles.children}>{children}</View> : null}
     </Animated.View>
   )

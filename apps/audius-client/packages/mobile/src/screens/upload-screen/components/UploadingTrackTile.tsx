@@ -51,7 +51,7 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
     <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
       <View style={styles.content}>
         <DynamicImage
-          uri={artwork?.url}
+          source={{ uri: artwork?.url }}
           styles={{ root: styles.artwork, imageContainer: styles.image }}
         >
           {artwork?.url ? null : (

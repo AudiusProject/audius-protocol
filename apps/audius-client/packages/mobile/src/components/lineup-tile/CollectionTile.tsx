@@ -16,7 +16,6 @@ import {
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
@@ -29,7 +28,8 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
+import type { DynamicImageProps } from 'app/components/core/DynamicImage'
+import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
@@ -113,7 +113,6 @@ const CollectionTileComponent = ({
   })
 
   const {
-    _cover_art_sizes,
     has_current_user_reposted,
     has_current_user_saved,
     is_album,
@@ -124,11 +123,12 @@ const CollectionTileComponent = ({
 
   const isOwner = playlist_owner_id === currentUserId
 
-  const imageUrl = useCollectionCoverArt({
-    id: playlist_id,
-    sizes: _cover_art_sizes,
-    size: SquareSizes.SIZE_150_BY_150
-  })
+  const renderImage = useCallback(
+    (props: DynamicImageProps) => (
+      <CollectionImage collection={collection} {...props} />
+    ),
+    [collection]
+  )
 
   const handlePress = useCallback(() => {
     if (!tracks.length) return
@@ -215,7 +215,7 @@ const CollectionTileComponent = ({
       favoriteType={FavoriteType.PLAYLIST}
       repostType={RepostType.COLLECTION}
       id={playlist_id}
-      imageUrl={imageUrl}
+      renderImage={renderImage}
       isPlayingUid={isPlayingUid}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ID, Maybe, UID } from '@audius/common'
+import type { Collection, ID, Maybe, UID } from '@audius/common'
 import {
   useProxySelector,
   collectionPageActions,
@@ -17,12 +17,14 @@ import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { DynamicImageProps } from 'app/components/core'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type {
   DetailsTileDetail,
   DetailsTileProps
 } from 'app/components/details-tile/types'
+import { CollectionImage } from 'app/components/image/CollectionImage'
 import { DownloadToggle } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
@@ -30,6 +32,7 @@ import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 const {
+  getCollection,
   getCollectionTracksLineup,
   getCollectionId,
   getCollectionUid,
@@ -90,6 +93,7 @@ export const CollectionScreenDetailsTile = ({
   isAlbum,
   isPrivate,
   isPublishing,
+  renderImage: renderCustomImage,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -97,6 +101,7 @@ export const CollectionScreenDetailsTile = ({
 
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
+  const collection = useSelector(getCollection)
   const collectionUid = useSelector(getCollectionUid)
   const collectionId = useSelector(getCollectionId)
   const userUid = useSelector(getUserUid)
@@ -142,6 +147,13 @@ export const CollectionScreenDetailsTile = ({
   const trackId = playingTrack?.track_id
 
   const isQueued = entries.some((entry) => playingUid === entry.uid)
+
+  const renderImage = useCallback(
+    (props: DynamicImageProps) => (
+      <CollectionImage collection={collection as Collection} {...props} />
+    ),
+    [collection]
+  )
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
@@ -233,6 +245,7 @@ export const CollectionScreenDetailsTile = ({
       renderBottomContent={renderTrackList}
       headerText={!isOfflineModeEnabled ? headerText : undefined}
       renderHeader={isOfflineModeEnabled ? renderHeader : undefined}
+      renderImage={renderCustomImage ?? renderImage}
       onPressPlay={handlePressPlay}
     />
   )

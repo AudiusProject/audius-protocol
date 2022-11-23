@@ -6,8 +6,10 @@ import { useSelectProfile } from './selectors'
 export const ProfilePicture = (props: Partial<ProfilePictureProps>) => {
   const profile = useSelectProfile([
     'user_id',
-    '_profile_picture_sizes',
-    'handle'
+    'profile_picture',
+    'profile_picture_sizes',
+    'creator_node_endpoint'
   ])
+
   return <ProfilePictureBase profile={profile} {...props} />
 }

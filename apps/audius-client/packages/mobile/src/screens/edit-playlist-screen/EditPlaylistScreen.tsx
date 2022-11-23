@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import type { Collection } from '@audius/common'
 import {
-  SquareSizes,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions,
   createPlaylistModalUISelectors
@@ -14,8 +13,8 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { FormScreen } from 'app/components/form-screen'
+import { useCollectionImage } from 'app/components/image/CollectionImage'
 import { TrackList } from 'app/components/track-list'
-import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { makeStyles } from 'app/styles'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
@@ -108,11 +107,7 @@ export const EditPlaylistScreen = () => {
   const dispatch = useDispatch()
   const tracks = useSelector(getTracks)
 
-  const coverArt = useCollectionCoverArt({
-    id: playlist?.playlist_id,
-    sizes: playlist?._cover_art_sizes ?? null,
-    size: SquareSizes.SIZE_1000_BY_1000
-  })
+  const coverArt = useCollectionImage(playlist)
 
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
@@ -146,7 +141,7 @@ export const EditPlaylistScreen = () => {
   const initialValues = {
     playlist_name,
     description,
-    artwork: { url: coverArt ?? '' },
+    artwork: { url: coverArt[0].uri ?? '' },
     removedTracks: [],
     tracks,
     track_ids: playlist.playlist_contents.track_ids

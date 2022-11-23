@@ -8,7 +8,6 @@ import {
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes,
   collectionPageActions,
   formatDate,
   accountSelectors,
@@ -25,8 +24,9 @@ import {
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { DynamicImageProps } from 'app/components/core'
 import { Screen, VirtualizedScrollView } from 'app/components/core'
-import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
+import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import type { SearchPlaylist, SearchUser } from 'app/store/search/types'
@@ -115,7 +115,6 @@ const CollectionScreenComponent = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const {
-    _cover_art_sizes,
     _is_publishing,
     description,
     has_current_user_reposted,
@@ -136,11 +135,12 @@ const CollectionScreenComponent = ({
     }/${encodeUrlName(playlist_name)}-${playlist_id}`
   }, [user.handle, is_album, playlist_name, playlist_id])
 
-  const imageUrl = useCollectionCoverArt({
-    id: playlist_id,
-    sizes: _cover_art_sizes,
-    size: SquareSizes.SIZE_480_BY_480
-  })
+  const renderImage = useCallback(
+    (props: DynamicImageProps) => (
+      <CollectionImage collection={collection} {...props} />
+    ),
+    [collection]
+  )
 
   const currentUserId = useSelector(getUserId)
   const isOwner = currentUserId === playlist_owner_id
@@ -226,7 +226,6 @@ const CollectionScreenComponent = ({
           extraDetails={extraDetails}
           hasReposted={has_current_user_reposted}
           hasSaved={has_current_user_saved}
-          imageUrl={imageUrl}
           isAlbum={is_album}
           isPrivate={is_private}
           isPublishing={_is_publishing ?? false}
@@ -236,6 +235,7 @@ const CollectionScreenComponent = ({
           onPressReposts={handlePressReposts}
           onPressSave={handlePressSave}
           onPressShare={handlePressShare}
+          renderImage={renderImage}
           repostCount={repost_count}
           saveCount={save_count}
           title={playlist_name}

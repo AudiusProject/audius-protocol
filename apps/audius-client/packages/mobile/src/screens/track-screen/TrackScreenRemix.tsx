@@ -1,23 +1,18 @@
 import { useCallback } from 'react'
 
 import type { ID, Track, User } from '@audius/common'
-import {
-  SquareSizes,
-  cacheTracksSelectors,
-  cacheUsersSelectors
-} from '@audius/common'
+import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { DynamicImage } from 'app/components/core'
+import { TrackImage } from 'app/components/image/TrackImage'
+import { UserImage } from 'app/components/image/UserImage'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
 const { getUserFromTrack } = cacheUsersSelectors
@@ -118,18 +113,6 @@ const TrackScreenRemixComponent = ({
   const { name, handle } = user
   const navigation = useNavigation()
 
-  const profilePictureImage = useUserProfilePicture({
-    id: user.user_id,
-    sizes: user._profile_picture_sizes,
-    size: SquareSizes.SIZE_150_BY_150
-  })
-
-  const coverArtImage = useTrackCoverArt({
-    id: track.track_id,
-    sizes: track._cover_art_sizes,
-    size: SquareSizes.SIZE_480_BY_480
-  })
-
   const handlePressTrack = useCallback(() => {
     navigation.push('Track', { id: track_id })
   }, [navigation, track_id])
@@ -141,10 +124,10 @@ const TrackScreenRemixComponent = ({
   const images = (
     <>
       <View style={styles.profilePicture}>
-        <DynamicImage uri={profilePictureImage} />
+        <UserImage user={user} />
       </View>
       <View style={styles.coverArt}>
-        <DynamicImage uri={coverArtImage} />
+        <TrackImage track={track} />
       </View>
     </>
   )
