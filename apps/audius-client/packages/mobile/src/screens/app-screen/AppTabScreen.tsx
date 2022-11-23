@@ -48,6 +48,7 @@ import {
 import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 import { UploadScreen } from '../upload-screen'
+import { WalletConnectScreen } from '../wallet-connect'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -93,6 +94,7 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   Upload: undefined
   EditTrack: { id: ID }
+  WalletConnect: undefined
 }
 
 const forFade = ({ current }) => ({
@@ -286,6 +288,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           headerShown: false,
           presentation: 'fullScreenModal'
         }}
+      />
+      <Stack.Screen
+        name='WalletConnect'
+        component={WalletConnectScreen}
+        options={{ headerShown: false, presentation: 'modal' }}
       />
     </Stack.Navigator>
   )

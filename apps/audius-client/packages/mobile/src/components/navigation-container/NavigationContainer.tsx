@@ -53,6 +53,13 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                 feed: {
                   initialRouteName: 'Feed',
                   screens: {
+                    WalletConnect: {
+                      initialRouteName: 'Wallets',
+                      screens: {
+                        Wallets: 'wallets',
+                        ConfirmWalletConnection: 'wallet-connect'
+                      }
+                    },
                     Feed: 'feed',
                     Collection: ':handle/collection/:collectionName',
                     Track: 'track/:handle/:slug',
@@ -127,6 +134,8 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       }
     },
     getStateFromPath: (path, options) => {
+      // Add leading slash if missing
+      if (path[0] !== '/') path = `/${path}`
       // Strip the trending query param because `/trending` will
       // always go to ThisWeek
       if (path.match(/^\/trending/)) {
