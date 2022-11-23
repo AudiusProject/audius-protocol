@@ -43,7 +43,7 @@ def search_full():
         "offset": offset,
         "only_downloadable": False,
         "exclude_premium": True,
-        "keys": args.get("keys", None),
+        "filter_keys": args.get("filter_keys", None),
         "bpm_range": args.get("bpm_range", None)
     }
     resp = search(search_args)

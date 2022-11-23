@@ -29,7 +29,7 @@ def search_es_full(args: dict):
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
     exclude_premium = args.get("exclude_premium", False)
-    keys = args.get("keys", None)
+    filter_keys = args.get("filter_keys", None)
     bpm_range = args.get("bpm_range", None)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
@@ -54,7 +54,7 @@ def search_es_full(args: dict):
                     must_saved=False,
                     only_downloadable=only_downloadable,
                     exclude_premium=exclude_premium,
-                    keys=keys,
+                    filter_keys=filter_keys,
                     bpm_range=bpm_range
                 ),
             ]
@@ -71,7 +71,7 @@ def search_es_full(args: dict):
                         must_saved=True,
                         only_downloadable=only_downloadable,
                         exclude_premium=exclude_premium,
-                        keys=keys,
+                        filter_keys=filter_keys,
                         bpm_range=bpm_range
                     ),
                 ]
