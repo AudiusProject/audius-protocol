@@ -42,6 +42,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         tag_list: lowerKeyword,
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
+        key: { type: 'keyword' },
+        bpm: { type: 'integer' },
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
         is_premium: { type: 'boolean' },
