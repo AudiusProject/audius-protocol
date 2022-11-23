@@ -2,7 +2,8 @@ import {
   reachabilityActions,
   reachabilitySelectors,
   getContext,
-  accountActions
+  accountActions,
+  waitForValue
 } from '@audius/common'
 import {
   put,
@@ -17,6 +18,7 @@ import {
 
 import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
+import { getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
 const REACHABILITY_TIMEOUT_MS = 8 * 1000
@@ -85,6 +87,11 @@ export function* setupBackend() {
     yield* put(backendActions.libsError(libsError))
     return
   }
+  const isReachable = yield* select(getIsReachable)
+  // Bail out before success if we are now offline
+  // This happens when we started the app with the device offline because
+  // we optimistically assume the device is connected to optimize for the "happy path"
+  if (!isReachable) return
   yield* put(backendActions.setupBackendSucceeded(web3Error))
 }
 
@@ -92,6 +99,17 @@ function* watchSetupBackend() {
   yield* takeEvery(backendActions.SETUP, setupBackend)
 }
 
+// Watch for changes to reachability and if not fully set up, re set-up the backend
+function* watchReachabilityChange() {
+  yield* call(waitForValue, (state) => !getIsReachable(state))
+  const isSetup = yield* select(getIsSetup)
+  if (!isSetup) {
+    yield* call(waitForValue, (state) => getIsReachable(state))
+    // Try to set up again, which should block further actions until completed
+    yield* put(backendActions.setupBackend())
+  }
+}
+
 export default function sagas() {
-  return [watchSetupBackend, watchBackendErrors]
+  return [watchSetupBackend, watchBackendErrors, watchReachabilityChange]
 }
