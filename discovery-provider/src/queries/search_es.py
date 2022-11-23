@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -424,13 +425,14 @@ def track_dsl(
     if exclude_premium:
         dsl["must"].append({"term": {"is_premium": {"value": False}}})
 
+    filters = []
     if filter_keys:
-        dsl["filter"] = {
-            "term": {"key": key} for key in filter_keys
-        }
+        filters.append({
+            "terms": {"key": filter_keys}
+        })
 
     if bpm_range:
-        dsl["filter"].append(
+        filters.append(
             {
                 "range": {
                     "bpm": {
@@ -453,6 +455,9 @@ def track_dsl(
                 "term": {"mood": {"value": mood}}
             }
         )
+
+    if filters:
+        dsl["filter"] = filters
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")

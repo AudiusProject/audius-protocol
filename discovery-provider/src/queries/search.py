@@ -27,12 +27,14 @@ def validate_search_args(args):
 @record_metrics
 def search_full():
     args = to_dict(request.args)
-    validation_error = validate_search_args(args)
-    if validation_error:
-        return validation_error
+    # validation_error = validate_search_args(args)
+    # if validation_error:
+    #     return validation_error
 
     current_user_id = get_current_user_id(required=False)
     limit, offset = get_pagination_vars()
+    bpm_range = (args.get("bpm_min", None), args.get("bpm_max", None))
+    bpm_range = bpm_range if bpm_range[0] is not None or bpm_range[1] is not None else None
     search_args = {
         "is_auto_complete": False,
         "kind": args.get("kind", "all"),
@@ -44,7 +46,7 @@ def search_full():
         "only_downloadable": False,
         "exclude_premium": True,
         "filter_keys": args.get("filter_keys", None),
-        "bpm_range": args.get("bpm_range", None),
+        "bpm_range": bpm_range,
         "genre": args.get("genre", None),
         "mood": args.get("mood", None)
     }
