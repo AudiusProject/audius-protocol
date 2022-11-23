@@ -91,7 +91,7 @@ export const useAppScreenOptions = (
   }, [navigation])
 
   const handlePressSearch = useCallback(() => {
-    navigation.push('Search')
+    navigation.navigate('Search')
   }, [navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
