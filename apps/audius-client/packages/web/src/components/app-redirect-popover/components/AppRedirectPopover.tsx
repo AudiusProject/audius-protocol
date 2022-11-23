@@ -84,7 +84,7 @@ type AppRedirectPopoverProps = {
  * page in the mobile app, or redirects to the app store
  * if no app is installed.
  */
-const AppRedirectPopover = ({
+export const AppRedirectPopover = ({
   enablePopover,
   incrementScroll,
   decrementScroll,
@@ -95,7 +95,7 @@ const AppRedirectPopover = ({
 
   const [animDelay, setAnimDelay] = useState(false)
   useEffect(() => {
-    enablePopover && setTimeout(() => setAnimDelay(true), 500)
+    enablePopover && setTimeout(() => setAnimDelay(true), 1000)
   }, [enablePopover])
 
   const shouldShow = animDelay && !isDismissed && isMobile()
@@ -207,5 +207,3 @@ const AppRedirectPopover = ({
     </>
   )
 }
-
-export default AppRedirectPopover
