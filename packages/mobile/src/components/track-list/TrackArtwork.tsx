@@ -1,18 +1,15 @@
-import type { ID, CoverArtSizes } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import type { Track } from '@audius/common'
 import { View } from 'react-native'
 
 import IconPause from 'app/assets/images/pbIconPauseAlt.svg'
 import IconPlay from 'app/assets/images/pbIconPlayAlt.svg'
-import { DynamicImage } from 'app/components/core'
-import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
+import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 
 type TrackArtworkProps = {
-  trackId: ID
+  track: Track
   isActive?: boolean
   isPlaying: boolean
-  coverArtSizes: CoverArtSizes
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -35,19 +32,14 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const TrackArtwork = (props: TrackArtworkProps) => {
-  const { trackId, isPlaying, isActive, coverArtSizes } = props
+  const { isPlaying, isActive, track } = props
   const styles = useStyles()
-  const image = useTrackCoverArt({
-    id: trackId,
-    sizes: coverArtSizes,
-    size: SquareSizes.SIZE_150_BY_150
-  })
 
   const ActiveIcon = isPlaying ? IconPause : IconPlay
 
   return (
-    <DynamicImage
-      uri={image}
+    <TrackImage
+      track={track}
       styles={{ root: styles.artworkContainer, image: styles.image }}
     >
       {isActive ? (
@@ -55,6 +47,6 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
           <ActiveIcon />
         </View>
       ) : null}
-    </DynamicImage>
+    </TrackImage>
   )
 }

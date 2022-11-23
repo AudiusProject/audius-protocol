@@ -9,7 +9,6 @@ import {
   RepostSource,
   ShareSource,
   FavoriteType,
-  SquareSizes,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
@@ -23,11 +22,11 @@ import {
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 
-import type { TileProps } from '../core'
+import type { DynamicImageProps, TileProps } from '../core'
 
 import { LineupTile } from './LineupTile'
 
@@ -84,7 +83,6 @@ export const TrackTileComponent = ({
   const isOwner = currentUserId === track.owner_id
 
   const {
-    _cover_art_sizes,
     duration,
     field_visibility,
     is_unlisted,
@@ -95,11 +93,10 @@ export const TrackTileComponent = ({
     track_id
   } = track
 
-  const imageUrl = useTrackCoverArt({
-    id: track_id,
-    sizes: _cover_art_sizes,
-    size: SquareSizes.SIZE_150_BY_150
-  })
+  const renderImage = useCallback(
+    (props: DynamicImageProps) => <TrackImage track={track} {...props} />,
+    [track]
+  )
 
   const handlePress = useCallback(() => {
     togglePlay({
@@ -182,7 +179,7 @@ export const TrackTileComponent = ({
       hideShare={hideShare}
       hidePlays={hidePlays}
       id={track_id}
-      imageUrl={imageUrl}
+      renderImage={renderImage}
       isUnlisted={is_unlisted}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}

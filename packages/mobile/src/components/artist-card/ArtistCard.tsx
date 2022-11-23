@@ -4,6 +4,7 @@ import type { User } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
+import { UserImage } from 'app/components/image/UserImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
 
@@ -24,11 +25,12 @@ export const ArtistCard = ({ artist, style }: ArtistCardProps) => {
     navigation.push('Profile', { handle })
   }, [navigation, handle])
 
+  const renderImage = useCallback(() => <UserImage user={artist} />, [artist])
+
   return (
     <Card
       style={style}
-      id={artist.user_id}
-      imageSize={artist._profile_picture_sizes}
+      renderImage={renderImage}
       primaryText={artist.name}
       secondaryText={formatProfileCardSecondaryText(artist.follower_count)}
       onPress={handlePress}

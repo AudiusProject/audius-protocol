@@ -1,96 +1,34 @@
-import { useCallback, useState } from 'react'
+import type { Nullable, User } from '@audius/common'
 
-import type { UserImage as UserImageType, UserMultihash } from 'app/models/User'
+import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
+import type { DynamicImageProps } from 'app/components/core'
+import { DynamicImage } from 'app/components/core'
+import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 
-import ImageLoader from './ImageLoader'
-import { gateways } from './utils'
-
-const getUserImageUrl = (
-  user: UserImageType & UserMultihash,
-  cNode: string
+export const useUserImage = (
+  user: Nullable<
+    Pick<
+      User,
+      'profile_picture_sizes' | 'profile_picture' | 'creator_node_endpoint'
+    >
+  >
 ) => {
-  if (user.profile_picture_sizes) {
-    return `${cNode}/ipfs/${user.profile_picture_sizes}/150x150.jpg`
-  }
-  if (user.profile_picture) {
-    return `${cNode}/ipfs/${user.profile_picture}`
-  }
-  return null
+  const cid = user ? user.profile_picture_sizes || user.profile_picture : null
+
+  return useContentNodeImage({
+    cid,
+    user,
+    fallbackImageSource: profilePicEmpty
+  })
 }
 
-const getHasImage = (user: UserImageType & UserMultihash) => {
-  return !!(user.profile_picture_sizes || user.profile_picture)
+export type UserImageProps = {
+  user: Parameters<typeof useUserImage>[0]
+} & DynamicImageProps
+
+export const UserImage = (props: UserImageProps) => {
+  const { user, ...imageProps } = props
+  const { source, handleError } = useUserImage(user)
+
+  return <DynamicImage {...imageProps} source={source} onError={handleError} />
 }
-
-const useUserImage = (user: UserImageType & UserMultihash) => {
-  const cNodes =
-    user.creator_node_endpoint !== null
-      ? user.creator_node_endpoint.split(',').filter(Boolean)
-      : gateways
-  const [didError, setDidError] = useState(
-    cNodes.length === 0 || !getHasImage(user)
-  )
-  const [source, setSource] = useState(
-    didError ? null : { uri: getUserImageUrl(user, cNodes[0]) }
-  )
-
-  const onError = useCallback(async () => {
-    if (didError) return
-    const nodes =
-      user.creator_node_endpoint !== null
-        ? user.creator_node_endpoint.split(',').filter(Boolean)
-        : gateways
-    const numNodes = nodes.length
-    const currInd = nodes.findIndex(
-      (cn: string) => (source?.uri ?? '') === getUserImageUrl(user, cn)
-    )
-    if (currInd !== -1 && currInd < numNodes - 1) {
-      setSource({ uri: getUserImageUrl(user, nodes[currInd + 1]) })
-    } else {
-      // contain "legacy" image formats (no dir cid)
-      const legacyUrls = (user.creator_node_endpoint ?? '')
-        .split(',')
-        .filter(Boolean)
-        .concat(gateways)
-        .map((gateway) => `${gateway}/ipfs/${user.profile_picture_sizes}`)
-      const legacyIdx = legacyUrls.findIndex(
-        (route: string) => (source?.uri ?? '') === route
-      )
-      if (
-        user.profile_picture_sizes &&
-        source?.uri?.endsWith('.jpg') &&
-        legacyUrls.length > 0
-      ) {
-        setSource({ uri: legacyUrls[0] })
-      } else if (legacyIdx !== -1 && legacyIdx < legacyUrls.length - 1) {
-        setSource({ uri: legacyUrls[legacyIdx + 1] })
-      } else {
-        setDidError(true)
-      }
-    }
-  }, [user, source, didError])
-  return { source, didError, onError }
-}
-
-const UserImage = ({
-  user,
-  imageStyle
-}: {
-  user: UserImageType & UserMultihash
-  imageStyle?: Record<string, any>
-}) => {
-  const { source, onError, didError } = useUserImage(user)
-  return (
-    <ImageLoader
-      style={imageStyle}
-      source={
-        didError || source === null
-          ? require('app/assets/images/imageProfilePicEmpty2X.png')
-          : source
-      }
-      onError={onError}
-    />
-  )
-}
-
-export default UserImage

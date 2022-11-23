@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { Supporting } from '@audius/common'
-import { WidthSizes, cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors } from '@audius/common'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'
@@ -10,10 +10,10 @@ import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text, Tile } from 'app/components/core'
+import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -90,16 +90,12 @@ export const SupportingTile = (props: SupportingTileProps) => {
   const user = useSelector((state) => {
     return getUser(state, { id: supporting.receiver_id })
   })
-  const { user_id, handle, name, _cover_photo_sizes } = user || {}
+  const { handle, name } = user || {}
   const isTopRank =
     supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
 
-  const coverPhoto = useUserCoverPhoto({
-    id: user_id,
-    sizes: _cover_photo_sizes ?? null,
-    size: WidthSizes.SIZE_640
-  })
-  const isDefaultImage = coverPhoto && /imageCoverPhotoBlank/.test(coverPhoto)
+  const { source: coverPhotoSource, handleError: handleCoverPhotoError } =
+    useUserCoverImage(user)
 
   const handlePress = useCallback(() => {
     if (handle) {
@@ -116,9 +112,8 @@ export const SupportingTile = (props: SupportingTileProps) => {
     <Tile style={[styles.root, style]} onPress={handlePress} scaleTo={scaleTo}>
       <ImageBackground
         style={styles.backgroundImage}
-        source={{
-          uri: isDefaultImage ? `https://audius.co/${coverPhoto}` : coverPhoto
-        }}
+        source={coverPhotoSource}
+        onError={handleCoverPhotoError}
       >
         <LinearGradient
           colors={['#0000001A', '#0000004D']}

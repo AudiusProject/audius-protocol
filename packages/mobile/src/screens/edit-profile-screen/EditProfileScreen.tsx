@@ -3,8 +3,6 @@ import { useCallback, useEffect } from 'react'
 import type { UserMetadata } from '@audius/common'
 import {
   accountSelectors,
-  SquareSizes,
-  WidthSizes,
   profilePageActions,
   profilePageSelectors,
   Status
@@ -21,9 +19,9 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { FormTextInput, FormImageInput } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
+import { useUserCoverImage } from 'app/components/image/UserCoverImage'
+import { useUserImage } from 'app/components/image/UserImage'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
-import { useUserProfilePicture } from 'app/hooks/useUserProfilePicture'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileValues, UpdatedProfile } from './types'
@@ -124,17 +122,9 @@ export const EditProfileScreen = () => {
 
   const dispatch = useDispatch()
 
-  const coverPhoto = useUserCoverPhoto({
-    id: profile?.user_id ?? null,
-    sizes: profile?._cover_photo_sizes ?? null,
-    size: WidthSizes.SIZE_2000
-  })
+  const { source: coverPhotoSource } = useUserCoverImage(profile)
 
-  const profilePicture = useUserProfilePicture({
-    id: profile?.user_id ?? null,
-    sizes: profile?._profile_picture_sizes ?? null,
-    size: SquareSizes.SIZE_150_BY_150
-  })
+  const { source: imageSource } = useUserImage(profile)
 
   const handleSubmit = useCallback(
     (values: ProfileValues) => {
@@ -182,8 +172,8 @@ export const EditProfileScreen = () => {
     tiktok_handle,
     website,
     donation,
-    cover_photo: { url: coverPhoto },
-    profile_picture: { url: profilePicture }
+    cover_photo: { url: coverPhotoSource[0].uri },
+    profile_picture: { url: imageSource[0].uri }
   }
 
   return (

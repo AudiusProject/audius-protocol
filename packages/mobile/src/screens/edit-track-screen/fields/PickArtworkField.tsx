@@ -92,7 +92,7 @@ export const PickArtworkField = () => {
   return (
     <View style={styles.root}>
       <DynamicImage
-        uri={trackArtworkUrl ?? ' '}
+        source={{ uri: trackArtworkUrl }}
         onLoad={() => setIsLoading(false)}
         style={styles.image}
       >

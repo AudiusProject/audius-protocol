@@ -4,6 +4,7 @@ import type { UserCollection } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
+import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
 
@@ -24,12 +25,16 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
     navigation.push('Collection', { id: collection.playlist_id })
   }, [navigation, collection])
 
+  const renderImage = useCallback(
+    () => <CollectionImage collection={collection} />,
+    [collection]
+  )
+
   return (
     <Card
       style={style}
-      id={collection.playlist_id}
+      renderImage={renderImage}
       type='collection'
-      imageSize={collection._cover_art_sizes}
       primaryText={collection.playlist_name}
       secondaryText={formatPlaylistCardSecondaryText(
         collection.save_count,

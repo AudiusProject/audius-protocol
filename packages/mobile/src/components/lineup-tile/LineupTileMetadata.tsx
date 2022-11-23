@@ -15,6 +15,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
 import { useStyles as useTrackTileStyles } from './styles'
+import type { LineupTileProps } from './types'
 
 const useStyles = makeStyles(({ palette }) => ({
   metadata: {
@@ -55,8 +56,8 @@ const messages = {
 type Props = {
   artistName: string
   coSign?: Remix | null
-  imageUrl?: string
   onPressTitle?: GestureResponderHandler
+  renderImage: LineupTileProps['renderImage']
   setArtworkLoaded: (loaded: boolean) => void
   title: string
   user: User
@@ -67,8 +68,8 @@ type Props = {
 export const LineupTileMetadata = ({
   artistName,
   coSign,
-  imageUrl,
   onPressTitle,
+  renderImage,
   setArtworkLoaded,
   title,
   user,
@@ -89,7 +90,7 @@ export const LineupTileMetadata = ({
   return (
     <View style={styles.metadata}>
       <LineupTileArt
-        imageUrl={imageUrl}
+        renderImage={renderImage}
         onLoad={() => setArtworkLoaded(true)}
         coSign={coSign}
         style={trackTileStyles.imageContainer}

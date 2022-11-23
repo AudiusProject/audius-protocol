@@ -97,7 +97,7 @@ export const FormImageInput = ({
       onPressOut={handlePressOut}
     >
       <DynamicImage
-        uri={isDefaultImage ? `https://audius.co/${url}` : url}
+        source={{ uri: isDefaultImage ? `https://audius.co/${url}` : url }}
         styles={{
           root: [styles.imageContainer, stylesProp?.imageContainer],
           image: [styles.image, stylesProp?.image]

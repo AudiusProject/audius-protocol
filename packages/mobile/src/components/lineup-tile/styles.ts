@@ -14,8 +14,7 @@ export const useStyles = makeStyles(({ palette }) => ({
   image: {
     borderRadius: 4,
     height: 72,
-    width: 72,
-    backgroundColor: palette.neutralLight7
+    width: 72
   },
   imageContainer: {
     marginTop: 10,

@@ -151,6 +151,8 @@ export const Scrubber = ({
     }
   }, [mediaKey, isPlaying, seekInterval, isDragging])
 
+  // TODO: disable scrubber animation when now playing is closed
+  // Disable tracking bar animation when now playing bar is open
   return (
     <View style={styles.root}>
       <Text
