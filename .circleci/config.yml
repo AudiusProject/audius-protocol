@@ -1330,6 +1330,7 @@ jobs:
       - run:
           name: Generate Release Checklist
           command: |
+            git pull
             RELEASE_VERSION=$(jq -r .version discovery-provider/.version.json)
             OLD_VERSION=$(echo ${RELEASE_VERSION} | awk -F. '{$NF = $NF - 1;} 1' | sed 's/ /./g')
             START_COMMIT=$(git show-ref --hash refs/tags/@audius/discovery-provider@${OLD_VERSION})
