@@ -1,7 +1,7 @@
 import copy
 import json
 import logging
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
@@ -425,7 +425,7 @@ def track_dsl(
     if exclude_premium:
         dsl["must"].append({"term": {"is_premium": {"value": False}}})
 
-    filters = []
+    filters: List[Any] = []
     if filter_keys:
         logger.info(f"search filter_keys {filter_keys}")
         if isinstance(filter_keys, list):
