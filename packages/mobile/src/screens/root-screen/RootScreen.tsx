@@ -4,6 +4,7 @@ import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
+import * as BootSplash from 'react-native-bootsplash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
@@ -39,6 +40,10 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const accountStatus = useSelector(getAccountStatus)
   const { updateRequired } = useUpdateRequired()
   const hasAccount = useSelector(getHasAccount)
+
+  useEffect(() => {
+    BootSplash.hide()
+  }, [])
 
   useEffect(() => {
     // Setup the backend when ready
