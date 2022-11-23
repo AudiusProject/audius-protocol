@@ -18,7 +18,7 @@ def generate_env(
     elasticsearch_replicas,
     block_explorer_enabled,
     discovery_environment=None,
-    discovery_db=None
+    discovery_db=None,
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -106,7 +106,6 @@ def generate_env(
         env["DISCOVERY_DB_URL"] = discovery_db
         env["DISCOVERY_DB_URL_READ_REPLICA"] = discovery_db
 
-
     # generate config.env used by startup scripts
     env_file = protocol_dir / ".env"
     env_file.touch()
@@ -176,7 +175,12 @@ def build(
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
-@click.option("-so", "--dn-stage-override-db", type=str, help="Run DN in staging mode, against a DB")
+@click.option(
+    "-so",
+    "--dn-stage-override-db",
+    type=str,
+    help="Run DN in staging mode, against a DB",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -199,8 +203,8 @@ def up(
         discovery_provider_replicas,
         elasticsearch_replicas,
         block_explorer,
-        "stage" if dn_stage_override_db else None, # eventually support prod env here
-        dn_stage_override_db or None
+        "stage" if dn_stage_override_db else None,  # eventually support prod env here
+        dn_stage_override_db or None,
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
