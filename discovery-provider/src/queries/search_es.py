@@ -427,7 +427,7 @@ def track_dsl(
 
     filters = []
     if filter_keys:
-        logger.info(f'search filter_keys {filter_keys}')
+        logger.info(f"search filter_keys {filter_keys}")
         if isinstance(filter_keys, list):
             filters.append({"terms": {"key": filter_keys}})
         else:
@@ -445,7 +445,7 @@ def track_dsl(
     if filters:
         dsl["filter"] = filters
 
-    logger.info(f'search dsl {json.dumps(dsl)}')
+    logger.info(f"search dsl {json.dumps(dsl)}")
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
