@@ -119,17 +119,17 @@
     "ETH_OWNER_WALLET": "0x855FA758c77D68a04990E992aA4dcdeF899F654A",
 
     "DISCOVERY_WEB3_HOST": "poa-ganache",
-    "DISCOVERY_WEB3_PORT": 8545,
+    "DISCOVERY_WEB3_PORT": "8545",
     "DISCOVERY_WEB3_ETH_PROVIDER_URL": "http://eth-ganache:8545",
     "DISCOVERY_SOLANA_ENDPOINT": "http://solana-test-validator:8899",
 
     "DISCOVERY_DB_URL": "postgresql+psycopg2://postgres@localhost/audius_discovery",
-    "DISCOVERY_DB_URL_READ_REPLICA": "postgresql+psycopg2://postgres@localhost/audius_discovery"
-
+    "DISCOVERY_DB_URL_READ_REPLICA": "postgresql+psycopg2://postgres@localhost/audius_discovery",
+    "DISCOVERY_ENV": ""
   },
   "discovery-stage-overrides": {
     "DISCOVERY_WEB3_HOST": "poa-gateway.staging.audius.co",
-    "DISCOVERY_WEB3_PORT": 443,
+    "DISCOVERY_WEB3_PORT": "443",
     "DISCOVERY_WEB3_ETH_PROVIDER_URL": "https://eth.staging.audius.co",
 
     "POA_REGISTRY_ADDRESS": "0x793373aBF96583d5eb71a15d86fFE732CD04D452",
@@ -144,7 +144,9 @@
     "SOLANA_REWARD_MANAGER_PUBLIC_KEY": "CDpzvz7DfgbF95jSSCHLX3ERkugyfgn9Fw8ypNZ1hfXp",
     "SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY": "GaiG9LDYHfZGqeNaoGRzFEnLiwUT7WiC6sA6FDJX9ZPq",
 
-    "DISCOVERY_DB_URL": "postgresql+psycopg2://postgres@localhost/audius_discovery",
-    "DISCOVERY_DB_URL_READ_REPLICA": "postgresql+psycopg2://postgres@localhost/audius_discovery"
+    "DISCOVERY_NETHERMIND_RPC": "https://discoveryprovider.staging.audius.co/nethermind",
+    "DISCOVERY_NETHERMIND_ENTITY_MANAGER_ADDRESS": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
+    "DISCOVERY_ENV": "stage",
+    "DISCOVERY_IDENTITY_SERVICE_URL": "https://identityservice.staging.audius.co"
   }
 }

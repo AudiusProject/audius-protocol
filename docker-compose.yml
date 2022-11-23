@@ -350,6 +350,13 @@ services:
       audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
 
       audius_discprov_dev_mode: "true"
+
+      # Only used in stage-overrides atm
+      audius_web3_nethermind_rpc: "${DISCOVERY_NETHERMIND_RPC}"
+      audius_contracts_nethermind_entity_manager_address: "${DISCOVERY_NETHERMIND_ENTITY_MANAGER_ADDRESS}"
+      audius_discprov_identity_service_url: "${DISCOVERY_NETHERMIND_ENTITY_MANAGER_ADDRESS}"
+      audius_discprov_env: "${DISCOVERY_ENV}"
+
     volumes:
       - ./discovery-provider/alembic:/audius-discovery-provider/alembic
       - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
