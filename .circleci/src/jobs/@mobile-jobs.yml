@@ -126,7 +126,7 @@ mobile-build-upload-staging-releasecandidate-ios:
 
 mobile-build-upload-staging-android:
   working_directory: ~/audius-client
-  resource_class: large
+  resource_class: xlarge
   docker:
     - image: circleci/android:api-30-node
   steps:
@@ -145,7 +145,7 @@ mobile-build-upload-staging-android:
 
 mobile-build-upload-production-android:
   working_directory: ~/audius-client
-  resource_class: large
+  resource_class: xlarge
   docker:
     - image: circleci/android:api-30-node
   steps:
