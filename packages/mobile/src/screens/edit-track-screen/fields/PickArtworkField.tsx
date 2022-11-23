@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
@@ -89,10 +89,12 @@ export const PickArtworkField = () => {
     launchSelectImageActionSheet(handleImageSelected, secondary)
   }, [secondary, setValue])
 
+  const source = useMemo(() => ({ uri: trackArtworkUrl }), [trackArtworkUrl])
+
   return (
     <View style={styles.root}>
       <DynamicImage
-        source={{ uri: trackArtworkUrl }}
+        source={source}
         onLoad={() => setIsLoading(false)}
         style={styles.image}
       >

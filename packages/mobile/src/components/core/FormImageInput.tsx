@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
@@ -89,6 +89,11 @@ export const FormImageInput = ({
 
   const isDefaultImage = /imageCoverPhotoBlank/.test(url)
 
+  const source = useMemo(
+    () => ({ uri: isDefaultImage ? `https://audius.co/${url}` : url }),
+    [isDefaultImage, url]
+  )
+
   return (
     <Pressable
       style={[style, stylesProp?.root]}
@@ -97,7 +102,7 @@ export const FormImageInput = ({
       onPressOut={handlePressOut}
     >
       <DynamicImage
-        source={{ uri: isDefaultImage ? `https://audius.co/${url}` : url }}
+        source={source}
         styles={{
           root: [styles.imageContainer, stylesProp?.imageContainer],
           image: [styles.image, stylesProp?.image]
