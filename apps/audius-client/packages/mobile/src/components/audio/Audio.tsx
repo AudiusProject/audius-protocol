@@ -21,6 +21,7 @@ import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useTrackImage } from 'app/components/image/TrackImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -81,6 +82,7 @@ export const Audio = () => {
   const trackOwner = useSelector((state) =>
     getUser(state, { id: track?.owner_id })
   )
+  const { source: imageSource } = useTrackImage(track)
   const currentUserId = useSelector(getUserId)
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -203,8 +205,7 @@ export const Audio = () => {
   // Track Info handler
   useEffect(() => {
     if (track && !track.is_delete && duration !== null) {
-      const imageUrl =
-        track._cover_art_sizes?.['1000x1000'] ?? DEFAULT_IMAGE_URL
+      const imageUrl = imageSource[2]?.uri ?? DEFAULT_IMAGE_URL
       // Set the background mode when a song starts
       // playing to ensure audio outside app
       // continues when music isn't being played.
@@ -222,7 +223,7 @@ export const Audio = () => {
         MusicControl.handleAudioInterruptions(false)
       }
     }
-  }, [track, index, duration, trackOwner])
+  }, [track, index, duration, trackOwner, imageSource])
 
   // Next and Previous handler
   useEffect(() => {
