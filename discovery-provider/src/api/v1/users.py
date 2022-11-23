@@ -628,7 +628,7 @@ class UserFavoritedTracksFull(Resource):
         return self._get(id)
 
 
-@ns.route("/<string:id>/favoriteAlbums")
+@ns.route("/<string:id>/favorites/albums")
 class FavoritedAlbums(Resource):
     @record_metrics
     @ns.doc(
@@ -646,7 +646,7 @@ class FavoritedAlbums(Resource):
         return success_response(favorites)
 
 
-@ns.route("/<string:id>/favoritePlaylists")
+@ns.route("/<string:id>/favorites/playlists")
 class FavoritedPlaylists(Resource):
     @record_metrics
     @ns.doc(
