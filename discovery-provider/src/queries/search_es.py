@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, Union
 
 from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
@@ -29,6 +29,8 @@ def search_es_full(args: dict):
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
     exclude_premium = args.get("exclude_premium", False)
+    keys = args.get("keys", None)
+    bpm_range = args.get("bpm_range", None)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -52,6 +54,8 @@ def search_es_full(args: dict):
                     must_saved=False,
                     only_downloadable=only_downloadable,
                     exclude_premium=exclude_premium,
+                    keys=keys,
+                    bpm_range=bpm_range
                 ),
             ]
         )
@@ -67,6 +71,8 @@ def search_es_full(args: dict):
                         must_saved=True,
                         only_downloadable=only_downloadable,
                         exclude_premium=exclude_premium,
+                        keys=keys,
+                        bpm_range=bpm_range
                     ),
                 ]
             )
@@ -379,6 +385,8 @@ def track_dsl(
     must_saved=False,
     only_downloadable=False,
     exclude_premium=False,
+    filter_keys=[],
+    bpm_range: Union[None, Tuple[int, int]] = None
 ):
     dsl = {
         "must": [
@@ -407,6 +415,22 @@ def track_dsl(
 
     if exclude_premium:
         dsl["must"].append({"term": {"is_premium": {"value": False}}})
+
+    if filter_keys:
+        dsl["filter"] = {
+            "term": {"key": key} for key in filter_keys
+        }
+
+    if bpm_range:
+        dsl["filter"].append(
+            {
+                "range": {
+                    "bpm": {
+                        "gte": bpm_range[0],
+                        "lte": bpm_range[1]
+                    }
+                }
+            })
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")

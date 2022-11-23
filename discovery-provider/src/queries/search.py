@@ -43,6 +43,8 @@ def search_full():
         "offset": offset,
         "only_downloadable": False,
         "exclude_premium": True,
+        "keys": args.get("keys", None),
+        "bpm_range": args.get("bpm_range", None)
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -71,6 +73,8 @@ def search_autocomplete():
         "offset": offset,
         "only_downloadable": False,
         "exclude_premium": True,
+        "keys": args.get("keys", None),
+        "bpm_range": args.get("bpm_range", None)
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
