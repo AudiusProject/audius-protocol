@@ -431,7 +431,7 @@ def track_dsl(
         if isinstance(filter_keys, list):
             filters.append({"terms": {"key": filter_keys}})
         else:
-            filters.append({"term", {"key": filter_keys}})
+            filters.append({"term": {"key": filter_keys}})
 
     if bpm_range:
         filters.append({"range": {"bpm": {"gte": bpm_range[0], "lte": bpm_range[1]}}})
