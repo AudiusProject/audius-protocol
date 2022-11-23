@@ -595,6 +595,12 @@ full_search_parser.add_argument(
     choices=("all", "users", "tracks", "playlists", "albums"),
     description="The type of response, one of: all, users, tracks, playlists, or albums",
 )
+full_search_parser.add_argument(
+    "bpm_min", required=False, description="Filters tracks to a minimum beats-per-minute", type=int)
+full_search_parser.add_argument(
+    "bpm_max", required=False, description="Filters tracks to a maximum beats-per-minute", type=int)
+full_search_parser.add_argument(
+    "filter_keys", required=False, description="Filters tracks to a certain key", type=str)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

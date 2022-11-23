@@ -42,6 +42,10 @@ class FullSearch(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
+        bpm_range = (args.get("bpm_min", None), args.get("bpm_max", None))
+        bpm_range = (
+            bpm_range if bpm_range[0] is not None or bpm_range[1] is not None else None
+        )
 
         search_args = {
             "is_auto_complete": False,
@@ -52,6 +56,8 @@ class FullSearch(Resource):
             "limit": limit,
             "offset": offset,
             "only_downloadable": False,
+            "bpm_range": bpm_range,
+            "filter_keys": args.get("filter_keys")
         }
         resp = search(search_args)
         return success_response(resp)

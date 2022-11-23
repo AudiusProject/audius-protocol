@@ -58,8 +58,11 @@ def search_es_full(args: dict):
                     exclude_premium=exclude_premium,
                     filter_keys=filter_keys,
                     bpm_range=bpm_range,
+                    << << << < Updated upstream
                     genre=genre,
                     mood=mood,
+                    == == == =
+                    >>>>>> > Stashed changes
                 ),
             ]
         )
@@ -77,8 +80,11 @@ def search_es_full(args: dict):
                         exclude_premium=exclude_premium,
                         filter_keys=filter_keys,
                         bpm_range=bpm_range,
+                        << << << < Updated upstream
                         genre=genre,
                         mood=mood,
+                        == == == =
+                        >>>>>> > Stashed changes
                     ),
                 ]
             )
