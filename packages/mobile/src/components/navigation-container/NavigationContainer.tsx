@@ -39,9 +39,13 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       'audius://',
       'https://audius.co',
       'http://audius.co',
+      'https://redirect.audius.co',
+      'http://redirect.audius.co',
       'audius-staging://',
       'https://staging.audius.co',
-      'http://staging.audius.co'
+      'http://staging.audius.co',
+      'https://redirect.staging.audius.co',
+      'http://redirect.staging.audius.co'
     ],
     // configuration for matching screens with paths
     config: {
@@ -134,8 +138,14 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       }
     },
     getStateFromPath: (path, options) => {
-      // Add leading slash if missing
+      // Add leading slash if it is missing
       if (path[0] !== '/') path = `/${path}`
+
+      // Remove the app-redirect prefix if present
+      if (path.match(`^/app-redirect`)) {
+        path = path.replace(`/app-redirect`, '')
+      }
+
       // Strip the trending query param because `/trending` will
       // always go to ThisWeek
       if (path.match(/^\/trending/)) {

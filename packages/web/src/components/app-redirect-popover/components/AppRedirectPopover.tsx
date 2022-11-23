@@ -98,7 +98,11 @@ export const AppRedirectPopover = ({
     enablePopover && setTimeout(() => setAnimDelay(true), 1000)
   }, [enablePopover])
 
-  const shouldShow = animDelay && !isDismissed && isMobile()
+  const shouldShow =
+    !matchPath(window.location.pathname, { path: '/', exact: true }) &&
+    animDelay &&
+    !isDismissed &&
+    isMobile()
 
   useEffect(() => {
     shouldShow && incrementScroll()
@@ -120,6 +124,7 @@ export const AppRedirectPopover = ({
     onBeforeClickApp()
     const pathname = getPathname()
     const newHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
+
     // If we're on the signup page, copy the URL to clipboard on app redirect
     // The app can then read the URL on load, persisting through install, to associate referrals
     if (
