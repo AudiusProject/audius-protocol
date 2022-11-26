@@ -38,7 +38,7 @@ import { ToastContext } from '../toast/ToastContext'
 
 import { messages } from './messages'
 import { getContentUrl, getTwitterShareUrl } from './utils'
-const { getShareState } = shareModalUISelectors
+const { getShareContent, getShareSource } = shareModalUISelectors
 const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
@@ -96,7 +96,8 @@ export const ShareDrawer = () => {
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
   const dispatch = useDispatch()
-  const { content, source } = useSelector(getShareState)
+  const content = useSelector(getShareContent)
+  const source = useSelector(getShareSource)
   const account = useSelector(getAccountUser)
   const { toast } = useContext(ToastContext)
   const isOwner =
@@ -161,7 +162,7 @@ export const ShareDrawer = () => {
         console.error('Error sharing story: ', error)
       }
     }
-  }, [content.track.duration, content.track.track_id, content?.type])
+  }, [content])
 
   const handleCopyLink = useCallback(() => {
     if (!content) return
