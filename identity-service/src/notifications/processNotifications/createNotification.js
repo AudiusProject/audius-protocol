@@ -34,7 +34,11 @@ async function processCreateNotifications(notifications, tx) {
   for (const notification of notifications) {
     // If the initiator is the main audius account, skip the notification
     // NOTE: This is a temp fix to not stall identity service
-    if (notification.initiator === 51 || notification.initiator === 1873428) {
+    if (
+      notification.initiator === 51 ||
+      notification.initiator === 1873428 ||
+      notification.initiator === 203752
+    ) {
       continue
     }
     const blocknumber = notification.blocknumber

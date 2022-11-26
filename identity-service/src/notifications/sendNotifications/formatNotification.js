@@ -353,7 +353,11 @@ async function _processCreateNotifications(notif, tx) {
 
   // If the initiator is the main audius account, skip the notification
   // NOTE: This is a temp fix to not stall identity service
-  if (notif.initiator === 51 || notif.initiator === 1873428) {
+  if (
+    notif.initiator === 51 ||
+    notif.initiator === 1873428 ||
+    notif.initiator === 203752
+  ) {
     return []
   }
 
