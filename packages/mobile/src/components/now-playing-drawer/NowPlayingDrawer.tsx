@@ -294,55 +294,53 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
       // Disable safe area view edges because they are handled manually
       disableSafeAreaView
     >
-      {track ? (
-        <View
-          style={[
-            styles.container,
-            { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
-          ]}
-        >
-          <View style={styles.playBarContainer}>
-            <PlayBar
-              track={track}
-              user={user}
-              onPress={onDrawerOpen}
-              translationAnim={translationAnim}
-            />
-          </View>
-          <Logo translationAnim={translationAnim} />
-          <View style={styles.titleBarContainer}>
-            <TitleBar onClose={handleDrawerCloseFromSwipe} />
-          </View>
-          <Pressable onPress={handlePressTitle} style={styles.artworkContainer}>
-            <Artwork track={track} />
-          </Pressable>
-          <View style={styles.trackInfoContainer}>
-            <TrackInfo
-              onPressArtist={handlePressArtist}
-              onPressTitle={handlePressTitle}
-              track={track}
-              user={user}
-            />
-          </View>
-          <View style={styles.scrubberContainer}>
-            <Scrubber
-              mediaKey={`${mediaKey}`}
-              isPlaying={isPlaying}
-              onPressIn={onPressScrubberIn}
-              onPressOut={onPressScrubberOut}
-              duration={track?.duration ?? 0}
-            />
-          </View>
-          <View style={styles.controlsContainer}>
-            <AudioControls
-              onNext={onNext}
-              onPrevious={onPrevious}
-              isPodcast={track?.genre === Genre.PODCASTS}
-            />
-            <ActionsBar track={track} />
-          </View>
+      <View
+        style={[
+          styles.container,
+          { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
+        ]}
+      >
+        <View style={styles.playBarContainer}>
+          <PlayBar
+            track={track}
+            user={user}
+            onPress={onDrawerOpen}
+            translationAnim={translationAnim}
+          />
         </View>
-      ) : null}
+        <Logo translationAnim={translationAnim} />
+        <View style={styles.titleBarContainer}>
+          <TitleBar onClose={handleDrawerCloseFromSwipe} />
+        </View>
+        <Pressable onPress={handlePressTitle} style={styles.artworkContainer}>
+          <Artwork track={track} />
+        </Pressable>
+        <View style={styles.trackInfoContainer}>
+          <TrackInfo
+            onPressArtist={handlePressArtist}
+            onPressTitle={handlePressTitle}
+            track={track}
+            user={user}
+          />
+        </View>
+        <View style={styles.scrubberContainer}>
+          <Scrubber
+            mediaKey={`${mediaKey}`}
+            isPlaying={isPlaying}
+            onPressIn={onPressScrubberIn}
+            onPressOut={onPressScrubberOut}
+            duration={track?.duration ?? 0}
+          />
+        </View>
+        <View style={styles.controlsContainer}>
+          <AudioControls
+            onNext={onNext}
+            onPrevious={onPrevious}
+            isPodcast={track?.genre === Genre.PODCASTS}
+          />
+          <ActionsBar track={track} />
+        </View>
+      </View>
     </Drawer>
   )
 })
