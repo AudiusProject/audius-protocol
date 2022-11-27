@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { User } from '@audius/common'
+import { formatCount } from '@audius/common'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getFollowArtists,
@@ -352,7 +353,7 @@ export const FollowArtistCard = ({
           ]}
           numberOfLines={1}
         >
-          {user.follower_count} Followers
+          {formatCount(user.follower_count)} Followers
         </Text>
       </LinearGradient>
     </View>
