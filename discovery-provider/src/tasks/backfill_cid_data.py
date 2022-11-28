@@ -36,7 +36,7 @@ def backfill_cid_data(db: SessionManager):
             # Load cid data from csv in chunks...
             with open(tmp.name, "r") as file:
                 while True:
-                    csv_reader = csv.reader(file, delimiter='\t')
+                    csv_reader = csv.reader(file, delimiter="\t")
                     lines = list(islice(csv_reader, chunk_size))
                     cid_metadata = {}
                     cid_type = {}
