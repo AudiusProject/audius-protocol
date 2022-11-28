@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional, TypedDict
 
 import base58
+from psycopg2.errors import IntegrityError
 from redis import Redis
 from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm.session import Session
@@ -295,6 +296,10 @@ def process_batch_sol_reward_manager_txs(
         challenge_type_map = get_challenge_type_map(session)
 
         audio_tx_histories = []
+        if reward_manager_txs[0]:
+            logger.info(
+                f"index_rewards_manager_backfill.py | parsing starting with slot: {reward_manager_txs[0]['slot']}"
+            )
         for tx in reward_manager_txs:
             timestamp = datetime.datetime.utcfromtimestamp(tx["timestamp"])
             # Add transaction
@@ -359,7 +364,25 @@ def process_batch_sol_reward_manager_txs(
 
         if audio_tx_histories:
             # Save out the transaction history list
-            session.bulk_save_objects(audio_tx_histories)
+            try:
+                session.bulk_save_objects(audio_tx_histories)
+                logger.info(
+                    f"index_rewards_manager_backfill.py | added txs to audio_tx_hist table starting with: {audio_tx_histories[0]}"
+                )
+            except IntegrityError:
+                session.rollback()
+                for tx in audio_tx_histories:
+                    try:
+                        session.add(tx)
+                        session.flush()
+                        logger.info(
+                            f"index_spl_token_backfill.py | added tx to audio_tx_hist table individually: {tx}"
+                        )
+                    except IntegrityError as e:
+                        logger.error(
+                            f"index_spl_token_backfill.py | encountered duplicate: {e}"
+                        )
+                        session.rollback()
 
     except Exception as e:
         logger.error(
@@ -450,11 +473,11 @@ def get_transaction_signatures(
                 )
                 if last_tx_signature != MIN_SIG:
                     raise Exception(
-                        f"No transactions found before {last_tx_signature} due to Solana flakiness"
+                        f"No transactions found before {last_tx_signature}, but there should be. Restarting."
                     )
             else:
                 logger.info(
-                    f"index_rewards_manager_backfill.py | adding to batch: slot {transactions_array[0]['slot']}"
+                    f"index_rewards_manager_backfill.py | adding to batch: starting with slot {transactions_array[0]['slot']}"
                 )
                 # Current batch of transactions
                 transaction_signature_batch = []
@@ -501,6 +524,9 @@ def get_transaction_signatures(
 
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
+    logger.info(
+        f"index_rewards_manager_backfill.py | transaction sigs reversed: {transaction_signatures}"
+    )
     return transaction_signatures
 
 
@@ -743,7 +769,6 @@ def index_rewards_manager_backfill(self):
 
     # Define lock acquired boolean
     have_lock = False
-    # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_rewards_manager_backfill_lock")
 
     try:
@@ -790,10 +815,10 @@ def index_rewards_manager_backfill(self):
             logger.info("index_rewards_manager_backfill.py | Failed to acquire lock")
     except Exception as e:
         logger.error(
-            "index_rewards_manager_backfill.py | Fatal error in main loop",
+            f"index_rewards_manager_backfill.py | Fatal error in main loop: {e}",
             exc_info=True,
         )
-        raise e
+        # raise e
     finally:
         if have_lock:
             update_lock.release()
