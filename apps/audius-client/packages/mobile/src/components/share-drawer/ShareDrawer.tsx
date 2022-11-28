@@ -135,7 +135,7 @@ export const ShareDrawer = () => {
       const audioStartOffsetConfig =
         content.track.duration && content.track.duration >= 20 ? '-ss 10 ' : ''
       const session = await FFmpegKit.execute(
-        `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=n=2:type=linear:s=270x480:duration=10:speed=0.05:c0=#AA1F3B:c1=#671525:x0=0:x1=0:y0=0:y1=280,format=rgb0" -t 10 ${storyVideoPath}`
+        `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=1080x1920:c0=000000:c1=434343:x0=0:x1=0:y0=0:y1=1920:duration=10:speed=0.0225:rate=60[bg];[0:a]aformat=channel_layouts=mono,showwaves=mode=cline:n=1:s=1080x200:scale=cbrt:colors=#ffffff[fg];[bg][fg]overlay=format=auto:x=0:y=1275" -pix_fmt yuv420p -vb 50M -t 10 ${storyVideoPath}`
       )
       // TODO(nkang): Add loading state
       const returnCode = await session.getReturnCode()
