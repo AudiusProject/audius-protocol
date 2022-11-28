@@ -1,3 +1,4 @@
+const { logger } = require('../../logging')
 const models = require('../../models')
 const {
   bulkGetSubscribersFromDiscovery,
@@ -106,13 +107,17 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       },
       transaction: tx
     })
-    const notificationIds = unreadSubscribers.map((notif) => notif.id)
     const unreadSubscribersUserIds = new Set(
       unreadSubscribers.map((s) => s.userId)
     )
     const subscriberIdsWithoutNotification = subscriberIds.filter(
       (s) => !unreadSubscribersUserIds.has(s)
     )
+    const subscriberIdsWithNotification = subscriberIds.filter((s) =>
+      unreadSubscribersUserIds.has(s)
+    )
+    logger.info(`got unread ${subscriberIdsWithoutNotification.length}`)
+
     if (subscriberIdsWithoutNotification.length > 0) {
       // Bulk create notifications for users that do not have a un-viewed notification
       const createTrackNotifTx = await models.Notification.bulkCreate(
@@ -130,40 +135,51 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
           { transaction: tx }
         )
       )
-      notificationIds.push(...createTrackNotifTx.map((notif) => notif.id))
+      const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
+      await models.NotificationAction.bulkCreate(
+        createdNotificationIds.map((notificationId) => ({
+          notificationId,
+          actionEntityType: actionEntityType,
+          actionEntityId: createdActionEntityId,
+          blocknumber
+        })),
+        { transaction: tx }
+      )
     }
-
-    await Promise.all(
-      notificationIds.map(async (notificationId) => {
-        // Action entity id can be one of album/playlist/track
-        const notifActionCreateTx =
-          await models.NotificationAction.findOrCreate({
-            where: {
-              notificationId,
-              actionEntityType: actionEntityType,
-              actionEntityId: createdActionEntityId,
-              blocknumber
-            },
-            transaction: tx
-          })
-
-        // Update Notification table timestamp
-        const updatePerformed = notifActionCreateTx[1]
-        if (updatePerformed) {
-          await models.Notification.update(
-            {
-              timestamp
-            },
-            {
-              where: { id: notificationId },
-              returning: true,
-              plain: true,
-              transaction: tx
-            }
-          )
+    if (subscriberIdsWithNotification.length > 0) {
+      const createTrackNotifTx = await models.Notification.findAll({
+        where: {
+          userId: { [models.Sequelize.Op.in]: subscriberIdsWithNotification },
+          type: createType,
+          entityId: notificationEntityId
         }
       })
-    )
+      const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
+      await models.NotificationAction.bulkCreate(
+        createdNotificationIds.map((notificationId) => ({
+          notificationId,
+          actionEntityType: actionEntityType,
+          actionEntityId: createdActionEntityId,
+          blocknumber
+        })),
+        { transaction: tx }
+      )
+      await models.Notification.update(
+        {
+          timestamp
+        },
+        {
+          where: {
+            type: createType,
+            entityId: notificationEntityId,
+            id: { [models.Sequelize.Op.in]: createdNotificationIds }
+          },
+          returning: true,
+          plain: true,
+          transaction: tx
+        }
+      )
+    }
 
     // Dedupe album /playlist notification
     if (
@@ -186,6 +202,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
         }
       }
     }
+
     validNotifications.push(notification)
   }
   return validNotifications

@@ -36,6 +36,7 @@ module.exports = function (app) {
           'handle',
           'isBlockedFromRelay',
           'isBlockedFromNotifications',
+          'isBlockedFromEmails',
           'appliedRules'
         ]
       })
@@ -62,7 +63,10 @@ module.exports = function (app) {
       // Handle abusive users
 
       const userFlaggedAsAbusive =
-        user && (user.isBlockedFromRelay || user.isBlockedFromNotifications)
+        user &&
+        (user.isBlockedFromRelay ||
+          user.isBlockedFromNotifications ||
+          user.isBlockedFromEmails)
       if (blockAbuseOnRelay && user && userFlaggedAsAbusive) {
         // allow previously abusive users to redeem themselves for next relays
         if (detectAbuseOnRelay) {

@@ -35,18 +35,15 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { timeout } = require('../utils')
+const { timeout, computeFilePath, computeFilePathInDir } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
-const {
-  premiumContentMiddleware
-} = require('../middlewares/premiumContent/premiumContentMiddleware')
-
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const BATCH_TRACKID_ROUTE_LIMIT = 250_000
 
 const router = express.Router()
 
@@ -120,14 +117,14 @@ const streamFromFileSystem = async (
       )
     }
 
-    // If content is premium, set cache-control to no-cache.
+    // If content is gated, set cache-control to no-cache.
     // Otherwise, set the CID cache-control so that client caches the response for 30 days.
-    // The premiumContentMiddleware sets the req.premiumContent object so that we do not
+    // The contentAccessMiddleware sets the req.contentAccess object so that we do not
     // have to make another database round trip to get this info.
-    if (req.premiumContent?.isPremium) {
-      res.setHeader('cache-control', 'no-cache')
-    } else {
+    if (req.shouldCache) {
       res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+    } else {
+      res.setHeader('cache-control', 'no-cache')
     }
 
     await new Promise((resolve, reject) => {
@@ -206,7 +203,7 @@ const getCID = async (req, res) => {
   // Compute expected storagePath for CID
   let storagePath
   try {
-    storagePath = DiskManager.computeFilePath(CID)
+    storagePath = computeFilePath(CID)
     decisionTree.push({
       stage: `COMPUTE_FILE_PATH_COMPLETE`
     })
@@ -578,10 +575,7 @@ const getDirCID = async (req, res) => {
   }
 
   // Compute expected storagePath to minimize reliance on DB storagePath (which will eventually be removed)
-  const storagePath = DiskManager.computeFilePathInDir(
-    dirCID,
-    queryResults.multihash
-  )
+  const storagePath = computeFilePathInDir(dirCID, queryResults.multihash)
 
   // Attempt to stream file from computed storagePath
   try {
@@ -831,17 +825,13 @@ router.post(
  * `...?filename=<file_name.mp3>`.
  * IPFS is not used anymore -- this route only exists with this name because the client uses it in prod
  *
- * This route uses the premium content middleware to check if content requested is premium.
- * If so, the middleware ensures that the user does have access to the content before
- * proceeding to the getCID logic that returns the premium content.
- *
  * @param req
  * @param req.query
  * @param {string} req.query.filename filename to set as the content-disposition header
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], premiumContentMiddleware, getCID)
+router.get(['/ipfs/:CID', '/content/:CID'], getCID)
 
 /**
  * Serve images hosted by content node.
@@ -909,6 +899,39 @@ router.post(
     }
 
     return successResponse(cidExistanceMap)
+  })
+)
+
+router.post(
+  '/batch_id_to_cid',
+  handleResponse(async (req, _res) => {
+    const { trackIds } = req.body
+    if (trackIds && trackIds.length > BATCH_TRACKID_ROUTE_LIMIT) {
+      return errorResponseBadRequest(
+        `Too many track IDs passed in, limit is ${BATCH_TRACKID_ROUTE_LIMIT}`
+      )
+    }
+
+    const queryResults = await models.File.findAll({
+      attributes: ['multihash', 'trackBlockchainId'],
+      raw: true,
+      where: {
+        trackBlockchainId: {
+          [models.Sequelize.Op.in]: trackIds
+        },
+        type: 'copy320'
+      }
+    })
+
+    const trackIdMapping = Object.fromEntries(
+      queryResults.map(({ trackBlockchainId, multihash }) => [
+        trackBlockchainId,
+        multihash
+      ])
+    )
+
+    // return results
+    return successResponse(trackIdMapping)
   })
 )
 
@@ -1066,6 +1089,5 @@ router.get('/file_lookup', async (req, res) => {
 })
 
 module.exports = router
-
 module.exports.getCID = getCID
 module.exports.streamFromFileSystem = streamFromFileSystem

@@ -56,25 +56,67 @@ function getUserIdsToNotify(notifications) {
  */
 const getUserNotificationSettings = async (userIdsToNotify, tx) => {
   const userNotificationSettings = {}
-
-  // Batch fetch mobile push notifications for userIds
-  const mobileQuery = {
-    where: { userId: { [models.Sequelize.Op.in]: userIdsToNotify } },
-    transaction: tx
+  if (userIdsToNotify.length === 0) {
+    return userNotificationSettings
   }
-  const userNotifSettingsMobile =
-    await models.UserNotificationMobileSettings.findAll(mobileQuery)
+  // fetch user's with registered browser devices
+  const userNotifSettingsMobile = await models.sequelize.query(
+    `
+      SELECT * 
+      FROM "UserNotificationMobileSettings" settings
+      WHERE 
+        settings."userId" in (:userIds) AND 
+        settings."userId" in (
+          SELECT "userId"
+          FROM "NotificationDeviceTokens" device
+          WHERE
+            device.enabled AND
+            device."deviceType" in ('ios', 'android')
+          )
+    `,
+    {
+      replacements: {
+        userIds: userIdsToNotify
+      },
+      model: models.UserNotificationMobileSettings,
+      mapToModel: true,
+      transaction: tx
+    }
+  )
+  // Batch fetch mobile push notifications for userIds
   userNotifSettingsMobile.forEach((settings) => {
     userNotificationSettings[settings.userId] = { mobile: settings }
   })
 
   // Batch fetch browser push notifications for userIds
-  const browserPushQuery = {
-    where: { userId: { [models.Sequelize.Op.in]: userIdsToNotify } },
-    transaction: tx
-  }
-  const userNotifBrowserPushSettings =
-    await models.UserNotificationBrowserSettings.findAll(browserPushQuery)
+  const userNotifBrowserPushSettings = await models.sequelize.query(
+    `
+      SELECT * 
+      FROM "UserNotificationBrowserSettings" settings
+      WHERE 
+        settings."userId" in (:userIds) AND (
+          settings."userId" in (
+            SELECT "userId"
+            FROM "NotificationDeviceTokens" device
+            WHERE
+              device.enabled AND
+              device."deviceType" in ('safari')
+          ) OR
+          settings."userId" in (
+            SELECT "userId"
+            FROM "NotificationBrowserSubscriptions" device
+            WHERE device.enabled
+          )
+        );
+    `,
+    {
+      replacements: { userIds: userIdsToNotify },
+      model: models.UserNotificationBrowserSettings,
+      mapToModel: true,
+      transaction: tx
+    }
+  )
+
   userNotifBrowserPushSettings.forEach((settings) => {
     userNotificationSettings[settings.userId] = {
       ...(userNotificationSettings[settings.userId] || {}),

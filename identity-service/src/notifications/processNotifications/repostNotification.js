@@ -100,7 +100,7 @@ async function processBaseRepostNotifications(notifications, tx) {
     for (const notif of notifs) {
       const blocknumber = notif.blocknumber
       const timestamp = Date.parse(notif.timestamp.slice(0, -2))
-      const notifActionCreateTx = await models.NotificationAction.findOrCreate({
+      let notifActionCreateTx = await models.NotificationAction.findOne({
         where: {
           notificationId: notificationId,
           actionEntityType: actionEntityTypes.User,
@@ -109,9 +109,19 @@ async function processBaseRepostNotifications(notifications, tx) {
         },
         transaction: tx
       })
-      // Update Notification table timestamp
-      const updatePerformed = notifActionCreateTx[1]
-      if (updatePerformed) {
+      if (notifActionCreateTx == null) {
+        notifActionCreateTx = await models.NotificationAction.create(
+          {
+            notificationId: notificationId,
+            actionEntityType: actionEntityTypes.User,
+            actionEntityId: notif.initiator,
+            blocknumber
+          },
+          {
+            transaction: tx
+          }
+        )
+        // Update Notification table timestamp
         await models.Notification.update(
           {
             timestamp

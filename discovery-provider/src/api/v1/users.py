@@ -714,6 +714,42 @@ class UserFavoritedTracksFull(Resource):
         return self._get(id)
 
 
+@ns.route("/<string:id>/favorites/albums")
+class FavoritedAlbums(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Favorite Albums""",
+        description="""Gets a user's favorite albums""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        favorites = get_saves("albums", decoded_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
+@ns.route("/<string:id>/favorites/playlists")
+class FavoritedPlaylists(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Favorite Playlists""",
+        description="""Gets a user's favorite playlists""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        favorites = get_saves("playlists", decoded_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
 history_response = make_full_response(
     "history_response", ns, fields.List(fields.Nested(activity_model))
 )

@@ -131,6 +131,7 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
+        "track_cid": fields.String(allow_null=True),
         "is_premium": fields.Boolean,
         "premium_conditions": fields.Raw(allow_null=True),
         "premium_content_signature": fields.Nested(
