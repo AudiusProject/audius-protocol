@@ -22,7 +22,7 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
-describe.only('test issueSyncRequest job processor', function () {
+describe('test issueSyncRequest job processor', function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
