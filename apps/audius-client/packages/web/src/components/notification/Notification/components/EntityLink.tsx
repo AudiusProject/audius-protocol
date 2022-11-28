@@ -1,14 +1,26 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Name, Collection, Track, User, Nullable, Entity } from '@audius/common'
+import {
+  Name,
+  Collection,
+  Track,
+  User,
+  Nullable,
+  Entity,
+  notificationsActions,
+  notificationsSelectors
+} from '@audius/common'
 import { push } from 'connected-react-router'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 
 import { getEntityLink } from '../utils'
 
 import styles from './EntityLink.module.css'
+
+const { toggleNotificationPanel } = notificationsActions
+const { getNotificationPanelIsOpen } = notificationsSelectors
 
 type EntityType = (Collection | Track) & { user: Nullable<User> }
 
@@ -23,6 +35,7 @@ export const useGoToEntity = (
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
+  const isNotificationPanelOpen = useSelector(getNotificationPanelIsOpen)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
@@ -30,6 +43,9 @@ export const useGoToEntity = (
       event.stopPropagation()
       event.preventDefault()
       const link = getEntityLink(entity)
+      if (isNotificationPanelOpen) {
+        dispatch(toggleNotificationPanel())
+      }
       dispatch(push(link))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
@@ -38,7 +54,7 @@ export const useGoToEntity = (
         })
       )
     },
-    [dispatch, entity, entityType, record]
+    [dispatch, entity, entityType, record, isNotificationPanelOpen]
   )
   return handleClick
 }
