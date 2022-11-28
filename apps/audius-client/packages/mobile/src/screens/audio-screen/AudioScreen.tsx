@@ -58,7 +58,7 @@ const messages = {
   totalAudio: 'Total $AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
-  connect: 'Connect Other Wallets',
+  connect: 'Connect Wallets',
   rewards: '$AUDIO Rewards',
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
   rewardsBody2:

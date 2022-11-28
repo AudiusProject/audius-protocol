@@ -118,6 +118,10 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="mailto" android:host="*"/>
         </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="wc"/>
+        </intent>
     </queries>
 
 </manifest>

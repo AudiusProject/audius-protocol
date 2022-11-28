@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
 
 const messages = {
   title: 'Transfer $AUDIO',
-  subtitle: 'To transfer AUDIO please visit audius.co from a desktop browser'
+  subtitle: 'To transfer $AUDIO please visit audius.co from a desktop browser'
 }
 
 export const TransferAudioMobileDrawer = () => {

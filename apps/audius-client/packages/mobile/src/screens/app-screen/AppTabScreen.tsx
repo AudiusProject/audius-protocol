@@ -292,7 +292,10 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen
         name='WalletConnect'
         component={WalletConnectScreen}
-        options={{ headerShown: false, presentation: 'modal' }}
+        options={{
+          headerShown: false,
+          presentation: 'fullScreenModal'
+        }}
       />
     </Stack.Navigator>
   )
