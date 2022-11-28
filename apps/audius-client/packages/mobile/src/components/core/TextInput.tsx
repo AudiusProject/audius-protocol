@@ -65,7 +65,9 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     flex: 1,
     color: palette.neutral,
     fontFamily: typography.fontByWeight.medium,
-    minWidth: 40
+    minWidth: 40,
+    // Needed for android
+    padding: 0
   },
   icon: {
     fill: palette.neutralLight5,
