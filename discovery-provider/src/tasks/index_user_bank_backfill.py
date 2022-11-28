@@ -6,6 +6,7 @@ import time
 from decimal import Decimal
 from typing import Any, List, Optional, TypedDict
 
+from psycopg2.errors import IntegrityError
 from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, asc, desc, or_
@@ -359,11 +360,19 @@ def parse_user_bank_transaction(
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
 
-    process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
-    session.add(
-        UserBankBackfillTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
-    )
-    return (tx_info["result"], tx_sig)
+    try:
+        process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
+        session.add(
+            UserBankBackfillTx(
+                signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp
+            )
+        )
+    except IntegrityError as e:
+        logger.error(
+            f"index_user_bank_backfill.py | Encountered duplicate: {tx_sig}, exception: {e}"
+        )
+    finally:
+        return (tx_info["result"], tx_sig)
 
 
 def process_user_bank_txs(stop_sig: str):
@@ -408,7 +417,7 @@ def process_user_bank_txs(stop_sig: str):
                 )
                 if last_tx_signature != MIN_SIG:
                     raise Exception(
-                        f"No transactions found before {last_tx_signature} due to Solana flakiness"
+                        f"No transactions found before {last_tx_signature}, but there should be. Restarting."
                     )
             else:
                 logger.info(
@@ -710,9 +719,10 @@ def index_user_bank_backfill(self):
 
     except Exception as e:
         logger.error(
-            "index_user_bank_backfill.py | Fatal error in main loop", exc_info=True
+            f"index_user_bank_backfill.py | Fatal error in main loop: {e}",
+            exc_info=True,
         )
-        raise e
+        # raise e
     finally:
         if have_lock:
             update_lock.release()
