@@ -215,7 +215,7 @@ async function _handleIssueSyncRequest({
   if (walletOnSecondaryExceedsMaxErrorsAllowed) {
     return {
       result: 'failure_secondary_failure_count_threshold_met',
-      error: `${logMsgString} || Wallet=${userWallet} on secondary=${secondaryEndpoint} exceeded max errors allowed. Will not issue further syncRequests today.`,
+      error: `${logMsgString} || Wallet exceeded max errors allowed. Will not issue further syncRequests today.`,
       syncReqsToEnqueue
     }
   }
