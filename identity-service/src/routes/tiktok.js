@@ -59,7 +59,7 @@ module.exports = function (app) {
 
       const resp = await axios.post(urlAccessToken)
 
-      return successResponse(resp)
+      return successResponse(resp.data)
     })
   )
 }
