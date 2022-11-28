@@ -56,7 +56,9 @@ function getUserIdsToNotify(notifications) {
  */
 const getUserNotificationSettings = async (userIdsToNotify, tx) => {
   const userNotificationSettings = {}
-
+  if (userIdsToNotify.length === 0) {
+    return userNotificationSettings
+  }
   // fetch user's with registered browser devices
   const userNotifSettingsMobile = await models.sequelize.query(
     `
@@ -77,10 +79,10 @@ const getUserNotificationSettings = async (userIdsToNotify, tx) => {
         userIds: userIdsToNotify
       },
       model: models.UserNotificationMobileSettings,
-      mapToModel: true
+      mapToModel: true,
+      transaction: tx
     }
   )
-
   // Batch fetch mobile push notifications for userIds
   userNotifSettingsMobile.forEach((settings) => {
     userNotificationSettings[settings.userId] = { mobile: settings }
@@ -110,7 +112,8 @@ const getUserNotificationSettings = async (userIdsToNotify, tx) => {
     {
       replacements: { userIds: userIdsToNotify },
       model: models.UserNotificationBrowserSettings,
-      mapToModel: true
+      mapToModel: true,
+      transaction: tx
     }
   )
 
