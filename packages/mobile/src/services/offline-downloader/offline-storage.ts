@@ -123,7 +123,7 @@ export const purgeAllDownloads = async () => {
   })
 }
 
-export const markCollectionDownloaded = async (
+export const persistCollectionDownloadStatus = async (
   collection: string,
   downloaded: boolean
 ) => {

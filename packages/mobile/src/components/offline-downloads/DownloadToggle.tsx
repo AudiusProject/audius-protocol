@@ -11,9 +11,9 @@ import {
 } from 'app/services/offline-downloader'
 import {
   getOfflineDownloadStatus,
-  getItemOfflineDownloadStatus
+  getIsCollectionMarkedForDownload
 } from 'app/store/offline-downloads/selectors'
-import { OfflineItemDownloadStatus } from 'app/store/offline-downloads/slice'
+import { OfflineTrackDownloadStatus as OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
@@ -88,16 +88,13 @@ export const DownloadToggle = ({
 
   const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
   const isAnyDownloadInProgress = tracks.some((track: Track) => {
-    const status = offlineDownloadStatus[track.track_id.toString()]
-    return status === OfflineItemDownloadStatus.LOADING
+    const status =
+      track?.track_id && offlineDownloadStatus[track.track_id.toString()]
+    return status === OfflineDownloadStatus.LOADING
   })
-  const collectionDownloadStatus = useSelector(
-    getItemOfflineDownloadStatus(collection)
+  const isCollectionMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(collection)
   )
-  const isToggleOn =
-    collectionDownloadStatus === OfflineItemDownloadStatus.SUCCESS ||
-    collectionDownloadStatus === OfflineItemDownloadStatus.LOADING
-
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
       if (!collection) return
@@ -121,20 +118,32 @@ export const DownloadToggle = ({
     <View style={styles.root}>
       {labelText && <View style={styles.flex1} />}
       <View style={[styles.iconTitle]}>
-        <DownloadStatusIndicator itemId={collection} showNotDownloaded />
+        <DownloadStatusIndicator
+          statusOverride={
+            isCollectionMarkedForDownload
+              ? isAnyDownloadInProgress
+                ? OfflineDownloadStatus.LOADING
+                : OfflineDownloadStatus.SUCCESS
+              : null
+          }
+          showNotDownloaded
+        />
         {labelText ? (
-          <Text style={[styles.labelText, isToggleOn && styles.purple]}>
+          <Text
+            style={[
+              styles.labelText,
+              isCollectionMarkedForDownload && styles.purple
+            ]}
+          >
             {isAnyDownloadInProgress ? messages.downloading : labelText}
           </Text>
         ) : null}
       </View>
       <View style={[styles.flex1, styles.toggleContainer]}>
         <Switch
-          value={isToggleOn}
+          value={isCollectionMarkedForDownload}
           onValueChange={handleToggleDownload}
-          disabled={
-            collectionDownloadStatus === OfflineItemDownloadStatus.LOADING
-          }
+          disabled={isAnyDownloadInProgress}
         />
       </View>
     </View>
