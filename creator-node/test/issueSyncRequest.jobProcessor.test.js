@@ -18,15 +18,11 @@ const {
   METRIC_NAMES
 } = require('../src/services/prometheusMonitoring/prometheus.constants')
 
-const {
-  SecondarySyncHealthTracker
-} = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker.ts')
-
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const { expect } = chai
 
-describe('test issueSyncRequest job processor', function () {
+describe.only('test issueSyncRequest job processor', function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
@@ -158,7 +154,15 @@ describe('test issueSyncRequest job processor', function () {
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
       retrieveClockValueForUserFromReplicaStub,
-      primarySyncFromSecondaryStub
+      primarySyncFromSecondaryStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
@@ -274,7 +278,15 @@ describe('test issueSyncRequest job processor', function () {
       .resolves(initialSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      retrieveClockValueForUserFromReplicaStub
+      retrieveClockValueForUserFromReplicaStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     sandbox
@@ -345,7 +357,15 @@ describe('test issueSyncRequest job processor', function () {
       .resolves(finalSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      retrieveClockValueForUserFromReplicaStub
+      retrieveClockValueForUserFromReplicaStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     sandbox
@@ -388,12 +408,11 @@ describe('test issueSyncRequest job processor', function () {
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
-    // expect(recordFailureStub).to.have.been.calledOnceWithExactly({
-    //   secondary,
-    //   wallet,
-    //   prometheusError: 'failure_secondary_failed_to_progress'
-    // })
-    expect(recordFailureStub).to.have.not.been.called
+    expect(recordFailureStub).to.have.been.calledOnceWithExactly({
+      secondary,
+      wallet,
+      prometheusError: 'failure_secondary_failed_to_progress'
+    })
   })
 
   it('requires additional sync when secondary returns failure for syncUuid', async function () {
@@ -418,7 +437,15 @@ describe('test issueSyncRequest job processor', function () {
       .resolves('failure_fetching_user_replica_set')
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSyncStatusByUuidStub
+      getSyncStatusByUuidStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Make the axios request succeed with a syncUuid
@@ -459,7 +486,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(recordFailureStub).to.have.been.calledOnceWithExactly({
       secondary,
       wallet,
-      prometheusError: 'failure_secondary_failed_to_progress'
+      prometheusError: 'failure_fetching_user_replica_set'
     })
   })
 
@@ -469,7 +496,15 @@ describe('test issueSyncRequest job processor', function () {
     const getSyncStatusByUuidStub = sandbox.stub().resolves('success')
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSyncStatusByUuidStub
+      getSyncStatusByUuidStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Make the axios request succeed with a syncUuid
@@ -520,7 +555,15 @@ describe('test issueSyncRequest job processor', function () {
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
       retrieveClockValueForUserFromReplicaStub,
-      primarySyncFromSecondaryStub
+      primarySyncFromSecondaryStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
@@ -582,7 +625,15 @@ describe('test issueSyncRequest job processor', function () {
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Make the sync request succeed regardless
@@ -646,7 +697,15 @@ describe('test issueSyncRequest job processor', function () {
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Verify job outputs the correct results: no sync issued
@@ -699,7 +758,15 @@ describe('test issueSyncRequest job processor', function () {
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Make the axios request succeed
