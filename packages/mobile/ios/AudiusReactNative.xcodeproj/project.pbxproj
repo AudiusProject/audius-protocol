@@ -688,7 +688,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3549AE74B86B49C376C63B88 /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "Audius Music (Release Candidate)";
+				APP_DISPLAY_NAME = "RC - Prod (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.ReleaseCandidate;
 				BUNDLE_ID_SUFFIX = "";
 				CLANG_ENABLE_MODULES = YES;
@@ -770,7 +770,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 021F02CDEBEC9193E350DD1F /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "Audius Music (Release Candidate Staging)";
+				APP_DISPLAY_NAME = "RC - Staging (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging.ReleaseCandidate;
 				BUNDLE_ID_SUFFIX = .staging.releasecandidate;
 				CLANG_ENABLE_MODULES = YES;
@@ -860,7 +860,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 89A7C3D6A808EBB25935ECD5 /* Pods-AudiusReactNative.staging.debug.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "Audius Music (Staging)";
+				APP_DISPLAY_NAME = "Staging (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging;
 				BUNDLE_ID_SUFFIX = .staging;
 				CLANG_ENABLE_MODULES = YES;
