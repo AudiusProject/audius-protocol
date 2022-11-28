@@ -56,7 +56,10 @@ type NativeDrawerProps = {
 /*
  * Conditionally renders the drawers hooked up to native store/drawers slice
  */
-const NativeDrawer = ({ drawer: Drawer, drawerName }: NativeDrawerProps) => {
+export const NativeDrawer = ({
+  drawer: Drawer,
+  drawerName
+}: NativeDrawerProps) => {
   const { visibleState } = useDrawer(drawerName)
 
   if (visibleState === false) return null
