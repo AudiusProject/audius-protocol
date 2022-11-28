@@ -9,6 +9,7 @@ import base58
 from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.spl_token_backfill_transaction import (
@@ -136,18 +137,24 @@ def decode_memo_and_extract_vendor(memo_encoded: str) -> str:
 
 
 def parse_spl_token_transaction(
+    session: Session,
     solana_client_manager: SolanaClientManager,
-    tx_sig: ConfirmedSignatureForAddressResult,
+    tx: ConfirmedSignatureForAddressResult,
 ) -> Optional[SplTokenTransactionInfo]:
     try:
-        if tx_sig["err"]:
+        if tx["err"]:
             return None
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"], retries=10)
+        tx_info = solana_client_manager.get_sol_tx_info(tx["signature"], retries=10)
         result = tx_info["result"]
         meta = result["meta"]
         error = meta["err"]
         if error:
             return None
+
+        tx_sig = tx["signature"]
+        tx_slot = result["slot"]
+        record = SPLTokenBackfillTransaction(slot=tx_slot, signature=tx_sig)
+        session.add(record)
 
         memo_encoded = parse_memo_instruction(result)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
@@ -164,8 +171,8 @@ def parse_spl_token_transaction(
             return None
         receiver_spl_tx_info: SplTokenTransactionInfo = {
             "user_bank": receiver_token_account,
-            "signature": tx_sig["signature"],
-            "slot": result["slot"],
+            "signature": tx_sig,
+            "slot": tx_slot,
             "timestamp": datetime.datetime.utcfromtimestamp(result["blockTime"]),
             "vendor": vendor,
             "prebalance": prebalance,
@@ -176,9 +183,8 @@ def parse_spl_token_transaction(
         return receiver_spl_tx_info
 
     except Exception as e:
-        signature = tx_sig["signature"]
         logger.error(
-            f"index_spl_token_backfill.py | Error processing {signature}, {e}",
+            f"index_spl_token_backfill.py | Error processing {tx_sig}, {e}",
             exc_info=True,
         )
         raise e
@@ -243,9 +249,11 @@ def process_spl_token_transactions(
 def get_latest_slot(db):
     latest_slot = None
     with db.scoped_session() as session:
-        highest_slot_query = session.query(
-            SPLTokenBackfillTransaction.last_scanned_slot
-        ).first()
+        highest_slot_query = (
+            session.query(SPLTokenBackfillTransaction.slot)
+            .order_by(desc(SPLTokenBackfillTransaction.slot))
+            .first()
+        )
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query[0]
@@ -258,7 +266,6 @@ def parse_sol_tx_batch(
     db: SessionManager,
     solana_client_manager: SolanaClientManager,
     tx_sig_batch_records: List[ConfirmedSignatureForAddressResult],
-    solana_logger: SolanaIndexingLogger,
 ):
     """
     Parse a batch of solana transactions in parallel by calling parse_spl_token_transaction
@@ -275,33 +282,35 @@ def parse_sol_tx_batch(
     # Process each batch in parallel
     if tx_sig_batch_records[0]:
         logger.info(
-            f"index_spl_token_backfill.py | parsing slot {tx_sig_batch_records[0]['slot']}"
+            f"index_spl_token_backfill.py | parsing slot starting at {tx_sig_batch_records[0]['slot']}"
         )
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        parse_sol_tx_futures = {
-            executor.submit(
-                parse_spl_token_transaction,
-                solana_client_manager,
-                tx_sig,
-            ): tx_sig
-            for tx_sig in tx_sig_batch_records
-        }
-        try:
-            for future in concurrent.futures.as_completed(
-                parse_sol_tx_futures, timeout=45
-            ):
-                tx_info = future.result()
-                if not tx_info:
-                    continue
-                updated_token_accounts.update(tx_info["token_accounts"])
+    with db.scoped_session() as session:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            parse_sol_tx_futures = {
+                executor.submit(
+                    parse_spl_token_transaction,
+                    session,
+                    solana_client_manager,
+                    tx_sig,
+                ): tx_sig
+                for tx_sig in tx_sig_batch_records
+            }
+            try:
+                for future in concurrent.futures.as_completed(
+                    parse_sol_tx_futures, timeout=45
+                ):
+                    tx_info = future.result()
+                    if not tx_info:
+                        continue
+                    updated_token_accounts.update(tx_info["token_accounts"])
 
-                spl_token_txs.append(tx_info)
+                    spl_token_txs.append(tx_info)
 
-        except Exception as exc:
-            logger.error(
-                f"index_spl_token_backfill.py | Error parsing sol spl token transaction: {exc}"
-            )
-            raise exc
+            except Exception as exc:
+                logger.error(
+                    f"index_spl_token_backfill.py | Error parsing sol spl token transaction: {exc}"
+                )
+                raise exc
 
     with db.scoped_session() as session:
         if updated_token_accounts:
@@ -318,30 +327,25 @@ def parse_sol_tx_batch(
 
             audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
             if audio_txs:
-                session.bulk_save_objects(audio_txs)
-                logger.info(
-                    f"index_spl_token_backfill.py | added txs to audio_tx_hist table: {audio_txs[0]}"
-                )
-
-        if tx_sig_batch_records:
-            last_tx = tx_sig_batch_records[0]
-
-            last_scanned_slot = last_tx["slot"]
-            last_scanned_signature = last_tx["signature"]
-            logger.info(
-                f"Updating last_scanned_slot to {last_scanned_slot} and signature to {last_scanned_signature}"
-            )
-
-            record = session.query(SPLTokenBackfillTransaction).first()
-            if record:
-                record.last_scanned_slot = last_scanned_slot
-                record.signature = last_scanned_signature
-            else:
-                record = SPLTokenBackfillTransaction(
-                    last_scanned_slot=last_scanned_slot,
-                    signature=last_scanned_signature,
-                )
-            session.add(record)
+                try:
+                    session.bulk_save_objects(audio_txs)
+                    logger.info(
+                        f"index_spl_token_backfill.py | added txs to audio_tx_hist table starting with: {audio_txs[0]}"
+                    )
+                except IntegrityError:
+                    session.rollback()
+                    for tx in audio_txs:
+                        try:
+                            session.add(tx)
+                            session.flush()
+                            logger.info(
+                                f"index_spl_token_backfill.py | added tx to audio_tx_hist table individually: {tx}"
+                            )
+                        except IntegrityError as e:
+                            logger.error(
+                                f"index_spl_token_backfill.py | encountered duplicate: {e}"
+                            )
+                            session.rollback()
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -410,7 +414,7 @@ def process_spl_token_tx(
             )
             if last_tx_signature != MIN_SIG:
                 raise Exception(
-                    f"No transactions found before {last_tx_signature} due to Solana flakiness"
+                    f"No transactions found before {last_tx_signature} but there should be. Restarting."
                 )
 
         else:
@@ -461,11 +465,16 @@ def process_spl_token_tx(
     solana_logger.end_time("fetch_batches")
     solana_logger.start_time("parse_batches")
     for tx_sig_batch in transaction_signatures:
+        tx_sig_batch.reverse()
+        if tx_sig_batch[0]:
+            logger.info(
+                f"index_spl_token_backfill.py | parsing new batch starting with {tx_sig_batch[0]['slot']}"
+            )
         for tx_sig_batch_records in split_list(
             tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
         ):
             token_accounts = parse_sol_tx_batch(
-                db, solana_client_manager, tx_sig_batch_records, solana_logger
+                db, solana_client_manager, tx_sig_batch_records
             )
             totals["token_accts"] += len(token_accounts)
 
@@ -597,13 +606,13 @@ def check_progress(session: Session):
     ret["stop_sig"] = stop_row.signature
     latest_processed_row = (
         session.query(SPLTokenBackfillTransaction)
-        .order_by(desc(SPLTokenBackfillTransaction.last_scanned_slot))
+        .order_by(desc(SPLTokenBackfillTransaction.slot))
         .first()
     )
     if not latest_processed_row:
         return ret
     ret["latest_processed_sig"] = latest_processed_row.signature
-    ret["latest_processed_slot"] = latest_processed_row.last_scanned_slot
+    ret["latest_processed_slot"] = latest_processed_row.slot
     min_row = (
         session.query(AudioTransactionsHistory)
         .filter(
@@ -641,7 +650,6 @@ def index_spl_token_backfill(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock(index_spl_token_backfill_lock)
 
     try:
@@ -683,9 +691,10 @@ def index_spl_token_backfill(self):
             process_spl_token_tx(solana_client_manager, db, stop_sig)
     except Exception as e:
         logger.error(
-            "index_spl_token_backfill.py | Fatal error in main loop", exc_info=True
+            f"index_spl_token_backfill.py | Fatal error in main loop: {e}",
+            exc_info=True,
         )
-        raise e
+        # raise e
     finally:
         if have_lock:
             update_lock.release()
