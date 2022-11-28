@@ -470,10 +470,11 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(recordFailureStub).to.have.been.calledOnceWithExactly(
+    expect(recordFailureStub).to.have.been.calledOnceWithExactly({
       secondary,
-      wallet
-    )
+      wallet,
+      prometheusError: 'failure_fetching_user_replica_set'
+    })
   })
 
   it('does not require additional sync when secondary returns success for syncUuid', async function () {

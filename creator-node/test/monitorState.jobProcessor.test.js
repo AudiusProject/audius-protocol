@@ -24,7 +24,6 @@ describe('test monitorState job processor', function () {
     getUnhealthyPeersStub,
     buildReplicaSetNodesToUserWalletsMapStub,
     retrieveUserInfoFromReplicaSetStub,
-    computeUserSecondarySyncSuccessRatesMapStub,
     getCNodeEndpointToSpIdMapStub
 
   beforeEach(async function () {
@@ -45,7 +44,6 @@ describe('test monitorState job processor', function () {
     getUnhealthyPeersStub = null
     buildReplicaSetNodesToUserWalletsMapStub = null
     retrieveUserInfoFromReplicaSetStub = null
-    computeUserSecondarySyncSuccessRatesMapStub = null
     getCNodeEndpointToSpIdMapStub = null
   })
 
@@ -97,11 +95,6 @@ describe('test monitorState job processor', function () {
         .stub()
         .resolves(retrieveUserInfoFromReplicaSetResp)
     }
-    if (!computeUserSecondarySyncSuccessRatesMapStub) {
-      computeUserSecondarySyncSuccessRatesMapStub = sandbox
-        .stub()
-        .resolves(userSecondarySyncSuccessRatesMap)
-    }
     if (!getCNodeEndpointToSpIdMapStub) {
       getCNodeEndpointToSpIdMapStub = sandbox
         .stub()
@@ -116,9 +109,7 @@ describe('test monitorState job processor', function () {
         './stateMonitoringUtils': {
           getNodeUsers: getNodeUsersStub,
           buildReplicaSetNodesToUserWalletsMap:
-            buildReplicaSetNodesToUserWalletsMapStub,
-          computeUserSecondarySyncSuccessRatesMap:
-            computeUserSecondarySyncSuccessRatesMapStub
+            buildReplicaSetNodesToUserWalletsMapStub
         },
         '../CNodeHealthManager': {
           CNodeHealthManager: {
@@ -281,9 +272,6 @@ describe('test monitorState job processor', function () {
     expect(
       retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
-    expect(
-      computeUserSecondarySyncSuccessRatesMapStub
-    ).to.have.been.calledOnceWithExactly(USERS)
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID
@@ -292,9 +280,6 @@ describe('test monitorState job processor', function () {
 
   it('should return without throwing when computeUserSecondarySyncSuccessRatesMap throws an error', async function () {
     // Run processStateMonitoringJob with each step succeeding except computeUserSecondarySyncSuccessRatesMapStub
-    computeUserSecondarySyncSuccessRatesMapStub = sandbox
-      .stub()
-      .rejects('test unexpected error')
     const jobResult = await processStateMonitoringJob({})
 
     // Verify that computeUserSecondarySyncSuccessRatesMapStub fails and steps before it succeed
@@ -314,9 +299,6 @@ describe('test monitorState job processor', function () {
     expect(
       retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
-    expect(
-      computeUserSecondarySyncSuccessRatesMapStub
-    ).to.have.been.calledOnceWithExactly(USERS)
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
@@ -348,7 +330,6 @@ describe('test monitorState job processor', function () {
     expect(
       retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
-    expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
@@ -379,7 +360,6 @@ describe('test monitorState job processor', function () {
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
     expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
-    expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
@@ -406,7 +386,6 @@ describe('test monitorState job processor', function () {
     )
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
     expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
-    expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
@@ -431,7 +410,6 @@ describe('test monitorState job processor', function () {
     expect(getUnhealthyPeersStub).to.not.have.been.called
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
     expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been.called
-    expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: LAST_PROCESSED_USER_ID,

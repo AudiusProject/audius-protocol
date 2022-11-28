@@ -16,14 +16,14 @@ const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
   computeSyncModeForUserAndReplica
 } = require('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils')
 const {
-  SyncType,
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
-const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
+const {
+  SecondarySyncHealthTracker
+} = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
