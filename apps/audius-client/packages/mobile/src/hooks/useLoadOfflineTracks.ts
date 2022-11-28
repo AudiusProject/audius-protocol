@@ -9,7 +9,7 @@ import moment from 'moment'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { completeDownload, loadTracks } from 'app/store/offline-downloads/slice'
+import { addCollection, loadTracks } from 'app/store/offline-downloads/slice'
 
 import {
   getOfflineCollections,
@@ -30,7 +30,7 @@ export const useLoadOfflineTracks = (collection: string) => {
 
     const offlineCollections = await getOfflineCollections()
     offlineCollections?.forEach((collection) => {
-      dispatch(completeDownload(collection))
+      dispatch(addCollection(collection))
     })
 
     const trackIds = await listTracks()
