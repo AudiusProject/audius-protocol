@@ -428,7 +428,7 @@ class TrackStream(Resource):
             "id": [decoded_id],
             "with_users": True,
         }
-        tracks = get_tracks(args)
+        tracks = get_tracks_including_unlisted(args)
 
         if not tracks:
             abort_not_found(track_id, ns)
