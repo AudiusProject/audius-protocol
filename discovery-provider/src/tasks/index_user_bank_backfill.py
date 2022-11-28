@@ -376,6 +376,7 @@ def parse_user_bank_transaction(
 
 
 def process_user_bank_txs(stop_sig: str):
+    traverse_start = time.time()
     solana_client_manager: SolanaClientManager = (
         index_user_bank_backfill.solana_client_manager
     )
@@ -470,6 +471,11 @@ def process_user_bank_txs(stop_sig: str):
                     logger.info(
                         f"index_user_bank_backfill.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
+
+    traverse_end = time.time()
+    logger.info(
+        f"index_user_bank_backfill.py | took {traverse_end - traverse_start}s to traverse"
+    )
 
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
@@ -713,7 +719,12 @@ def index_user_bank_backfill(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            process_start = time.time()
             process_user_bank_txs(stop_sig)
+            process_end = time.time()
+            logger.info(
+                f"index_user_bank_backfill.py | full job done in {process_end - process_start}s"
+            )
         else:
             logger.info("index_user_bank_backfill.py | Failed to acquire lock")
 
