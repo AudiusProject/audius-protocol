@@ -29,6 +29,10 @@ export class SecondarySyncHealthTracker {
       walletToSecondaryAndMaxErrorReached: {}
     }
   ) {
+    if (!walletToSecondaryAndMaxErrorReached) {
+      walletToSecondaryAndMaxErrorReached = {}
+    }
+
     this.walletToSecondaryAndMaxErrorReached =
       walletToSecondaryAndMaxErrorReached
   }

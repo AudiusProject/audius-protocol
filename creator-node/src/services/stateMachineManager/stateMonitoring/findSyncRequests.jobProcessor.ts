@@ -229,7 +229,7 @@ async function _findSyncsForUser(
         secondary
       )
     if (walletOnSecondaryExceedsMaxErrorsAllowed) {
-      outcomesBySecondary[secondary].result = 'no_sync_success_rate_too_low'
+      outcomesBySecondary[secondary].result = 'no_sync_max_errors_encountered'
       continue
     }
 

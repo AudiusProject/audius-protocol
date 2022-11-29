@@ -805,8 +805,10 @@ describe('test findSyncRequests job processor', function () {
 
     // Mark wallet on secondary encountered too many errors
     const secondarySyncHealthTrackerState = {
-      [wallet]: {
-        [secondary1]: 'failure_undefined_sync_status'
+      walletToSecondaryAndMaxErrorReached: {
+        [wallet]: {
+          [secondary1]: 'failure_undefined_sync_status'
+        }
       }
     }
 
@@ -864,7 +866,7 @@ describe('test findSyncRequests job processor', function () {
         {
           metricLabels: {
             sync_mode: _.snakeCase(SYNC_MODES.None),
-            result: 'no_sync_success_rate_too_low'
+            result: 'no_sync_max_errors_encountered'
           },
           metricName,
           metricType,

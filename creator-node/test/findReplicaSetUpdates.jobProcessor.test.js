@@ -274,10 +274,12 @@ describe('test findReplicaSetUpdates job processor', function () {
   })
 
   it('issues update for low sync success when this node is primary', async function () {
-    // Make sync success rate lower than threshold
+    // Force max errors encountered for the wallet
     const secondarySyncHealthTrackerState = {
-      [wallet]: {
-        [secondary1]: 'failure_undefined_sync_status'
+      walletToSecondaryAndMaxErrorReached: {
+        [wallet]: {
+          [secondary1]: 'failure_undefined_sync_status'
+        }
       }
     }
 
