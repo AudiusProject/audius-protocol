@@ -21,8 +21,8 @@ import { processTrackFile } from '../utils/processTrackFile'
 
 const messages = {
   screenTitle: 'Upload',
-  title: 'Upload Tracks',
-  description: 'Select Audio Files to Upload',
+  title: 'Upload a Track',
+  description: 'Select an Audio File to Upload',
   browse: 'Browse Files'
 }
 

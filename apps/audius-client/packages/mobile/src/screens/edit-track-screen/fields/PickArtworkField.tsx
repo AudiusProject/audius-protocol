@@ -69,6 +69,7 @@ export const PickArtworkField = () => {
   const [{ value }, { error, touched }, { setValue }] = useField(name)
   const [{ value: existingTrackArtwork }] = useField('trackArtwork')
   const trackArtworkUrl = value?.url ?? existingTrackArtwork
+
   const { secondary } = useThemeColors()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -89,7 +90,10 @@ export const PickArtworkField = () => {
     launchSelectImageActionSheet(handleImageSelected, secondary)
   }, [secondary, setValue])
 
-  const source = useMemo(() => ({ uri: trackArtworkUrl }), [trackArtworkUrl])
+  const source = useMemo(
+    () => ({ uri: trackArtworkUrl ?? ' ' }),
+    [trackArtworkUrl]
+  )
 
   return (
     <View style={styles.root}>
@@ -97,6 +101,7 @@ export const PickArtworkField = () => {
         source={source}
         onLoad={() => setIsLoading(false)}
         style={styles.image}
+        noSkeleton
       >
         <View style={styles.iconPicture}>
           {isLoading ? (
