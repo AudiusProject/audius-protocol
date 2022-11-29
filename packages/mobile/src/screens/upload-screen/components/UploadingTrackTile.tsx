@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import type { UploadTrack } from '@audius/common'
 import { View } from 'react-native'
 
@@ -47,12 +49,15 @@ export const UploadingTrackTile = (props: UploadingTrackTileProps) => {
   const styles = useStyles()
   const { neutralLight8 } = useThemeColors()
 
+  const source = useMemo(() => ({ uri: artwork?.url }), [artwork?.url])
+
   return (
     <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
       <View style={styles.content}>
         <DynamicImage
-          source={{ uri: artwork?.url }}
+          source={source}
           styles={{ root: styles.artwork, imageContainer: styles.image }}
+          noSkeleton
         >
           {artwork?.url ? null : (
             <IconImage
