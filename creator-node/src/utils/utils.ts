@@ -44,7 +44,6 @@ export function getCharsInRange(startChar: string, endChar: string): string[] {
 export function getCharsInRanges(...ranges: string[]): string[] {
   const charsInRanges = []
   for (const range of ranges) {
-    console.log('theo range: ', range)
     charsInRanges.push(...getCharsInRange(range.charAt(0), range.charAt(1)))
   }
   return charsInRanges
