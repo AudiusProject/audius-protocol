@@ -130,32 +130,62 @@ async function _sendNotification(notifFn, bufferObj, logger) {
   return numSentNotifs || 0
 }
 
+/**
+ * Same as Promise.all(items.map(item => task(item))), but it waits for
+ * the first {batchSize} promises to finish before starting the next batch.
+ */
+async function promiseAllInBatches(task, items, batchSize) {
+  let position = 0
+  let results = []
+  while (position < items.length) {
+    const itemsForBatch = items.slice(position, position + batchSize)
+    results = [
+      ...results,
+      ...(await Promise.allSettled(itemsForBatch.map((item) => task(item))))
+    ]
+    position += batchSize
+  }
+  return results
+}
+
+async function processNotification(notification) {
+  let numProcessedNotifs = 0
+
+  if (notification.types.includes(deviceType.Mobile)) {
+    const numSentNotifs = await _sendNotification(
+      sendAwsSns,
+      notification,
+      logger
+    )
+    numProcessedNotifs += numSentNotifs
+  }
+  if (notification.types.includes(deviceType.Browser)) {
+    const numSentNotifsArr = await Promise.all([
+      _sendNotification(sendBrowserNotification, notification, logger),
+      _sendNotification(sendSafariNotification, notification, logger)
+    ])
+    numSentNotifsArr.forEach((numSentNotifs) => {
+      numProcessedNotifs += numSentNotifs
+    })
+  }
+  return numProcessedNotifs
+}
+
+// Number of notitications to process in parallel
+const BATCH_SIZE = 20
+
 async function drainPublishedMessages(logger) {
   logger.info(
     `[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`
   )
 
-  let numProcessedNotifs = 0
-  for (const bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
-    if (bufferObj.types.includes(deviceType.Mobile)) {
-      const numSentNotifs = await _sendNotification(
-        sendAwsSns,
-        bufferObj,
-        logger
-      )
-      numProcessedNotifs += numSentNotifs
-    }
-    if (bufferObj.types.includes(deviceType.Browser)) {
-      const numSentNotifsArr = await Promise.all([
-        _sendNotification(sendBrowserNotification, bufferObj, logger),
-        _sendNotification(sendSafariNotification, bufferObj, logger)
-      ])
-      numSentNotifsArr.forEach((numSentNotifs) => {
-        numProcessedNotifs += numSentNotifs
-      })
-    }
-  }
+  const numProcessedNotifications = await promiseAllInBatches(
+    processNotification,
+    pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
+    BATCH_SIZE
+  )
 
+  const numProcessedNotifs = numProcessedNotifications.reduce((total,val) => total+val, 0)
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 
   return numProcessedNotifs
@@ -221,5 +251,8 @@ module.exports = {
   publishAnnouncement,
   drainPublishedMessages,
   drainPublishedSolanaMessages,
-  drainPublishedAnnouncements
+  drainPublishedAnnouncements,
+  processNotification,
+  promiseAllInBatches,
+  BATCH_SIZE
 }
