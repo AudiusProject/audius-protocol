@@ -2,16 +2,7 @@ import logging
 
 import pytest
 from integration_tests.utils import populate_mock_db
-from src.queries.get_playlists import (
-    GetPlaylistArgs,
-    _get_unpopulated_playlists,
-    get_playlists,
-)
-from src.queries.get_user_listen_counts_monthly import (
-    GetUserListenCountsMonthlyArgs,
-    get_user_listen_counts_monthly,
-)
-from src.queries.query_helpers import populate_playlist_metadata
+from src.queries.get_playlists import GetPlaylistArgs, get_playlists
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
