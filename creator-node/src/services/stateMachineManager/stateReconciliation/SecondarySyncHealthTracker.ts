@@ -73,8 +73,8 @@ export class SecondarySyncHealthTracker {
   }
 
   /**
-   * If there is no presence of the wallet, wallet-secondary pair, that means no
-   * error was encountered. Else, return what is in the map
+   * If there is no presence of the wallet, wallet-secondary pair, that means a wallet did not
+   * encounter any max error capacity. Else, a max error was encountered
    * @param wallet
    * @param secondary
    * @returns flag on whether wallet on secondary exceeded the max attempts allowed
@@ -83,15 +83,9 @@ export class SecondarySyncHealthTracker {
     wallet: string,
     secondary: string
   ): boolean {
-    if (
-      !this.walletToSecondaryToExceedsMaxErrorsAllowed ||
-      !this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet] ||
-      !this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary]
-    ) {
-      return false
-    }
-
-    return this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary]
+    return !!this.walletToSecondaryToExceedsMaxErrorsAllowed?.[wallet]?.[
+      secondary
+    ]
   }
 
   /**

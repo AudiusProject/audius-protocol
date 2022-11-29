@@ -179,7 +179,7 @@ export async function getReplicaSetSpIdsByUserId({
       },
       asyncFn: async () => {
         try {
-          // Sill throw error if blocknumber not found
+          // Still throw error if blocknumber not found
           const encodedUserId = libs.Utils.encodeHashId(userId)
           const spResponse = await libs.discoveryProvider.getUserReplicaSet({
             encodedUserId,
@@ -315,6 +315,7 @@ export async function getReplicaSetEndpointsByWallet({
   wallet,
   parentLogger
 }: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
+  throw new Error('force failed replica set fetch')
   const user: { user_id: number } = (
     await libs.User.getUsers(1, 0, null, wallet)
   )[0]
