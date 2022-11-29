@@ -61,11 +61,11 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   const health = data.data
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
-  const fsUsed = bytesToGb(health.filesystem_used)
-  const fsSize = bytesToGb(health.filesystem_size)
+  const fsUsed = bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
+  const fsSize = bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
-  const dbSize = bytesToGb(health.database_size)
+  const dbSize = bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
 
