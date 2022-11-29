@@ -262,7 +262,7 @@ export function computeFilePathInDir(dirName: string, fileName: string) {
 
   const parentDirPath = computeFilePath(dirName)
   const absolutePath = path.join(parentDirPath, fileName)
-  genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
+  genericLogger.debug(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
 }
 
@@ -278,7 +278,7 @@ export async function computeFilePathInDirAndEnsureItExists(
 
   const parentDirPath = await computeFilePathAndEnsureItExists(dirName)
   const absolutePath = path.join(parentDirPath, fileName)
-  genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
+  genericLogger.debug(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
 }
 
