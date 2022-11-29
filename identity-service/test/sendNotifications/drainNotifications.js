@@ -18,6 +18,7 @@ describe('Test Drain Notifications', function () {
   
     it('should drain all notifications from queue', async function () {
         assert(notifQueue.pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length == NUM_NOTIFS)
+        await notifQueue.drainPublishedMessages(logger)
         assert(notifQueue.pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length == 0)
     })
 

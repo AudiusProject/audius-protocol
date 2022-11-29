@@ -134,7 +134,7 @@ async function _sendNotification(notifFn, bufferObj, logger) {
  * Same as Promise.all(items.map(item => task(item))), but it waits for
  * the first {batchSize} promises to finish before starting the next batch.
  */
-async function promiseAllInBatches(task, items, batchSize) {
+async function promiseAllInBatches(task, logger, items, batchSize) {
   let position = 0
   let results = []
   while (position < items.length) {
@@ -148,7 +148,7 @@ async function promiseAllInBatches(task, items, batchSize) {
   return results
 }
 
-async function processNotification(notification) {
+async function processNotification(logger, notification) {
   let numProcessedNotifs = 0
 
   if (notification.types.includes(deviceType.Mobile)) {
@@ -181,11 +181,15 @@ async function drainPublishedMessages(logger) {
 
   const numProcessedNotifications = await promiseAllInBatches(
     processNotification,
+    logger,
     pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
     BATCH_SIZE
   )
 
-  const numProcessedNotifs = numProcessedNotifications.reduce((total,val) => total+val, 0)
+  const numProcessedNotifs = numProcessedNotifications.reduce(
+    (total, val) => total + val,
+    0
+  )
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 
   return numProcessedNotifs
