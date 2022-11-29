@@ -1,19 +1,15 @@
-FROM rust:1.65.0
+FROM rust:1.60.0
 
 WORKDIR /usr/src/app
 
-# ENV PATH="/root/solana-release/bin:${PATH}"
+ENV PATH="/root/solana-release/bin:${PATH}"
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y jq build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn
-    # npm install -g yarn @project-serum/anchor-cli@0.24.1 && \
-    # curl -SfL https://github.com/solana-labs/solana/releases/download/v1.10.11/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+    npm install -g yarn @project-serum/anchor-cli@0.24.1 && \
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.10.11/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
 
-# RUN cargo install --git https://github.com/coral-xyz/anchor avm --locked --force && \
-#     avm install 0.25.0
-
-# COPY anchor/audius-data/package.json anchor/audius-data/yarn.lock anchor/audius-data/
-# RUN cd anchor/audius-data && yarn install
+COPY anchor/audius-data/package.json anchor/audius-data/yarn.lock anchor/audius-data/
+RUN cd anchor/audius-data && yarn install
 
 ENV CARGO_INCREMENTAL=1
 
@@ -34,14 +30,14 @@ ARG reward_manager_token_pda_private_key
 ARG valid_signer_eth_address
 
 COPY . .
-# RUN --mount=type=cache,target=/usr/src/app/target \
-#     --mount=type=cache,target=/usr/src/app/anchor/audius-data/target \
-#     --mount=type=cache,target=/root/.cache/solana \
-#     --mount=type=cache,target=/usr/local/cargo/registry \
-#     ./scripts/setup-predeployed.sh /usr/db && \
-#     cp -r anchor/audius-data/target/idl anchor/audius-data/
+RUN --mount=type=cache,target=/usr/src/app/target \
+    --mount=type=cache,target=/usr/src/app/anchor/audius-data/target \
+    --mount=type=cache,target=/root/.cache/solana \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    ./scripts/setup-predeployed.sh /usr/db && \
+    cp -r anchor/audius-data/target/idl anchor/audius-data/
 
-# HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
-#     CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
+    CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1
 
-# CMD [ "solana-test-validator", "--ledger", "/usr/db" ]
+CMD [ "solana-test-validator", "--ledger", "/usr/db" ]

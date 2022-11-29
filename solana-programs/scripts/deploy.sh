@@ -19,7 +19,7 @@ function airdrop_till {
 cd $(dirname "$(readlink -f "$0")")/..
 
 solana -V
-solana config set --url "$SOLANA_HOST"
+solana config set -u "$SOLANA_HOST"
 
 # TODO: Remove this when we deprecate service-commands
 if [[ "$valid_signer_eth_address" != "" ]]; then
