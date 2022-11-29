@@ -182,7 +182,9 @@ describe('test monitorState job processor', function () {
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
       replicaToAllUserInfoMaps,
-      secondarySyncHealthTrackerState: {}
+      secondarySyncHealthTrackerState: {
+        walletToSecondaryAndMaxErrorReached: {}
+      }
     })
 
     // Verify jobResult enqueues the correct findReplicaSetUpdates job
@@ -191,7 +193,9 @@ describe('test monitorState job processor', function () {
       users,
       unhealthyPeers: Array.from(unhealthyPeers),
       replicaToAllUserInfoMaps,
-      secondarySyncHealthTrackerState: {}
+      secondarySyncHealthTrackerState: {
+        walletToSecondaryAndMaxErrorReached: {}
+      }
     })
   }
 

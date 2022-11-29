@@ -119,7 +119,9 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   async function runJobProcessor({
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
-    secondarySyncHealthTrackerState = {},
+    secondarySyncHealthTrackerState = {
+      walletToSecondaryAndMaxErrorReached: {}
+    },
     unhealthyPeers = [],
     isPrimaryHealthyInExtraHealthCheck = false
   }) {

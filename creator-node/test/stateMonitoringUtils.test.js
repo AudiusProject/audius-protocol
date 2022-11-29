@@ -384,65 +384,6 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   })
 })
 
-it('returns expected counts and percentages after recording successes and failures', async function () {
-  const nodeUsers = [
-    {
-      user_id: 1,
-      wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-      primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-      secondary1: 'http://cnWithSpId2.co',
-      secondary2: 'http://cnWithSpId3.co',
-      primarySpID: 1,
-      secondary1SpID: 2,
-      secondary2SpID: 3
-    },
-    {
-      user_id: 2,
-      wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9adaaaa',
-      primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-      secondary1: 'http://cnWithSpId2.co',
-      secondary2: 'http://cnWithSpId3.co',
-      primarySpID: 1,
-      secondary1SpID: 2,
-      secondary2SpID: 3
-    }
-  ]
-
-  const usersInfoSlice = nodeUsers.map((user) => {
-    return {
-      wallet: user.wallet,
-      secondary1: user.secondary1,
-      secondary2: user.secondary2
-    }
-  })
-
-  const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
-
-  await secondarySyncHealthTracker.recordFailure({
-    secondary: [nodeUsers[0].secondary1],
-    wallet: [nodeUsers[0].wallet],
-    prometheusError: 'failure_fetching_user_replica_set'
-  })
-  await secondarySyncHealthTracker.recordFailure({
-    secondary: [nodeUsers[0].secondary2],
-    wallet: [nodeUsers[0].wallet],
-    prometheusError: 'failure_fetching_user_replica_set'
-  })
-
-  await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
-    usersInfoSlice
-  )
-
-  const expectedSecondarySyncHealthTrackerState = {}
-
-  const secondarySyncHealthTrackerState =
-    await secondarySyncHealthTracker.getState()
-
-  expect(secondarySyncHealthTrackerState).to.deep.equal(
-    expectedSecondarySyncHealthTrackerState
-  )
-})
-
 describe('Test computeSyncModeForUserAndReplica()', function () {
   let primaryClock,
     secondaryClock,

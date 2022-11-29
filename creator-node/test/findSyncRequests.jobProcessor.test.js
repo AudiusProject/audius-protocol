@@ -776,7 +776,7 @@ describe('test findSyncRequests job processor', function () {
     )
   })
 
-  it("doesn't sync if success rate is too low", async function () {
+  it("doesn't sync if max errors for wallet were encountered", async function () {
     /**
      * Define input variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except success rate)
      */
@@ -803,7 +803,7 @@ describe('test findSyncRequests job processor', function () {
       }
     }
 
-    // Make sync success rate lower than threshold for secondary1
+    // Mark wallet on secondary encountered too many errors
     const secondarySyncHealthTrackerState = {
       [wallet]: {
         [secondary1]: 'failure_undefined_sync_status'
