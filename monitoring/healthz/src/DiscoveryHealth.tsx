@@ -99,7 +99,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       )}
       <td>
         <progress value={storagePercent} />
-        <span> {fsSize} GB</span>
+        <br></br>
+        <span>{fsUsed} / {fsSize} GB</span>
       </td>
       <td>{`${dbSize} GB`}</td>
       <td>{health.block_difference}</td>
