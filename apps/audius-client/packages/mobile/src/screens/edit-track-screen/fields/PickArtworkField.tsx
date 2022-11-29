@@ -90,10 +90,7 @@ export const PickArtworkField = () => {
     launchSelectImageActionSheet(handleImageSelected, secondary)
   }, [secondary, setValue])
 
-  const source = useMemo(
-    () => ({ uri: trackArtworkUrl ?? ' ' }),
-    [trackArtworkUrl]
-  )
+  const source = useMemo(() => ({ uri: trackArtworkUrl }), [trackArtworkUrl])
 
   return (
     <View style={styles.root}>
