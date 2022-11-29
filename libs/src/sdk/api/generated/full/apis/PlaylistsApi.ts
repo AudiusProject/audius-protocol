@@ -32,13 +32,17 @@ import {
 
 export interface GetPlaylistRequest {
     /**
-     * A Playlist ID
-     */
-    playlistId: string;
-    /**
      * The user ID of the user making the request
      */
     userId?: string;
+    /**
+     * The permalink of the playlist
+     */
+    permalink?: Array<string>;
+    /**
+     * The ID of the desired playlist
+     */
+    playlistId?: Array<string>;
 }
 
 export interface GetPlaylistTracksRequest {
@@ -136,21 +140,25 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by ID
      */
-    async getPlaylist(requestParameters: GetPlaylistRequest): Promise<NonNullable<FullPlaylistResponse["data"]>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylist.');
-        }
-
+    async getPlaylist(requestParameters: GetPlaylistRequest = {}): Promise<NonNullable<FullPlaylistResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.userId !== undefined) {
             queryParameters['user_id'] = requestParameters.userId;
         }
 
+        if (requestParameters.permalink) {
+            queryParameters['permalink'] = requestParameters.permalink;
+        }
+
+        if (requestParameters.playlistId) {
+            queryParameters['playlist_id'] = requestParameters.playlistId;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         return this.request({
-            path: `/playlists/{playlist_id}`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            path: `/playlists`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
