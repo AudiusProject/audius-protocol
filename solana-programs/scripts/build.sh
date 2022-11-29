@@ -27,10 +27,6 @@ function generate_key {
 # cd into solana-programs
 cd $(dirname "$(readlink -f "$0")")/..
 
-# IF DARWIN
-# source ./hack/m1shim.sh
-# ENDIF
-
 mkdir -p ${CARGO_TARGET_DIR:-target}/deploy anchor/audius-data/target/deploy
 
 generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_eth_registry-keypair.json "$AUDIUS_ETH_REGISTRY_PRIVATE_KEY"
@@ -51,10 +47,10 @@ replace_address \
     anchor/audius-data/Anchor.toml \
     ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
 
-# cargo build-bpf
 cargo install --debug --target-dir ./target --path cli
 cargo install --debug --target-dir ./target --path reward-manager/cli
 cargo install --debug --target-dir ./target --path claimable-tokens/cli
 
-cd anchor/audius-data
-anchor build -- --bpf-sdk=/workspace/solana/sdk/bpf
+## MUST BUILD ON HOST
+# # cargo build-bpf
+# # cd anchor/audius-data && anchor build -- --bpf-sdk=/workspace/solana/sdk/bpf

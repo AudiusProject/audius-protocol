@@ -10,7 +10,7 @@ if [[ "$ledger_dir" == "" ]]; then
     exit 1
 fi
 
-./scripts/build.sh
+# ./scripts/build.sh
 
 mkdir -p $ledger_dir
 solana-test-validator --ledger $ledger_dir &
