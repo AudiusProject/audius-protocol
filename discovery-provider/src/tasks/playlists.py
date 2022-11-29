@@ -134,6 +134,9 @@ def playlist_state_update(
 
 
 def update_playlist_routes_table(session, playlist_record, pending_playlist_routes):
+    logger.info(
+        f"index.py | playlists.py | updating playlist routes for {playlist_record.playlist_id}"
+    )
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
     new_playlist_slug_title = helpers.sanitize_slug(
@@ -166,6 +169,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
+            logger.info(f"not changing for {playlist_record.playlist_id}")
             return
         # The new route will be current
         prev_playlist_route_record.is_current = False
@@ -193,7 +197,8 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     new_playlist_route.blocknumber = playlist_record.blocknumber
     new_playlist_route.txhash = playlist_record.txhash
     session.add(new_playlist_route)
-
+    logger.info(f"changing slug for {playlist_record.playlist_id}")
+    logger.info(f"playlist route is {new_playlist_route}")
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
 
