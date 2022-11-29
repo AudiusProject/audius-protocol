@@ -21,6 +21,13 @@ body {
   background: lightyellow;
 }
 
+tr.is-behind {
+  background: navajowhite;
+}
+tr.is-behind:hover td {
+  background: yellow;
+}
+
 a,
 a:visited {
   color: blue;

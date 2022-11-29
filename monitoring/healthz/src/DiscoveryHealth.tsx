@@ -29,9 +29,9 @@ export function DiscoveryHealth() {
             <th>compose?</th>
             <th>auto upgrade</th>
             {isContent && <th>selectedDiscoveryProvider</th>}
-            <th>blockdiff</th>
             <th>storage</th>
             <th>dbsize</th>
+            <th>blockdiff</th>
           </tr>
         </thead>
         <tbody>
@@ -63,15 +63,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const fsUsed = bytesToGb(health.filesystem_used)
   const fsSize = bytesToGb(health.filesystem_size)
-  const storageUsage = `${Math.floor(
-    (fsUsed / fsSize) * 100
-  )} (${fsUsed}/${fsSize} GB)`
+  const storagePercent = fsUsed / fsSize
+  const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize = bytesToGb(health.database_size)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
 
   return (
-    <tr>
+    <tr className={isBehind}>
       <td>
         <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint.replace('https://', '')}
@@ -98,9 +97,12 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           </a>
         </td>
       )}
-      <td>{health.block_difference}</td>
-      <td>{storageUsage}</td>
+      <td>
+        <progress value={storagePercent} />
+        <span> {fsSize} GB</span>
+      </td>
       <td>{`${dbSize} GB`}</td>
+      <td>{health.block_difference}</td>
     </tr>
   )
 }
