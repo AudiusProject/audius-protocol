@@ -1,4 +1,5 @@
 import { PayloadAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
 
 import { Chain } from '../../../models/Chain'
 import { StringWei, WalletAddress } from '../../../models/Wallet'
@@ -51,7 +52,7 @@ export type CanReceiveWAudio = 'false' | 'loading' | 'true'
 
 export type AssociatedWallet = {
   address: string
-  balance: any // TODO(nkang) `any` should be `BNWei`
+  balance: BN
   collectibleCount: number
 }
 
