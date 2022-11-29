@@ -1,0 +1,39 @@
+* {
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+.table td,
+.table th {
+  border: 1px solid #ccc;
+  padding: 4px;
+}
+.table tr:hover td {
+  background: lightyellow;
+}
+
+tr.is-behind {
+  background: navajowhite;
+}
+tr.is-behind:hover td {
+  background: yellow;
+}
+
+a,
+a:visited {
+  color: blue;
+  text-decoration: none;
+}
+a:hover {
+  background: yellow;
+  text-decoration: underline;
+}
