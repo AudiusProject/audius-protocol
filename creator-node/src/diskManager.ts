@@ -508,7 +508,7 @@ async function _deleteFiles(filePaths: string[], logger: Logger) {
     try {
       await fs.unlink(filePath)
     } catch (e) {
-      logger.error(`Failed to delete file at ${filePath}`)
+      logger.error(`Failed to delete file at ${filePath} because: ${e}`)
     }
   }
 }
