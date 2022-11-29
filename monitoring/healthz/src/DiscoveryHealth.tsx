@@ -5,7 +5,7 @@ import {
 } from './components/EnvironmentSlector'
 import { SP, useServiceProviders } from './useServiceProviders'
 
-const bytesToGb = (bytes: number) => Math.floor(bytes / 10**9)
+const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function DiscoveryHealth() {
@@ -27,6 +27,7 @@ export function DiscoveryHealth() {
             <th>ver</th>
             <th>git sha</th>
             <th>compose?</th>
+            <th>auto upgrade</th>
             {isContent && <th>selectedDiscoveryProvider</th>}
             <th>blockdiff</th>
             <th>storage</th>
@@ -62,8 +63,12 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const fsUsed = bytesToGb(health.filesystem_used)
   const fsSize = bytesToGb(health.filesystem_size)
-  const storageUsage = `${Math.floor(fsUsed / fsSize * 100)} (${fsUsed}/${fsSize} GB)`
+  const storageUsage = `${Math.floor(
+    (fsUsed / fsSize) * 100
+  )} (${fsUsed}/${fsSize} GB)`
   const dbSize = bytesToGb(health.database_size)
+  const autoUpgradeEnabled =
+    health.auto_upgrade_enabled || health.autoUpgradeEnabled
 
   return (
     <tr>
@@ -82,6 +87,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </a>
       </td>
       <td>{isCompose && 'Yes'}</td>
+      <td>{autoUpgradeEnabled && 'Yes'}</td>
       {isContent && (
         <td>
           <a
