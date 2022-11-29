@@ -47,7 +47,7 @@ const { setFollowing } = followingUserListActions
 const messages = {
   profile: 'Profile',
   audio: '$AUDIO & Rewards',
-  upload: 'Upload Track',
+  upload: 'Upload a Track',
   listeningHistory: 'Listening History',
   settings: 'Settings'
 }

@@ -32,6 +32,7 @@ export type DynamicImageProps = Omit<ImageProps, 'source'> & {
   onLoad?: () => void
   animatedValue?: Animated.Value
   firstOpacity?: number
+  noSkeleton?: boolean
 }
 
 const styles = StyleSheet.create({
@@ -63,6 +64,7 @@ const ImageLoader = ({
   children,
   onLoad,
   animatedValue,
+  noSkeleton,
   ...imageProps
 }: DynamicImageProps) => {
   const [size, setSize] = useState(0)
@@ -102,7 +104,7 @@ const ImageLoader = ({
           onLoad={handleLoad}
         />
       ) : null}
-      {!isAnimationFinished ? (
+      {!isAnimationFinished && !noSkeleton ? (
         <Animated.View
           style={[
             stylesProp?.imageContainer,
