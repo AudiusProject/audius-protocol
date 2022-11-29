@@ -144,27 +144,6 @@ export class SecondarySyncHealthTracker {
     }
   }
 
-  async _fetchErrorToErrorCount(failedSyncKey: string) {
-    const errorToErrorCount = await redisClient.hgetall(failedSyncKey)
-
-    if (!errorToErrorCount) {
-      return null
-    }
-
-    const errors = Object.keys(errorToErrorCount)
-
-    if (!errors.length) {
-      return null
-    }
-
-    const errorsToErrorCountParsed: { [error: string]: number } = {}
-    errors.forEach((e) => {
-      errorsToErrorCountParsed[e] = parseInt(errorToErrorCount[e])
-    })
-
-    return errorsToErrorCountParsed
-  }
-
   getWalletToSecondaryToExceedsMaxErrorsAllowed(): WalletToSecondaryToExceedsMaxErrorsAllowed {
     return this.walletToSecondaryToExceedsMaxErrorsAllowed
   }
@@ -195,6 +174,27 @@ export class SecondarySyncHealthTracker {
     }
 
     return syncFailureKeys
+  }
+
+  async _fetchErrorToErrorCount(failedSyncKey: string) {
+    const errorToErrorCount = await redisClient.hgetall(failedSyncKey)
+
+    if (!errorToErrorCount) {
+      return null
+    }
+
+    const errors = Object.keys(errorToErrorCount)
+
+    if (!errors.length) {
+      return null
+    }
+
+    const errorsToErrorCountParsed: { [error: string]: number } = {}
+    errors.forEach((e) => {
+      errorsToErrorCountParsed[e] = parseInt(errorToErrorCount[e])
+    })
+
+    return errorsToErrorCountParsed
   }
 
   _determineIfWalletOnSecondaryExceededMaxErrorsAllowed({
