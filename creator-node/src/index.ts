@@ -22,7 +22,8 @@ import { logger } from './logging'
 import { sequelize } from './models'
 import {
   emptyTmpTrackUploadArtifacts,
-  sweepSubdirectoriesInFiles
+  sweepSubdirectoriesInFiles,
+  migrateFilesWithLegacyStoragePaths
 } from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
@@ -119,6 +120,21 @@ const getPort = () => {
   return config.get('port')
 }
 
+const runAsyncBackgroundTasks = async () => {
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    sweepSubdirectoriesInFiles()
+  }
+  if (config.get('migrateFilesWithLegacyStoragePath')) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    migrateFilesWithLegacyStoragePaths(
+      1000,
+      serviceRegistry.prometheusRegistry,
+      logger
+    )
+  }
+}
+
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {
   debugLogTimer('startAppForPrimary')
@@ -193,13 +209,12 @@ const startAppForPrimary = async () => {
     }
   })
 
-  // do not await this, this should just run in background for now
-  // wait one minute before starting this because it might cause init to degrade
-  if (config.get('backgroundDiskCleanupCheckEnabled')) {
-    setTimeout(() => {
-      sweepSubdirectoriesInFiles()
-    }, 60_000)
-  }
+  // Don't await this - these are recurring tasks that run in the background after
+  // a one minute delay to avoid causing init to degrade
+  setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    runAsyncBackgroundTasks()
+  }, 60_000)
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
@@ -243,6 +258,13 @@ const startAppWithoutCluster = async () => {
   await setupDbAndRedis()
   debugLogTimer('startAppWithoutCluster.startApp')
   await startApp()
+
+  // Don't await this - these are recurring tasks that run in the background after
+  // a one minute delay to avoid causing init to degrade
+  setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    runAsyncBackgroundTasks()
+  }, 60_000)
 }
 
 const setupDbAndRedis = async () => {
@@ -270,7 +292,7 @@ const startApp = async () => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
-    logger.info('Shutting down db and express app...', signal, error)
+    logger.error('Shutting down db and express app...', signal, error)
     sequelize.close()
     if (appInfo) {
       appInfo.server.close()

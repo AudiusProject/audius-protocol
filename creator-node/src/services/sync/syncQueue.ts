@@ -1,5 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
@@ -23,6 +23,7 @@ type EnqueueSyncArgs = {
   blockNumber: number
   forceResyncConfig: ForceResyncConfig
   forceWipe?: boolean
+  syncOverride?: boolean
   logContext: LogContext
   parentSpanContext: SpanContext
   syncUuid: string | null
@@ -132,6 +133,7 @@ export class SyncQueue {
       creatorNodeEndpoint,
       forceResyncConfig,
       forceWipe,
+      syncOverride,
       blockNumber,
       logContext,
       serviceRegistry,
@@ -148,6 +150,7 @@ export class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
+        syncOverride,
         logContext,
         syncUuid: syncUuid || null
       })
@@ -173,6 +176,7 @@ export class SyncQueue {
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
@@ -187,6 +191,7 @@ export class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
+        syncOverride,
         logContext,
         parentSpanContext,
         syncUuid: syncUuid || null

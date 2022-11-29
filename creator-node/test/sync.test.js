@@ -26,7 +26,7 @@ const sessionManager = require('../src/sessionManager')
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 
-const { saveFileForMultihashToFS } = require('../src/fileManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../src/fileManager')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -180,6 +180,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         metadata: {
           test: 'field1',
           owner_id: 1,
+          track_cid: transcodedTrackCID,
           track_segments: trackSegments
         },
         source_file: sourceFile
@@ -1454,7 +1455,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             }
           },
           '../../fileManager': {
-            saveFileForMultihashToFS: async function (
+            fetchFileFromNetworkAndSaveToFS: async function (
               libs,
               logger,
               multihash,
@@ -1463,7 +1464,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
               fileNameForImage = null,
               trackId = null
             ) {
-              return saveFileForMultihashToFS(
+              return fetchFileFromNetworkAndSaveToFS(
                 libs,
                 logger,
                 multihash,
@@ -2329,7 +2330,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
         '../initAudiusLibs': async () => libsMock,
         './../../config': config,
         '../../fileManager': {
-          saveFileForMultihashToFS: async function (
+          fetchFileFromNetworkAndSaveToFS: async function (
             libs,
             logger,
             multihash,
@@ -2338,7 +2339,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
             fileNameForImage = null,
             trackId = null
           ) {
-            return saveFileForMultihashToFS(
+            return fetchFileFromNetworkAndSaveToFS(
               libs,
               logger,
               multihash,

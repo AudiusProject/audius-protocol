@@ -1,4 +1,4 @@
-import type { LogContext } from './apiHelpers'
+import type { LogContext } from './utils'
 
 import config from './config'
 import fs from 'fs-extra'

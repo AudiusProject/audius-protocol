@@ -20,6 +20,10 @@ const { sortKeys } = require('../src/apiSigning')
 const DiskManager = require('../src/diskManager')
 const { getLibsMock } = require('./lib/libsMock')
 const DecisionTree = require('../src/utils/decisionTree')
+const {
+  deleteAttemptedStateFixes,
+  computeFilePathAndEnsureItExists
+} = require('../src/utils')
 
 const storagePath = config.get('storagePath')
 
@@ -72,6 +76,10 @@ describe('test fileManager', () => {
     libsMock = getLibsMock()
   })
 
+  beforeEach(async function () {
+    await deleteAttemptedStateFixes()
+  })
+
   afterEach(function () {
     sinon.restore()
   })
@@ -119,10 +127,9 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 0,
@@ -136,7 +143,7 @@ describe('test fileManager', () => {
           successStage.name.includes(
             'Successfully fetched CID from target gateway'
           )
-        )
+        )      
       } catch (e) {
         // Should not have thrown bc file was found in target gateways
         assert.fail(e.message)
@@ -181,10 +188,9 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 0,
@@ -256,10 +262,9 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 1,
@@ -332,10 +337,9 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 1,
@@ -371,7 +375,7 @@ describe('test fileManager', () => {
 
       nock(MOCK_CN4)
         .get((uri) => uri.includes('ipfs') && uri.includes(DUMMY_MULTIHASH))
-        .reply(500)
+        .reply(200)
 
       const { fetchFileFromNetworkAndWriteToDisk } = proxyquire(
         '../src/fileManager',
@@ -384,9 +388,6 @@ describe('test fileManager', () => {
             }),
             verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
               return new Promise((resolve, reject) => resolve(true))
-            }),
-            findCIDInNetwork: sinon.stub().callsFake(() => {
-              return new Promise((resolve, reject) => resolve(true))
             })
           }
         }
@@ -397,10 +398,12 @@ describe('test fileManager', () => {
           name: 'fetchFileFromNetworkAndWriteToDisk'
         })
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
+          nonTargetGatewayContentRoutes: [MOCK_CN4].map(
+            (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
+          ),
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 0,
@@ -410,7 +413,7 @@ describe('test fileManager', () => {
 
         // Last stage should be successful
         const successStage = decisionTree.tree[decisionTree.tree.length - 1]
-        assert.ok(successStage.name.includes('Found file from network'))
+        assert.ok(successStage.name.includes('Successfully fetched CID from non-replica set gateway'))
       } catch (e) {
         // Should not have thrown bc file was found in network
         assert.fail(e.message)
@@ -445,9 +448,6 @@ describe('test fileManager', () => {
             }),
             verifyCIDMatchesExpected: sinon.stub().callsFake(() => {
               return new Promise((resolve, reject) => resolve(true))
-            }),
-            findCIDInNetwork: sinon.stub().callsFake(() => {
-              return new Promise((resolve, reject) => resolve(false))
             })
           }
         }
@@ -458,10 +458,9 @@ describe('test fileManager', () => {
       })
       try {
         await fetchFileFromNetworkAndWriteToDisk({
-          gatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
+          targetGatewayContentRoutes: [MOCK_CN1, MOCK_CN2, MOCK_CN3].map(
             (e) => `${e}/ipfs/${DUMMY_MULTIHASH}`
           ),
-          targetGateways: [MOCK_CN1, MOCK_CN2, MOCK_CN3],
           multihash: DUMMY_MULTIHASH,
           path: PATH_TO_DUMMY_MULTIHASH,
           numRetries: 0,
@@ -552,7 +551,7 @@ describe('test fileManager', () => {
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
       const segmentCID = 'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd'
-      const syncedSegmentPath = await DiskManager.computeFilePath(segmentCID)
+      const syncedSegmentPath = await computeFilePathAndEnsureItExists(segmentCID)
       assert.ok(await fs.pathExists(syncedSegmentPath))
 
       // the segment content should match the original sourcefile
@@ -648,7 +647,7 @@ describe('test fileManager', () => {
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = await DiskManager.computeFilePath(resp.cid)
+      const metadataPath = await computeFilePathAndEnsureItExists(resp.cid)
       assert.ok(await fs.pathExists(metadataPath))
 
       // check that the contents of the metadata file is what we expect

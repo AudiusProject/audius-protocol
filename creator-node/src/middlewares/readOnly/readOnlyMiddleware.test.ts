@@ -1,10 +1,11 @@
-const {
+import type { Request, Response } from 'express'
+import {
   readOnlyMiddleware,
   readOnlyMiddlewareHelper
-} = require('./readOnlyMiddleware')
-const assert = require('assert')
-const config = require('../../config')
-const { resFactory, loggerFactory } = require('../../../test/lib/reqMock')
+} from './readOnlyMiddleware'
+import assert from 'assert'
+import config from '../../config'
+import { resFactory, loggerFactory } from '../../../test/lib/reqMock'
 
 describe('Test read-only middleware', function () {
   beforeEach(function () {
@@ -20,7 +21,7 @@ describe('Test read-only middleware', function () {
     config.set('spID', 1)
     let nextCalled = false
 
-    readOnlyMiddleware({ method }, {}, function () {
+    readOnlyMiddleware({ method } as Request, {} as Response, function () {
       nextCalled = true
     })
 
@@ -43,8 +44,8 @@ describe('Test read-only middleware', function () {
     const req = {
       method,
       logger
-    }
-    const res = resFactory()
+    } as unknown as Request
+    const res = resFactory() as unknown as Response
 
     readOnlyMiddleware(req, res, function () {
       nextCalled = true
@@ -70,8 +71,8 @@ describe('Test read-only middleware', function () {
     const req = {
       method,
       logger
-    }
-    const res = resFactory()
+    } as unknown as Request
+    const res = resFactory() as unknown as Response
 
     readOnlyMiddleware(req, res, function () {
       nextCalled = true
@@ -96,8 +97,8 @@ describe('Test read-only middleware', function () {
     const req = {
       method,
       logger
-    }
-    const res = resFactory()
+    } as unknown as Request
+    const res = resFactory() as unknown as Response
 
     readOnlyMiddleware(req, res, function () {
       nextCalled = true

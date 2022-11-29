@@ -1,6 +1,6 @@
 // eslint-disable-next-line node/no-extraneous-import
 import type { SpanContext } from '@opentelemetry/api'
-import type { LogContext } from '../../../apiHelpers'
+import type { LogContext } from '../../../utils'
 
 export type SyncRequestAxiosData = {
   wallet: string[]

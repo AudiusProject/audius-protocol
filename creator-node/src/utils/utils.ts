@@ -1,8 +1,7 @@
+import { range } from 'lodash'
 import { recoverPersonalSignature } from 'eth-sig-util'
 import { logger as genericLogger } from '../logging'
 import config from '../config'
-
-export type ValuesOf<T> = T[keyof T]
 
 export function verifySignature(data: any, sig: any) {
   return recoverPersonalSignature({ data, sig })
@@ -34,4 +33,18 @@ export function isFqdn(url: string) {
     /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
   )
   return fqdn.test(url)
+}
+
+export function getCharsInRange(startChar: string, endChar: string): string[] {
+  return range(startChar.charCodeAt(0), endChar.charCodeAt(0) + 1).map(
+    (charCode) => String.fromCharCode(charCode)
+  )
+}
+
+export function getCharsInRanges(...ranges: string[]): string[] {
+  const charsInRanges = []
+  for (const range of ranges) {
+    charsInRanges.push(...getCharsInRange(range.charAt(0), range.charAt(1)))
+  }
+  return charsInRanges
 }

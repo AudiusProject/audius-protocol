@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -10,7 +10,7 @@ import {
   getStartTime,
   logInfoWithDuration
 } from '../../logging'
-import { saveFileForMultihashToFS } from '../../fileManager'
+import { fetchFileFromNetworkAndSaveToFS } from '../../fileManager'
 import {
   gatherCNodeUserDataToDelete,
   clearFilePathsToDelete,
@@ -26,6 +26,7 @@ import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
+import { computeFilePath, computeFilePathInDir } from '../../utils'
 
 const models = require('../../models')
 const config = require('../../config')
@@ -39,6 +40,7 @@ type SecondarySyncFromPrimaryParams = {
   forceResyncConfig: ForceResyncConfig
   logContext: LogContext
   forceWipe?: boolean
+  syncOverride?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
 }
@@ -49,6 +51,7 @@ const handleSyncFromPrimary = async ({
   creatorNodeEndpoint,
   forceResyncConfig,
   forceWipe,
+  syncOverride,
   logContext,
   secondarySyncFromPrimaryLogger
 }: SecondarySyncFromPrimaryParams & {
@@ -99,7 +102,7 @@ const handleSyncFromPrimary = async ({
       throw error
     }
 
-    if (userReplicaSet.primary !== creatorNodeEndpoint) {
+    if (!syncOverride && userReplicaSet.primary !== creatorNodeEndpoint) {
       return {
         abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
         result: 'abort_current_node_is_not_user_primary'
@@ -111,7 +114,8 @@ const handleSyncFromPrimary = async ({
      */
     const forceResync = await shouldForceResync(
       { libs, logContext },
-      forceResyncConfig
+      forceResyncConfig,
+      syncOverride
     )
     const forceResyncQueryParam = forceResyncConfig?.forceResync
     if (forceResyncQueryParam && !forceResync) {
@@ -238,6 +242,7 @@ const handleSyncFromPrimary = async ({
     // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
     // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
     if (
+      !syncOverride &&
       thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
       thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
@@ -309,7 +314,7 @@ const handleSyncFromPrimary = async ({
      * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    // Use user's replica set as gateways for content fetching in saveFileForMultihashToFS.
+    // Use user's replica set as gateways for content fetching in fetchFileFromNetworkAndSaveToFS.
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
     let gatewaysToTry: string[] = []
     try {
@@ -330,11 +335,11 @@ const handleSyncFromPrimary = async ({
     } catch (e: any) {
       tracing.recordException(e)
       logger.error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
 
       error = new Error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
       errorResponse = {
         error,
@@ -509,16 +514,28 @@ const handleSyncFromPrimary = async ({
       /*
        * Make list of all track Files to add after track creation
        *
-       * Files with trackBlockchainIds cannot be created until tracks have been created,
-       *    but tracks cannot be created until metadata and cover art files have been created.
+       * Files with trackBlockchainIds cannot be created until tracks have been created.
        */
 
       const startSaveFiles = getStartTime()
-      const trackFiles = fetchedCNodeUser.files.filter((file: any) =>
+
+      // Recompute storage paths to use this node's path prefix
+      const filesWithRecomputedStoragePaths = fetchedCNodeUser.files.map(
+        (file: any) => {
+          return {
+            ...file,
+            storagePath: file.dirMultihash
+              ? computeFilePathInDir(file.dirMultihash, file.multihash)
+              : computeFilePath(file.multihash)
+          }
+        }
+      )
+
+      const trackFiles = filesWithRecomputedStoragePaths.filter((file: any) =>
         models.File.TrackTypes.includes(file.type)
       )
-      const nonTrackFiles = fetchedCNodeUser.files.filter((file: any) =>
-        models.File.NonTrackTypes.includes(file.type)
+      const nonTrackFiles = filesWithRecomputedStoragePaths.filter(
+        (file: any) => models.File.NonTrackTypes.includes(file.type)
       )
       const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
@@ -528,7 +545,7 @@ const handleSyncFromPrimary = async ({
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
         logger.debug(
-          `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
+          `TrackFiles fetchFileFromNetworkAndSaveToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
         )
@@ -536,15 +553,15 @@ const handleSyncFromPrimary = async ({
         /**
          * Fetch content for each CID + save to FS
          * Record any CIDs that failed retrieval/saving for later use
-         * @notice `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+         * @notice `fetchFileFromNetworkAndSaveToFS()` should never reject - it will return error indicator for post processing
          */
         await Promise.all(
           trackFilesSlice.map(async (trackFile: any) => {
-            const error = await saveFileForMultihashToFS(
+            const { error } = await fetchFileFromNetworkAndSaveToFS(
               libs,
               logger,
               trackFile.multihash,
-              trackFile.storagePath,
+              trackFile.dirMultihash,
               gatewaysToTry,
               null,
               trackFile.trackBlockchainId
@@ -566,7 +583,7 @@ const handleSyncFromPrimary = async ({
           i + FileSaveMaxConcurrency
         )
         logger.debug(
-          `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
+          `NonTrackFiles fetchFileFromNetworkAndSaveToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
         )
@@ -584,22 +601,26 @@ const handleSyncFromPrimary = async ({
                 nonTrackFile.type === 'image' &&
                 nonTrackFile.fileName !== null
               ) {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry,
-                  nonTrackFile.fileName
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry,
+                    nonTrackFile.fileName
+                  )
+                error = fetchError
               } else {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry
+                  )
+                error = fetchError
               }
 
               // If saveFile op failed, record CID for later processing
@@ -775,6 +796,7 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
+  syncOverride = false,
   blockNumber = null,
   syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
@@ -808,6 +830,7 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     secondarySyncFromPrimaryLogger
   })

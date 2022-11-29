@@ -96,16 +96,6 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             )
 
 
-def update_user_record(params: ManageEntityParameters, user: User, metadata: Dict):
-    update_user_metadata(
-        params.session, params.redis, user, metadata, params.web3, params.challenge_bus
-    )
-    user.metadata_multihash = params.metadata_cid
-    user = update_legacy_user_images(user)
-    user = validate_user_record(user)
-    return user
-
-
 def create_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
