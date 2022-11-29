@@ -135,7 +135,7 @@ def playlist_state_update(
 
 def update_playlist_routes_table(session, playlist_record, pending_playlist_routes):
     logger.info(
-        f"index.py | playlists.py | updating playlist routes for {playlist_record.playlist_id}"
+        f"index.py | playlists.py | Updating playlist routes for {playlist_record.playlist_id}"
     )
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
@@ -197,10 +197,13 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     new_playlist_route.blocknumber = playlist_record.blocknumber
     new_playlist_route.txhash = playlist_record.txhash
     session.add(new_playlist_route)
-    logger.info(f"changing slug for {playlist_record.playlist_id}")
-    logger.info(f"playlist route is {new_playlist_route}")
+
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
+
+    logger.info(
+        f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
+    )
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
