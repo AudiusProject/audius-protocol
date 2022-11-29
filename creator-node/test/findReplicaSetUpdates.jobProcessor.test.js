@@ -119,7 +119,7 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   async function runJobProcessor({
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
-    walletToSecondaryToExceedsMaxErrorsAllowed = {},
+    secondarySyncHealthTrackerState = {},
     unhealthyPeers = [],
     isPrimaryHealthyInExtraHealthCheck = false
   }) {
@@ -141,7 +141,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       users,
       unhealthyPeers,
       replicaToAllUserInfoMaps: DEFAULT_REPLICA_TO_USER_INFO_MAP,
-      walletToSecondaryToExceedsMaxErrorsAllowed
+      secondarySyncHealthTrackerState
     })
   }
 
@@ -273,9 +273,9 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   it('issues update for low sync success when this node is primary', async function () {
     // Make sync success rate lower than threshold
-    const walletToSecondaryToExceedsMaxErrorsAllowed = {
+    const secondarySyncHealthTrackerState = {
       [wallet]: {
-        [secondary1]: true
+        [secondary1]: 'failure_undefined_sync_status'
       }
     }
 
@@ -285,7 +285,7 @@ describe('test findReplicaSetUpdates job processor', function () {
     // Verify job outputs the correct results: secondary1 should be removed from replica set because its sync success rate is too low
     return runAndVerifyJobProcessor({
       jobProcessorArgs: {
-        walletToSecondaryToExceedsMaxErrorsAllowed
+        secondarySyncHealthTrackerState
       },
       expectedUnhealthyReplicas: [secondary1]
     })

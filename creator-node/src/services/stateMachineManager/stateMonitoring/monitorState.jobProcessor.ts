@@ -69,8 +69,7 @@ async function monitorState({
   let unhealthyPeers = new Set<string>()
   let replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps = {}
 
-  const secondarySyncHealthTracker: SecondarySyncHealthTracker =
-    new SecondarySyncHealthTracker()
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
 
   try {
     try {
@@ -193,12 +192,7 @@ async function monitorState({
       _addToDecisionTree(
         decisionTree,
         'computeWalletOnSecondaryExceedsMaxErrorsAllowed Success',
-        logger,
-        {
-          walletToSecondaryToExceedsMaxErrorsAllowed: Object.keys(
-            secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
-          )?.length
-        }
+        logger
       )
     } catch (e: any) {
       tracing.recordException(e)
@@ -231,16 +225,14 @@ async function monitorState({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToExceedsMaxErrorsAllowed:
-      secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed(),
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    walletToSecondaryToExceedsMaxErrorsAllowed:
-      secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed(),
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {

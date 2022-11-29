@@ -433,13 +433,13 @@ it('returns expected counts and percentages after recording successes and failur
     usersInfoSlice
   )
 
-  const expectedWalletToSecondaryToExceedsMaxErrorsAllowed = {}
+  const expectedSecondarySyncHealthTrackerState = {}
 
-  const walletToSecondaryToExceedsMaxErrorsAllowed =
-    await secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
+  const secondarySyncHealthTrackerState =
+    await secondarySyncHealthTracker.getState()
 
-  expect(walletToSecondaryToExceedsMaxErrorsAllowed).to.deep.equal(
-    expectedWalletToSecondaryToExceedsMaxErrorsAllowed
+  expect(secondarySyncHealthTrackerState).to.deep.equal(
+    expectedSecondarySyncHealthTrackerState
   )
 })
 

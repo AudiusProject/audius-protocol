@@ -5,7 +5,7 @@ import type {
   UpdateReplicaSetUser,
   ReplicaToUserInfoMap,
   UpdateReplicaSetJobParamsWithoutEnabledReconfigModes,
-  WalletToSecondaryToExceedsMaxErrorsAllowed
+  SecondarySyncHealthTrackerState
 } from '../stateReconciliation/types'
 import type {
   FindReplicaSetUpdateJobParams,
@@ -38,14 +38,14 @@ const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
- * @param {WalletToSecondaryToExceedsMaxErrorsAllowed} param.walletToSecondaryToExceedsMaxErrorsAllowed serialized data used to determine if secondary is unhealthy for wallet
+ * @param {SecondarySyncHealthTrackerState} param.secondarySyncHealthTrackerState serialized data used to determine if secondary is unhealthy for wallet
  */
 async function findReplicaSetUpdates({
   logger,
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  walletToSecondaryToExceedsMaxErrorsAllowed
+  secondarySyncHealthTrackerState
 }: DecoratedJobParams<FindReplicaSetUpdateJobParams>): Promise<
   DecoratedJobReturnValue<FindReplicaSetUpdatesJobReturnValue>
 > {
@@ -70,7 +70,7 @@ async function findReplicaSetUpdates({
             user,
             thisContentNodeEndpoint,
             unhealthyPeersSet,
-            walletToSecondaryToExceedsMaxErrorsAllowed,
+            secondarySyncHealthTrackerState,
             cNodeEndpointToSpIdMap,
             logger
           })
@@ -147,7 +147,7 @@ type UpdateReplicaSetOp = UpdateReplicaSetUser & {
  * @param {Object} param.user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string} param.thisContentNodeEndpoint URL or IP address of this Content Node
  * @param {Set<string>} param.unhealthyPeers set of unhealthy peers
- * @param {SecondarySyncHealthTracker} param.walletToSecondaryToExceedsMaxErrorsAllowed serialized data used to determine if secondary is unhealthy for wallet
+ * @param {SecondarySyncHealthTrackerState} param.secondarySyncHealthTrackerState serialized data used to determine if secondary is unhealthy for wallet
  * @param {Object} param.cNodeEndpointToSpIdMap map of content node endpoint to sp id
  * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
@@ -155,14 +155,14 @@ const _findReplicaSetUpdatesForUser = async ({
   user,
   thisContentNodeEndpoint,
   unhealthyPeersSet,
-  walletToSecondaryToExceedsMaxErrorsAllowed,
+  secondarySyncHealthTrackerState,
   cNodeEndpointToSpIdMap,
   logger
 }: {
   user: StateMonitoringUser
   thisContentNodeEndpoint: string
   unhealthyPeersSet: Set<string>
-  walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
+  secondarySyncHealthTrackerState: SecondarySyncHealthTrackerState
   cNodeEndpointToSpIdMap: Map<string, number>
   logger: Logger
 }): Promise<UpdateReplicaSetOp[]> => {
@@ -213,7 +213,7 @@ const _findReplicaSetUpdatesForUser = async ({
      */
 
     const secondarySyncHealthTracker = new SecondarySyncHealthTracker(
-      walletToSecondaryToExceedsMaxErrorsAllowed
+      secondarySyncHealthTrackerState
     )
 
     for (const secondaryInfo of secondariesInfo) {

@@ -9,10 +9,7 @@ import {
   SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES,
   SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP
 } from './SecondarySyncHealthTrackerConstants'
-import {
-  WalletToSecondaryAndMaxErrorReached,
-  WalletToSecondaryToExceedsMaxErrorsAllowed
-} from './types'
+import { WalletToSecondaryAndMaxErrorReached } from './types'
 
 const { logger: genericLogger } = require('../../../logging')
 const redisClient = require('../../../redis')
@@ -24,15 +21,16 @@ const REDIS_KEY_EXPIRY_SECONDS = 259_200 // 3 days -- small range of buffer time
 const PROCESS_USERS_BATCH_SIZE = 30
 
 export class SecondarySyncHealthTracker {
-  walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed
-  walletsToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+  walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
+  // Param exists so when processing jobs, data can be serialized into redis for processing later
   constructor(
-    walletToSecondaryToExceedsMaxErrorsAllowed: WalletToSecondaryToExceedsMaxErrorsAllowed = {}
+    { walletToSecondaryAndMaxErrorReached } = {
+      walletToSecondaryAndMaxErrorReached: {}
+    }
   ) {
-    this.walletToSecondaryToExceedsMaxErrorsAllowed =
-      walletToSecondaryToExceedsMaxErrorsAllowed
-    this.walletsToSecondaryAndMaxErrorReached = {}
+    this.walletToSecondaryAndMaxErrorReached =
+      walletToSecondaryAndMaxErrorReached
   }
 
   /**
@@ -73,7 +71,7 @@ export class SecondarySyncHealthTracker {
   }
 
   /**
-   * If there is no presence of the wallet, wallet-secondary pair, that means a wallet did not
+   * If there is no presence of the wallet-secondary-error relationship, that means a wallet did not
    * encounter any max error capacity. Else, a max error was encountered
    * @param wallet
    * @param secondary
@@ -83,9 +81,23 @@ export class SecondarySyncHealthTracker {
     wallet: string,
     secondary: string
   ): boolean {
-    return !!this.walletToSecondaryToExceedsMaxErrorsAllowed?.[wallet]?.[
-      secondary
-    ]
+    const error =
+      this.walletToSecondaryAndMaxErrorReached?.[wallet]?.[secondary]
+
+    if (error) {
+      genericLogger.warn(
+        {
+          SecondarySyncHealthTracker:
+            'doesWalletOnSecondaryExceedMaxErrorsAllowed',
+          wallet,
+          secondary,
+          error
+        },
+        `Wallet encountered max errors allowed on secondary`
+      )
+    }
+
+    return !!error
   }
 
   /**
@@ -125,21 +137,28 @@ export class SecondarySyncHealthTracker {
       }
     }
 
-    if (Object.keys(this.walletsToSecondaryAndMaxErrorReached).length) {
+    if (Object.keys(this.walletToSecondaryAndMaxErrorReached).length) {
       genericLogger.warn(
         {
           SecondarySyncHealthTracker:
             'computeWalletOnSecondaryExceedsMaxErrorsAllowed'
         },
         `Wallets on secondaries have exceeded the allowed error capacity for today: ${JSON.stringify(
-          this.walletsToSecondaryAndMaxErrorReached
+          this.walletToSecondaryAndMaxErrorReached
         )}`
       )
     }
   }
 
-  getWalletToSecondaryToExceedsMaxErrorsAllowed(): WalletToSecondaryToExceedsMaxErrorsAllowed {
-    return this.walletToSecondaryToExceedsMaxErrorsAllowed
+  // Used for passing around state for job processing. Ideally, do not consume this data directly and
+  // use the abstract methods
+  getState(): {
+    walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+  } {
+    return {
+      walletToSecondaryAndMaxErrorReached:
+        this.walletToSecondaryAndMaxErrorReached
+    }
   }
 
   /**
@@ -216,28 +235,24 @@ export class SecondarySyncHealthTracker {
           secondary,
           error
         })
-
-        // If under, record retry to 'true'. Else, record retry as 'false'.
-        this._updateWalletToSecondaryToExceededMaxErrorsAllowed({
-          wallet,
-          secondary
-        })
       }
     }
   }
 
-  _updateWalletToSecondaryToExceededMaxErrorsAllowed({
+  _updateWalletToSecondaryAndMaxErrorReached({
     wallet,
-    secondary
+    secondary,
+    error
   }: {
     wallet: string
     secondary: string
+    error: string
   }) {
-    if (!this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet]) {
-      this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet] = {}
+    if (!this.walletToSecondaryAndMaxErrorReached[wallet]) {
+      this.walletToSecondaryAndMaxErrorReached[wallet] = {}
     }
 
-    this.walletToSecondaryToExceedsMaxErrorsAllowed[wallet][secondary] = true
+    this.walletToSecondaryAndMaxErrorReached[wallet][secondary] = error
   }
 
   _didErrorExceedMaxRetries(error: string, errorCount: number) {
@@ -273,22 +288,6 @@ export class SecondarySyncHealthTracker {
       secondary: info[2],
       wallet: info[3]
     }
-  }
-
-  _updateWalletToSecondaryAndMaxErrorReached({
-    wallet,
-    secondary,
-    error
-  }: {
-    wallet: string
-    secondary: string
-    error: string
-  }) {
-    if (!this.walletsToSecondaryAndMaxErrorReached[wallet]) {
-      this.walletsToSecondaryAndMaxErrorReached[wallet] = {}
-    }
-
-    this.walletsToSecondaryAndMaxErrorReached[wallet][secondary] = error
   }
 }
 

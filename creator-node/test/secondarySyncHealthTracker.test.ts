@@ -132,7 +132,7 @@ describe('test secondarySyncHealthTracker', function () {
     )
   })
 
-  it('passing in the walletToSecondaryToExceedsMaxErrorsAllowed instance properly instantiates the constructor', async function () {
+  it('passing in the secondarySyncHealthTrackerState state properly instantiates the constructor', async function () {
     const wallet = '0xadD36aaa12002f1097Cdb7eE24085C28e9random'
     const secondary = 'http://secondary1.co'
 
@@ -165,14 +165,14 @@ describe('test secondarySyncHealthTracker', function () {
       ]
     )
 
-    const walletToSecondaryToExceedsMaxErrorsAllowed =
-      await secondarySyncHealthTracker.getWalletToSecondaryToExceedsMaxErrorsAllowed()
+    const secondarySyncHealthTrackerState =
+      await secondarySyncHealthTracker.getState()
 
-    // Passing in the a walletToSecondaryToExceedsMaxErrorsAllowed should allow another
+    // Passing in the a secondarySyncHealthTrackerState should allow another
     // instance to properly parse data. This method is used in handling jobs that have
     // serialized data
     const secondarySyncHealthTracker2 = new SecondarySyncHealthTracker(
-      walletToSecondaryToExceedsMaxErrorsAllowed
+      secondarySyncHealthTrackerState
     )
 
     assert.deepEqual(
