@@ -57,19 +57,17 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
     () => dispatch(enterBackground())
   )
 
+  const accountFetchResolved =
+    accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
   return (
     <>
-      <SplashScreen
-        canDismiss={
-          accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
-        }
-      />
+      <SplashScreen canDismiss={accountFetchResolved} />
       <Stack.Navigator
         screenOptions={{ gestureEnabled: false, headerShown: false }}
       >
         {updateRequired ? (
           <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
-        ) : !hasAccount ? (
+        ) : accountFetchResolved && !hasAccount ? (
           <Stack.Screen name='SignOnStack' component={SignOnScreen} />
         ) : (
           <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
