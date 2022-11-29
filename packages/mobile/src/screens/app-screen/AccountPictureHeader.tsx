@@ -5,6 +5,8 @@ import {
 } from '@audius/common'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import type { Node } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/user'
@@ -38,27 +40,35 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type AccountPictureHeaderProps = {
   onPress: () => void
+  drawerProgress: Node<number>
 }
 
 export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
-  const { onPress } = props
+  const { onPress, drawerProgress } = props
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
 
+  const opacity = Animated.interpolate(drawerProgress, {
+    inputRange: [0, 1],
+    outputRange: [1, 0]
+  })
+
   return (
-    <TouchableOpacity onPress={onPress}>
-      <ProfilePicture
-        profile={accountUser}
-        style={styles.root}
-        firstOpacity={0}
-      />
-      {hasClaimableRewards ? (
-        <View style={styles.notificationBubbleRoot}>
-          <View style={styles.notificationBubble} />
-        </View>
-      ) : null}
-    </TouchableOpacity>
+    <Animated.View style={{ opacity }}>
+      <TouchableOpacity onPress={onPress}>
+        <ProfilePicture
+          profile={accountUser}
+          style={styles.root}
+          firstOpacity={0}
+        />
+        {hasClaimableRewards ? (
+          <View style={styles.notificationBubbleRoot}>
+            <View style={styles.notificationBubble} />
+          </View>
+        ) : null}
+      </TouchableOpacity>
+    </Animated.View>
   )
 }

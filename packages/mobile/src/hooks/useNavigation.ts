@@ -12,6 +12,7 @@ import { getNearestStackNavigator } from 'app/utils/navigation'
 
 export type ContextualParams = {
   fromNotifications?: boolean
+  fromAppDrawer?: boolean
 }
 
 export type ContextualizedParamList<ParamList extends ParamListBase> = {
