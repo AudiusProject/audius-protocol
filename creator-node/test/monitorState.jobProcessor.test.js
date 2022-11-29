@@ -65,7 +65,6 @@ describe('test monitorState job processor', function () {
     replicaToAllUserInfoMaps: REPLICA_TO_USER_INFO_MAP,
     unhealthyPeers: RETRIEVE_USER_INFO_EXTRA_UNHEALTHY_PEERS
   }
-  const USER_SECONDARY_SYNC_SUCCESS_RATES_MAP = { dummyMap: 'dummyMap' }
   const CNODE_ENDPOINT_TO_SP_ID_MAP = { dummyCNodeMap: 'dummyCNodeMap' }
 
   // Return processStateMonitoringJob with each step stubbed to return
@@ -75,7 +74,6 @@ describe('test monitorState job processor', function () {
     unhealthyPeers = UNHEALTHY_PEERS,
     replicaSetNodesToUserWalletsMap = REPLICA_SET_NODES_TO_USER_WALLETS_MAP,
     retrieveUserInfoFromReplicaSetResp = RETRIEVE_USER_INFO_FROM_REPLICA_SET_RESP,
-    userSecondarySyncSuccessRatesMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP,
     cNodeEndpointToSpIdMap = CNODE_ENDPOINT_TO_SP_ID_MAP
   }) {
     // Make the stubs return the given params if they're not already set

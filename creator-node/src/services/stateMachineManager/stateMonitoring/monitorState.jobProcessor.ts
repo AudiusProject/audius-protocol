@@ -205,12 +205,12 @@ async function monitorState({
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Error',
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Error',
         logger,
         { error: e.message }
       )
       throw new Error(
-        'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
+        'monitor-state job processor computeWalletOnSecondaryExceedsMaxErrorsAllowed Error'
       )
     }
   } catch (e: any) {
