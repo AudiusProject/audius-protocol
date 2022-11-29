@@ -7,7 +7,11 @@ import { chunk, reverse, isEqual } from 'lodash'
 import DbManager from './dbManager'
 import redisClient from './redis'
 import config from './config'
-import { logger as genericLogger } from './logging'
+import {
+  logger as genericLogger,
+  getStartTime,
+  logErrorWithDuration
+} from './logging'
 import { tracing } from './tracer'
 import {
   execShellCommand,
@@ -20,6 +24,9 @@ import {
   computeFilePathInDirAndEnsureItExists,
   getCharsInRanges
 } from './utils'
+import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
+import { getReplicaSetEndpointsByCnodeUserUuid } from './services/ContentNodeInfoManager'
+import initAudiusLibs from './services/initAudiusLibs'
 
 const models = require('./models')
 
@@ -503,22 +510,12 @@ async function _copyLegacyFiles(
   return copiedPaths
 }
 
-async function _deleteFiles(filePaths: string[], logger: Logger) {
-  for (const filePath of filePaths) {
-    try {
-      await fs.unlink(filePath)
-    } catch (e) {
-      logger.error(`Failed to delete file at ${filePath} because: ${e}`)
-    }
-  }
-}
-
 async function _migrateNonDirFilesWithLegacyStoragePaths(
   queryDelayMs: number,
   prometheusRegistry: any,
   logger: Logger
 ) {
-  const BATCH_SIZE = 1000
+  const BATCH_SIZE = 3000
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
   for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
     const cursor = 'Qm' + char
@@ -536,16 +533,7 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(
           prometheusRegistry,
           logger
         )
-        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
-          copiedFilePaths,
-          logger
-        )
-        if (dbUpdateSuccessful) {
-          await _deleteFiles(
-            copiedFilePaths.map((file) => file.legacyPath),
-            logger
-          )
-        }
+        await DbManager.updateLegacyPathDbRows(copiedFilePaths, logger)
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
@@ -556,7 +544,7 @@ async function _migrateDirsWithLegacyStoragePaths(
   queryDelayMs: number,
   logger: Logger
 ) {
-  const BATCH_SIZE = 1000
+  const BATCH_SIZE = 3000
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
   for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
     const cursor = 'Qm' + char
@@ -583,6 +571,116 @@ async function _migrateDirsWithLegacyStoragePaths(
   }
 }
 
+async function _migrateFileWithCustomStoragePath(
+  fileRecord: {
+    storagePath: string
+    multihash: string
+    cnodeUserUUID: string
+    dirMultihash?: string
+    fileName?: string
+    fileUUID: string
+    trackBlockchainId?: number
+  },
+  logger: Logger
+) {
+  const fetchStartTime = getStartTime()
+  const replicaSet = await getReplicaSetEndpointsByCnodeUserUuid({
+    libs: await initAudiusLibs({ logger }),
+    cnodeUserUuid: fileRecord.cnodeUserUUID,
+    parentLogger: logger
+  })
+  // Will retry internally
+  const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
+    {}, // libs param is unused, so empty object is sufficient
+    logger,
+    fileRecord.multihash,
+    fileRecord.dirMultihash,
+    [
+      replicaSet.primary,
+      replicaSet.secondary1,
+      replicaSet.secondary2
+    ] /** targetGateways */,
+    fileRecord.fileName,
+    fileRecord.trackBlockchainId,
+    2 /** numRetries */
+  )
+
+  if (error) {
+    logErrorWithDuration(
+      { logger, startTime: fetchStartTime },
+      `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
+    )
+    return false
+  } else {
+    // Update file's storagePath in DB to newly saved location, and ensure it's not marked as skipped
+    await models.File.update(
+      { storagePath, skipped: false },
+      {
+        where: { fileUUID: fileRecord.fileUUID }
+      }
+    )
+    return true
+  }
+}
+
+async function _migrateFilesWithCustomStoragePaths(
+  queryDelayMs: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  const BATCH_SIZE = 3000
+  const metric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
+  )
+  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
+    const cursor = 'Qm' + char
+
+    // Query for custom storagePaths in the pagination range until no new results are returned
+    let prevFileRecordsWithCustomPath
+    let fileRecordsWithCustomPath: {
+      storagePath: string
+      multihash: string
+      cnodeUserUUID: string
+      dirMultihash?: string
+      fileName?: string
+      fileUUID: string
+      trackBlockchainId?: number
+    }[] = []
+    while (!isEqual(prevFileRecordsWithCustomPath, fileRecordsWithCustomPath)) {
+      prevFileRecordsWithCustomPath = fileRecordsWithCustomPath
+      fileRecordsWithCustomPath = await DbManager.getCustomStoragePathsRecords(
+        cursor,
+        BATCH_SIZE
+      )
+      if (fileRecordsWithCustomPath.length) {
+        // Process sequentially to minimize load since this is not time-sensitive
+        let numFilesMigratedSuccessfully = 0
+        let numFilesFailedToMigrate = 0
+        for (const fileRecord of fileRecordsWithCustomPath) {
+          let success
+          try {
+            success = await _migrateFileWithCustomStoragePath(
+              fileRecord,
+              logger
+            )
+          } catch (e: any) {
+            logger.error(`Error in _migrateFileWithCustomStoragePath(): ${e}`)
+          }
+          if (success) numFilesMigratedSuccessfully++
+          else numFilesFailedToMigrate++
+
+          // Add delay between calls since each call will make an internal request to every node in the user's replica set
+          await timeout(1000)
+        }
+        metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
+        metric.inc({ result: 'failure' }, numFilesFailedToMigrate)
+      }
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
+  }
+}
+
 /**
  * For non-directory files and then later for files, this:
  * 1. Finds rows in the Files table that have a legacy storagePath (/file_storage/<CID or dirCID>)
@@ -593,22 +691,42 @@ async function _migrateDirsWithLegacyStoragePaths(
  * @param prometheusRegistry registry to record Prometheus metrics
  * @param logger logger to print errors to
  */
-export async function migrateFilesWithLegacyStoragePaths(
+export async function migrateFilesWithNonStandardStoragePaths(
   queryDelayMs: number,
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
-  try {
-    await _migrateNonDirFilesWithLegacyStoragePaths(
-      queryDelayMs,
-      prometheusRegistry,
-      logger
-    )
-    await _migrateDirsWithLegacyStoragePaths(queryDelayMs, logger)
-  } catch (e: any) {
-    logger.error(`Error migrating legacy storagePaths: ${e}`)
+  // Legacy storagePaths
+  if (config.get('migrateFilesWithLegacyStoragePath')) {
+    try {
+      await _migrateNonDirFilesWithLegacyStoragePaths(
+        queryDelayMs,
+        prometheusRegistry,
+        logger
+      )
+      await _migrateDirsWithLegacyStoragePaths(queryDelayMs, logger)
+    } catch (e: any) {
+      logger.error(`Error migrating legacy storagePaths: ${e}`)
+    }
+  }
+
+  // Custom storagePaths (not matching 'storagePath' env var)
+  if (config.get('migrateFilesWithCustomStoragePath')) {
+    try {
+      await _migrateFilesWithCustomStoragePaths(
+        queryDelayMs,
+        prometheusRegistry,
+        logger
+      )
+    } catch (e: any) {
+      logger.error(`Error migrating custom storagePaths: ${e}`)
+    }
   }
 
   // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithLegacyStoragePaths(10_000, prometheusRegistry, logger)
+  return migrateFilesWithNonStandardStoragePaths(
+    5000,
+    prometheusRegistry,
+    logger
+  )
 }
