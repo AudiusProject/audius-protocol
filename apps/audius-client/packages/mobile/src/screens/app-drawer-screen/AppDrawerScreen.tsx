@@ -6,10 +6,10 @@ import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/types
 import { useNavigation } from '@react-navigation/native'
 import { Dimensions } from 'react-native'
 
-import { AccountDrawer } from '../account-screen'
 import { AppScreen } from '../app-screen'
 
 import { AppDrawerContextProvider } from './AppDrawerContext'
+import { LeftNavDrawer } from './left-nav-drawer'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -50,7 +50,7 @@ export const AppDrawerScreen = () => {
     () => ({
       headerShown: false,
       swipeEdgeWidth: SCREEN_WIDTH,
-      drawerType: 'front' as const,
+      drawerType: 'slide' as const,
       drawerStyle: { width: '75%' },
       gestureHandlerProps: { enabled: !gesturesDisabled }
     }),
@@ -64,7 +64,7 @@ export const AppDrawerScreen = () => {
       // legacy implementation uses reanimated-v1
       useLegacyImplementation={true}
       screenOptions={drawerScreenOptions}
-      drawerContent={(props) => <AccountDrawer {...gestureProps} {...props} />}
+      drawerContent={(props) => <LeftNavDrawer {...gestureProps} {...props} />}
     >
       <Drawer.Screen name='App'>
         {(props) => <AppStack {...props} {...gestureProps} />}

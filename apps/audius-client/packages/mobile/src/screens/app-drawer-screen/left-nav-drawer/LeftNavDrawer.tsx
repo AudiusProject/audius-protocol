@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common'
 import {
@@ -35,7 +35,10 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-import { useAppDrawerNavigation } from '../app-drawer-screen'
+import { AppDrawerContext, AppDrawerContextProvider } from '../AppDrawerContext'
+import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
+
+import { LeftNavLink } from './LeftNavLink'
 const { getAccountUser } = accountSelectors
 const { getAccountTotalBalance } = walletSelectors
 const { setFollowers } = followersUserListActions
@@ -119,14 +122,19 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-export const AccountDrawer = (props: AccountDrawerProps) => {
+export const LeftNavDrawer = (props: AccountDrawerProps) => {
+  const { navigation: drawerHelpers, ...other } = props
   const accountUser = useSelector(getAccountUser) as User
   if (!accountUser) return null
-  return <WrappedAccountDrawer {...props} />
+  return (
+    <AppDrawerContextProvider drawerHelpers={drawerHelpers} {...other}>
+      <WrappedLeftNavDrawer />
+    </AppDrawerContextProvider>
+  )
 }
 
-const WrappedAccountDrawer = (props: AccountDrawerProps) => {
-  const { navigation: drawerHelpers } = props
+const WrappedLeftNavDrawer = () => {
+  const { drawerHelpers } = useContext(AppDrawerContext)
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
   const { user_id, name, handle, track_count, followee_count, follower_count } =
@@ -135,7 +143,7 @@ const WrappedAccountDrawer = (props: AccountDrawerProps) => {
   const totalBalance = useSelector(getAccountTotalBalance)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
-  const { neutral, neutralLight4 } = useThemeColors()
+  const { neutralLight4 } = useThemeColors()
 
   const dispatch = useDispatch()
   const navigation = useAppDrawerNavigation()
@@ -166,23 +174,8 @@ const WrappedAccountDrawer = (props: AccountDrawerProps) => {
     drawerHelpers.closeDrawer()
   }, [dispatch, user_id, navigation, drawerHelpers])
 
-  const handlePressSettings = useCallback(() => {
-    navigation.push('SettingsScreen')
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
-
-  const handlePressListeningHistory = useCallback(() => {
-    navigation.push('ListeningHistoryScreen')
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
-
-  const handlePressUpload = useCallback(() => {
-    navigation.push('Upload')
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
-
   return (
-    <DrawerContentScrollView {...props}>
+    <DrawerContentScrollView>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.accountInfo}
@@ -260,103 +253,52 @@ const WrappedAccountDrawer = (props: AccountDrawerProps) => {
         </TouchableOpacity>
       </View>
       <Divider style={styles.divider} />
-      <TouchableOpacity
-        style={styles.accountListItem}
-        onPress={handlePressAccount}
+      <LeftNavLink
+        icon={IconUser}
+        label={messages.profile}
+        to='Profile'
+        params={{ handle: 'accountUser' }}
+      />
+      <LeftNavLink
+        icon={IconCrown}
+        label={messages.audio}
+        to='AudioScreen'
+        params={null}
       >
-        <View style={styles.accountListItemIconRoot}>
-          <IconUser
-            fill={neutral}
-            height={spacing(7)}
-            width={spacing(7)}
-            style={styles.accountListItemIcon}
-          />
-        </View>
-        <Text
-          fontSize='large'
-          weight='demiBold'
-          style={{ marginTop: spacing(1) }}
-        >
-          {messages.profile}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.accountListItem}
-        onPress={handlePressRewards}
-      >
-        <View style={styles.accountListItemIconRoot}>
-          <IconCrown
-            fill={neutral}
-            height={spacing(7)}
-            width={spacing(7)}
-            style={styles.accountListItemIcon}
-          />
-        </View>
-        <Text
-          fontSize='large'
-          weight='demiBold'
-          style={{ marginTop: spacing(1) }}
-        >
-          {messages.audio}
-        </Text>
         {hasClaimableRewards ? (
           <View style={styles.notificationBubble} />
         ) : null}
-      </TouchableOpacity>
+      </LeftNavLink>
       {isMobileUploadEnabled ? (
-        <TouchableOpacity
-          style={styles.accountListItem}
-          onPress={handlePressUpload}
-        >
-          <View style={styles.accountListItemIconRoot}>
-            <IconUpload
-              fill={neutral}
-              height={spacing(8)}
-              width={spacing(8)}
-              style={[styles.accountListItemIcon, { marginLeft: -2 }]}
-            />
-          </View>
-          <Text fontSize='large' weight='demiBold' style={{ marginTop: 2 }}>
-            {messages.upload}
-          </Text>
-        </TouchableOpacity>
+        <LeftNavLink
+          icon={IconUpload}
+          iconProps={{
+            height: spacing(8),
+            width: spacing(8),
+            style: { marginLeft: -2 }
+          }}
+          label={messages.upload}
+          to='Upload'
+          params={{ fromAppDrawer: false }}
+        />
       ) : null}
-      <TouchableOpacity
-        style={styles.accountListItem}
-        onPress={handlePressListeningHistory}
-      >
-        <View style={styles.accountListItemIconRoot}>
-          <IconListeningHistory
-            fill={neutral}
-            height={spacing(7)}
-            width={spacing(7)}
-            style={styles.accountListItemIcon}
-          />
-        </View>
-        <Text
-          fontSize='large'
-          weight='demiBold'
-          style={{ marginTop: spacing(1) }}
-        >
-          {messages.listeningHistory}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.accountListItem}
-        onPress={handlePressSettings}
-      >
-        <View style={styles.accountListItemIconRoot}>
-          <IconSettings
-            fill={neutral}
-            height={spacing(9)}
-            width={spacing(9)}
-            style={[styles.accountListItemIcon, { marginLeft: spacing(-1) }]}
-          />
-        </View>
-        <Text fontSize='large' weight='demiBold' style={{ marginTop: 2 }}>
-          {messages.settings}
-        </Text>
-      </TouchableOpacity>
+      <LeftNavLink
+        icon={IconListeningHistory}
+        label={messages.listeningHistory}
+        to='ListeningHistoryScreen'
+        params={null}
+      />
+      <LeftNavLink
+        icon={IconSettings}
+        label={messages.settings}
+        to='SettingsScreen'
+        params={null}
+        iconProps={{
+          height: spacing(9),
+          width: spacing(9),
+          style: { marginLeft: spacing(-1) }
+        }}
+      />
     </DrawerContentScrollView>
   )
 }

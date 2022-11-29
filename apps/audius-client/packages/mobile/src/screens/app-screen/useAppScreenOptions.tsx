@@ -2,6 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import { FeatureFlags, notificationsActions } from '@audius/common'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
+import { useDrawerProgress } from '@react-navigation/drawer'
 import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
@@ -14,6 +15,7 @@ import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
+import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
@@ -95,18 +97,18 @@ export const useAppScreenOptions = (
   }, [navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
+  const drawerProgress = useDrawerProgress()
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
       (options) => {
-        const { navigation } = options
-        // The manual typing is unfortunate here. There may be a better way, but
-        // the tricky bit is that StackNavigationOptions aren't known to the RouteProp.
-        // A better solution may be to wrap <Stack.Screen> in our own variant that
-        // can do some better generics & inference.
+        const { navigation, route } = options
+        const { params } = route
+        const isFromAppLeftDrawer =
+          params && (params as ContextualParams).fromAppDrawer
 
         return {
-          animation: 'default',
+          animation: isFromAppLeftDrawer ? 'none' : 'default',
           fullScreenGestureEnabled: true,
           freezeOnBlur: true,
           cardOverlayEnabled: true,
@@ -131,7 +133,10 @@ export const useAppScreenOptions = (
             }
             return (
               <View style={[styles.headerLeft, { marginLeft: 0 }]}>
-                <AccountPictureHeader onPress={handlePressNotification} />
+                <AccountPictureHeader
+                  drawerProgress={drawerProgress}
+                  onPress={handlePressNotification}
+                />
               </View>
             )
           },
@@ -182,7 +187,8 @@ export const useAppScreenOptions = (
         styles,
         neutralLight4,
         overrides,
-        isEarlyAccess
+        isEarlyAccess,
+        drawerProgress
       ]
     )
 
