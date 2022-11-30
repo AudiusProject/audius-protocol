@@ -427,6 +427,7 @@ class TrackStream(Resource):
         args = {
             "id": [decoded_id],
             "with_users": True,
+            "skip_unlisted_filter": True,
         }
         tracks = get_tracks(args)
 
