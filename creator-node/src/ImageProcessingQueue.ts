@@ -1,6 +1,5 @@
 import type { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
-import type { ValuesOf } from './utils'
-import type { LogContext } from './apiHelpers'
+import type { ValuesOf, LogContext } from './utils'
 
 import { Queue, QueueEvents, Worker } from 'bullmq'
 import path from 'path'

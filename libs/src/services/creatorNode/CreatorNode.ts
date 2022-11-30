@@ -369,6 +369,7 @@ export class CreatorNode {
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+    metadata.track_cid = trackContentResp.transcodedTrackCID
     if (metadata.download?.is_downloadable) {
       metadata.download.cid = trackContentResp.transcodedTrackCID
     }

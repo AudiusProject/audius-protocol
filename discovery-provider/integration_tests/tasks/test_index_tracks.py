@@ -94,6 +94,7 @@ cid_metadata_client = CIDMetadataClient(
     {
         multihash: {
             "owner_id": 1,
+            "track_cid": "some-track-cid",
             "title": "real magic bassy flip",
             "length": None,
             "cover_art": None,
@@ -143,6 +144,7 @@ cid_metadata_client = CIDMetadataClient(
         },
         multihash2: {
             "owner_id": 1,
+            "track_cid": "some-track-cid",
             "title": "real magic bassy flip 2",
             "length": None,
             "cover_art": None,

@@ -1,11 +1,10 @@
 import type { Job } from 'bullmq'
 import type { Request } from 'express'
 import type { SpanContext } from '@opentelemetry/api'
-import type { LogContext } from './apiHelpers'
 
 import { Queue, Worker } from 'bullmq'
 import { logger } from './logging'
-import { getConcurrencyPerWorker, ValuesOf } from './utils'
+import { getConcurrencyPerWorker, ValuesOf, LogContext } from './utils'
 
 // Processing fns
 import {

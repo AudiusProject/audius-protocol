@@ -99,10 +99,18 @@ module.exports = function (app) {
         return errorResponseBadRequest(`Did not pass in a valid userId`)
 
       try {
-        await models.UserNotificationMobileSettings.upsert({
-          userId,
-          ...settings
-        })
+        // pseudo-upsert without sequlize magic
+        try {
+          await models.UserNotificationMobileSettings.update({
+            userId,
+            ...settings
+          })
+        } catch (e) {
+          await models.UserNotificationMobileSettings.create({
+            userId,
+            ...settings
+          })
+        }
 
         return successResponse()
       } catch (e) {

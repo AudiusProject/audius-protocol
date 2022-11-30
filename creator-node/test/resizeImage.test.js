@@ -2,12 +2,12 @@ const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
-const DiskManager = require('../src/diskManager')
 
 const fs = require('fs-extra')
 const path = require('path')
 const sinon = require('sinon')
 const assert = require('assert')
+const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 // Image buffer for audiusDj.png test image
 const imageTestDir = 'resizeImageAssets'
@@ -161,7 +161,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = await DiskManager.computeFilePath(DIR_CID_SQUARE)
+    const dirPath = await computeFilePathAndEnsureItExists(DIR_CID_SQUARE)
     assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_150, CID_480, CID_1000, CID_ORIGINAL])
@@ -221,7 +221,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = await DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
+    const dirPath = await computeFilePathAndEnsureItExists(DIR_CID_NOT_SQUARE)
     assert.ok(await fs.pathExists(dirPath))
 
     const dirContentCIDs = new Set([CID_640, CID_2000, CID_ORIGINAL])

@@ -106,6 +106,8 @@ class SyncImmediateQueue {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       serviceRegistry,
       syncUuid
@@ -118,6 +120,8 @@ class SyncImmediateQueue {
         wallet,
         creatorNodeEndpoint,
         forceResyncConfig,
+        forceWipe,
+        syncOverride,
         logContext,
         syncUuid: syncUuid || null
       })
@@ -143,6 +147,8 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
+    forceWipe,
+    syncOverride,
     logContext,
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
@@ -151,6 +157,8 @@ class SyncImmediateQueue {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       parentSpanContext,
       syncUuid: syncUuid || null

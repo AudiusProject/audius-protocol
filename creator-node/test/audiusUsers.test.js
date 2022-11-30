@@ -7,6 +7,7 @@ const models = require('../src/models')
 
 const BlacklistManager = require('../src/blacklistManager')
 const DiskManager = require('../src/diskManager')
+const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
@@ -74,7 +75,7 @@ describe('Test AudiusUsers', function () {
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = await computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -102,7 +103,7 @@ describe('Test AudiusUsers', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = await computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified

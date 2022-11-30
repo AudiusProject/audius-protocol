@@ -25,9 +25,6 @@ const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
-const {
-  PremiumContentAccessChecker
-} = require('./premiumContent/premiumContentAccessChecker')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -49,7 +46,6 @@ class ServiceRegistry {
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
-    this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
     this.monitoringQueue = null // Recurring job to monitor node state & performance metrics

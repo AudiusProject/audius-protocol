@@ -3,7 +3,7 @@ from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class playlistRoute(Base, RepresentableMixin):
+class PlaylistRoute(Base, RepresentableMixin):
     __tablename__ = "playlist_routes"
     __table_args__ = (
         Index("playlist_routes_playlist_id_idx", "playlist_id", "is_current"),

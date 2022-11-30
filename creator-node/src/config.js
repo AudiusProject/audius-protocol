@@ -40,6 +40,12 @@ const config = convict({
     env: 'storagePath',
     default: '/file_storage'
   },
+  migrateFilesWithLegacyStoragePath: {
+    doc: 'True to copy files with a legacy storage to the new storage path',
+    format: Boolean,
+    env: 'migrateFilesWithLegacyStoragePath',
+    default: true
+  },
   redisHost: {
     doc: 'Redis host name',
     format: String,
@@ -499,12 +505,6 @@ const config = convict({
     env: 'entityManagerReplicaSetEnabled',
     default: false
   },
-  premiumContentEnabled: {
-    doc: 'whether or not to enable premium content',
-    format: Boolean,
-    env: 'premiumContentEnabled',
-    default: false
-  },
 
   /** sync / snapback configs */
 
@@ -587,7 +587,7 @@ const config = convict({
     default: 10000
   },
   nodeSyncFileSaveMaxConcurrency: {
-    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    doc: 'Max concurrency of fetchFileFromNetworkAndSaveToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
     default: 10
@@ -851,6 +851,19 @@ const config = convict({
     format: Boolean,
     env: 'processSyncResults',
     default: true
+  },
+  syncOverridePassword: {
+    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+    format: String,
+    env: 'syncOverridePassword',
+    default: '',
+    sensitive: true
+  },
+  autoUpgradeEnabled: {
+    doc: 'Is the audius-cli cron job for auto upgrade enabled on the host machine.',
+    format: Boolean,
+    env: 'autoUpgradeEnabled',
+    default: false
   }
 })
 

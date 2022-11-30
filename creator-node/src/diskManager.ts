@@ -2,15 +2,24 @@ import type Logger from 'bunyan'
 
 import path from 'path'
 import fs from 'fs-extra'
-import CID from 'cids'
-import { chunk } from 'lodash'
+import { chunk, reverse, isEqual } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { tracing } from './tracer'
-import { execShellCommand } from './utils'
+import {
+  execShellCommand,
+  runShellCommand,
+  verifyCIDMatchesExpected,
+  timeout,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRanges
+} from './utils'
 
 const models = require('./models')
 
@@ -77,121 +86,6 @@ export async function getTmpTrackUploadArtifactsPath() {
     TMP_TRACK_ARTIFACTS_CREATED = true
   }
   return dirPath
-}
-
-/**
- * Construct the path to a file or directory given a CID
- *
- * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
- * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
- * Use `computeFilePathInDir` if you want to get the path for a file inside a directory.
- *
- * @dev Returns a path with the three characters before the last character
- *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
- * @param {String} cid file system destination, either filename or directory
- */
-export async function computeFilePath(cid: string, ensurePathExists = true) {
-  try {
-    CID.isCID(new CID(cid))
-  } catch (e: any) {
-    tracing.recordException(e)
-    genericLogger.error(`CID invalid, cid=${cid}, error=${e.toString()}`)
-    throw new Error(
-      `Please pass in a valid cid to computeFilePath. Passed in ${cid} ${e.message}`
-    )
-  }
-
-  // This is the directory path that file with cid will go into.
-  // The reason for nesting `files` inside `/file_storage` is because legacy nodes store files at the root of `/file_storage`, and
-  // that can cause potential collisions if we're creating large amounts of subdirectories. A way to mitigate this is create one
-  // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<cid>
-  const directoryID = cid.slice(-4, -1)
-  const parentDirPath = path.join(getConfigStoragePath(), 'files', directoryID)
-  // in order to easily dev against the older and newer paths, the line below is the legacy storage path
-  // const parentDirPath = getConfigStoragePath()
-
-  // create the subdirectories in parentDirHash if they don't exist
-  if (ensurePathExists) {
-    await ensureDirPathExists(parentDirPath)
-  }
-
-  return path.join(parentDirPath, cid)
-}
-
-/**
- * Construct the legacy path to a file or directory given a CID
- */
-export function computeLegacyFilePath(cid: string) {
-  if (!isValidCID(cid)) {
-    throw new Error(`[computeLegacyFilePath] [CID=${cid}] Invalid CID.`)
-  }
-  return path.join(getConfigStoragePath(), cid)
-}
-
-/**
- * Boolean function to check if arg is a valid CID
- */
-export function isValidCID(cid: string) {
-  try {
-    // Will throw if `new CID(cid)` fails
-    // CID.isCID() returns boolean
-    return CID.isCID(new CID(cid))
-  } catch (e) {
-    return false
-  }
-}
-
-/**
- * Given a directory name and a file name, construct the full file system path for a directory and a folder inside a directory
- *
- * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
- * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
- * Use `computeFilePath` if you just want to get to the path of a file or directory.
- *
- * @param {String} dirName directory name
- * @param {String} fileName file name
- */
-export async function computeFilePathInDir(dirName: string, fileName: string) {
-  if (!dirName || !fileName) {
-    genericLogger.error(
-      `Invalid dirName and/or fileName, dirName=${dirName}, fileName=${fileName}`
-    )
-    throw new Error('Must pass in valid dirName and fileName')
-  }
-
-  try {
-    CID.isCID(new CID(dirName))
-    CID.isCID(new CID(fileName))
-  } catch (e: any) {
-    genericLogger.error(
-      `CID invalid, dirName=${dirName}, fileName=${fileName}, error=${e.toString()}`
-    )
-    throw new Error(
-      `Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`
-    )
-  }
-
-  const parentDirPath = await computeFilePath(dirName)
-  const absolutePath = path.join(parentDirPath, fileName)
-  genericLogger.info(`File path computed, absolutePath=${absolutePath}`)
-  return absolutePath
-}
-
-/**
- * Given a directory path, this function will create the dirPath if it doesn't exist
- * If it does exist, it will not overwrite, effectively a no-op
- * @param {*} dirPath fs directory path to create if it does not exist
- */
-export async function ensureDirPathExists(dirPath: string) {
-  try {
-    // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
-    await fs.mkdir(dirPath, { recursive: true })
-  } catch (e: any) {
-    genericLogger.error(
-      `Error making directory, dirName=${dirPath}, error=${e.toString()}`
-    )
-    throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
-  }
 }
 
 /**
@@ -297,7 +191,7 @@ export async function gatherCNodeUserDataToDelete(
   const cnodeUser = await models.CNodeUser.findOne({
     where: { walletPublicKey }
   })
-  if (!cnodeUser) throw new Error('No cnodeUser found')
+  if (!cnodeUser) return 0 // User is already wiped if no db record exists
   const { cnodeUserUUID } = cnodeUser
   logger.info(
     `Fetching data to delete from disk for cnodeUserUUID: ${cnodeUserUUID}`
@@ -517,8 +411,204 @@ export async function sweepSubdirectoriesInFiles(
         `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
       )
     }
+
+    // Wait 10sec between batches to reduce server load
+    await timeout(10000)
   }
 
   // keep calling this function recursively without an await so the original function scope can close
-  if (redoJob) return sweepSubdirectoriesInFiles()
+  // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
+  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled'))
+    return sweepSubdirectoriesInFiles()
+}
+
+async function _copyLegacyFiles(
+  legacyPathsAndCids: { storagePath: string; cid: string }[],
+  prometheusRegistry: any,
+  logger: Logger
+): Promise<
+  {
+    legacyPath: string
+    nonLegacyPath: string
+  }[]
+> {
+  const erroredPaths: { [path: string]: [error: string] } = {}
+  const copiedPaths: {
+    legacyPath: string
+    nonLegacyPath: string
+  }[] = []
+  for (const { storagePath: legacyPath, cid } of legacyPathsAndCids) {
+    try {
+      // Compute new path
+      const nonLegacyPathInfo = extractCIDsFromFSPath(legacyPath)
+      if (!nonLegacyPathInfo) throw new Error('Unable to extract CID from path')
+      if (!nonLegacyPathInfo.inner && !nonLegacyPathInfo.outer) {
+        throw new Error('Extracted empty CID from path')
+      }
+
+      // Ensure new path's parent exists
+      const nonLegacyPath = await (nonLegacyPathInfo.isDir
+        ? computeFilePathInDirAndEnsureItExists(
+            nonLegacyPathInfo.outer,
+            nonLegacyPathInfo.inner!
+          )
+        : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
+
+      // Copy to new path if it doesn't already exist
+      if (!(await fs.pathExists(nonLegacyPath))) {
+        try {
+          await fs.copyFile(legacyPath, nonLegacyPath)
+        } catch (e: any) {
+          // If we see a ENOSPC error, log out the disk space and inode details from the system
+          if (e.message.includes('ENOSPC')) {
+            await Promise.all([
+              runShellCommand(`df`, ['-h'], logger),
+              runShellCommand(`df`, ['-ih'], logger)
+            ])
+          }
+          throw e
+        }
+      }
+
+      // Verify that the correct contents were copied
+      const cidMatchesExpected = await verifyCIDMatchesExpected({
+        cid,
+        path: nonLegacyPath,
+        logger
+      })
+      if (cidMatchesExpected) {
+        copiedPaths.push({ legacyPath, nonLegacyPath })
+      } else {
+        try {
+          await fs.unlink(nonLegacyPath)
+        } catch (e) {
+          logger.error(
+            `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
+          )
+        }
+        throw new Error('CID does not match what is expected to be')
+      }
+    } catch (e: any) {
+      erroredPaths[legacyPath] = e.toString()
+    }
+  }
+
+  // Record results in Prometheus metric
+  const metric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  )
+  metric.inc({ result: 'success' }, copiedPaths.length)
+  metric.inc({ result: 'failure' }, erroredPaths.length)
+
+  return copiedPaths
+}
+
+async function _deleteFiles(filePaths: string[], logger: Logger) {
+  for (const filePath of filePaths) {
+    try {
+      await fs.unlink(filePath)
+    } catch (e) {
+      logger.error(`Failed to delete file at ${filePath} because: ${e}`)
+    }
+  }
+}
+
+async function _migrateNonDirFilesWithLegacyStoragePaths(
+  queryDelayMs: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  const BATCH_SIZE = 1000
+  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
+    const cursor = 'Qm' + char
+
+    // Query for legacy storagePaths in the pagination range until no new results are returned
+    let prevLegacyStoragePathsAndCids
+    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
+    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
+      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
+      legacyStoragePathsAndCids =
+        await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
+      if (legacyStoragePathsAndCids.length) {
+        const copiedFilePaths = await _copyLegacyFiles(
+          legacyStoragePathsAndCids,
+          prometheusRegistry,
+          logger
+        )
+        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
+          copiedFilePaths,
+          logger
+        )
+        if (dbUpdateSuccessful) {
+          await _deleteFiles(
+            copiedFilePaths.map((file) => file.legacyPath),
+            logger
+          )
+        }
+      }
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
+  }
+}
+
+async function _migrateDirsWithLegacyStoragePaths(
+  queryDelayMs: number,
+  logger: Logger
+) {
+  const BATCH_SIZE = 1000
+  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
+  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
+    const cursor = 'Qm' + char
+
+    // Query for legacy storagePaths in the pagination range until no new results are returned
+    let prevLegacyStoragePathsAndCids
+    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
+    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
+      legacyStoragePathsAndCids =
+        await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
+      if (legacyStoragePathsAndCids.length) {
+        const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
+          (storagePathAndCid) => {
+            return {
+              legacyPath: storagePathAndCid.storagePath,
+              nonLegacyPath: computeFilePath(storagePathAndCid.cid)
+            }
+          }
+        )
+        await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      }
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
+  }
+}
+
+/**
+ * For non-directory files and then later for files, this:
+ * 1. Finds rows in the Files table that have a legacy storagePath (/file_storage/<CID or dirCID>)
+ * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
+ * 3. Updates the row in the Files table to reflect the new storagePath
+ * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
+ * @param queryDelayMs millis to wait between SQL queries
+ * @param prometheusRegistry registry to record Prometheus metrics
+ * @param logger logger to print errors to
+ */
+export async function migrateFilesWithLegacyStoragePaths(
+  queryDelayMs: number,
+  prometheusRegistry: any,
+  logger: Logger
+): Promise<void> {
+  try {
+    await _migrateNonDirFilesWithLegacyStoragePaths(
+      queryDelayMs,
+      prometheusRegistry,
+      logger
+    )
+    await _migrateDirsWithLegacyStoragePaths(queryDelayMs, logger)
+  } catch (e: any) {
+    logger.error(`Error migrating legacy storagePaths: ${e}`)
+  }
+
+  // Keep calling this function recursively without an await so the original function scope can close
+  return migrateFilesWithLegacyStoragePaths(10_000, prometheusRegistry, logger)
 }

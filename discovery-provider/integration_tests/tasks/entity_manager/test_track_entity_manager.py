@@ -107,6 +107,7 @@ def test_index_valid_track(app, mocker):
     test_metadata = {
         "QmCreateTrack1": {
             "owner_id": 1,
+            "track_cid": "some-track-cid",
             "title": "track 1",
             "length": None,
             "cover_art": None,
@@ -156,6 +157,7 @@ def test_index_valid_track(app, mocker):
         },
         "QmCreateTrack2": {
             "owner_id": 1,
+            "track_cid": "some-track-cid-2",
             "title": "track 2",
             "length": None,
             "cover_art": None,
@@ -193,6 +195,7 @@ def test_index_valid_track(app, mocker):
         },
         "QmUpdateTrack1": {
             "owner_id": 1,
+            "track_cid": "some-track-cid",
             "title": "track 1 2",
             "length": None,
             "cover_art": None,

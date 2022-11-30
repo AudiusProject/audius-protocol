@@ -1,7 +1,7 @@
 """Create playlist_routes table
 
 Revision ID: bead88b41a20
-Revises: 03dbd1b775c5
+Revises: 6adee41cb531
 Create Date: 2022-10-28 18:08:50.677819
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = "bead88b41a20"
-down_revision = "f91c041d1d8d"
+down_revision = "6adee41cb531"
 branch_labels = None
 depends_on = None
 
@@ -62,7 +62,7 @@ def upgrade():
                 , is_current
                 , blockhash
                 , blocknumber
-                ,txhash
+                , txhash
             FROM playlists
             WHERE is_current
             GROUP BY
@@ -122,9 +122,10 @@ def upgrade():
                 ON c_playlists.playlist_id = nc.playlist_id
                 WHERE NOT nc.is_current
                 AND c_playlists.is_current
-                AND NOT nc.playlist_name = c_playlists.playlist_name
+                AND NOT LOWER(nc.playlist_name) = LOWER(c_playlists.playlist_name)
             ) p
-            WHERE p.rank = 1;
+            WHERE p.rank = 1
+            ON CONFLICT DO NOTHING;
             """
         )
     )

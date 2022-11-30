@@ -1,4 +1,9 @@
+const { logger } = require('../../logging')
 const models = require('../../models')
+const {
+  bulkGetSubscribersFromDiscovery,
+  shouldReadSubscribersFromDiscovery
+} = require('../utils')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 
 const getNotifType = (entityType) => {
@@ -28,24 +33,46 @@ const getNotifType = (entityType) => {
  * set of subscribers and dedpupe tracks in collections.
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transcation to attach to DB requests
+ * @param {*} optimizelyClient Optimizely client for feature flags
  */
-async function processCreateNotifications(notifications, tx) {
+async function processCreateNotifications(notifications, tx, optimizelyClient) {
   const validNotifications = []
+
+  // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
+  // from discovery for the initiators of create notifications.
+  const readSubscribersFromDiscovery =
+    shouldReadSubscribersFromDiscovery(optimizelyClient)
+  let userSubscribersMap = {}
+  if (readSubscribersFromDiscovery) {
+    const userIds = new Set(notifications.map((notif) => notif.initiator))
+    if (userIds.size > 0) {
+      userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
+    }
+  }
+
   for (const notification of notifications) {
+    // If the initiator is the main audius account, skip the notification
+    // NOTE: This is a temp fix to not stall identity service
+    if (notification.initiator === 51) {
+      continue
+    }
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const { createType, actionEntityType } = getNotifType(
       notification.metadata.entity_type
     )
 
-    // Query user IDs from subscriptions table
     // Notifications go to all users subscribing to this content uploader
-    const subscribers = await models.Subscription.findAll({
-      where: {
-        userId: notification.initiator
-      },
-      transaction: tx
-    })
+    let subscribers = userSubscribersMap[notification.initiator] || []
+    if (!readSubscribersFromDiscovery) {
+      // Query user IDs from subscriptions table
+      subscribers = await models.Subscription.findAll({
+        where: {
+          userId: notification.initiator
+        },
+        transaction: tx
+      })
+    }
 
     // No operation if no users subscribe to this creator
     if (subscribers.length === 0) continue
@@ -67,7 +94,10 @@ async function processCreateNotifications(notifications, tx) {
         : notification.metadata.entity_owner_id
 
     // Query all subscribers for a un-viewed notification - is no un-view notification exists a new one is created
-    const subscriberIds = subscribers.map((s) => s.subscriberId)
+    let subscriberIds = subscribers
+    if (!readSubscribersFromDiscovery) {
+      subscriberIds = subscribers.map((s) => s.subscriberId)
+    }
     const unreadSubscribers = await models.Notification.findAll({
       where: {
         isViewed: false,
@@ -77,13 +107,17 @@ async function processCreateNotifications(notifications, tx) {
       },
       transaction: tx
     })
-    const notificationIds = unreadSubscribers.map((notif) => notif.id)
     const unreadSubscribersUserIds = new Set(
       unreadSubscribers.map((s) => s.userId)
     )
     const subscriberIdsWithoutNotification = subscriberIds.filter(
       (s) => !unreadSubscribersUserIds.has(s)
     )
+    const subscriberIdsWithNotification = subscriberIds.filter((s) =>
+      unreadSubscribersUserIds.has(s)
+    )
+    logger.info(`got unread ${subscriberIdsWithoutNotification.length}`)
+
     if (subscriberIdsWithoutNotification.length > 0) {
       // Bulk create notifications for users that do not have a un-viewed notification
       const createTrackNotifTx = await models.Notification.bulkCreate(
@@ -101,40 +135,51 @@ async function processCreateNotifications(notifications, tx) {
           { transaction: tx }
         )
       )
-      notificationIds.push(...createTrackNotifTx.map((notif) => notif.id))
+      const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
+      await models.NotificationAction.bulkCreate(
+        createdNotificationIds.map((notificationId) => ({
+          notificationId,
+          actionEntityType: actionEntityType,
+          actionEntityId: createdActionEntityId,
+          blocknumber
+        })),
+        { transaction: tx }
+      )
     }
-
-    await Promise.all(
-      notificationIds.map(async (notificationId) => {
-        // Action entity id can be one of album/playlist/track
-        const notifActionCreateTx =
-          await models.NotificationAction.findOrCreate({
-            where: {
-              notificationId,
-              actionEntityType: actionEntityType,
-              actionEntityId: createdActionEntityId,
-              blocknumber
-            },
-            transaction: tx
-          })
-
-        // Update Notification table timestamp
-        const updatePerformed = notifActionCreateTx[1]
-        if (updatePerformed) {
-          await models.Notification.update(
-            {
-              timestamp
-            },
-            {
-              where: { id: notificationId },
-              returning: true,
-              plain: true,
-              transaction: tx
-            }
-          )
+    if (subscriberIdsWithNotification.length > 0) {
+      const createTrackNotifTx = await models.Notification.findAll({
+        where: {
+          userId: { [models.Sequelize.Op.in]: subscriberIdsWithNotification },
+          type: createType,
+          entityId: notificationEntityId
         }
       })
-    )
+      const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
+      await models.NotificationAction.bulkCreate(
+        createdNotificationIds.map((notificationId) => ({
+          notificationId,
+          actionEntityType: actionEntityType,
+          actionEntityId: createdActionEntityId,
+          blocknumber
+        })),
+        { transaction: tx }
+      )
+      await models.Notification.update(
+        {
+          timestamp
+        },
+        {
+          where: {
+            type: createType,
+            entityId: notificationEntityId,
+            id: { [models.Sequelize.Op.in]: createdNotificationIds }
+          },
+          returning: true,
+          plain: true,
+          transaction: tx
+        }
+      )
+    }
 
     // Dedupe album /playlist notification
     if (
@@ -157,6 +202,7 @@ async function processCreateNotifications(notifications, tx) {
         }
       }
     }
+
     validNotifications.push(notification)
   }
   return validNotifications

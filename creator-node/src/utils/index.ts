@@ -12,23 +12,27 @@ import {
   verifySignature,
   stringifyMap,
   isFqdn,
+  getCharsInRange,
+  getCharsInRanges,
   clearActiveJobs
 } from './utils'
 import {
   validateMetadata,
   validateAssociatedWallets
 } from './validateAudiusUserMetadata'
-import {
-  findCIDInNetwork,
-  verifyCIDMatchesExpected,
-  EMPTY_FILE_CID
-} from './cidUtils'
+import { verifyCIDMatchesExpected, EMPTY_FILE_CID } from './cidUtils'
 import {
   createDirForFile,
   writeStreamToFileSystem,
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
-  _streamFileToDiskHelper
+  _streamFileToDiskHelper,
+  deleteAttemptedStateFixes,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
@@ -40,7 +44,7 @@ import {
 import { clusterUtilsForPrimary } from './clusterUtilsForPrimary'
 import { clusterUtilsForWorker } from './clusterUtilsForWorker'
 
-export type { ValuesOf } from './utils'
+export * from './types'
 export {
   isFqdn,
   timeout,
@@ -48,7 +52,7 @@ export {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
+  deleteAttemptedStateFixes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -63,7 +67,15 @@ export {
   getConcurrencyPerWorker,
   clusterUtilsForPrimary,
   clusterUtilsForWorker,
-  clearActiveJobs
+  clearActiveJobs,
+  verifyCIDMatchesExpected,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }
 
 module.exports = {
@@ -73,7 +85,7 @@ module.exports = {
   verifySignature,
   currentNodeShouldHandleTranscode,
   validateStateForImageDirCIDAndReturnFileUUID,
-  findCIDInNetwork,
+  deleteAttemptedStateFixes,
   getIfAttemptedStateFix,
   createDirForFile,
   writeStreamToFileSystem,
@@ -90,5 +102,12 @@ module.exports = {
   getConcurrencyPerWorker,
   clusterUtilsForPrimary,
   clusterUtilsForWorker,
-  clearActiveJobs
+  clearActiveJobs,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }

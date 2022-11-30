@@ -246,7 +246,7 @@ export const fileHasher = {
       hrtime.bigint() - startHashing
     )
 
-    logger.info(
+    logger.debug(
       `[fileHasher - generateNonImageCid()] CID=${cid} hashDurationMs=${hashDurationMs}ms`
     )
 
@@ -270,7 +270,7 @@ export const fileHasher = {
     )
 
     const hashedImagesStr = JSON.stringify(hashedImages)
-    logger.info(
+    logger.debug(
       `[fileHasher - generateImageCids()] hashedImages=${hashedImagesStr} hashImagesDurationMs=${hashDurationMs}ms`
     )
     return hashedImages

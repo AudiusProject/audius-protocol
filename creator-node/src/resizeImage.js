@@ -6,7 +6,10 @@ const path = require('path')
 const { logger: genericLogger } = require('./logging')
 const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
-const DiskManager = require('./diskManager')
+const {
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
+} = require('./utils')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
@@ -143,7 +146,7 @@ module.exports = async (job) => {
   // return the CIDs and storage paths to write to db
   // in the main thread
   const dirCID = multihashes[multihashes.length - 1].cid
-  const dirDestPath = await DiskManager.computeFilePath(dirCID)
+  const dirDestPath = await computeFilePathAndEnsureItExists(dirCID)
 
   const resp = {
     dir: { dirCID, dirDestPath },
@@ -161,7 +164,7 @@ module.exports = async (job) => {
     await Promise.all(
       multihashesMinusDir.map(async (multihash, i) => {
         // Save file to disk
-        const destPath = await DiskManager.computeFilePathInDir(
+        const destPath = await computeFilePathInDirAndEnsureItExists(
           dirCID,
           multihash.cid
         )
