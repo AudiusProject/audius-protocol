@@ -64,7 +64,7 @@
     "@solana/spl-token": "0.1.8",
     "@solana/web3.js": "1.24.1",
     "react": "17.0.2",
-    "react-redux": "7.2.0",
+    "react-redux": "7.2.5",
     "redux": "4.0.5",
     "redux-saga": "1.1.3"
   }
