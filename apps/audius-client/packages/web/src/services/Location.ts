@@ -34,6 +34,9 @@ export const getLocation = async (): Promise<Location | null> => {
     }
     const res = await fetch('https://ipapi.co/json/')
     const json = await res.json()
+    if (json.error) {
+      throw new Error(json.reason)
+    }
     cachedLocation = {
       location: json,
       expires: Date.now() + CACHED_LOCATION_TTL_MS
