@@ -6,7 +6,6 @@ import time
 from decimal import Decimal
 from typing import Any, List, Optional, TypedDict
 
-from psycopg2.errors import IntegrityError
 from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, asc, desc, or_
@@ -52,7 +51,6 @@ USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
-MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 MIN_SIG = str(shared_config["solana"]["user_bank_backfill_min_sig"])
 
 # Used to find the correct accounts for sender/receiver in the transaction
@@ -61,6 +59,7 @@ TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 
 index_user_bank_backfill_tablename = "index_user_bank_backfill"
 index_user_bank_backfill_complete = "index_user_bank_backfill_complete"
+index_user_bank_backfill_min_slot = "index_user_bank_backfill_min_slot"
 
 
 # Recover ethereum public key from bytes array
@@ -78,15 +77,16 @@ def parse_eth_address_from_msg(msg: str):
     return public_key_str, public_key_bytes
 
 
-# Return highest user bank slot that has been processed
-def get_highest_user_bank_tx_slot(session: Session):
-    slot = MIN_SLOT
-    tx_query = (
-        session.query(UserBankBackfillTx.slot).order_by(desc(UserBankBackfillTx.slot))
+# Return lowest user bank signature and slot that has been processed
+def get_earliest_processed_tx(session: Session):
+    min_sig = (
+        session.query(
+            IndexingCheckpoint.signature, IndexingCheckpoint.last_checkpoint
+        ).filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
     ).first()
-    if tx_query:
-        slot = tx_query[0]
-    return slot
+    if not min_sig:
+        return None, None
+    return min_sig
 
 
 # Query a tx signature and confirm its existence
@@ -350,7 +350,7 @@ def parse_user_bank_transaction(
     solana_client_manager: SolanaClientManager,
     tx_sig,
 ):
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig, retries=10)
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
@@ -360,22 +360,14 @@ def parse_user_bank_transaction(
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
 
-    try:
-        process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
-        session.add(
-            UserBankBackfillTx(
-                signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp
-            )
-        )
-    except IntegrityError as e:
-        logger.error(
-            f"index_user_bank_backfill.py | Encountered duplicate: {tx_sig}, exception: {e}"
-        )
-    finally:
-        return (tx_info["result"], tx_sig)
+    process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
+    session.add(
+        UserBankBackfillTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
+    )
+    return (tx_info["result"], tx_sig)
 
 
-def process_user_bank_txs(stop_sig: str):
+def process_user_bank_txs():
     traverse_start = time.time()
     solana_client_manager: SolanaClientManager = (
         index_user_bank_backfill.solana_client_manager
@@ -394,101 +386,61 @@ def process_user_bank_txs(stop_sig: str):
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = []
 
-    last_tx_signature = stop_sig
-
-    # Loop exit condition
-    intersection_found = False
-
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
-        latest_processed_slot = get_highest_user_bank_tx_slot(session)
-        logger.info(f"index_user_bank_backfill.py | high tx = {latest_processed_slot}")
-        while not intersection_found:
+        earliest_processed_sig, earliest_processed_slot = get_earliest_processed_tx(
+            session
+        )
+        logger.info(
+            f"index_user_bank_backfill.py | high tx = {earliest_processed_sig}, slot = {earliest_processed_slot}"
+        )
+
+        while len(transaction_signatures) < TX_SIGNATURES_MAX_BATCHES:
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS,
-                before=last_tx_signature,
+                before=earliest_processed_sig,
                 limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
-                retries=20,
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
-                intersection_found = True
                 logger.info(
-                    f"index_user_bank_backfill.py | No transactions found before {last_tx_signature}, got {transactions_array}"
+                    f"index_user_bank_backfill.py | No transactions found before {earliest_processed_sig}, got {transactions_array}"
                 )
-                if last_tx_signature != MIN_SIG:
-                    raise Exception(
-                        f"No transactions found before {last_tx_signature}, but there should be. Restarting."
+                if earliest_processed_sig != MIN_SIG:
+                    logger.error(
+                        f"No transactions found before {earliest_processed_sig}, but there should be"
                     )
+                break
             else:
                 logger.info(
                     f"index_user_bank_backfill.py | Adding to batch slot: {transactions_array[0]['slot']}"
                 )
-                # Current batch of transactions
-                transaction_signature_batch = []
-                for tx_info in transactions_array:
-                    tx_sig = tx_info["signature"]
-                    tx_slot = tx_info["slot"]
-                    logger.debug(
-                        f"index_user_bank_backfill.py | Processing tx={tx_sig} | slot={tx_slot}"
-                    )
-                    if tx_info["slot"] > latest_processed_slot:
-                        transaction_signature_batch.append(tx_sig)
-                    elif (
-                        tx_info["slot"] <= latest_processed_slot
-                        and tx_info["slot"] > MIN_SLOT
-                    ):
-                        # Check the tx signature for any txs in the latest batch,
-                        # and if not present in DB, add to processing
-                        logger.info(
-                            f"index_user_bank_backfill.py | Latest slot re-traversal\
-                            slot={tx_slot}, sig={tx_sig},\
-                            latest_processed_slot(db)={latest_processed_slot}"
-                        )
-                        exists = get_tx_in_db(session, tx_sig)
-                        if exists:
-                            intersection_found = True
-                            break
-                        # Ensure this transaction is still processed
-                        transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
-                last_tx = transactions_array[-1]
-                last_tx_signature = last_tx["signature"]
+                earliest_tx = transactions_array[-1]
+                earliest_processed_sig = earliest_tx["signature"]
 
                 # Append batch of processed signatures
-                if transaction_signature_batch:
-                    transaction_signatures.append(transaction_signature_batch)
-
-                # Ensure processing does not grow unbounded
-                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    prev_len = len(transaction_signatures)
-                    # Only take the oldest transaction from the transaction_signatures array
-                    # transaction_signatures is sorted from newest to oldest
-                    transaction_signatures = transaction_signatures[
-                        -TX_SIGNATURES_RESIZE_LENGTH:
-                    ]
-                    logger.info(
-                        f"index_user_bank_backfill.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
-                    )
+                transaction_signature_batch = [
+                    tx["signature"] for tx in transactions_array
+                ]
+                transaction_signatures.append(transaction_signature_batch)
 
     traverse_end = time.time()
     logger.info(
         f"index_user_bank_backfill.py | took {traverse_end - traverse_start}s to traverse"
     )
 
-    # Reverse batches aggregated so oldest transactions are processed first
-    transaction_signatures.reverse()
-
-    last_tx_sig: Optional[str] = None
-    last_tx = None
-    if transaction_signatures and transaction_signatures[-1]:
-        last_tx_sig = transaction_signatures[-1][0]
-
+    earliest_tx_sig: Optional[str] = None
+    total_batch_start_time = time.time()
     num_txs_processed = 0
     for tx_sig_batch in transaction_signatures:
+        earliest_tx = None
+        if tx_sig_batch:
+            earliest_tx_sig = tx_sig_batch[-1]
         logger.info(f"index_user_bank_backfill.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
+
         # Process each batch in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             with db.scoped_session() as session:
@@ -505,15 +457,43 @@ def process_user_bank_txs(stop_sig: str):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         tx_info, tx_sig = future.result()
-                        if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                            last_tx = tx_info
+                        if tx_info and earliest_tx_sig and earliest_tx_sig == tx_sig:
+                            earliest_tx = tx_info
 
                         num_txs_processed += 1
                     except Exception as exc:
+                        futures_cancelled = 0
+                        for future_to_cancel in parse_sol_tx_futures:
+                            future_to_cancel.cancel()
+                            futures_cancelled += 1
                         logger.error(
-                            f"index_user_bank_backfill.py | error {exc}", exc_info=True
+                            f"index_user_bank_backfill.py | error in future, cancelled {futures_cancelled} futures. {exc}",
+                            exc_info=True,
                         )
-                        raise
+                        raise exc
+
+                # Checkpoint earliest processed signature
+                record = (
+                    session.query(IndexingCheckpoint)
+                    .filter(
+                        IndexingCheckpoint.tablename
+                        == index_user_bank_backfill_tablename
+                    )
+                    .first()
+                )
+                earliest_slot = earliest_tx["slot"]
+                if record:
+                    record.last_checkpoint = earliest_slot
+                    record.signature = earliest_tx_sig
+                else:
+                    logger.error(
+                        f"index_user_bank_backfill.py | Indexing checkpoint did not exist"
+                    )
+                    raise Exception("Indexing checkpoint did not exist")
+                logger.info(
+                    f"index_user_bank_backfill.py | Checkpointing earliest sig: {earliest_tx_sig} slot: {earliest_slot}"
+                )
+                session.add(record)
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
@@ -521,44 +501,45 @@ def process_user_bank_txs(stop_sig: str):
             f"index_user_bank_backfill.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
+    total_batch_end_time = time.time()
+    total_batch_time = total_batch_end_time - total_batch_start_time
+    logger.info(
+        f"index_user_bank_backfill.py | processed {len(transaction_signatures)} total batches in {total_batch_time}s"
+    )
+
 
 def check_if_backfilling_complete(
-    session: Session, solana_client_manager: SolanaClientManager, redis: Redis
+    earliest_program_slot: int,
+    session: Session,
+    solana_client_manager: SolanaClientManager,
+    redis: Redis,
 ) -> bool:
     try:
         redis_complete = bool(redis.get(index_user_bank_backfill_complete))
         if redis_complete:
             return True
 
-        stop_sig_tuple = (
-            session.query(IndexingCheckpoint.signature)
+        earliest_processed_tuple = (
+            session.query(
+                IndexingCheckpoint.signature, IndexingCheckpoint.last_checkpoint
+            )
             .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
             .first()
         )
-        if not stop_sig_tuple:
+        if not earliest_processed_tuple:
             logger.error(
-                "index_user_bank_backfill.py | Tried to check if complete, but no stop_sig"
+                "index_user_bank_backfill.py | Tried to check if complete, but no signature checkpointed"
             )
             return False
-        stop_sig = stop_sig_tuple[0]
+        earliest_processed_sig = earliest_processed_tuple[0]
+        earliest_processed_slot = earliest_processed_tuple[1]
 
-        one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
-            USER_BANK_ADDRESS, before=stop_sig, limit=1, retries=20
-        )
-        if not one_sig_before_stop_result:
-            logger.error("index_user_bank_backfill.py | No sigs before stop_sig")
-            return False
-        one_sig_before_stop_result = one_sig_before_stop_result["result"][0]
-        one_sig_before_stop = one_sig_before_stop_result["signature"]
-
-        sig_before_stop_in_db = (
-            session.query(UserBankBackfillTx)
-            .filter(UserBankBackfillTx.signature == one_sig_before_stop)
-            .first()
-        )
-        complete = bool(sig_before_stop_in_db)
+        complete = earliest_processed_sig == MIN_SIG
         if complete:
             redis.set(index_user_bank_backfill_complete, int(complete))
+        logger.debug(
+            f"index_user_bank_backfill.py | Checking for completion, earliest processed tx sig={earliest_processed_sig} slot={earliest_processed_slot}, {earliest_processed_slot - earliest_program_slot} slots left"
+        )
         return complete
     except Exception as e:
         logger.error(
@@ -568,10 +549,13 @@ def check_if_backfilling_complete(
         raise e
 
 
-def find_true_stop_sig(
-    session: Session, solana_client_manager: SolanaClientManager, stop_sig: str
+# This should only run once - the first time this backfiller starts up, indexing_checkpoints
+# table will not contain a row pertaining to this backfiller, so we populate it with the
+# earliest signature from audio_transactions_history table.
+def find_earliest_audio_tx_hist_tx(
+    session: Session, solana_client_manager: SolanaClientManager
 ) -> str:
-    stop_sig_and_slot = (
+    earliest_sig_and_slot = (
         session.query(AudioTransactionsHistory.slot, AudioTransactionsHistory.signature)
         .filter(
             or_(
@@ -586,84 +570,78 @@ def find_true_stop_sig(
         .order_by(asc(AudioTransactionsHistory.slot))
     ).first()
 
-    if not stop_sig_and_slot:
+    if not earliest_sig_and_slot:
+        logger.info(
+            "index_user_bank_backfill.py | No relevant tx in audio_transactions_history yet."
+        )
         return ""
-    stop_sig = stop_sig_and_slot[1]
-    stop_sig_slot = stop_sig_and_slot[0]
+    earliest_sig = earliest_sig_and_slot[1]
+    earliest_slot = earliest_sig_and_slot[0]
 
-    # Traverse backwards 1-by-1 from the min sig from audio_transactions_history table.
-    # When we find a sig that is not in the table, then the sig after that is the true
-    # stop sig.
+    # Traverse backwards 1-by-1 in time descending order from the earliest sig from
+    # audio_transactions_history table. When we encounter a sig that is not in the table,
+    # then the sig after that is the true earliest sig. This is necessary because ordering
+    # in audio_transactions_history db is not necessarily the same as Solana transaction
+    # ordering. Avoid an infinite loop by limiting to 100 hops.
     count = 100
     while count:
-        tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
-            USER_BANK_ADDRESS, before=stop_sig, limit=1, retries=20
+        tx_before_earliest_sig = solana_client_manager.get_signatures_for_address(
+            USER_BANK_ADDRESS, before=earliest_sig, limit=1
         )
-        if tx_before_stop_sig:
-            tx_before_stop_sig = tx_before_stop_sig["result"][0]
-        if get_tx_in_audio_tx_history(session, tx_before_stop_sig["signature"]):
-            stop_sig = tx_before_stop_sig["signature"]
-            stop_sig_slot = tx_before_stop_sig["slot"]
+        if tx_before_earliest_sig:
+            tx_before_earliest_sig = tx_before_earliest_sig["result"][0]
+        if get_tx_in_audio_tx_history(session, tx_before_earliest_sig["signature"]):
+            earliest_sig = tx_before_earliest_sig["signature"]
+            earliest_slot = tx_before_earliest_sig["slot"]
         else:
             break
         count -= 1
     if not count:
         return ""
 
-    session.add(
-        IndexingCheckpoint(
-            tablename=index_user_bank_backfill_tablename,
-            last_checkpoint=stop_sig_slot,
-            signature=stop_sig,
-        )
-    )
-    logger.info(
-        f"index_user_bank_backfill.py | Added new stop_sig to indexing_checkpoints: {stop_sig}"
-    )
-    return stop_sig
-
-
-def check_progress(session: Session):
-    stop_row = (
+    record = (
         session.query(IndexingCheckpoint)
         .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
         .first()
     )
-    if not stop_row:
-        return None
-    ret: Any = {}
-    ret["stop_slot"] = stop_row.last_checkpoint
-    ret["stop_sig"] = stop_row.signature
-    latest_processed_row = (
-        session.query(UserBankBackfillTx)
-        .order_by(desc(UserBankBackfillTx.slot))
+    if record:
+        logger.error(
+            f"index_user_bank_backfill.py | Tried to add new earliest_sig to IndexingCheckpoints table but there already is one! new stop sig: {stop_sig}"
+        )
+    session.add(
+        IndexingCheckpoint(
+            tablename=index_user_bank_backfill_tablename,
+            last_checkpoint=earliest_slot,
+            signature=earliest_sig,
+        )
+    )
+    logger.info(
+        f"index_user_bank_backfill.py | Added new earliest_sig to indexing_checkpoints: {earliest_sig}"
+    )
+    return earliest_sig
+
+
+def check_progress(session: Session, redis: Redis):
+    earliest_processed_row = (
+        session.query(IndexingCheckpoint)
+        .filter(IndexingCheckpoint.tablename == index_user_bank_backfill_tablename)
         .first()
     )
-    if not latest_processed_row:
-        return ret
-    ret["latest_processed_sig"] = latest_processed_row.signature
-    ret["latest_processed_slot"] = latest_processed_row.slot
-    min_row = (
-        session.query(AudioTransactionsHistory)
-        .filter(
-            and_(
-                or_(
-                    AudioTransactionsHistory.transaction_type == TransactionType.tip,
-                    and_(
-                        AudioTransactionsHistory.transaction_type
-                        == TransactionType.transfer,
-                        AudioTransactionsHistory.method == TransactionMethod.send,
-                    ),
-                ),
-                AudioTransactionsHistory.slot < ret["stop_slot"],
-            )
+    if not earliest_processed_row:
+        return None
+    ret: Any = {}
+    ret["earliest_processed_sig"] = earliest_processed_row.signature
+    ret["earliest_processed_slot"] = earliest_processed_row.last_checkpoint
+    ret["earliest_program_sig"] = MIN_SIG
+    earliest_program_slot = redis.get(index_user_bank_backfill_min_slot)
+    if earliest_program_slot:
+        earliest_program_slot = int(earliest_program_slot)
+        ret["earliest_program_slot"] = earliest_program_slot
+        ret["slots_left"] = (
+            earliest_processed_row.last_checkpoint - earliest_program_slot
         )
-        .order_by(asc(AudioTransactionsHistory.slot))
-    ).first()
-    if not min_row:
-        return ret
-    ret["min_slot"] = min_row.slot
-    ret["min_sig"] = min_row.signature
+    txs_traversed = session.query(UserBankBackfillTx).count()
+    ret["txs_traversed"] = txs_traversed
     return ret
 
 
@@ -685,34 +663,22 @@ def index_user_bank_backfill(self):
     solana_client_manager = index_user_bank_backfill.solana_client_manager
 
     try:
-        with db.scoped_session() as session:
-            stop_sig = (
-                session.query(IndexingCheckpoint.signature)
-                .filter(
-                    IndexingCheckpoint.tablename == index_user_bank_backfill_tablename
-                )
-                .first()
-            )
-            if not stop_sig:
-                stop_sig = find_true_stop_sig(session, solana_client_manager, stop_sig)
-                if not stop_sig:
-                    logger.info(
-                        "index_user_bank_backfill.py | Failed to find true stop signature"
-                    )
-                    return
-                logger.info(
-                    f"index_user_bank_backfill.py | Found true stop_sig: {stop_sig}"
-                )
-            else:
-                stop_sig = stop_sig[0]
+        earliest_program_slot = redis.get(index_user_bank_backfill_min_slot)
+        # Fetch earliest program slot for use in check_progress() (used by get_health.py)
+        if not earliest_program_slot:
+            earliest_tx_info = solana_client_manager.get_sol_tx_info(MIN_SIG)
+            earliest_program_slot = earliest_tx_info["result"]["slot"]
+            if earliest_tx_info:
+                redis.set(index_user_bank_backfill_min_slot, earliest_program_slot)
+        earliest_program_slot = int(earliest_program_slot)
 
-            if not stop_sig:
-                logger.info(
-                    f"index_user_bank_backfill.py | No stop_sig found: {stop_sig}"
-                )
+        with db.scoped_session() as session:
+            if not find_earliest_audio_tx_hist_tx(session, solana_client_manager):
                 return
 
-            if check_if_backfilling_complete(session, solana_client_manager, redis):
+            if check_if_backfilling_complete(
+                earliest_program_slot, session, solana_client_manager, redis
+            ):
                 logger.info("index_user_bank_backfill.py | Backfill indexing complete!")
                 return
 
@@ -720,10 +686,10 @@ def index_user_bank_backfill(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             process_start = time.time()
-            process_user_bank_txs(stop_sig)
+            process_user_bank_txs()
             process_end = time.time()
             logger.info(
-                f"index_user_bank_backfill.py | full job done in {process_end - process_start}s"
+                f"index_user_bank_backfill.py | full task done in {process_end - process_start}s"
             )
         else:
             logger.info("index_user_bank_backfill.py | Failed to acquire lock")
@@ -733,7 +699,7 @@ def index_user_bank_backfill(self):
             f"index_user_bank_backfill.py | Fatal error in main loop: {e}",
             exc_info=True,
         )
-        # raise e
+        raise e
     finally:
         if have_lock:
             update_lock.release()

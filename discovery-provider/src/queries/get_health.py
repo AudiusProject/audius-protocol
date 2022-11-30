@@ -426,11 +426,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
         db = db_session.get_db_read_replica()
         with db.scoped_session() as session:
-            spl_token_backfill_progress = spl_token_backfill_check_progress(session)
-            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
-                session
+            user_bank_backfill_progress = user_bank_backfill_check_progress(
+                session, redis
             )
-            user_bank_backfill_progress = user_bank_backfill_check_progress(session)
+            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
+                session, redis
+            )
+            spl_token_backfill_progress = spl_token_backfill_check_progress(
+                session, redis
+            )
 
         health_results["transactions_history_backfill_progress"] = {
             "user_bank_backfilling_progress": user_bank_backfill_progress,
