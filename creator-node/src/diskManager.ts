@@ -25,8 +25,6 @@ import {
   getCharsInRanges
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
-import { getReplicaSetEndpointsByCnodeUserUuid } from './services/ContentNodeInfoManager'
-import initAudiusLibs from './services/initAudiusLibs'
 
 const models = require('./models')
 
@@ -584,22 +582,13 @@ async function _migrateFileWithCustomStoragePath(
   logger: Logger
 ) {
   const fetchStartTime = getStartTime()
-  const replicaSet = await getReplicaSetEndpointsByCnodeUserUuid({
-    libs: await initAudiusLibs({ logger }),
-    cnodeUserUuid: fileRecord.cnodeUserUUID,
-    parentLogger: logger
-  })
   // Will retry internally
   const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
     {}, // libs param is unused, so empty object is sufficient
     logger,
     fileRecord.multihash,
     fileRecord.dirMultihash,
-    [
-      replicaSet.primary,
-      replicaSet.secondary1,
-      replicaSet.secondary2
-    ] /** targetGateways */,
+    [] /** targetGateways - empty to try all nodes */,
     fileRecord.fileName,
     fileRecord.trackBlockchainId,
     2 /** numRetries */
@@ -670,7 +659,7 @@ async function _migrateFilesWithCustomStoragePaths(
           if (success) numFilesMigratedSuccessfully++
           else numFilesFailedToMigrate++
 
-          // Add delay between calls since each call will make an internal request to every node in the user's replica set
+          // Add delay between calls since each call will make an internal request to every node
           await timeout(1000)
         }
         metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)

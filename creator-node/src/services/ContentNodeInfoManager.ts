@@ -20,7 +20,6 @@ import defaultRedisClient from '../redis'
 import { timeout } from '../utils'
 import { asyncRetry } from '../utils/asyncRetry'
 import config from '../config'
-import DbManager from '../dbManager'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
@@ -327,15 +326,6 @@ export async function getReplicaSetEndpointsByWallet({
   return replicaSetEndpoints
 }
 
-export async function getReplicaSetEndpointsByCnodeUserUuid({
-  libs,
-  cnodeUserUuid,
-  parentLogger
-}: GetReplicaSetEndpointsByCnodeUserUuidParams): Promise<ReplicaSetEndpoints> {
-  const wallet = await DbManager.getWalletFromCnodeUserUuid(cnodeUserUuid)
-  return getReplicaSetEndpointsByWallet({ libs, wallet, parentLogger })
-}
-
 export async function getReplicaSetEndpointsByUserId({
   libs,
   userId,
@@ -540,11 +530,6 @@ export type GetReplicaSetSpIdsByUserIdParams = {
 export type GetReplicaSetEndpointsByWalletParams = {
   libs: any
   wallet: string
-  parentLogger: Logger
-}
-export type GetReplicaSetEndpointsByCnodeUserUuidParams = {
-  libs: any
-  cnodeUserUuid: string
   parentLogger: Logger
 }
 export type GetReplicaSetEndpointsByUserIdParams = {
