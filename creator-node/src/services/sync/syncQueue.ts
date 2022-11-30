@@ -4,7 +4,11 @@ import type { LogContext } from '../../utils'
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
-import { clusterUtils } from '../../utils'
+import {
+  clusterUtilsForWorker,
+  getConcurrencyPerWorker,
+  clearActiveJobs
+} from '../../utils'
 import { instrumentTracing, tracing } from '../../tracer'
 import {
   logger,
@@ -65,8 +69,8 @@ export class SyncQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-    if (clusterUtils.isThisWorkerInit()) {
-      await this.deleteOldActiveJobs()
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
     }
 
     /**
@@ -106,7 +110,7 @@ export class SyncQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }
@@ -115,16 +119,6 @@ export class SyncQueue {
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }
-  }
-
-  private async deleteOldActiveJobs() {
-    // safe null check assuming `init()` is called after constructor
-    // (which it should be)
-    const oldActiveJobs = await this.queue!.getJobs(['active'])
-    logger.info(
-      `[sync-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
-    )
-    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
   }
 
   private async processTask(job: Job) {

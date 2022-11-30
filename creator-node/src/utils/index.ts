@@ -13,7 +13,8 @@ import {
   stringifyMap,
   isFqdn,
   getCharsInRange,
-  getCharsInRanges
+  getCharsInRanges,
+  clearActiveJobs
 } from './utils'
 import {
   validateMetadata,
@@ -35,7 +36,13 @@ import {
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
-import { clusterUtils } from './clusterUtils'
+import {
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker
+} from './cluster/clusterUtils'
+import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
 
 export * from './types'
 export {
@@ -55,7 +62,12 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils,
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs,
   verifyCIDMatchesExpected,
   ensureDirPathExists,
   computeFilePath,
@@ -85,7 +97,12 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils,
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs,
   ensureDirPathExists,
   computeFilePath,
   computeFilePathInDir,
