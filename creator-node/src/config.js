@@ -287,6 +287,7 @@ const config = convict({
     env: 'expressAppConcurrency',
     default: 0
   },
+  // Set this to false when trying to use the debugger
   clusterModeEnabled: {
     doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
     format: Boolean,
@@ -924,5 +925,9 @@ const asyncConfig = async () => {
 }
 
 config.asyncConfig = asyncConfig
+
+// Disable cluster for tests because they only have 1 process
+const isInTest = typeof global.it === 'function'
+if (isInTest) config.set('clusterModeEnabled', false)
 
 module.exports = config
