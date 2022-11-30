@@ -427,6 +427,22 @@ export async function sweepSubdirectoriesInFiles(
     return sweepSubdirectoriesInFiles()
 }
 
+async function _touch(path: string) {
+  return new Promise((resolve, reject) => {
+    const now = new Date()
+    // Set mtime to now, and on error (file not found) create new file which will by default have mtime of now
+    fs.utimes(path, now, now, (err) => {
+      if (err) {
+        return fs.open(path, 'w', (err, fd) => {
+          if (err) return reject(err)
+          fs.close(fd, (err) => (err ? reject(err) : resolve(fd)))
+        })
+      }
+      resolve(null)
+    })
+  })
+}
+
 async function _copyLegacyFiles(
   legacyPathsAndCids: { storagePath: string; cid: string }[],
   prometheusRegistry: any,
@@ -459,20 +475,23 @@ async function _copyLegacyFiles(
           )
         : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
 
-      // Copy to new path if it doesn't already exist
-      if (!(await fs.pathExists(nonLegacyPath))) {
-        try {
-          await fs.copyFile(legacyPath, nonLegacyPath)
-        } catch (e: any) {
-          // If we see a ENOSPC error, log out the disk space and inode details from the system
-          if (e.message.includes('ENOSPC')) {
-            await Promise.all([
-              runShellCommand(`df`, ['-h'], logger),
-              runShellCommand(`df`, ['-ih'], logger)
-            ])
-          }
-          throw e
+      // Copy to new path, overwriting if it already exists
+      try {
+        // Set the file's mtime to now so disk pruning doesn't delete it before we update db
+        await _touch(nonLegacyPath)
+        await fs.copyFile(legacyPath, nonLegacyPath)
+        // Update mtime again just in case copyFile changed it
+        const now = new Date()
+        await fs.utimes(nonLegacyPath, now, now)
+      } catch (e: any) {
+        // If we see a ENOSPC error, log out the disk space and inode details from the system
+        if (e.message.includes('ENOSPC')) {
+          await Promise.all([
+            runShellCommand(`df`, ['-h'], logger),
+            runShellCommand(`df`, ['-ih'], logger)
+          ])
         }
+        throw e
       }
 
       // Verify that the correct contents were copied

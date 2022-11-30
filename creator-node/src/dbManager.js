@@ -517,13 +517,6 @@ class DBManager {
     }
     return false
   }
-
-  static async getWalletFromCnodeUserUuid(cnodeUserUuid) {
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { cnodeUserUUID: cnodeUserUuid }
-    })
-    return cnodeUser.walletPublicKey
-  }
 }
 
 /**
