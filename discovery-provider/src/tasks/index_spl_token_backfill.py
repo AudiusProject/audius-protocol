@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Set, Tuple, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy import and_, asc, or_
 from sqlalchemy.orm.session import Session
 from src.exceptions import UnsupportedVersionError
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
@@ -25,7 +25,6 @@ from src.models.users.user_bank import UserBankAccount
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
@@ -356,7 +355,7 @@ def parse_sol_tx_batch(
             record.signature = earliest_sig
         else:
             logger.error(
-                f"index_spl_token_backfill.py | Indexing checkpoint did not exist"
+                "index_spl_token_backfill.py | Indexing checkpoint did not exist"
             )
             raise Exception("Indexing checkpoint did not exist")
         logger.info(
@@ -403,8 +402,7 @@ def process_spl_token_tx(
             f"index_spl_token_backfill.py | high tx = {earliest_processed_sig}, slot = {earliest_processed_slot}"
         )
 
-    while len(transaction_signatures) < 10:
-        # while len(transaction_signatures) < TX_SIGNATURES_MAX_BATCHES:
+    while len(transaction_signatures) < TX_SIGNATURES_MAX_BATCHES:
         logger.info(f"Requesting transactions before {earliest_processed_sig}")
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,

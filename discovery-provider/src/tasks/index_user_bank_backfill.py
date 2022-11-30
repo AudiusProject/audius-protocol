@@ -8,7 +8,7 @@ from typing import Any, List, Optional, TypedDict
 
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy import and_, asc, or_
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.users.audio_transactions_history import (
@@ -22,7 +22,6 @@ from src.models.users.user_bank_backfill import UserBankBackfillTx
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_parser import (
@@ -487,7 +486,7 @@ def process_user_bank_txs():
                     record.signature = earliest_tx_sig
                 else:
                     logger.error(
-                        f"index_user_bank_backfill.py | Indexing checkpoint did not exist"
+                        "index_user_bank_backfill.py | Indexing checkpoint did not exist"
                     )
                     raise Exception("Indexing checkpoint did not exist")
                 logger.info(
@@ -606,7 +605,7 @@ def find_earliest_audio_tx_hist_tx(
     )
     if record:
         logger.error(
-            f"index_user_bank_backfill.py | Tried to add new earliest_sig to IndexingCheckpoints table but there already is one! new stop sig: {stop_sig}"
+            f"index_user_bank_backfill.py | Tried to add new earliest_sig to IndexingCheckpoints table but there already is one! new earliest sig: {earliest_sig}"
         )
     session.add(
         IndexingCheckpoint(
