@@ -2,8 +2,9 @@ const { logger } = require('../../logging')
 const moment = require('moment-timezone')
 const models = require('../../models')
 const { sequelize, Sequelize } = require('../../models')
+const { LogTimer } = require('../../utils/logTimer')
 
-const logPrefix = 'notifications playlist updates -'
+const logPrefix = 'notifications playlist updates'
 
 /**
  * Process playlist update notifications
@@ -16,6 +17,7 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
    * keep track of last playlist updates for each user that favorited playlists
    * e.g. { user1: { playlist1: <timestamp1>, playlist2: <timestamp2>, ... }, ... }
    */
+  const logTimer = new LogTimer(logPrefix)
   const startTime = Date.now()
   logger.info(
     `${logPrefix} num notifications: ${notifications.length}, start: ${startTime}`
@@ -28,6 +30,11 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
       playlist_update_timestamp: playlistUpdatedAt,
       playlist_update_users: userIds
     } = metadata
+    // If playlist if Hot and New skip playlist update notification
+    // NOTE: This is a temporary fix
+    if (playlistId === 4281) {
+      return
+    }
     userIds.forEach((userId) => {
       if (userPlaylistUpdatesMap[userId]) {
         userPlaylistUpdatesMap[userId][playlistId] = playlistUpdatedAt
@@ -36,14 +43,13 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
       }
     })
   })
-
   const userIds = Object.keys(userPlaylistUpdatesMap)
   logger.info(
     `${logPrefix} parsed notifications, num user ids: ${
       userIds.length
     }, time: ${Date.now() - startTime}ms`
   )
-
+  logTimer.startTime('fetch users and updates')
   // get wallets for all user ids and map each blockchain user id to their wallet
   const userIdsAndWallets = await models.User.findAll({
     attributes: ['blockchainUserId', 'walletAddress'],
@@ -64,8 +70,6 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
     userIdToWalletsMap[blockchainUserId] = walletAddress
   }
 
-  logger.info(`${logPrefix} made wallet map, time: ${Date.now() - startTime}ms`)
-
   // get playlist updates for all wallets and map each wallet to its playlist updates
   const userWalletsAndPlaylistUpdates = await models.UserEvents.findAll({
     attributes: ['walletAddress', 'playlistUpdates'],
@@ -74,8 +78,8 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
     },
     transaction: tx
   })
-
-  logger.info(`${logPrefix} found updates, time: ${Date.now() - startTime}ms`)
+  logTimer.endTime('fetch users and updates')
+  logTimer.startTime('update playlist in user events')
 
   const userWalletToPlaylistUpdatesMap = {}
   for (const {
@@ -115,8 +119,6 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
     })
     .filter(Boolean)
 
-  logger.info(`${logPrefix} mapped events, time: ${Date.now() - startTime}ms`)
-
   const results = await sequelize.query(
     `
     INSERT INTO "UserEvents" ("walletAddress", "playlistUpdates", "createdAt", "updatedAt")
@@ -130,7 +132,15 @@ async function processPlaylistUpdateNotifications(notifications, tx) {
     }
   )
 
+  logTimer.endTime('update playlist in user events')
+  logTimer.addContext('userIdsAndWallets', userIdsAndWallets.length)
+  logTimer.addContext('rows', results.length)
+  logTimer.addContext('newUserEvents', newUserEvents.length)
+  logTimer.addContext('notifications', notifications.length)
+  logTimer.addContext('userIds', userIds.length)
+
   logger.info(
+    logTimer.getContext(),
     `${logPrefix} bulk upserted updates, rows: ${results}, time: ${
       Date.now() - startTime
     }ms`

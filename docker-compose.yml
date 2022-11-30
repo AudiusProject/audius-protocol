@@ -73,6 +73,7 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
@@ -253,6 +254,9 @@ services:
       redisHost: "identity-service-redis"
       redisPort: 6379
 
+      aaoEndpoint: "http://anti-abuse-oracle:8000"
+      aaoAddress: "${AAO_WALLET_ADDRESS}"
+
       web3Provider: "http://poa-ganache:8545"
       secondaryWeb3Provider: "http://poa-ganache:8545"
       registryAddress: "${POA_REGISTRY_ADDRESS}"
@@ -386,6 +390,7 @@ services:
       rateLimitingBatchCidsExistLimit: 1
       maxAudioFileSizeBytes: 250000000
       maxMemoryFileSizeBytes: 50000000
+      expressAppConcurrency: 2
 
       identityService: "http://identity-service:7000"
 
@@ -415,6 +420,7 @@ services:
       replicas: "${CREATOR_NODE_REPLICAS}"
 
   # port forwarder
+  # required for getting consistent port mappings
 
   port-forwarder:
     image: alpine:3.16.0
@@ -433,13 +439,15 @@ services:
 
   sshuttle-server:
     image: linuxserver/openssh-server:latest # don't pin
-    command: bash -c "apk add python3 && sleep inf"
+    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
     environment:
       PASSWORD_ACCESS: "true"
       USER_NAME: "sshuttle"
       USER_PASSWORD: "sshuttle"
     ports:
       - "2222:2222"
+    volumes:
+      - ./dev-tools/:/tmp/dev-tools
 
 volumes:
   poa-contracts-abis:

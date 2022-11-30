@@ -11,6 +11,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -79,7 +80,9 @@ def entity_manager_update(
         )
 
         # collect events by entity type and action
-        entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
+        entities_to_fetch = collect_entities_to_fetch(
+            update_task, entity_manager_txs, metadata
+        )
 
         # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
@@ -183,7 +186,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
+                        f"entity_manager.py | failed to process {params.action} {params.entity_type} tx error {e} | with event {event}"
                     )
                     metric_num_errors.save_time(
                         {"entity_type": params.entity_type}, start_time=start_time_tx
@@ -198,6 +201,9 @@ def entity_manager_update(
                 # invalidate all new records except the last
                 for record in records:
                     record.is_current = False
+
+                    if "updated_at" in record.__dict__:
+                        record.updated_at = params.block_datetime
                 records[-1].is_current = True
                 records_to_save.extend(records)
 
@@ -240,10 +246,7 @@ def copy_original_records(existing_records):
 entity_types_to_fetch = set([EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST])
 
 
-def collect_entities_to_fetch(
-    update_task,
-    entity_manager_txs,
-):
+def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
@@ -257,11 +260,23 @@ def collect_entities_to_fetch(
             entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
 
-            # Query follow operations as needed
+            # Query social operations as needed
             if action in action_to_record_type.keys():
                 record_type = action_to_record_type[action]
                 entity_key = get_record_key(user_id, entity_type, entity_id)
                 entities_to_fetch[record_type].add(entity_key)
+
+            # Add playlist track ids in entities to fetch
+            # to prevent playlists from including premium tracks
+            metadata_cid = helpers.get_tx_arg(event, "_metadata")
+            if metadata_cid in metadata:
+                tracks = (
+                    metadata[metadata_cid]
+                    .get("playlist_contents", {})
+                    .get("track_ids", [])
+                )
+                for track in tracks:
+                    entities_to_fetch[EntityType.TRACK].add(track["track"])
 
     return entities_to_fetch
 
@@ -376,6 +391,31 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 repost.user_id, repost.repost_type, repost.repost_item_id
             ): repost
             for repost in reposts
+        }
+
+    # SUBSCRIPTIONS
+    if entities_to_fetch[EntityType.SUBSCRIPTION]:
+        subscriptions_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.SUBSCRIPTION]
+        and_queries = []
+        for subscription_to_fetch in subscriptions_to_fetch:
+            user_id = subscription_to_fetch[0]
+            # subscriptions does not need entity type in subscription_to_fetch[1]
+            entity_id = subscription_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Subscription.subscriber_id == user_id,
+                    Subscription.user_id == entity_id,
+                    Subscription.is_current == True,
+                )
+            )
+        subscriptions: List[Subscription] = (
+            session.query(Subscription).filter(or_(*and_queries)).all()
+        )
+        existing_entities[EntityType.SUBSCRIPTION] = {
+            get_record_key(
+                subscription.subscriber_id, EntityType.USER, subscription.user_id
+            ): subscription
+            for subscription in subscriptions
         }
 
     return existing_entities

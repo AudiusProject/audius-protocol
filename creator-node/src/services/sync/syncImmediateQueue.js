@@ -1,6 +1,10 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
 
-const { clusterUtils } = require('../../utils')
+const {
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  getConcurrencyPerWorker
+} = require('../../utils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const {
   logger,
@@ -24,7 +28,7 @@ class SyncImmediateQueue {
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig, redis, serviceRegistry) {
+  async init(nodeConfig, redis, serviceRegistry) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
@@ -43,6 +47,12 @@ class SyncImmediateQueue {
     this.queueEvents = new QueueEvents('sync-immediate-processing-queue', {
       connection
     })
+
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
+    }
 
     const worker = new Worker(
       'sync-immediate-processing-queue',
@@ -79,11 +89,12 @@ class SyncImmediateQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }
     )
+
     const prometheusRegistry = serviceRegistry?.prometheusRegistry
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
@@ -95,6 +106,8 @@ class SyncImmediateQueue {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       serviceRegistry,
       syncUuid
@@ -107,6 +120,8 @@ class SyncImmediateQueue {
         wallet,
         creatorNodeEndpoint,
         forceResyncConfig,
+        forceWipe,
+        syncOverride,
         logContext,
         syncUuid: syncUuid || null
       })
@@ -132,6 +147,8 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
+    forceWipe,
+    syncOverride,
     logContext,
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
@@ -140,6 +157,8 @@ class SyncImmediateQueue {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       parentSpanContext,
       syncUuid: syncUuid || null

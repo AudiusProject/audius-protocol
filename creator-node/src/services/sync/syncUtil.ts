@@ -152,7 +152,7 @@ export async function fetchExportFromNode({
     }
   }
 
-  logger.info('Export successful')
+  logger.debug('Export successful')
 
   return {
     fetchedCNodeUser
@@ -185,4 +185,17 @@ export function getMaxSyncMonitoringMs(syncType: string) {
   return syncType === SyncType.Manual
     ? maxManualSyncMonitoringDurationInMs
     : maxSyncMonitoringDurationInMs
+}
+
+export function checkSyncOverride(syncOverridePassword: string): boolean {
+  const syncOverridePasswordConfig = config.get('syncOverridePassword')
+  const spID = config.get('spID')
+
+  const foundationNodeSPIDs = [1, 2, 3, 4, 27]
+
+  return (
+    foundationNodeSPIDs.includes(spID) &&
+    syncOverridePasswordConfig &&
+    syncOverridePasswordConfig === syncOverridePassword
+  )
 }

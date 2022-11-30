@@ -45,7 +45,7 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
       where: { walletAddress: emailUsersWalletAddress }
     })
 
-    logger.info(
+    logger.debug(
       `processDownloadAppEmail - ${emailUsers.length} 2 day old users who have not signed in mobile`
     )
 
@@ -61,10 +61,21 @@ async function processDownloadAppEmail(expressApp, audiusLibs) {
 
       const sent = await renderAndSendDownloadAppEmail(sg, userEmail)
       if (sent) {
-        await models.UserEvents.upsert({
-          walletAddress: userToEmail.walletAddress,
-          hasSentDownloadAppEmail: true
-        })
+        await models.sequelize.query(
+          `
+          INSERT INTO "UserEvents" ("walletAddress", "hasSentDownloadAppEmail", "createdAt", "updatedAt")
+          VALUES (:walletAddress, :hasSentDownloadAppEmail, now(), now())
+          ON CONFLICT ("walletAddress")
+          DO
+            UPDATE SET "hasSentDownloadAppEmail" = :hasSentDownloadAppEmail;
+        `,
+          {
+            replacements: {
+              walletAddress: userToEmail.walletAddress,
+              hasSentDownloadAppEmail: true
+            }
+          }
+        )
       }
     }
   } catch (e) {

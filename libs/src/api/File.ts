@@ -6,6 +6,7 @@ import { raceRequests } from '../utils/network'
 import retry from 'async-retry'
 import type { Users } from './Users'
 import type { Nullable } from '../utils'
+import type { ServiceProvider } from './ServiceProvider'
 
 /**
  * Downloads a file using an element in the DOM
@@ -24,11 +25,17 @@ const downloadURL = (url: string, filename: string) => {
 
 export class File extends Base {
   User: Users
+  ServiceProvider: ServiceProvider
 
-  constructor(user: Users, ...args: BaseConstructorArgs) {
+  constructor(
+    user: Users,
+    serviceProvider: ServiceProvider,
+    ...args: BaseConstructorArgs
+  ) {
     super(...args)
 
     this.User = user
+    this.ServiceProvider = serviceProvider
   }
 
   /**
@@ -46,6 +53,47 @@ export class File extends Base {
     responseType: ResponseType = 'blob',
     trackId = null,
     premiumContentHeaders = {}
+  ) {
+    try {
+      const replicaSetAttempt = await this.fetchCIDInternal(
+        cid,
+        creatorNodeGateways,
+        callback,
+        responseType,
+        trackId,
+        premiumContentHeaders
+      )
+      return replicaSetAttempt
+    } catch (e) {
+      // In the case we can't find the CID from anywhere in the user's replica set,
+      // retry the whole network
+      console.error(e)
+      const allCreatorNodes = await this.ServiceProvider.listCreatorNodes()
+      const allCreatorNodeEndpoints = allCreatorNodes.map((node) =>
+        urlJoin(node.endpoint, 'ipfs')
+      )
+      // Re-throw whatever error might happen here
+      const allNodesAttempt = await this.fetchCIDInternal(
+        cid,
+        allCreatorNodeEndpoints,
+        callback,
+        responseType,
+        trackId,
+        premiumContentHeaders,
+        0
+      )
+      return allNodesAttempt
+    }
+  }
+
+  async fetchCIDInternal(
+    cid: string,
+    creatorNodeGateways: string[],
+    callback: Nullable<(url: string) => void> = null,
+    responseType: ResponseType = 'blob',
+    trackId = null,
+    premiumContentHeaders = {},
+    retries = 3
   ) {
     const urls: string[] = []
 
@@ -71,10 +119,12 @@ export class File extends Base {
           )
 
           if (!response) {
-            const allForbidden = errored.every(
-              // @ts-expect-error not valid axios error
-              (error) => error.response.status === 403
-            )
+            const allForbidden =
+              errored.length &&
+              errored.every(
+                // @ts-expect-error not valid axios error
+                (error) => error.response.status === 403
+              )
             if (allForbidden) {
               // In the case for a 403, do not retry fetching
               bail(new Error('Forbidden'))
@@ -121,7 +171,7 @@ export class File extends Base {
         minTimeout: 500,
         maxTimeout: 4000,
         factor: 3,
-        retries: 5,
+        retries,
         onRetry: (err: any, i) => {
           // eslint-disable-next-line no-console
           console.log(`FetchCID attempt ${i} error: ${err}`)

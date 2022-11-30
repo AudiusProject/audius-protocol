@@ -6,6 +6,8 @@ import os
 import subprocess
 import sys
 
+os.environ["OLD_FLOW"] = "TRUE"
+
 DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
 PROTOCOL_DIR = os.getenv("PROTOCOL_DIR", DEFAULT_PROTOCOL_DIR)
 
@@ -128,12 +130,12 @@ def setup_command_parser(subparser):
 
     parser_setup.add_argument(
         "--protocol-git-ref",
-        help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
+        help="git ref to use for audius-protocol (only used for remote-dev) (default: main)",
     )
 
     parser_setup.add_argument(
         "--client-git-ref",
-        help="git ref to use for audius-client (only used for remote-dev) (default: master)",
+        help="git ref to use for audius-client (only used for remote-dev) (default: main)",
     )
 
     parser_setup.add_argument(

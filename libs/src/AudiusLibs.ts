@@ -654,7 +654,7 @@ export class AudiusLibs {
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlists(...services)
-    this.File = new File(this.User, ...services)
+    this.File = new File(this.User, this.ServiceProvider, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
     this.EntityManager = new EntityManager(...services)

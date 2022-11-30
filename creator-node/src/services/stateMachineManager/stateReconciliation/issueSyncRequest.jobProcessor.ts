@@ -128,7 +128,9 @@ async function issueSyncRequest({
       : MAX_ISSUE_RECURRING_SYNC_JOB_ATTEMPTS
   if (!_.isEmpty(additionalSync)) {
     if (attemptNumber < maxRetries) {
-      logger.info(`Retrying issue-sync-request after attempt #${attemptNumber}`)
+      logger.debug(
+        `Retrying issue-sync-request after attempt #${attemptNumber}`
+      )
       const queueName =
         additionalSync?.syncType === SyncType.Manual
           ? QUEUE_NAMES.MANUAL_SYNC
@@ -138,7 +140,7 @@ async function issueSyncRequest({
         attemptNumber: attemptNumber + 1
       })
     } else {
-      logger.info(
+      logger.warn(
         `Gave up retrying issue-sync-request (type: ${additionalSync?.syncType}) after ${attemptNumber} failed attempts`
       )
     }
@@ -621,7 +623,7 @@ const _additionalSyncIsRequired = async (
     }
   }
 
-  if (syncStatus.startsWith('success')) {
+  if (syncStatus?.startsWith('success')) {
     await SecondarySyncHealthTracker.recordSuccess(
       targetNode,
       userWallet,

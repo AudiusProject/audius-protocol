@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import pathlib
-import random
-import string
 import subprocess
 
 import click
@@ -88,6 +87,12 @@ def generate_env(
     env["BOOTSTRAP_SP_IDS"] = ",".join(bootstrap_sp_ids)
     env["BOOTSTRAP_SP_OWNER_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
     env["BOOTSTRAP_SP_DELEGATE_WALLETS"] = ",".join(bootstrap_sp_owner_wallets)
+
+    aao_wallets = []
+    for key, value in env.items():
+        if key.startswith("AAO_WALLET_") and key.endswith("_ADDRESS"):
+            aao_wallets.append(value)
+    env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
 
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
@@ -188,6 +193,8 @@ def load_env(protocol_dir, service, environment):
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
+@click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
     protocol_dir,
@@ -195,6 +202,8 @@ def up(
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer,
+    anti_abuse_oracle,
+    services,
 ):
     generate_env(
         protocol_dir,
@@ -204,14 +213,23 @@ def up(
         block_explorer,
     )
 
+    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+
     subprocess.run(
         [
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.yml'}",
+            *(
+                [f"--file={AAO_DIR / 'audius-compose.yml'}"]
+                if anti_abuse_oracle
+                else []
+            ),
             "up",
             "--build",
             "-d",
+            *services,
         ],
     )
 
@@ -225,74 +243,79 @@ def down(protocol_dir):
             "compose",
             f"--project-directory={protocol_dir}",
             "down",
-            "-v",
+            "--remove-orphans",
+            "--volumes",
         ],
     )
 
 
-@cli.command()
+@cli.group()
+def test():
+    pass
+
+
+@test.command(name="build")
+@click.pass_obj
+def test_build(protocol_dir):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir}",
+            "build",
+        ],
+        env={"COMPOSE_PROFILES": "*"},
+    )
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir}",
+            "pull",
+        ],
+    )
+
+
+@test.command(name="run")
 @click.argument("service")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_obj
-def test(protocol_dir, service, args):
-    generate_env(
-        protocol_dir,
-        0,  # amount of replicas don't matter here
-        0,  # amount of replicas don't matter here
-        0,  # amount of replicas don't matter here
-        False,
+def test_run(protocol_dir, service, args):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir}",
+            "run",
+            "--rm",
+            f"test-{service}",
+            *args,
+        ],
     )
 
-    project_name = f"audius-compose-{''.join(random.choice(string.ascii_lowercase) for i in range(9))}"
 
-    no_deps = False
-    if service == "discovery-provider":
-        no_deps = args and not any(arg.startswith("integration_tests") for arg in args)
-
-    try:
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--project-name={project_name}",
-                f"--project-directory={protocol_dir}",
-                f"--file={protocol_dir / 'docker-compose.test.yml'}",
-                "build",
-            ],
-        )
-
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--project-name={project_name}",
-                f"--project-directory={protocol_dir}",
-                f"--file={protocol_dir / 'docker-compose.test.yml'}",
-                "run",
-                "--rm",
-                *(["--no-deps"] if no_deps else []),
-                f"test-{service}",
-                *args,
-            ],
-        )
-    finally:
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--project-name={project_name}",
-                f"--project-directory={protocol_dir}",
-                f"--file={protocol_dir / 'docker-compose.test.yml'}",
-                "down",
-                "--timeout=1",
-                "-v",
-            ],
-        )
-
-        subprocess.run(
-            f'docker rmi $(docker images --filter "reference={project_name}-*" -q)',
-            shell=True,
-        )
+@test.command(name="down")
+@click.pass_obj
+def test_down(protocol_dir):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir}",
+            "--profile=*",
+            "down",
+            "-v",
+        ],
+    )
 
 
 @cli.command()
@@ -317,7 +340,9 @@ def exec(protocol_dir, service, command, args):
             service,
             "sh",
             "-c",
-            'while IFS= read -rd "" var; do export "$var"; done </proc/1/environ; exec "$@"',
+            # Ugly command since this needs run on all containers (i.e. posix compliant)
+            r'''eval $(od -An -to1 -v /proc/1/environ | tr -d '\n' | sed 's/ 000/\n/g; s/ /\\/g; s/[^\n]\+/export "`printf "&"`"/g'); exec "$@"''',
+            # r'''eval $(xargs -0 -n1 sh -c 'echo $0 | sed "'"s/'/'\\\\\''/g; s/.*/export '&'/"'"' </proc/1/environ); exec "$@"''',
             "-",
             command,
             *args,
@@ -328,11 +353,15 @@ def exec(protocol_dir, service, command, args):
 @cli.command()
 @click.pass_obj
 def ps(protocol_dir):
+    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+
     proc = subprocess.run(
         [
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.yml'}",
+            *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
             "ps",
             "--format=json",
         ],

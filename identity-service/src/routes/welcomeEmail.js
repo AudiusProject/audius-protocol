@@ -63,6 +63,12 @@ module.exports = function (app) {
         )
         return successResponse({ msg: 'Welcome email forbidden', status: true })
       }
+      if (existingUser.isBlockedFromEmails) {
+        req.logger.info(
+          `User with handle ${existingUser.handle} and email ${existingUser.email} is blocked from receiving emails`
+        )
+        return successResponse({ msg: 'Welcome email forbidden', status: true })
+      }
 
       const walletAddress = existingUser.walletAddress
       const htmlTemplate = isNativeMobile
@@ -86,17 +92,22 @@ module.exports = function (app) {
       }
       try {
         await sg.send(emailParams)
-        if (isNativeMobile) {
-          await models.UserEvents.upsert({
-            walletAddress,
-            hasSignedInNativeMobile: true
-          })
-        } else {
-          await models.UserEvents.upsert({
-            walletAddress,
-            hasSignedInNativeMobile: false
-          })
-        }
+        await models.sequelize.query(
+          `
+          INSERT INTO "UserEvents" ("walletAddress", "hasSignedInNativeMobile", "createdAt", "updatedAt")
+          VALUES (:walletAddress, :hasSignedInNativeMobile, now(), now())
+          ON CONFLICT ("walletAddress")
+          DO
+            UPDATE SET "hasSignedInNativeMobile" = :hasSignedInNativeMobile;
+        `,
+          {
+            replacements: {
+              walletAddress,
+              hasSignedInNativeMobile: isNativeMobile
+            }
+          }
+        )
+
         return successResponse({ status: true })
       } catch (e) {
         console.log(e)

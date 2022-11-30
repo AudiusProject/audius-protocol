@@ -6,7 +6,12 @@ setupTracing()
 
 import type { Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
-import { clusterUtils } from './utils'
+import {
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  getNumWorkers,
+  isClusterEnabled
+} from './utils'
 import cluster from 'cluster'
 
 import ON_DEATH from 'death'
@@ -16,9 +21,15 @@ import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
+import DBManager from './dbManager'
 
 import { logger } from './logging'
 import { sequelize } from './models'
+import {
+  emptyTmpTrackUploadArtifacts,
+  sweepSubdirectoriesInFiles,
+  migrateFilesWithLegacyStoragePaths
+} from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
 const redisClient = require('./redis')
@@ -27,6 +38,18 @@ const redisClient = require('./redis')
 // However, a bug currently requires instantiating this in workers as well:
 // https://github.com/siimon/prom-client/issues/501
 const aggregatorRegistry = new AggregatorRegistry()
+
+const globalStartTimeMS = Date.now()
+function debugLogTimer(message: string) {
+  // Make times lineup in grepped logs i.e.
+  // 'LogTimer: startApp.serviceRegistry.initServices - 0.625s'
+  // 'LogTimer: startApp.initializeApp                - 7.673s'
+  const padWidth = 60
+  logger.debug(
+    `LogTimer: ${message}`.padEnd(padWidth) +
+      `- ${(Date.now() - globalStartTimeMS) / 1000}s`
+  )
+}
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -102,15 +125,50 @@ const getPort = () => {
   return config.get('port')
 }
 
+const runAsyncBackgroundTasks = async () => {
+  if (config.get('backgroundDiskCleanupCheckEnabled')) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    sweepSubdirectoriesInFiles()
+  }
+  if (config.get('migrateFilesWithLegacyStoragePath')) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    migrateFilesWithLegacyStoragePaths(
+      1000,
+      serviceRegistry.prometheusRegistry,
+      logger
+    )
+  }
+}
+
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
 const startAppForPrimary = async () => {
+  debugLogTimer('startAppForPrimary')
   logger.info(`Primary process with pid=${process.pid} is running`)
 
+  debugLogTimer('startAppForPrimary.setupDbAndRedis')
   await setupDbAndRedis()
 
-  const numWorkers = clusterUtils.getNumWorkers()
+  const startTime = Date.now()
+  debugLogTimer('startAppForPrimary.emptyTmpTrackUploadArtifacts')
+  const size = await emptyTmpTrackUploadArtifacts()
+  logger.info(
+    `old tmp track artifacts deleted : ${size} : ${
+      (Date.now() - startTime) / 1000
+    }sec`
+  )
+
+  // Don't await - run in background. Remove after v0.3.69
+  // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  DBManager.createStoragePathIndexOnFilesTable()
+
+  const numWorkers = getNumWorkers()
   logger.info(`Spawning ${numWorkers} processes to run the Express app...`)
-  const firstWorker = cluster.fork()
+  const firstWorker = cluster.fork({
+    isThisWorkerFirst: true,
+    isThisWorkerSpecial: true
+  })
+  clusterUtilsForPrimary.setSpecialWorkerId(firstWorker.id)
   // Wait for the first worker to perform one-time init logic before spawning other workers
   firstWorker.on('message', (msg) => {
     if (msg?.cmd === 'initComplete') {
@@ -140,7 +198,7 @@ const startAppForPrimary = async () => {
     }
   })
 
-  // Respawn workers and update each worker's knowledge of who the special worker is.
+  // Respawn workers and track which worker is the special worker.
   // The primary process doesn't need to be respawned because the whole app stops if the primary stops (since the workers are child processes of the primary)
   cluster.on('exit', (worker, code, signal) => {
     logger.info(
@@ -148,31 +206,45 @@ const startAppForPrimary = async () => {
         signal || code
       }. Respawning...`
     )
-    const newWorker = cluster.fork()
-    if (clusterUtils.specialWorkerId === worker.id) {
+    const killedWorkerWasSpecial =
+      clusterUtilsForPrimary.getSpecialWorkerId() === worker.id
+    const newWorker = cluster.fork({ isSpecialWorker: killedWorkerWasSpecial })
+    if (killedWorkerWasSpecial) {
       logger.info(
         'The worker that died was the special worker. Setting a new special worker...'
       )
-      clusterUtils.specialWorkerId = newWorker.id
-      for (const worker of Object.values(cluster.workers || {})) {
-        worker?.send({ cmd: 'setSpecialWorkerId', val: newWorker.id })
-      }
+      clusterUtilsForPrimary.setSpecialWorkerId(newWorker.id)
     }
   })
+
+  // Don't await this - these are recurring tasks that run in the background after
+  // a one minute delay to avoid causing init to degrade
+  setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    runAsyncBackgroundTasks()
+  }, 60_000)
 }
 
 // Workers don't share memory, so each one is its own Express instance with its own version of objects like serviceRegistry
 const startAppForWorker = async () => {
+  debugLogTimer('startAppForWorker')
+  if (process.env.isThisWorkerFirst === 'true')
+    clusterUtilsForWorker.markThisWorkerAsFirst()
+  if (process.env.isThisWorkerSpecial === 'true')
+    clusterUtilsForWorker.markThisWorkerAsSpecial()
+
   logger.info(
-    `Worker process with pid=${process.pid} and worker ID=${cluster.worker?.id} is running`
+    `Worker process with pid=${process.pid} and worker ID=${
+      cluster.worker?.id
+    } is running. Is this worker init: ${clusterUtilsForWorker.isThisWorkerFirst()}`
   )
+  debugLogTimer('startAppForWorker.verifyConfigAndDb')
   await verifyConfigAndDb()
+  debugLogTimer('startAppForWorker.startApp')
   await startApp()
 
   cluster.worker!.on('message', (msg) => {
-    if (msg?.cmd === 'setSpecialWorkerId') {
-      clusterUtils.specialWorkerId = msg?.val
-    } else if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
+    if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
       try {
         const { prometheusRegistry } = serviceRegistry
         prometheusRegistry.resolvePromiseToGetAggregatedMetrics(msg?.val)
@@ -184,15 +256,35 @@ const startAppForWorker = async () => {
     }
   })
 
-  if (clusterUtils.isThisWorkerInit() && process.send) {
+  if (clusterUtilsForWorker.isThisWorkerFirst() && process.send) {
     process.send({ cmd: 'initComplete' })
+  }
+
+  // Ensure health of queues that might've been affected by the special worker dying.
+  // The special worker is responsible for re-enqueing jobs when other jobs complete,
+  // so if it died then it might have failed to re-enqueue some jobs
+  if (clusterUtilsForWorker.isThisWorkerSpecial()) {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    setInterval(async () => {
+      await serviceRegistry.recoverStateMachineQueues()
+    }, 90_000)
   }
 }
 
 const startAppWithoutCluster = async () => {
+  debugLogTimer('startAppWithoutCluster')
   logger.info(`Starting app with cluster mode disabled`)
+  debugLogTimer('startAppWithoutCluster.setupDbAndRedis')
   await setupDbAndRedis()
+  debugLogTimer('startAppWithoutCluster.startApp')
   await startApp()
+
+  // Don't await this - these are recurring tasks that run in the background after
+  // a one minute delay to avoid causing init to degrade
+  setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    runAsyncBackgroundTasks()
+  }, 60_000)
 }
 
 const setupDbAndRedis = async () => {
@@ -220,25 +312,27 @@ const startApp = async () => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
-    logger.info('Shutting down db and express app...', signal, error)
+    logger.error('Shutting down db and express app...', signal, error)
     sequelize.close()
     if (appInfo) {
       appInfo.server.close()
     }
   })
-
+  debugLogTimer('startApp.serviceRegistry.initServices')
   await serviceRegistry.initServices()
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
   logger.info(`Initialized services (Node running in ${nodeMode})`)
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   serviceRegistry.initServicesAsynchronously()
+  debugLogTimer('startApp.initializeApp')
   const appInfo = initializeApp(getPort(), serviceRegistry)
+  debugLogTimer('startApp.initialized')
   logger.info('Initialized app and server')
   await serviceRegistry.initServicesThatRequireServer(appInfo.app)
 }
 
-if (!clusterUtils.isClusterEnabled()) {
+if (!isClusterEnabled()) {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   startAppWithoutCluster()
 } else if (cluster.isMaster) {

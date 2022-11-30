@@ -50,6 +50,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: true
       },
+      isBlockedFromEmails: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true
+      },
       appliedRules: {
         type: DataTypes.JSONB,
         allowNull: true

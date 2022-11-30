@@ -352,6 +352,17 @@ def extend_tip(tip):
     return new_tip
 
 
+def extend_transaction_details(transaction_details):
+    new_transaction_details = transaction_details.copy()
+    new_transaction_details["change"] = str(transaction_details["change"])
+    new_transaction_details["balance"] = str(transaction_details["balance"])
+    new_transaction_details["transaction_date"] = transaction_details[
+        "transaction_created_at"
+    ]
+    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
+    return new_transaction_details
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
@@ -396,13 +407,6 @@ def get_current_user_id(args):
     """Gets current_user_id from args featuring a "user_id" key"""
     if args.get("user_id"):
         return decode_string_id(args["user_id"])
-    return None
-
-
-def get_authed_user_id(args):
-    """Gets authed_user_id from args featuring a "authed_user_id" key"""
-    if args.get("authed_user_id"):
-        return decode_string_id(args["authed_user_id"])
     return None
 
 

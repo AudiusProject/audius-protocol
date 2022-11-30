@@ -4,6 +4,7 @@ const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
 const utils = require('../../utils')
+const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -47,7 +48,6 @@ const healthCheck = async (
   const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
-  const syncForceWipeEnabled = config.get('syncForceWipeEnabled')
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
@@ -131,7 +131,13 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const clusterWorkersCount = getNumWorkers()
+
   const healthy = !config.get('considerNodeUnhealthy')
+  const databaseIsLocalhost =
+    config.get('dbUrl') ===
+      'postgres://postgres:postgres@db:5432/audius_creator_node' ||
+    config.get('dbUrl').includes('localhost')
 
   const response = {
     ...versionInfo,
@@ -144,6 +150,7 @@ const healthCheck = async (
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
+    autoUpgradeEnabled: config.get('autoUpgradeEnabled'),
     numberOfCPUs,
     totalMemory,
     storagePathSize,
@@ -152,6 +159,7 @@ const healthCheck = async (
     longitude,
     databaseConnections,
     databaseSize,
+    databaseIsLocalhost: databaseIsLocalhost,
     usedMemory,
     usedTCPMemory,
     storagePathUsed,
@@ -171,7 +179,6 @@ const healthCheck = async (
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
-    syncForceWipeEnabled,
     stateMonitoringQueueRateLimitInterval: config.get(
       'stateMonitoringQueueRateLimitInterval'
     ),
@@ -211,7 +218,8 @@ const healthCheck = async (
     trustedNotifier: {
       ...trustedNotifierManager?.getTrustedNotifierData(),
       id: trustedNotifierManager?.trustedNotifierID
-    }
+    },
+    clusterWorkersCount
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -281,8 +289,19 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+const configCheck = () => {
+  /**
+   * Docs: https://github.com/mozilla/node-convict/tree/master/packages/convict#configtostring
+   *
+   * This roundabout approach can be removed once the PR to add a .toJson() is merged: https://github.com/mozilla/node-convict/pull/407
+   */
+  const data = JSON.parse(config.toString())
+  return data
+}
+
 module.exports = {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 }

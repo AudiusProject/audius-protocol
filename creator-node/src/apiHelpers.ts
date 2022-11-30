@@ -1,31 +1,18 @@
 import type { Request, Response, NextFunction } from 'express'
 import type { AxiosResponse } from 'axios'
 import type Logger from 'bunyan'
+import type { ApiResponse, CustomRequest } from './utils'
 
 import { tracing } from './tracer'
 
 import config from './config'
 
 import {
-  requestNotExcludedFromLogging,
   getDuration,
   createChildLogger,
   logger as genericLogger
 } from './logging'
 import { generateTimestampAndSignature } from './apiSigning'
-
-type RequestWithLogger = Request & { logger: Logger }
-
-type ApiResponse = {
-  statusCode: number
-  object: {
-    error?: any
-    timestamp?: Date
-    signature?: string
-    data?: any
-    signer?: string
-  }
-}
 
 export const handleResponse = <
   TAsyncFunction extends (...args: any[]) => Promise<any>
@@ -99,23 +86,19 @@ export const sendResponse = (
   res: Response,
   resp: ApiResponse
 ) => {
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   const duration = getDuration(req as any)
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
     if (req && req.body) {
-      logger.info(
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
@@ -124,7 +107,7 @@ export const sendResponse = (
         req.query
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
   }
 
@@ -141,29 +124,25 @@ export const sendResponseWithHeartbeatTerminator = (
   resp: ApiResponse
 ) => {
   const duration = getDuration(req as any)
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode
   }) as Logger
 
-  if (resp.statusCode === 200) {
-    if (requestNotExcludedFromLogging(req.originalUrl)) {
-      logger.info('Success')
-    }
-  } else {
+  if (resp.statusCode !== 200) {
     logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     }) as Logger
     if (req && req.body) {
-      logger.info(
+      logger.error(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
         req.body
       )
     } else {
-      logger.info('Error processing request:', resp.object.error)
+      logger.error('Error processing request:', resp.object.error)
     }
 
     // Converts the error object into an object that JSON.stringify can parse

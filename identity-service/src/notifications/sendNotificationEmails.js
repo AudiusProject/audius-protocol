@@ -51,6 +51,7 @@ const DEFAULT_EMAIL_FREQUENCY = EmailFrequency.LIVE
 
 const Results = Object.freeze({
   USER_TURNED_OFF: 'USER_TURNED_OFF',
+  USER_BLOCKED: 'USER_BLOCKED',
   SHOULD_SKIP: 'SHOULD_SKIP',
   ERROR: 'ERROR',
   SENT: 'SENT'
@@ -294,7 +295,19 @@ async function processEmailNotifications(expressApp, audiusLibs) {
       const chunkResults = await Promise.all(
         userInfo.slice(start, end).map(async (user) => {
           try {
-            let { email: userEmail, blockchainUserId: userId, timezone } = user
+            let {
+              email: userEmail,
+              blockchainUserId: userId,
+              timezone,
+              isBlockedFromEmails
+            } = user
+            if (isBlockedFromEmails) {
+              return {
+                result: Results.USER_BLOCKED,
+                error: `User with id ${userId} and email ${userEmail} is blocked from receiving emails`
+              }
+            }
+
             if (timezone === null) {
               timezone = DEFAULT_TIMEZONE
             }
@@ -372,7 +385,7 @@ async function processEmailNotifications(expressApp, audiusLibs) {
                 return { result: Results.ERROR, error: 'Unable to send email' }
               }
               return {
-                result: Results.ERROR,
+                result: Results.SHOULD_SKIP,
                 error: 'No notifications to send in email'
               }
             }
@@ -433,7 +446,7 @@ async function renderAndSendNotificationEmail(
   audiusLibs
 ) {
   try {
-    logger.info(
+    logger.debug(
       `renderAndSendNotificationEmail | ${userId}, ${userEmail}, ${frequency}, from ${startTime}`
     )
 
@@ -448,7 +461,7 @@ async function renderAndSendNotificationEmail(
     const timeAfterEmailNotifications = Date.now()
     const getEmailDuration =
       (timeAfterEmailNotifications - timeBeforeEmailNotifications) / 1000
-    logger.info(
+    logger.debug(
       `renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`
     )
 
@@ -456,7 +469,7 @@ async function renderAndSendNotificationEmail(
       notificationCount > 1 ? 's' : ''
     } on Audius`
     if (notificationCount === 0) {
-      logger.info(
+      logger.debug(
         `renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`
       )
       return

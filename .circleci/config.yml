@@ -6,6 +6,7 @@ version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
   slack: circleci/slack@4.9.3
+  queue: eddiewebb/queue@1.7.0
 
 commands:
   slack-basic:
@@ -137,7 +138,7 @@ commands:
       - unless:
           condition:
             or:
-              - equal: [master, << pipeline.git.branch >>]
+              - equal: [main, << pipeline.git.branch >>]
               - matches:
                   pattern: '^release.*$'
                   value: << pipeline.git.branch >>
@@ -158,10 +159,14 @@ commands:
             echo "Continue on odd week? << parameters.odd_week >>"
             if [ $(($week % 2)) == 0 ]; then
                 echo "Even week"
-                << parameters.odd_week >> && exit 1
+                if [ "<< parameters.odd_week >>" = true ] ; then
+                  exit 1
+                fi
             else
                 echo "Odd week"
-                << parameters.odd_week >> || exit 1
+                if [ "<< parameters.odd_week >>" = false ] ; then
+                  exit 1
+                fi
             fi
 
   run-on-gcp:
@@ -197,7 +202,6 @@ commands:
             # cleanup code setup before starting actual execution
             cleanup() {
               # Delete GCP box
-              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
               # Delete GCP firewall
               gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
@@ -257,10 +261,16 @@ parameters:
   slash_address:
     type: string
     default: ""
+  slash_amount:
+    type: string
+    default: ""
   reservations:
     type: string
     default: ""
   slack_mentions_user:
+    type: string
+    default: ""
+  sp_release:
     type: string
     default: ""
   full_ci:
@@ -285,7 +295,7 @@ jobs:
           password: $DOCKERHUB_PASS
     steps:
       - bi-weekly:
-          odd_week: true
+          odd_week: false
 
   bake-gcp-dev-image:
     docker:
@@ -331,7 +341,7 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
       - slack-fail:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: "@dheeraj"
 
   publish-sdk:
@@ -358,7 +368,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
       - slack-basic:
           event: always
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
       - run:
           name: Bump and Publish Libs
@@ -366,10 +376,10 @@ jobs:
             export PROTOCOL_DIR=/home/circleci/project
             libs/scripts/release.sh << parameters.sdk_release_commit >>
       - slack-fail:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
       - slack-success:
-          branch_pattern: master
+          branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
 
   test-mad-dog-e2e:
@@ -987,7 +997,7 @@ jobs:
       image: ubuntu-2004:202201-02
     parameters:
       git_tag:
-        description: Git_tag to deploy. Latest commit on `master` otherwise.
+        description: Git_tag to deploy. Latest commit on `main` otherwise.
         type: string
         default: ""
       environment:
@@ -1021,17 +1031,23 @@ jobs:
         type: boolean
         default: false
     steps:
-      # only send Starting slack message when prod, --force, or custom args are used
+      - queue/until_front_of_line:
+          consider-branch: false
+          dont-quit: true
       - when:
           condition:
             and:
-              - equal: [ master, "${CIRCLE_BRANCH}" ]
+              - equal: [ main, << pipeline.git.branch >> ]
               - equal: [ staging, << parameters.environment >> ]
               - not:
                   equal: [ all, << parameters.service >> ]
           steps:
-            - diff-if-necessary:
-                service: << parameters.service >>
+            - checkout
+            - run:
+                name: Check for Changes
+                command: |
+                  [[ $(git diff $(git rev-parse HEAD)~1 --dirstat=files -- << parameters.service >>*) ]] || (echo "no diff" && circleci-agent step halt)
+      # only send Starting slack message when prod, --force, or custom args are used
       - when:
           condition:
             or:
@@ -1248,6 +1264,14 @@ jobs:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
         enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
+      slash_address:
+        description: Required for target:slash-proposal. Address to be slashed.
+        type: string
+        default: ""
+      slash_amount:
+        description: Required for target:slash-proposal. Amount in $AUDIO.
+        type: string
+        default: ""
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -1258,10 +1282,12 @@ jobs:
           docker_layer_caching: true
       - run: |
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:AudiusProject/audius-tooling.git --branch jc-inf-246
+          git clone git@github.com:AudiusProject/audius-tooling.git
           cd audius-tooling
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+          SLASH_ADDRESS=<< parameters.slash_address >> \
+          SLASH_AMOUNT=<< parameters.slash_amount >> \
           release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
@@ -1285,8 +1311,9 @@ jobs:
                 detail: ":vote: New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
                 slack_mentions_user: "${SLACK_RELEASE_MENTIONS}"
             - run: |
+                VERSION=$(curl -s "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/discovery-provider/.version.json" | jq -r '.version')
                 curl -d '{
-                  "content": "New service version is out now!\n\nCompose files have been updated here:\nhttps://github.com/AudiusProject/audius-docker-compose\n\nChangelogs:\nhttps://github.com/AudiusProject/audius-protocol/releases\n\nGovernance proposals (2 days of voting left):\nhttps://dashboard.audius.org/#/governance",
+                  "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
                   "embeds": null,
                   "attachments": []
                 }' \
@@ -1303,6 +1330,7 @@ jobs:
       - run:
           name: Generate Release Checklist
           command: |
+            git pull
             RELEASE_VERSION=$(jq -r .version discovery-provider/.version.json)
             OLD_VERSION=$(echo ${RELEASE_VERSION} | awk -F. '{$NF = $NF - 1;} 1' | sed 's/ /./g')
             START_COMMIT=$(git show-ref --hash refs/tags/@audius/discovery-provider@${OLD_VERSION})
@@ -1324,6 +1352,8 @@ workflows:
          - not: << pipeline.parameters.deploy_args >>
          - not: << pipeline.parameters.reservations >>
          - not: << pipeline.parameters.slash_address >>
+         - not: << pipeline.parameters.slash_amount >>
+         - not: << pipeline.parameters.sp_release >>
     jobs:
       - noop:
           name: tests
@@ -1339,7 +1369,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-creator
             - test-creator
@@ -1348,7 +1378,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-discovery
             - test-discovery
@@ -1357,7 +1387,7 @@ workflows:
           type: approval
           filters:
             branches:
-              ignore: /(^master|release-.*$)/
+              ignore: /(^main|release-.*$)/
           requires:
             - build-identity
             - test-identity
@@ -1383,198 +1413,240 @@ workflows:
             - test-mad-dog-e2e
             - test-sdk
 
-      # Auto-deploy `master` to staging
+      # Auto-deploy `main` to staging
       - deploy:
           name: autodeploy-stage-discovery
           service: discovery
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-discovery
             - test-discovery
       - deploy:
           name: autodeploy-stage-creator
           service: creator
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-creator
             - test-creator
       - deploy:
           name: autodeploy-stage-identity
           service: identity
+          git_tag: ${CIRCLE_SHA1}
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
           requires:
             - build-identity
             - test-identity
-      # Force deploy `master` to staging (by service)
+      # Force deploy `main` to staging (by service)
       - noop:
-          name: unreserve-stage-<< matrix.service >>
+          name: unreserve-stage-<< matrix.service >>-hold
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - autodeploy-stage-<< matrix.service >>
-      - deploy:
-          name: unreserving-stage-<< matrix.service >>
-          params: --force
-          context:
-            - slack-secrets
-            - gh-tokens
-            - open-vpn
+      - noop:
+          name: unreserve-stage-<< matrix.service >>-all
+          type: approval
           matrix:
             parameters:
               service: [discovery, creator, identity]
-          requires:
-            - unreserve-stage-<< matrix.service >>
-      # Force deploy `master` to staging (by host) - discovery
-      - noop:
-          name: unreserve-<< matrix.host >>
-          type: approval
           filters:
             branches:
-              only: /(^master$)/
-          matrix:
-            parameters:
-              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+              only: /(^main$)/
           requires:
-            - autodeploy-stage-discovery
+            - unreserve-stage-<< matrix.service >>-hold
       - deploy:
-          name: unreserving-<< matrix.host >>
+          name: unreserving-stage-<< matrix.service >>-all
+          git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
+          matrix:
+            parameters:
+              service: [discovery, creator, identity]
+          filters:
+            branches:
+              only: /(^main$)/
+          requires:
+            - unreserve-stage-<< matrix.service >>-all
+      # Force deploy `main` to staging (by host) - discovery
+      - noop:
+          name: unreserve-<< matrix.host >>
+          type: approval
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
+          requires:
+            - unreserve-stage-discovery-hold
+      - deploy:
+          name: unreserving-<< matrix.host >>
+          service: discovery
+          git_tag: ${CIRCLE_SHA1}
+          params: --force
+          context:
+            - slack-secrets
+            - gh-tokens
+            - open-vpn
+            - circle-ci-api
+          matrix:
+            parameters:
+              host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - unreserve-<< matrix.host >>
-      # Force deploy `master` to staging (by host) - creator
+      # Force deploy `main` to staging (by host) - creator
       - noop:
           name: unreserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              only: /(^master$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
-            - autodeploy-stage-creator
+            - unreserve-stage-creator-hold
       - deploy:
           name: unreserving-<< matrix.host >>
+          service: creator
+          git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              only: /(^main$)/
           requires:
             - unreserve-<< matrix.host >>
 
       # Deploy branch to staging (by service)
       - noop:
-          name: reserve-stage-<< matrix.service >>
+          name: reserve-stage-<< matrix.service >>-all
           type: approval
-          filters:
-            branches:
-              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - << matrix.service >>-deploy-hold
       - deploy:
-          name: reserving-stage-<< matrix.service >>
+          name: reserving-stage-<< matrix.service >>-all
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           matrix:
             parameters:
               service: [discovery, creator, identity]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
-            - reserve-stage-<< matrix.service >>
+            - reserve-stage-<< matrix.service >>-all
       # Deploy branch to staging (by host) - discovery
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - discovery-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
+          service: discovery
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^master$)/
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-discovery-1, stage-discovery-2, stage-discovery-3, stage-discovery-4, stage-discovery-5]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - reserve-<< matrix.host >>
       # Deploy branch to staging (by host) - creator
       - noop:
           name: reserve-<< matrix.host >>
           type: approval
-          filters:
-            branches:
-              ignore: /(^master|release-.*$)/
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - creator-deploy-hold
       - deploy:
           name: reserving-<< matrix.host >>
+          service: creator
           git_tag: ${CIRCLE_SHA1}
           params: --force
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
-          filters:
-            branches:
-              ignore: /(^master$)/
+            - circle-ci-api
           matrix:
             parameters:
               host: [stage-creator-4, stage-creator-5, stage-creator-6, stage-creator-7, stage-creator-8, stage-creator-9, stage-creator-10, stage-creator-11, stage-user-metadata]
+          filters:
+            branches:
+              ignore: /(^main|release-.*$)/
           requires:
             - reserve-<< matrix.host >>
 
@@ -1601,14 +1673,18 @@ workflows:
             - bump-hotfix
       - deploy:
           name: releasing-discovery-foundation
+          service: discovery
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: discovery
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - release-discovery-foundation
       # Deploy Identity to prod (for release branches)
@@ -1622,14 +1698,18 @@ workflows:
             - bump-hotfix
       - deploy:
           name: releasing-identity-foundation
+          service: identity
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: identity
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v\d*.\d*.\d*$)/
           requires:
             - release-identity-foundation
       # Deploy Creator Nodes to prod (for release branches)
@@ -1646,14 +1726,18 @@ workflows:
             - built
       - deploy:
           name: releasing-<< matrix.host >>
+          service: creator
           git_tag: ${CIRCLE_SHA1}
           environment: prod
-          service: creator
           context:
             - slack-secrets
             - gh-tokens
             - open-vpn
             - restricted-ci-jobs
+            - circle-ci-api
+          filters:
+            branches:
+              only: /(^release-v.*-patch-.*$)/
           matrix:
             parameters:
               host: [prod-creator-1, prod-creator-2, prod-creator-3, prod-creator-4, prod-creator-5, prod-user-metadata]
@@ -1733,7 +1817,7 @@ workflows:
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to the `master` branch
+  # 2. go to the `main` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string parameter "sdk_release_commit" and set to a valid git commit
   sdk-release:
@@ -1748,11 +1832,11 @@ workflows:
             - slack-secrets
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
-  # 2. go to the `master` branch
+  # 2. go to the `main` branch
   # 3. click "Trigger Pipeline"
   # 4. Add string parameter "deploy_args" to be passed to deploy-ci.py
   deploy-args:
@@ -1765,23 +1849,31 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
   # 2. click "Trigger Pipeline"
-  # 3. Add string parameter "slash_address" with any non-null value
+  # 3. Add string parameter "slash_address" and "slash_amount" with any non-null value
   slash-proposal:
-    when: << pipeline.parameters.slash_address >>
+    when:
+      and:
+        - << pipeline.parameters.slash_address >>
+        - << pipeline.parameters.slash_amount >>
     jobs:
-      - release-scripts:
-          name: slash-proposal
-          target: slash-proposal
-          context:
-            - slack-secrets
-            - gh-tokens.releases
+      - noop:
+          name: address (<< pipeline.parameters.slash_address >>) amount (<< pipeline.parameters.slash_amount >>)
+      # - release-scripts:
+      #     name: slash-proposal
+      #     target: slash-proposal
+      #     slash_address: << pipeline.parameters.slash_address >>
+      #     slash_amount: << pipeline.parameters.slash_amount >>
+      #     context:
+      #       - slack-secrets
+      #       - gh-tokens.releases
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
@@ -1797,6 +1889,7 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
 
   reservations-cron:
     jobs:
@@ -1808,26 +1901,35 @@ workflows:
             - slack-secrets
             - gh-tokens
             - open-vpn
+            - circle-ci-api
     triggers:
       - schedule:
           cron: '0 15 * * 1,2,3,4,5'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/
 
-  joaquins-cron-test:
+  # in order to trigger this job
+  # 1. go to the CircleCI dashboard
+  # 2. click "Trigger Pipeline"
+  # 3. Add string parameter "sp_release" with any non-null value
+  release-to-service-providers:
+    when: << pipeline.parameters.sp_release >>
     jobs:
       - release-week
-      - noop:
-          name: special-release-job
-          requires:
-            - release-week
-    triggers:
-      - schedule:
-          cron: '1,3,5,7,9,11 * * * 1'
+      - release-scripts:
+          name: release-to-service-providers
+          target: release-to-service-providers
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+            - discord
+            - governance
           filters:
             branches:
-              only: master
+              only: /(^release-v\d*.\d*.\d*$)/
+          requires:
+            - release-week
 
   # release-to-service-providers-cron:
   #   jobs:
@@ -1847,46 +1949,51 @@ workflows:
   #         cron: '0 15 * * 1'
   #         filters:
   #           branches:
-  #             only: /(^master$)/
+  #             only: /(^main$)/
 
-  # evaluate-proposal-cron:
-  #   jobs:
-  #     - release-week
-  #     - release-scripts:
-  #         name: evaluate-proposal
-  #         target: evaluate-proposal
-  #         context:
-  #           - slack-secrets
-  #           - governance
-  #         requires:
-  #           - release-week
-  #   triggers:
-  #     - schedule:
-  #         cron: '0 19 * * 5'
-  #         filters:
-  #           branches:
-  #             only: /(^master$)/
+  evaluate-proposal-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: evaluate-proposal
+          target: evaluate-proposal
+          context:
+            - slack-secrets
+            - governance
+          requires:
+            - release-week
+    triggers:
+      - schedule:
+          cron: '0 19 * * 5'
+          filters:
+            branches:
+              only: /(^main$)/
+      - schedule:
+          cron: '0 23 * * 6'
+          filters:
+            branches:
+              only: /(^main$)/
 
-  # cut-release-cron:
-  #   jobs:
-  #     - release-week
-  #     - release-scripts:
-  #         name: cut-release
-  #         target: cut-release
-  #         context:
-  #           - slack-secrets
-  #           - gh-tokens.releases
-  #         requires:
-  #           - release-week
-  #     - generate-release-checklist:
-  #         requires:
-  #           - cut-release
-  #   triggers:
-  #     - schedule:
-  #         cron: '0 7 * * 6'
-  #         filters:
-  #           branches:
-  #             only: /(^master$)/
+  cut-release-cron:
+    jobs:
+      - release-week
+      - release-scripts:
+          name: cut-release
+          target: cut-release
+          context:
+            - slack-secrets
+            - gh-tokens.releases
+          requires:
+            - release-week
+      - generate-release-checklist:
+          requires:
+            - cut-release
+    triggers:
+      - schedule:
+          cron: '0 7 * * 6'
+          filters:
+            branches:
+              only: /(^main$)/
 
   # in order to run a job in hold-workflows
   # 1. go to the CircleCI dashboard
@@ -1922,7 +2029,7 @@ workflows:
           requires:
             - hold-bake-gcp-dev-image
 
-  # test master at midnight daily
+  # test main at midnight daily
   test-nightly:
     jobs:
       - test-libs:
@@ -1963,4 +2070,4 @@ workflows:
           cron: '0 5 * * *'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^main$)/

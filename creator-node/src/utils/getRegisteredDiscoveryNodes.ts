@@ -54,7 +54,10 @@ export const getRegisteredDiscoveryNodes = async ({
         )
       },
       logger,
-      logLabel: 'fetch all the registered discovery nodes'
+      logLabel: 'fetch all the registered discovery nodes',
+      options: {
+        maxTimeout: 5000
+      }
     })
   } catch (e) {
     logger.error(

@@ -296,7 +296,7 @@ class NotificationProcessor {
 
     // Download Email notification queue
     this.downloadEmailQueue.process(async (job, done) => {
-      logger.info('processDownloadEmails')
+      logger.debug('processDownloadEmails')
       let error = null
       try {
         await processDownloadAppEmail(expressApp, audiusLibs)
@@ -441,7 +441,7 @@ class NotificationProcessor {
       const listenCountWithOwners = []
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
-      await processNotifications(notifications, tx)
+      await processNotifications(notifications, tx, optimizelyClient)
       logger.info(
         `notifications main indexAll job - processNotifications complete in ${
           Date.now() - time
@@ -561,7 +561,8 @@ class NotificationProcessor {
       // Insert the solana notifications into the DB
       const processedNotifications = await processNotifications(
         notifications,
-        tx
+        tx,
+        optimizelyClient
       )
       logger.info(
         `${logLabel} - processNotifications complete in ${Date.now() - time}ms`

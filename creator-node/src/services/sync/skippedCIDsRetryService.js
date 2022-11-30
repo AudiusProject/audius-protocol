@@ -3,11 +3,11 @@ const { Queue, Worker } = require('bullmq')
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
-const { clusterUtils } = require('../../utils')
+const { clusterUtilsForWorker } = require('../../utils')
 const {
   getAllRegisteredCNodes
 } = require('../../services/ContentNodeInfoManager')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
@@ -37,6 +37,10 @@ class SkippedCIDsRetryQueue {
     })
   }
 
+  logDebug(msg) {
+    logger.debug(`${LogPrefix} ${msg}`)
+  }
+
   logInfo(msg) {
     logger.info(`${LogPrefix} ${msg}`)
   }
@@ -53,7 +57,7 @@ class SkippedCIDsRetryQueue {
       }
 
       // Clean up anything that might be still stuck in the queue on restart
-      if (clusterUtils.isThisWorkerInit()) {
+      if (clusterUtilsForWorker.isThisWorkerFirst()) {
         await this.queue.drain(true)
       }
 
@@ -81,7 +85,7 @@ class SkippedCIDsRetryQueue {
 
       // Add first job to queue
       await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
-      this.logInfo(`Successfully initialized and enqueued initial job.`)
+      this.logDebug(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
       this.logError(`Failed to start`)
     }
@@ -113,11 +117,11 @@ class SkippedCIDsRetryQueue {
     const savedFileUUIDs = []
     for await (const file of skippedFiles) {
       // Returns boolean success indicator
-      const error = await saveFileForMultihashToFS(
+      const { error } = await fetchFileFromNetworkAndSaveToFS(
         libs,
         logger,
         file.multihash,
-        file.storagePath,
+        file.dirMultihash,
         registeredGateways,
         file.fileName,
         file.trackBlockchainId

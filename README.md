@@ -1,19 +1,22 @@
 <p align="center">
   <br/>
   <a target="_blank" href="https://audius.co">
-    <img src="https://avatars1.githubusercontent.com/u/38231615?s=400&u=c00678880596dabd2746dae13a47edbe7ea7210e&v=4" width="150px" >
+    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="200">
   </a>
   <br/>
 
+
   <p align="center">
-    <b>Audius Protocol</b>
+    The Audius Protocol Monorepo
+    <br/>
+    🎧🎸🎹🤘🎶🥁🎷🎻🎤🔊
   </p>
 </p>
 
 <br/>
 <br/>
 
-[![CircleCI](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master.svg?style=svg&circle-token=e272a756b49e50a54dcc096af8fd8b0405f6bf41)](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master)
+[![CircleCI](https://circleci.com/gh/AudiusProject/audius-protocol/tree/main.svg?style=svg&circle-token=e272a756b49e50a54dcc096af8fd8b0405f6bf41)](https://circleci.com/gh/AudiusProject/audius-protocol/tree/main)
 
 Audius is a decentralized, community-owned music-sharing protocol
 
@@ -40,9 +43,9 @@ The independent sets of smart contracts that power the on-chain aspects of the A
 
 | Contracts                                                        | Description                                                                                       
 | -- | --
-| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/eth-contracts) | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance
-| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/master/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality
-| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/contracts)         | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality
+| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/eth-contracts) | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance
+| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality
+| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/contracts)         | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality
 
 ### Audius Client Libraries
 
@@ -51,7 +54,7 @@ Audius protocol:
 
 | Library                                                        | Description                                                                                       
 | -- | --
-| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/master/libs)     | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node
+| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/libs)     | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node
 
 ### Audius Tools & Tests
 
@@ -59,8 +62,8 @@ Packages for developers to run and test Audius
 
 | Library                                                        | Description                                                                                       
 | -- | --
-| [`service-commands`](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands)     | Tooling to run an entire instance of Audius locally with all dependencies
-| [`mad-dog`](https://github.com/AudiusProject/audius-protocol/tree/master/mad-dog)     | A system level test suite and tests for Audius
+| [`service-commands`](https://github.com/AudiusProject/audius-protocol/tree/main/service-commands)     | Tooling to run an entire instance of Audius locally with all dependencies
+| [`mad-dog`](https://github.com/AudiusProject/audius-protocol/tree/main/mad-dog)     | A system level test suite and tests for Audius
 
 
 ## Development
@@ -95,4 +98,4 @@ vulnerability and any steps to reproduce. Details on our bug bounty program are 
 
 ## License
 
-Apache 2.0: [LICENSE file](https://github.com/AudiusProject/audius-protocol/blob/master/LICENSE)
+Apache 2.0: [LICENSE file](https://github.com/AudiusProject/audius-protocol/blob/main/LICENSE)

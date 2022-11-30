@@ -1,8 +1,10 @@
 from typing import Union
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
@@ -15,10 +17,31 @@ action_to_record_type = {
     Action.UNSAVE: EntityType.SAVE,
     Action.REPOST: EntityType.REPOST,
     Action.UNREPOST: EntityType.REPOST,
+    Action.SUBSCRIBE: EntityType.SUBSCRIPTION,
+    Action.UNSUBSCRIBE: EntityType.SUBSCRIPTION,
 }
 
-create_social_action_types = {Action.FOLLOW, Action.SAVE, Action.REPOST}
-delete_social_action_types = {Action.UNFOLLOW, Action.UNSAVE, Action.UNREPOST}
+action_to_challenge_event = {
+    Action.FOLLOW: ChallengeEvent.follow,
+    Action.UNFOLLOW: ChallengeEvent.follow,
+    Action.SAVE: ChallengeEvent.favorite,
+    Action.UNSAVE: ChallengeEvent.favorite,
+    Action.REPOST: ChallengeEvent.repost,
+    Action.UNREPOST: ChallengeEvent.repost,
+}
+
+create_social_action_types = {
+    Action.FOLLOW,
+    Action.SAVE,
+    Action.REPOST,
+    Action.SUBSCRIBE,
+}
+delete_social_action_types = {
+    Action.UNFOLLOW,
+    Action.UNSAVE,
+    Action.UNREPOST,
+    Action.UNSUBSCRIBE,
+}
 
 premium_content_validation_actions = {
     Action.SAVE,
@@ -33,7 +56,7 @@ def create_social_record(params: ManageEntityParameters):
 
     validate_social_feature(params)
 
-    create_record: Union[Save, Follow, Repost, None] = None
+    create_record: Union[Save, Follow, Repost, Subscription, None] = None
     if params.action == Action.FOLLOW:
         create_record = Follow(
             blockhash=params.event_blockhash,
@@ -69,6 +92,17 @@ def create_social_record(params: ManageEntityParameters):
             is_current=True,
             is_delete=False,
         )
+    if params.action == Action.SUBSCRIBE:
+        create_record = Subscription(
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+            created_at=params.block_datetime,
+            txhash=params.txhash,
+            user_id=params.entity_id,
+            subscriber_id=params.user_id,
+            is_current=True,
+            is_delete=False,
+        )
 
     if create_record:
         params.add_social_feature_record(
@@ -78,6 +112,13 @@ def create_social_record(params: ManageEntityParameters):
             action_to_record_type[params.action],
             create_record,
         )
+
+        # dispatch repost, favorite, follow challenges
+        if params.action in action_to_challenge_event:
+            challenge_event = action_to_challenge_event[params.action]
+            params.challenge_bus.dispatch(
+                challenge_event, params.block_number, params.user_id
+            )
 
 
 def delete_social_record(params):
@@ -120,6 +161,17 @@ def delete_social_record(params):
             is_current=True,
             is_delete=True,
         )
+    elif params.action == Action.UNSUBSCRIBE:
+        deleted_record = Subscription(
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+            created_at=params.block_datetime,
+            txhash=params.txhash,
+            user_id=params.entity_id,
+            subscriber_id=params.user_id,
+            is_current=True,
+            is_delete=True,
+        )
 
     if deleted_record:
         record_type = action_to_record_type[params.action]
@@ -131,21 +183,32 @@ def delete_social_record(params):
             deleted_record,
         )
 
+        # dispatch repost, favorite, follow challenges
+        if params.action in action_to_challenge_event:
+            challenge_event = action_to_challenge_event[params.action]
+            params.challenge_bus.dispatch(
+                challenge_event, params.block_number, params.user_id
+            )
+
 
 def validate_social_feature(params: ManageEntityParameters):
     if params.user_id not in params.existing_records[EntityType.USER]:
-        raise Exception("User does not exists")
+        raise Exception(f"User {params.user_id} does not exists")
 
     wallet = params.existing_records[EntityType.USER][params.user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception("User does not match signer")
+        raise Exception(f"User {params.user_id} does not match signer")
 
     if params.entity_id not in params.existing_records[params.entity_type]:
-        raise Exception("Entity does not exist")
+        raise Exception(f"Entity {params.entity_id} does not exist")
 
     if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
         if params.user_id == params.entity_id:
-            raise Exception("User cannot follow themself")
+            raise Exception(f"User {params.user_id} cannot follow themself")
+
+    if params.action == Action.SUBSCRIBE or params.action == Action.UNSUBSCRIBE:
+        if params.user_id == params.entity_id:
+            raise Exception("User cannot subscribe to themself")
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
@@ -157,7 +220,7 @@ def validate_social_feature(params: ManageEntityParameters):
             ],
         )
         if not premium_content_access["does_user_have_access"]:
-            raise Exception("User has no access to entity")
+            raise Exception(f"User {params.user_id} has no access to entity")
 
 
 def should_check_entity_access(action: Action, entity_type: EntityType):

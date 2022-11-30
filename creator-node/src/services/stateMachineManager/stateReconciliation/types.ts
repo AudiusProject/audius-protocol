@@ -1,5 +1,6 @@
 // eslint-disable-next-line node/no-extraneous-import
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../../utils'
 
 export type SyncRequestAxiosData = {
   wallet: string[]
@@ -39,7 +40,7 @@ export type ForceResyncConfig = {
   wallet: string
   forceResync?: boolean
   libs: any
-  logContext?: any
+  logContext?: LogContext
   logger?: any
 } | null
 
@@ -78,7 +79,7 @@ export type ReplicaToUserInfoMap = {
 }
 export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
   UpdateReplicaSetUser & {
-    unhealthyReplicas: string[]
+    nodesToReconfigOffOf: string[]
     replicaToUserInfoMap: ReplicaToUserInfoMap
     parentSpanContext?: SpanContext
   }

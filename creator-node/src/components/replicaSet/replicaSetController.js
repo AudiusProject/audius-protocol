@@ -20,7 +20,11 @@ const {
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
-const { getSyncStatus, setSyncStatus } = require('../../services/sync/syncUtil')
+const {
+  getSyncStatus,
+  setSyncStatus,
+  checkSyncOverride
+} = require('../../services/sync/syncUtil')
 const {
   enqueueSync,
   processManualImmediateSync
@@ -96,6 +100,9 @@ const _syncRouteController = async (req, _res) => {
   const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
+  const syncOverridePassword = req.body.syncOverridePassword
+
+  const syncOverride = checkSyncOverride(syncOverridePassword)
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -141,6 +148,7 @@ const _syncRouteController = async (req, _res) => {
           wallet
         },
         forceWipe: req.body.forceWipe,
+        syncOverride,
         logContext: req.logContext,
         syncUuid,
 
@@ -180,6 +188,7 @@ const _syncRouteController = async (req, _res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncOverride,
         syncUuid,
         parentSpanContext: tracing.currentSpanContext()
       })
@@ -239,11 +248,15 @@ const mergePrimaryAndSecondaryController = async (req, _res) => {
     }
   }
 
-  await recurringSyncQueue.add('recurring-sync', {
-    syncType,
-    syncMode,
-    syncRequestParameters
-  })
+  await recurringSyncQueue.add(
+    'recurring-sync',
+    {
+      syncType,
+      syncMode,
+      syncRequestParameters
+    },
+    { lifo: !!forceWipe }
+  )
 
   return successResponse()
 }
@@ -316,7 +329,13 @@ router.get(
 )
 router.post(
   '/sync',
-  ensureStorageMiddleware,
+  // Force wipe syncs will free up storage space so we want to perform them regardless of current usage
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  async (req, res, next) => {
+    return req.body?.forceWipe
+      ? next()
+      : ensureStorageMiddleware(req, res, next)
+  },
   handleResponse(syncRouteController)
 )
 router.post(

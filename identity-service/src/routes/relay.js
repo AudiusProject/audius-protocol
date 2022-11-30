@@ -36,6 +36,7 @@ module.exports = function (app) {
           'handle',
           'isBlockedFromRelay',
           'isBlockedFromNotifications',
+          'isBlockedFromEmails',
           'appliedRules'
         ]
       })
@@ -62,7 +63,10 @@ module.exports = function (app) {
       // Handle abusive users
 
       const userFlaggedAsAbusive =
-        user && (user.isBlockedFromRelay || user.isBlockedFromNotifications)
+        user &&
+        (user.isBlockedFromRelay ||
+          user.isBlockedFromNotifications ||
+          user.isBlockedFromEmails)
       if (blockAbuseOnRelay && user && userFlaggedAsAbusive) {
         // allow previously abusive users to redeem themselves for next relays
         if (detectAbuseOnRelay) {
@@ -84,6 +88,27 @@ module.exports = function (app) {
         body.senderAddress &&
         body.encodedABI
       ) {
+        // fire and forget update handle if necessary for early anti-abuse measures
+        ;(async () => {
+          try {
+            if (!user) return
+
+            const useProvisionalHandle = !user.handle && !user.blockchainUserId
+            if (body.handle && useProvisionalHandle) {
+              user.handle = body.handle
+              await user.save()
+              const reqIP = getIP(req)
+              // Perform an abbreviated check here, b/c we
+              // won't have all the requried info on DN for a full check
+              detectAbuse(user, reqIP, true /* abbreviated */)
+            }
+          } catch (e) {
+            req.logger.error(
+              `Error setting provisional handle for user ${user.wallet}: ${e.message}`
+            )
+          }
+        })()
+
         // send tx
         let receipt
         const reqBodySHA = crypto

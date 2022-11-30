@@ -6,8 +6,9 @@ Create Date: 2021-06-22 17:22:00.102134
 
 """
 import logging
-from alembic import op
+
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger(__name__)

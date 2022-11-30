@@ -136,7 +136,6 @@ module.exports = function (app) {
               `Could not find matching ig user in the db: ${profile.username}`
             )
           igUser.profile = profile
-          igUser.verified = profile.is_verified || false
           await igUser.save()
 
           return successResponse(profile)

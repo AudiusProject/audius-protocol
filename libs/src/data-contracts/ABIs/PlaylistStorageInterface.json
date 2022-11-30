@@ -5,14 +5,17 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_userId",
           "type": "uint256"
         },
         {
+          "internalType": "bool",
           "name": "_isAlbum",
           "type": "bool"
         },
         {
+          "internalType": "uint256[]",
           "name": "_trackIds",
           "type": "uint256[]"
         }
@@ -20,6 +23,7 @@
       "name": "createPlaylist",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "newPlaylistId",
           "type": "uint256"
         }
@@ -32,10 +36,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_addedTrackId",
           "type": "uint256"
         }
@@ -50,10 +56,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_deletedTrackId",
           "type": "uint256"
         }
@@ -68,6 +76,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -75,6 +84,7 @@
       "name": "getPlaylistOwner",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "playlistOwnerId",
           "type": "uint256"
         }
@@ -87,10 +97,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_trackId",
           "type": "uint256"
         }
@@ -98,6 +110,7 @@
       "name": "isTrackInPlaylist",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "trackInPlaylist",
           "type": "bool"
         }
@@ -110,6 +123,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -117,6 +131,7 @@
       "name": "playlistExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }

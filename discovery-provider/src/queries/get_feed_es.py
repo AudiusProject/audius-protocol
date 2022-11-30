@@ -14,6 +14,7 @@ from src.utils.elasticdsl import (
 
 
 def get_feed_es(args, limit=10):
+
     current_user_id = str(args.get("user_id"))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]

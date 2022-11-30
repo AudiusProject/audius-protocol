@@ -22,7 +22,7 @@ from src.models.users.user_bank import UserBankAccount
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
-from src.premium_content.signature import get_premium_content_signature
+from src.premium_content.signature import get_premium_content_signature_for_user
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users
@@ -119,6 +119,11 @@ class SortMethod(str, enum.Enum):
     plays = "plays"
     reposts = "reposts"
     saves = "saves"
+
+
+class TransactionSortMethod(str, enum.Enum):
+    date = "date"
+    transaction_type = "transaction_type"
 
 
 class SortDirection(str, enum.Enum):
@@ -533,6 +538,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
 
     for track in premium_tracks:
         track_id = track["track_id"]
+        track_cid = track["track_cid"]
         does_user_have_track_access = (
             current_user_id in premium_content_access["track"]
             and track_id in premium_content_access["track"][current_user_id]
@@ -543,11 +549,12 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
         if does_user_have_track_access:
             track[
                 response_name_constants.premium_content_signature
-            ] = get_premium_content_signature(
+            ] = get_premium_content_signature_for_user(
                 {
-                    "id": track_id,
+                    "id": track_cid,
                     "type": "track",
                     "user_wallet": current_user_wallet[0],
+                    "is_premium": True,
                 }
             )
 
@@ -1231,7 +1238,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     dominant_mood_subquery = (
         session.query(
             Track.mood.label("mood"),
-            func.max(Track.track_id).label("latest"),
+            func.max(Track.created_at).label("latest"),
             func.count(Track.mood).label("cnt"),
         )
         .filter(

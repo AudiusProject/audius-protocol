@@ -1,5 +1,5 @@
 import type { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
-import type { ValuesOf } from './utils'
+import type { ValuesOf, LogContext } from './utils'
 
 import { Queue, QueueEvents, Worker } from 'bullmq'
 import path from 'path'
@@ -7,7 +7,7 @@ import os from 'os'
 
 import config from './config'
 import { logger as genericLogger } from './logging'
-import { clusterUtils } from './utils'
+import { getConcurrencyPerWorker } from './utils'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
@@ -58,7 +58,7 @@ export class ImageProcessingQueue {
     }
     const worker = new Worker('image-processing-queue', processorFile, {
       connection,
-      concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+      concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
     })
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
@@ -74,14 +74,13 @@ export class ImageProcessingQueue {
 
   /**
    * Logs a status message and includes current queue info
-   * @param {object} logContext to create a logger.child(logContext) from
+   * @param {LogContext} logContext to create a logger.child(logContext) from
    * @param {string} message
    */
-  async logStatus(logContext: Object, message: string) {
+  async logStatus(logContext: LogContext, message: string) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.info(`Image Processing Queue: ${message}`)
-    logger.info(`Image Processing Queue: count: ${count}`)
+    logger.info(`Image Processing Queue (count ${count}): ${message}`)
   }
 
   /**
@@ -119,7 +118,7 @@ export class ImageProcessingQueue {
     fileName: string
     sizes: Record<string, number>
     square: boolean
-    logContext: Object
+    logContext: LogContext
   }) {
     const job = await this.queue.add(ProcessNames.resizeImage, {
       file,

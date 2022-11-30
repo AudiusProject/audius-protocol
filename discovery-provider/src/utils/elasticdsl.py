@@ -18,6 +18,8 @@ ES_USERS = "users"
 
 ES_INDEXES = [ES_PLAYLISTS, ES_REPOSTS, ES_SAVES, ES_TRACKS, ES_USERS]
 
+STALE_THRESHOLD_SECONDS = 4 * 60 * 60  # 4 hours
+
 
 def listify(things):
     if isinstance(things, list):

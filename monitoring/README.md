@@ -127,7 +127,7 @@ ssh-add ~/.ssh/id_ed25519.github
 ssh prometheus-grafana-metrics
 cd ~/audius-protocol/monitoring
 
-git checkout master
+git checkout main
 git pull
 
 scripts/deploy.sh prod
@@ -460,8 +460,8 @@ cd ~/audius-protocol/monitoring
 # git checkout -b grafana-$(date "+%F-%H-%M-%S")
 # git add grafana/dashboards/
 
-# return to the master branch prior to logging out
-git checkout master
+# return to the main branch prior to logging out
+git checkout main
 ```
 
 ##### Saving Production Dashboards Locally
@@ -487,7 +487,7 @@ ssh-add ~/.ssh/id_ed25519.github
 ssh prometheus-grafana-metrics
 cd ~/audius-protocol/monitoring
 
-# ensure we're on the latest tip of master
+# ensure we're on the latest tip of main
 git pull
 
 # pull all production dashboards to ensure no manual changes have been made
@@ -507,8 +507,8 @@ git pull
 # "manual mode" supports uploading one file at a time
 # ./grafana/bin/upload-dashboards.sh filename.json
 
-# return to the master branch prior to logging out
-git checkout master
+# return to the main branch prior to logging out
+git checkout main
 ```
 
 ### Releasing Alerts to Production

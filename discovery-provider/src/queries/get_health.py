@@ -19,6 +19,20 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
+from src.tasks.index_rewards_manager_backfill import (
+    check_progress as rewards_manager_backfill_check_progress,
+)
+from src.tasks.index_rewards_manager_backfill import (
+    index_rewards_manager_backfill_complete,
+)
+from src.tasks.index_spl_token_backfill import (
+    check_progress as spl_token_backfill_check_progress,
+)
+from src.tasks.index_spl_token_backfill import index_spl_token_backfill_complete
+from src.tasks.index_user_bank_backfill import (
+    check_progress as user_bank_backfill_check_progress,
+)
+from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
@@ -151,6 +165,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_hash: Optional[str] = None
     last_track_unavailability_job_start_time: Optional[str] = None
     last_track_unavailability_job_end_time: Optional[str] = None
+    is_index_user_bank_backfill_complete: bool = False
+    is_index_rewards_manager_backfill_complete: bool = False
+    is_index_spl_token_backfill_complete: bool = False
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -249,6 +266,36 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
         last_track_unavailability_job_end_time = None
 
+    try:
+        is_index_user_bank_backfill_complete = bool(
+            redis.get(index_user_bank_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_user_bank backfilling is complete: {e}"
+        )
+        is_index_user_bank_backfill_complete = False
+
+    try:
+        is_index_rewards_manager_backfill_complete = bool(
+            redis.get(index_rewards_manager_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_rewards_manager backfilling is complete: {e}"
+        )
+        is_index_rewards_manager_backfill_complete = False
+
+    try:
+        is_index_spl_token_backfill_complete = bool(
+            redis.get(index_spl_token_backfill_complete)
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not check whether index_spl_token backfilling is complete: {e}"
+        )
+        is_index_spl_token_backfill_complete = False
+
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -264,6 +311,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         ]
     )
 
+    url = shared_config["discprov"]["url"]
+    final_poa_block = helpers.get_final_poa_block(shared_config)
+
+    auto_upgrade_enabled = (
+        True if os.getenv("audius_auto_upgrade_enabled") == "true" else False
+    )
+    database_is_localhost = os.getenv(
+        "audius_db_url"
+    ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
+        "audius_db_url", ""
+    )
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -274,6 +333,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "blockhash": latest_indexed_block_hash,
         },
         "git": os.getenv("GIT_SHA"),
+        "auto_upgrade_enabled": auto_upgrade_enabled,
+        "database_is_localhost": database_is_localhost,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
@@ -293,10 +354,24 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "spl_audio_info": spl_audio_info,
         "reactions": reactions_health_info,
         "infra_setup": infra_setup,
+        "url": url,
+        # Temp
+        "latest_block_num": latest_block_num,
+        "latest_indexed_block_num": latest_indexed_block_num,
+        "final_poa_block": final_poa_block,
+        "transactions_history_backfill": {
+            "user_bank_backfilling_complete": is_index_user_bank_backfill_complete,
+            "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
+            "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
+        },
     }
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        block_difference = abs(latest_block_num - latest_indexed_block_num)
+        if final_poa_block and latest_block_num < final_poa_block:
+            latest_block_num += final_poa_block
+        block_difference = abs(
+            latest_block_num - latest_indexed_block_num
+        )  # nethermind offset
     else:
         # If we cannot get a reading from chain about what the latest block is,
         # we set the difference to be an unhealthy amount
@@ -348,6 +423,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
         health_results["tables"] = table_size_info_json
+
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            spl_token_backfill_progress = spl_token_backfill_check_progress(session)
+            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
+                session
+            )
+            user_bank_backfill_progress = user_bank_backfill_check_progress(session)
+
+        health_results["transactions_history_backfill_progress"] = {
+            "user_bank_backfilling_progress": user_bank_backfill_progress,
+            "rewards_manager_backfilling_progress": rewards_manager_backfill_progress,
+            "spl_token_backfilling_progress": spl_token_backfill_progress,
+        }
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff

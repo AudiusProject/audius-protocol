@@ -85,8 +85,23 @@ export interface Download {
   cid: Nullable<string>
 }
 
+export type TokenStandard = 'ERC721' | 'ERC1155'
+
+export type PremiumConditionsEthNFTCollection = {
+  chain: 'eth'
+  standard: TokenStandard
+  address: string
+}
+
+export type PremiumConditionsSolNFTCollection = {
+  chain: 'sol'
+  name: string
+}
+
 export type PremiumConditions = {
-  nft_collection?: string
+  nft_collection?:
+    | PremiumConditionsEthNFTCollection
+    | PremiumConditionsSolNFTCollection
   follow_user_id?: number
 }
 
@@ -100,6 +115,7 @@ export type TrackMetadata = {
   activity_timestamp?: string
   is_delete: boolean
   track_id: number
+  track_cid: string
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>

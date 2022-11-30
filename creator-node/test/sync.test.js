@@ -26,7 +26,7 @@ const sessionManager = require('../src/sessionManager')
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 
-const { saveFileForMultihashToFS } = require('../src/fileManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../src/fileManager')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -180,6 +180,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
         metadata: {
           test: 'field1',
           owner_id: 1,
+          track_cid: transcodedTrackCID,
           track_segments: trackSegments
         },
         source_file: sourceFile
@@ -1083,7 +1084,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
       server = appInfo.server
       app = appInfo.app
 
-      serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
+      serviceRegistryMock = await getServiceRegistryMock(
+        libsMock,
+        BlacklistManager
+      )
     })
 
     afterEach(function () {
@@ -1266,7 +1270,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = true', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeDBEnabled` = true', async () => {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1281,6 +1285,10 @@ describe('Test secondarySyncFromPrimary()', async function () {
 
       setupMocks(sampleExport)
 
+      nock('http://docker.for.mac.localhost:5000')
+        .get((uri) => uri.includes('/users/history'))
+        .reply(200, { data: [] })
+
       // Confirm local user state is empty before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
@@ -1294,8 +1302,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = true
-      config.set('syncForceWipeEnabled', true)
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeDBEnabled` = true
+      config.set('syncForceWipeDBEnabled', true)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
@@ -1325,7 +1333,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeEnabled` = false', async () => {
+    it('Syncs correctly when cnodeUser data already exists locally with `forceResync` = true and `syncForceWipeDBEnabled` = false', async () => {
       // Set this endpoint to the user's secondary
       config.set('creatorNodeEndpoint', MOCK_CN2)
 
@@ -1354,8 +1362,8 @@ describe('Test secondarySyncFromPrimary()', async function () {
         raw: true
       })
 
-      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeEnabled` = false
-      config.set('syncForceWipeEnabled', false)
+      // Call secondarySyncFromPrimary with `forceResync` = true and `syncForceWipeDBEnabled` = false
+      config.set('syncForceWipeDBEnabled', false)
       const { secondarySyncFromPrimary: secondarySyncFromPrimaryMock } =
         proxyquire('../src/services/sync/secondarySyncFromPrimary', {
           '../../config': config,
@@ -1447,7 +1455,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
             }
           },
           '../../fileManager': {
-            saveFileForMultihashToFS: async function (
+            fetchFileFromNetworkAndSaveToFS: async function (
               libs,
               logger,
               multihash,
@@ -1456,7 +1464,7 @@ describe('Test secondarySyncFromPrimary()', async function () {
               fileNameForImage = null,
               trackId = null
             ) {
-              return saveFileForMultihashToFS(
+              return fetchFileFromNetworkAndSaveToFS(
                 libs,
                 logger,
                 multihash,
@@ -1814,7 +1822,10 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
 
     // Define mocks
 
-    serviceRegistryMock = getServiceRegistryMock(libsMock, BlacklistManager)
+    serviceRegistryMock = await getServiceRegistryMock(
+      libsMock,
+      BlacklistManager
+    )
 
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',
@@ -2319,7 +2330,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
         '../initAudiusLibs': async () => libsMock,
         './../../config': config,
         '../../fileManager': {
-          saveFileForMultihashToFS: async function (
+          fetchFileFromNetworkAndSaveToFS: async function (
             libs,
             logger,
             multihash,
@@ -2328,7 +2339,7 @@ describe('Test primarySyncFromSecondary() with mocked export', async () => {
             fileNameForImage = null,
             trackId = null
           ) {
-            return saveFileForMultihashToFS(
+            return fetchFileFromNetworkAndSaveToFS(
               libs,
               logger,
               multihash,

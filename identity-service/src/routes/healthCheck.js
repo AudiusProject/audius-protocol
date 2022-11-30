@@ -226,6 +226,15 @@ module.exports = function (app) {
   )
 
   app.get(
+    '/health_check/poa',
+    handleResponse(async (req, res) => {
+      return successResponse({
+        finalPOABlock: config.get('finalPOABlock')
+      })
+    })
+  )
+
+  app.get(
     '/balance_check',
     handleResponse(async (req, res) => {
       let { minimumBalance, minimumRelayerBalance } = req.query
