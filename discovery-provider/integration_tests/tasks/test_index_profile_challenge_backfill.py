@@ -8,11 +8,7 @@ from src.tasks.index_profile_challenge_backfill import (
     enqueue_social_rewards_check,
     index_profile_challenge_backfill_tablename,
 )
-from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from src.utils.redis_connection import get_redis
-
-REDIS_URL = shared_config["redis"]["url"]
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +23,6 @@ def test_index_related_artists(
     get_latest_mock.return_value = 0
     with app.app_context():
         db = get_db()
-        redis = get_redis()
 
         entities = {
             "users": [{}] * 100,
@@ -45,7 +40,7 @@ def test_index_related_artists(
         }
         populate_mock_db(db, entities)
 
-        enqueue_social_rewards_check(db, bus_mock, redis)
+        enqueue_social_rewards_check(db, bus_mock)
         repost_calls = [
             mock.call.dispatch(ChallengeEvent.repost, i + 2, i) for i in range(1, 50)
         ]

@@ -4,6 +4,7 @@ from typing import Optional
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.indexing.block import Block
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -33,7 +34,9 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
     with db.scoped_session() as session:
         block_backfill = get_latest_backfill(session)
         if block_backfill is None:
-            logger.info("index_profile_challenge_backfill.py | No backfill block")
+            logger.info(
+                "index_profile_challenge_backfill.py | Exit early from backfill"
+            )
             return
         # Do it
         max_blocknumber_seen = block_backfill
@@ -41,8 +44,8 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         reposts = (
             session.query(Repost)
             .filter(
-                Repost.blocknumber > block_backfill,
-                Repost.blocknumber <= block_backfill + BLOCK_INTERVAL,
+                Repost.blocknumber <= block_backfill,
+                Repost.blocknumber > block_backfill - BLOCK_INTERVAL,
             )
             .all()
         )
@@ -54,8 +57,8 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         saves = (
             session.query(Save)
             .filter(
-                Save.blocknumber > block_backfill,
-                Save.blocknumber <= block_backfill + BLOCK_INTERVAL,
+                Save.blocknumber <= block_backfill,
+                Save.blocknumber > block_backfill - BLOCK_INTERVAL,
             )
             .all()
         )
@@ -67,8 +70,8 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
         follows = (
             session.query(Follow)
             .filter(
-                Follow.blocknumber > block_backfill,
-                Follow.blocknumber <= block_backfill + BLOCK_INTERVAL,
+                Follow.blocknumber <= block_backfill,
+                Follow.blocknumber > block_backfill - BLOCK_INTERVAL,
             )
             .all()
         )
@@ -84,7 +87,6 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
 
 def get_latest_backfill(session: Session) -> Optional[int]:
     try:
-
         checkpoint = get_last_indexed_checkpoint(
             session, index_profile_challenge_backfill_tablename
         )
@@ -93,15 +95,23 @@ def get_latest_backfill(session: Session) -> Optional[int]:
             if "backfill_social_rewards_blocknumber" in shared_config["discprov"]
             else None
         )
+        # If the checkpoints is not set, start from the current blocknumber
         if checkpoint == 0:
-            # check config for value
-            if not BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
+            block = session.query(Block).filter(Block.is_current == True).first()
+            if not block:
                 return None
-            return int(BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER)
+            block_number = block.number
+            return block_number
 
-        # NOTE: This will continue until the next release but is fine as the
-        # dispatch of rewards events is idempotent and will validate itself
-        # Fetch the blocknumber associated with this signature
+        # check config for value
+        if not BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
+            logger.info("index_profile_challenge_backfill.py | block number not set")
+            return None
+
+        if checkpoint <= BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
+            logger.info("index_profile_challenge_backfill.py | backfill complete")
+            return None
+
         return checkpoint
 
     except Exception as e:
