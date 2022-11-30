@@ -7,7 +7,7 @@ import os from 'os'
 
 import config from './config'
 import { logger as genericLogger } from './logging'
-import { clusterUtils } from './utils'
+import { getConcurrencyPerWorker } from './utils'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
@@ -58,7 +58,7 @@ export class ImageProcessingQueue {
     }
     const worker = new Worker('image-processing-queue', processorFile, {
       connection,
-      concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+      concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
     })
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)

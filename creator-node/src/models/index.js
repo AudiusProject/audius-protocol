@@ -5,7 +5,7 @@ const path = require('path')
 const Sequelize = require('sequelize')
 
 const config = require('../config')
-const { clusterUtils } = require('../utils/clusterUtils')
+const { getNumWorkers } = require('../utils/cluster/clusterUtils')
 
 const basename = path.basename(__filename)
 const db = {}
@@ -22,7 +22,7 @@ const sequelize = new Sequelize(config.get('dbUrl'), {
   logging: config.get('printSequelizeLogs'),
   operatorsAliases: false,
   pool: {
-    max: config.get('dbConnectionPoolMax') / clusterUtils.getNumWorkers(),
+    max: config.get('dbConnectionPoolMax') / getNumWorkers(),
     min: 5,
     acquire: 60000,
     idle: 10000

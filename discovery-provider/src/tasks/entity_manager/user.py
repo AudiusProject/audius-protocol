@@ -1,6 +1,7 @@
 import logging
 from typing import Dict
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.entity_manager.user_replica_set import parse_sp_ids
@@ -168,6 +169,11 @@ def update_user(params: ManageEntityParameters):
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
     params.add_user_record(user_id, user_record)
+    params.challenge_bus.dispatch(
+        ChallengeEvent.profile_update,
+        params.block_number,
+        user_id,
+    )
 
     return user_record
 
@@ -188,5 +194,10 @@ def verify_user(params: ManageEntityParameters):
     user_record = validate_user_record(user_record)
     user_record.is_verified = True
     params.add_user_record(user_id, user_record)
+    params.challenge_bus.dispatch(
+        ChallengeEvent.connect_verified,
+        params.block_number,
+        user_id,
+    )
 
     return user_record

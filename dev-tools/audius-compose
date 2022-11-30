@@ -3,8 +3,6 @@
 import json
 import os
 import pathlib
-import random
-import string
 import subprocess
 
 import click
