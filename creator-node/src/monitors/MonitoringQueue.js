@@ -8,7 +8,7 @@ const {
   getMonitorRedisKey
 } = require('./monitors')
 const { logger } = require('../logging')
-const { clusterUtils } = require('../utils')
+const { clusterUtilsForWorker, clearActiveJobs } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -28,7 +28,7 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor(prometheusRegistry) {
+  async init(prometheusRegistry) {
     const connection = {
       host: config.get('redisHost'),
       port: config.get('redisPort')
@@ -44,11 +44,12 @@ class MonitoringQueue {
     this.prometheusRegistry = prometheusRegistry
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
-    if (clusterUtils.isThisWorkerInit()) {
-      this.queue.drain(true)
-      this.seedInitialValues()
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await this.queue.obliterate({ force: true })
+      await clearActiveJobs(this.queue, logger)
+      await this.seedInitialValues()
     }
-    if (clusterUtils.isThisWorkerSpecial()) {
+    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
       const _worker = new Worker(
         'monitoring-queue',
         async (_job) => {
@@ -141,7 +142,7 @@ class MonitoringQueue {
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
-    if (clusterUtils.isThisWorkerSpecial()) {
+    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
       try {
         // Run the job immediately
         await this.queue.add(PROCESS_NAMES.monitor, {})

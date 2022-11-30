@@ -1,5 +1,9 @@
+import type { Queue } from 'bullmq'
+import type Logger from 'bunyan'
+
 import { range } from 'lodash'
 import { recoverPersonalSignature } from 'eth-sig-util'
+
 import { logger as genericLogger } from '../logging'
 import config from '../config'
 
@@ -33,6 +37,14 @@ export function isFqdn(url: string) {
     /(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/gm
   )
   return fqdn.test(url)
+}
+
+export async function clearActiveJobs(queue: Queue, queueLogger: Logger) {
+  const oldActiveJobs = await queue.getJobs(['active'])
+  queueLogger.info(
+    `Removing ${oldActiveJobs.length} leftover active jobs from ${queue.name}`
+  )
+  return Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
 }
 
 export function getCharsInRange(startChar: string, endChar: string): string[] {
