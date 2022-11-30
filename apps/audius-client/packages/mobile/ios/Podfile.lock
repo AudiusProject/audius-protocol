@@ -361,7 +361,7 @@ PODS:
     - React
   - react-native-keep-awake (1.1.0):
     - React-Core
-  - react-native-music-control (1.4.0):
+  - react-native-music-control (1.4.1):
     - React-Core
   - react-native-netinfo (9.3.0):
     - React-Core
@@ -822,7 +822,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: ae1202414bd5c37c00b2a701daa5b6194a06b7d9
   react-native-job-queue: b5ab7a599f4cdef5b20905172972f0a4bbd69770
   react-native-keep-awake: 16f22b2dc09f7ede9f46e3b187a824a1841f1ddf
-  react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
+  react-native-music-control: 70cfb4520a2244818a61c92f3b00ee674d8c7a73
   react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
