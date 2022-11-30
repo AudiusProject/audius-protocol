@@ -5,7 +5,6 @@ from unittest import mock
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
-from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -43,8 +42,7 @@ def set_patches(mocker):
     )
 
     event_bus = mocker.patch(
-        "src.challenges.challenge_event_bus.ChallengeEventBus",
-        autospec=True
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
     )
     return event_bus
 
