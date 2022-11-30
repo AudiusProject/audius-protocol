@@ -50,6 +50,7 @@ COPY ./anchor/audius-data/target ./anchor/audius-data/target
 RUN rm ./target/deploy/*-keypair.json
 # endif
 
+ARG BUILDTARGET
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
@@ -85,6 +86,7 @@ COPY --from=builder /workspace/bin/ /workspace/bin
 COPY --from=builder /root/.config/solana/ /root/.config/solana
 COPY --from=builder /usr/db/ /usr/db
 
+ENV PATH="/workspace/bin:${PATH}"
 RUN solana config set --url "http://127.0.0.1:8899"
 
 CMD [ "solana-test-validator", "--ledger", "/usr/db" ]

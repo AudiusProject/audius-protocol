@@ -75,7 +75,9 @@ if [[ ! "$OSTYPE" =~ ^darwin ]]; then
     cargo install --debug --target-dir ./target --path reward-manager/cli
     cargo install --debug --target-dir ./target --path claimable-tokens/cli
 
-    # on osx these files are required to be built on host and copied in during docker build
-    cargo build-bpf
-    cd anchor/audius-data && anchor build -- --bpf-sdk=/workspace/solana/sdk/bpf
+    if [[ $BUILDTARGET == "x86_64" ]]; then
+        # on M1 (arm64) these files are required to be built on host and copied in during docker build
+        cargo build-bpf
+        cd anchor/audius-data && anchor build
+    fi
 fi
