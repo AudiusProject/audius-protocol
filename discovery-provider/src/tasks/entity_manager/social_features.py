@@ -1,5 +1,6 @@
 from typing import Union
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -18,6 +19,15 @@ action_to_record_type = {
     Action.UNREPOST: EntityType.REPOST,
     Action.SUBSCRIBE: EntityType.SUBSCRIPTION,
     Action.UNSUBSCRIBE: EntityType.SUBSCRIPTION,
+}
+
+action_to_challenge_event = {
+    Action.FOLLOW: ChallengeEvent.follow,
+    Action.UNFOLLOW: ChallengeEvent.follow,
+    Action.SAVE: ChallengeEvent.favorite,
+    Action.UNSAVE: ChallengeEvent.favorite,
+    Action.REPOST: ChallengeEvent.repost,
+    Action.UNREPOST: ChallengeEvent.repost,
 }
 
 create_social_action_types = {
@@ -103,6 +113,13 @@ def create_social_record(params: ManageEntityParameters):
             create_record,
         )
 
+        # dispatch repost, favorite, follow challenges
+        if params.action in action_to_challenge_event:
+            challenge_event = action_to_challenge_event[params.action]
+            params.challenge_bus.dispatch(
+                challenge_event, params.block_number, params.user_id
+            )
+
 
 def delete_social_record(params):
 
@@ -165,6 +182,13 @@ def delete_social_record(params):
             record_type,
             deleted_record,
         )
+
+        # dispatch repost, favorite, follow challenges
+        if params.action in action_to_challenge_event:
+            challenge_event = action_to_challenge_event[params.action]
+            params.challenge_bus.dispatch(
+                challenge_event, params.block_number, params.user_id
+            )
 
 
 def validate_social_feature(params: ManageEntityParameters):
