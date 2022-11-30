@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
@@ -29,9 +29,7 @@ index_profile_challenge_backfill_tablename = "index_profile_challenge_backfill"
 BLOCK_INTERVAL = 1000
 
 
-def enqueue_social_rewards_check(
-    db: SessionManager, challenge_bus: ChallengeEventBus, redis: Redis
-):
+def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):
     with db.scoped_session() as session:
         block_backfill = get_latest_backfill(session)
         if block_backfill is None:
@@ -40,7 +38,7 @@ def enqueue_social_rewards_check(
         # Do it
         max_blocknumber_seen = block_backfill
         # reposts of tracks and playlists reposts
-        reposts: List[Repost] = (
+        reposts = (
             session.query(Repost)
             .filter(
                 Repost.blocknumber > block_backfill,
@@ -49,10 +47,11 @@ def enqueue_social_rewards_check(
             .all()
         )
         for repost in reposts:
-            dispatch_challenge_repost(challenge_bus, repost, repost.blocknumber)
-            max_blocknumber_seen = max(repost.blocknumber, max_blocknumber_seen)
+            repost_blocknumber: int = repost.blocknumber
+            dispatch_challenge_repost(challenge_bus, repost, repost_blocknumber)
+            max_blocknumber_seen = max(repost_blocknumber, max_blocknumber_seen)
 
-        saves: List[Save] = (
+        saves = (
             session.query(Save)
             .filter(
                 Save.blocknumber > block_backfill,
@@ -61,10 +60,11 @@ def enqueue_social_rewards_check(
             .all()
         )
         for save in saves:
-            dispatch_favorite(challenge_bus, save, save.blocknumber)
-            max_blocknumber_seen = max(save.blocknumber, max_blocknumber_seen)
+            save_blocknumber: int = save.blocknumber
+            dispatch_favorite(challenge_bus, save, save_blocknumber)
+            max_blocknumber_seen = max(save_blocknumber, max_blocknumber_seen)
 
-        follows: List[Follow] = (
+        follows = (
             session.query(Follow)
             .filter(
                 Follow.blocknumber > block_backfill,
@@ -73,8 +73,9 @@ def enqueue_social_rewards_check(
             .all()
         )
         for follow in follows:
-            dispatch_challenge_follow(challenge_bus, follow, follow.blocknumber)
-            max_blocknumber_seen = max(follow.blocknumber, max_blocknumber_seen)
+            follow_blocknumber: int = follow.blocknumber
+            dispatch_challenge_follow(challenge_bus, follow, follow_blocknumber)
+            max_blocknumber_seen = max(follow_blocknumber, max_blocknumber_seen)
 
         save_indexed_checkpoint(
             session, index_profile_challenge_backfill_tablename, max_blocknumber_seen
@@ -85,7 +86,7 @@ def get_latest_backfill(session: Session) -> Optional[int]:
     try:
 
         checkpoint = get_last_indexed_checkpoint(
-            index_profile_challenge_backfill_tablename
+            session, index_profile_challenge_backfill_tablename
         )
         BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER = (
             shared_config["discprov"]["backfill_social_rewards_blocknumber"]
@@ -96,7 +97,7 @@ def get_latest_backfill(session: Session) -> Optional[int]:
             # check config for value
             if not BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
                 return None
-            return BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER
+            return int(BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER)
 
         # NOTE: This will continue until the next release but is fine as the
         # dispatch of rewards events is idempotent and will validate itself
@@ -131,7 +132,7 @@ def index_profile_challenge_backfill(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_profile_challenge_backfill.py | Acquired lock")
-            enqueue_social_rewards_check(db, challenge_bus, redis)
+            enqueue_social_rewards_check(db, challenge_bus)
         else:
             logger.info("index_profile_challenge_backfill.py | Failed to acquire lock")
     except Exception as e:
