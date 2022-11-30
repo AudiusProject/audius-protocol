@@ -663,8 +663,8 @@ def index_user_bank_backfill(self):
     solana_client_manager = index_user_bank_backfill.solana_client_manager
 
     try:
-        earliest_program_slot = redis.get(index_user_bank_backfill_min_slot)
         # Fetch earliest program slot for use in check_progress() (used by get_health.py)
+        earliest_program_slot = redis.get(index_user_bank_backfill_min_slot)
         if not earliest_program_slot:
             earliest_tx_info = solana_client_manager.get_sol_tx_info(MIN_SIG)
             earliest_program_slot = earliest_tx_info["result"]["slot"]
@@ -673,8 +673,12 @@ def index_user_bank_backfill(self):
         earliest_program_slot = int(earliest_program_slot)
 
         with db.scoped_session() as session:
-            if not find_earliest_audio_tx_hist_tx(session, solana_client_manager):
-                return
+            # Ensure that there is at least one relevant tx in audio_transactions_history
+            # table, and that IndexingCheckpoints is populated.
+            earliest_processed_sig, _ = get_earliest_processed_tx(session)
+            if not earliest_processed_sig:
+                if not find_earliest_audio_tx_hist_tx(session, solana_client_manager):
+                    return
 
             if check_if_backfilling_complete(
                 earliest_program_slot, session, solana_client_manager, redis
