@@ -315,7 +315,6 @@ export async function getReplicaSetEndpointsByWallet({
   wallet,
   parentLogger
 }: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
-  throw new Error('force failed replica set fetch')
   const user: { user_id: number } = (
     await libs.User.getUsers(1, 0, null, wallet)
   )[0]
