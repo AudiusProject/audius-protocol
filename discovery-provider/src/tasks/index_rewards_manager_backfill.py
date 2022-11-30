@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, TypedDict
 
 import base58
 from redis import Redis
-from sqlalchemy import and_, asc, desc, or_
+from sqlalchemy import asc, or_
 from sqlalchemy.orm.session import Session
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.rewards.challenge import Challenge, ChallengeType
@@ -25,7 +25,6 @@ from src.models.users.user_bank import UserBankAccount
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_parser import (
@@ -444,7 +443,7 @@ def get_transaction_signatures(
             transactions_array = transactions_history["result"]
             if not transactions_array:
                 logger.info(
-                    f"index_rewards_manager_backfill.py | No transactions found before {last_tx_signature}, got {transactions_array}"
+                    f"index_rewards_manager_backfill.py | No transactions found before {earliest_processed_sig}, got {transactions_array}"
                 )
                 if earliest_processed_sig != MIN_SIG:
                     logger.error(
@@ -539,7 +538,7 @@ def process_transaction_signatures(
                 record.signature = earliest_tx_sig
             else:
                 logger.error(
-                    f"index_rewards_manager_backfill.py | Indexing checkpoint did not exist"
+                    "index_rewards_manager_backfill.py | Indexing checkpoint did not exist"
                 )
                 raise Exception("Indexing checkpoint did not exist")
             logger.info(
