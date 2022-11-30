@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import List
+from unittest import mock
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
+from src.challenges.challenge_event import ChallengeEvent
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
@@ -40,18 +42,23 @@ def set_patches(mocker):
         autospec=True,
     )
 
+    event_bus = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus",
+        autospec=True
+    )
+    return event_bus
+
 
 def test_index_valid_user(app, mocker):
     "Tests valid batch of users create/update/delete actions"
 
-    set_patches(mocker)
+    bus_mock = set_patches(mocker)
 
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(None, web3, challenge_event_bus)
+        update_task = UpdateTask(None, web3, bus_mock)
 
     tx_receipts = {
         "CreateUser1Tx": [
@@ -268,6 +275,12 @@ def test_index_valid_user(app, mocker):
         )
         assert user_2.name == "Forrest"
         assert user_2.handle == "forrest"
+        calls = [
+            mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
+            mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),
+            mock.call.dispatch(ChallengeEvent.mobile_install, 1, USER_ID_OFFSET),
+        ]
+        bus_mock.assert_has_calls(calls, any_order=True)
 
 
 def test_index_invalid_users(app, mocker):
@@ -567,13 +580,17 @@ def test_index_invalid_users(app, mocker):
 
 def test_index_verify_users(app, mocker):
     "Tests user verify actions"
-    set_patches(mocker)
+    bus_mock = set_patches(mocker)
 
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(
+            None,
+            web3,
+            challenge_event_bus=bus_mock,
+        )
 
         tx_receipts = {
             "VerifyUser": [
@@ -651,3 +668,5 @@ def test_index_verify_users(app, mocker):
             assert len(all_users) == 2  # no new users indexed
             assert all_users[0].is_verified  # user 1 is verified
             assert not all_users[1].is_verified  # user 2 is not verified
+            calls = [mock.call.dispatch(ChallengeEvent.connect_verified, 0, 1)]
+            bus_mock.assert_has_calls(calls, any_order=True)
