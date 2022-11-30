@@ -570,6 +570,7 @@ async function _migrateDirsWithLegacyStoragePaths(
     let prevLegacyStoragePathsAndCids
     let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
     while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
+      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
       legacyStoragePathsAndCids =
         await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
       if (legacyStoragePathsAndCids.length) {
