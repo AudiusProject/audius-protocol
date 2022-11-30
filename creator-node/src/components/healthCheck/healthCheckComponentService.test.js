@@ -9,7 +9,7 @@ const {
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
-const { clusterUtils } = require('../../../src/utils/clusterUtils')
+const { getNumWorkers } = require('../../../src/utils/clusterUtils')
 
 const TEST_ENDPOINT = 'test_endpoint'
 
@@ -264,7 +264,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 
@@ -384,7 +384,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 
@@ -491,7 +491,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -641,7 +641,7 @@ describe('Test Health Check Verbose', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 
