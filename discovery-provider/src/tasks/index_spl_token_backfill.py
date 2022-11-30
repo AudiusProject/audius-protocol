@@ -3,7 +3,7 @@ import datetime
 import logging
 import time
 from decimal import Decimal
-from typing import Any, List, Optional, Set, Tuple, TypedDict
+from typing import Any, List, Optional, Set, TypedDict
 
 import base58
 from redis import Redis
@@ -190,19 +190,10 @@ def parse_spl_token_transaction(
 
 def process_spl_token_transactions(
     txs: List[SplTokenTransactionInfo], user_bank_set: Set[str]
-) -> Tuple[List[AudioTransactionsHistory], List[SPLTokenBackfillTransaction]]:
+) -> List[AudioTransactionsHistory]:
     try:
         audio_txs: List[AudioTransactionsHistory] = []
-        spl_backfill_txs: List[SPLTokenBackfillTransaction] = []
         for tx_info in txs:
-            spl_backfill_txs.append(
-                SPLTokenBackfillTransaction(
-                    slot=tx_info["slot"],
-                    signature=tx_info["signature"],
-                    created_at=tx_info["timestamp"],
-                )
-            )
-
             # Disregard if recipient account is not a user_bank
             if tx_info["user_bank"] not in user_bank_set:
                 continue
@@ -242,7 +233,7 @@ def process_spl_token_transactions(
                         tx_metadata=None,
                     )
                 )
-        return (audio_txs, spl_backfill_txs)
+        return audio_txs
 
     except Exception as e:
         logger.error(
@@ -328,16 +319,22 @@ def parse_sol_tx_batch(
             )
             user_bank_set = {user[1] for user in user_result}
 
-            audio_txs, spl_backfill_txs = process_spl_token_transactions(
-                spl_token_txs, user_bank_set
-            )
+            audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
             if audio_txs:
                 session.bulk_save_objects(audio_txs)
                 logger.info(
                     f"index_spl_token_backfill.py | added txs to audio_tx_hist table starting with: {audio_txs[0]}"
                 )
-            if spl_backfill_txs:
-                session.bulk_save_objects(spl_backfill_txs)
+
+        spl_backfill_txs = [
+            SPLTokenBackfillTransaction(
+                slot=tx["slot"],
+                signature=tx["signature"],
+                created_at=datetime.datetime.utcfromtimestamp(tx["blockTime"]),
+            )
+            for tx in tx_sig_batch_records
+        ]
+        session.bulk_save_objects(spl_backfill_txs)
 
         # Checkpoint earliest processed signature
         record = (
