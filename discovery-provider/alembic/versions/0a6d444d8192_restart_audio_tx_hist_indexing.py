@@ -1,7 +1,7 @@
 """restart_audio_tx_hist_indexing
 
 Revision ID: 0a6d444d8192
-Revises: 959f15b94094
+Revises: 1eec1d124caf
 Create Date: 2022-11-20 19:42:21.304552
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0a6d444d8192"
-down_revision = "959f15b94094"
+down_revision = "1eec1d124caf"
 branch_labels = None
 depends_on = None
 
