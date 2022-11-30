@@ -105,7 +105,8 @@ export const SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS = [
   'failure_export_wallet',
   'failure_import_not_consistent',
   'failure_import_not_contiguous',
-  'failure_inconsistent_clock'
+  'failure_inconsistent_clock',
+  'failure_undefined_sync_status'
 ] as const
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
@@ -189,7 +190,7 @@ export const METRIC_LABELS = Object.freeze({
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
       'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
-      'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
+      'no_sync_max_errors_encountered', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
       'no_sync_error_computing_sync_mode', // Sync not found because of failure to compute sync mode
       'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
       'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
