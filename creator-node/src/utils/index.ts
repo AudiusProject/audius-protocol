@@ -40,9 +40,9 @@ import {
   isClusterEnabled,
   getNumWorkers,
   getConcurrencyPerWorker
-} from './clusterUtils'
-import { clusterUtilsForPrimary } from './clusterUtilsForPrimary'
-import { clusterUtilsForWorker } from './clusterUtilsForWorker'
+} from './cluster/clusterUtils'
+import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
 
 export * from './types'
 export {

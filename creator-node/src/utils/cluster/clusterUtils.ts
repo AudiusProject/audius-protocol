@@ -1,7 +1,7 @@
 import type { CpuInfo } from 'os'
 const { cpus }: { cpus: () => CpuInfo[] } = require('os')
 
-const config = require('../config')
+const config = require('../../config')
 
 /**
  * Returns true if cluster mode is enabled. If it's disabled, then

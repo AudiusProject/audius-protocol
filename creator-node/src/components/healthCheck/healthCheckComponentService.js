@@ -4,7 +4,7 @@ const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
 const utils = require('../../utils')
-const { getNumWorkers } = require('../../utils/clusterUtils')
+const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu

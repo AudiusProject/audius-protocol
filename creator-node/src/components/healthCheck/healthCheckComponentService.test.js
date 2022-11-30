@@ -9,7 +9,7 @@ const {
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
-const { getNumWorkers } = require('../../../src/utils/clusterUtils')
+const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 
 const TEST_ENDPOINT = 'test_endpoint'
 

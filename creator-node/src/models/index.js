@@ -5,7 +5,7 @@ const path = require('path')
 const Sequelize = require('sequelize')
 
 const config = require('../config')
-const { getNumWorkers } = require('../utils/clusterUtils')
+const { getNumWorkers } = require('../utils/cluster/clusterUtils')
 
 const basename = path.basename(__filename)
 const db = {}
