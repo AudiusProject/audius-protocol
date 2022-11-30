@@ -89,4 +89,7 @@ COPY --from=builder /usr/db/ /usr/db
 ENV PATH="/workspace/bin:${PATH}"
 RUN solana config set --url "http://127.0.0.1:8899"
 
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
+    CMD solana balance $(solana address) || exit 1
+
 CMD [ "solana-test-validator", "--ledger", "/usr/db" ]

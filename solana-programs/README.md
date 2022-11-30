@@ -34,10 +34,13 @@ Yet, `cargo build-bpf` compiles successfully when run on the host (OSX Darwin). 
 - Build the docker image
   ```
   cd audius-project
-  docker compose -f docker-compose.m1.yml build
+  docker compose -f docker-compose.m1.build.yml build
   ```
-
-You now have a working image for M1.
+- You now have a working image for M1. Push to dockerhub
+  ```
+  # TODO audius dockerhub auth
+  docker push endliine/solana-programs:m1
+  ```
 
 <!-- # Below are deprecated
 ## Testing
