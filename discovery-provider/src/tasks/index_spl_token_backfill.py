@@ -3,7 +3,7 @@ import datetime
 import logging
 import time
 from decimal import Decimal
-from typing import Any, List, Optional, Set, TypedDict
+from typing import Any, List, Optional, Set, Tuple, TypedDict
 
 import base58
 from redis import Redis
@@ -154,8 +154,6 @@ def parse_spl_token_transaction(
 
         tx_sig = tx["signature"]
         tx_slot = result["slot"]
-        record = SPLTokenBackfillTransaction(slot=tx_slot, signature=tx_sig)
-        session.add(record)
 
         memo_encoded = parse_memo_instruction(result)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
@@ -193,10 +191,19 @@ def parse_spl_token_transaction(
 
 def process_spl_token_transactions(
     txs: List[SplTokenTransactionInfo], user_bank_set: Set[str]
-) -> List[AudioTransactionsHistory]:
+) -> Tuple[List[AudioTransactionsHistory], List[SPLTokenBackfillTransaction]]:
     try:
-        audio_txs = []
+        audio_txs: List[AudioTransactionsHistory] = []
+        spl_backfill_txs: List[SPLTokenBackfillTransaction] = []
         for tx_info in txs:
+            spl_backfill_txs.append(
+                SPLTokenBackfillTransaction(
+                    slot=tx_info["slot"],
+                    signature=tx_info["signature"],
+                    created_at=tx_info["timestamp"],
+                )
+            )
+
             # Disregard if recipient account is not a user_bank
             if tx_info["user_bank"] not in user_bank_set:
                 continue
@@ -236,7 +243,7 @@ def process_spl_token_transactions(
                         tx_metadata=None,
                     )
                 )
-        return audio_txs
+        return (audio_txs, spl_backfill_txs)
 
     except Exception as e:
         logger.error(
@@ -322,12 +329,16 @@ def parse_sol_tx_batch(
             )
             user_bank_set = {user[1] for user in user_result}
 
-            audio_txs = process_spl_token_transactions(spl_token_txs, user_bank_set)
+            audio_txs, spl_backfill_txs = process_spl_token_transactions(
+                spl_token_txs, user_bank_set
+            )
             if audio_txs:
                 session.bulk_save_objects(audio_txs)
                 logger.info(
                     f"index_spl_token_backfill.py | added txs to audio_tx_hist table starting with: {audio_txs[0]}"
                 )
+            if spl_backfill_txs:
+                session.bulk_save_objects(spl_backfill_txs)
 
         # Checkpoint earliest processed signature
         record = (
@@ -389,7 +400,8 @@ def process_spl_token_tx(
             f"index_spl_token_backfill.py | high tx = {earliest_processed_sig}, slot = {earliest_processed_slot}"
         )
 
-    while len(transaction_signatures) < TX_SIGNATURES_MAX_BATCHES:
+    while len(transaction_signatures) < 10:
+        # while len(transaction_signatures) < TX_SIGNATURES_MAX_BATCHES:
         logger.info(f"Requesting transactions before {earliest_processed_sig}")
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,
