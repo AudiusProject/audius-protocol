@@ -156,6 +156,34 @@ def build(
 
 
 @cli.command()
+@click.argument("service")
+@click.argument("name")
+@click.argument("value")
+@click.pass_obj
+def set_env(protocol_dir, service, name, value):
+    env_file = protocol_dir / f"dev-tools/startup/{service}.env"
+    dotenv.set_key(env_file, name, value)
+
+
+@cli.command()
+@click.argument("service")
+@click.argument("environment")
+@click.pass_obj
+def load_env(protocol_dir, service, environment):
+    replica = 1
+    parts = service.split("-")
+    if parts[-1].isdigit():
+        service, replica = "-".join(parts[:-1]), int(parts[-1])
+
+    env_file = protocol_dir / f"dev-tools/startup/{service}-{replica}.env"
+
+    with urllib.request.urlopen(
+        f"https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/{service}/{environment}.env"
+    ) as resp:
+        env_file.write_bytes(resp.read())
+
+
+@cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
