@@ -1,8 +1,10 @@
 import logging
 from typing import List
+from unittest import mock
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event import ChallengeEvent
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
@@ -19,12 +21,15 @@ logger = logging.getLogger(__name__)
 
 def test_index_valid_social_features(app, mocker):
     "Tests valid batch of social create/update/delete actions"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
 
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -272,6 +277,15 @@ def test_index_valid_social_features(app, mocker):
         assert len(aggregate_playlists) == 1
         aggregate_palylist = aggregate_playlists[0]
         assert aggregate_palylist.repost_count == 1
+    calls = [
+        mock.call.dispatch(ChallengeEvent.follow, 1, 1),
+        mock.call.dispatch(ChallengeEvent.follow, 1, 1),
+        mock.call.dispatch(ChallengeEvent.favorite, 1, 1),
+        mock.call.dispatch(ChallengeEvent.favorite, 1, 1),
+        mock.call.dispatch(ChallengeEvent.repost, 1, 1),
+        mock.call.dispatch(ChallengeEvent.repost, 1, 1),
+    ]
+    bus_mock.assert_has_calls(calls, any_order=True)
 
 
 def test_index_invalid_social_features(app, mocker):
