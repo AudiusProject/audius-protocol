@@ -142,7 +142,8 @@ def index_profile_challenge_backfill(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_profile_challenge_backfill.py | Acquired lock")
-            enqueue_social_rewards_check(db, challenge_bus)
+            with challenge_bus.use_scoped_dispatch_queue():
+                enqueue_social_rewards_check(db, challenge_bus)
         else:
             logger.info("index_profile_challenge_backfill.py | Failed to acquire lock")
     except Exception as e:
