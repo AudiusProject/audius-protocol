@@ -1,4 +1,4 @@
-FROM alpine:3.13 AS base
+FROM alpine:3.14 AS base
 
 WORKDIR /usr/src/app
 
@@ -9,7 +9,7 @@ ENV storagePath=/file_storage
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
 COPY scripts/wait /usr/bin/wait
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/main' >> /etc/apk/repositories && \
     apk update && \
     apk add \
         bash=5.1.16-r0 \
@@ -25,12 +25,12 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         py3-pip \
         python3 \
         python3-dev \
-        redis=6.0.16-r0 \
+        redis=6.2.7-r0 \
         rsyslog=8.2012.0-r3 \
         sudo=1.9.5p2-r0
 
 # Install openresty with public key
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.14/community' >> /etc/apk/repositories && \
     apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \

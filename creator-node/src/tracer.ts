@@ -16,12 +16,12 @@ import {
   SemanticResourceAttributes as ResourceAttributesSC
 } from '@opentelemetry/semantic-conventions'
 import { FsInstrumentation } from '@opentelemetry/instrumentation-fs'
-import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis'
 
 import config from './config'
 
@@ -83,7 +83,7 @@ export const setupTracing = () => {
       new ExpressInstrumentation(),
 
       // Adds spans to redis operations
-      new RedisInstrumentation(),
+      new IORedisInstrumentation(),
 
       // Adds spans to filesystem operatioons
       new FsInstrumentation(),
