@@ -48,9 +48,11 @@ export const getSolanaConnection = async () => {
 export const getRootAccountRentExemptionMinimum = async () => {
   await waitForLibsInit()
   const connection = await getSolanaConnection()
-  return await connection.getMinimumBalanceForRentExemption(
-    ROOT_ACCOUNT_SIZE,
-    'processed'
+  return (
+    (await connection.getMinimumBalanceForRentExemption(
+      ROOT_ACCOUNT_SIZE,
+      'processed'
+    )) + 5000 // Temporary fix to pad such that we can always transfer if there's leftovers
   )
 }
 
