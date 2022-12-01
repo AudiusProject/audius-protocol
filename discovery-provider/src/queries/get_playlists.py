@@ -1,7 +1,6 @@
 import logging
 from typing import List, TypedDict  # pylint: disable=C0302
 
-import sqlalchemy
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.exc import NoResultFound
 from src import exceptions
