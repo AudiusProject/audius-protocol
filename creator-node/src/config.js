@@ -834,18 +834,6 @@ const config = convict({
     env: 'reconfigSPIdBlacklistString',
     default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   },
-  recordSyncResults: {
-    doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
-    format: Boolean,
-    env: 'recordSyncResults',
-    default: true
-  },
-  processSyncResults: {
-    doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
-    format: Boolean,
-    env: 'processSyncResults',
-    default: true
-  },
   syncOverridePassword: {
     doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
     format: String,
