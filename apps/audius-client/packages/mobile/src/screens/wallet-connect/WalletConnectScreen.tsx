@@ -32,18 +32,20 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: typography.fontSize.xl,
+    fontSize: typography.fontSize.xxl,
     color: palette.secondary,
     marginVertical: spacing(6)
   },
   text: {
-    textAlign: 'center'
+    marginHorizontal: spacing(4),
+    textAlign: 'center',
+    lineHeight: 24
   },
   connectButton: {
-    marginTop: spacing(4)
+    marginTop: spacing(6)
   },
   linkedWallets: {
-    marginTop: spacing(4)
+    marginTop: spacing(6)
   }
 }))
 
@@ -70,7 +72,7 @@ export const WalletConnectScreen = () => {
         <Text weight='bold' style={styles.subtitle}>
           {messages.subtitle}
         </Text>
-        <Text fontSize='medium' style={styles.text}>
+        <Text weight='medium' fontSize='medium' style={styles.text}>
           {messages.text}
         </Text>
         <Button
