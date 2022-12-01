@@ -63,6 +63,7 @@ import oauthSagas from './oauth/sagas'
 import settingsSagas from './settings/sagas'
 import signOutSagas from './sign-out/sagas'
 import themeSagas from './theme/sagas'
+import walletsSagas from './wallet-connect/sagas'
 
 export default function* rootSaga() {
   const sagas = [
@@ -148,7 +149,8 @@ export default function* rootSaga() {
 
     initKeyboardEvents,
     ...remoteConfig(),
-    ...oauthSagas()
+    ...oauthSagas(),
+    ...walletsSagas()
   ]
 
   yield* all(sagas.map(fork))

@@ -1,5 +1,5 @@
 export { LinkedWallets } from './LinkedWallets'
 export {
-  WalletsDrawer,
+  WalletConnectDrawer as WalletsDrawer,
   WalletConnectProviderRenderModal
-} from './WalletsDrawer'
+} from './WalletConnectDrawer'

@@ -1,18 +1,21 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
+import { useRoute } from '@react-navigation/native'
 import { useWalletConnect } from '@walletconnect/react-native-dapp'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { Button, Text, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { connectNewWallet, signMessage } from 'app/store/wallet-connect/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 
 import { LinkedWallets } from './components'
-import type { WalletConnectParamList } from './types'
+import type { WalletConnectParamList, WalletConnectRoute } from './types'
 
 const messages = {
   title: 'Connect Wallets',
@@ -26,9 +29,7 @@ const messages = {
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     paddingVertical: spacing(4),
-    paddingHorizontal: spacing(4),
-    height: '100%',
-    backgroundColor: 'white'
+    paddingHorizontal: spacing(4)
   },
   subtitle: {
     textAlign: 'center',
@@ -53,6 +54,17 @@ export const WalletConnectScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<WalletConnectParamList>()
   const connector = useWalletConnect()
+  const dispatch = useDispatch()
+  const { params } = useRoute<WalletConnectRoute<'Wallets'>>()
+
+  useEffect(() => {
+    if (!params) return
+    if (params.path === 'wallet-connect') {
+      dispatch(connectNewWallet(params))
+    } else if (params.path === 'wallet-sign-message') {
+      dispatch(signMessage(params))
+    }
+  }, [params?.path, params, dispatch])
 
   const handleConnectWallet = useCallback(() => {
     connector.connect()
@@ -62,7 +74,7 @@ export const WalletConnectScreen = () => {
     <Screen
       title={messages.title}
       icon={IconLink}
-      variant='secondary'
+      variant='white'
       topbarLeft={
         <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
       }

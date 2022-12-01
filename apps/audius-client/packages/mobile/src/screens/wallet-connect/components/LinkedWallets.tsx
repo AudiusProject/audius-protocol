@@ -67,6 +67,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   linkedWalletLogo: {
     marginRight: spacing(2)
   },
+  linkedWalletActions: {
+    width: spacing(7)
+  },
   chainIcon: {
     borderWidth: 1,
     borderColor: palette.neutralLight7,
@@ -260,6 +263,7 @@ export const LinkedWallets = () => {
         >
           {messages.audio}
         </Text>
+        <View />
       </View>
       <FlatList
         renderItem={({ item }) => (

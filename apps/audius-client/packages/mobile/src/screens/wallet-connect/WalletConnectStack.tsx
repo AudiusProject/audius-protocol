@@ -7,7 +7,6 @@ import { ToastContextProvider } from 'app/components/toast/ToastContext'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
-import { ConfirmWalletConnectionScreen } from './ConfirmWalletConnectionScreen'
 import { WalletConnectScreen } from './WalletConnectScreen'
 import { WalletConnectProviderRenderModal, WalletsDrawer } from './components'
 
@@ -30,10 +29,6 @@ export const WalletConnectStack = () => {
       >
         <Stack.Navigator screenOptions={screenOptions}>
           <Stack.Screen name='Wallets' component={WalletConnectScreen} />
-          <Stack.Screen
-            name='ConfirmWalletConnection'
-            component={ConfirmWalletConnectionScreen}
-          />
         </Stack.Navigator>
         <NativeDrawer drawerName='ConnectWallets' drawer={WalletsDrawer} />
       </WalletConnectProvider>

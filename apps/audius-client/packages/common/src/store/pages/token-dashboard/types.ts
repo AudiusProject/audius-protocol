@@ -78,6 +78,7 @@ export type AssociatedWalletsState = {
     chain: Nullable<Chain>
     balance: Nullable<any> // TODO(nkang) `any` should be `BNWei`
     collectibleCount: Nullable<number>
+    signature: Nullable<string>
   }
   errorMessage: Nullable<string>
   removeWallet: {
