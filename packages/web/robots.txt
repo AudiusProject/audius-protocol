@@ -2,7 +2,7 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://audius.co/sitemaps/defaults.xml
-Sitemap: https://audius.co/sitemaps/tracks/index.xml
-Sitemap: https://audius.co/sitemaps/collections/index.xml
-Sitemap: https://audius.co/sitemaps/users/index.xml
+Sitemap: https://discoveryprovider.audius.co/sitemaps/default.xml
+Sitemap: https://discoveryprovider.audius.co/sitemaps/track/index.xml
+Sitemap: https://discoveryprovider.audius.co/sitemaps/playlist/index.xml
+Sitemap: https://discoveryprovider.audius.co/sitemaps/user/index.xml
