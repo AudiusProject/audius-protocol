@@ -30,6 +30,8 @@ import rootSaga from './sagas'
 import type { SearchState } from './search/reducer'
 import search from './search/reducer'
 import { storeContext } from './storeContext'
+import type { WalletConnectState } from './wallet-connect/slice'
+import walletConnect from './wallet-connect/slice'
 
 export type AppState = {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
@@ -46,6 +48,7 @@ export type AppState = {
   remoteConfig: RemoteConfigState
   search: SearchState
   mobileUi: MobileUiState
+  walletConnect: WalletConnectState
 }
 
 const commonStoreReducers = commonReducers()
@@ -66,7 +69,8 @@ const createRootReducer = () =>
     offlineDownloads,
     remoteConfig,
     search,
-    mobileUi
+    mobileUi,
+    walletConnect
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })
