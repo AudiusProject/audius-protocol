@@ -37,19 +37,25 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   container: {
     marginTop: spacing(4),
+    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start'
+    flexWrap: 'wrap'
   },
   title: {
-    marginVertical: spacing(4),
+    marginTop: spacing(4),
+    marginBottom: spacing(2),
     color: palette.neutralLight2
   },
   wallet: {
-    marginHorizontal: spacing(2),
-    marginVertical: spacing(1),
+    flexBasis: '25%',
+    marginVertical: spacing(3),
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  walletImage: {
+    height: 50,
+    width: 50,
+    borderRadius: 25
   },
   walletIcon: {
     display: 'flex',
@@ -120,6 +126,7 @@ export const WalletsDrawer = () => {
                   name={walletService.name}
                   icon={
                     <Image
+                      style={styles.walletImage}
                       source={{
                         // @ts-ignore: image_url is valid
                         uri: `${walletService.image_url.sm}`
