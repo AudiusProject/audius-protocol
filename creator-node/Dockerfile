@@ -9,12 +9,12 @@ ENV storagePath=/file_storage
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
 COPY scripts/wait /usr/bin/wait
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/main' >> /etc/apk/repositories && \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
     apk add \
         bash=5.1.16-r0 \
         curl \
-        docker=20.10.3-r1 \
+        docker=20.10.11-r1 \
         libpq=11.12-r0 \
         nodejs=14.20.1-r0 \
         npm \
@@ -30,7 +30,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/main' >> /etc/apk/repositor
         sudo=1.9.5p2-r0
 
 # Install openresty with public key
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.14/community' >> /etc/apk/repositories && \
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
     apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
@@ -38,7 +38,7 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.14/community' >> /etc/apk/reposit
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty=1.19.3.2-r0 && \
+    apk add openresty=1.21.4.1-r0 && \
     mkdir /usr/local/openresty/conf && \
     mkdir /usr/local/openresty/logs && \
     mkdir /usr/local/openresty/cache
