@@ -55,7 +55,9 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(f"index_profile_challenge_backfill.py | calculated {len(reposts)} reposts")
+        logger.info(
+            f"index_profile_challenge_backfill.py | calculated {len(reposts)} reposts"
+        )
         for repost in reposts:
             repost_blocknumber: int = repost.blocknumber
             dispatch_challenge_repost(challenge_bus, repost, repost_blocknumber)
@@ -68,7 +70,9 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(f"index_profile_challenge_backfill.py | calculated {len(saves)} saves")
+        logger.info(
+            f"index_profile_challenge_backfill.py | calculated {len(saves)} saves"
+        )
         for save in saves:
             save_blocknumber: int = save.blocknumber
             dispatch_favorite(challenge_bus, save, save_blocknumber)
@@ -81,7 +85,9 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
             )
             .all()
         )
-        logger.info(f"index_profile_challenge_backfill.py | calculated {len(follows)} follows")
+        logger.info(
+            f"index_profile_challenge_backfill.py | calculated {len(follows)} follows"
+        )
         for follow in follows:
             follow_blocknumber: int = follow.blocknumber
             dispatch_challenge_follow(challenge_bus, follow, follow_blocknumber)
