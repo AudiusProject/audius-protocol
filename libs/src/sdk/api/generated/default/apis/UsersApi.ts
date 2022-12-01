@@ -105,20 +105,6 @@ export interface GetConnectedWalletsRequest {
     id: string;
 }
 
-export interface GetFavoriteAlbumsRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-}
-
-export interface GetFavoritePlaylistsRequest {
-    /**
-     * A User ID
-     */
-    id: string;
-}
-
 export interface GetFavoritesRequest {
     /**
      * A User ID
@@ -582,46 +568,6 @@ export class UsersApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<ConnectedWalletsResponse["data"]>>;
-    }
-
-    /**
-     * Gets a user\'s favorite albums
-     */
-    async getFavoriteAlbums(requestParameters: GetFavoriteAlbumsRequest): Promise<NonNullable<FavoritesResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFavoriteAlbums.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/favorites/albums`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FavoritesResponse["data"]>>;
-    }
-
-    /**
-     * Gets a user\'s favorite playlists
-     */
-    async getFavoritePlaylists(requestParameters: GetFavoritePlaylistsRequest): Promise<NonNullable<FavoritesResponse["data"]>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFavoritePlaylists.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/users/{id}/favorites/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FavoritesResponse["data"]>>;
     }
 
     /**

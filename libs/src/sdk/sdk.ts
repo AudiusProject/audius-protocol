@@ -9,12 +9,14 @@ import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './api/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
+import { MessagesApi } from './api/MessagesApi'
 import {
   Configuration,
   PlaylistsApi,
   UsersApi,
   TipsApi,
-  querystring
+  querystring,
+  WalletAPI
 } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -75,19 +77,23 @@ type SdkConfig = {
    * Configuration for Web3
    */
   web3Config?: Web3Config
+  /**
+   * Helpers to faciliate requests that require signatures or encryption
+   */
+  walletApi?: WalletAPI
 }
 
 /**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
-  const { appName } = config
+  const { appName, walletApi } = config
 
   // Initialize services
   const { discoveryProvider } = initializeServices(config)
 
   // Initialize APIs
-  const apis = initializeApis({ appName, discoveryProvider })
+  const apis = initializeApis({ appName, discoveryProvider, walletApi })
 
   // Initialize OAuth
   const oauth =
@@ -147,10 +153,12 @@ const initializeServices = (config: SdkConfig) => {
 
 const initializeApis = ({
   appName,
-  discoveryProvider
+  discoveryProvider,
+  walletApi
 }: {
   appName: string
   discoveryProvider: DiscoveryProvider
+  walletApi?: WalletAPI
 }) => {
   const initializationPromise = discoveryProvider.init()
 
@@ -183,6 +191,13 @@ const initializeApis = ({
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
+  const messages = new MessagesApi(
+    new Configuration({
+      fetchApi,
+      walletApi,
+      basePath: '/comms'
+    })
+  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi
@@ -204,9 +219,12 @@ const initializeApis = ({
     playlists,
     tips,
     resolve,
+    messages,
     full
   }
 }
+
+console.log('MARCUS')
 
 const formatProviders = (providers: string | string[]) => {
   if (typeof providers === 'string') {

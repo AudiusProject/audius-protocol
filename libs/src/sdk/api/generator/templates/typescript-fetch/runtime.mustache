@@ -142,6 +142,12 @@ export const COLLECTION_FORMATS = {
 // Returns unknown and is cast to the appropriate type in the corresponding api method
 export type FetchAPI = (url: string, init?: RequestInit) => Promise<unknown>
 
+// Injected helper methods for methods requiring user signatures or encryption
+export type WalletAPI = {
+    getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array>
+    sign: (data: string) => Promise<Uint8Array>
+}
+
 export interface ConfigurationParameters {
     basePath?: string; // override base path
     fetchApi: FetchAPI; // fetch implementation
@@ -153,6 +159,7 @@ export interface ConfigurationParameters {
     accessToken?: string | Promise<string> | ((name?: string, scopes?: string[]) => string | Promise<string>); // parameter for oauth2 security
     headers?: HTTPHeaders; //header params we want to use on every request
     credentials?: RequestCredentials; //value for the credentials param we want to use on each request
+    walletApi?: WalletAPI
 }
 
 export class Configuration {
@@ -204,6 +211,10 @@ export class Configuration {
 
     get credentials(): RequestCredentials | undefined {
         return this.configuration.credentials;
+    }
+
+    get walletApi(): WalletAPI | undefined {
+        return this.configuration.walletApi;
     }
 }
 
