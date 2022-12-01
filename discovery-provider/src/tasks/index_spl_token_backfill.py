@@ -185,7 +185,7 @@ def parse_spl_token_transaction(
         return None
     except Exception as e:
         logger.error(
-            f"index_spl_token_backfill.py | Error processing {tx_sig}, {e}",
+            f"index_spl_token_backfill.py | Error processing {tx['signature']}, {e}",
             exc_info=True,
         )
         raise e
