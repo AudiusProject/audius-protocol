@@ -39,7 +39,7 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
                 "index_profile_challenge_backfill.py | backfill block number not set"
             )
             return None
-
+        backfill_blocknumber = int(backfill_blocknumber)
         block_backfill = get_latest_backfill(session, backfill_blocknumber)
         if block_backfill is None:
             logger.info("index_profile_challenge_backfill.py | Backfill complete")
