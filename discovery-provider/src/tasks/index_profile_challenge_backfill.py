@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Optional
 
 from redis import Redis
@@ -14,7 +15,6 @@ from src.tasks.social_features import (
     dispatch_challenge_repost,
 )
 from src.tasks.user_library import dispatch_favorite
-from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import (
@@ -89,11 +89,7 @@ def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEve
 
 
 def get_config_backfill():
-    return (
-        shared_config["discprov"]["backfill_social_rewards_blocknumber"]
-        if "backfill_social_rewards_blocknumber" in shared_config["discprov"]
-        else None
-    )
+    return os.getenv("audius_discprov_backfill_social_rewards_blocknumber")
 
 
 def get_latest_backfill(session: Session, backfill_blocknumber: int) -> Optional[int]:
