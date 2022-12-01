@@ -21,14 +21,14 @@ Run tests
 
 ```bash
 # Run all tests
-audius-compose test discovery-provider
+audius-compose test run discovery-provider
 
 # Run unit tests
-audius-compose test discovery-provider src
+audius-compose test run discovery-provider src
 
 # Run integration tests
-audius-compose test discovery-provider integration_tests
+audius-compose test run discovery-provider integration_tests
 
 # A single test
-audius-compose test discovery-provider src/api/v1/api_unit_test.py
+audius-compose test run discovery-provider src/api/v1/api_unit_test.py
 ```
