@@ -11,7 +11,10 @@ import {
   getRandomInt,
   verifySignature,
   stringifyMap,
-  isFqdn
+  isFqdn,
+  getCharsInRange,
+  getCharsInRanges,
+  clearActiveJobs
 } from './utils'
 import {
   validateMetadata,
@@ -24,11 +27,22 @@ import {
   getIfAttemptedStateFix,
   validateStateForImageDirCIDAndReturnFileUUID,
   _streamFileToDiskHelper,
-  deleteAttemptedStateFixes
+  deleteAttemptedStateFixes,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
-import { clusterUtils } from './clusterUtils'
+import {
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker
+} from './cluster/clusterUtils'
+import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
 
 export * from './types'
 export {
@@ -48,7 +62,20 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  clusterUtils
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  verifyCIDMatchesExpected,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }
 
 module.exports = {
@@ -70,5 +97,17 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  clusterUtils
+  isClusterEnabled,
+  getNumWorkers,
+  getConcurrencyPerWorker,
+  clusterUtilsForPrimary,
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  ensureDirPathExists,
+  computeFilePath,
+  computeFilePathInDir,
+  computeFilePathAndEnsureItExists,
+  computeFilePathInDirAndEnsureItExists,
+  getCharsInRange,
+  getCharsInRanges
 }

@@ -15,7 +15,7 @@ const {
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
-const { clusterUtils } = require('../../utils')
+const { clusterUtilsForWorker } = require('../../utils')
 const { clearSyncStatuses } = require('../sync/syncUtil')
 
 /**
@@ -26,7 +26,7 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    if (clusterUtils.isThisWorkerInit()) {
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
       await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
       await clearSyncStatuses()
 
@@ -54,10 +54,7 @@ class StateMachineManager {
       recoverOrphanedDataQueue
     } = await stateReconciliationManager.init(prometheusRegistry)
 
-    if (clusterUtils.isThisWorkerInit()) {
-      await SyncRequestDeDuplicator.clear()
-    }
-    if (clusterUtils.isThisWorkerSpecial()) {
+    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
       // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
       const queueNameToQueueMap = {
         [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
@@ -164,8 +161,12 @@ class StateMachineManager {
           })
         }
       }
+    }
 
-      // Start recurring queues that need an initial job to get started
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await SyncRequestDeDuplicator.clear()
+
+      // Start queues that need an initial job to get started and then re-add jobs to themselves
       await stateMonitoringManager.startEndpointToSpIdMapQueue(
         cNodeEndpointToSpIdMapQueue
       )
@@ -187,7 +188,9 @@ class StateMachineManager {
       manualSyncQueue,
       recurringSyncQueue,
       updateReplicaSetQueue,
-      recoverOrphanedDataQueue
+      recoverOrphanedDataQueue,
+      stateMonitoringManager,
+      stateReconciliationManager
     }
   }
 

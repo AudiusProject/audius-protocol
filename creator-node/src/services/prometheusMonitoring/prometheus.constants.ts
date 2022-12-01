@@ -60,7 +60,8 @@ const metricNames: Record<string, string> = {
   RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE:
     'recover_orphaned_data_wallet_counts',
   RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
-  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes'
+  STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes',
+  FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE: 'files_migrated_from_legacy_path'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -104,7 +105,8 @@ export const SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS = [
   'failure_export_wallet',
   'failure_import_not_consistent',
   'failure_import_not_contiguous',
-  'failure_inconsistent_clock'
+  'failure_inconsistent_clock',
+  'failure_undefined_sync_status'
 ] as const
 export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
@@ -188,7 +190,7 @@ export const METRIC_LABELS = Object.freeze({
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
       'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
-      'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
+      'no_sync_max_errors_encountered', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
       'no_sync_error_computing_sync_mode', // Sync not found because of failure to compute sync mode
       'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
       'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
@@ -222,6 +224,9 @@ export const METRIC_LABELS = Object.freeze({
       'failed_uncaught_error', // Failed due to some uncaught exception. This should never happen
       'failed_sync' // Failed to reach 2/3 quorum because no syncs were successful
     ]
+  },
+  [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
+    result: ['success', 'failure']
   }
 })
 
@@ -430,6 +435,16 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       ]
     })
   ),
+  [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      help: 'Number of total files migrated from a legacy storage path to a non legacy storage path',
+      labelNames:
+        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE],
+      aggregator: 'sum' as AggregatorType // Only runs on primary process
+    }
+  },
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {

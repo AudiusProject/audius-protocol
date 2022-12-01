@@ -40,6 +40,12 @@ const config = convict({
     env: 'storagePath',
     default: '/file_storage'
   },
+  migrateFilesWithLegacyStoragePath: {
+    doc: 'True to copy files with a legacy storage to the new storage path',
+    format: Boolean,
+    env: 'migrateFilesWithLegacyStoragePath',
+    default: true
+  },
   redisHost: {
     doc: 'Redis host name',
     format: String,
@@ -281,6 +287,7 @@ const config = convict({
     env: 'expressAppConcurrency',
     default: 0
   },
+  // Set this to false when trying to use the debugger
   clusterModeEnabled: {
     doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
     format: Boolean,
@@ -499,12 +506,6 @@ const config = convict({
     env: 'entityManagerReplicaSetEnabled',
     default: false
   },
-  premiumContentEnabled: {
-    doc: 'whether or not to enable premium content',
-    format: Boolean,
-    env: 'premiumContentEnabled',
-    default: false
-  },
 
   /** sync / snapback configs */
 
@@ -683,18 +684,6 @@ const config = convict({
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
-  minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
-    format: 'nat',
-    env: 'minimumSecondaryUserSyncSuccessPercent',
-    default: 50
-  },
-  minimumFailedSyncRequestsBeforeReconfig: {
-    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
-    format: 'nat',
-    env: 'minimumFailedSyncRequestsBeforeReconfig',
-    default: 20
-  },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
@@ -840,17 +829,18 @@ const config = convict({
     env: 'reconfigSPIdBlacklistString',
     default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
   },
-  recordSyncResults: {
-    doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
-    format: Boolean,
-    env: 'recordSyncResults',
-    default: true
+  syncOverridePassword: {
+    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+    format: String,
+    env: 'syncOverridePassword',
+    default: '',
+    sensitive: true
   },
-  processSyncResults: {
-    doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
+  autoUpgradeEnabled: {
+    doc: 'Is the audius-cli cron job for auto upgrade enabled on the host machine.',
     format: Boolean,
-    env: 'processSyncResults',
-    default: true
+    env: 'autoUpgradeEnabled',
+    default: false
   }
 })
 
@@ -911,5 +901,9 @@ const asyncConfig = async () => {
 }
 
 config.asyncConfig = asyncConfig
+
+// Disable cluster for tests because they only have 1 process
+const isInTest = typeof global.it === 'function'
+if (isInTest) config.set('clusterModeEnabled', false)
 
 module.exports = config

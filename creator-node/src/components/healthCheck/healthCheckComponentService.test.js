@@ -9,7 +9,7 @@ const {
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
-const { clusterUtils } = require('../../../src/utils/clusterUtils')
+const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 
 const TEST_ENDPOINT = 'test_endpoint'
 
@@ -189,10 +189,12 @@ describe('Test Health Check', function () {
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
       audiusContentInfraSetup: '',
+      autoUpgradeEnabled: false,
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
       databaseConnections: 5,
+      databaseIsLocalhost: true,
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
@@ -262,7 +264,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 
@@ -307,10 +309,12 @@ describe('Test Health Check', function () {
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
       audiusContentInfraSetup: '',
+      autoUpgradeEnabled: false,
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
       databaseConnections: 5,
+      databaseIsLocalhost: true,
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
@@ -380,7 +384,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 
@@ -412,10 +416,12 @@ describe('Test Health Check', function () {
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
       audiusContentInfraSetup: '',
+      autoUpgradeEnabled: false,
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
       databaseConnections: 5,
+      databaseIsLocalhost: true,
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
@@ -485,7 +491,7 @@ describe('Test Health Check', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -560,10 +566,12 @@ describe('Test Health Check Verbose', function () {
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
       audiusContentInfraSetup: '',
+      autoUpgradeEnabled: false,
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
       databaseConnections: 5,
+      databaseIsLocalhost: true,
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
@@ -633,7 +641,7 @@ describe('Test Health Check Verbose', function () {
         endpoint: 'default.trustednotifier',
         id: 12
       },
-      clusterWorkersCount: clusterUtils.getNumWorkers()
+      clusterWorkersCount: getNumWorkers()
     })
   })
 

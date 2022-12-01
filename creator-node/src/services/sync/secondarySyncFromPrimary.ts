@@ -14,9 +14,7 @@ import { fetchFileFromNetworkAndSaveToFS } from '../../fileManager'
 import {
   gatherCNodeUserDataToDelete,
   clearFilePathsToDelete,
-  deleteAllCNodeUserDataFromDisk,
-  computeFilePath,
-  computeFilePathInDir
+  deleteAllCNodeUserDataFromDisk
 } from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
@@ -28,6 +26,7 @@ import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
+import { computeFilePath, computeFilePathInDir } from '../../utils'
 
 const models = require('../../models')
 const config = require('../../config')
@@ -41,6 +40,7 @@ type SecondarySyncFromPrimaryParams = {
   forceResyncConfig: ForceResyncConfig
   logContext: LogContext
   forceWipe?: boolean
+  syncOverride?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
 }
@@ -51,6 +51,7 @@ const handleSyncFromPrimary = async ({
   creatorNodeEndpoint,
   forceResyncConfig,
   forceWipe,
+  syncOverride,
   logContext,
   secondarySyncFromPrimaryLogger
 }: SecondarySyncFromPrimaryParams & {
@@ -101,7 +102,7 @@ const handleSyncFromPrimary = async ({
       throw error
     }
 
-    if (userReplicaSet.primary !== creatorNodeEndpoint) {
+    if (!syncOverride && userReplicaSet.primary !== creatorNodeEndpoint) {
       return {
         abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
         result: 'abort_current_node_is_not_user_primary'
@@ -113,7 +114,8 @@ const handleSyncFromPrimary = async ({
      */
     const forceResync = await shouldForceResync(
       { libs, logContext },
-      forceResyncConfig
+      forceResyncConfig,
+      syncOverride
     )
     const forceResyncQueryParam = forceResyncConfig?.forceResync
     if (forceResyncQueryParam && !forceResync) {
@@ -240,6 +242,7 @@ const handleSyncFromPrimary = async ({
     // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
     // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
     if (
+      !syncOverride &&
       thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
       thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
@@ -793,6 +796,7 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
+  syncOverride = false,
   blockNumber = null,
   syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
@@ -826,6 +830,7 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     secondarySyncFromPrimaryLogger
   })

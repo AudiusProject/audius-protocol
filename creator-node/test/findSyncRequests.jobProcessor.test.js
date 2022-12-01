@@ -776,7 +776,7 @@ describe('test findSyncRequests job processor', function () {
     )
   })
 
-  it("doesn't sync if success rate is too low", async function () {
+  it("doesn't sync if max errors for wallet were encountered", async function () {
     /**
      * Define input variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except success rate)
      */
@@ -803,11 +803,12 @@ describe('test findSyncRequests job processor', function () {
       }
     }
 
-    // Make sync success rate lower than threshold for secondary1
-    const userSecondarySyncMetricsMap = {
-      [wallet]: {
-        [secondary1]: { successRate: 0, failureCount: 100 },
-        [secondary2]: { successRate: 1, failureCount: 0 }
+    // Mark wallet on secondary encountered too many errors
+    const secondarySyncHealthTrackerState = {
+      walletToSecondaryAndMaxErrorReached: {
+        [wallet]: {
+          [secondary1]: 'failure_undefined_sync_status'
+        }
       }
     }
 
@@ -865,7 +866,7 @@ describe('test findSyncRequests job processor', function () {
         {
           metricLabels: {
             sync_mode: _.snakeCase(SYNC_MODES.None),
-            result: 'no_sync_success_rate_too_low'
+            result: 'no_sync_max_errors_encountered'
           },
           metricName,
           metricType,
@@ -886,7 +887,7 @@ describe('test findSyncRequests job processor', function () {
       users,
       unhealthyPeers,
       replicaToAllUserInfoMaps,
-      userSecondarySyncMetricsMap,
+      secondarySyncHealthTrackerState,
       logger
     })
     expect(actualOutput).to.deep.equal(expectedOutput)

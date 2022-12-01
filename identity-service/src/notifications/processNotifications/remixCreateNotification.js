@@ -25,7 +25,7 @@ async function processRemixCreateNotifications(notifications, tx) {
       .add(1, 's')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    const [notificationObj] = await models.Notification.findOrCreate({
+    let notificationObj = await models.Notification.findOne({
       where: {
         type: notificationTypes.RemixCreate,
         userId: parentTrackUserId,
@@ -35,8 +35,22 @@ async function processRemixCreateNotifications(notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationObj == null) {
+      notificationObj = await models.Notification.create(
+        {
+          type: notificationTypes.RemixCreate,
+          userId: parentTrackUserId,
+          entityId: childTrackId,
+          blocknumber,
+          timestamp: updatedTimestamp
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId: notificationObj.id,
         actionEntityType: actionEntityTypes.Track,
@@ -45,6 +59,19 @@ async function processRemixCreateNotifications(notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId: notificationObj.id,
+          actionEntityType: actionEntityTypes.Track,
+          actionEntityId: parentTrackId,
+          blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
   }
   return notifications
 }

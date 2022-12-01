@@ -1,6 +1,10 @@
 const { Queue, QueueEvents, Worker } = require('bullmq')
 
-const { clusterUtils } = require('../../utils')
+const {
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  getConcurrencyPerWorker
+} = require('../../utils')
 const { instrumentTracing, tracing } = require('../../tracer')
 const {
   logger,
@@ -46,8 +50,8 @@ class SyncImmediateQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-    if (clusterUtils.isThisWorkerInit()) {
-      await this.deleteOldActiveJobs()
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
     }
 
     const worker = new Worker(
@@ -85,7 +89,7 @@ class SyncImmediateQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }
@@ -97,19 +101,13 @@ class SyncImmediateQueue {
     }
   }
 
-  async deleteOldActiveJobs() {
-    const oldActiveJobs = await this.queue.getJobs(['active'])
-    logger.info(
-      `[sync-immediate-processing-queue] removing ${oldActiveJobs.length} leftover active sync jobs`
-    )
-    await Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
-  }
-
   async processTask(job) {
     const {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       serviceRegistry,
       syncUuid
@@ -122,6 +120,8 @@ class SyncImmediateQueue {
         wallet,
         creatorNodeEndpoint,
         forceResyncConfig,
+        forceWipe,
+        syncOverride,
         logContext,
         syncUuid: syncUuid || null
       })
@@ -147,6 +147,8 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
+    forceWipe,
+    syncOverride,
     logContext,
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
@@ -155,6 +157,8 @@ class SyncImmediateQueue {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
+      forceWipe,
+      syncOverride,
       logContext,
       parentSpanContext,
       syncUuid: syncUuid || null

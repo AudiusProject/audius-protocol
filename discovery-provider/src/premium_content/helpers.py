@@ -8,11 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 def does_user_have_nft_collection(user_id: int, nft_collection: Any):
-    # todo: check whether user has the nft from some user_wallet_nfts table
-    # which is populated during nft indexing
-    # db = db_session.get_db_read_replica()
-    # with db.scoped_session() as session:
-    return True
+    # Return False here as we want to avoid this check here, in favor of
+    # calling the /tracks/<user-id>/nft-gated-signatures endpoint to check
+    # whether a user has access to nft-gated tracks.
+    return False
 
 
 def does_user_follow_artist(user_id: int, follow_user_id: int):

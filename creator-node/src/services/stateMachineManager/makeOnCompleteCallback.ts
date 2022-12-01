@@ -123,7 +123,10 @@ function makeOnCompleteCallback(
         }
       }
 
-      await enqueueJobs(
+      // Don't await this because it might cause "missing lock for job" errors.
+      // See https://github.com/OptimalBits/bull/issues/789#issuecomment-620324812
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      enqueueJobs(
         jobs,
         queue,
         queueName,

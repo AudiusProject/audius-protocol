@@ -1,11 +1,8 @@
 import type {
   ReplicaSetNodesToUserWalletsMap,
-  StateMonitoringUser,
-  UserSecondarySyncMetricsMap
+  StateMonitoringUser
 } from './types'
-import type { WalletsToSecondariesMapping } from '../types'
 
-import { computeUsersSecondarySyncSuccessRatesForToday } from '../stateReconciliation/SecondarySyncHealthTracker'
 import { asyncRetry } from '../../../utils/asyncRetry'
 
 const _ = require('lodash')
@@ -174,25 +171,6 @@ const buildReplicaSetNodesToUserWalletsMap = (
   return replicaSetNodesToUserWalletsMap
 }
 
-const computeUserSecondarySyncSuccessRatesMap = async (
-  users: StateMonitoringUser[] = []
-): Promise<UserSecondarySyncMetricsMap> => {
-  // Map each user to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
-  const walletsToSecondariesMapping: WalletsToSecondariesMapping = {}
-  for (const user of users) {
-    const { wallet, secondary1, secondary2 } = user
-    const secondaries = [secondary1, secondary2].filter(Boolean)
-    walletsToSecondariesMapping[wallet] = secondaries
-  }
-
-  const userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap =
-    await computeUsersSecondarySyncSuccessRatesForToday(
-      walletsToSecondariesMapping
-    )
-
-  return userSecondarySyncMetricsMap
-}
-
 /**
  * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
  *
@@ -301,6 +279,5 @@ module.exports = {
   getLatestUserIdFromDiscovery,
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
   computeSyncModeForUserAndReplica
 }

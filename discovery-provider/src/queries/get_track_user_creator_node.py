@@ -20,7 +20,6 @@ def get_track_user_creator_node(args):
                     Track.owner_id == User.user_id,
                     Track.is_current == True,
                     Track.is_delete == False,
-                    Track.is_unlisted == False,
                     Track.track_id == args.get("track_id"),
                 ),
             )
