@@ -1,8 +1,3 @@
-## Run on Apple M1
-```
-docker compose -f docker-compose.m1.yml up -d --build
-```
-
 ## Setup Instructions
 
 ```
