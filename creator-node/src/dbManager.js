@@ -477,7 +477,7 @@ class DBManager {
         'dirMultihash',
         'fileName',
         'trackBlockchainId',
-        'cnodeUserUUID'
+        'fileUUID'
       ],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },

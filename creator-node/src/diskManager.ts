@@ -593,10 +593,9 @@ async function _migrateFileWithCustomStoragePath(
   fileRecord: {
     storagePath: string
     multihash: string
-    cnodeUserUUID: string
+    fileUUID: string
     dirMultihash?: string
     fileName?: string
-    fileUUID: string
     trackBlockchainId?: number
   },
   logger: Logger
@@ -638,9 +637,6 @@ async function _migrateFilesWithCustomStoragePaths(
   logger: Logger
 ) {
   const BATCH_SIZE = 3000
-  const metric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
-  )
   // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
   for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
     const cursor = 'Qm' + char
@@ -650,10 +646,9 @@ async function _migrateFilesWithCustomStoragePaths(
     let fileRecordsWithCustomPath: {
       storagePath: string
       multihash: string
-      cnodeUserUUID: string
+      fileUUID: string
       dirMultihash?: string
       fileName?: string
-      fileUUID: string
       trackBlockchainId?: number
     }[] = []
     while (!isEqual(prevFileRecordsWithCustomPath, fileRecordsWithCustomPath)) {
@@ -674,7 +669,10 @@ async function _migrateFilesWithCustomStoragePaths(
               logger
             )
           } catch (e: any) {
-            logger.error(`Error in _migrateFileWithCustomStoragePath(): ${e}`)
+            logger.error(
+              `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${e}`
+            )
+            numFilesFailedToMigrate++
           }
           if (success) numFilesMigratedSuccessfully++
           else numFilesFailedToMigrate++
@@ -682,6 +680,10 @@ async function _migrateFilesWithCustomStoragePaths(
           // Add delay between calls since each call will make an internal request to every node
           await timeout(1000)
         }
+        // Record results in Prometheus metric
+        const metric = prometheusRegistry.getMetric(
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
+        )
         metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
         metric.inc({ result: 'failure' }, numFilesFailedToMigrate)
       }
