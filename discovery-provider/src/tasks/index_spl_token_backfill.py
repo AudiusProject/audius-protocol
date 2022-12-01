@@ -10,6 +10,7 @@ from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, asc, or_
 from sqlalchemy.orm.session import Session
+from src.exceptions import UnsupportedVersionError
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.spl_token_backfill_transaction import (
     SPLTokenBackfillTransaction,
@@ -180,9 +181,11 @@ def parse_spl_token_transaction(
         }
         return receiver_spl_tx_info
 
+    except UnsupportedVersionError:
+        return None
     except Exception as e:
         logger.error(
-            f"index_spl_token_backfill.py | Error processing {tx_sig}, {e}",
+            f"index_spl_token_backfill.py | Error processing {tx['signature']}, {e}",
             exc_info=True,
         )
         raise e
