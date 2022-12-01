@@ -8,6 +8,7 @@ from typing import Optional, Union
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, Commitment
+from src.exceptions import UnsupportedVersionError
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
     ConfirmedTransaction,
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_MAX_RETRIES = 5
 # number of seconds to wait between calls to get_confirmed_transaction
 DELAY_SECONDS = 0.2
+UNSUPPORTED_VERSION_ERROR_CODE = -32015
 
 
 class SolanaClientManager:
@@ -49,8 +51,11 @@ class SolanaClientManager:
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
+                    _check_unsupported_version(tx_info, tx_sig)
                     if tx_info["result"] is not None:
                         return tx_info
+                except UnsupportedVersionError as e:
+                    raise e
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_sol_tx_info | \
@@ -164,6 +169,14 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 
+def _check_unsupported_version(tx, tx_sig):
+    if "error" in tx and tx["error"]["code"] == UNSUPPORTED_VERSION_ERROR_CODE:
+        logger.error(
+            f"solana_client_manager.py | _check_unsupported_version | Transaction {tx_sig} version is unsupported"
+        )
+        raise UnsupportedVersionError()
+
+
 def _try_all(iterable, func, message, randomize=False):
     """Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
@@ -172,6 +185,8 @@ def _try_all(iterable, func, message, randomize=False):
     for index, value in items:
         try:
             return func(value, index)
+        except UnsupportedVersionError as e:
+            raise e
         except Exception:
             logger.error(
                 f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}"
