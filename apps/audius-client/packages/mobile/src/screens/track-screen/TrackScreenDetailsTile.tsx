@@ -93,6 +93,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
   hiddenDetailsTileWrapper: {
     ...flexRowCentered(),
+    justifyContent: 'center',
     marginBottom: spacing(4)
   },
 
