@@ -1025,6 +1025,7 @@ function* recoverPurchaseIfNecessary() {
 
     // Check if we have an exchangable amount of SOL, and if so, exchange it to AUDIO
     const exchangableBalance = new BN(existingBalance).sub(totalFees)
+    // Usually indicates Swap Failed
     if (exchangableBalance.gt(new BN(0))) {
       yield* put(
         make(Name.BUY_AUDIO_RECOVERY_OPENED, {
@@ -1072,49 +1073,60 @@ function* recoverPurchaseIfNecessary() {
         tokenAccount
       })
       const audioBalance = audioAccountInfo?.amount ?? new BN(0)
-      if (
-        audioBalance.gt(new BN(0)) &&
-        new BN(existingBalance)
-          .sub(new BN(rootAccountMinBalance))
-          .gt(new BN(5_000))
-      ) {
-        yield* put(
-          make(Name.BUY_AUDIO_RECOVERY_OPENED, {
-            provider,
-            trigger: '$AUDIO',
-            balance: audioBalance.toString()
-          })
-        )
-        console.debug(
-          `Found existing $AUDIO balance of ${audioBalance}, transferring to user bank...`
-        )
-
-        yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
-        yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
-        didNeedRecovery = true
-
-        const { audioTransferredWei } = yield* call(transferStep, {
-          transferAmount: audioBalance,
-          rootAccount,
-          transactionHandler,
-          provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
-        })
-        recoveredAudio = parseFloat(
-          formatWei(audioTransferredWei).replaceAll(',', '')
-        )
-        yield* call(populateAndSaveTransactionDetails)
-      } else if (audioBalance.lte(new BN(0))) {
-        // If we only failed to save the metadata, try that again
-        if (localStorageState?.transactionDetailsArgs?.transferTransactionId) {
-          const metadata = yield* call(
-            getUserBankTransactionMetadata,
-            localStorageState.transactionDetailsArgs.transferTransactionId
+      // Usually indicates Transfer Failed
+      if (audioBalance.gt(new BN(0))) {
+        // Check we can afford to transfer
+        if (
+          new BN(existingBalance)
+            .sub(new BN(rootAccountMinBalance))
+            .gt(new BN(0))
+        ) {
+          yield* put(
+            make(Name.BUY_AUDIO_RECOVERY_OPENED, {
+              provider,
+              trigger: '$AUDIO',
+              balance: audioBalance.toString()
+            })
           )
-          if (!metadata) {
-            yield* call(populateAndSaveTransactionDetails)
-          }
+          console.debug(
+            `Found existing $AUDIO balance of ${audioBalance}, transferring to user bank...`
+          )
+
+          yield* put(
+            setVisibility({ modal: 'BuyAudioRecovery', visible: true })
+          )
+          yield* put(setVisibility({ modal: 'BuyAudio', visible: false }))
+          didNeedRecovery = true
+
+          const { audioTransferredWei } = yield* call(transferStep, {
+            transferAmount: audioBalance,
+            rootAccount,
+            transactionHandler,
+            provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
+          })
+          recoveredAudio = parseFloat(
+            formatWei(audioTransferredWei).replaceAll(',', '')
+          )
+          yield* call(populateAndSaveTransactionDetails)
         } else {
-          throw new Error('User is bricked')
+          // User can't afford to transfer their $AUDIO
+          console.debug(
+            `OWNED: ${audioBalance.toString()} $AUDIO (spl wei) ${existingBalance.toString()} SOL (lamports)\n` +
+              `NEED: ${totalFees.toString()} SOL (lamports)`
+          )
+          throw new Error(`User is bricked`)
+        }
+      } else if (
+        localStorageState?.transactionDetailsArgs?.transferTransactionId
+      ) {
+        // If we only failed to save the metadata, try that again
+        console.debug('Only need to resend metadata...')
+        const metadata = yield* call(
+          getUserBankTransactionMetadata,
+          localStorageState.transactionDetailsArgs.transferTransactionId
+        )
+        if (!metadata) {
+          yield* call(populateAndSaveTransactionDetails)
         }
       }
     }
