@@ -1,0 +1,1 @@
+export { ConfirmRemoveWalletDrawer } from './ConfirmRemoveWalletDrawer'

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import WalletConnectProvider from '@walletconnect/react-native-dapp'
 
 import { NativeDrawer } from 'app/Drawers'
+import { ToastContextProvider } from 'app/components/toast/ToastContext'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
@@ -18,22 +19,24 @@ export const WalletConnectStack = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
-    <WalletConnectProvider
-      redirectUrl='audius://'
-      storageOptions={{
-        // @ts-ignore: IAsyncStorage isn't up to date
-        asyncStorage: AsyncStorage
-      }}
-      renderQrcodeModal={WalletConnectProviderRenderModal}
-    >
-      <Stack.Navigator screenOptions={screenOptions}>
-        <Stack.Screen name='Wallets' component={WalletConnectScreen} />
-        <Stack.Screen
-          name='ConfirmWalletConnection'
-          component={ConfirmWalletConnectionScreen}
-        />
-      </Stack.Navigator>
-      <NativeDrawer drawerName='ConnectWallets' drawer={WalletsDrawer} />
-    </WalletConnectProvider>
+    <ToastContextProvider>
+      <WalletConnectProvider
+        redirectUrl='audius://'
+        storageOptions={{
+          // @ts-ignore: IAsyncStorage isn't up to date
+          asyncStorage: AsyncStorage
+        }}
+        renderQrcodeModal={WalletConnectProviderRenderModal}
+      >
+        <Stack.Navigator screenOptions={screenOptions}>
+          <Stack.Screen name='Wallets' component={WalletConnectScreen} />
+          <Stack.Screen
+            name='ConfirmWalletConnection'
+            component={ConfirmWalletConnectionScreen}
+          />
+        </Stack.Navigator>
+        <NativeDrawer drawerName='ConnectWallets' drawer={WalletsDrawer} />
+      </WalletConnectProvider>
+    </ToastContextProvider>
   )
 }
