@@ -6,21 +6,23 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.tasks.index_profile_challenge_backfill import (
     enqueue_social_rewards_check,
+    get_latest_backfill,
     index_profile_challenge_backfill_tablename,
 )
 from src.utils.db_session import get_db
+from src.utils.update_indexing_checkpoints import save_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
 
 
 @mock.patch(
-    "src.tasks.index_profile_challenge_backfill.get_latest_backfill", autospec=True
+    "src.tasks.index_profile_challenge_backfill.get_config_backfill", autospec=True
 )
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
-def test_index_related_artists(
-    bus_mock: mock.MagicMock, get_latest_mock: mock.MagicMock, app
+def test_index_profile_challenge_backfill(
+    bus_mock: mock.MagicMock, get_config_backfill: mock.MagicMock, app
 ):
-    get_latest_mock.return_value = 0
+    get_config_backfill.return_value = 0
     with app.app_context():
         db = get_db()
 
@@ -65,4 +67,44 @@ def test_index_related_artists(
             .first()
         )
 
-        assert checkpoint.last_checkpoint == 66
+        assert checkpoint.last_checkpoint == -901
+
+
+@mock.patch(
+    "src.tasks.index_profile_challenge_backfill.get_config_backfill", autospec=True
+)
+def test_index_profile_challenge_get_blocknumber(
+    get_config_backfill: mock.MagicMock, app
+):
+    get_config_backfill.return_value = 10
+    with app.app_context():
+        db = get_db()
+
+        # No checkpoint and no block
+        with db.scoped_session() as session:
+            cp_1 = get_latest_backfill(session, 10)
+            assert cp_1 == None
+
+        entities = {"users": [{}] * 100}
+        populate_mock_db(db, entities)
+
+        # No checkpoint - so return latest block
+        with db.scoped_session() as session:
+            cp_2 = get_latest_backfill(session, 10)
+            assert cp_2 == 99
+
+            save_indexed_checkpoint(
+                session, index_profile_challenge_backfill_tablename, 80
+            )
+
+            # with checkpoint greater than backfill stopping blocknumber
+            cp_3 = get_latest_backfill(session, 10)
+            assert cp_3 == 80
+
+            save_indexed_checkpoint(
+                session, index_profile_challenge_backfill_tablename, 7
+            )
+
+            # with checkpoint less than backfill stopping blocknumber
+            cp_3 = get_latest_backfill(session, 10)
+            assert cp_3 == None

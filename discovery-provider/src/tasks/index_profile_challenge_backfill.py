@@ -32,68 +32,74 @@ BLOCK_INTERVAL = 1000
 
 def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):
     with db.scoped_session() as session:
-        block_backfill = get_latest_backfill(session)
-        if block_backfill is None:
+        backfill_blocknumber = get_config_backfill()
+        # check config for value
+        if backfill_blocknumber == None:
             logger.info(
-                "index_profile_challenge_backfill.py | Exit early from backfill"
+                "index_profile_challenge_backfill.py | backfill block number not set"
             )
+            return None
+
+        block_backfill = get_latest_backfill(session, backfill_blocknumber)
+        if block_backfill is None:
+            logger.info("index_profile_challenge_backfill.py | Backfill complete")
             return
         # Do it
-        max_blocknumber_seen = block_backfill
+        min_blocknumber = block_backfill - BLOCK_INTERVAL
         # reposts of tracks and playlists reposts
         reposts = (
             session.query(Repost)
             .filter(
                 Repost.blocknumber <= block_backfill,
-                Repost.blocknumber > block_backfill - BLOCK_INTERVAL,
+                Repost.blocknumber > min_blocknumber,
             )
             .all()
         )
         for repost in reposts:
             repost_blocknumber: int = repost.blocknumber
             dispatch_challenge_repost(challenge_bus, repost, repost_blocknumber)
-            max_blocknumber_seen = max(repost_blocknumber, max_blocknumber_seen)
 
         saves = (
             session.query(Save)
             .filter(
                 Save.blocknumber <= block_backfill,
-                Save.blocknumber > block_backfill - BLOCK_INTERVAL,
+                Save.blocknumber > min_blocknumber,
             )
             .all()
         )
         for save in saves:
             save_blocknumber: int = save.blocknumber
             dispatch_favorite(challenge_bus, save, save_blocknumber)
-            max_blocknumber_seen = max(save_blocknumber, max_blocknumber_seen)
 
         follows = (
             session.query(Follow)
             .filter(
                 Follow.blocknumber <= block_backfill,
-                Follow.blocknumber > block_backfill - BLOCK_INTERVAL,
+                Follow.blocknumber > min_blocknumber,
             )
             .all()
         )
         for follow in follows:
             follow_blocknumber: int = follow.blocknumber
             dispatch_challenge_follow(challenge_bus, follow, follow_blocknumber)
-            max_blocknumber_seen = max(follow_blocknumber, max_blocknumber_seen)
 
         save_indexed_checkpoint(
-            session, index_profile_challenge_backfill_tablename, max_blocknumber_seen
+            session, index_profile_challenge_backfill_tablename, min_blocknumber
         )
 
 
-def get_latest_backfill(session: Session) -> Optional[int]:
+def get_config_backfill():
+    return (
+        shared_config["discprov"]["backfill_social_rewards_blocknumber"]
+        if "backfill_social_rewards_blocknumber" in shared_config["discprov"]
+        else None
+    )
+
+
+def get_latest_backfill(session: Session, backfill_blocknumber: int) -> Optional[int]:
     try:
         checkpoint = get_last_indexed_checkpoint(
             session, index_profile_challenge_backfill_tablename
-        )
-        BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER = (
-            shared_config["discprov"]["backfill_social_rewards_blocknumber"]
-            if "backfill_social_rewards_blocknumber" in shared_config["discprov"]
-            else None
         )
         # If the checkpoints is not set, start from the current blocknumber
         if checkpoint == 0:
@@ -103,12 +109,7 @@ def get_latest_backfill(session: Session) -> Optional[int]:
             block_number = block.number
             return block_number
 
-        # check config for value
-        if not BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
-            logger.info("index_profile_challenge_backfill.py | block number not set")
-            return None
-
-        if checkpoint <= BACKFILL_SOCIAL_REWARDS_BLOCKNUMBER:
+        if checkpoint <= backfill_blocknumber:
             logger.info("index_profile_challenge_backfill.py | backfill complete")
             return None
 
