@@ -10,6 +10,7 @@ import type {
   ViewStyle
 } from 'react-native'
 import {
+  Platform,
   Keyboard,
   InputAccessoryView,
   Animated,
@@ -154,7 +155,8 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
 
     const hideInputAccessory =
-      hideInputAccessoryProp ?? returnKeyType === 'search'
+      (hideInputAccessoryProp ?? returnKeyType === 'search') ||
+      Platform.OS === 'android'
 
     const handleFocus = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
