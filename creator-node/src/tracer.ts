@@ -64,6 +64,9 @@ export const setupTracing = () => {
     })
   })
 
+  // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
+  provider.register()
+
   /**
    * prebuilt tracing instrumentations are registered
    * in order to add trace information and context to
@@ -83,7 +86,7 @@ export const setupTracing = () => {
       new ExpressInstrumentation(),
 
       // Adds spans to redis operations
-      new IORedisInstrumentation(),
+      new IORedisInstrumentation({}),
 
       // Adds spans to filesystem operatioons
       new FsInstrumentation(),
@@ -117,9 +120,6 @@ export const setupTracing = () => {
     url: COLLECTOR_URL
   })
   provider.addSpanProcessor(new BatchSpanProcessor(exporter))
-
-  // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
-  provider.register()
 }
 
 /**
