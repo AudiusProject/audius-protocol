@@ -25,7 +25,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.playlists import full_playlist_model, playlist_model
 from src.api.v1.models.users import user_model_full
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.queries.get_playlists import RouteArgs, get_playlists
+from src.queries.get_playlists import get_playlists
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
@@ -75,8 +75,13 @@ full_playlists_with_score_response = make_full_response(
 )
 
 
-def get_playlist(args):
+def get_playlist(playlist_id, current_user_id):
     """Returns a single playlist, or None"""
+    args = {
+        "playlist_id": [playlist_id],
+        "with_users": True,
+        "current_user_id": current_user_id,
+    }
     playlists = get_playlists(args)
     if playlists:
         return extend_playlist(playlists[0])
@@ -114,89 +119,28 @@ class Playlist(Resource):
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
-        playlist = get_playlist(
-            {
-                "with_users": True,
-                "current_user_id": None,
-                "playlist_ids": [playlist_id],
-            }
-        )
+        playlist = get_playlist(playlist_id, None)
         response = success_response([playlist] if playlist else [])
         return response
 
 
-full_playlist_permalink_parser = current_user_parser.copy()
-full_playlist_permalink_parser.add_argument(
-    "permalink",
-    action="append",
-    type=str,
-    required=False,
-    description="The permalink of the playlist",
-)
-full_playlist_permalink_parser.add_argument(
-    "playlist_id",
-    action="append",
-    type=str,
-    required=False,
-    description="The ID of the desired playlist",
-)
-
-
-def parse_playlist_permalink(permalink: str) -> RouteArgs:
-    try:
-        # Permalinks for playlists look like <handle>/playlist/<slug>
-        return {
-            "handle": permalink.split("/")[-3],
-            "slug": permalink.split("/")[-1],
-        }
-    except IndexError:
-        abort_bad_request_param("permalink", ns)
-        return {"handle": "", "slug": ""}
-
-
-@full_ns.route("")
+@full_ns.route(PLAYLIST_ROUTE)
 class FullPlaylist(Resource):
     @ns.doc(
         id="""Get Playlist""",
         description="""Get a playlist by ID""",
-        params={},
+        params={"playlist_id": "A Playlist ID"},
     )
-    @ns.expect(full_playlist_permalink_parser)
+    @ns.expect(current_user_parser)
     @ns.marshal_with(full_playlists_response)
     @cache(ttl_sec=5)
-    def get(self):
-        args = full_playlist_permalink_parser.parse_args()
+    def get(self, playlist_id):
+        playlist_id = decode_with_abort(playlist_id, full_ns)
+        args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-        playlist_ids = args.get("playlist_id")
-        permalinks = args.get("permalink")
-
-        if not permalinks and not playlist_ids:
-            # No identifying arguments, abort
-            ns.abort(400, "Expected query param permalink or playlist id")
-        if permalinks and playlist_ids:
-            # Should only have playlist id or permalink, not both
-            ns.abort(
-                400,
-                "Ambiguous query params: Expected one of 'id', 'permalink' but not both",
-            )
-        get_playlist_args = {
-            "with_users": True,
-            "current_user_id": current_user_id,
-        }
-
-        if permalinks:
-            parsed_permalinks = [
-                parse_playlist_permalink(permalink=p) for p in permalinks
-            ]
-            get_playlist_args["routes"] = parsed_permalinks
-
-        if playlist_ids:
-            playlist_ids = [decode_with_abort(p, full_ns) for p in playlist_ids]
-            get_playlist_args["playlist_ids"] = playlist_ids
-
-        playlist = get_playlist(get_playlist_args)
+        playlist = get_playlist(playlist_id, current_user_id)
         if playlist:
-            tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
+            tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
         return response

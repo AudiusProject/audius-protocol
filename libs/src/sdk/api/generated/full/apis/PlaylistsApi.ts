@@ -14,328 +14,321 @@
  */
 
 
-import * as runtime from '../runtime';
-import {
-    FollowingResponse,
-    FollowingResponseFromJSON,
-    FollowingResponseToJSON,
-    FullPlaylistResponse,
-    FullPlaylistResponseFromJSON,
-    FullPlaylistResponseToJSON,
-    FullPlaylistTracksResponse,
-    FullPlaylistTracksResponseFromJSON,
-    FullPlaylistTracksResponseToJSON,
-    FullTrendingPlaylistsResponse,
-    FullTrendingPlaylistsResponseFromJSON,
-    FullTrendingPlaylistsResponseToJSON,
-} from '../models';
-
-export interface GetPlaylistRequest {
-    /**
-     * The user ID of the user making the request
+ import * as runtime from '../runtime';
+ import {
+     FollowingResponse,
+     FollowingResponseFromJSON,
+     FollowingResponseToJSON,
+     FullPlaylistResponse,
+     FullPlaylistResponseFromJSON,
+     FullPlaylistResponseToJSON,
+     FullPlaylistTracksResponse,
+     FullPlaylistTracksResponseFromJSON,
+     FullPlaylistTracksResponseToJSON,
+     FullTrendingPlaylistsResponse,
+     FullTrendingPlaylistsResponseFromJSON,
+     FullTrendingPlaylistsResponseToJSON,
+ } from '../models';
+ 
+ export interface GetPlaylistRequest {
+     /**
+      * A Playlist ID
+      */
+     playlistId: string;
+     /**
+      * The user ID of the user making the request
+      */
+     userId?: string;
+ }
+ 
+ export interface GetPlaylistTracksRequest {
+     /**
+      * A Playlist ID
+      */
+     playlistId: string;
+ }
+ 
+ export interface GetTrendingPlaylistsRequest {
+     /**
+      * The number of items to skip. Useful for pagination (page number * limit)
+      */
+     offset?: number;
+     /**
+      * The number of items to fetch
+      */
+     limit?: number;
+     /**
+      * The user ID of the user making the request
+      */
+     userId?: string;
+     /**
+      * Calculate trending over a specified time range
+      */
+     time?: GetTrendingPlaylistsTimeEnum;
+ }
+ 
+ export interface GetTrendingPlaylistsWithVersionRequest {
+     /**
+      * The strategy version of trending to use
+      */
+     version: string;
+     /**
+      * The number of items to skip. Useful for pagination (page number * limit)
+      */
+     offset?: number;
+     /**
+      * The number of items to fetch
+      */
+     limit?: number;
+     /**
+      * The user ID of the user making the request
+      */
+     userId?: string;
+     /**
+      * Calculate trending over a specified time range
+      */
+     time?: GetTrendingPlaylistsWithVersionTimeEnum;
+ }
+ 
+ export interface GetUsersFromPlaylistFavoritesRequest {
+     /**
+      * A Playlist ID
+      */
+     playlistId: string;
+     /**
+      * The number of items to skip. Useful for pagination (page number * limit)
+      */
+     offset?: number;
+     /**
+      * The number of items to fetch
+      */
+     limit?: number;
+     /**
+      * The user ID of the user making the request
+      */
+     userId?: string;
+ }
+ 
+ export interface GetUsersFromPlaylistRepostsRequest {
+     /**
+      * A Playlist ID
+      */
+     playlistId: string;
+     /**
+      * The number of items to skip. Useful for pagination (page number * limit)
+      */
+     offset?: number;
+     /**
+      * The number of items to fetch
+      */
+     limit?: number;
+     /**
+      * The user ID of the user making the request
+      */
+     userId?: string;
+ }
+ 
+ /**
+  * 
+  */
+ export class PlaylistsApi extends runtime.BaseAPI {
+ 
+     /**
+      * Get a playlist by ID
+      */
+     async getPlaylist(requestParameters: GetPlaylistRequest): Promise<NonNullable<FullPlaylistResponse["data"]>> {
+         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
+             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylist.');
+         }
+ 
+         const queryParameters: any = {};
+ 
+         if (requestParameters.userId !== undefined) {
+             queryParameters['user_id'] = requestParameters.userId;
+         }
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/{playlist_id}`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FullPlaylistResponse["data"]>>;
+     }
+ 
+     /**
+      * Fetch tracks within a playlist.
+      */
+     async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest): Promise<NonNullable<FullPlaylistTracksResponse["data"]>> {
+         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
+             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylistTracks.');
+         }
+ 
+         const queryParameters: any = {};
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/{playlist_id}/tracks`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FullPlaylistTracksResponse["data"]>>;
+     }
+ 
+     /**
+      * Returns trending playlists for a time period
+      */
+     async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
+         const queryParameters: any = {};
+ 
+         if (requestParameters.offset !== undefined) {
+             queryParameters['offset'] = requestParameters.offset;
+         }
+ 
+         if (requestParameters.limit !== undefined) {
+             queryParameters['limit'] = requestParameters.limit;
+         }
+ 
+         if (requestParameters.userId !== undefined) {
+             queryParameters['user_id'] = requestParameters.userId;
+         }
+ 
+         if (requestParameters.time !== undefined) {
+             queryParameters['time'] = requestParameters.time;
+         }
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/trending`,
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
+     }
+ 
+     /**
+      * Returns trending playlists for a time period based on the given trending version
+      */
+     async getTrendingPlaylistsWithVersion(requestParameters: GetTrendingPlaylistsWithVersionRequest): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
+         if (requestParameters.version === null || requestParameters.version === undefined) {
+             throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingPlaylistsWithVersion.');
+         }
+ 
+         const queryParameters: any = {};
+ 
+         if (requestParameters.offset !== undefined) {
+             queryParameters['offset'] = requestParameters.offset;
+         }
+ 
+         if (requestParameters.limit !== undefined) {
+             queryParameters['limit'] = requestParameters.limit;
+         }
+ 
+         if (requestParameters.userId !== undefined) {
+             queryParameters['user_id'] = requestParameters.userId;
+         }
+ 
+         if (requestParameters.time !== undefined) {
+             queryParameters['time'] = requestParameters.time;
+         }
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
+     }
+ 
+     /**
+      * Get users that favorited a playlist
+      */
+     async getUsersFromPlaylistFavorites(requestParameters: GetUsersFromPlaylistFavoritesRequest): Promise<NonNullable<FollowingResponse["data"]>> {
+         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
+             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistFavorites.');
+         }
+ 
+         const queryParameters: any = {};
+ 
+         if (requestParameters.offset !== undefined) {
+             queryParameters['offset'] = requestParameters.offset;
+         }
+ 
+         if (requestParameters.limit !== undefined) {
+             queryParameters['limit'] = requestParameters.limit;
+         }
+ 
+         if (requestParameters.userId !== undefined) {
+             queryParameters['user_id'] = requestParameters.userId;
+         }
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/{playlist_id}/favorites`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FollowingResponse["data"]>>;
+     }
+ 
+     /**
+      * Get users that reposted a playlist
+      */
+     async getUsersFromPlaylistReposts(requestParameters: GetUsersFromPlaylistRepostsRequest): Promise<NonNullable<FollowingResponse["data"]>> {
+         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
+             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistReposts.');
+         }
+ 
+         const queryParameters: any = {};
+ 
+         if (requestParameters.offset !== undefined) {
+             queryParameters['offset'] = requestParameters.offset;
+         }
+ 
+         if (requestParameters.limit !== undefined) {
+             queryParameters['limit'] = requestParameters.limit;
+         }
+ 
+         if (requestParameters.userId !== undefined) {
+             queryParameters['user_id'] = requestParameters.userId;
+         }
+ 
+         const headerParameters: runtime.HTTPHeaders = {};
+ 
+         return this.request({
+             path: `/playlists/{playlist_id}/reposts`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+             method: 'GET',
+             headers: headerParameters,
+             query: queryParameters,
+         }) as Promise<NonNullable<FollowingResponse["data"]>>;
+     }
+ 
+ }
+ 
+ /**
+     * @export
+     * @enum {string}
      */
-    userId?: string;
-    /**
-     * The permalink of the playlist
+ export enum GetTrendingPlaylistsTimeEnum {
+     Week = 'week',
+     Month = 'month',
+     Year = 'year',
+     AllTime = 'allTime'
+ }
+ /**
+     * @export
+     * @enum {string}
      */
-    permalink?: Array<string>;
-    /**
-     * The ID of the desired playlist
-     */
-    playlistId?: Array<string>;
-}
-
-export interface GetPlaylistTracksRequest {
-    /**
-     * A Playlist ID
-     */
-    playlistId: string;
-}
-
-export interface GetTrendingPlaylistsRequest {
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-    /**
-     * Calculate trending over a specified time range
-     */
-    time?: GetTrendingPlaylistsTimeEnum;
-}
-
-export interface GetTrendingPlaylistsWithVersionRequest {
-    /**
-     * The strategy version of trending to use
-     */
-    version: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-    /**
-     * Calculate trending over a specified time range
-     */
-    time?: GetTrendingPlaylistsWithVersionTimeEnum;
-}
-
-export interface GetUsersFromPlaylistFavoritesRequest {
-    /**
-     * A Playlist ID
-     */
-    playlistId: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-export interface GetUsersFromPlaylistRepostsRequest {
-    /**
-     * A Playlist ID
-     */
-    playlistId: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
-    offset?: number;
-    /**
-     * The number of items to fetch
-     */
-    limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
-    userId?: string;
-}
-
-/**
- * 
- */
-export class PlaylistsApi extends runtime.BaseAPI {
-
-    /**
-     * Get a playlist by ID
-     */
-    async getPlaylist(requestParameters: GetPlaylistRequest = {}): Promise<NonNullable<FullPlaylistResponse["data"]>> {
-        const queryParameters: any = {};
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        if (requestParameters.permalink) {
-            queryParameters['permalink'] = requestParameters.permalink;
-        }
-
-        if (requestParameters.playlistId) {
-            queryParameters['playlist_id'] = requestParameters.playlistId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FullPlaylistResponse["data"]>>;
-    }
-
-    /**
-     * Fetch tracks within a playlist.
-     */
-    async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest): Promise<NonNullable<FullPlaylistTracksResponse["data"]>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylistTracks.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists/{playlist_id}/tracks`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FullPlaylistTracksResponse["data"]>>;
-    }
-
-    /**
-     * Returns trending playlists for a time period
-     */
-    async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists/trending`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
-    }
-
-    /**
-     * Returns trending playlists for a time period based on the given trending version
-     */
-    async getTrendingPlaylistsWithVersion(requestParameters: GetTrendingPlaylistsWithVersionRequest): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingPlaylistsWithVersion.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
-    }
-
-    /**
-     * Get users that favorited a playlist
-     */
-    async getUsersFromPlaylistFavorites(requestParameters: GetUsersFromPlaylistFavoritesRequest): Promise<NonNullable<FollowingResponse["data"]>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistFavorites.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists/{playlist_id}/favorites`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponse["data"]>>;
-    }
-
-    /**
-     * Get users that reposted a playlist
-     */
-    async getUsersFromPlaylistReposts(requestParameters: GetUsersFromPlaylistRepostsRequest): Promise<NonNullable<FollowingResponse["data"]>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistReposts.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        return this.request({
-            path: `/playlists/{playlist_id}/reposts`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponse["data"]>>;
-    }
-
-}
-
-/**
-    * @export
-    * @enum {string}
-    */
-export enum GetTrendingPlaylistsTimeEnum {
-    Week = 'week',
-    Month = 'month',
-    Year = 'year',
-    AllTime = 'allTime'
-}
-/**
-    * @export
-    * @enum {string}
-    */
-export enum GetTrendingPlaylistsWithVersionTimeEnum {
-    Week = 'week',
-    Month = 'month',
-    Year = 'year',
-    AllTime = 'allTime'
-}
+ export enum GetTrendingPlaylistsWithVersionTimeEnum {
+     Week = 'week',
+     Month = 'month',
+     Year = 'year',
+     AllTime = 'allTime'
+ }
+ 
