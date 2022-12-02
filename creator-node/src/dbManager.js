@@ -3,6 +3,7 @@ const { isEmpty } = require('lodash')
 
 const { logger } = require('./logging')
 const models = require('./models')
+const config = require('./config')
 const sequelize = models.sequelize
 const { QueryTypes } = models.Sequelize
 
@@ -446,7 +447,7 @@ class DBManager {
           [sequelize.Op.like]: '/file_storage/%'
         }
       },
-      order: [['multihash', 'ASC']],
+      order: [['multihash', 'DESC']],
       limit: batchSize
     })
     logger.debug(
@@ -466,6 +467,35 @@ class DBManager {
 
   static async getDirLegacyStoragePathsAndCids(cursor, batchSize) {
     return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, true)
+  }
+
+  static async getCustomStoragePathsRecords(cursor, batchSize) {
+    const queryResult = await models.File.findAll({
+      attributes: [
+        'storagePath',
+        'multihash',
+        'dirMultihash',
+        'fileName',
+        'trackBlockchainId',
+        'fileUUID'
+      ],
+      where: {
+        multihash: { [sequelize.Op.gte]: cursor },
+        storagePath: {
+          [sequelize.Op.notLike]: `${config.get('storagePath')}/%`,
+          [sequelize.Op.notLike]: '/file_storage/%'
+        }
+      },
+      order: [['multihash', 'DESC']],
+      limit: batchSize
+    })
+    logger.debug(
+      `queryResult for custom storagePaths with cursor ${cursor}: ${JSON.stringify(
+        queryResult || {}
+      )}`
+    )
+    if (isEmpty(queryResult)) return []
+    return queryResult
   }
 
   static async updateLegacyPathDbRows(copiedFilePaths, logger) {

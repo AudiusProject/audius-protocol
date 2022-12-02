@@ -28,7 +28,7 @@ import { sequelize } from './models'
 import {
   emptyTmpTrackUploadArtifacts,
   sweepSubdirectoriesInFiles,
-  migrateFilesWithLegacyStoragePaths
+  migrateFilesWithNonStandardStoragePaths
 } from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
@@ -130,14 +130,12 @@ const runAsyncBackgroundTasks = async () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     sweepSubdirectoriesInFiles()
   }
-  if (config.get('migrateFilesWithLegacyStoragePath')) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    migrateFilesWithLegacyStoragePaths(
-      1000,
-      serviceRegistry.prometheusRegistry,
-      logger
-    )
-  }
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  migrateFilesWithNonStandardStoragePaths(
+    500,
+    serviceRegistry.prometheusRegistry,
+    logger
+  )
 }
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
