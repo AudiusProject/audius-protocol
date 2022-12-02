@@ -4,6 +4,7 @@ import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
+import { Platform } from 'react-native'
 import * as BootSplash from 'react-native-bootsplash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -17,7 +18,11 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
 
+import { ThemedStatusBar } from './StatusBar'
+
 const { getAccountStatus, getHasAccount } = accountSelectors
+
+const IS_IOS = Platform.OS === 'ios'
 
 export type RootScreenParamList = {
   HomeStack: NavigatorScreenParams<{
@@ -42,10 +47,6 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const hasAccount = useSelector(getHasAccount)
 
   useEffect(() => {
-    BootSplash.hide()
-  }, [])
-
-  useEffect(() => {
     // Setup the backend when ready
     if (isReadyToSetupBackend) {
       dispatch(setupBackend())
@@ -59,9 +60,24 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
 
   const accountFetchResolved =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
+
+  // Android does not use the SplashScreen component as different
+  // devices will render different sizes of the BootSplash.
+  // Instead of our custom SplashScreen, fade out the BootSplash screen.
+  useEffect(() => {
+    if (accountFetchResolved && !IS_IOS) {
+      BootSplash.hide({ fade: true })
+    }
+  }, [accountFetchResolved])
+
   return (
     <>
-      <SplashScreen canDismiss={accountFetchResolved} />
+      {IS_IOS ? (
+        <SplashScreen canDismiss={accountFetchResolved} />
+      ) : (
+        <ThemedStatusBar onSignUpScreen={accountFetchResolved && !hasAccount} />
+      )}
+
       <Stack.Navigator
         screenOptions={{ gestureEnabled: false, headerShown: false }}
       >

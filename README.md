@@ -62,14 +62,23 @@ npm run desktop:dev
 npm run desktop:stage
 npm run desktop:prod
 
-# mobile (append -- --device to target a physical device)
+# mobile
+
+# ios
 npm run ios:dev
 npm run ios:stage
 npm run ios:prod
+# on a physical device
+xcrun xctrace list devices
+npm run ios:<env> -- --device "My iPhone"
 
+# android
 npm run android:dev
 npm run android:stage
 npm run android:prod
+# on a physical device
+adb devices
+npm run android:<env> -- --device "A38M608KHBK"
 
 # stems in watch mode
 npm run stems

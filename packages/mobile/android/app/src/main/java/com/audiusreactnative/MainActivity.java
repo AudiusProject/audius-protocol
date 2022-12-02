@@ -4,6 +4,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import com.facebook.react.ReactActivity;
 import com.google.android.gms.cast.framework.CastContext;
+import com.zoontek.rnbars.RNBars;
 import com.zoontek.rnbootsplash.RNBootSplash;
 
 
@@ -29,6 +30,7 @@ public class MainActivity extends ReactActivity {
   protected void onCreate(Bundle savedInstanceState) {
     RNBootSplash.init(this);
     super.onCreate(null);
+    RNBars.init(this, "light-content");
 
     // lazy load Google Cast context
     CastContext.getSharedInstance(this);
