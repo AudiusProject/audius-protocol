@@ -525,6 +525,10 @@ def configure_celery(celery, test_config=None):
             "update_track_is_available": {
                 "task": "update_track_is_available",
                 "schedule": timedelta(hours=3),
+            },
+            "index_profile_challenge_backfill": {
+                "task": "index_profile_challenge_backfill",
+                "schedule": timedelta(minutes=1),
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
@@ -598,6 +602,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
     redis_inst.delete("spl_token_backfill_lock")
+    redis_inst.delete("profile_challenge_backfill_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
