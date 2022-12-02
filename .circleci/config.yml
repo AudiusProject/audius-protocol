@@ -596,7 +596,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_creator_node_test
-      - image: redis:5.0.4
+      - image: redis:6.2.7
     steps:
       - checkout
       - diff-if-necessary:

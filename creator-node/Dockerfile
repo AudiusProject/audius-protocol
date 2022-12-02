@@ -1,4 +1,4 @@
-FROM alpine:3.13 AS base
+FROM alpine:3.14 AS base
 
 WORKDIR /usr/src/app
 
@@ -14,7 +14,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add \
         bash=5.1.16-r0 \
         curl \
-        docker=20.10.3-r1 \
+        docker=20.10.11-r1 \
         libpq=11.12-r0 \
         nodejs=14.20.1-r0 \
         npm \
@@ -25,7 +25,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         py3-pip \
         python3 \
         python3-dev \
-        redis=6.0.16-r0 \
+        redis=6.2.7-r0 \
         rsyslog=8.2012.0-r3 \
         sudo=1.9.5p2-r0
 
@@ -38,7 +38,7 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty=1.19.3.2-r0 && \
+    apk add openresty=1.21.4.1-r0 && \
     mkdir /usr/local/openresty/conf && \
     mkdir /usr/local/openresty/logs && \
     mkdir /usr/local/openresty/cache
