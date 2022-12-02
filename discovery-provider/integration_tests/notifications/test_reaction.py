@@ -64,7 +64,6 @@ def test_reaction_notification(app):
         ).rstrip(
             "0"
         )
-        assert notifications[0].notification_group_id == None
         assert notifications[0].type == "reaction"
         assert notifications[0].slot == 0
         assert notifications[0].blocknumber == None

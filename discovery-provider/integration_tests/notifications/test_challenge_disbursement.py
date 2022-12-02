@@ -40,7 +40,6 @@ def test_challenge_disbursement_notification(app):
 
         assert notifications[0].specifier == "1"
         assert notifications[0].group_id == "challenge_reward:1:challenge:2:specifier:2"
-        assert notifications[0].notification_group_id == None
         assert notifications[0].type == "challenge_reward"
         assert notifications[0].slot == 2
         assert notifications[0].blocknumber == None

@@ -16,6 +16,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.tasks.entity_manager.notification_seen import view_notification
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -186,6 +187,12 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         update_user_replica_set(params)
+                    elif (
+                        params.action == Action.VIEW
+                        and params.entity_type == EntityType.NOTIFICATION
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        view_notification(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -211,7 +218,10 @@ def entity_manager_update(
                 records_to_save.extend(records)
 
                 # invalidate original record if it already existed in the DB
-                if entity_id in original_records[record_type]:
+                if (
+                    record_type in original_records
+                    and entity_id in original_records[record_type]
+                ):
                     original_records[record_type][entity_id].is_current = False
 
         # insert/update all tracks, playlist records in this block
