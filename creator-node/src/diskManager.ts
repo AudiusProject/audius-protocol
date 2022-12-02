@@ -2,7 +2,7 @@ import type Logger from 'bunyan'
 
 import path from 'path'
 import fs from 'fs-extra'
-import { chunk, reverse, isEqual } from 'lodash'
+import { chunk, reverse, isEqual, isEmpty } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
@@ -427,20 +427,18 @@ export async function sweepSubdirectoriesInFiles(
     return sweepSubdirectoriesInFiles()
 }
 
+/**
+ * Performs the equivalent of Unix `touch` command - make file at given path with ctime and mtime of now.
+ */
 async function _touch(path: string) {
-  return new Promise((resolve, reject) => {
-    const now = new Date()
-    // Set mtime to now, and on error (file not found) create new file which will by default have mtime of now
-    fs.utimes(path, now, now, (err) => {
-      if (err) {
-        return fs.open(path, 'w', (err, fd) => {
-          if (err) return reject(err)
-          fs.close(fd, (err) => (err ? reject(err) : resolve(fd)))
-        })
-      }
-      resolve(null)
-    })
-  })
+  // Set mtime to now, and on error (file not found) create new file which will by default have mtime of now
+  const now = new Date()
+  try {
+    await fs.utimes(path, now, now)
+  } catch (e: any) {
+    const fd = await fs.open(path, 'w')
+    await fs.close(fd)
+  }
 }
 
 async function _copyLegacyFiles(
@@ -517,12 +515,17 @@ async function _copyLegacyFiles(
     }
   }
 
-  // Record results in Prometheus metric
+  // Record results in Prometheus metric and log errors
   const metric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
   )
   metric.inc({ result: 'success' }, copiedPaths.length)
   metric.inc({ result: 'failure' }, erroredPaths.length)
+  if (!isEmpty(erroredPaths)) {
+    logger.debug(
+      `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
+    )
+  }
 
   return copiedPaths
 }
@@ -698,6 +701,12 @@ async function _migrateFilesWithCustomStoragePaths(
  * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
  * 3. Updates the row in the Files table to reflect the new storagePath
  * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
+ *
+ * Then, for files with custom storage paths, this:
+ * 1. Finds rows in the Files table that have a custom storagePath (not /file_storage/<CID> and not /file_storage/files/<CID>)
+ * 2. Finds the file in network and saves it to the standard path (/file_storage/files/*)
+ * 3. Updates the row in the Files table to reflect the new storagePath
+ * 4. Increments Prometheus metric `filesMigratedFromCustomPath` to reflect the number of files moved
  * @param queryDelayMs millis to wait between SQL queries
  * @param prometheusRegistry registry to record Prometheus metrics
  * @param logger logger to print errors to
