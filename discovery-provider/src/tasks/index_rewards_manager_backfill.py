@@ -487,7 +487,6 @@ def process_transaction_signatures(
             earliest_tx_sig = tx_sig_batch[-1]
         logger.info(f"index_rewards_manager_backfill.py | processing {tx_sig_batch}")
         fetch_start_time = time.time()
-        batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
         # Process each batch in parallel
