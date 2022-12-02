@@ -25,7 +25,7 @@ import {
   getCharsInRanges
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
-import { serviceRegistry } from './serviceRegistry'
+import BlacklistManager from './blacklistManager'
 
 const models = require('./models')
 
@@ -634,9 +634,7 @@ async function _migrateFileWithCustomStoragePath(
 
   if (error) {
     // If copying errored because the file is delisted, we can ignore the error and update the db storagePath
-    const isServable = await serviceRegistry.blacklistManager.isServable(
-      fileRecord.multihash
-    )
+    const isServable = await BlacklistManager.isServable(fileRecord.multihash)
     if (!isServable && fileRecord.skipped) {
       await models.File.update(
         { storagePath },
