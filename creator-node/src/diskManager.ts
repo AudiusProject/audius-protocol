@@ -541,19 +541,24 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(
     const cursor = 'Qm' + char
 
     // Query for legacy storagePaths in the pagination range until no new results are returned
-    let prevLegacyStoragePathsAndCids
-    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
-      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
-      legacyStoragePathsAndCids =
-        await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      if (legacyStoragePathsAndCids.length) {
+    let newResultsFound = true
+    let results: { storagePath: string; cid: string }[] = []
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getNonDirLegacyStoragePathsAndCids(
+        cursor,
+        BATCH_SIZE
+      )
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
         const copiedFilePaths = await _copyLegacyFiles(
-          legacyStoragePathsAndCids,
+          results,
           prometheusRegistry,
           logger
         )
         await DbManager.updateLegacyPathDbRows(copiedFilePaths, logger)
+      } else {
+        newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
@@ -570,22 +575,25 @@ async function _migrateDirsWithLegacyStoragePaths(
     const cursor = 'Qm' + char
 
     // Query for legacy storagePaths in the pagination range until no new results are returned
-    let prevLegacyStoragePathsAndCids
-    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
-      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
-      legacyStoragePathsAndCids =
-        await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      if (legacyStoragePathsAndCids.length) {
-        const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
-          (storagePathAndCid) => {
-            return {
-              legacyPath: storagePathAndCid.storagePath,
-              nonLegacyPath: computeFilePath(storagePathAndCid.cid)
-            }
+    let newResultsFound = true
+    let results: { storagePath: string; cid: string }[] = []
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getDirLegacyStoragePathsAndCids(
+        cursor,
+        BATCH_SIZE
+      )
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
+        const legacyAndNonLegacyPaths = results.map((storagePathAndCid) => {
+          return {
+            legacyPath: storagePathAndCid.storagePath,
+            nonLegacyPath: computeFilePath(storagePathAndCid.cid)
           }
-        )
+        })
         await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      } else {
+        newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
@@ -645,8 +653,8 @@ async function _migrateFilesWithCustomStoragePaths(
     const cursor = 'Qm' + char
 
     // Query for custom storagePaths in the pagination range until no new results are returned
-    let prevFileRecordsWithCustomPath
-    let fileRecordsWithCustomPath: {
+    let newResultsFound
+    let results: {
       storagePath: string
       multihash: string
       fileUUID: string
@@ -654,17 +662,15 @@ async function _migrateFilesWithCustomStoragePaths(
       fileName?: string
       trackBlockchainId?: number
     }[] = []
-    while (!isEqual(prevFileRecordsWithCustomPath, fileRecordsWithCustomPath)) {
-      prevFileRecordsWithCustomPath = fileRecordsWithCustomPath
-      fileRecordsWithCustomPath = await DbManager.getCustomStoragePathsRecords(
-        cursor,
-        BATCH_SIZE
-      )
-      if (fileRecordsWithCustomPath.length) {
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getCustomStoragePathsRecords(cursor, BATCH_SIZE)
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
         // Process sequentially to minimize load since this is not time-sensitive
         let numFilesMigratedSuccessfully = 0
         let numFilesFailedToMigrate = 0
-        for (const fileRecord of fileRecordsWithCustomPath) {
+        for (const fileRecord of results) {
           let success
           try {
             success = await _migrateFileWithCustomStoragePath(
@@ -689,6 +695,8 @@ async function _migrateFilesWithCustomStoragePaths(
         )
         metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
         metric.inc({ result: 'failure' }, numFilesFailedToMigrate)
+      } else {
+        newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
