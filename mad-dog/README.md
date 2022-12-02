@@ -33,6 +33,7 @@
 
 - `service-commands` need to be linked, or the latest version published to npm.
 - In the event that mad-dog fails due to libs errors, try running `npm i` in `/libs` and relinking packages.
+- If you get a module not found error e.g. `Error: Cannot find module 'node-localstorage'`, check the stack and directory the error is coming from, and run `npm i` in that directory. E.g. if the error is coming from service-commands, run `npm i` in audius-protocol/service-commands then re run tests.
 - If mad-dog fails for other random reasons, it could be a state issue -- try bringing up a fresh set of services.
 
 ## Code Structure
