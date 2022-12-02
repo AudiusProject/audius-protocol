@@ -650,11 +650,11 @@ async function _migrateFileWithCustomStoragePath(
     )
     return false
   } else {
-    // Update file's storagePath in DB to newly saved location
+    // Update file's storagePath in DB to newly saved location, and ensure it's not marked as skipped
     await models.File.update(
       { storagePath },
       {
-        where: { fileUUID: fileRecord.fileUUID }
+        where: { fileUUID: fileRecord.fileUUID, skipped: false }
       }
     )
     return true
