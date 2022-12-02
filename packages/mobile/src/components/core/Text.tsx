@@ -16,6 +16,7 @@ export type TextProps = RNTextProps & {
     | 'secondary'
     | 'neutral'
     | 'neutralLight4'
+    | 'neutralLight2'
     | 'inherit'
     | 'error'
     | 'warning'

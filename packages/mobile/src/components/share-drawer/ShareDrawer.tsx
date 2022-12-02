@@ -1,24 +1,17 @@
-import React, { useCallback, useContext } from 'react'
-
-import path from 'path'
+import React, { useCallback, useContext, useRef } from 'react'
 
 import {
-  encodeHashId,
-  FeatureFlags,
   accountSelectors,
   collectionsSocialActions,
-  tracksSocialActions,
-  usersSocialActions,
+  FeatureFlags,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
-  uuid
+  tracksSocialActions,
+  usersSocialActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native'
 import { Linking, View } from 'react-native'
-import Config from 'react-native-config'
-import RNFS from 'react-native-fs'
-import Share from 'react-native-share'
+import ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
@@ -27,17 +20,19 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import Text from 'app/components/text'
+import DeprecatedText from 'app/components/text'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { apiClient } from 'app/services/audius-api-client'
 import { makeStyles } from 'app/styles'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
 import { ToastContext } from '../toast/ToastContext'
 
+import { ShareToStorySticker } from './ShareToStorySticker'
 import { messages } from './messages'
+import { useShareToStory } from './useShareToStory'
 import { getContentUrl, getTwitterShareUrl } from './utils'
+
 const { getShareContent, getShareSource } = shareModalUISelectors
 const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
@@ -81,17 +76,25 @@ const useStyles = makeStyles(({ palette }) => ({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 24
+  },
+  viewShot: {
+    position: 'absolute',
+    // Position the container off-screen (264px is the width of the whole thing)
+    right: -264 - 5
   }
 }))
 
 export const ShareDrawer = () => {
   const styles = useStyles()
+  const viewShotRef = useRef() as React.RefObject<ViewShot>
+
   const { isEnabled: isShareToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
   const { isEnabled: isShareToInstagramStoryEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_TO_STORY
   )
+
   const { primary, secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
@@ -123,46 +126,11 @@ export const ShareDrawer = () => {
     }
   }, [content, dispatch])
 
-  // nkang: WIP, will probably be moved:
-  const handleShareToInstagramStory = useCallback(async () => {
-    if (content?.type === 'track') {
-      const encodedTrackId = encodeHashId(content.track.track_id)
-      const streamMp3Url = apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
-      const storyVideoPath = path.join(
-        RNFS.TemporaryDirectoryPath,
-        `storyVideo-${uuid()}.mp4`
-      )
-      const audioStartOffsetConfig =
-        content.track.duration && content.track.duration >= 20 ? '-ss 10 ' : ''
-      const session = await FFmpegKit.execute(
-        `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=1080x1920:c0=000000:c1=434343:x0=0:x1=0:y0=0:y1=1920:duration=10:speed=0.0225:rate=60[bg];[0:a]aformat=channel_layouts=mono,showwaves=mode=cline:n=1:s=1080x200:scale=cbrt:colors=#ffffff[fg];[bg][fg]overlay=format=auto:x=0:y=1275" -pix_fmt yuv420p -vb 50M -t 10 ${storyVideoPath}`
-      )
-      // TODO(nkang): Add loading state
-      const returnCode = await session.getReturnCode()
-
-      if (ReturnCode.isSuccess(returnCode)) {
-      } else {
-        const output = await session.getOutput()
-        // TODO(nkang): Make this a toast?
-        console.error('Error sharing story: ', output)
-        return
-      }
-
-      const shareOptions = {
-        backgroundVideo: storyVideoPath,
-        // stickerImage: image, TODO(nkang): Base64 sticker image goes here
-        attributionURL: Config.AUDIUS_URL,
-        social: Share.Social.INSTAGRAM_STORIES,
-        appId: Config.INSTAGRAM_APP_ID
-      }
-      try {
-        await Share.shareSingle(shareOptions)
-      } catch (error) {
-        // TODO (nkang): Make this a toast?
-        console.error('Error sharing story: ', error)
-      }
-    }
-  }, [content])
+  const {
+    handleShareToStoryStickerLoad,
+    handleShareToInstagramStory,
+    shouldRenderShareToStorySticker
+  } = useShareToStory({ content, viewShotRef })
 
   const handleCopyLink = useCallback(() => {
     if (!content) return
@@ -284,23 +252,39 @@ export const ShareDrawer = () => {
   ])
 
   return (
-    <ActionDrawer
-      modalName='Share'
-      rows={getRows()}
-      renderTitle={() => (
-        <View style={styles.title}>
-          <IconShare
-            style={styles.titleIcon}
-            fill={neutral}
-            height={18}
-            width={20}
+    <>
+      {/* Redundant `content?.type === 'track'` needed to make TS happy */}
+      {content?.type === 'track' && shouldRenderShareToStorySticker ? (
+        <ViewShot
+          style={styles.viewShot}
+          ref={viewShotRef}
+          options={{ format: 'png' }}
+        >
+          <ShareToStorySticker
+            onLoad={handleShareToStoryStickerLoad}
+            track={content?.track}
+            artist={content?.artist}
           />
-          <Text weight='bold' style={styles.titleText}>
-            {messages.modalTitle(shareType)}
-          </Text>
-        </View>
-      )}
-      styles={{ row: styles.row }}
-    />
+        </ViewShot>
+      ) : null}
+      <ActionDrawer
+        modalName='Share'
+        rows={getRows()}
+        renderTitle={() => (
+          <View style={styles.title}>
+            <IconShare
+              style={styles.titleIcon}
+              fill={neutral}
+              height={18}
+              width={20}
+            />
+            <DeprecatedText weight='bold' style={styles.titleText}>
+              {messages.modalTitle(shareType)}
+            </DeprecatedText>
+          </View>
+        )}
+        styles={{ row: styles.row }}
+      />
+    </>
   )
 }
