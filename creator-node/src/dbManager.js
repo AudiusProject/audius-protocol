@@ -436,7 +436,7 @@ class DBManager {
 
   static async _getLegacyStoragePathsAndCids(cursor, batchSize, dir) {
     const queryResult = await models.File.findAll({
-      attributes: ['storagePath', 'multihash'],
+      attributes: ['storagePath', 'multihash', 'skipped'],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },
         type: {
@@ -457,7 +457,11 @@ class DBManager {
     )
     if (isEmpty(queryResult)) return []
     return queryResult.map((result) => {
-      return { storagePath: result.storagePath, cid: result.multihash }
+      return {
+        storagePath: result.storagePath,
+        cid: result.multihash,
+        skipped: result.skipped
+      }
     })
   }
 
@@ -477,7 +481,8 @@ class DBManager {
         'dirMultihash',
         'fileName',
         'trackBlockchainId',
-        'fileUUID'
+        'fileUUID',
+        'skipped'
       ],
       where: {
         multihash: { [sequelize.Op.gte]: cursor },

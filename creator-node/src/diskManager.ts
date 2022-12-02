@@ -25,6 +25,7 @@ import {
   getCharsInRanges
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
+import BlacklistManager from './blacklistManager'
 
 const models = require('./models')
 
@@ -442,7 +443,7 @@ async function _touch(path: string) {
 }
 
 async function _copyLegacyFiles(
-  legacyPathsAndCids: { storagePath: string; cid: string }[],
+  legacyPathsAndCids: { storagePath: string; cid: string; skipped: boolean }[],
   prometheusRegistry: any,
   logger: Logger
 ): Promise<
@@ -456,7 +457,8 @@ async function _copyLegacyFiles(
     legacyPath: string
     nonLegacyPath: string
   }[] = []
-  for (const { storagePath: legacyPath, cid } of legacyPathsAndCids) {
+  for (const { storagePath: legacyPath, cid, skipped } of legacyPathsAndCids) {
+    let nonLegacyPath = ''
     try {
       // Compute new path
       const nonLegacyPathInfo = extractCIDsFromFSPath(legacyPath)
@@ -466,7 +468,7 @@ async function _copyLegacyFiles(
       }
 
       // Ensure new path's parent exists
-      const nonLegacyPath = await (nonLegacyPathInfo.isDir
+      nonLegacyPath = await (nonLegacyPathInfo.isDir
         ? computeFilePathInDirAndEnsureItExists(
             nonLegacyPathInfo.outer,
             nonLegacyPathInfo.inner!
@@ -511,7 +513,12 @@ async function _copyLegacyFiles(
         throw new Error('CID does not match what is expected to be')
       }
     } catch (e: any) {
-      erroredPaths[legacyPath] = e.toString()
+      // If the file is skipped (blacklisted) then we don't care if it failed to copy
+      if (skipped && nonLegacyPath?.length) {
+        copiedPaths.push({ legacyPath, nonLegacyPath })
+      } else {
+        erroredPaths[legacyPath] = e.toString()
+      }
     }
   }
 
@@ -542,7 +549,7 @@ async function _migrateNonDirFilesWithLegacyStoragePaths(
 
     // Query for legacy storagePaths in the pagination range until no new results are returned
     let newResultsFound = true
-    let results: { storagePath: string; cid: string }[] = []
+    let results: { storagePath: string; cid: string; skipped: boolean }[] = []
     while (newResultsFound) {
       const prevResults = results
       results = await DbManager.getNonDirLegacyStoragePathsAndCids(
@@ -576,7 +583,7 @@ async function _migrateDirsWithLegacyStoragePaths(
 
     // Query for legacy storagePaths in the pagination range until no new results are returned
     let newResultsFound = true
-    let results: { storagePath: string; cid: string }[] = []
+    let results: { storagePath: string; cid: string; skipped: boolean }[] = []
     while (newResultsFound) {
       const prevResults = results
       results = await DbManager.getDirLegacyStoragePathsAndCids(
@@ -605,6 +612,7 @@ async function _migrateFileWithCustomStoragePath(
     storagePath: string
     multihash: string
     fileUUID: string
+    skipped: boolean
     dirMultihash?: string
     fileName?: string
     trackBlockchainId?: number
@@ -625,6 +633,17 @@ async function _migrateFileWithCustomStoragePath(
   )
 
   if (error) {
+    // If copying errored because the file is delisted, we can ignore the error and update the db storagePath
+    const isServable = await BlacklistManager.isServable(fileRecord.multihash)
+    if (!isServable && fileRecord.skipped) {
+      await models.File.update(
+        { storagePath },
+        {
+          where: { fileUUID: fileRecord.fileUUID }
+        }
+      )
+      return true
+    }
     logErrorWithDuration(
       { logger, startTime: fetchStartTime },
       `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
@@ -633,9 +652,9 @@ async function _migrateFileWithCustomStoragePath(
   } else {
     // Update file's storagePath in DB to newly saved location, and ensure it's not marked as skipped
     await models.File.update(
-      { storagePath, skipped: false },
+      { storagePath },
       {
-        where: { fileUUID: fileRecord.fileUUID }
+        where: { fileUUID: fileRecord.fileUUID, skipped: false }
       }
     )
     return true
@@ -658,6 +677,7 @@ async function _migrateFilesWithCustomStoragePaths(
       storagePath: string
       multihash: string
       fileUUID: string
+      skipped: boolean
       dirMultihash?: string
       fileName?: string
       trackBlockchainId?: number
