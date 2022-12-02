@@ -2,10 +2,11 @@ import { StyleSheet, View } from 'react-native'
 
 import IconQuestionMark from 'app/assets/images/iconQuestionMark.svg'
 import { NativeDrawer } from 'app/components/drawer'
-import Text from 'app/components/text'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
+
+import { Text } from '../core'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -30,7 +31,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     title: {
       fontSize: 18,
-      fontWeight: '800',
       lineHeight: 22
     },
 
@@ -63,7 +63,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     fromHeader: {
       color: themeColors.neutralLight4,
-      fontWeight: 'bold',
       fontSize: 16,
       lineHeight: 20,
       marginBottom: 12
@@ -71,7 +70,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     subjectHeader: {
       color: themeColors.neutralLight4,
-      fontWeight: 'bold',
       fontSize: 16,
       lineHeight: 20
     },
@@ -91,7 +89,6 @@ const createStyles = (themeColors: ThemeColors) =>
     },
 
     subjectContent: {
-      fontWeight: '600',
       fontSize: 16,
       lineHeight: 20
     }
@@ -121,7 +118,9 @@ export const ForgotPasswordDrawer = () => {
             height={20}
             width={20}
           />
-          <Text style={styles.title}>{messages.forgotPassword}</Text>
+          <Text weight='bold' style={styles.title}>
+            {messages.forgotPassword}
+          </Text>
         </View>
         <View style={styles.bodyView}>
           <Text style={styles.restoreAccount} weight='demiBold'>
@@ -129,8 +128,12 @@ export const ForgotPasswordDrawer = () => {
           </Text>
           <View style={styles.emailView}>
             <View style={styles.emailSubHeadings}>
-              <Text style={styles.fromHeader}>{messages.fromHeader}</Text>
-              <Text style={styles.subjectHeader}>{messages.subjectHeader}</Text>
+              <Text weight='bold' style={styles.fromHeader}>
+                {messages.fromHeader}
+              </Text>
+              <Text weight='bold' style={styles.subjectHeader}>
+                {messages.subjectHeader}
+              </Text>
             </View>
             <View style={styles.emailContent}>
               <Text style={styles.fromContent}>{messages.from}</Text>

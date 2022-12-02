@@ -26,7 +26,7 @@ import {
   View
 } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
 
 import backgImage from 'app/assets/images/DJportrait.jpg'
@@ -47,7 +47,6 @@ import type { SignOnStackParamList } from './types'
 
 const { getAccountUser } = accountSelectors
 const image = backgImage
-const windowWidth = Dimensions.get('window').width
 const defaultBorderColor = '#F2F2F4'
 
 const styles = StyleSheet.create({
@@ -56,34 +55,22 @@ const styles = StyleSheet.create({
     height: '100%',
     zIndex: 2,
     backgroundColor: 'white',
-    justifyContent: 'space-evenly'
+    justifyContent: 'space-between'
   },
   containerForm: {
-    position: 'absolute',
     transform: [
       {
         translateY: 0
       }
     ],
-    top: 0,
-    left: 0,
     width: '100%',
     zIndex: 5,
     backgroundColor: 'white',
     borderBottomRightRadius: 40,
     borderBottomLeftRadius: 40,
-    padding: 28,
-    paddingBottom: 38
+    padding: 50
   },
   drawerContent: { width: '100%', alignItems: 'center' },
-  containerCTA: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    zIndex: 4,
-    alignItems: 'center'
-  },
   containerBack: {
     flex: 1,
     position: 'absolute',
@@ -128,14 +115,26 @@ const styles = StyleSheet.create({
     height: 51,
     marginTop: 24
   },
+  containerCTA: {
+    zIndex: 4,
+    flexGrow: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between'
+  },
   signupCTAContainer: {
-    flex: 1,
-    marginTop: 32
+    flexGrow: 1
   },
   signupCTA: {
+    marginTop: 32,
+    marginBottom: 16,
     resizeMode: 'contain',
-    flex: 1,
-    width: windowWidth - 64
+    width: undefined,
+    height: undefined,
+    flex: 1
+  },
+  bottomButtons: {
+    marginTop: 16,
+    height: 80
   },
   input: {
     height: 42,
@@ -198,8 +197,7 @@ const styles = StyleSheet.create({
   },
   switchFormBtn: {
     width: '100%',
-    alignItems: 'center',
-    marginTop: 16
+    alignItems: 'center'
   },
   switchFormBtnTitle: {
     color: 'white',
@@ -209,8 +207,7 @@ const styles = StyleSheet.create({
   forgotPasswordButton: {
     padding: 6,
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 32
+    marginTop: 16
   },
   forgotPasswordButtonTitle: {
     color: 'white',
@@ -270,7 +267,6 @@ const errorMessages = {
   default: 'Invalid Credentials'
 }
 
-let formContainerHeight = 0
 let lastIsSignin = false
 let errorOpacity = new Animated.Value(0)
 
@@ -322,7 +318,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const [emailBorderColor, setEmailBorderColor] = useState(defaultBorderColor)
   const [passBorderColor, setPassBorderColor] = useState(defaultBorderColor)
   const [formButtonMarginTop, setFormButtonMarginTop] = useState(28)
-  const [cpaContainerHeight, setcpaContainerHeight] = useState(0)
   const [attemptedEmail, setAttemptedEmail] = useState(false)
   const [attemptedPassword, setAttemptedPassword] = useState(false)
   const [showInvalidEmailError, setShowInvalidEmailError] = useState(false)
@@ -692,6 +687,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
     dispatch(signOnActions.signIn(email, password))
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -718,14 +715,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
               styles.containerForm,
               { transform: [{ translateY: topDrawer }] }
             ]}
-            onLayout={(event: any) => {
-              formContainerHeight = event.nativeEvent.layout.height
-              setcpaContainerHeight(
-                Dimensions.get('window').height - formContainerHeight
-              )
-            }}
           >
-            <SafeAreaView edges={['top']} style={styles.drawerContent}>
+            <View style={styles.drawerContent}>
               <Image
                 source={audiusLogoHorizontal}
                 style={styles.audiusLogoHorizontal}
@@ -766,13 +757,15 @@ const SignOn = ({ navigation }: SignOnProps) => {
               {passwordInputField()}
               {errorView()}
               <MainButton isWorking={isWorking} isSignin={isSignin} />
-            </SafeAreaView>
+            </View>
           </Animated.View>
         </TouchableWithoutFeedback>
         <Animated.View
           style={[
             styles.containerCTA,
-            { height: cpaContainerHeight, opacity: opacityCTA }
+            {
+              opacity: opacityCTA
+            }
           ]}
         >
           {Dimensions.get('window').height < 720 ? (
@@ -783,26 +776,28 @@ const SignOn = ({ navigation }: SignOnProps) => {
             </View>
           )}
 
-          <TouchableOpacity
-            style={styles.switchFormBtn}
-            activeOpacity={0.6}
-            onPress={() => {
-              switchForm()
-            }}
-          >
-            {renderFormSwitchButton()}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.forgotPasswordButton}
-            activeOpacity={0.6}
-            onPress={() => {
-              dispatch(
-                setVisibility({ drawer: 'ForgotPassword', visible: true })
-              )
-            }}
-          >
-            {renderForgotPasswordButton()}
-          </TouchableOpacity>
+          <View style={[styles.bottomButtons, { marginBottom: insets.bottom }]}>
+            <TouchableOpacity
+              style={styles.switchFormBtn}
+              activeOpacity={0.6}
+              onPress={() => {
+                switchForm()
+              }}
+            >
+              {renderFormSwitchButton()}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.forgotPasswordButton}
+              activeOpacity={0.6}
+              onPress={() => {
+                dispatch(
+                  setVisibility({ drawer: 'ForgotPassword', visible: true })
+                )
+              }}
+            >
+              {renderForgotPasswordButton()}
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </View>
     </TouchableWithoutFeedback>

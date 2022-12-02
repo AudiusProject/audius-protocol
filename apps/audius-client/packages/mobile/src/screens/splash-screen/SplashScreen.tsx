@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 
 import { Animated, StatusBar, StyleSheet } from 'react-native'
+import * as BootSplash from 'react-native-bootsplash'
 
 import SplashLogo from 'app/assets/images/bootsplash_logo.svg'
 import { makeStyles } from 'app/styles'
@@ -55,8 +56,10 @@ export const SplashScreen = ({ canDismiss }: SplashScreenProps) => {
 
   useEffect(() => {
     if (canDismiss) {
-      // Animate smaller, then bigger with a fade out at the same time
+      // Hide the system splash screen
+      BootSplash.hide()
 
+      // Animate smaller, then bigger with a fade out at the same time
       Animated.spring(scale, {
         useNativeDriver: true,
         tension: 10,
