@@ -145,7 +145,7 @@ export type FetchAPI = (url: string, init?: RequestInit) => Promise<unknown>
 // Injected helper methods for methods requiring user signatures or encryption
 export type WalletAPI = {
     getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array>
-    sign: (data: string) => Promise<Uint8Array>
+    sign: (data: string) => Promise<[Uint8Array, number]>
 }
 
 export interface ConfigurationParameters {

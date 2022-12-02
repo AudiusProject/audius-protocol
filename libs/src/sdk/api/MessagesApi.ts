@@ -1,6 +1,6 @@
 import { BaseAPI, RequiredError } from './generated/default'
 import * as aes from 'micro-aes-gcm'
-import { bytesToBase64, base64ToBytes } from 'byte-base64'
+import { base64 } from '@scure/base'
 
 type GetMessagesRequestArgs = {
   otherUserId: string
@@ -62,7 +62,6 @@ export class MessagesApi extends BaseAPI {
     const sharedSecret = await this.configuration.walletApi.getSharedSecret(
       receiverPubKey
     )
-    console.log({ sharedSecret })
     const encrypted = await aes.encrypt(
       sharedSecret.slice(sharedSecret.length - 32),
       requestParameters.message
@@ -72,7 +71,7 @@ export class MessagesApi extends BaseAPI {
       method: 'send_message',
       params: {
         other_user_id: requestParameters.otherUserId,
-        message: bytesToBase64(encrypted)
+        message: base64.encode(encrypted)
       }
     })
   }
@@ -94,12 +93,9 @@ export class MessagesApi extends BaseAPI {
     const sharedSecret = await this.configuration.walletApi.getSharedSecret(
       senderPubKey
     )
-    const signature = await this.configuration.walletApi.sign(path)
     const messages: MessageResponse[] = await this.request({
       path: path,
-      headers: {
-        'x-sig': bytesToBase64(signature)
-      },
+      headers: await this.getSignatureHeader(path),
       method: 'GET'
     })
     return await Promise.all(
@@ -117,18 +113,25 @@ export class MessagesApi extends BaseAPI {
   }
 
   private async getPublicKey(userId: string) {
-    let base64key = ''
-    if (userId === 'ngNmq') {
-      base64key =
-        'BMLr/Ia8LhZbf9Sn2NN4nRKq9udDDEdVT19FjLMj4olJriDnzlJylAwlcElB765qZdERS9XzDfj/cMlrlY8FiNQ='
-    } else {
-      base64key = await this.request({
-        path: `/pubkey/${userId}`,
-        method: 'GET',
-        headers: {}
-      })
+    const response = await this.request({
+      path: `/pubkey/${userId}`,
+      method: 'GET',
+      headers: {}
+    })
+    const base64key = await response.text()
+    return base64.decode(base64key)
+  }
+
+  private async getSignatureHeader(payload: string) {
+    if (!this.configuration.walletApi) {
+      throw new AccessError('getSignatureHeader')
     }
-    return base64ToBytes(base64key)
+    const [allSignatureBytes, recoveryByte] =
+      await this.configuration.walletApi.sign(payload)
+    const signatureBytes = new Uint8Array(65)
+    signatureBytes.set(allSignatureBytes, 0)
+    signatureBytes[64] = recoveryByte
+    return { 'x-sig': base64.encode(signatureBytes) }
   }
 
   private async sendRpc(args: SendRpcArgs) {
@@ -136,21 +139,10 @@ export class MessagesApi extends BaseAPI {
       throw new AccessError('sendRpc')
     }
     const payload = JSON.stringify(args)
-    const signature = await this.configuration.walletApi.sign(payload)
-    console.log({
-      path: `/send`,
-      method: 'POST',
-      headers: {
-        'x-sig': bytesToBase64(signature)
-      },
-      body: payload
-    })
     return await this.request({
       path: `/send`,
       method: 'POST',
-      headers: {
-        'x-sig': bytesToBase64(signature)
-      },
+      headers: await this.getSignatureHeader(payload),
       body: payload
     })
   }

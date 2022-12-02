@@ -193,9 +193,9 @@ const initializeApis = ({
   const { resolve } = new ResolveApi(generatedApiClientConfig)
   const messages = new MessagesApi(
     new Configuration({
-      fetchApi,
+      fetchApi: fetch,
       walletApi,
-      basePath: '/comms'
+      basePath: 'http://localhost:8925/comms'
     })
   )
 
@@ -223,8 +223,6 @@ const initializeApis = ({
     full
   }
 }
-
-console.log('MARCUS')
 
 const formatProviders = (providers: string | string[]) => {
   if (typeof providers === 'string') {
