@@ -145,7 +145,13 @@ def parse_spl_token_transaction(
     try:
         if tx["err"]:
             return None
+        tx_start_time = time.time()
         tx_info = solana_client_manager.get_sol_tx_info(tx["signature"])
+        tx_end_time = time.time()
+        logger.info(
+            f"index_spl_token_backfill.py | get_sol_tx_info time: {tx_end_time - tx_start_time}"
+        )
+
         result = tx_info["result"]
         meta = result["meta"]
         error = meta["err"]
@@ -271,7 +277,6 @@ def parse_sol_tx_batch(
     This function also has a recursive retry upto a certain limit in case a future doesn't complete
     within the alloted time. It clears the futures thread queue and the batch is retried
     """
-    batch_start_time = time.time()
     # Last record in this batch to be cached
     # Important to note that the batch records are in time DESC order
     updated_token_accounts: Set[str] = set()
@@ -281,8 +286,9 @@ def parse_sol_tx_batch(
     logger.info(
         f"index_spl_token_backfill.py | parsing slot starting at {tx_sig_batch_records[0]['slot']}"
     )
+    fetch_start_time = time.time()
     with db.scoped_session() as session:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
                     parse_spl_token_transaction,
@@ -309,6 +315,11 @@ def parse_sol_tx_batch(
                 )
                 raise exc
 
+    fetch_end_time = time.time()
+    logger.info(
+        f"index_spl_token_backfill.py | fetched {len(tx_sig_batch_records)} fetch time: {fetch_end_time - fetch_start_time}"
+    )
+    process_start_time = time.time()
     with db.scoped_session() as session:
         if updated_token_accounts:
             user_result = (
@@ -360,9 +371,10 @@ def parse_sol_tx_batch(
         )
         session.add(record)
 
-    batch_end_time = time.time()
-    batch_duration = batch_end_time - batch_start_time
-    logger.info(f"processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s")
+    process_end_time = time.time()
+    logger.info(
+        f"index_spl_token_backfill.py | processed batch {len(tx_sig_batch_records)} txs in {process_end_time - process_start_time}s"
+    )
 
     return updated_token_accounts
 
@@ -437,13 +449,8 @@ def process_spl_token_tx(
         logger.info(
             f"index_spl_token_backfill.py | parsing new batch starting with {tx_sig_batch[0]}"
         )
-        for tx_sig_batch_records in split_list(
-            tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
-        ):
-            token_accounts = parse_sol_tx_batch(
-                db, solana_client_manager, tx_sig_batch_records
-            )
-            totals["token_accts"] += len(token_accounts)
+        token_accounts = parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch)
+        totals["token_accts"] += len(token_accounts)
 
     solana_logger.end_time("parse_batches")
     solana_logger.add_context("total_token_accts_updated", totals["token_accts"])

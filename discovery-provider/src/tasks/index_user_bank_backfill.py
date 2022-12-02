@@ -367,7 +367,6 @@ def parse_user_bank_transaction(
 
 
 def process_user_bank_txs():
-    traverse_start = time.time()
     solana_client_manager: SolanaClientManager = (
         index_user_bank_backfill.solana_client_manager
     )
@@ -425,11 +424,6 @@ def process_user_bank_txs():
                 ]
                 transaction_signatures.append(transaction_signature_batch)
 
-    traverse_end = time.time()
-    logger.info(
-        f"index_user_bank_backfill.py | took {traverse_end - traverse_start}s to traverse"
-    )
-
     earliest_tx_sig: Optional[str] = None
     total_batch_start_time = time.time()
     num_txs_processed = 0
@@ -441,7 +435,7 @@ def process_user_bank_txs():
         batch_start_time = time.time()
 
         # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
                     executor.submit(

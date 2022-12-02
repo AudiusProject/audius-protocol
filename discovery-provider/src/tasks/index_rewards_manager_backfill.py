@@ -206,8 +206,14 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     Decodes and parses the transfer instruction metadata
     Validates the metadata fields
     """
+
     try:
+        tx_start_time = time.time()
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        tx_end_time = time.time()
+        logger.info(
+            f"index_rewards_manager_backfill.py | get_sol_tx_info time: {tx_end_time - tx_start_time}"
+        )
         result: TransactionInfoResult = tx_info["result"]
         # Create transaction metadata
         tx_metadata: RewardManagerTransactionInfo = {
@@ -480,11 +486,12 @@ def process_transaction_signatures(
         if tx_sig_batch:
             earliest_tx_sig = tx_sig_batch[-1]
         logger.info(f"index_rewards_manager_backfill.py | processing {tx_sig_batch}")
+        fetch_start_time = time.time()
         batch_start_time = time.time()
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
         # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
                     fetch_and_parse_sol_rewards_transfer_instruction,
@@ -515,6 +522,11 @@ def process_transaction_signatures(
                             exc_info=True,
                         )
                     raise exc
+        fetch_end_time = time.time()
+        logger.info(
+            f"index_rewards_manager_backfill.py | fetched {len(transfer_instructions)} time: {fetch_end_time - fetch_start_time}"
+        )
+        process_start_time = time.time()
         with db.scoped_session() as session:
             process_batch_sol_reward_manager_txs(session, transfer_instructions)
 
@@ -546,10 +558,9 @@ def process_transaction_signatures(
             )
             session.add(record)
 
-        batch_end_time = time.time()
-        batch_duration = batch_end_time - batch_start_time
+        process_end_time = time.time()
         logger.info(
-            f"index_rewards_manager_backfill.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
+            f"index_rewards_manager_backfill.py | processed batch {len(tx_sig_batch)} txs in {process_end_time - process_start_time}s"
         )
 
     return earliest_tx
