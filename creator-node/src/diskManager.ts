@@ -545,7 +545,7 @@ async function _copyLegacyFiles(
  *
  * We don't have any CIDs that start with Qm[0,9], so that's why we:
  * - start at Qma00 instead of Qm000; and
- * - end at Qmz90 instead of Qm999
+ * - end at Qmz99 instead of Qm999
  * @param func the function to call on each pagination window (there are 1872 windows)
  */
 async function _callFuncOnAllCidsPaginated(
