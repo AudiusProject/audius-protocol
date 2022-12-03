@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
-    "@audius/common": "1.4.3",
+    "@audius/common": "1.4.4",
     "@audius/sdk": "1.0.24",
     "@babel/runtime": "7.15.4",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
@@ -68,7 +68,7 @@
     "@svgr/core": "5.5.0",
     "@walletconnect/react-native-dapp": "1.8.0",
     "array.prototype.flat": "1.2.5",
-    "audius-client": "1.4.3",
+    "audius-client": "1.4.4",
     "babel-plugin-transform-remove-console": "6.9.4",
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
@@ -116,6 +116,7 @@
     "react-native-pager-view": "5.4.6",
     "react-native-permissions": "3.0.5",
     "react-native-push-notification": "7.4.0",
+    "react-native-qrcode-svg": "6.0.6",
     "react-native-radial-gradient": "1.0.8",
     "react-native-randombytes": "3.6.1",
     "react-native-reanimated": "1.13.4",
@@ -127,7 +128,6 @@
     "react-native-static-server": "github:futurepress/react-native-static-server.git#034c04e7a2999ae11a799fb68266c94389fc61bf",
     "react-native-svg": "12.3.0",
     "react-native-svg-transformer": "0.14.3",
-    "react-native-qrcode-svg": "6.0.6",
     "react-native-tab-view": "3.1.1",
     "react-native-threads": "0.0.19",
     "react-native-unimodules": "0.14.8",
