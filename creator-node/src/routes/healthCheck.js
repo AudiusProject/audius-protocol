@@ -145,6 +145,16 @@ router.get(
   })
 )
 
+router.get(
+  '/entity_manager_enabled_check',
+  handleResponse(async (req, _res) => {
+
+    return successResponse({
+      entityManagerReplicaSetEnabled: config.get('entityManagerReplicaSetEnabled') || ''
+    })
+  })
+)
+
 function _formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes'
 
