@@ -70,7 +70,7 @@ export type InputSendDataAction = PayloadAction<{
 }>
 
 export type AssociatedWalletsState = {
-  status: Nullable<'Connecting' | 'Confirming' | 'Confirmed'>
+  status: Nullable<'Connecting' | 'Connected' | 'Confirming' | 'Confirmed'>
   connectedEthWallets: Nullable<AssociatedWallets>
   connectedSolWallets: Nullable<AssociatedWallets>
   confirmingWallet: {

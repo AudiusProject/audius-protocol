@@ -12,6 +12,7 @@ import {
   fetchSolanaCollectiblesForWallets
 } from 'common/store/profile/sagas'
 import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+
 const { fetchAssociatedWallets, setAssociatedWallets } =
   tokenDashboardPageActions
 

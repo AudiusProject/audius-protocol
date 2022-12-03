@@ -60,9 +60,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                     WalletConnect: {
                       initialRouteName: 'Wallets',
                       screens: {
-                        Wallets: 'wallets',
-                        ConfirmWalletConnection: 'wallet-connect',
-                        ConfirmSignMessage: 'wallet-sign-message'
+                        Wallets: 'wallets'
                       }
                     },
                     Feed: 'feed',
