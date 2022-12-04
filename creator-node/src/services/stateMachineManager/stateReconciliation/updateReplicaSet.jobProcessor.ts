@@ -1,6 +1,7 @@
 import type Logger from 'bunyan'
 import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 import { METRIC_NAMES } from '../../../services/prometheusMonitoring/prometheus.constants'
+import { makeHistogramToRecord } from '../../../services/prometheusMonitoring/prometheusUsageUtils'
 import {
   getCachedHealthyNodes,
   cacheHealthyNodes
@@ -12,8 +13,10 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import { makeHistogramToRecord } from '../stateMachineUtils'
-import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
+import {
+  QUEUE_NAMES,
+  UpdateReplicaSetJobResult
+} from '../stateMachineConstants'
 import { stringifyMap } from '../../../utils'
 import {
   getMapOfCNodeEndpointToSpId,
@@ -28,7 +31,6 @@ const {
   SyncType,
   RECONFIG_MODES,
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
-  QUEUE_NAMES,
   SYNC_MODES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')

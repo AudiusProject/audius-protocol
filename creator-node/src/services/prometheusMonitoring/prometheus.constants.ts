@@ -1,7 +1,7 @@
 import { Gauge, Histogram } from 'prom-client'
-import { snakeCase, mapValues } from 'lodash'
+import { snakeCase } from 'lodash'
 // eslint-disable-next-line import/no-unresolved
-import { exponentialBucketsRange } from './prometheusUtils'
+import { exponentialBucketsRange } from './prometheusSetupUtils'
 import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
@@ -10,7 +10,20 @@ import {
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
-import { PROMETHEUS_MONITORS } from '../../monitors/monitors'
+import { MONITORS } from '../../monitors/monitors'
+
+// Add all integer monitors as prometheus metrics
+type TMONITOR_KEY = keyof typeof MONITORS
+const monitorKeys = Object.keys(MONITORS) as TMONITOR_KEY[]
+
+const monitorEntries: [TMONITOR_KEY, typeof MONITORS[TMONITOR_KEY]][] =
+  monitorKeys
+    .filter((key) => MONITORS[key]?.type === 'int')
+    .map((key) => [key, MONITORS[key]])
+export const PROMETHEUS_MONITORS: Record<
+  TMONITOR_KEY,
+  typeof MONITORS[TMONITOR_KEY]
+> = Object.fromEntries(monitorEntries)
 
 /**
  * For explanation of METRICS, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -35,13 +48,16 @@ export const METRIC_TYPES = Object.freeze({
 /**
  * Types for recording a metric value.
  */
-export const METRIC_RECORD_TYPE = Object.freeze({
+export const METRIC_RECORD_TYPE = {
   GAUGE_INC: 'GAUGE_INC',
   GAUGE_SET: 'GAUGE_SET',
   HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
-})
+} as const
+type TMETRIC_RECORD_TYPE_KEYS = keyof typeof METRIC_RECORD_TYPE
+export type TMETRIC_RECORD_TYPE =
+  typeof METRIC_RECORD_TYPE[TMETRIC_RECORD_TYPE_KEYS]
 
-const metricNames: Record<string, string> = {
+const metricNamesWithoutStateMachine = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ISSUE_SYNC_REQUEST_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_duration_seconds',
@@ -63,25 +79,177 @@ const metricNames: Record<string, string> = {
   STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes',
   FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE: 'files_migrated_from_legacy_path',
   FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE: 'files_migrated_from_custom_path'
+} as const
+type KebabToSnake<T extends string, P extends string = ''> = string extends T
+  ? string
+  : T extends `${infer C0}${infer R}`
+  ? KebabToSnake<R, `${P}${C0 extends `${'-'}` ? '_' : C0}`>
+  : P
+type TSTATE_MACHINE_JOB_NAMES_KEYS = keyof typeof STATE_MACHINE_JOB_NAMES
+type TSTATE_MACHINE_JOB_NAMES =
+  typeof STATE_MACHINE_JOB_NAMES[TSTATE_MACHINE_JOB_NAMES_KEYS]
+// type TMAPPED_STATE_MACHINE_JOB_NAMES_KEYS =
+//   `STATE_MACHINE_${TSTATE_MACHINE_JOB_NAMES}_JOB_DURATION_SECONDS_HISTOGRAM`
+type TMAPPED_STATE_MACHINE_JOB_NAMES =
+  `state_machine_${KebabToSnake<TSTATE_MACHINE_JOB_NAMES>}_job_duration_seconds`
+
+// const stateMachineMetricNamesKeys = Object.keys(
+//   STATE_MACHINE_JOB_NAMES
+// ) as TSTATE_MACHINE_JOB_NAMES_KEYS[]
+
+// const stateMachineMetricEntries: [
+//   TMAPPED_STATE_MACHINE_JOB_NAMES_KEYS,
+//   TMAPPED_STATE_MACHINE_JOB_NAMES
+// ][] = stateMachineMetricNamesKeys.map((key) => [
+//   `STATE_MACHINE_${key}_JOB_DURATION_SECONDS_HISTOGRAM` as TMAPPED_STATE_MACHINE_JOB_NAMES_KEYS,
+//   `state_machine_${snakeCase(
+//     STATE_MACHINE_JOB_NAMES[key]
+//   )}_job_duration_seconds` as TMAPPED_STATE_MACHINE_JOB_NAMES
+// ])
+// const stateMachineMetricNames: Record<
+//   TMAPPED_STATE_MACHINE_JOB_NAMES_KEYS,
+//   TMAPPED_STATE_MACHINE_JOB_NAMES
+// > = Object.fromEntries(stateMachineMetricEntries)
+
+type ExtractJobName<S extends string> =
+  S extends `STATE_MACHINE_${infer JobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+    ? JobName
+    : S
+
+type ExtractMonitorName<S extends string> =
+  S extends `MONITOR_${infer MonitorName}` ? MonitorName : S
+
+type TSTATE_MACHINE_JOB_NAMES_KEY = keyof typeof STATE_MACHINE_JOB_NAMES
+type TSTATE_MACHINE_JOB_NAMES_VALUE =
+  typeof STATE_MACHINE_JOB_NAMES[TSTATE_MACHINE_JOB_NAMES_KEY]
+function makeStateMachineMetricNames<
+  K extends TSTATE_MACHINE_JOB_NAMES_KEY,
+  K2 extends `STATE_MACHINE_${TSTATE_MACHINE_JOB_NAMES}_JOB_DURATION_SECONDS_HISTOGRAM`,
+  V extends TSTATE_MACHINE_JOB_NAMES_VALUE,
+  T extends {
+    readonly [P in K]: V
+  }
+>(
+  obj: T
+): {
+  readonly [P in K2]: `state_machine_${KebabToSnake<
+    ExtractJobName<P>
+  >}_job_duration_seconds`
+} {
+  const mappedObj: {
+    [key: string]: string
+  } = {}
+
+  for (const key of Object.keys(obj) as K[]) {
+    mappedObj[`STATE_MACHINE_${key}_JOB_DURATION_SECONDS_HISTOGRAM`] =
+      `state_machine_${snakeCase(
+        obj[key]
+      )}_job_duration_seconds` as `state_machine_${KebabToSnake<K>}_job_duration_seconds`
+  }
+
+  return mappedObj as {
+    [P in K2]: `state_machine_${KebabToSnake<
+      ExtractJobName<P>
+    >}_job_duration_seconds`
+  }
 }
+
+const stateMachineMetricNamesTest = makeStateMachineMetricNames(
+  STATE_MACHINE_JOB_NAMES
+)
+
+type TPROM_MONITOR_KEY = keyof typeof PROMETHEUS_MONITORS
+type TPROM_MONITOR_VALUE = typeof PROMETHEUS_MONITORS[TPROM_MONITOR_KEY]
+function makeMonitorGaugeMetricNames<
+  K extends TPROM_MONITOR_KEY,
+  K2 extends `MONITOR_${TPROM_MONITOR_KEY}`,
+  V extends TPROM_MONITOR_VALUE,
+  T extends {
+    readonly [P in K]: V
+  }
+>(obj: T): { readonly [P in K2]: `monitor_${ExtractMonitorName<P>}` } {
+  const mappedObj: {
+    [key: string]: string
+  } = {}
+
+  for (const key of Object.keys(obj) as K[]) {
+    mappedObj[`MONITOR_${key}`] = `monitor_${obj[key]}` as `monitor_${K}`
+  }
+
+  return mappedObj as {
+    [P in K2]: `monitor_${ExtractMonitorName<P>}`
+  }
+}
+
+const monitorGaugeMetricNamesTest =
+  makeMonitorGaugeMetricNames(PROMETHEUS_MONITORS)
+
+// const stateMachineMetricNames: typeof STATE_MACHINE_JOB_NAMES[keyof typeof STATE_MACHINE_JOB_NAMES] =
+//   {
+//     ...Object.fromEntries(
+//       Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
+//         `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM` as keyof typeof STATE_MACHINE_JOB_NAMES,
+//         `state_machine_${snakeCase(
+//           jobName
+//         )}_job_duration_seconds` as typeof STATE_MACHINE_JOB_NAMES[keyof typeof STATE_MACHINE_JOB_NAMES]
+//       ])
+//     )
+//   }
+
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
-for (const jobName of Object.values(
-  STATE_MACHINE_JOB_NAMES as Record<string, string>
-)) {
-  metricNames[
-    `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
-  ] = `state_machine_${snakeCase(jobName)}_job_duration_seconds`
-}
+// for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
+//   metricNames[
+//     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+//   ] = `state_machine_${snakeCase(jobName)}_job_duration_seconds`
+// }
 
 // Add gauge for each monitor
-for (const monitor of Object.keys(PROMETHEUS_MONITORS)) {
-  metricNames[`MONITOR_${monitor}`] = `monitor_${snakeCase(monitor)}`
-}
+// for (const monitor of Object.keys(PROMETHEUS_MONITORS)) {
+//   metricNames[`MONITOR_${monitor}`] = `monitor_${snakeCase(monitor)}`
+// }
 
-export const METRIC_NAMES = Object.freeze(
-  mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
-)
+type TPROMETHEUS_MONITORS_KEYS = keyof typeof PROMETHEUS_MONITORS
+// const monitorGaugeMetricNamesKeys = Object.keys(
+//   PROMETHEUS_MONITORS
+// ) as TPROMETHEUS_MONITORS_KEYS[]
+// type TPROMETHEUS_MONITOR_MAPPED_KEY = `MONITOR_${TPROMETHEUS_MONITORS_KEYS}`
+type TPROMETHEUS_MONITOR_MAPPED = `monitor_${TPROMETHEUS_MONITORS_KEYS}`
+// const monitorGaugeMetricEntries: [
+//   TPROMETHEUS_MONITOR_MAPPED_KEY,
+//   TPROMETHEUS_MONITOR_MAPPED
+// ][] = monitorGaugeMetricNamesKeys.map((key: TPROMETHEUS_MONITORS_KEYS) => [
+//   `MONITOR_${key}` as TPROMETHEUS_MONITOR_MAPPED_KEY,
+//   `monitor_${snakeCase(key)}` as TPROMETHEUS_MONITOR_MAPPED
+// ])
+// const monitorGaugeMetricNames: Record<
+//   TPROMETHEUS_MONITOR_MAPPED_KEY,
+//   TPROMETHEUS_MONITOR_MAPPED
+// > = Object.fromEntries(monitorGaugeMetricEntries)
+
+export const METRIC_NAMES = {
+  ...metricNamesWithoutStateMachine,
+  ...stateMachineMetricNamesTest,
+  ...monitorGaugeMetricNamesTest
+} as const
+
+// type TMETRIC_NAME_KEY = keyof typeof metricNames
+// type TMETRIC_NAME_UNMAPPED = typeof metricNames[TMETRIC_NAME_KEY]
+// const metricNameKeys = Object.keys(metricNames) as TMETRIC_NAME_KEY[]
+// type TMETRIC_NAME_MAPPED = `${typeof NAMESPACE_PREFIX}_${TMETRIC_NAME_UNMAPPED}`
+// const metricNameEntries: [TMETRIC_NAME_KEY, TMETRIC_NAME_MAPPED][] =
+//   metricNameKeys.map((metricNameKey) => [
+//     metricNameKey,
+//     `${NAMESPACE_PREFIX}_${metricNames[metricNameKey]}` as TMETRIC_NAME_MAPPED
+//   ])
+// export const METRIC_NAMES: Record<TMETRIC_NAME_KEY, TMETRIC_NAME_MAPPED> =
+// Object.fromEntries(metricNameEntries)
+
+// export const METRIC_NAMES = mapValues(
+//   metricNames,
+//   (metricName) => `${NAMESPACE_PREFIX}_${metricName}`
+// )
+export type TMETRIC_NAME = typeof METRIC_NAMES[keyof typeof METRIC_NAMES]
 
 export const SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS = [
   'success',
@@ -108,8 +276,11 @@ export const SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS = [
   'failure_import_not_contiguous',
   'failure_inconsistent_clock',
   'failure_undefined_sync_status'
-] as const
-export const METRIC_LABELS = Object.freeze({
+]
+type TMetricValue = {
+  [label: string]: any[]
+}
+export const METRIC_LABELS: Partial<Record<TMETRIC_NAME, TMetricValue>> = {
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
     mode: ['force_resync', 'default', 'force_wipe'],
     result: SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS,
@@ -232,7 +403,7 @@ export const METRIC_LABELS = Object.freeze({
   [METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]: {
     result: ['success', 'failure']
   }
-})
+}
 
 const METRIC_LABEL_NAMES = Object.freeze(
   Object.fromEntries(
@@ -253,10 +424,13 @@ type Metric = {
     // Function to aggregate metrics across workers.
     // See https://github.com/siimon/prom-client/blob/96f7495d66b1a21755f745b1367d3e530668a957/lib/metricAggregators.js#L50
     aggregator: AggregatorType
+    buckets?: number[]
   }
 }
 
-export const METRICS: Record<string, Metric> = Object.freeze({
+// TODO: This thinks it's missing keys that is actually has bc each TMETRIC_NAME is a union of all, not just its own
+// Easy solution is to surround with Partial, but it should be able to know it's complete
+export const METRICS: Record<TMETRIC_NAME, Metric> = {
   [METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -396,7 +570,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
   },
 
   // Add histogram for each job in the state machine queues
-  ...Object.fromEntries(
+  ...(Object.fromEntries(
     Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
       METRIC_NAMES[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
       {
@@ -421,11 +595,11 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         }
       }
     ])
-  ),
+  ) as Record<TMAPPED_STATE_MACHINE_JOB_NAMES, Metric>),
   // Add gauge for each monitor
-  ...Object.fromEntries(
-    Object.keys(PROMETHEUS_MONITORS).map((monitor) => {
-      return [
+  ...(Object.fromEntries(
+    (Object.keys(PROMETHEUS_MONITORS) as TPROMETHEUS_MONITORS_KEYS[]).map(
+      (monitor) => [
         METRIC_NAMES[`MONITOR_${monitor}`],
         {
           metricType: METRIC_TYPES.GAUGE,
@@ -437,8 +611,8 @@ export const METRICS: Record<string, Metric> = Object.freeze({
           }
         }
       ]
-    })
-  ),
+    )
+  ) as Record<TPROMETHEUS_MONITOR_MAPPED, Metric>),
   [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
     metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
@@ -497,9 +671,10 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       aggregator: 'first' as AggregatorType
     }
   }
-})
+}
 
 module.exports = {
+  PROMETHEUS_MONITORS,
   NAMESPACE_PREFIX,
   METRIC_TYPES,
   METRIC_NAMES,

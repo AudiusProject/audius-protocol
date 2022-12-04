@@ -2,13 +2,12 @@ const { Queue, Worker } = require('bullmq')
 
 const redis = require('../redis')
 const config = require('../config')
-const {
-  MONITORS,
-  PROMETHEUS_MONITORS,
-  getMonitorRedisKey
-} = require('./monitors')
+const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
 const { clusterUtilsForWorker, clearActiveJobs } = require('../utils')
+const {
+  PROMETHEUS_MONITORS
+} = require('../services/prometheusMonitoring/prometheus.constants')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 

@@ -294,13 +294,6 @@ const MONITORS = {
   LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
 }
 
-// add all integer monitors as prometheus metrics
-const PROMETHEUS_MONITORS = {}
-for (const monitor in MONITORS) {
-  if (MONITORS[monitor]?.type === 'int')
-    PROMETHEUS_MONITORS[monitor] = MONITORS[monitor]
-}
-
 const getMonitorRedisKey = (monitor) =>
   `${MONITORING_REDIS_PREFIX}:${monitor.name}`
 
@@ -353,7 +346,6 @@ const getMonitors = async (monitors) => {
 
 module.exports = {
   MONITORS,
-  PROMETHEUS_MONITORS,
   getMonitorRedisKey,
   getMonitors
 }

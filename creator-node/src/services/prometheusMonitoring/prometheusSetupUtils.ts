@@ -23,7 +23,7 @@ export const exponentialBucketsRange = (
   max: number,
   count: number,
   precision = 0
-) => {
+): number[] => {
   if (count < 1) {
     throw new Error('exponentialBucketsRange count needs a positive count')
   }
@@ -37,7 +37,7 @@ export const exponentialBucketsRange = (
   const growthFactor = (max / min) ** (1 / (count - 1))
 
   // Now that we know growthFactor, solve for each bucket
-  const buckets = new Set()
+  const buckets = new Set<number>()
   for (let i = 1; i <= count; i++) {
     const bucket = min * growthFactor ** (i - 1)
     buckets.add(round(bucket, precision))
