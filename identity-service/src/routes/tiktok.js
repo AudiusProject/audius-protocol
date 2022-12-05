@@ -1,5 +1,6 @@
 const axios = require('axios')
 const cors = require('cors')
+const models = require('../models')
 
 const config = require('../config.js')
 
@@ -8,6 +9,11 @@ const {
   successResponse,
   errorResponseBadRequest
 } = require('../apiHelpers')
+
+const verifiedUserReporter = new VerifiedUserReporter({
+  slackUrl: config.get('verifiedUserReporterSlackUrl'),
+  source: 'tiktok'
+})
 
 /**
  * This file contains the TikTok endpoints for oauth
@@ -57,9 +63,151 @@ module.exports = function (app) {
       urlAccessToken += '&code=' + code
       urlAccessToken += '&grant_type=authorization_code'
 
-      const resp = await axios.post(urlAccessToken)
+      try {
 
-      return successResponse(resp.data)
+        const accessTokenResponse = await axios.post(urlAccessToken)
+        const { access_token: accessToken } = accessTokenResponse.data
+
+        const userResponse = await axios.post(
+          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              fields: [
+                'open_id',
+                'display_name',
+                'profile_deep_link',
+                'is_verified'
+              ]
+            })
+          }
+        )
+
+        const tikTokUser = userResponse.data
+
+        const existingTikTokUser = await models.TikTokUser.findOne({
+          where: {
+            uuid: tikTokUser.open_id,
+            blockchainUserId: {
+              [models.Sequelize.Op.not]: null
+            }
+          }
+        })
+
+        if (existingTikTokUser) {
+          return errorResponseBadRequest(
+            `Another Audius profile has already been authenticated with TikTok user @${tikTokUser.display_name}!`
+          )
+        } else {
+          // Store the access token, user id, and current profile for user in db
+          try {
+            await models.TikTokUser.upsert({
+              uuid: tikTokUser.open_id,
+              profile: tikTokUser,
+              accessToken,
+              verified: tikTokUser.is_verified
+            })
+
+            return successResponse(accessTokenResponse.data)
+          } catch (err) {
+            return errorResponseBadRequest(err)
+          }
+        }
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
+    })
+  )
+
+  /**
+   * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
+   * the blockchainUserId with the twitter profile so we can write the verified flag on chain
+   */
+  app.post(
+    '/tiktok/associate',
+    handleResponse(async (req, res, next) => {
+      const { uuid, userId, handle } = req.body
+      const audiusLibsInstance = req.app.get('audiusLibs')
+
+      try {
+        const tikTokObj = await models.TikTokUser.findOne({
+          where: { uuid: uuid }
+        })
+
+        // only set blockchainUserId if not already set
+        if (tikTokObj && !tikTokObj.blockchainUserId) {
+          tikTokObj.blockchainUserId = userId
+
+          // if the user is verified, write to chain, otherwise skip to next step
+          if (tikTokObj.verified) {
+            const [encodedABI, contractAddress] =
+              await audiusLibsInstance.User.updateIsVerified(
+                userId,
+                true,
+                config.get('userVerifierPrivateKey'),
+                config.get('entityManagerReplicaSetEnabled')
+              )
+            const contractRegKey =
+              await audiusLibsInstance.contracts.getRegistryContractForAddress(
+                contractAddress
+              )
+            const senderAddress = config.get('userVerifierPublicKey')
+
+            try {
+              const txProps = {
+                contractRegistryKey: contractRegKey,
+                contractAddress: contractAddress,
+                encodedABI: encodedABI,
+                senderAddress: senderAddress,
+                gasLimit: null
+              }
+              await txRelay.sendTransaction(
+                req,
+                false,
+                txProps,
+                'tikTokVerified'
+              )
+              await verifiedUserReporter.report({ userId, handle })
+            } catch (e) {
+              return errorResponseBadRequest(e)
+            }
+          }
+
+          const socialHandle = await models.SocialHandles.findOne({
+            where: { handle }
+          })
+          if (socialHandle) {
+            socialHandle.twitterHandle = tikTokObj.profile.display_name
+            await socialHandle.save()
+          } else if (
+            tikTokObj.profile &&
+            tikTokObj.profile.display_name
+          ) {
+            await models.SocialHandles.create({
+              handle,
+              tikTokHandle: tikTokObj.profile.display_name
+            })
+          }
+
+          // the final step is to save userId to db and respond to request
+          try {
+            await tikTokObj.save()
+            return successResponse()
+          } catch (e) {
+            return errorResponseBadRequest(e)
+          }
+        } else {
+          req.logger.error(
+            `TikTok profile does not exist or userId has already been set for uuid: ${uuid}`,
+            twitterObj
+          )
+          return errorResponseBadRequest(
+            'TikTok profile does not exist or userId has already been set'
+          )
+        }
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
     })
   )
 }

@@ -32,6 +32,7 @@ export class Account extends Base {
     this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
+    this.associateTikTokUser = this.associateTikTokUser.bind(this)
     this.handleIsValid = this.handleIsValid.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
     this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
@@ -316,6 +317,19 @@ export class Account extends Base {
    * @param uuid from the Instagram API
    */
   async associateInstagramUser(uuid: string, userId: number, handle: string) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return await this.identityService.associateInstagramUser(
+      uuid,
+      userId,
+      handle
+    )
+  }
+
+  /**
+   * Associates a user with an tiktok uuid
+   * @param uuid from the TikTok API
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.associateInstagramUser(
       uuid,
