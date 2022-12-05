@@ -1,0 +1,22 @@
+.button {
+  background-color: #fe2c55;
+}
+
+.button.includeHoverAnimations:hover:enabled {
+  background-color: #fe5676;
+}
+
+.button.includeHoverAnimations:active:enabled {
+  background-color: #e5294d;
+}
+
+.button .text {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  color: var(--static-white);
+  color: 'black';
+}
+
+.button .icon path {
+  fill: var(--static-white);
+}

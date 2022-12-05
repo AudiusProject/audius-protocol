@@ -248,6 +248,7 @@ function* validateHandle(action) {
     const handleInUse = !isEmpty(user)
 
     if (IS_PRODUCTION_BUILD || IS_PRODUCTION) {
+      // TODO: add tiktok here
       const [twitterUserQuery, instagramUser] = yield all([
         call(audiusBackendInstance.twitterHandle, handle),
         call(getInstagramUser, handle, remoteConfigInstance)
@@ -425,6 +426,22 @@ function* signUp() {
             yield put(signOnActions.setInstagramProfileError(error))
           }
         }
+
+        // if (
+        //   !signOn.useMetaMask &&
+        //   signOn.tikTokId &&
+        //   handle.toLowerCase() === (signOn.tikTokId || '').toLowerCase()
+        // ) {
+        //   const { error } = yield call(
+        //     audiusBackendInstance.associateTikTokAccount,
+        //     handle.toLowerCase(),
+        //     userId,
+        //     handle
+        //   )
+        //   if (error) {
+        //     yield put(signOnActions.setTikTokProfileError(error))
+        //   }
+        // }
 
         yield put(
           identify(handle, {

@@ -7,7 +7,8 @@ import {
   accountSelectors,
   AccountImage,
   InstagramProfile,
-  TwitterProfile
+  TwitterProfile,
+  TikTokProfile
 } from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
@@ -88,6 +89,12 @@ export type SignOnProps = {
     profileImg?: AccountImage,
     skipEdit?: boolean
   ) => void
+  setTikTokProfile: (
+    uuid: string,
+    profile: TikTokProfile,
+    profileImg?: AccountImage,
+    skipEdit?: boolean
+  ) => void
   validateHandle: (
     handle: string,
     isOauthVerified: boolean,
@@ -137,7 +144,7 @@ const animatedStyle = {
  * TODO: When the user selects the metamask option, set the localStorage key 'useMetaMask' to true
  * Reference the setup function in Audius backend. A new instance of Audiusbackend will have to be created
  */
-const SignOnProvider = ({
+const SignOnPage = ({
   title,
   description,
   page,
@@ -157,6 +164,7 @@ const SignOnProvider = ({
   onSetProfileImage,
   setTwitterProfile,
   setInstagramProfile,
+  setTikTokProfile,
   validateHandle,
   onAddFollows,
   onRemoveFollows,
@@ -281,6 +289,7 @@ const SignOnProvider = ({
           setProfileImage={onSetProfileImage}
           setTwitterProfile={setTwitterProfile}
           setInstagramProfile={setInstagramProfile}
+          setTikTokProfile={setTikTokProfile}
           validateHandle={validateHandle}
           recordTwitterStart={recordTwitterStart}
           recordInstagramStart={recordInstagramStart}
@@ -489,4 +498,4 @@ const SignOnProvider = ({
   )
 }
 
-export default SignOnProvider
+export default SignOnPage

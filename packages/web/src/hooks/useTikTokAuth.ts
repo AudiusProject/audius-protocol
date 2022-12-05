@@ -117,9 +117,7 @@ export const useTikTokAuth = (args: UseTikTokAuthArguments) => {
     }
 
     const {
-      data: {
-        data: { access_token, open_id, expires_in }
-      }
+      data: { access_token, open_id, expires_in }
     } = await response.json()
 
     record(make(Name.TIKTOK_COMPLETE_OAUTH, {}))

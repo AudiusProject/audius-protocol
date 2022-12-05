@@ -50,6 +50,7 @@
   display: inline-flex;
   align-items: center;
 }
+
 .twitterButton svg {
   height: 48px !important;
   width: 48px !important;

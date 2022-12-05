@@ -1,21 +1,24 @@
-import { useState } from 'react'
+import { KeyboardEventHandler, useState } from 'react'
 
 import {
   imageProfilePicEmpty as profilePicEmpty,
   MAX_DISPLAY_NAME_LENGTH,
-  MAX_HANDLE_LENGTH
+  MAX_HANDLE_LENGTH,
+  getErrorMessage
 } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 import TwitterLogin from 'react-twitter-auth'
 
 import Input from 'components/data-entry/Input'
-import InstagramAuth from 'components/instagram-auth/InstagramAuth'
+import InstagramAuth, {
+  InstagramAuthProps
+} from 'components/instagram-auth/InstagramAuth'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import StatusMessage from 'components/status-message/StatusMessage'
+import { TwitterAuthProps } from 'components/twitter-auth/TwitterAuth'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { resizeImage } from 'utils/imageProcessingUtil'
@@ -35,9 +38,49 @@ const messages = {
   completeWithInstagram: 'Link to Instagram to claim'
 }
 
-const ProfileForm = (props) => {
+type Field = {
+  error?: string
+  status?: string
+  value?: string
+}
+
+export type ProfileFormProps = {
+  canUpdateHandle: boolean
+  handle: Field
+  header: string
+  isMobile?: boolean
+  name: Field
+  onContinue: () => void
+  onInstagramLogin: InstagramAuthProps['onSuccess']
+  onHandleChange: (value: any) => void
+  onHandleKeyDown: KeyboardEventHandler
+  onNameChange: (name: string) => void
+  onToggleTwitterOverlay: () => void
+  onTwitterLogin: TwitterAuthProps['onSuccess']
+  // TODO: type profileImage
+  profileImage: any
+  profileValid: boolean
+  setProfileImage: (image: any) => void
+}
+
+const ProfileForm = (props: ProfileFormProps) => {
+  const {
+    canUpdateHandle,
+    handle,
+    header,
+    isMobile,
+    name,
+    onContinue,
+    onHandleChange,
+    onHandleKeyDown,
+    onInstagramLogin,
+    onNameChange,
+    onTwitterLogin,
+    profileImage,
+    profileValid,
+    setProfileImage
+  } = props
   const [focus, onChangeFocus] = useState(false)
-  const { profileValid, name, handle, profileImage, onContinue } = props
   const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] =
     useState(false)
 
@@ -48,35 +91,33 @@ const ProfileForm = (props) => {
     delay: 1000
   })
 
-  const onDropArtwork = async (selectedFiles) => {
+  const onDropArtwork = async (selectedFiles: File[]) => {
     try {
       let file = selectedFiles[0]
       file = await resizeImage(file)
       const url = URL.createObjectURL(file)
-      props.setProfileImage({ file, url })
+      setProfileImage({ file, url })
     } catch (err) {
-      props.setProfileImage({ ...profileImage, error: err.message })
+      setProfileImage({ ...profileImage, error: getErrorMessage(err) })
     }
   }
 
+  // TODO: Handle tiktok here
   const suggestTwitterLogin = handle.error === 'twitterReserved'
   const suggestInstagramLogin = handle.error === 'instagramReserved'
 
   return (
     <div
       className={cn(styles.profileFormContainer, {
-        [styles.isMobile]: props.isMobile,
-        [styles.blur]: props.showTwitterOverlay,
+        [styles.isMobile]: isMobile,
         [styles.moveFormUp]: suggestTwitterLogin || suggestInstagramLogin
       })}
     >
-      {props.isMobile ? (
-        <div className={styles.header}>{props.header}</div>
-      ) : null}
+      {isMobile ? <div className={styles.header}>{header}</div> : null}
       <div className={styles.profilePic}>
         <ProfilePicture
           showEdit={!profileImage}
-          isMobile={props.isMobile}
+          isMobile={isMobile}
           includePopup={false}
           updatedProfilePicture={
             profileImage ? profileImage.url : profilePicEmpty
@@ -88,7 +129,6 @@ const ProfileForm = (props) => {
       </div>
       <div
         className={cn(styles.inputContainer, {
-          [styles.hide]: props.showTwitterOverlay,
           [styles.errorInput]: handle.error
         })}
       >
@@ -98,14 +138,14 @@ const ProfileForm = (props) => {
           id='name-input'
           autoComplete='off'
           size='medium'
-          variant={props.isMobile ? 'normal' : 'elevatedPlaceholder'}
+          variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
           value={name.value}
           characterLimit={MAX_DISPLAY_NAME_LENGTH}
-          showCharacterLimit={name.value.length === MAX_DISPLAY_NAME_LENGTH}
-          warning={name.value.length === MAX_DISPLAY_NAME_LENGTH}
-          onChange={props.onNameChange}
+          showCharacterLimit={name.value?.length === MAX_DISPLAY_NAME_LENGTH}
+          warning={name.value?.length === MAX_DISPLAY_NAME_LENGTH}
+          onChange={onNameChange}
           className={cn(styles.profileInput, styles.nameInput, {
-            [styles.placeholder]: props.name.value === ''
+            [styles.placeholder]: name.value === ''
           })}
         />
         <div className={styles.handleContainer}>
@@ -116,13 +156,13 @@ const ProfileForm = (props) => {
             id='nickname-input'
             autoComplete='off'
             value={handle.value}
-            disabled={!props.canUpdateHandle || handle.status === 'disabled'}
-            onChange={props.onHandleChange}
+            disabled={!canUpdateHandle || handle.status === 'disabled'}
+            onChange={onHandleChange}
             characterLimit={MAX_HANDLE_LENGTH}
-            showCharacterLimit={handle.value.length === MAX_HANDLE_LENGTH}
-            warning={handle.value.length === MAX_HANDLE_LENGTH}
-            onKeyDown={props.onHandleKeyDown}
-            variant={props.isMobile ? 'normal' : 'elevatedPlaceholder'}
+            showCharacterLimit={handle.value?.length === MAX_HANDLE_LENGTH}
+            warning={handle.value?.length === MAX_HANDLE_LENGTH}
+            onKeyDown={onHandleKeyDown}
+            variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
             onFocus={() => {
               onChangeFocus(true)
             }}
@@ -130,13 +170,13 @@ const ProfileForm = (props) => {
               onChangeFocus(false)
             }}
             className={cn(styles.profileInput, styles.handleInput, {
-              [styles.placeholder]: props.handle.value === ''
+              [styles.placeholder]: handle.value === ''
             })}
             error={!!handle.error}
           />
           <span
             className={cn(styles.atHandle, {
-              [styles.atHandleFocus]: focus || props.handle.value
+              [styles.atHandleFocus]: focus || handle.value
             })}
           >
             {'@'}
@@ -146,7 +186,6 @@ const ProfileForm = (props) => {
           <Spring
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
-            leave={{ opacity: 0 }}
             config={{ duration: 200 }}
           >
             {(animProps) => (
@@ -154,7 +193,9 @@ const ProfileForm = (props) => {
                 status='error'
                 containerStyle={animProps}
                 containerClassName={styles.errorMessage}
-                label={messages.errors[handle.error]}
+                label={
+                  messages.errors[handle.error as keyof typeof messages.errors]
+                }
               />
             )}
           </Spring>
@@ -163,14 +204,14 @@ const ProfileForm = (props) => {
           <Spring
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
-            leave={{ opacity: 0 }}
             config={{ duration: 200 }}
           >
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <TwitterLogin
-                  onFailure={(...args) => console.log(args)}
-                  onSuccess={props.onTwitterLogin}
+                  onFailure={console.log}
+                  onSuccess={onTwitterLogin as any}
+                  /* @ts-ignore */
                   className={styles.hideTwitterButton}
                   requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
                   loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
@@ -185,14 +226,13 @@ const ProfileForm = (props) => {
           <Spring
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
-            leave={{ opacity: 0 }}
             config={{ duration: 200 }}
           >
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <InstagramAuth
-                  onFailure={(...args) => console.log(args)}
-                  onSuccess={props.onInstagramLogin}
+                  onFailure={console.log}
+                  onSuccess={onInstagramLogin}
                   className={styles.hideTwitterButton}
                   setProfileUrl={`${audiusBackendInstance.identityServiceUrl}/instagram/profile`}
                   getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
@@ -219,38 +259,10 @@ const ProfileForm = (props) => {
         isDisabled={!profileValid}
         onClick={onContinue}
         textClassName={styles.continueButtonText}
-        className={cn(styles.continueButton, {
-          [styles.hide]: props.showTwitterOverlay
-        })}
+        className={cn(styles.continueButton)}
       />
     </div>
   )
 }
-
-const field = PropTypes.shape({
-  value: PropTypes.string,
-  error: PropTypes.string,
-  status: PropTypes.string
-})
-
-ProfileForm.propTypes = {
-  header: PropTypes.string,
-  isMobile: PropTypes.bool,
-  showTwitterOverlay: PropTypes.bool,
-  profileImage: PropTypes.any,
-  name: field,
-  onTwitterLogin: PropTypes.func,
-  onToggleTwitterOverlay: PropTypes.func,
-  profileValid: PropTypes.bool,
-  canUpdateHandle: PropTypes.bool,
-  handle: field,
-  setProfileImage: PropTypes.func,
-  onHandleKeyDown: PropTypes.func,
-  onHandleChange: PropTypes.func,
-  onNameChange: PropTypes.func,
-  onContinue: PropTypes.func
-}
-
-ProfileForm.defaultProps = {}
 
 export default ProfileForm
