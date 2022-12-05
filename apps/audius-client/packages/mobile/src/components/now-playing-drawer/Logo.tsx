@@ -1,6 +1,6 @@
 import { StyleSheet, Animated } from 'react-native'
 
-import AudiusLogoHorizontal from 'app/assets/images/audiusLogoHorizontal.svg'
+import AudiusLogoHorizontal from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
 import { useThemeColors } from 'app/utils/theme'
 
 import { NOW_PLAYING_HEIGHT } from './constants'

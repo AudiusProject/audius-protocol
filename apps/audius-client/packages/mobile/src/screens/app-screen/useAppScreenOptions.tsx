@@ -11,7 +11,7 @@ import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
+import AudiusLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
