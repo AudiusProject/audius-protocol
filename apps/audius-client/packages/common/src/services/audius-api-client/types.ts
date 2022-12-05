@@ -15,9 +15,10 @@ import {
   UserTip,
   PremiumConditions,
   PremiumContentSignature,
-  ID
-} from 'models'
-import { Nullable } from 'utils'
+  ID,
+  License
+} from '../../models'
+import { Nullable } from '../../utils'
 
 export type OpaqueID = string
 
@@ -114,7 +115,7 @@ export type APITrack = {
   cover_art_sizes: string
   download: Download
   isrc: Nullable<string>
-  license: Nullable<string>
+  license: Nullable<License>
   iswc: Nullable<string>
   field_visibility: FieldVisibility
   followee_reposts: APIRepost[]

@@ -5,9 +5,9 @@ import type { ScreenProps } from 'app/components/core'
 
 export type FormValues = ExtendedTrackMetadata & {
   licenseType: {
-    allowAttribution: boolean
-    commercialUse: boolean
-    derivativeWorks: boolean
+    allowAttribution: Nullable<boolean>
+    commercialUse: Nullable<boolean>
+    derivativeWorks: Nullable<boolean>
   }
   trackArtwork?: string
 }

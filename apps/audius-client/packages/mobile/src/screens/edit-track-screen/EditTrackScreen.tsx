@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
 import type { UploadTrack } from '@audius/common'
+import { creativeCommons } from '@audius/common'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 
 import { EditTrackNavigator } from './EditTrackNavigator'
 import type { FormValues, EditTrackScreenProps } from './types'
+const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
 const EditTrackSchema = Yup.object().shape({
   title: Yup.string().required('Required'),
@@ -29,11 +31,9 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
   const initialValues: FormValues = {
     ...initialValuesProp,
-    licenseType: {
-      allowAttribution: false,
-      commercialUse: false,
-      derivativeWorks: false
-    }
+    licenseType: computeLicenseVariables(
+      initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
+    )
   }
 
   const handleSubmit = useCallback(
