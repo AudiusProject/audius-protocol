@@ -74,8 +74,8 @@ const findDominantColors = (selectFrom) => {
  * Returns the 3 dominant RGB colors of an image.
  * @param {string} imageUrl url of the image to use
  */
-const dominantRgb = (imageUrl) => {
-  Jimp.read(imageUrl)
+export const getDominantRgb = (imageUrl) => {
+  return Jimp.read(imageUrl)
     .then((img) => {
       img.posterize(15)
       const imageData = img.bitmap
@@ -114,14 +114,18 @@ const dominantRgb = (imageUrl) => {
       } else {
         result = findDominantColors(sortedResult)
       }
-
-      self.postMessage(JSON.stringify(result))
+      return result
     })
     .catch((err) => {
       console.error(imageUrl, err)
-      // eslint-disable-next-line
-      self.postMessage(DEFAULT_RGB)
+      return DEFAULT_RGB
     })
+}
+
+export const dominantRgb = (imageUrl) => {
+  getDominantRgb(imageUrl).then((result) => {
+    self.postMessage(JSON.stringify(result))
+  })
 }
 
 // listen for messages
