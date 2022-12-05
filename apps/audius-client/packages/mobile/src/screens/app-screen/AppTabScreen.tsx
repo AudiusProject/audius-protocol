@@ -35,7 +35,6 @@ import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { EditProfileScreen } from '../edit-profile-screen'
-import { EditExistingTrackScreen } from '../edit-track-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -45,10 +44,7 @@ import {
   NotificationSettingsScreen,
   SettingsScreen
 } from '../settings-screen'
-import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
-import { UploadScreen } from '../upload-screen'
-import { WalletConnectScreen } from '../wallet-connect'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -229,14 +225,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         options={screenOptions}
       />
       <Stack.Screen
-        name='TipArtist'
-        component={TipArtistModal}
-        options={{
-          headerShown: false,
-          presentation: 'fullScreenModal'
-        }}
-      />
-      <Stack.Screen
         name='TopSupporters'
         component={TopSupportersScreen}
         options={screenOptions}
@@ -273,30 +261,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           component={ChangePasswordScreen}
         />
       </Stack.Group>
-      <Stack.Screen
-        name='Upload'
-        component={UploadScreen}
-        options={{
-          headerShown: false,
-          presentation: 'fullScreenModal'
-        }}
-      />
-      <Stack.Screen
-        name='EditTrack'
-        component={EditExistingTrackScreen}
-        options={{
-          headerShown: false,
-          presentation: 'fullScreenModal'
-        }}
-      />
-      <Stack.Screen
-        name='WalletConnect'
-        component={WalletConnectScreen}
-        options={{
-          headerShown: false,
-          presentation: 'fullScreenModal'
-        }}
-      />
     </Stack.Navigator>
   )
 }
