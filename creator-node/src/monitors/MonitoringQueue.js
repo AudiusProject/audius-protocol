@@ -7,7 +7,7 @@ const { logger } = require('../logging')
 const { clusterUtilsForWorker, clearActiveJobs } = require('../utils')
 const {
   PROMETHEUS_MONITORS
-} = require('../services/prometheusMonitoring/prometheus.constants')
+} = require('../services/prometheusMonitoring/metrics/monitors')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 

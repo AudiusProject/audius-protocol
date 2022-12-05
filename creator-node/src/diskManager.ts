@@ -26,6 +26,7 @@ import {
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
 import BlacklistManager from './blacklistManager'
+import { PrometheusRegistry } from './services/prometheusMonitoring/prometheusRegistry'
 
 const models = require('./models')
 
@@ -444,7 +445,7 @@ async function _touch(path: string) {
 
 async function _copyLegacyFiles(
   legacyPathsAndCids: { storagePath: string; cid: string; skipped: boolean }[],
-  prometheusRegistry: any,
+  prometheusRegistry: PrometheusRegistry,
   logger: Logger
 ): Promise<
   {
@@ -523,11 +524,11 @@ async function _copyLegacyFiles(
   }
 
   // Record results in Prometheus metric and log errors
-  const metric = prometheusRegistry.getMetric(
+  const metric = prometheusRegistry.getGauge(
     prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
   )
   metric.inc({ result: 'success' }, copiedPaths.length)
-  metric.inc({ result: 'failure' }, erroredPaths.length)
+  metric.inc({ result: 'failure' }, Object.keys(erroredPaths).length)
   if (!isEmpty(erroredPaths)) {
     logger.debug(
       `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
@@ -566,7 +567,7 @@ async function _callFuncOnAllCidsPaginated(
 const _migrateNonDirFilesWithLegacyStoragePaths = async (
   queryDelayMs: number,
   batchSize: number,
-  prometheusRegistry: any,
+  prometheusRegistry: PrometheusRegistry,
   logger: Logger
 ) =>
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
@@ -684,7 +685,7 @@ async function _migrateFileWithCustomStoragePath(
 const _migrateFilesWithCustomStoragePaths = async (
   queryDelayMs: number,
   batchSize: number,
-  prometheusRegistry: any,
+  prometheusRegistry: PrometheusRegistry,
   logger: Logger
 ) =>
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
@@ -731,7 +732,7 @@ const _migrateFilesWithCustomStoragePaths = async (
           await timeout(1000)
         }
         // Record results in Prometheus metric
-        const metric = prometheusRegistry.getMetric(
+        const metric = prometheusRegistry.getGauge(
           prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
         )
         metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
@@ -761,7 +762,7 @@ const _migrateFilesWithCustomStoragePaths = async (
  */
 export async function migrateFilesWithNonStandardStoragePaths(
   queryDelayMs: number,
-  prometheusRegistry: any,
+  prometheusRegistry: PrometheusRegistry,
   logger: Logger
 ): Promise<void> {
   const BATCH_SIZE = 5_000

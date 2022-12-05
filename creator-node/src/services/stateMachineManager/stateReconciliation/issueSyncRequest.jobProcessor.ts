@@ -11,9 +11,10 @@ import type {
   IssueSyncRequestJobReturnValue,
   SyncRequestAxiosParams
 } from './types'
-import { SyncStatus, getMaxSyncMonitoringMs } from '../../sync/syncUtil'
 
+import { SyncStatus, getMaxSyncMonitoringMs } from '../../sync/syncUtil'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
 import {
   SYNC_MONITORING_RETRY_DELAY_MS,
   SYNC_MODES,
@@ -31,9 +32,6 @@ const _: LoDashStatic = require('lodash')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
-const {
-  METRIC_NAMES
-} = require('../../prometheusMonitoring/prometheus.constants')
 const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord

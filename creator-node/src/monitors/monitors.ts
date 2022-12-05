@@ -57,75 +57,82 @@ const MONITORING_REDIS_PREFIX = 'monitoring'
  *    Options are bool, int, float, string, json
  */
 
-const DATABASE_LIVENESS = {
+export type Monitor = {
+  name: string
+  func: () => any
+  ttl?: number
+  type?: string
+}
+
+const DATABASE_LIVENESS: Monitor = {
   name: 'databaseLiveness',
   func: getDatabaseLiveness,
   type: 'bool'
 }
-const DATABASE_SIZE = {
+const DATABASE_SIZE: Monitor = {
   name: 'databaseSize',
   func: getDatabaseSize,
   ttl: 60 * 2,
   type: 'int'
 }
-const DATABASE_CONNECTIONS = {
+const DATABASE_CONNECTIONS: Monitor = {
   name: 'databaseConnections',
   func: getDatabaseConnections,
   type: 'int'
 }
-const DATABASE_CONNECTION_INFO = {
+const DATABASE_CONNECTION_INFO: Monitor = {
   name: 'databaseConnectionInfo',
   func: getDatabaseConnectionInfo,
   type: 'json'
 }
 
-const TOTAL_MEMORY = {
+const TOTAL_MEMORY: Monitor = {
   name: 'totalMemory',
   func: getTotalMemory,
   type: 'int'
 }
-const USED_MEMORY = {
+const USED_MEMORY: Monitor = {
   name: 'usedMemory',
   func: getUsedMemory,
   type: 'int'
 }
-const NODE_PROCESS_MEMORY_USAGE = {
+const NODE_PROCESS_MEMORY_USAGE: Monitor = {
   name: 'nodeProcessMemoryUsage',
   func: getNodeProcessMemoryUsage,
   type: 'json'
 }
 
-const USED_TCP_MEMORY = {
+const USED_TCP_MEMORY: Monitor = {
   name: 'usedTCPMemory',
   func: getUsedTCPMemory,
   type: 'int'
 }
 
-const STORAGE_PATH_SIZE = {
+const STORAGE_PATH_SIZE: Monitor = {
   name: 'storagePathSize',
   func: getStoragePathSize,
   ttl: 60 * 5,
   type: 'int'
 }
-const STORAGE_PATH_USED = {
+const STORAGE_PATH_USED: Monitor = {
   name: 'storagePathUsed',
   func: getStoragePathUsed,
   ttl: 60 * 5,
   type: 'int'
 }
-const FILESYSTEM_SIZE = {
+const FILESYSTEM_SIZE: Monitor = {
   name: 'filesystemSize',
   func: getFilesystemSize,
   ttl: 60 * 5,
   type: 'int'
 }
-const FILESYSTEM_USED = {
+const FILESYSTEM_USED: Monitor = {
   name: 'filesystemUsed',
   func: getFilesystemUsed,
   ttl: 60 * 5,
   type: 'int'
 }
-const MAX_FILE_DESCRIPTORS = {
+const MAX_FILE_DESCRIPTORS: Monitor = {
   name: 'maxFileDescriptors',
   func: getMaxFileDescriptors,
   ttl: 60 * 5,
@@ -138,30 +145,30 @@ const ALLOCATED_FILE_DESCRIPTORS = {
   type: 'int'
 }
 
-const RECEIVED_BYTES_PER_SEC = {
+const RECEIVED_BYTES_PER_SEC: Monitor = {
   name: 'receivedBytesPerSec',
   func: getReceivedBytesPerSec,
   type: 'float'
 }
-const TRANSFERRED_BYTES_PER_SEC = {
+const TRANSFERRED_BYTES_PER_SEC: Monitor = {
   name: 'transferredBytesPerSec',
   func: getTransferredBytesPerSec,
   type: 'float'
 }
 
-const REDIS_NUM_KEYS = {
+const REDIS_NUM_KEYS: Monitor = {
   name: 'redisNumKeys',
   func: getRedisNumKeys,
   ttl: 60 * 5,
   type: 'int'
 }
-const REDIS_USED_MEMORY = {
+const REDIS_USED_MEMORY: Monitor = {
   name: 'redisUsedMemory',
   func: getRedisUsedMemory,
   ttl: 60 * 5,
   type: 'int'
 }
-const REDIS_TOTAL_MEMORY = {
+const REDIS_TOTAL_MEMORY: Monitor = {
   name: 'redisTotalMemory',
   func: getRedisTotalMemory,
   ttl: 60 * 5,
@@ -171,7 +178,7 @@ const REDIS_TOTAL_MEMORY = {
 // The rolling window count of successful syncs
 // The window is for 30 days
 // Keep the rolling window count ttl to 1 hour (refreshes every hour)
-const THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT = {
+const THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT: Monitor = {
   name: 'rollingSyncSuccessCount',
   func: get30DayRollingSyncSuccessCount,
   ttl: 60 /* mins */ * 60 /* s */,
@@ -181,7 +188,7 @@ const THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT = {
 // The rolling window count of failed syncs
 // The window is for 30 days
 // Keep the rolling window count ttl to 1 hour (refreshes every hour)
-const THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT = {
+const THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT: Monitor = {
   name: 'rollingSyncFailCount',
   func: get30DayRollingSyncFailCount,
   ttl: 60 /* mins */ * 60 /* s */,
@@ -190,7 +197,7 @@ const THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT = {
 
 // The daily count of successful syncs
 // Set ttl to every 5 minutes
-const DAILY_SYNC_SUCCESS_COUNT = {
+const DAILY_SYNC_SUCCESS_COUNT: Monitor = {
   name: 'dailySyncSuccessCount',
   func: getDailySyncSuccessCount,
   ttl: 5 /* mins */ * 60 /* s */,
@@ -199,7 +206,7 @@ const DAILY_SYNC_SUCCESS_COUNT = {
 
 // The daily count of successful syncs
 // Set ttl freshness to every 5 minutes
-const DAILY_SYNC_FAIL_COUNT = {
+const DAILY_SYNC_FAIL_COUNT: Monitor = {
   name: 'dailySyncFailCount',
   func: getDailySyncFailCount,
   ttl: 5 /* mins */ * 60 /* s */,
@@ -208,7 +215,7 @@ const DAILY_SYNC_FAIL_COUNT = {
 
 // The timestamp of the latest succesful sync
 // Set ttl freshness to every 5 minutes
-const LATEST_SYNC_SUCCESS_TIMESTAMP = {
+const LATEST_SYNC_SUCCESS_TIMESTAMP: Monitor = {
   name: 'latestSyncSuccessTimestamp',
   func: getLatestSyncSuccessTimestamp,
   ttl: 5 /* mins */ * 60 /* s */,
@@ -217,50 +224,50 @@ const LATEST_SYNC_SUCCESS_TIMESTAMP = {
 
 // The timestamp of the latest failed sync
 // Set ttl freshness to every 5 minutes
-const LATEST_SYNC_FAIL_TIMESTAMP = {
+const LATEST_SYNC_FAIL_TIMESTAMP: Monitor = {
   name: 'latestSyncFailTimestamp',
   func: getLatestSyncFailTimestamp,
   ttl: 5 /* mins */ * 60 /* s */,
   type: 'string'
 }
 
-const LATEST_MONITOR_STATE_JOB_START = {
+const LATEST_MONITOR_STATE_JOB_START: Monitor = {
   name: 'latestMonitorStateJobStart',
   func: getLatestMonitorStateJobStart,
   type: 'string'
 }
 
-const LATEST_MONITOR_STATE_JOB_SUCCESS = {
+const LATEST_MONITOR_STATE_JOB_SUCCESS: Monitor = {
   name: 'latestMonitorStateJobSuccess',
   func: getLatestMonitorStateJobSuccess,
   type: 'string'
 }
 
-const LATEST_FIND_SYNC_REQUESTS_JOB_START = {
+const LATEST_FIND_SYNC_REQUESTS_JOB_START: Monitor = {
   name: 'latestFindSyncRequestsJobStart',
   func: getLatestFindSyncRequestsJobStart,
   type: 'string'
 }
 
-const LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS = {
+const LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS: Monitor = {
   name: 'latestFindSyncRequestsJobSuccess',
   func: getLatestFindSyncRequestsJobSuccess,
   type: 'string'
 }
 
-const LATEST_FIND_REPLICA_SET_UPDATES_JOB_START = {
+const LATEST_FIND_REPLICA_SET_UPDATES_JOB_START: Monitor = {
   name: 'latestFindReplicaSetUpdatesJobStart',
   func: getLatestFindReplicaSetUpdatesJobStart,
   type: 'string'
 }
 
-const LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS = {
+const LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS: Monitor = {
   name: 'latestFindReplicaSetUpdatesJobSuccess',
   func: getLatestFindReplicaSetUpdatesJobSuccess,
   type: 'string'
 }
 
-const MONITORS = {
+export const MONITORS = {
   DATABASE_LIVENESS,
   DATABASE_SIZE,
   DATABASE_CONNECTIONS,
@@ -294,15 +301,15 @@ const MONITORS = {
   LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
 }
 
-const getMonitorRedisKey = (monitor) =>
+const getMonitorRedisKey = (monitor: Monitor) =>
   `${MONITORING_REDIS_PREFIX}:${monitor.name}`
 
 /**
  * Parses a string value into the corresponding type
- * @param {Object} monitor
+ * @param {Monitor} monitor
  * @param {string} value
  */
-const parseValue = (monitor, value) => {
+const parseValue = (monitor: Monitor, value: string) => {
   try {
     if (monitor.type) {
       switch (monitor.type) {
@@ -330,7 +337,7 @@ const parseValue = (monitor, value) => {
  * Gets monitor values
  * @param {Array<Object>} monitors the monitor, containing name, func, ttl, and type
  */
-const getMonitors = async (monitors) => {
+const getMonitors = async (monitors: Monitor[]) => {
   const pipeline = redis.pipeline()
   monitors.forEach((monitor) => {
     const key = getMonitorRedisKey(monitor)
@@ -340,7 +347,9 @@ const getMonitors = async (monitors) => {
     pipeline
       .exec()
       // Pull the value off of the result
-      .then((result) => result.map((r, i) => parseValue(monitors[i], r[1])))
+      .then((result: any) =>
+        result.map((r: string[], i: number) => parseValue(monitors[i], r[1]))
+      )
   )
 }
 

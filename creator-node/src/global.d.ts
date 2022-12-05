@@ -10,5 +10,9 @@ export type FromEntriesWithReadOnly<T> = FromEntries<DeepWriteable<T>>
 declare global {
   interface ObjectConstructor {
     fromEntries<T>(obj: T): FromEntriesWithReadOnly<T>
+    // Allow Object.keys() to return more specific types than string when possible.
+    // For example, instead of returning string[] it can return ('a' | 'b')[]
+    keys<T = string>(o = {}): T[]
+    entries<K extends string, T>(o: { [s: K]: T } | ArrayLike<T>): [K, T][]
   }
 }

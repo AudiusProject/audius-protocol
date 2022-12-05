@@ -6,7 +6,7 @@ import _ from 'lodash'
 
 import { asyncRetry } from '../../utils/asyncRetry'
 import { SyncType } from '../../services/stateMachineManager/stateMachineConstants'
-import { SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS } from '../prometheusMonitoring/prometheus.constants'
+import { RESULT_LABEL_VALUES as SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_RESULT_LABEL_VALUES } from '../prometheusMonitoring/metrics/secondarySyncFromPrimary'
 
 const config = require('../../config')
 const redisClient: Redis & {
@@ -55,7 +55,7 @@ export type FetchExportOutput = {
 }
 export type SyncStatus =
   | 'waiting'
-  | typeof SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_LABELS[number]
+  | typeof SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM_RESULT_LABEL_VALUES[number]
 
 export async function fetchExportFromNode({
   nodeEndpointToFetchFrom,

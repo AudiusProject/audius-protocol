@@ -1,12 +1,16 @@
 import type { Job, Queue, Worker } from 'bullmq'
-
 import {
+  ALL_METRICS,
+  MetricName,
+  MetricNameKey,
   NAMESPACE_PREFIX,
-  METRICS,
   METRIC_NAMES,
   QUEUE_INTERVAL
 } from './prometheus.constants'
+
 import * as PrometheusClient from 'prom-client'
+import { lowerCase } from 'lodash'
+import { MetricTypeAndConfig } from './types'
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
@@ -22,9 +26,26 @@ type MetricsDataAndType = {
   contentType: any
 }
 
+export interface PrometheusRegistry {
+  registry: PrometheusClient.Registry
+  metricNames: { [P in MetricNameKey]: Lowercase<P> }
+  namespacePrefix: string
+  resolvePromiseToGetAggregatedMetrics?: (data: MetricsDataAndType) => void
+  promiseToGetAggregatedMetrics?: Promise<any>
+
+  getMetric(name: MetricName): PrometheusClient.Metric<string>
+  getHistogram(name: MetricName): PrometheusClient.Histogram<string>
+  getGauge(name: MetricName): PrometheusClient.Gauge<string>
+  getAllMetricData(): Promise<string>
+  startQueueMetrics(queue: Queue, worker: Worker): { stop(): void }
+  getCustomAggregateMetricData(): Promise<any>
+  makePromiseToGetMetrics(): Promise<unknown>
+  resetInFlightPromiseVariables(): void
+}
+
 export class PrometheusRegistry {
-  registry: any
-  metricNames: Record<string, string>
+  registry: PrometheusClient.Registry
+  metricNames: { [P in MetricNameKey]: Lowercase<P> }
   namespacePrefix: string
   resolvePromiseToGetAggregatedMetrics?: (data: MetricsDataAndType) => void
   promiseToGetAggregatedMetrics?: Promise<any>
@@ -52,12 +73,19 @@ export class PrometheusRegistry {
   /**
    * Creates and registers every static metric defined in prometheus.constants.js
    */
-  public initStaticMetrics(registry: any) {
-    for (const { metricType, metricConfig } of Object.values(METRICS)) {
+  public initStaticMetrics(registry: PrometheusClient.Registry) {
+    for (const [metricNameKey, metricTypeAndConfig] of Object.entries<
+      MetricNameKey,
+      MetricTypeAndConfig
+    >(ALL_METRICS)) {
       // Create and register instance of MetricType, with provided metricConfig
 
       // eslint-disable-next-line new-cap
-      const metric = new metricType(metricConfig)
+      const metric = new metricTypeAndConfig.metricType({
+        ...metricTypeAndConfig.metricConfig,
+        name: lowerCase(metricNameKey),
+        labelNames: Object.keys(metricTypeAndConfig.metricLabels)
+      })
       registry.registerMetric(metric)
     }
   }
@@ -70,8 +98,16 @@ export class PrometheusRegistry {
   }
 
   /** Returns single metric instance by name */
-  public getMetric(name: string) {
-    return this.registry.getSingleMetric(name)
+  public getMetric(name: MetricName) {
+    return this.registry.getSingleMetric(name)!
+  }
+
+  public getHistogram(name: MetricName) {
+    return this.getMetric(name) as unknown as PrometheusClient.Histogram<string>
+  }
+
+  public getGauge(name: MetricName) {
+    return this.getMetric(name) as unknown as PrometheusClient.Gauge<string>
   }
 
   public recordJobMetrics(
@@ -90,18 +126,18 @@ export class PrometheusRegistry {
 
     // job duration in seconds
     const jobDuration = (job.finishedOn - job.processedOn!) / 1000
-    this.getMetric(this.metricNames.JOBS_DURATION_SECONDS_HISTOGRAM).observe(
+    this.getHistogram(this.metricNames.JOBS_DURATION_SECONDS_HISTOGRAM).observe(
       jobLabels,
       jobDuration
     )
 
     // job duration in seconds
     const waitingDuration = (job.processedOn! - job.timestamp) / 1000
-    this.getMetric(
+    this.getHistogram(
       this.metricNames.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM
     ).observe(jobLabels, waitingDuration)
 
-    this.getMetric(this.metricNames.JOBS_ATTEMPTS_HISTOGRAM).observe(
+    this.getHistogram(this.metricNames.JOBS_ATTEMPTS_HISTOGRAM).observe(
       jobLabels,
       job.attemptsMade
     )
@@ -132,23 +168,23 @@ export class PrometheusRegistry {
       queue
         .getJobCounts('completed', 'failed', 'delayed', 'active', 'waiting')
         .then(({ completed, failed, delayed, active, waiting }) => {
-          this.getMetric(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).set(
+          this.getGauge(this.metricNames.JOBS_COMPLETED_TOTAL_GAUGE).set(
             labels,
             completed || 0
           )
-          this.getMetric(this.metricNames.JOBS_FAILED_TOTAL_GAUGE).set(
+          this.getGauge(this.metricNames.JOBS_FAILED_TOTAL_GAUGE).set(
             labels,
             failed || 0
           )
-          this.getMetric(this.metricNames.JOBS_DELAYED_TOTAL_GAUGE).set(
+          this.getGauge(this.metricNames.JOBS_DELAYED_TOTAL_GAUGE).set(
             labels,
             delayed || 0
           )
-          this.getMetric(this.metricNames.JOBS_ACTIVE_TOTAL_GAUGE).set(
+          this.getGauge(this.metricNames.JOBS_ACTIVE_TOTAL_GAUGE).set(
             labels,
             active || 0
           )
-          this.getMetric(this.metricNames.JOBS_WAITING_TOTAL_GAUGE).set(
+          this.getGauge(this.metricNames.JOBS_WAITING_TOTAL_GAUGE).set(
             labels,
             waiting || 0
           )
