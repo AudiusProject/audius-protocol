@@ -5,7 +5,7 @@ import type {
   WalletService
 } from '@walletconnect/react-native-dapp'
 import { useWalletConnectContext } from '@walletconnect/react-native-dapp'
-import { View, Image } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
@@ -14,8 +14,9 @@ import { getVisibility } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
+import { EthWalletConnectOption } from './EthWalletConnectOption'
 import { PhantomWalletConnectOption } from './PhantomWalletConnectOption'
-import { WalletConnectOption } from './WalletConnectOption'
+import { SolanaPhoneOption } from './SolanaPhoneOption'
 
 const SUPPORTED_SERVICES = new Set(['MetaMask', 'Rainbow'])
 const MODAL_NAME = 'ConnectWallets'
@@ -43,18 +44,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap'
-  },
-  walletImage: {
-    height: 50,
-    width: 50,
-    borderRadius: 25
   }
 }))
 
 export const WalletConnectDrawer = () => {
   const styles = useStyles()
-  const { walletServices, connectToWalletService, redirectUrl } =
-    useWalletConnectContext()
+  const { walletServices } = useWalletConnectContext()
 
   const supportedWalletServices = (walletServices || []).filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
@@ -74,27 +69,14 @@ export const WalletConnectDrawer = () => {
         <View style={styles.container}>
           {supportedWalletServices.map((walletService: WalletService) => {
             return (
-              <WalletConnectOption
+              <EthWalletConnectOption
                 key={walletService.name}
-                name={walletService.name}
-                icon={
-                  <Image
-                    style={styles.walletImage}
-                    source={{
-                      // @ts-ignore: image_url is valid
-                      uri: `${walletService.image_url.sm}`
-                    }}
-                    onError={(error) => console.error(error)}
-                  />
-                }
-                onPress={() =>
-                  connectToWalletService?.(walletService, redirectUrl)
-                }
+                walletService={walletService}
               />
             )
           })}
           <PhantomWalletConnectOption />
-          {/* TODO: Add Solana Phone as an option */}
+          <SolanaPhoneOption />
         </View>
       </View>
     </NativeDrawer>

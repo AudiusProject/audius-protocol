@@ -2,20 +2,26 @@ import type { Nullable } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
-import type { ConnectNewWalletAction, SignMessageAction } from './types'
+import type {
+  ConnectionType,
+  ConnectNewWalletAction,
+  SignMessageAction
+} from './types'
 
 export type WalletConnectState = {
   dappKeyPair: Nullable<string>
   sharedSecret: Nullable<string>
   session: Nullable<string>
   publicKey: Nullable<string>
+  connectionType: Nullable<ConnectionType>
 }
 
 const initialState: WalletConnectState = {
   dappKeyPair: null,
   sharedSecret: null,
   session: null,
-  publicKey: null
+  publicKey: null,
+  connectionType: null
 }
 
 const walletConnectSlice = createSlice({
@@ -38,6 +44,12 @@ const walletConnectSlice = createSlice({
     },
     setPublicKey: (state, action: PayloadAction<{ publicKey: string }>) => {
       state.publicKey = action.payload.publicKey
+    },
+    setConnectionType: (
+      state,
+      action: PayloadAction<{ connectionType: ConnectionType }>
+    ) => {
+      state.connectionType = action.payload.connectionType
     }
   }
 })
@@ -48,6 +60,7 @@ export const {
   setDappKeyPair,
   setSharedSecret,
   setSession,
-  setPublicKey
+  setPublicKey,
+  setConnectionType
 } = walletConnectSlice.actions
 export default walletConnectSlice.reducer
