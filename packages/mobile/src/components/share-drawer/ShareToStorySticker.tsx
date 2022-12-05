@@ -100,7 +100,7 @@ export const ShareToStorySticker = ({
           >
             {messages.nowPlayingOn}
           </Text>
-          <AudiusLogo fill={neutralLight2} height={24} width={115} />
+          <AudiusLogo fill={neutralLight2} height={22} width={105} />
         </View>
       </View>
     </View>
