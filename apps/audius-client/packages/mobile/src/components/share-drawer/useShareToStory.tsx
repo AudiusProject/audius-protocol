@@ -4,13 +4,13 @@ import EventEmitter from 'events'
 import path from 'path'
 
 import type { Color, Nullable, ShareModalContent } from '@audius/common'
-import { modalsActions, encodeHashId, ErrorLevel, uuid } from '@audius/common'
+import { encodeHashId, ErrorLevel, modalsActions, uuid } from '@audius/common'
 import {
   activateKeepAwake,
   deactivateKeepAwake
 } from '@sayem314/react-native-keep-awake'
 import type { FFmpegSession } from 'ffmpeg-kit-react-native'
-import { FFmpegKitConfig, FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native'
+import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native'
 import { View } from 'react-native'
 import Config from 'react-native-config'
 import RNFS from 'react-native-fs'
@@ -22,7 +22,6 @@ import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
-import { getDominantColors } from 'app/services/threads/getDominantColors'
 import { setVisibility } from 'app/store/drawers/slice'
 import {
   getCancel,
@@ -39,6 +38,7 @@ import { convertRGBToHex } from 'app/utils/convertRGBtoHex'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
 
+import { getDominantRgb } from '../../../threads/dominantColors.thread'
 import { NativeDrawer } from '../drawer'
 import { useTrackImage } from '../image/TrackImage'
 import { ToastContext } from '../toast/ToastContext'
@@ -208,7 +208,7 @@ export const useShareToStory = ({
       let dominantColorHex2: string
       if (trackImageUri) {
         try {
-          dominantColorsResult = await getDominantColors(trackImageUri)
+          dominantColorsResult = await getDominantRgb(trackImageUri)
         } catch (e) {
           handleError(
             e,
@@ -240,9 +240,9 @@ export const useShareToStory = ({
         }
         const totalVideoDuration = 10000
         const loadedSoFar = statistics.getTime()
-        const percentageLoaded = (loadedSoFar * 90) / totalVideoDuration
+        const percentageLoaded = (loadedSoFar * 80) / totalVideoDuration
         // Pad the result by 10% so the progress bar gets full before we get to IG
-        dispatch(setProgress(Math.min(10 + percentageLoaded + 10, 100)))
+        dispatch(setProgress(Math.min(20 + percentageLoaded + 10, 100)))
       })
       let session: FFmpegSession
 
