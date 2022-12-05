@@ -3,7 +3,6 @@ import { omit } from 'lodash'
 
 /**
  * Potentially add
- * @param track
  */
 const setIsCoSigned = <T extends TrackMetadata>(track: T) => {
   const { remix_of } = track

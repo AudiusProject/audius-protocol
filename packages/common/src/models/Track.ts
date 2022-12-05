@@ -1,7 +1,7 @@
-import { Chain } from 'models'
-
 import { Nullable } from '../utils/typeUtils'
 
+import { Chain } from './Chain'
+import type { License } from './CreativeCommons'
 import { Favorite } from './Favorite'
 import { CID, ID, UID } from './Identifiers'
 import { CoverArtSizes } from './ImageSizes'
@@ -94,7 +94,7 @@ export type TrackMetadata = {
   has_current_user_reposted: boolean
   has_current_user_saved: boolean
   download: Nullable<Download>
-  license: Nullable<string>
+  license: Nullable<License>
   mood: Nullable<string>
   play_count: number
   owner_id: ID

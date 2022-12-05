@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from './typeUtils'
 
 export const ALL_RIGHTS_RESERVED_TYPE = 'All rights reserved'
 const ALL_RIGHTS_RESERVED_DESC = ''
@@ -53,7 +53,7 @@ const ALL_LICENSES = {
   [BY_SA_TYPE]: BY_SA_DESC
 }
 
-type License = keyof typeof ALL_LICENSES
+export type License = keyof typeof ALL_LICENSES
 
 /**
  * Computes the Create Commons License for provided attribution, commercial use, and derivative works flags.

@@ -6,7 +6,8 @@ import { getUser as getCachedUser } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { PREFIX } from 'store/pages/track/lineup/actions'
 
-import { ID } from '../../../models'
+import { ID, Track, User } from '../../../models'
+import { Nullable } from '../../../utils/typeUtils'
 
 export const getBaseState = (state: CommonState) => state.pages.track
 
@@ -26,7 +27,9 @@ export const getTrack = (state: CommonState, params?: { id?: ID }) => {
   return getCachedTrack(state, { permalink })
 }
 
-export const getRemixParentTrack = (state: CommonState) => {
+export const getRemixParentTrack = (
+  state: CommonState
+): Nullable<Track & { user: User }> => {
   const cachedTrack = getTrack(state)
   const parentTrackId = cachedTrack?.remix_of?.tracks?.[0].parent_track_id
   if (parentTrackId) {

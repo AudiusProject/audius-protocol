@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
+import { creativeCommons } from '@audius/common'
 import { useField } from 'formik'
 import { ScrollView, View } from 'react-native'
-import { computeLicense } from 'utils/creativeCommons'
 
 import IconCreativeCommons from 'app/assets/images/creativeCommons/cc.svg'
 import type { TextProps } from 'app/components/core'
@@ -14,6 +14,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { FormScreen } from '../components'
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
+const { computeLicense } = creativeCommons
 
 const messages = {
   title: 'License Type',
