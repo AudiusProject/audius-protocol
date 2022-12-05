@@ -24,8 +24,8 @@ import { useThemeColors } from 'app/utils/theme'
 import { AppDrawerContext } from '../app-drawer-screen'
 
 import { AccountPictureHeader } from './AccountPictureHeader'
-import type { AppScreenParamList } from './AppScreen'
 import type { AppTabScreenParamList } from './AppTabScreen'
+import type { AppScreenParamList } from './AppTabsScreen'
 const { markAllAsViewed } = notificationsActions
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
