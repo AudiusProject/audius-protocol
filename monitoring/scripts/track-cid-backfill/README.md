@@ -4,6 +4,18 @@
 
 Build a mapping of trackBlockchainId,copy320
 
+# To Run
+
+Run the script to fetch the trackid to cid mapping run
+```
+npm run start
+```
+
+to run the python script to combine the csvs into one mega-csv for the migration, run
+```
+cd python && pipenv run python3 main.py
+```
+
 # Steps
 
 * get all content nodes
