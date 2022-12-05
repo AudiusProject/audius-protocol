@@ -20,12 +20,13 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import DeprecatedText from 'app/components/text'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
+import { Text } from '../core'
 import { ToastContext } from '../toast/ToastContext'
 
 import { ShareToStorySticker } from './ShareToStorySticker'
@@ -65,10 +66,10 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingBottom: 16
   },
   titleText: {
-    fontSize: 18
+    textTransform: 'uppercase'
   },
   titleIcon: {
-    marginRight: 8
+    marginRight: spacing(3)
   },
   row: {
     flexDirection: 'row',
@@ -95,7 +96,8 @@ export const ShareDrawer = () => {
     FeatureFlags.SHARE_TO_STORY
   )
 
-  const { primary, secondary, neutral, staticTwitterBlue } = useThemeColors()
+  const { primary, secondary, neutralLight2, staticTwitterBlue } =
+    useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
   const dispatch = useDispatch()
@@ -274,13 +276,18 @@ export const ShareDrawer = () => {
           <View style={styles.title}>
             <IconShare
               style={styles.titleIcon}
-              fill={neutral}
+              fill={neutralLight2}
               height={18}
               width={20}
             />
-            <DeprecatedText weight='bold' style={styles.titleText}>
+            <Text
+              weight='heavy'
+              color='neutralLight2'
+              fontSize='xl'
+              style={styles.titleText}
+            >
               {messages.modalTitle(shareType)}
-            </DeprecatedText>
+            </Text>
           </View>
         )}
         styles={{ row: styles.row }}

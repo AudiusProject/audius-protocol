@@ -25,5 +25,8 @@ export const messages = {
     `Check out ${albumName} by ${handle} @AudiusProject #Audius`,
   playlistShareText: (playlistName: string, handle: string) =>
     `Check out ${playlistName} by ${handle} @AudiusProject #Audius`,
+  loadingStoryModalTitle: 'Generating Story',
+  loadingInstagramStorySubtitle: 'Preparing to open Instagram',
+  cancel: 'Cancel',
   nftPlaylistShareText: ''
 }
