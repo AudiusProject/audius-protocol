@@ -33,12 +33,12 @@ const igUserFields = [
   'edge_follow'
 ]
 
-type InstagramAuthProps = {
+export type InstagramAuthProps = {
   dialogWidth?: number
   dialogHeight?: number
   setProfileUrl: string
   getUserUrl: string
-  onClick: () => void
+  onClick?: () => void
   onSuccess: (uuid: string, profile: any) => void
   onFailure: (error: any) => void
   style?: object

@@ -8,7 +8,8 @@ import {
   InstagramProfile,
   AccountImage,
   TwitterProfile,
-  accountActions
+  accountActions,
+  TikTokProfile
 } from '@audius/common'
 import {
   push as pushRoute,
@@ -386,6 +387,18 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     }
   }
 
+  setTikTokProfile = (
+    tikTokId: string,
+    profile: TikTokProfile,
+    profileImg?: AccountImage,
+    skipEdit?: boolean
+  ) => {
+    this.props.setTikTokProfile(tikTokId, profile, profileImg)
+    if (skipEdit) {
+      this.onNextPage()
+    }
+  }
+
   onMetaMaskSignIn = () => {
     this.props.goToRoute(FEED_PAGE)
     window.location.reload()
@@ -447,6 +460,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onViewSignUp: this.onViewSignUp,
       setTwitterProfile: this.setTwitterProfile,
       setInstagramProfile: this.setInstagramProfile,
+      setTikTokProfile: this.setTikTokProfile,
       validateHandle: this.props.validateHandle,
       onMetaMaskSignIn: this.onMetaMaskSignIn,
       recordTwitterStart: this.onRecordTwitterStart,
@@ -507,6 +521,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         signOnAction.setInstagramProfile(instagramId, profile, profileImage)
       ),
+    setTikTokProfile: (
+      tikTokId: string,
+      profile: TikTokProfile,
+      profileImage?: AccountImage
+    ) =>
+      dispatch(signOnAction.setTikTokProfile(tikTokId, profile, profileImage)),
     validateEmail: (email: string) =>
       dispatch(signOnAction.validateEmail(email)),
     validateHandle: (

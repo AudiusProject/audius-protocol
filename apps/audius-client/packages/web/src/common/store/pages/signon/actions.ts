@@ -4,7 +4,8 @@ import {
   AccountImage,
   InstagramProfile,
   TwitterProfile,
-  NativeAccountImage
+  NativeAccountImage,
+  TikTokProfile
 } from '@audius/common'
 
 import { UiErrorCode } from 'store/errors/actions'
@@ -43,6 +44,8 @@ export const SET_TWITTER_PROFILE = 'SIGN_ON/SET_TWITTER_PROFILE'
 export const SET_TWITTER_PROFILE_ERROR = 'SIGN_ON/SET_TWITTER_PROFILE_ERROR'
 export const SET_INSTAGRAM_PROFILE = 'SIGN_ON/SET_INSTAGRAM_PROFILE'
 export const SET_INSTAGRAM_PROFILE_ERROR = 'SIGN_ON/SET_INSTAGRAM_PROFILE_ERROR'
+export const SET_TIKTOK_PROFILE = 'SIGN_ON/SET_TIKTOK_PROFILE'
+export const SET_TIKTOK_PROFILE_ERROR = 'SIGN_ON/SET_TIKTOK_PROFILE_ERROR'
 
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
 export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
@@ -306,6 +309,23 @@ export function setInstagramProfile(
 
 export function setInstagramProfileError(error: string) {
   return { type: SET_INSTAGRAM_PROFILE_ERROR, error }
+}
+
+export function setTikTokProfile(
+  tikTokId: string,
+  profile: TikTokProfile,
+  profileImage?: AccountImage | NativeAccountImage | null
+) {
+  return {
+    type: SET_TIKTOK_PROFILE,
+    tikTokId,
+    profile,
+    profileImage
+  }
+}
+
+export function setTikTokProfileError(error: string) {
+  return { type: SET_TIKTOK_PROFILE_ERROR, error }
 }
 
 /**

@@ -1,4 +1,8 @@
-import { InstagramProfile, TwitterProfile } from 'store/account/types'
+import {
+  InstagramProfile,
+  TikTokProfile,
+  TwitterProfile
+} from 'store/account/types'
 
 export const MAX_HANDLE_LENGTH = 16
 export const MAX_DISPLAY_NAME_LENGTH = 32
@@ -114,6 +118,55 @@ export const formatInstagramProfile = async (
   return {
     profile: instagramProfile,
     profileImage,
+    requiresUserReview
+  }
+}
+
+export const formatTikTokProfile = async (
+  tikTokProfile: TikTokProfile,
+  resizeImage: (
+    image: File,
+    maxWidth?: number,
+    square?: boolean,
+    key?: string
+  ) => Promise<File>
+) => {
+  const getProfilePicture = async () => {
+    if (tikTokProfile.avatar_large_url) {
+      const imageBlob = await fetch(tikTokProfile.avatar_large_url).then((r) =>
+        r.blob()
+      )
+      const artworkFile = new File([imageBlob], 'Artwork', {
+        type: 'image/jpeg'
+      })
+      const file = await resizeImage(artworkFile)
+      const url = URL.createObjectURL(file)
+      return { url, file }
+    }
+
+    return undefined
+  }
+
+  const profilePicture = await getProfilePicture()
+
+  // Truncate to MAX_HANDLE_LENGTH characters because we don't support longer handles.
+  // If the user is verifed, they won't be able to claim the status if
+  // the handle doesn't match, so just pass through.
+  let requiresUserReview = false
+  if (tikTokProfile.display_name.length > MAX_HANDLE_LENGTH) {
+    requiresUserReview = true
+    if (!tikTokProfile.is_verified) {
+      tikTokProfile.display_name = tikTokProfile.display_name.slice(
+        0,
+        MAX_HANDLE_LENGTH
+      )
+    }
+  }
+
+  return {
+    profile: tikTokProfile,
+    profileImage: profilePicture,
+    profileBanner: undefined,
     requiresUserReview
   }
 }

@@ -7,6 +7,7 @@ import {
   SET_VALUE_FIELD,
   SET_TWITTER_PROFILE,
   SET_INSTAGRAM_PROFILE,
+  SET_TIKTOK_PROFILE,
   FETCH_FOLLOW_ARTISTS_SUCCEEDED,
   SET_FOLLOW_ARTIST_CATEGORY,
   VALIDATE_EMAIL,
@@ -59,6 +60,8 @@ const initialState = {
   twitterScreenName: '',
   instagramId: '',
   instagramScreenName: '',
+  tikTokId: '',
+  tikTokScreenName: '',
   profileImage: null, // Object with file blob & url
   coverPhoto: null, // Object with file blob & url
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
@@ -220,6 +223,24 @@ const actionsMap = {
         value: action.profile.username
       },
       instagramScreenName: action.profile.username,
+      profileImage: action.profileImage || null,
+      verified: action.profile.is_verified
+    }
+  },
+  [SET_TIKTOK_PROFILE](state, action) {
+    return {
+      ...state,
+      tikTokProfile: action.tikTokProfile,
+      name: {
+        value: action.profile.display_name || '',
+        status: 'editing',
+        error: ''
+      },
+      handle: {
+        ...state.handle,
+        value: action.profile.display_name
+      },
+      tikTokScreenName: action.profile.display_name,
       profileImage: action.profileImage || null,
       verified: action.profile.is_verified
     }
