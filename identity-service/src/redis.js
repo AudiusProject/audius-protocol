@@ -1,6 +1,10 @@
 const Redis = require('ioredis')
 const config = require('./config.js')
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+const redisClient = new Redis(
+  config.get('redisPort'),
+  config.get('redisHost'),
+  { showFriendlyErrorStack: config.get('environment') !== 'production' }
+)
 const { logger } = require('./logging')
 
 /**
