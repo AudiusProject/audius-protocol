@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
+import { make, track } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { getDominantColors } from 'app/services/threads/getDominantColors'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -33,6 +34,7 @@ import {
   setProgress
 } from 'app/store/share-to-story-progress/slice'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
 import { convertRGBToHex } from 'app/utils/convertRGBtoHex'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
@@ -61,6 +63,10 @@ export const useShareToStory = ({
   const cancelRef = useRef(false)
   const [shouldRenderShareToStorySticker, setShouldRenderShareToStorySticker] =
     useState(false)
+  const trackTitle =
+    content?.type === 'track' ? content?.track.title : undefined
+  const artistHandle =
+    content?.type === 'track' ? content?.artist.handle : undefined
 
   const { source: trackImageSource } = useTrackImage(
     content?.type === 'track' ? content.track : null
@@ -121,20 +127,43 @@ export const useShareToStory = ({
         name
       })
       toast({ content: messages.shareToStoryError, type: 'error' })
+      track(
+        make({
+          eventName: EventNames.SHARE_TO_IG_STORY_ERROR,
+          title: trackTitle,
+          artist: artistHandle,
+          error: `${name ? `${name} - ` : ''}${error.message}`
+        })
+      )
       cleanup()
     },
-    [cleanup, toast]
+    [artistHandle, cleanup, toast, trackTitle]
   )
 
   const cancelStory = useCallback(async () => {
     cancelRef.current = true
     cancelRequestedEventEmitter.emit(CANCEL_REQUESTED_EVENT)
     await FFmpegKit.cancel()
+    track(
+      make({
+        eventName: EventNames.SHARE_TO_IG_STORY_CANCELLED,
+        title: trackTitle,
+        artist: artistHandle
+      })
+    )
     cleanup()
-  }, [cleanup])
+  }, [artistHandle, cleanup, trackTitle])
 
   const generateStory = useCallback(async () => {
     if (content?.type === 'track') {
+      track(
+        make({
+          eventName: EventNames.SHARE_TO_IG_STORY,
+          title: content.track.title,
+          artist: content.artist.handle
+        })
+      )
+
       // Reset any stale values:
       dispatch(reset())
       cancelRef.current = false
@@ -263,6 +292,14 @@ export const useShareToStory = ({
       } finally {
         cleanup()
       }
+
+      track(
+        make({
+          eventName: EventNames.SHARE_TO_IG_STORY_SUCCESS,
+          title: content.track.title,
+          artist: content.artist.handle
+        })
+      )
     }
   }, [
     trackImageUri,
