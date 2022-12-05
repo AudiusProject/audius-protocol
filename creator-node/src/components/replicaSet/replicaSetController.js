@@ -23,7 +23,7 @@ const {
 const {
   getSyncStatus,
   setSyncStatus,
-  checkSyncOverride
+  verifySPOverride
 } = require('../../services/sync/syncUtil')
 const {
   enqueueSync,
@@ -102,7 +102,7 @@ const _syncRouteController = async (req, _res) => {
   const blockNumber = req.body.blockNumber // integer
   const syncOverridePassword = req.body.syncOverridePassword
 
-  const syncOverride = checkSyncOverride(syncOverridePassword)
+  const syncOverride = verifySPOverride(syncOverridePassword)
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -269,8 +269,10 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { nodeConfig: config } = serviceRegistry
 
-  const isRouteEnabled = config.get('devMode')
-  if (!isRouteEnabled) {
+  const overridePassword = req.body.overridePassword
+  const override = verifySPOverride(overridePassword)
+
+  if (!override || !config.get('devMode')) {
     return errorResponseBadRequest('This route is disabled')
   }
 

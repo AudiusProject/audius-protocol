@@ -187,15 +187,15 @@ export function getMaxSyncMonitoringMs(syncType: string) {
     : maxSyncMonitoringDurationInMs
 }
 
-export function checkSyncOverride(syncOverridePassword: string): boolean {
-  const syncOverridePasswordConfig = config.get('syncOverridePassword')
+export function checkSyncOverride(overridePassword: string): boolean {
+  const overridePasswordConfig = config.get('overridePassword')
   const spID = config.get('spID')
 
   const foundationNodeSPIDs = [1, 2, 3, 4, 27]
 
   return (
     foundationNodeSPIDs.includes(spID) &&
-    syncOverridePasswordConfig &&
-    syncOverridePasswordConfig === syncOverridePassword
+    overridePasswordConfig && // ensure non-null
+    overridePasswordConfig === overridePassword
   )
 }
