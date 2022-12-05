@@ -835,10 +835,10 @@ const config = convict({
     env: 'reconfigSPIdBlacklistString',
     default: '1,4,5,9,10,21,27,33,39,43,52,58,62'
   },
-  syncOverridePassword: {
-    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+  overridePassword: {
+    doc: 'Used to allow manual actions to be issued on foundation nodes only',
     format: String,
-    env: 'syncOverridePassword',
+    env: 'overridePassword',
     default: '',
     sensitive: true
   },
