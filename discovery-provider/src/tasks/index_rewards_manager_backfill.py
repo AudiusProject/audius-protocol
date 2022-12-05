@@ -455,7 +455,7 @@ def get_transaction_signatures(
                     logger.error(
                         f"No transactions found before {earliest_processed_sig}, but there should be."
                     )
-                    break
+                break
             else:
                 logger.info(
                     f"index_rewards_manager_backfill.py | adding to batch: starting with slot {transactions_array[0]['slot']}"
