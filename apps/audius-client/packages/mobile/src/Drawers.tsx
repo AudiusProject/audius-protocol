@@ -29,6 +29,7 @@ import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 import { ConfirmRemoveWalletDrawer } from './components/confirm-remove-wallet-drawer'
 import { useDrawerState } from './components/drawer'
 import { DeleteConfirmationDrawer } from './components/drawers/DeleteConfirmationDrawer'
+import { ShareToStoryProgressDrawer } from './components/share-drawer/useShareToStory'
 import { VipDiscordDrawer } from './components/vip-discord-drawer'
 import { useDrawer } from './hooks/useDrawer'
 import type { Drawer } from './store/drawers/slice'
@@ -97,7 +98,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteConfirmation: DeleteConfirmationDrawer,
-  ConfirmRemoveWallet: ConfirmRemoveWalletDrawer
+  ConfirmRemoveWallet: ConfirmRemoveWalletDrawer,
+  ShareToStoryProgress: ShareToStoryProgressDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

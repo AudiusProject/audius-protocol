@@ -29,6 +29,8 @@ import offlineDownloads from './offline-downloads/slice'
 import rootSaga from './sagas'
 import type { SearchState } from './search/reducer'
 import search from './search/reducer'
+import shareToStoryProgress from './share-to-story-progress/slice'
+import type { ShareToStoryProgressState } from './share-to-story-progress/slice'
 import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
@@ -49,6 +51,7 @@ export type AppState = {
   search: SearchState
   mobileUi: MobileUiState
   walletConnect: WalletConnectState
+  shareToStoryProgress: ShareToStoryProgressState
 }
 
 const commonStoreReducers = commonReducers()
@@ -70,7 +73,8 @@ const createRootReducer = () =>
     remoteConfig,
     search,
     mobileUi,
-    walletConnect
+    walletConnect,
+    shareToStoryProgress
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })
