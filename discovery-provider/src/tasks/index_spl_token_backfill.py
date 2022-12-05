@@ -429,7 +429,7 @@ def process_spl_token_tx(
                 logger.error(
                     f"No transactions found before {earliest_processed_sig}, but there should be."
                 )
-                break
+            break
         else:
             logger.info(
                 f"index_spl_token_backfill.py | adding to batch: newest slot {transactions_array[0]['slot']}"
