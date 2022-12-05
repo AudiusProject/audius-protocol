@@ -1306,7 +1306,11 @@ class LatestTrack(Resource):
         description="""Gets the most recent track on Audius""",
     )
     def get(self):
-        latest = get_latest_entities("track")
+        args = {
+            "limit": 1,
+            "offset": 0
+        }
+        latest = get_latest_entities("track", args)
         return success_response(latest)
 
 
