@@ -118,7 +118,6 @@
   font-family: var(--font-family);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
-  flex: 1 0;
 }
 
 .disabled .artistName :global(.ant-popover-open):hover {
