@@ -54,80 +54,84 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           screens: {
             App: {
               screens: {
-                feed: {
-                  initialRouteName: 'Feed',
+                AppTabs: {
                   screens: {
-                    WalletConnect: {
-                      initialRouteName: 'Wallets',
+                    feed: {
+                      initialRouteName: 'Feed',
                       screens: {
-                        Wallets: 'wallets'
+                        Feed: 'feed',
+                        Collection: ':handle/collection/:collectionName',
+                        Track: 'track/:handle/:slug',
+                        Profile: {
+                          path: ':handle',
+                          screens: {
+                            Tracks: 'tracks',
+                            Albums: 'albums',
+                            Playlists: 'playlists',
+                            Reposts: 'reposts',
+                            Collectibles: 'collectibles'
+                          }
+                        } as any // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
                       }
                     },
-                    Feed: 'feed',
-                    Collection: ':handle/collection/:collectionName',
-                    Track: 'track/:handle/:slug',
-                    Profile: {
-                      path: ':handle',
+                    trending: {
+                      initialRouteName: 'Trending',
                       screens: {
-                        Tracks: 'tracks',
-                        Albums: 'albums',
-                        Playlists: 'playlists',
-                        Reposts: 'reposts',
-                        Collectibles: 'collectibles'
+                        Trending: 'trending'
                       }
-                    } as any, // Nested navigator typing with own params is broken, see: https://github.com/react-navigation/react-navigation/issues/9897
-                    Upload: {
-                      path: 'upload'
+                    },
+                    explore: {
+                      initialRouteName: 'Explore',
+                      screens: {
+                        Explore: 'explore',
+                        TrendingPlaylists: 'explore/playlists',
+                        TrendingUnderground: 'explore/underground',
+                        LetThemDJ: 'explore/let-them-dj',
+                        TopAlbums: 'explore/top-albums',
+                        UnderTheRadar: 'explore/under-the-radar',
+                        BestNewReleases: 'explore/best-new-releases',
+                        Remixables: 'explore/remixables',
+                        MostLoved: 'explore/most-loved',
+                        FeelingLucky: 'explore/feeling-lucky',
+                        HeavyRotation: 'explore/heavy-rotation',
+                        ChillPlaylists: 'explore/chill',
+                        IntensePlaylists: 'explore/intense',
+                        IntimatePlaylists: 'explore/intimate',
+                        ProvokingPlaylists: 'explore/provoking',
+                        UpbeatPlaylists: 'explore/upbeat'
+                      }
+                    },
+                    favorites: {
+                      screens: {
+                        Favorites: 'favorites'
+                      }
+                    },
+                    profile: {
+                      screens: {
+                        UserProfile: {
+                          path: 'profile',
+                          screens: {
+                            Tracks: 'tracks',
+                            Albums: 'albums',
+                            Playlists: 'playlists',
+                            Reposts: 'reposts',
+                            Collectibles: 'collectibles'
+                          }
+                        },
+                        SettingsScreen: {
+                          path: 'settings'
+                        }
+                      }
                     }
                   }
                 },
-                trending: {
-                  initialRouteName: 'Trending',
-                  screens: {
-                    Trending: 'trending'
-                  }
+                Upload: {
+                  path: 'upload'
                 },
-                explore: {
-                  initialRouteName: 'Explore',
+                WalletConnect: {
+                  initialRouteName: 'Wallets',
                   screens: {
-                    Explore: 'explore',
-                    TrendingPlaylists: 'explore/playlists',
-                    TrendingUnderground: 'explore/underground',
-                    LetThemDJ: 'explore/let-them-dj',
-                    TopAlbums: 'explore/top-albums',
-                    UnderTheRadar: 'explore/under-the-radar',
-                    BestNewReleases: 'explore/best-new-releases',
-                    Remixables: 'explore/remixables',
-                    MostLoved: 'explore/most-loved',
-                    FeelingLucky: 'explore/feeling-lucky',
-                    HeavyRotation: 'explore/heavy-rotation',
-                    ChillPlaylists: 'explore/chill',
-                    IntensePlaylists: 'explore/intense',
-                    IntimatePlaylists: 'explore/intimate',
-                    ProvokingPlaylists: 'explore/provoking',
-                    UpbeatPlaylists: 'explore/upbeat'
-                  }
-                },
-                favorites: {
-                  screens: {
-                    Favorites: 'favorites'
-                  }
-                },
-                profile: {
-                  screens: {
-                    UserProfile: {
-                      path: 'profile',
-                      screens: {
-                        Tracks: 'tracks',
-                        Albums: 'albums',
-                        Playlists: 'playlists',
-                        Reposts: 'reposts',
-                        Collectibles: 'collectibles'
-                      }
-                    },
-                    SettingsScreen: {
-                      path: 'settings'
-                    }
+                    Wallets: 'wallets'
                   }
                 }
               }
@@ -142,10 +146,12 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       const walletConnectPath = /^\/(wallet-connect)/
       if (path.match(walletConnectPath)) {
+        console.log('okay this is happening?', path)
         path = `${path.replace(
           walletConnectPath,
           '/wallets'
         )}&path=wallet-connect`
+        console.log('path now..', path)
       }
 
       const walletSignPath = /^\/(wallet-sign-message)/

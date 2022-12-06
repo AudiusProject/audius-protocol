@@ -30,11 +30,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingHorizontal: spacing(6),
     paddingVertical: spacing(2)
   },
-  label: {
-    marginTop: spacing(1)
-  },
   dateText: {
-    marginTop: spacing(1),
     textTransform: 'uppercase'
   },
   datePickerModal: {
@@ -94,11 +90,13 @@ export const ReleaseDateField = () => {
 
   const handleChange = useCallback(
     (selectedDate: Date) => {
+      // This must be called first to prevent android date-picker
+      // from showing up twice
+      handleClose()
       const dateString = moment(selectedDate).toString()
       if (dateString) {
         onChange('release_date')(dateString)
       }
-      handleClose()
     },
     [onChange, handleClose]
   )
@@ -106,7 +104,7 @@ export const ReleaseDateField = () => {
   return (
     <>
       <TouchableOpacity style={styles.root} onPress={handlePress}>
-        <Text fontSize='large' weight='demiBold' style={styles.label}>
+        <Text fontSize='large' weight='demiBold'>
           {messages.label}
         </Text>
         <Pill>

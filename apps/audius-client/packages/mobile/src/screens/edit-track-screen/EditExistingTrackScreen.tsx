@@ -14,7 +14,8 @@ const { getTrack } = cacheTracksSelectors
 const { editTrack } = cacheTracksActions
 
 const messages = {
-  title: 'Edit Track'
+  title: 'Edit Track',
+  save: 'Save Changes'
 }
 
 export const EditExistingTrackScreen = () => {
@@ -48,6 +49,7 @@ export const EditExistingTrackScreen = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       title={messages.title}
+      doneText={messages.save}
     />
   )
 }

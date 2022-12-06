@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import type { TextProps as RNTextProps, TextStyle } from 'react-native'
-import { Text as RNText } from 'react-native'
+import { Platform, Text as RNText } from 'react-native'
 import type { SetRequired } from 'type-fest'
 
 import type { FontSize, FontWeight, typography } from 'app/styles'
@@ -61,7 +61,7 @@ const useStyles = makeStyles<StyleConfig>(
             fontFamily: typography.fontByWeight[weight],
             // Fix for demibold's weird positioning
             marginTop:
-              weight === 'demiBold'
+              weight === 'demiBold' && Platform.OS === 'ios'
                 ? spacing(
                     fontSize === 'large' ? 1 : fontSize === 'small' ? 0.5 : 0
                   )
