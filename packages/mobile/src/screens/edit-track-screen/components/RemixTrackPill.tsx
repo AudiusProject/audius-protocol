@@ -1,5 +1,6 @@
 import type { Track, User } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
 import { Pill, Text } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
@@ -29,10 +30,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     overflow: 'hidden',
     borderColor: palette.neutralLight9
   },
+  trackTextContainer: {
+    flex: 1
+  },
   trackText: {
     fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.demiBold,
-    marginTop: spacing(1)
+    fontFamily: typography.fontByWeight.demiBold
   },
   byText: {
     color: palette.neutralLight2
@@ -46,13 +49,15 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
   return (
     <Pill style={[styles.trackPill, style]}>
       <TrackImage track={track} style={styles.trackArtwork} />
-      <Text style={styles.trackText}>
-        {track.title}{' '}
-        <Text style={[styles.trackText, styles.byText]}>
-          {messages.trackBy}
-        </Text>{' '}
-        {user.name}
-      </Text>
+      <View style={styles.trackTextContainer}>
+        <Text style={styles.trackText} numberOfLines={1} ellipsizeMode='middle'>
+          {track.title}{' '}
+          <Text style={[styles.trackText, styles.byText]}>
+            {messages.trackBy}{' '}
+          </Text>
+          <Text style={styles.trackText}>{user.name} </Text>
+        </Text>
+      </View>
       <UserBadges user={user} hideName />
     </Pill>
   )

@@ -9,7 +9,8 @@ import { EditTrackScreen } from '../../edit-track-screen'
 import type { UploadParamList, UploadRouteProp } from '../types'
 
 const messages = {
-  title: 'Complete Track'
+  title: 'Complete Track',
+  done: 'Upload Track'
 }
 
 export type CompleteTrackParams = UploadTrack
@@ -34,6 +35,7 @@ export const CompleteTrackScreen = () => {
       onSubmit={handleSubmit}
       title={messages.title}
       url='/complete-track'
+      doneText={messages.done}
     />
   )
 }

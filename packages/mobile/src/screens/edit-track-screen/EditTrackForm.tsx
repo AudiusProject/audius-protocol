@@ -33,7 +33,6 @@ import type { EditTrackFormProps } from './types'
 const messages = {
   trackName: 'Track Name',
   trackNameError: 'Track Name Required',
-  continue: 'Continue',
   fixErrors: 'Fix Errors To Continue'
 }
 
@@ -55,7 +54,15 @@ const useStyles = makeStyles(({ spacing }) => ({
 export type EditTrackParams = UploadTrack
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { handleSubmit, isSubmitting, errors, touched, dirty, title } = props
+  const {
+    handleSubmit,
+    isSubmitting,
+    errors,
+    touched,
+    dirty,
+    title,
+    doneText
+  } = props
   const errorsKeys = Object.keys(errors)
   const hasErrors =
     errorsKeys.length > 0 && errorsKeys.every((errorKey) => touched[errorKey])
@@ -101,7 +108,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             size='large'
             icon={IconArrow}
             fullWidth
-            title={messages.continue}
+            title={doneText}
             onPress={() => {
               handleSubmit()
             }}

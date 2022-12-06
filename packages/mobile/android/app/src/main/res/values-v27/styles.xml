@@ -12,6 +12,17 @@
         <!-- Disable auto contrasted system bars background -->
         <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+
+        <item name="android:datePickerDialogTheme">@style/CalendarDatePickerDialog</item>
+    </style>
+
+    <style name="CalendarDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:headerBackground">@color/colorPrimary</item>
+        <item name="android:colorControlNormal">@color/colorPrimary</item>
+        <item name="android:colorControlHighlight">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:textColorPrimary">@color/colorPrimary</item>
     </style>
 
     <!-- BootTheme should inherit from Theme.SplashScreen -->
@@ -20,7 +31,7 @@
         <item name="windowSplashScreenAnimatedIcon">@mipmap/bootsplash_logo</item>
         <item name="postSplashScreenTheme">@style/AppTheme</item>
 
-        
+
         <!-- Bars initial styles: true = dark-content, false = light-content -->
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>

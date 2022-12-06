@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import type { ViewStyle } from 'react-native'
-import { View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableOpacity, View } from 'react-native'
 
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import { Divider, Text } from 'app/components/core'
