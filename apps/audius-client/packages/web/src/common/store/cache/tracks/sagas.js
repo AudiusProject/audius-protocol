@@ -34,7 +34,7 @@ import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { dominantColor } from 'utils/imageProcessingUtil'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
@@ -170,7 +170,7 @@ function* confirmEditTrack(
   isNowListed,
   currentTrack
 ) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
   yield put(
@@ -257,7 +257,7 @@ function* watchEditTrack() {
 
 function* deleteTrackAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -302,7 +302,7 @@ function* deleteTrackAsync(action) {
 }
 
 function* confirmDeleteTrack(trackId) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
   yield put(

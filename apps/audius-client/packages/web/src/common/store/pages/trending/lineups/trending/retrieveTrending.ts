@@ -12,11 +12,12 @@ import {
   trendingPageSelectors,
   getContext
 } from '@audius/common'
+import { keccak_256 } from 'js-sha3'
 import { call, put, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { AppState } from 'store/types'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
 const { getTrendingEntries } = trendingPageLineupSelectors
@@ -37,11 +38,9 @@ export function* retrieveTrending({
   limit,
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const web3 = yield call(audiusBackendInstance.getWeb3)
 
   yield call(remoteConfigInstance.waitForRemoteConfig)
   const TF = new Set(
@@ -75,7 +74,7 @@ export function* retrieveTrending({
 
   if (TF.size > 0) {
     apiTracks = apiTracks.filter((t) => {
-      const shaId = web3.utils.sha3(t.track_id.toString())
+      const shaId = keccak_256(t.track_id.toString())
       return !TF.has(shaId)
     })
   }

@@ -48,7 +48,7 @@ import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
@@ -154,7 +154,7 @@ function* fetchFollowArtistGenre(followArtistCategory) {
 }
 
 function* fetchReferrer(action) {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { handle } = action
   if (handle) {

@@ -15,7 +15,7 @@ import { select, call, takeEvery, put } from 'redux-saga/effects'
 
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup } = profilePageSelectors
@@ -24,7 +24,7 @@ const { getCollections } = cacheCollectionsSelectors
 const { getUserId, getUserHandle } = accountSelectors
 
 function* getReposts({ offset, limit, handle }) {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
 
   const profileId = yield select((state) => getProfileUserId(state, handle))
 

@@ -63,7 +63,7 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const {
   calculateAudioPurchaseInfo,
@@ -961,7 +961,7 @@ function* recoverPurchaseIfNecessary() {
   let recoveredAudio: null | number = null
   try {
     // Bail if not enabled
-    yield* call(waitForBackendAndAccount)
+    yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     if (!getFeatureEnabled(FeatureFlags.BUY_AUDIO_ENABLED)) {
       return

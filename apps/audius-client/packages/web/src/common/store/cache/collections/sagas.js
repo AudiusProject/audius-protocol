@@ -34,7 +34,7 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 import { reformat } from './utils'
 import {
@@ -64,7 +64,7 @@ function* watchCreatePlaylist() {
 }
 
 function* createPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   // Potentially grab artwork from the initializing track.
   if (action.initTrackId) {
     const track = yield select(getTrack, { id: action.initTrackId })
@@ -288,7 +288,7 @@ function* watchEditPlaylist() {
 }
 
 function* editPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   action.formFields.description = squashNewLines(action.formFields.description)
 
   const userId = yield select(getUserId)
@@ -403,7 +403,7 @@ function* watchAddTrackToPlaylist() {
 }
 
 function* addTrackToPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -588,7 +588,7 @@ function* watchRemoveTrackFromPlaylist() {
 }
 
 function* removeTrackFromPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -650,7 +650,7 @@ function* removeTrackFromPlaylistAsync(action) {
 
 // Removes the invalid track ids from the playlist by calling `dangerouslySetPlaylistOrder`
 function* fixInvalidTracksInPlaylist(playlistId, userId, invalidTrackIds) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
   const removedTrackIds = new Set(invalidTrackIds)
@@ -794,7 +794,7 @@ function* watchOrderPlaylist() {
 }
 
 function* orderPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -933,7 +933,7 @@ function* watchPublishPlaylist() {
 }
 
 function* publishPlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))
@@ -1023,7 +1023,7 @@ function* watchDeletePlaylist() {
 }
 
 function* deletePlaylistAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const userId = yield select(getUserId)
   if (!userId) {
     yield put(signOnActions.openSignOn(false))

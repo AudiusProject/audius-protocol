@@ -20,7 +20,7 @@ import { processAndCacheCollections } from 'common/store/cache/collections/utils
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { getFollowIds } from 'common/store/pages/signon/selectors'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { getFeedFilter } = feedPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -39,7 +39,7 @@ function* getTracks({
   offset: number
   limit: number
 }): Generator<any, FeedItem[], any> {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUser = yield select(getAccountUser)
   const filterEnum: FeedFilter = yield select(getFeedFilter)
   const apiClient = yield* getContext('apiClient')

@@ -1,12 +1,12 @@
 import { accountSelectors, getContext } from '@audius/common'
 import { select, call } from 'typed-redux-saga'
 
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const { getUserId } = accountSelectors
 
 export function* getAccountMetadataCID() {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return null

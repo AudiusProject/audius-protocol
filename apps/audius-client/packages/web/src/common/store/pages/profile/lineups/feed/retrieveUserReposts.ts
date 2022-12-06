@@ -9,7 +9,7 @@ import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const getTracksAndCollections = (
   feed: (UserTrackMetadata | UserCollection)[]
@@ -41,7 +41,7 @@ export function* retrieveUserReposts({
   offset,
   limit
 }: RetrieveUserRepostsArgs): Generator<any, Track[], any> {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
   const reposts = yield apiClient.getUserRepostsByHandle({
     handle,

@@ -3,7 +3,7 @@ import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import * as searchActions from './actions'
 import { getSearch } from './selectors'
@@ -11,7 +11,7 @@ import { getSearch } from './selectors'
 const getUserId = accountSelectors.getUserId
 
 export function* getSearchResults(searchText: string) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)

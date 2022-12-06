@@ -12,7 +12,7 @@ import { make } from 'common/store/analytics/actions'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const { afterDeactivationSignOut, deactivateAccount, deactivateAccountFailed } =
   deactivateAccountActions
@@ -24,7 +24,7 @@ const DEACTIVATE_CONFIRMATION_UID = 'DEACTIVATE'
 function* handleDeactivateAccount() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
-    yield* waitForBackendAndAccount()
+    yield* waitForWrite()
 
     const accountUserId = yield* select(getUserId)
     const userMetadata = yield* select(getAccountUser)

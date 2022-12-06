@@ -28,7 +28,7 @@ import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
 const { update: updatePlaylistLibrary } = playlistLibraryActions
@@ -47,7 +47,7 @@ export function* watchRepostCollection() {
 export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -153,7 +153,7 @@ export function* watchUndoRepostCollection() {
 export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -269,7 +269,7 @@ export function* watchSaveSmartCollection() {
 export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -301,7 +301,7 @@ export function* saveSmartCollection(
 export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())

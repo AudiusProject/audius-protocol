@@ -10,7 +10,7 @@ import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 
 import { reformat as reformatUser } from 'common/store/cache/users/utils'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const getAccountUser = accountSelectors.getAccountUser
 
@@ -22,7 +22,7 @@ const getAccountUser = accountSelectors.getAccountUser
 export function* addUsersFromCollections(
   metadataArray: Array<UserCollectionMetadata>
 ) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const accountUser = yield* select(getAccountUser)
   const currentUserId = accountUser?.user_id

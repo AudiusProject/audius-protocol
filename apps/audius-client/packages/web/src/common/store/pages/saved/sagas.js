@@ -15,7 +15,7 @@ import {
 } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
 const { getSaves } = savedPageSelectors
@@ -31,7 +31,7 @@ function* watchFetchSaves() {
   let currentSortDirection = ''
 
   yield takeLatest(actions.FETCH_SAVES, function* (props) {
-    yield waitForBackendAndAccount()
+    yield waitForRead()
     const apiClient = yield getContext('apiClient')
     const account = yield call(waitForValue, getAccountUser)
     const userId = account.user_id
@@ -94,7 +94,7 @@ function* watchFetchSaves() {
 }
 
 function* watchFetchMoreSaves() {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
   const apiClient = yield getContext('apiClient')
   yield takeLatest(actions.FETCH_MORE_SAVES, function* (props) {
     const account = yield call(waitForValue, getAccountUser)

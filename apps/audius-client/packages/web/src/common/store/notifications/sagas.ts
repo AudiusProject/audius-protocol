@@ -48,7 +48,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
 const { fetchReactionValues } = reactionsUIActions
@@ -195,7 +195,7 @@ export function* fetchNotifications(action: FetchNotifications) {
 export function* parseAndProcessNotifications(
   notifications: Notification[]
 ): Generator<any, Notification[], any> {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   /**
    * Parse through the notifications & collect user /track / collection IDs
    * that the notification references to fetch

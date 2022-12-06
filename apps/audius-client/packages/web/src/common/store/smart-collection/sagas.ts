@@ -14,7 +14,7 @@ import { takeEvery, put, call, select } from 'typed-redux-saga'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { requiresAccount } from 'common/utils/requiresAccount'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { EXPLORE_PAGE } from '../../../utils/route'
 
@@ -63,7 +63,7 @@ function* fetchHeavyRotation() {
 
 function* fetchBestNewReleases() {
   const explore = yield* getContext('explore')
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -114,7 +114,7 @@ function* fetchUnderTheRadar() {
 }
 
 function* fetchMostLoved() {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -140,7 +140,7 @@ function* fetchMostLoved() {
 }
 
 function* fetchFeelingLucky() {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
   const explore = yield* getContext('explore')
 
@@ -162,7 +162,7 @@ function* fetchFeelingLucky() {
 
 function* fetchRemixables() {
   const explore = yield* getContext('explore')
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -233,7 +233,7 @@ function* watchFetch() {
   yield takeEvery(
     fetchSmartCollection.type,
     function* (action: ReturnType<typeof fetchSmartCollection>) {
-      yield* waitForBackendAndAccount()
+      yield* waitForRead()
 
       const { variant } = action.payload
 

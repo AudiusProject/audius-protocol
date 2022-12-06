@@ -7,7 +7,7 @@ import {
 import { select } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveTrending } from './retrieveTrending'
 const { getTrendingGenre } = trendingPageSelectors
@@ -23,7 +23,7 @@ const getUserId = accountSelectors.getUserId
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {
-    yield waitForBackendAndAccount()
+    yield waitForRead()
     const genreAtStart = yield select(getTrendingGenre)
     const userId = yield select(getUserId)
     try {

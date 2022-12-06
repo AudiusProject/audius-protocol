@@ -23,7 +23,7 @@ import {
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
 const { SET_ARTIST_PICK } = tracksSocialActions
@@ -35,7 +35,7 @@ const { getUserId, getUserHandle } = accountSelectors
 const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload, handle }) {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
   const currentUserId = yield select(getUserId)
   const profileHandle = handle.toLowerCase()
 
