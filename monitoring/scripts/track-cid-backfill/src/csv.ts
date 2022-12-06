@@ -1,5 +1,6 @@
 
 import fs from 'fs-extra'
+import * as path from 'path'
 import { getEnv } from './config';
 
 const OUTPUT_CSV_PREFIX = "output";
@@ -11,12 +12,12 @@ export async function saveMappingToCSV(
   spid: number
 ) {
   const { nodeEnv } = getEnv()
-  const filename = `${nodeEnv}-csv/${OUTPUT_CSV_PREFIX}-${spid}-${offset}.csv`;
+  const filename = `${nodeEnv || 'local'}-csv/${OUTPUT_CSV_PREFIX}-${spid}-${offset}.csv`;
   console.log(`saving ${Object.keys(mapping).length} items to csv: ${filename}`);
 
-  const stream = fs.createWriteStream(filename, { flags: 'a' })
+  const filepath = path.join(__dirname, '..', filename)
+  const stream = fs.createWriteStream(filepath, { flags: 'a' })
 
-  // console.log(mapping)
   stream.write('track_id,track_cid\n')
   for (const [trackId, copy320] of Object.entries(mapping)) {
     if (copy320 !== undefined && copy320 !== null) {
@@ -30,14 +31,15 @@ export async function saveMappingToCSV(
 // creates a file for the missing batch
 export async function saveMissingBatch(
   offset: number,
-  batchSize: number
+  batchSize: number,
+  spid: number
 ) {
   const { nodeEnv } = getEnv()
-  const filename = `${nodeEnv || 'local'}-missing-batches/${offset}-${batchSize}.txt`;
-  console.log(`saving missing batch for offset ${offset} and batch size ${batchSize} in file: ${filename}`);
+  const filename = `${nodeEnv || 'local'}-missing-batches/missing-batches.txt`;
+  console.log(`saving missing batch for spid ${spid} for offset ${offset} and batch size ${batchSize} in file: ${filename}`);
 
-  const stream = fs.createWriteStream(filename, { flags: 'a' })
-  stream.write('offset,batch_size\n')
-  stream.write(`${offset},${batchSize}\n`)
+  const filepath = path.join(__dirname, '..', filename)
+  const stream = fs.createWriteStream(filepath, { flags: 'a' })
+  stream.write(`${spid},${offset},${batchSize}\n`)
   stream.end()
 }

@@ -2,10 +2,10 @@ import { getTrackIdToCIDMapping } from "./content";
 import { saveMappingToCSV, saveMissingBatch } from "./csv";
 import { closeDBConnection, verifyDBConnection } from "./db";
 import { 
-  dumpTrackIds,
-  getAllContentNodes, 
-  getTrackCount, 
-  getTrackIdBatch 
+  // dumpTrackIds,
+  getAllContentNodes,
+  getTrackCount,
+  getTrackIdBatch
 } from "./queries";
 
 const BATCH_SIZE = 10_000;
@@ -24,13 +24,14 @@ async function main() {
   //   },
   // ];
   console.log(`[INFO] content nodes: ${contentNodes.length}`);
+  const sortedContentNodes = contentNodes.sort((x,y) => x.spid - y.spid)
 
-  await dumpTrackIds()
+  // await dumpTrackIds()
 
   const trackCount = await getTrackCount();
   console.log(`[INFO] track count: ${JSON.stringify(trackCount)}`);
   await Promise.all(
-    contentNodes.map(async ({ spid, endpoint }) => {
+    sortedContentNodes.map(async ({ spid, endpoint }) => {
       for (let offset = 0; offset < trackCount; offset += BATCH_SIZE) {
         const trackIdBatch = await getTrackIdBatch(offset, BATCH_SIZE);
         try {
@@ -50,7 +51,7 @@ async function main() {
             // getTrackIdToCIDMapping caught an error
             // so we save the missing batch in a csv to later be able to
             // try again for those batches
-            await saveMissingBatch(offset, BATCH_SIZE)
+            await saveMissingBatch(offset, BATCH_SIZE, spid)
             continue;
           }
 

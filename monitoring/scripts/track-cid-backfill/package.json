@@ -5,6 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "start:stage": "NODE_ENV=staging ts-node src/index.ts",
+    "start:prod": "NODE_ENV=production ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,6 +27,7 @@
     "dotenv": "^16.0.3",
     "fs-extra": "^11.0.0",
     "node-fetch": "^2.6.7",
+    "path": "^0.12.7",
     "pg": "^8.8.0",
     "sequelize": "^6.25.8",
     "umzug": "^3.2.1"
