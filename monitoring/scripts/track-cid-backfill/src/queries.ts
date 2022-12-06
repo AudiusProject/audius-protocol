@@ -53,7 +53,7 @@ export async function getTrackIdBatch(
     FROM tracks
     WHERE is_current = TRUE
     AND track_cid is NULL
-    ORDER BY track_id
+    ORDER BY created_at
     OFFSET :offset
     LIMIT :batchSize; 
     `, {
