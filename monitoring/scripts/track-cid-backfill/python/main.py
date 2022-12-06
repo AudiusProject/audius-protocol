@@ -2,68 +2,54 @@
 import os
 import pandas as pd
 
-csv_path = "/Users/johannes/Repos/cameron/csv"
+csv_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'csv'))
 
 def get_all_csvs():
-
     # Get the list of all files and directories
     dir_list = os.listdir(csv_path)
- 
-    print("Files and directories in '", len(dir_list))
- 
+    print('Num files and directories in', csv_path, 'is', len(dir_list))
     return dir_list
 
 
 def main():
     csvs = get_all_csvs()
 
-    final_boss = None
-
-    for csv in csvs:
-        df = pd.read_csv('../csv/' + csv)
-
-        final_boss = pd.concat([final_boss, df])
-
-    final_boss = final_boss.groupby(final_boss.TrackId).first()
+    final_result = None
+    dfs = [pd.read_csv('../csv/' + csv) for csv in csvs]
+    final_result = pd.concat(dfs).groupby(final_result.TrackId).first()
 
     try: 
-        final_boss.pop('Unnamed: 0')
+        final_result.pop('Unnamed: 0')
     except:
         pass
     
     try:
-        final_boss.pop('Unnamed: 0.1')
+        final_result.pop('Unnamed: 0.1')
     except:
         pass
 
     try:
-        final_boss.pop('Unnamed: 0.2')
+        final_result.pop('Unnamed: 0.2')
     except:
         pass
 
-    final_boss.sort_values(by=['TrackId'])
-
-
-    final_boss.to_csv('../final_boss.csv')
+    final_result = final_result.sort_values(by=['TrackId'])
+    # print(final_result)
+    final_result.to_csv('../final_result.csv')
 
     ############################################
 
-    wtf = pd.read_csv('../final_boss.csv')
+    final_result_read = pd.read_csv('../final_result.csv')
+    # print(final_result_read)
 
-    print(wtf)
-    whatever = pd.read_csv('../all_track_ids.csv').sort_values(by=['track_id'])
+    all_track_ids_read = pd.read_csv('../all_track_ids.csv').sort_values(by=['track_id'])
+    # print(all_track_ids_read)
 
-    # print(final_boss)
-    print(whatever)
+    # print(final_result_read[['TrackId']].compare(all_track_ids_read[['TrackId']]))
+    # print(final_result_read['TrackId'].isnotin(all_track_ids_read['TrackId']).value_counts())
 
-    # print(wtf[['TrackId']].compare(whatever[['TrackId']]))
-    # print(wtf['TrackId'].isnotin(whatever['TrackId']).value_counts())
-    thebads = whatever[~whatever['track_id'].isin(wtf['track_id'])].sort_values(by=['track_id'])
-
+    thebads = all_track_ids_read[~all_track_ids_read['track_id'].isin(final_result_read['track_id'])].sort_values(by=['track_id'])
     thebads.to_csv('../thebads.csv', index=False, header=False)
-
-
-
 
 
 if __name__ == '__main__':
