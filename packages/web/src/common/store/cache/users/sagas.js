@@ -30,7 +30,7 @@ import {
   getStatus
 } from 'common/store/service-selection/selectors'
 import { fetchServicesFailed } from 'common/store/service-selection/slice'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import { pruneBlobValues, reformat } from './utils'
 const { removePlaylistLibraryTempPlaylists } = playlistLibraryHelpers
@@ -42,7 +42,7 @@ const { getAccountUser, getUserId } = accountSelectors
  * If the user is not a creator, upgrade the user to a creator node.
  */
 export function* upgradeToCreator() {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const user = yield select(getAccountUser)
 
@@ -118,7 +118,7 @@ export function* fetchUsers(
 }
 
 function* retrieveUserByHandle(handle, retry) {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
   const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
   if (Array.isArray(handle)) {

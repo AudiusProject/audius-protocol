@@ -21,7 +21,7 @@ import { identify } from 'common/store/analytics/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
 
@@ -283,7 +283,7 @@ export function* reCacheAccount() {
 
 function* associateTwitterAccount(action) {
   const { uuid, profile } = action.payload
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   try {
     const userId = yield select(getUserId)
@@ -337,7 +337,7 @@ function* associateInstagramAccount(action) {
 }
 
 function* fetchSavedAlbumsAsync() {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
   const cachedSavedAlbums = yield select(getAccountAlbumIds)
   if (cachedSavedAlbums.length > 0) {
     yield call(retrieveCollections, null, cachedSavedAlbums)
@@ -345,7 +345,7 @@ function* fetchSavedAlbumsAsync() {
 }
 
 function* fetchSavedPlaylistsAsync() {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
 
   // Fetch other people's playlists you've saved
   yield fork(function* () {

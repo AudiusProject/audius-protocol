@@ -46,6 +46,13 @@ export function* waitForBackendSetup() {
   }
 }
 
+export function* waitForReachability() {
+  const isReachable = yield* select(getIsReachable)
+  if (!isReachable) {
+    yield* all([take(reachabilityActions.SET_REACHABLE)])
+  }
+}
+
 function* awaitReachability() {
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isReachable = yield* select(getIsReachable)

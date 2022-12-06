@@ -25,7 +25,7 @@ import {
 
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const { update } = playlistLibraryActions
 const {
@@ -72,7 +72,7 @@ function* watchUpdatePlaylistLibrary() {
   yield takeEvery(
     update.type,
     function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
-      yield* waitForBackendAndAccount()
+      yield* waitForWrite()
       const { playlistLibrary } = action.payload
 
       const account: User = yield select(getAccountUser)
@@ -113,7 +113,7 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
   yield takeLatest(
     TEMP_PLAYLIST_UPDATE_HELPER,
     function* makeUpdate(action: ReturnType<typeof update>) {
-      yield* waitForBackendAndAccount()
+      yield* waitForWrite()
       const { playlistLibrary: rawPlaylistLibrary } = action.payload
       const playlistLibrary =
         removePlaylistLibraryDuplicates(rawPlaylistLibrary)

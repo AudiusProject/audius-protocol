@@ -11,6 +11,7 @@ import {
   reachabilitySelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
+import { keccak_256 } from 'js-sha3'
 import moment from 'moment'
 import {
   call,
@@ -37,11 +38,9 @@ const { getUsers } = cacheUsersSelectors
 
 export const TRENDING_BADGE_LIMIT = 10
 
-function* watchTrackBadge() {
+function* watchFetchTrackBadge() {
   const apiClient = yield getContext('apiClient')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const web3 = yield call(audiusBackendInstance.getWeb3)
 
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
@@ -57,15 +56,15 @@ function* watchTrackBadge() {
         })
         if (TF.size > 0) {
           trendingRanks.week = trendingRanks.week.filter((i) => {
-            const shaId = web3.utils.sha3(i.toString())
+            const shaId = keccak_256(i.toString())
             return !TF.has(shaId)
           })
           trendingRanks.month = trendingRanks.month.filter((i) => {
-            const shaId = web3.utils.sha3(i.toString())
+            const shaId = keccak_256(i.toString())
             return !TF.has(shaId)
           })
           trendingRanks.year = trendingRanks.year.filter((i) => {
-            const shaId = web3.utils.sha3(i.toString())
+            const shaId = keccak_256(i.toString())
             return !TF.has(shaId)
           })
         }
@@ -267,7 +266,7 @@ export default function sagas() {
     watchFetchTrack,
     watchFetchTrackSucceeded,
     watchRefetchLineup,
-    watchTrackBadge,
+    watchFetchTrackBadge,
     watchTrackPageMakePublic,
     watchGoToRemixesOfParentPage
   ]

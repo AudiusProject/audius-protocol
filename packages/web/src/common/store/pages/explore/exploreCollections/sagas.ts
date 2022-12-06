@@ -9,7 +9,7 @@ import { takeEvery, call, put } from 'typed-redux-saga'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
 
 function* fetchLetThemDJ() {
@@ -49,7 +49,7 @@ const fetchMap = {
 
 function* watchFetch() {
   yield* takeEvery(fetch.type, function* (action: ReturnType<typeof fetch>) {
-    yield* waitForBackendAndAccount()
+    yield* waitForRead()
 
     const { variant, moods } = action.payload
 

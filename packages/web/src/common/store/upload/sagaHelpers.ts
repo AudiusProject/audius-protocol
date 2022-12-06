@@ -3,7 +3,7 @@ import { range } from 'lodash'
 import { all, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
 export function* reportResultEvents({
@@ -19,7 +19,7 @@ export function* reportResultEvents({
   uploadType: 'single_track' | 'multi_track' | 'album' | 'playlist'
   errors: string[]
 }) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
   const primary = accountUser.creator_node_endpoint?.split(',')[0]

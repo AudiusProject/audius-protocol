@@ -13,7 +13,7 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const getUserId = accountSelectors.getUserId
 
@@ -90,7 +90,7 @@ export function* fetchSearchPageTags(action) {
 }
 
 export function* getSearchResults(searchText, kind, limit, offset) {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
 
   const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)

@@ -37,7 +37,7 @@ import {
 } from 'typed-redux-saga'
 
 import { AUDIO_PAGE } from 'utils/route'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
@@ -436,7 +436,7 @@ function* watchClaimChallengeReward() {
 }
 
 function* fetchUserChallengesAsync() {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return

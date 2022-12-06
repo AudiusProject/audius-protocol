@@ -48,7 +48,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -396,7 +396,7 @@ function* watchUpdateProfile() {
 }
 
 export function* updateProfileAsync(action) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
@@ -471,7 +471,7 @@ export function* updateProfileAsync(action) {
 }
 
 function* confirmUpdateProfile(userId, metadata) {
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const apiClient = yield getContext('apiClient')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const localStorage = yield getContext('localStorage')

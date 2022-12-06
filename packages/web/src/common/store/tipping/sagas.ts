@@ -43,7 +43,7 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import { updateTipsStorage } from './storageUtils'
 const { decreaseBalance } = walletActions
@@ -200,7 +200,7 @@ function* sendTipAsync() {
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   const isNativeMobile = yield* getContext('isNativeMobile')
   yield call(waitForRemoteConfig)
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
 
   const device = isNativeMobile ? 'native' : 'web'
 
@@ -319,7 +319,7 @@ function* refreshSupportAsync({
   payload: RefreshSupportPayloadAction
   type: string
 }) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
 
   const supportingParams: GetSupportingArgs = {
@@ -405,7 +405,7 @@ function* fetchSupportingForUserAsync({
   payload: { userId: ID }
   type: string
 }) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
 
   /**

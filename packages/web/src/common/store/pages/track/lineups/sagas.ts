@@ -9,7 +9,7 @@ import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { PREFIX, tracksActions } = trackPageLineupActions
 const { getLineup, getSourceSelector: sourceSelector } = trackPageSelectors
 const { getTrack } = cacheTracksSelectors
@@ -29,7 +29,7 @@ function* getTracks({
   limit?: number
 }) {
   const { ownerHandle, heroTrackPermalink } = payload
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
 
   const lineup = []

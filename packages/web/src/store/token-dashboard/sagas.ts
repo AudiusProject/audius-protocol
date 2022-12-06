@@ -31,7 +31,7 @@ import {
   loadBitski,
   loadWalletConnect
 } from 'services/web3-modal'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchConnectNewWallet } from './connectNewWalletSaga'
 import { getAccountMetadataCID } from './getAccountMetadataCID'
@@ -119,7 +119,7 @@ function* confirmSendAsync() {
 }
 
 function* removeWallet(action: ConfirmRemoveWalletAction) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const removeWallet = action.payload.wallet

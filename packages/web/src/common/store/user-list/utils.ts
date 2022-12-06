@@ -11,7 +11,7 @@ import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 const { getAccountUser, getUserId } = accountSelectors
 
@@ -73,7 +73,7 @@ export function createUserListProvider<T, U = void>({
     currentPage: number
     pageSize: number
   }) {
-    yield* waitForBackendAndAccount()
+    yield* waitForRead()
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const apiClient = yield* getContext('apiClient')
     const existingEntity: T | null = yield* select(getExistingEntity, { id })

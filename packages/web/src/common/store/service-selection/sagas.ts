@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'
 import { getSecondaries, getSelectedServices } from './selectors'
@@ -27,7 +27,7 @@ const getAccountUser = accountSelectors.getAccountUser
 export function* watchFetchServices() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(fetchServices.type, function* () {
-    yield* waitForBackendAndAccount()
+    yield* waitForRead()
 
     const currentUser = yield* call(waitForValue, getAccountUser)
 
@@ -112,7 +112,7 @@ function* watchSetSelected() {
   yield* takeEvery(
     setSelected.type,
     function* (action: ReturnType<typeof setSelected>) {
-      yield* waitForBackendAndAccount()
+      yield* waitForWrite()
 
       const user = yield* call(waitForValue, getAccountUser)
 

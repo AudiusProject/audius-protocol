@@ -10,7 +10,7 @@ import { call, put, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { getTrackId, getLineup } = remixesPageSelectors
 const { setCount } = remixesPageActions
 const getUserId = accountSelectors.getUserId
@@ -27,7 +27,7 @@ function* getTracks({
   const apiClient = yield* getContext('apiClient')
   const { trackId } = payload
   if (!trackId) return []
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
 
   const currentUserId = yield* select(getUserId)
   const { tracks, count } = yield* call([apiClient, 'getRemixes'], {

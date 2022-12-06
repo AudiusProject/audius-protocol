@@ -112,6 +112,7 @@
     "idb-keyval": "3.2.0",
     "inherits": "2.0.4",
     "jimp": "0.6.8",
+    "js-sha3": "0.8.0",
     "js-yaml": "3.13.1",
     "jsmediatags": "3.8.1",
     "lerp": "1.0.3",

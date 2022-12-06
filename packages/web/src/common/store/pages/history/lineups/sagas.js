@@ -8,12 +8,12 @@ import { call, getContext, select } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 const { getUserId } = accountSelectors
 const { prefix: PREFIX } = tracksActions
 
 function* getHistoryTracks() {
-  yield waitForBackendAndAccount()
+  yield waitForRead()
 
   const apiClient = yield getContext('apiClient')
   try {

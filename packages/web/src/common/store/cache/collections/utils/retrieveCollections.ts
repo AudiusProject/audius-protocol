@@ -16,7 +16,7 @@ import { call, select } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -89,7 +89,7 @@ export function* retrieveTracksForCollections(
  * Retrieves a single collection via API client
  */
 export function* retrieveCollection(playlistId: ID) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
   const playlists = yield* call([apiClient, 'getPlaylist'], {

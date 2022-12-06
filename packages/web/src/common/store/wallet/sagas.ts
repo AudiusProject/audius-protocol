@@ -20,7 +20,7 @@ import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
@@ -64,7 +64,7 @@ function* getIsBalanceFrozen() {
 function* sendAsync({
   payload: { recipientWallet, amount: weiAudioAmount, chain }
 }: ReturnType<typeof send>) {
-  yield* waitForBackendAndAccount()
+  yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
   const account = yield* select(getAccountUser)
@@ -171,7 +171,7 @@ function* getWalletBalanceAndWallets() {
 }
 
 function* fetchBalanceAsync() {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const walletClient = yield* getContext('walletClient')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 

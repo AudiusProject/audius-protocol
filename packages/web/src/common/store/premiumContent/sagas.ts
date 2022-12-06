@@ -17,7 +17,7 @@ import {
 } from '@audius/common'
 import { takeLatest, select, call, put } from 'typed-redux-saga'
 
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const {
   updatePremiumContentSignatures,
@@ -169,7 +169,7 @@ function* updateNFTGatedTrackAccess(
     | ReturnType<typeof cacheActions.add>
 ) {
   // Halt if premium content not enabled
-  yield waitForBackendAndAccount()
+  yield waitForWrite()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   if (!getFeatureEnabled(FeatureFlags.PREMIUM_CONTENT_ENABLED)) {
     return

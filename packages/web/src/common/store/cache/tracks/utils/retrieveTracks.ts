@@ -15,7 +15,7 @@ import {
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
-import { waitForBackendAndAccount } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import {
   fetchAndProcessRemixes,
@@ -65,7 +65,7 @@ export function* retrieveTrackByHandleAndSlug({
         return track
       },
       retrieveFromSource: function* (permalinks: string[]) {
-        yield* waitForBackendAndAccount()
+        yield* waitForRead()
         const apiClient = yield* getContext('apiClient')
         const userId = yield* select(getUserId)
         const track = yield* call((args) => {
@@ -153,7 +153,7 @@ export function* retrieveTracks({
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
-  yield* waitForBackendAndAccount()
+  yield* waitForRead()
   const currentUserId = yield* select(getUserId)
 
   // In the case of unlisted tracks, trackIds contains metadata used to fetch tracks
@@ -217,7 +217,7 @@ export function* retrieveTracks({
       return selected
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
-      yield* waitForBackendAndAccount()
+      yield* waitForRead()
       const apiClient = yield* getContext('apiClient')
       let fetched: UserTrackMetadata | UserTrackMetadata[] | null | undefined
       if (canBeUnlisted) {
