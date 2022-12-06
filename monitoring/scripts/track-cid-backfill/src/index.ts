@@ -1,5 +1,5 @@
 import { getTrackIdToCIDMapping } from "./content";
-import { saveMappingToCSV } from "./csv";
+import { saveMappingToCSV, saveMissingBatch } from "./csv";
 import { closeDBConnection, connectToDBAndRunMigrations } from "./db";
 import { 
   dumpTrackIds,
@@ -47,6 +47,12 @@ async function main() {
           );
 
           if (Object.keys(mapping).length === 0) {
+            // continue-ing here may not be correct as it's possible that
+            // getTrackIdToCIDMapping was canceled, or
+            // getTrackIdToCIDMapping caught an error
+            // so we save the missing batch in a csv to later be able to
+            // try again for those batches
+            await saveMissingBatch(offset, BATCH_SIZE)
             continue;
           }
 

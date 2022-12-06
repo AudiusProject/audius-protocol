@@ -26,3 +26,18 @@ export async function saveMappingToCSV(
 
   stream.end()
 }
+
+// creates a file for the missing batch
+export async function saveMissingBatch(
+  offset: number,
+  batchSize: number
+) {
+  const { nodeEnv } = getEnv()
+  const filename = `${nodeEnv || 'local'}-missing-batches/${offset}-${batchSize}.txt`;
+  console.log(`saving missing batch for offset ${offset} and batch size ${batchSize} in file: ${filename}`);
+
+  const stream = fs.createWriteStream(filename, { flags: 'a' })
+  stream.write('offset,batch_size\n')
+  stream.write(`${offset},${batchSize}\n`)
+  stream.end()
+}
