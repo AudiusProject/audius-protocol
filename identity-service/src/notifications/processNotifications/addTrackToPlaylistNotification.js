@@ -38,7 +38,7 @@ async function processAddTrackToPlaylistNotification(notifications, tx) {
       transaction: tx
     })
     if (addTrackToPlaylistNotification == null) {
-      addTrackToPlaylistNotification = models.Notification.create(
+      addTrackToPlaylistNotification = await models.Notification.create(
         {
           type: notificationTypes.AddTrackToPlaylist,
           userId: trackOwnerId,
