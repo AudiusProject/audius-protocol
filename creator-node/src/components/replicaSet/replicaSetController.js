@@ -269,10 +269,11 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { nodeConfig: config } = serviceRegistry
 
-  const overridePassword = req.body.overridePassword
+  const overridePassword = req.query.overridePassword
   const override = verifySPOverride(overridePassword)
 
-  if (!override || !config.get('devMode')) {
+  // If override not provided AND devMode not enabled, error
+  if (!override && !config.get('devMode')) {
     return errorResponseBadRequest('This route is disabled')
   }
 
