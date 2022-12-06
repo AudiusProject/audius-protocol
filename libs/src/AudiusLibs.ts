@@ -39,6 +39,7 @@ import { Playlists } from './api/Playlist'
 import { File } from './api/File'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
+import { Notifications } from './api/Notifications'
 import Web3 from './LibsWeb3'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
@@ -368,6 +369,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  Notifications: Nullable<Notifications>
   EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
@@ -450,6 +452,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.Notifications = null
     this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
@@ -658,7 +661,13 @@ export class AudiusLibs {
     this.Playlist = new Playlists(...services)
     this.File = new File(this.User, this.ServiceProvider, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
+    console.log('is changed')
+    console.log('is changed')
+    console.log('is changed')
+    console.log('is changed')
+    console.log('is changed')
     this.Reactions = new Reactions(...services)
+    this.Notifications = new Notifications(...services)
     this.EntityManager = new EntityManager(...services)
   }
 }

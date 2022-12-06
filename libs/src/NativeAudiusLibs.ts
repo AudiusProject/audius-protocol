@@ -33,6 +33,7 @@ import { Track } from './api/Track'
 import { Playlists } from './api/Playlist'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
+import { Notifications } from './api/Notifications'
 import { File } from './api/File'
 import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
@@ -333,6 +334,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  Notifications: Nullable<Notifications>
   EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
@@ -409,6 +411,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.Notifications = null
     this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
@@ -603,6 +606,7 @@ export class AudiusLibs {
     this.File = new File(this.User, this.ServiceProvider, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.Notifications = new Notifications(...services)
     this.EntityManager = new EntityManager(...services)
   }
 }
