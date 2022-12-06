@@ -1,6 +1,6 @@
 import { getTrackIdToCIDMapping } from "./content";
 import { saveMappingToCSV, saveMissingBatch } from "./csv";
-import { closeDBConnection, connectToDBAndRunMigrations } from "./db";
+import { closeDBConnection, verifyDBConnection } from "./db";
 import { 
   dumpTrackIds,
   getAllContentNodes, 
@@ -10,10 +10,8 @@ import {
 
 const BATCH_SIZE = 10_000;
 
-
-
 async function main() {
-  await connectToDBAndRunMigrations();
+  await verifyDBConnection();
 
   const contentNodes: {
     spid: number;

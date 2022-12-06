@@ -1,7 +1,6 @@
 
 import { Sequelize } from 'sequelize'
 
-import { SequelizeStorage, Umzug } from 'umzug'
 import { getEnv } from '../config'
 
 const { db } = getEnv()
@@ -40,36 +39,11 @@ export const verifyDBConnection = async () => {
   }
 }
 
-export const runDBMigrations = async () => {
-  try {
-    console.info('Executing database migrations...')
-    await runMigrations()
-    console.info('Migrations completed successfully')
-  } catch (migrationError) {
-    throw new Error('Error in migrations: ' + migrationError)
-  }
-}
-
-export const runMigrations = async () => {
-  const umzug = new Umzug({
-    migrations: [],
-    context: sequelizeConn.getQueryInterface(),
-    storage: new SequelizeStorage({ sequelize: sequelizeConn }),
-    logger: console,
-  })
-  return umzug.up()
-}
-
 export const clearDatabase = async () => {
   // clear and recreate database schema, which cascades to all tables and rows in tables
   // for use in testing only - will delete all data in the database!!
   await sequelizeConn.query('DROP SCHEMA IF EXISTS public CASCADE')
   await sequelizeConn.query('CREATE SCHEMA public')
-}
-
-export const connectToDBAndRunMigrations = async () => {
-  await verifyDBConnection()
-  await runDBMigrations()
 }
 
 export const closeDBConnection = async () => {
