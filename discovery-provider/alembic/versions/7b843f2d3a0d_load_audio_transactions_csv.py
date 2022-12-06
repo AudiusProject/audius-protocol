@@ -22,7 +22,7 @@ depends_on = None
 
 def upgrade():
     env = os.getenv("audius_discprov_env")
-    if env == "stage":
+    if env == "stage" or env == "dev":
         pass
 
     connection = op.get_bind()
@@ -31,23 +31,22 @@ def upgrade():
     """
     connection.execute(query)
 
-    aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
     path_zip = Path(__file__).parent.joinpath(
         "../tmp/audio_transactions_history.csv.zip"
     )
-    urllib.request.urlretrieve(aws_url, path_zip)
-    print(f"path_zip: {path_zip}")
-    path_tmp = Path(__file__).parent.joinpath("../tmp")
-    print(f"path_tmp: {path_tmp}")
     path_csv = Path(__file__).parent.joinpath("../tmp/audio_transactions_history.csv")
-    print(f"path_csv: {path_csv}")
+    path_tmp = Path(__file__).parent.joinpath("../tmp")
+    os.mkdir(path_tmp)
+    aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
+    print(f"Migration - downloading {aws_url}")
+    urllib.request.urlretrieve(aws_url, path_zip)
+    print("Migration - download complete")
     with zipfile.ZipFile(path_zip, "r") as zip_ref:
         zip_ref.extractall(path_tmp)
 
     cursor = connection.connection.cursor()
-    f = open(path_csv, "r")
-    cursor.copy_from(f, "audio_transactions_history", sep=",")
-    f.close()
+    with open(path_csv, "r") as f:
+        cursor.copy_from(f, "audio_transactions_history", sep=",")
     os.remove(path_zip)
     os.remove(path_csv)
     os.rmdir(path_tmp)
