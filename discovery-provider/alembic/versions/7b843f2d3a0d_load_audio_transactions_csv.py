@@ -6,6 +6,8 @@ Create Date: 2022-12-05 20:30:57.288526
 
 """
 import os
+import urllib.request
+import zipfile
 from pathlib import Path
 
 import sqlalchemy as sa
@@ -29,12 +31,26 @@ def upgrade():
     """
     connection.execute(query)
 
+    aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
+    path_zip = Path(__file__).parent.joinpath(
+        "../tmp/audio_transactions_history.csv.zip"
+    )
+    urllib.request.urlretrieve(aws_url, path_zip)
+    print(f"path_zip: {path_zip}")
+    path_tmp = Path(__file__).parent.joinpath("../tmp")
+    print(f"path_tmp: {path_tmp}")
+    path_csv = Path(__file__).parent.joinpath("../tmp/audio_transactions_history.csv")
+    print(f"path_csv: {path_csv}")
+    with zipfile.ZipFile(path_zip, "r") as zip_ref:
+        zip_ref.extractall(path_tmp)
+
     cursor = connection.connection.cursor()
-    for i in range(4):
-        path = Path(__file__).parent.joinpath(f"../tmp/audio_transactions_history0{i}")
-        f = open(path, "r")
-        cursor.copy_from(f, "audio_transactions_history", sep=",")
-        f.close()
+    f = open(path_csv, "r")
+    cursor.copy_from(f, "audio_transactions_history", sep=",")
+    f.close()
+    os.remove(path_zip)
+    os.remove(path_csv)
+    os.rmdir(path_tmp)
 
 
 def downgrade():
