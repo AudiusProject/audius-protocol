@@ -181,19 +181,18 @@ def copy_user_record(
     old_user_attributes = inspect.getmembers(old_user)
     user_copy = User()
     for key, value in old_user_attributes:
-        match key:
-            case "is_current":
-                setattr(user_copy, key, False)
-            case "updated_at":
-                setattr(user_copy, key, block_datetime)
-            case "blocknumber":
-                setattr(user_copy, key, block_number)
-            case "blockhash":
-                setattr(user_copy, key, event_blockhash)
-            case "txhash":
-                setattr(user_copy, key, txhash)
-            case _:
-                setattr(user_copy, key, value)
+        if key == "is_current":
+            setattr(user_copy, key, False)
+        elif key == "updated_at":
+            setattr(user_copy, key, block_datetime)
+        elif key == "blocknumber":
+            setattr(user_copy, key, block_number)
+        elif key == "blockhash":
+            setattr(user_copy, key, event_blockhash)
+        elif key == "txhash":
+            setattr(user_copy, key, txhash)
+        else:
+            setattr(user_copy, key, value)
     return user_copy
 
     # return User(

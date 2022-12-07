@@ -47,21 +47,20 @@ def test_copy_user_record(app):
         old_user_attributes = user_1.__dict__
         user_copy_attributes = user_1_copy.__dict__
         for key, value in user_copy_attributes.items():
-            match key:
-                case "is_current":
-                    assert value == False
-                    assert old_user_attributes[key] == True
-                case "updated_at":
-                    assert value == block_datetime
-                    assert old_user_attributes[key] == user_1_updated_at
-                case "blocknumber":
-                    assert value == block_number
-                    assert old_user_attributes[key] == user_1_block_number
-                case "blockhash":
-                    assert value == event_blockhash
-                    assert old_user_attributes[key] == user_1_blockhash
-                case "txhash":
-                    assert value == txhash
-                    assert old_user_attributes[key] == user_1_txhash
-                case _:
-                    assert value == old_user_attributes[key]
+            if key == "is_current":
+                assert value == False
+                assert old_user_attributes[key] == True
+            elif key == "updated_at":
+                assert value == block_datetime
+                assert old_user_attributes[key] == user_1_updated_at
+            elif key == "blocknumber":
+                assert value == block_number
+                assert old_user_attributes[key] == user_1_block_number
+            elif key == "blockhash":
+                assert value == event_blockhash
+                assert old_user_attributes[key] == user_1_blockhash
+            elif key == "txhash":
+                assert value == txhash
+                assert old_user_attributes[key] == user_1_txhash
+            else:
+                assert value == old_user_attributes[key]
