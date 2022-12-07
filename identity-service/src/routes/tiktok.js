@@ -143,7 +143,8 @@ module.exports = function (app) {
         const isUnassociated = tikTokObj && !tikTokObj.blockchainUserId
         const handlesMatch =
           tikTokObj &&
-          tikTokObj.profile.display_name.toLowerCase() === user.handle.toLowerCase()
+          tikTokObj.profile.display_name.toLowerCase() ===
+          user.handle.toLowerCase()
 
         // only set blockchainUserId if not already set
         if (isUnassociated && handlesMatch) {
@@ -190,9 +191,7 @@ module.exports = function (app) {
           if (socialHandle) {
             socialHandle.tikTokHandle = tikTokObj.profile.display_name
             await socialHandle.save()
-          } else if (
-            tikTokObj.profile && tikTokObj.profile.display_name
-          ) {
+          } else if (tikTokObj.profile && tikTokObj.profile.display_name) {
             await models.SocialHandles.create({
               handle,
               tikTokHandle: tikTokObj.profile.display_name
