@@ -10,6 +10,7 @@ from src.tasks.entity_manager.utils import (
     USER_ID_OFFSET,
 )
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import encode_int_id
 
 MAX_USER_ID = 999999999  # max for reward specifier id
 MAX_POSTGRES_ID = 2147483647
@@ -54,4 +55,4 @@ def get_unclaimed(type):
                 ).first()
 
             if not is_claimed:
-                return random_id
+                return encode_int_id(random_id)
