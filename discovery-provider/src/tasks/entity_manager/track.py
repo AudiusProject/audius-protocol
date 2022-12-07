@@ -122,6 +122,7 @@ def update_track(params: ManageEntityParameters):
     ):  # override with last updated track is in this block
         existing_track = params.new_records[EntityType.TRACK][track_id][-1]
 
+    print(f"existing_track: {existing_track}")
     updated_track = copy_record(
         existing_track,
         params.block_number,
@@ -129,6 +130,7 @@ def update_track(params: ManageEntityParameters):
         params.txhash,
         params.block_datetime,
     )
+    print(f"updated_track: {updated_track}")
 
     update_track_routes_table(
         params.session, updated_track, track_metadata, params.pending_track_routes
@@ -149,9 +151,15 @@ def delete_track(params: ManageEntityParameters):
         # override with last updated playlist is in this block
         existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
 
+    print(f"existing_track: {existing_track}")
     deleted_track = copy_record(
-        existing_track, params.block_number, params.event_blockhash, params.txhash
+        existing_track,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
+    print(f"deleted_track: {deleted_track}")
     deleted_track.is_delete = True
     deleted_track.stem_of = null()
     deleted_track.remix_of = null()
