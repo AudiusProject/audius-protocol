@@ -376,14 +376,14 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks.sh",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/ffmpegkit.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavcodec.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavdevice.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavfilter.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavformat.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libavutil.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libswresample.framework",
-				"${PODS_ROOT}/ffmpeg-kit-ios-https/libswscale.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/ffmpegkit.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libavcodec.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libavdevice.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libavfilter.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libavformat.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libavutil.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libswresample.framework",
+				"${PODS_ROOT}/ffmpeg-kit-ios-https-gpl/libswscale.framework",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/FingerprintPro/FingerprintPro.framework/FingerprintPro",
 			);
 			name = "[CP] Embed Pods Frameworks";
