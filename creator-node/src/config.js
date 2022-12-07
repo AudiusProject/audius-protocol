@@ -865,12 +865,6 @@ const config = convict({
     format: Boolean,
     env: 'autoUpgradeEnabled',
     default: false
-  },
-  audiusDockerCompose: {
-    doc: 'Is the audius-docker-compose commit hash',
-    format: String,
-    env: 'audiusDockerCompose',
-    default: ''
   }
 })
 
