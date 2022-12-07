@@ -106,9 +106,6 @@ export const SendTip = () => {
     supportersMap
   })
 
-  const { isEnabled: isBuyAudioEnabled } = useFlag(
-    FeatureFlags.BUY_AUDIO_ENABLED
-  )
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
   )
@@ -203,7 +200,7 @@ export const SendTip = () => {
           </>
         }
       />
-    ) : isBuyAudioEnabled && isStripeBuyAudioEnabled ? (
+    ) : isStripeBuyAudioEnabled ? (
       <div>
         <OnRampButton
           buttonPrefix={messages.buyAudioPrefix}
@@ -224,9 +221,7 @@ export const SendTip = () => {
         },
         {
           [styles.containerDense]:
-            hasInsufficientBalance &&
-            isBuyAudioEnabled &&
-            isStripeBuyAudioEnabled
+            hasInsufficientBalance && isStripeBuyAudioEnabled
         }
       )}
     >
