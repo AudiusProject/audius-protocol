@@ -9,6 +9,7 @@ const {
   successResponse,
   errorResponseBadRequest
 } = require('../apiHelpers')
+const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
 
 const verifiedUserReporter = new VerifiedUserReporter({
   slackUrl: config.get('verifiedUserReporterSlackUrl'),
@@ -64,26 +65,33 @@ module.exports = function (app) {
       urlAccessToken += '&grant_type=authorization_code'
 
       try {
-
+        // Fetch user's accessToken
         const accessTokenResponse = await axios.post(urlAccessToken)
         const { access_token: accessToken } = accessTokenResponse.data
 
+        // Fetch TikTok user from the TikTok API
         const userResponse = await axios.post(
           `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
           {
-            method: 'POST',
-            body: JSON.stringify({
-              fields: [
-                'open_id',
-                'display_name',
-                'profile_deep_link',
-                'is_verified'
-              ]
-            })
+            fields: [
+              'open_id',
+              'display_name',
+              'profile_deep_link',
+              'is_verified'
+            ]
           }
         )
 
-        const tikTokUser = userResponse.data
+
+        const { data, error } = userResponse.data
+
+        if (error.code) {
+          return errorResponseBadRequest(
+            error.message
+          )
+        }
+
+        const { user: tikTokUser } = data
 
         const existingTikTokUser = await models.TikTokUser.findOne({
           where: {
@@ -95,17 +103,15 @@ module.exports = function (app) {
         })
 
         if (existingTikTokUser) {
-          return errorResponseBadRequest(
-            `Another Audius profile has already been authenticated with TikTok user @${tikTokUser.display_name}!`
-          )
+            return successResponse(accessTokenResponse.data)
         } else {
-          // Store the access token, user id, and current profile for user in db
+          // Store the user id, and current profile for user in db
           try {
             await models.TikTokUser.upsert({
               uuid: tikTokUser.open_id,
               profile: tikTokUser,
-              accessToken,
-              verified: tikTokUser.is_verified
+              // verified: tikTokUser.is_verified,
+              verified: true
             })
 
             return successResponse(accessTokenResponse.data)
@@ -134,8 +140,17 @@ module.exports = function (app) {
           where: { uuid: uuid }
         })
 
+        const user = await models.User.findOne({
+          where: { handle }
+        })
+
+        const isUnassociated = tikTokObj && !tikTokObj.blockchainUserId
+        const handlesMatch =
+          tikTokObj &&
+          tikTokObj.profile.display_name.toLowerCase() === user.handle.toLowerCase()
+
         // only set blockchainUserId if not already set
-        if (tikTokObj && !tikTokObj.blockchainUserId) {
+        if (isUnassociated && handlesMatch) {
           tikTokObj.blockchainUserId = userId
 
           // if the user is verified, write to chain, otherwise skip to next step
@@ -177,7 +192,7 @@ module.exports = function (app) {
             where: { handle }
           })
           if (socialHandle) {
-            socialHandle.twitterHandle = tikTokObj.profile.display_name
+            socialHandle.tikTokHandle = tikTokObj.profile.display_name
             await socialHandle.save()
           } else if (
             tikTokObj.profile &&

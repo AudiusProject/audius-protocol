@@ -14,10 +14,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: false
       },
-      accessToken: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
       verified: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

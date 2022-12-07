@@ -14,9 +14,10 @@ module.exports = {
           allowNull: false,
           unique: false
         },
-        accessToken: {
-          type: Sequelize.STRING,
-          allowNull: false
+        verified: {
+          type: Sequelize.BOOLEAN,
+          allowNull: false,
+          defaultValue: false
         },
         uuid: {
           type: Sequelize.STRING,
