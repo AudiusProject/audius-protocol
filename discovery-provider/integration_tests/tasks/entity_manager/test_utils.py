@@ -26,7 +26,7 @@ def test_copy_user_record(app):
     with db.scoped_session() as session:
         all_users: List[User] = session.query(User).all()
         assert len(all_users) == 1
-        user_1 = all_users[1]
+        user_1 = all_users[0]
         user_1_updated_at = user_1.updated_at
         user_1_block_number = user_1.blocknumber
         user_1_blockhash = user_1.blockhash
@@ -44,8 +44,8 @@ def test_copy_user_record(app):
             block_datetime
         )
 
-        old_user_attributes = user_1.__dict__
-        user_copy_attributes = user_1_copy.__dict__
+        old_user_attributes = user_1.get_attributes_dict()
+        user_copy_attributes = user_1_copy.get_attributes_dict()
         for key, value in user_copy_attributes.items():
             if key == "is_current":
                 assert value == False

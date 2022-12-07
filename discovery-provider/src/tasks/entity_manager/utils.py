@@ -1,4 +1,3 @@
-import inspect
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict
@@ -178,9 +177,9 @@ def copy_user_record(
     txhash: str,
     block_datetime: datetime,
 ):
-    old_user_attributes = inspect.getmembers(old_user)
+    old_user_attributes = old_user.get_attributes_dict()
     user_copy = User()
-    for key, value in old_user_attributes:
+    for key, value in old_user_attributes.items():
         if key == "is_current":
             setattr(user_copy, key, False)
         elif key == "updated_at":
@@ -194,36 +193,3 @@ def copy_user_record(
         else:
             setattr(user_copy, key, value)
     return user_copy
-
-    # return User(
-    #     user_id=old_user.user_id,
-    #     wallet=old_user.wallet,
-    #     created_at=old_user.created_at,
-    #     handle=old_user.handle,
-    #     name=old_user.name,
-    #     profile_picture=old_user.profile_picture,
-    #     cover_photo=old_user.cover_photo,
-    #     bio=old_user.bio,
-    #     location=old_user.location,
-    #     metadata_multihash=old_user.metadata_multihash,
-    #     creator_node_endpoint=old_user.creator_node_endpoint,
-    #     is_verified=old_user.is_verified,
-    #     handle_lc=old_user.handle_lc,
-    #     cover_photo_sizes=old_user.cover_photo_sizes,
-    #     profile_picture_sizes=old_user.profile_picture_sizes,
-    #     primary_id=old_user.primary_id,
-    #     secondary_ids=old_user.secondary_ids,
-    #     replica_set_update_signer=old_user.replica_set_update_signer,
-    #     has_collectibles=old_user.has_collectibles,
-    #     playlist_library=old_user.playlist_library,
-    #     is_deactivated=old_user.is_deactivated,
-    #     slot=old_user.slot,
-    #     user_storage_account=old_user.user_storage_account,
-    #     user_authority_account=old_user.user_authority_account,
-    #     updated_at=block_datetime,
-    #     blocknumber=block_number,
-    #     blockhash=event_blockhash,
-    #     txhash=txhash,
-    #     artist_pick_track_id=old_user.artist_pick_track_id,
-    #     is_current=False,
-    # )
