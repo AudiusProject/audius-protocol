@@ -963,7 +963,13 @@ function* recoverPurchaseIfNecessary() {
     // Bail if not enabled
     yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-    if (!getFeatureEnabled(FeatureFlags.BUY_AUDIO_ENABLED)) {
+
+    if (
+      !(
+        getFeatureEnabled(FeatureFlags.BUY_AUDIO_COINBASE_ENABLED) ||
+        getFeatureEnabled(FeatureFlags.BUY_AUDIO_STRIPE_ENABLED)
+      )
+    ) {
       return
     }
 

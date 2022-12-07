@@ -44,9 +44,15 @@ const RewardsContent = () => {
     FeatureFlags.CHALLENGE_REWARDS_UI
   )
 
-  const { isEnabled: isBuyAudioEnabled } = useFlag(
-    FeatureFlags.BUY_AUDIO_ENABLED
+  const { isEnabled: isCoinbaseEnabled } = useFlag(
+    FeatureFlags.BUY_AUDIO_COINBASE_ENABLED
   )
+
+  const { isEnabled: isStripeEnabled } = useFlag(
+    FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
+  )
+
+  const isBuyAudioEnabled = isCoinbaseEnabled || isStripeEnabled
 
   useRequiresAccount(TRENDING_PAGE)
 
