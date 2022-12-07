@@ -10,7 +10,6 @@ export const OfflineDownloader = () => {
     if (!initialized && isOfflineModeEnabled) {
       setInitialized(true)
       startDownloadWorker()
-      console.log('OfflineDownloader -- Started')
     }
   }, [initialized, isOfflineModeEnabled])
 

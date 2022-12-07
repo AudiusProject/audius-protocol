@@ -512,7 +512,11 @@ export const audiusBackend = ({
     }
   }
 
-  async function getImageUrl(cid: CID, size: string, gateways: string[]) {
+  async function getImageUrl(
+    cid: Nullable<CID>,
+    size: Nullable<string>,
+    gateways: string[]
+  ) {
     if (!cid) return ''
     try {
       return size

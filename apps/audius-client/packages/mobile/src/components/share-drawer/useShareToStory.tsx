@@ -40,7 +40,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { getDominantRgb } from '../../../threads/dominantColors.thread'
 import { NativeDrawer } from '../drawer'
-import { useTrackImage } from '../image/TrackImage'
+import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
 import { ToastContext } from '../toast/ToastContext'
 
 import { messages } from './messages'
@@ -68,7 +68,7 @@ export const useShareToStory = ({
   const artistHandle =
     content?.type === 'track' ? content?.artist.handle : undefined
 
-  const { source: trackImageSource } = useTrackImage(
+  const trackImage = useTrackImage(
     content?.type === 'track' ? content.track : null
   )
   const isStickerImageLoadedRef = useRef(false)
@@ -76,7 +76,8 @@ export const useShareToStory = ({
     isStickerImageLoadedRef.current = true
     stickerLoadedEventEmitter.emit(STICKER_LOADED_EVENT)
   }
-  const trackImageUri = trackImageSource[2]?.uri
+  const trackImageUri =
+    (trackImage && trackImage?.source[2].uri) ?? DEFAULT_IMAGE_URL
   const captureStickerImage = useCallback(async () => {
     if (!isStickerImageLoadedRef.current) {
       // Wait for the sticker component and image inside it to load. If this hasn't happened in 5 seconds, assume that it failed.
