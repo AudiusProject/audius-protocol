@@ -9,6 +9,7 @@ from typing import Any, List, Optional, Set, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
+from src.exceptions import UnsupportedVersionError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.audio_transactions_history import (
@@ -175,6 +176,8 @@ def parse_spl_token_transaction(
         }
         return receiver_spl_tx_info
 
+    except UnsupportedVersionError:
+        return None
     except Exception as e:
         signature = tx_sig["signature"]
         logger.error(
@@ -518,6 +521,7 @@ def process_spl_token_tx(
         for tx_sig_batch_records in split_list(
             tx_sig_batch, TX_SIGNATURES_PROCESSING_SIZE
         ):
+            tx_sig_batch_records.reverse()
             user_ids, root_accounts, token_accounts = parse_sol_tx_batch(
                 db, solana_client_manager, redis, tx_sig_batch_records, solana_logger
             )

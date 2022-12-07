@@ -7,7 +7,7 @@ FETCH_TX_SIGNATURES_BATCH_SIZE = 1000
 WRITE_TX_SIGNATURES_BATCH_SIZE = 500
 
 # Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 100
+TX_SIGNATURES_MAX_BATCHES = 10
 
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 75

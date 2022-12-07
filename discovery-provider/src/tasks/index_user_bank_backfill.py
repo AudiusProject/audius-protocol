@@ -435,7 +435,7 @@ def process_user_bank_txs():
         batch_start_time = time.time()
 
         # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
                     executor.submit(

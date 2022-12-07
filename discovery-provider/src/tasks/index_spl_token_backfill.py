@@ -288,7 +288,7 @@ def parse_sol_tx_batch(
     )
     fetch_start_time = time.time()
     with db.scoped_session() as session:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
                     parse_spl_token_transaction,

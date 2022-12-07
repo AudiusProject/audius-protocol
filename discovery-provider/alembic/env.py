@@ -78,7 +78,8 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    audius_db_url = os.getenv("audius_db_url")
+    # audius_db_url = os.getenv("audius_db_url")
+    audius_db_url = "postgres://postgres:upliftdesk@34.27.64.107:5432/audius_discovery"
 
     if audius_db_url:
         config.set_main_option("sqlalchemy.url", audius_db_url)

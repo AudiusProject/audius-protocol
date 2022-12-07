@@ -490,7 +490,7 @@ def process_transaction_signatures(
 
         transfer_instructions: List[RewardManagerTransactionInfo] = []
         # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
                     fetch_and_parse_sol_rewards_transfer_instruction,
