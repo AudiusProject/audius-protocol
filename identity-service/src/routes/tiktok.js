@@ -1,8 +1,8 @@
 const axios = require('axios')
 const cors = require('cors')
 const models = require('../models')
-
 const config = require('../config.js')
+const txRelay = require('../relay/txRelay')
 
 const {
   handleResponse,
@@ -67,6 +67,8 @@ module.exports = function (app) {
       try {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(urlAccessToken)
+        // const accessTokenResponse = { data: { access_token: 'act.0aa2abca0c7dd10b474f601bd4e6d75fcvovzlDYxr27mXhRDklZI21BiMtw!6394' } }
+
         const { access_token: accessToken } = accessTokenResponse.data
 
         // Fetch TikTok user from the TikTok API
@@ -82,6 +84,19 @@ module.exports = function (app) {
           }
         )
 
+
+        // const userResponse = {
+        //   data: {
+        //     data: {
+        //       user: {
+        //         open_id: '1',
+        //         display_name: 'sebastian',
+        //         is_verified: true
+        //       }
+        //     },
+        //     error: {}
+        //   }
+        // }
 
         const { data, error } = userResponse.data
 
@@ -110,8 +125,7 @@ module.exports = function (app) {
             await models.TikTokUser.upsert({
               uuid: tikTokUser.open_id,
               profile: tikTokUser,
-              // verified: tikTokUser.is_verified,
-              verified: true
+              verified: tikTokUser.is_verified
             })
 
             return successResponse(accessTokenResponse.data)
