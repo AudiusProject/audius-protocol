@@ -16,7 +16,7 @@ MAX_USER_ID = 999999999  # max for reward specifier id
 MAX_POSTGRES_ID = 2147483647
 
 
-def get_unclaimed(type):
+def get_unclaimed_id(type):
 
     if type not in ["track", "playlist", "user"]:
         raise exceptions.ArgumentError(

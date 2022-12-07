@@ -81,7 +81,7 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
 from src.queries.get_tracks import GetTrackArgs, get_tracks
-from src.queries.get_unclaimed import get_unclaimed
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
@@ -1798,14 +1798,12 @@ verify_token_response = make_response(
     "verify_token", ns, fields.Nested(decoded_user_token)
 )
 
-UNCLAIMED_USER_ID = "/unclaimed_id"
 
-
-@ns.route(UNCLAIMED_USER_ID, doc=False)
+@ns.route("/unclaimed_id", doc=False)
 class GetUnclaimedUserId(Resource):
     @ns.doc(
         id="""Get unclaimed user ID""",
         description="""Gets an unclaimed blockchain user ID""",
     )
     def get(self):
-        return get_unclaimed("user")
+        return get_unclaimed_id("user")
