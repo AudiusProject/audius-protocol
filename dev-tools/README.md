@@ -1,4 +1,4 @@
-## Setup Instructions
+# Setup Instructions
 
 ```
 # initial setup
@@ -6,22 +6,36 @@ curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-t
 
 # refresh terminal for docker
 exit
-
-# build and pull
+```
+```
+# build and run
 audius-compose build # About 10 minutes
-audius-compose up # About 20 seconds
+audius-compose up
 ```
 
 ## Port Forwarding Instructions
 
 To use the client from a mac, we need to setup a transparent proxy server to interact with the machine running the backend
-
-To setup the transparent proxy server from a mac:
 ```
 brew install sshuttle
-sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 ```
 
-The password is `sshuttle`
+### localhost
+
+If running protocol and client on localhost
+
+```
+sshuttle -N -H -r sshuttle@localhost:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+# the password is sshuttle
+```
+
+### GCP
+
+If running protocol on remote instance and client on localhost
+
+```
+sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+# the password is sshuttle
+```
 
 Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
