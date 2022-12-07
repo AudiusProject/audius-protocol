@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
 import type { CommonState, UserCollection } from '@audius/common'
-import { accountActions, useProxySelector } from '@audius/common'
-import { useDispatch } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { useProxySelector } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
@@ -12,20 +10,12 @@ import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from './FilterInput'
 import { getAccountCollections } from './selectors'
 
-const { fetchSavedAlbums } = accountActions
-
 const messages = {
   emptyTabText: "You haven't favorited any albums yet.",
   inputPlaceholder: 'Filter Albums'
 }
 
 export const AlbumsTab = () => {
-  const dispatch = useDispatch()
-
-  useEffectOnce(() => {
-    dispatch(fetchSavedAlbums())
-  })
-
   const [filterValue, setFilterValue] = useState('')
 
   const userAlbums = useProxySelector(

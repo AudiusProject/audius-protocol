@@ -1,7 +1,7 @@
 import queue, { Worker } from 'react-native-job-queue'
 
 import { store } from 'app/store'
-import { startDownload } from 'app/store/offline-downloads/slice'
+import { errorDownload, startDownload } from 'app/store/offline-downloads/slice'
 
 import { downloadTrack } from './offline-downloader'
 
@@ -39,7 +39,13 @@ export const startDownloadWorker = async () => {
   const worker = queue.registeredWorkers[TRACK_DOWNLOAD_WORKER]
   // Reset worker to improve devEx. Forces the worker to take code updates across reloads
   if (worker) queue.removeWorker(TRACK_DOWNLOAD_WORKER, true)
-  queue.addWorker(new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack))
+  queue.addWorker(
+    new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack, {
+      onFailure: ({ payload }) =>
+        store.dispatch(errorDownload(payload.trackId.toString())),
+      concurrency: 10
+    })
+  )
   const jobs = await queue.getJobs()
   jobs
     .filter((job) => job.workerName === TRACK_DOWNLOAD_WORKER)
@@ -52,5 +58,6 @@ export const startDownloadWorker = async () => {
         console.warn(e)
       }
     })
-  queue.start()
+
+  setTimeout(queue.start, 1000)
 }
