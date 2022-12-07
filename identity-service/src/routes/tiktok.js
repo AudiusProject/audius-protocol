@@ -100,7 +100,7 @@ module.exports = function (app) {
         })
 
         if (existingTikTokUser) {
-            return successResponse(accessTokenResponse.data)
+          return successResponse(accessTokenResponse.data)
         } else {
           // Store the user id, and current profile for user in db
           try {
@@ -123,7 +123,7 @@ module.exports = function (app) {
 
   /**
    * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
-   * the blockchainUserId with the twitter profile so we can write the verified flag on chain
+   * the blockchainUserId with the tiktok profile so we can write the verified flag on chain
    */
   app.post(
     '/tiktok/associate',
@@ -191,8 +191,7 @@ module.exports = function (app) {
             socialHandle.tikTokHandle = tikTokObj.profile.display_name
             await socialHandle.save()
           } else if (
-            tikTokObj.profile &&
-            tikTokObj.profile.display_name
+            tikTokObj.profile && tikTokObj.profile.display_name
           ) {
             await models.SocialHandles.create({
               handle,
