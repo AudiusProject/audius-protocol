@@ -144,7 +144,7 @@ module.exports = function (app) {
         const handlesMatch =
           tikTokObj &&
           tikTokObj.profile.display_name.toLowerCase() ===
-          user.handle.toLowerCase()
+            user.handle.toLowerCase()
 
         // only set blockchainUserId if not already set
         if (isUnassociated && handlesMatch) {
