@@ -4,8 +4,12 @@ from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
+from src.tasks.entity_manager.utils import (
+    PLAYLIST_ID_OFFSET,
+    TRACK_ID_OFFSET,
+    USER_ID_OFFSET,
+)
 from src.utils.db_session import get_db_read_replica
-from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, PLAYLIST_ID_OFFSET, USER_ID_OFFSET
 
 MAX_USER_ID = 999999999  # max for reward specifier id
 MAX_POSTGRES_ID = 2147483647
