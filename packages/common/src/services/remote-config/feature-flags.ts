@@ -27,7 +27,7 @@ export enum FeatureFlags {
   OFFLINE_MODE_ENABLED = 'offline_mode_enabled',
   PREMIUM_CONTENT_ENABLED = 'premium_content_enabled',
   AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow',
-  MOBILE_UPLOAD = 'mobile_upload_final',
+  MOBILE_UPLOAD = 'mobile_upload_final_2',
   STREAM_MP3 = 'stream_mp3',
   READ_ARTIST_PICK_FROM_DISCOVERY = 'read_artist_pick_from_discovery',
   SHARE_TO_STORY = 'share_to_story',
