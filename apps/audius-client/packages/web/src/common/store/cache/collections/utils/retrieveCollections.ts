@@ -4,7 +4,6 @@ import {
   CollectionMetadata,
   UserCollectionMetadata,
   Kind,
-  Track,
   makeUid,
   accountSelectors,
   cacheCollectionsSelectors,
@@ -12,7 +11,8 @@ import {
   CommonState,
   getContext
 } from '@audius/common'
-import { call, select } from 'typed-redux-saga'
+import { chunk } from 'lodash'
+import { all, call, select } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
@@ -51,9 +51,15 @@ export function* retrieveTracksForCollections(
   const filteredTrackIds = [
     ...new Set(allTrackIds.filter((id) => !excludedTrackIdSet.has(id)))
   ]
-  const tracks: Track[] = yield call(retrieveTracks, {
-    trackIds: filteredTrackIds
-  })
+  const chunkedTracks = yield* all(
+    chunk(filteredTrackIds, 200).map((chunkedTrackIds) =>
+      call(retrieveTracks, {
+        trackIds: chunkedTrackIds
+      })
+    )
+  )
+
+  const tracks = chunkedTracks.flat(1)
 
   // If any tracks failed to be retrieved for some reason,
   // remove them from their collection.
