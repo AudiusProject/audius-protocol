@@ -3,9 +3,10 @@ from typing import List
 from integration_tests.utils import populate_mock_db
 from src.models.users.user import User
 from src.utils.db_session import get_db
-from src.tasks.entity_manager.utils import copy_user_record
+from src.tasks.entity_manager.utils import copy_record
 
-def test_copy_user_record(app):
+
+def test_copy_record(app):
     with app.app_context():
         db = get_db()
 
@@ -36,7 +37,7 @@ def test_copy_user_record(app):
         event_blockhash = hex(10)
         txhash = "0x01"
         block_datetime = datetime.now()
-        user_1_copy = copy_user_record(
+        user_1_copy = copy_record(
             user_1,
             block_number,
             event_blockhash,

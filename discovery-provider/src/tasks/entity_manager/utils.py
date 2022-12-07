@@ -169,27 +169,26 @@ class ManageEntityParameters:
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
 
-
-def copy_user_record(
-    old_user: User,
+def copy_record(
+    old_record: User,
     block_number: int,
     event_blockhash: str,
     txhash: str,
     block_datetime: datetime,
 ):
-    old_user_attributes = old_user.get_attributes_dict()
-    user_copy = User()
+    old_user_attributes = old_record.get_attributes_dict()
+    record_copy = type(old_record)()
     for key, value in old_user_attributes.items():
         if key == "is_current":
-            setattr(user_copy, key, False)
+            setattr(record_copy, key, False)
         elif key == "updated_at":
-            setattr(user_copy, key, block_datetime)
+            setattr(record_copy, key, block_datetime)
         elif key == "blocknumber":
-            setattr(user_copy, key, block_number)
+            setattr(record_copy, key, block_number)
         elif key == "blockhash":
-            setattr(user_copy, key, event_blockhash)
+            setattr(record_copy, key, event_blockhash)
         elif key == "txhash":
-            setattr(user_copy, key, txhash)
+            setattr(record_copy, key, txhash)
         else:
-            setattr(user_copy, key, value)
-    return user_copy
+            setattr(record_copy, key, value)
+    return record_copy

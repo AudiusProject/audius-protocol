@@ -10,7 +10,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
-    copy_user_record,
+    copy_record,
 )
 from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.tasks.users import (
@@ -143,7 +143,7 @@ def update_user(params: ManageEntityParameters):
     ):  # override with last updated user is in this block
         existing_user = params.new_records[EntityType.USER][user_id][-1]
 
-    user_record = copy_user_record(
+    user_record = copy_record(
         existing_user,
         params.block_number,
         params.event_blockhash,
@@ -183,7 +183,7 @@ def verify_user(params: ManageEntityParameters):
 
     user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    user_record = copy_user_record(
+    user_record = copy_record(
         existing_user,
         params.block_number,
         params.event_blockhash,
