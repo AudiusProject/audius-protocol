@@ -16,7 +16,10 @@ const messages = {
 }
 
 type ShareToStoryStickerProps = {
-  track: Pick<Track, 'cover_art_sizes' | 'cover_art' | 'owner_id' | 'title'>
+  track: Pick<
+    Track,
+    'cover_art_sizes' | 'cover_art' | 'owner_id' | 'title' | 'track_id'
+  >
   user?: Pick<User, 'creator_node_endpoint'>
   artist: Pick<User, 'user_id' | 'name' | 'is_verified'>
   style?: StyleProp<ViewStyle>
@@ -55,20 +58,21 @@ export const ShareToStorySticker = ({
 }: ShareToStoryStickerProps) => {
   const styles = useStyles()
 
-  const { source: trackImage, handleError: handleTrackImageError } =
-    useTrackImage(track, user)
+  const trackImage = useTrackImage(track, user)
   const { neutralLight2 } = useThemeColors()
   return (
     <View style={[styles.container, style]}>
       <View>
-        <Image
-          onLoad={onLoad}
-          height={240}
-          width={240}
-          source={trackImage}
-          onError={handleTrackImageError}
-          borderRadius={4}
-        />
+        {trackImage ? (
+          <Image
+            onLoad={onLoad}
+            height={240}
+            width={240}
+            source={trackImage.source}
+            onError={trackImage.handleError}
+            borderRadius={4}
+          />
+        ) : null}
         <Text variant='h2' numberOfLines={1} style={{ marginTop: 8 }}>
           {track.title}
         </Text>

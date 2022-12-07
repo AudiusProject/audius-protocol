@@ -26,7 +26,7 @@ export const EditExistingTrackScreen = () => {
 
   const track = useSelector((state) => getTrack(state, { id }))
 
-  const { source: imageSource } = useTrackImage(track)
+  const trackImage = useTrackImage(track)
 
   const handleSubmit = useCallback(
     (metadata: ExtendedTrackMetadata) => {
@@ -36,12 +36,12 @@ export const EditExistingTrackScreen = () => {
     [dispatch, id, navigation]
   )
 
-  if (!track) return null
+  if (!track || !trackImage) return null
 
   const initialValues = {
     ...track,
     artwork: null,
-    trackArtwork: imageSource[2].uri
+    trackArtwork: trackImage?.source[2].uri
   }
 
   return (

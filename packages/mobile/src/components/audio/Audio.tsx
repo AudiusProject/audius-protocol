@@ -21,7 +21,10 @@ import type { OnProgressData } from 'react-native-video'
 import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useTrackImage } from 'app/components/image/TrackImage'
+import {
+  DEFAULT_IMAGE_URL,
+  useTrackImage
+} from 'app/components/image/TrackImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -49,9 +52,6 @@ declare global {
 }
 
 const SKIP_DURATION_SEC = 15
-
-const DEFAULT_IMAGE_URL =
-  'https://download.audius.co/static-resources/preview-image.jpg'
 
 const RECORD_LISTEN_SECONDS = 1
 
@@ -82,7 +82,7 @@ export const Audio = () => {
   const trackOwner = useSelector((state) =>
     getUser(state, { id: track?.owner_id })
   )
-  const { source: imageSource } = useTrackImage(track)
+  const trackImageSource = useTrackImage(track, trackOwner ?? undefined)
   const currentUserId = useSelector(getUserId)
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -204,8 +204,13 @@ export const Audio = () => {
 
   // Track Info handler
   useEffect(() => {
-    if (track && !track.is_delete && duration !== null) {
-      const imageUrl = imageSource[2]?.uri ?? DEFAULT_IMAGE_URL
+    if (
+      track &&
+      !track.is_delete &&
+      duration !== null &&
+      trackImageSource?.source[2]
+    ) {
+      const imageUrl = trackImageSource?.source[2].uri ?? DEFAULT_IMAGE_URL
       // Set the background mode when a song starts
       // playing to ensure audio outside app
       // continues when music isn't being played.
@@ -223,7 +228,14 @@ export const Audio = () => {
         MusicControl.handleAudioInterruptions(false)
       }
     }
-  }, [track, index, duration, trackOwner, imageSource])
+  }, [
+    track,
+    index,
+    duration,
+    trackOwner,
+    trackImageSource?.source,
+    trackImageSource
+  ])
 
   // Next and Previous handler
   useEffect(() => {

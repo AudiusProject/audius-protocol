@@ -3,10 +3,11 @@ import {
   Kind,
   makeUid,
   cacheActions,
-  savedPageTracksLineupActions
+  savedPageTracksLineupActions,
+  reachabilitySelectors
 } from '@audius/common'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { addCollection, loadTracks } from 'app/store/offline-downloads/slice'
@@ -19,14 +20,16 @@ import {
 } from '../services/offline-downloader/offline-storage'
 
 import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
+const { getIsReachable } = reachabilitySelectors
 
 export const useLoadOfflineTracks = (collection: string) => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isReachable = useSelector(getIsReachable)
 
   const dispatch = useDispatch()
 
   useAsync(async () => {
-    if (!isOfflineModeEnabled) return
+    if (!isOfflineModeEnabled || isReachable) return
 
     const offlineCollections = await getOfflineCollections()
     offlineCollections?.forEach((collection) => {
@@ -93,5 +96,5 @@ export const useLoadOfflineTracks = (collection: string) => {
         false
       )
     )
-  }, [isOfflineModeEnabled, loadTracks])
+  }, [isOfflineModeEnabled, isReachable, loadTracks])
 }
