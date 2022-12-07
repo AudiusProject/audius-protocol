@@ -61,9 +61,9 @@ const stageToStep = (stage: BuyAudioStage) => {
       return 2
     case BuyAudioStage.CONFIRMING_SWAP:
     case BuyAudioStage.TRANSFERRING:
+    case BuyAudioStage.FINISH: // incl finish to squelch errors while transitioning
       return 3
   }
-  console.error('Reached unexpected stage in InProgressPage.tsx:', stage)
   return 1
 }
 

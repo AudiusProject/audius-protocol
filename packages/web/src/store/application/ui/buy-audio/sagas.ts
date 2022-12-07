@@ -522,10 +522,10 @@ function* populateAndSaveTransactionDetails() {
   })
 
   // Clear local storage
+  console.debug('Clearing BUY_AUDIO_LOCAL_STORAGE...')
   yield* call(
-    [localStorage, localStorage.setJSONValue],
-    BUY_AUDIO_LOCAL_STORAGE_KEY,
-    {}
+    [localStorage, localStorage.removeItem],
+    BUY_AUDIO_LOCAL_STORAGE_KEY
   )
 }
 
@@ -933,13 +933,13 @@ function* doBuyAudio({
       error: e as Error,
       additionalInfo: { stage, userRootWallet }
     })
-    console.error('BuyAudio failed')
     yield* put(buyAudioFlowFailed())
     yield* put(
       make(Name.BUY_AUDIO_FAILURE, {
         provider,
         stage,
         requestedAudio: desiredAudioAmount.uiAmount,
+        name: 'BuyAudio failed',
         error: (e as Error).message
       })
     )
@@ -1023,10 +1023,24 @@ function* recoverPurchaseIfNecessary() {
       route: quote.route
     })
 
-    // Check if we have an exchangable amount of SOL, and if so, exchange it to AUDIO
+    // Subtract fees and rent to see how much SOL is available to exchange
     const exchangableBalance = new BN(existingBalance).sub(totalFees)
-    // Usually indicates Swap Failed
-    if (exchangableBalance.gt(new BN(0))) {
+
+    // Use proportion to guesstimate an $AUDIO quote for the exchangeable balance
+    const estimatedAudio =
+      existingBalance > 0
+        ? exchangableBalance
+            .mul(new BN(quote.outputAmount.amountString))
+            .div(new BN(existingBalance))
+        : new BN(0)
+
+    // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
+    // Should only occur as the result of a previously failed Swap
+    if (
+      exchangableBalance.gt(new BN(0)) &&
+      // $AUDIO has 8 decimals
+      estimatedAudio.gt(new BN('1'.padEnd(9, '0')))
+    ) {
       yield* put(
         make(Name.BUY_AUDIO_RECOVERY_OPENED, {
           provider,
@@ -1039,7 +1053,7 @@ function* recoverPurchaseIfNecessary() {
           existingBalance / LAMPORTS_PER_SOL
         } SOL, converting ${
           exchangableBalance.toNumber() / LAMPORTS_PER_SOL
-        } SOL to AUDIO...`
+        } SOL to AUDIO... (~${estimatedAudio.toString()} $AUDIO SPL)`
       )
 
       yield* put(setVisibility({ modal: 'BuyAudioRecovery', visible: true }))
@@ -1073,7 +1087,8 @@ function* recoverPurchaseIfNecessary() {
         tokenAccount
       })
       const audioBalance = audioAccountInfo?.amount ?? new BN(0)
-      // Usually indicates Transfer Failed
+
+      // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
       if (audioBalance.gt(new BN(0))) {
         // Check we can afford to transfer
         if (
@@ -1119,7 +1134,7 @@ function* recoverPurchaseIfNecessary() {
       } else if (
         localStorageState?.transactionDetailsArgs?.transferTransactionId
       ) {
-        // If we only failed to save the metadata, try that again
+        // If we previously just failed to save the metadata, try that again
         console.debug('Only need to resend metadata...')
         const metadata = yield* call(
           getUserBankTransactionMetadata,
@@ -1145,9 +1160,9 @@ function* recoverPurchaseIfNecessary() {
     }
   } catch (e) {
     const stage = yield* select(getBuyAudioFlowStage)
-    console.error('BuyAudioRecovery failed')
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
+      name: 'BuyAudioRecovery failed',
       error: e as Error,
       additionalInfo: { stage, didNeedRecovery, userRootWallet }
     })
