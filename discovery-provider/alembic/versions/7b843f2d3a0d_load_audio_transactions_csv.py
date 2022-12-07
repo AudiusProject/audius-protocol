@@ -22,8 +22,7 @@ depends_on = None
 
 def upgrade():
     env = os.getenv("audius_discprov_env")
-    print(f"REED migration env: {env}")
-    if env == "stage" or env == "dev":
+    if env != "prod":
         return
 
     connection = op.get_bind()
