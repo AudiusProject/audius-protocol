@@ -85,9 +85,7 @@ module.exports = function (app) {
         const { data, error } = userResponse.data
 
         if (error.code) {
-          return errorResponseBadRequest(
-            error.message
-          )
+          return errorResponseBadRequest(error.message)
         }
 
         const { user: tikTokUser } = data
@@ -212,7 +210,7 @@ module.exports = function (app) {
         } else {
           req.logger.error(
             `TikTok profile does not exist or userId has already been set for uuid: ${uuid}`,
-            twitterObj
+            tikTokObj
           )
           return errorResponseBadRequest(
             'TikTok profile does not exist or userId has already been set'
