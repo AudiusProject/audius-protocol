@@ -29,7 +29,7 @@ export const useLoadOfflineTracks = (collection: string) => {
   const dispatch = useDispatch()
 
   useAsync(async () => {
-    if (!isOfflineModeEnabled || isReachable) return
+    if (!isOfflineModeEnabled) return
 
     const offlineCollections = await getOfflineCollections()
     offlineCollections?.forEach((collection) => {
@@ -81,20 +81,22 @@ export const useLoadOfflineTracks = (collection: string) => {
     dispatch(cacheActions.add(Kind.USERS, cacheUsers, false, true))
     dispatch(loadTracks(savesLineupTracks))
 
-    // TODO: support for collection lineups
-    dispatch(
-      savedPageTracksLineupActions.fetchLineupMetadatasSucceeded(
-        savesLineupTracks.map((track) => ({
-          uid: track.uid,
-          kind: Kind.TRACKS,
-          id: track.track_id,
-          dateSaved: moment()
-        })),
-        0,
-        savesLineupTracks.length,
-        false,
-        false
+    if (!isReachable) {
+      // TODO: support for collection lineups
+      dispatch(
+        savedPageTracksLineupActions.fetchLineupMetadatasSucceeded(
+          savesLineupTracks.map((track) => ({
+            uid: track.uid,
+            kind: Kind.TRACKS,
+            id: track.track_id,
+            dateSaved: moment()
+          })),
+          0,
+          savesLineupTracks.length,
+          false,
+          false
+        )
       )
-    )
+    }
   }, [isOfflineModeEnabled, isReachable, loadTracks])
 }

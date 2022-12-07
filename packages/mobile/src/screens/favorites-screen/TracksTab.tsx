@@ -24,9 +24,7 @@ import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -74,7 +72,6 @@ export const TracksTab = () => {
   }, [dispatch])
 
   useFocusEffect(handleFetchSaves)
-  useLoadOfflineTracks(DOWNLOAD_REASON_FAVORITES)
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)

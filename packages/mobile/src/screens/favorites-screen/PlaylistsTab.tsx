@@ -1,9 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import type { CommonState, UserCollection } from '@audius/common'
-import { accountActions, useProxySelector } from '@audius/common'
-import { useDispatch } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { useProxySelector } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView, Button } from 'app/components/core'
@@ -15,8 +13,6 @@ import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScre
 import { FilterInput } from './FilterInput'
 import { getAccountCollections } from './selectors'
 
-const { fetchSavedPlaylists } = accountActions
-
 const messages = {
   emptyTabText: "You haven't favorited any playlists yet.",
   inputPlaceholder: 'Filter Playlists'
@@ -25,13 +21,6 @@ const messages = {
 export const PlaylistsTab = () => {
   const navigation = useNavigation<FavoritesTabScreenParamList>()
   const [filterValue, setFilterValue] = useState('')
-  const dispatch = useDispatch()
-
-  const handleFetchSavedPlaylists = useCallback(() => {
-    dispatch(fetchSavedPlaylists())
-  }, [dispatch])
-
-  useEffectOnce(handleFetchSavedPlaylists)
 
   const userPlaylists = useProxySelector(
     (state: CommonState) =>
