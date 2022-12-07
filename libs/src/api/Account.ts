@@ -331,11 +331,7 @@ export class Account extends Base {
    */
   async associateTikTokUser(uuid: string, userId: number, handle: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.associateInstagramUser(
-      uuid,
-      userId,
-      handle
-    )
+    return await this.identityService.associateTikTokUser(uuid, userId, handle)
   }
 
   /**
