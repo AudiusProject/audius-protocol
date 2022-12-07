@@ -166,8 +166,9 @@ def build(
 @click.argument("value")
 @click.pass_obj
 def set_env(protocol_dir, service, name, value):
-    env_file = protocol_dir / f"dev-tools/startup/{service}.env"
-    dotenv.set_key(env_file, name, value)
+    if click.confirm(f"All existing env for {service} will be replaced continue?"):
+        env_file = protocol_dir / f"dev-tools/startup/{service}.env"
+        dotenv.set_key(env_file, name, value)
 
 
 @cli.command()
