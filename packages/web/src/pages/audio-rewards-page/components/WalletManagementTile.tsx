@@ -10,17 +10,20 @@ import {
   buyAudioActions,
   OnRampProvider,
   FeatureFlags,
+  BooleanKeys,
   StringKeys
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
+import { ReactComponent as IconTransaction } from 'assets/img/iconTransaction.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
@@ -31,7 +34,11 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation, Location } from 'services/Location'
 import { isMobile } from 'utils/clientUtil'
-import { pushUniqueRoute, TRENDING_PAGE } from 'utils/route'
+import {
+  AUDIO_TRANSACTIONS_PAGE,
+  pushUniqueRoute,
+  TRENDING_PAGE
+} from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
@@ -44,6 +51,7 @@ const { startBuyAudioFlow } = buyAudioActions
 const messages = {
   receiveLabel: 'Receive',
   sendLabel: 'Send',
+  transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
   connectWallets: 'Connect Other Wallets',
@@ -74,6 +82,9 @@ const AdvancedWalletActions = () => {
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
   const mobile = isMobile()
+  const isTransactionsEnabled = useRemoteVar(
+    BooleanKeys.AUDIO_TRANSACTIONS_ENABLED
+  )
   const onClickReceive = useCallback(() => {
     if (mobile) {
       openTransferDrawer(true)
@@ -90,6 +101,10 @@ const AdvancedWalletActions = () => {
     }
   }, [mobile, dispatch, openTransferDrawer])
   const [, setOpen] = useModalState('MobileConnectWalletsDrawer')
+
+  const onClickTransactions = useCallback(() => {
+    dispatch(pushRoute(AUDIO_TRANSACTIONS_PAGE))
+  }, [dispatch])
 
   const onClickConnectWallets = useCallback(() => {
     if (mobile) {
@@ -130,6 +145,17 @@ const AdvancedWalletActions = () => {
           type={ButtonType.GLASS}
           minWidth={200}
         />
+        {!mobile && isTransactionsEnabled && (
+          <Button
+            className={cn(styles.advancedButton)}
+            text={messages.transactionsLabel}
+            textClassName={styles.textClassName}
+            onClick={onClickTransactions}
+            leftIcon={<IconTransaction className={styles.iconStyle} />}
+            type={ButtonType.GLASS}
+            minWidth={200}
+          />
+        )}
         <Button
           className={cn(styles.advancedButton, styles.manageWalletsButton)}
           text={

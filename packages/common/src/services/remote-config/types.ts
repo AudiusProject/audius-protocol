@@ -179,7 +179,12 @@ export enum BooleanKeys {
   /**
    * Boolean to use amplitude as the metrics tracking.
    */
-  USE_AMPLITUDE = 'USE_AMPLITUDE'
+  USE_AMPLITUDE = 'USE_AMPLITUDE',
+
+  /**
+   * Boolean to enable "Transactions" button on Audio page.
+   */
+  AUDIO_TRANSACTIONS_ENABLED = 'AUDIO_TRANSACTIONS_ENABLED'
 }
 
 export enum DoubleKeys {
