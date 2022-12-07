@@ -5,7 +5,7 @@ import {
 } from '@audius/common'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 
@@ -13,7 +13,7 @@ function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      yield* call(waitForBackendSetup)
+      yield* call(waitForWrite)
       const emailSettings = yield* call(
         audiusBackendInstance.getEmailNotificationSettings
       )

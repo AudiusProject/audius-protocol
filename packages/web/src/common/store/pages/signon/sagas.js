@@ -35,7 +35,6 @@ import {
 import { fetchAccountAsync, reCacheAccount } from 'common/store/account/sagas'
 import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
@@ -48,7 +47,7 @@ import { isValidEmailString } from 'utils/email'
 import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { waitForRead } from 'utils/sagaHelpers'
+import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
@@ -111,7 +110,7 @@ function* getArtistsToFollow() {
 }
 
 function* fetchAllFollowArtist() {
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
   try {
     // Fetch Featured Follow artists first
     const suggestedUserFollowIds = yield call(fetchSuggestedFollowUserIds)
@@ -217,7 +216,7 @@ function* validateHandle(action) {
   const { handle, isOauthVerified, onValidate } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
-  yield call(waitForBackendSetup)
+  yield call(waitForWrite)
   try {
     if (handle.length > MAX_HANDLE_LENGTH) {
       yield put(signOnActions.validateHandleFailed('tooLong'))
@@ -326,7 +325,9 @@ function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  yield call(waitForBackendSetup)
+
+  yield call(waitForWrite)
+
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
   const createUserMetadata = {
@@ -504,7 +505,7 @@ function* signUp() {
 
 function* signIn(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
   try {
     const signOn = yield select(getSignOn)
     const signInResponse = yield call(
@@ -618,7 +619,7 @@ function* signIn(action) {
 }
 
 function* followCollections(collectionIds, favoriteSource) {
-  yield call(waitForBackendSetup)
+  yield call(waitForWrite)
   try {
     const result = yield retrieveCollections(null, collectionIds)
 
@@ -635,7 +636,7 @@ function* followCollections(collectionIds, favoriteSource) {
 
 function* followArtists() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield call(waitForBackendSetup)
+  yield call(waitForWrite)
   try {
     // Auto-follow Hot & New Playlist
     if (IS_PRODUCTION) {

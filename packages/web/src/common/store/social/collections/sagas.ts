@@ -22,7 +22,6 @@ import {
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
@@ -426,7 +425,7 @@ export function* watchUnsaveSmartCollection() {
 export function* unsaveSmartCollection(
   action: ReturnType<typeof socialActions.unsaveSmartCollection>
 ) {
-  yield* call(waitForBackendSetup)
+  yield* call(waitForWrite)
 
   const playlistLibrary = yield* select(getPlaylistLibrary)
   if (!playlistLibrary) return
@@ -447,7 +446,7 @@ export function* unsaveSmartCollection(
 export function* unsaveCollectionAsync(
   action: ReturnType<typeof socialActions.unsaveCollection>
 ) {
-  yield* call(waitForBackendSetup)
+  yield* call(waitForWrite)
   const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })

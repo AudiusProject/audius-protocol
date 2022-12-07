@@ -1,11 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { Platform } from 'react-native'
-import * as BootSplash from 'react-native-bootsplash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
@@ -43,8 +42,9 @@ type RootScreenProps = {
 export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
-  const { updateRequired } = useUpdateRequired()
   const hasAccount = useSelector(getHasAccount)
+  const { updateRequired } = useUpdateRequired()
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     // Setup the backend when ready
@@ -58,37 +58,36 @@ export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
     () => dispatch(enterBackground())
   )
 
-  const accountFetchResolved =
-    accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
-
-  // Android does not use the SplashScreen component as different
-  // devices will render different sizes of the BootSplash.
-  // Instead of our custom SplashScreen, fade out the BootSplash screen.
   useEffect(() => {
-    if (accountFetchResolved && !IS_IOS) {
-      BootSplash.hide({ fade: true })
+    if (
+      !isLoaded &&
+      (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR)
+    ) {
+      setIsLoaded(true)
     }
-  }, [accountFetchResolved])
+  }, [accountStatus, setIsLoaded, isLoaded])
 
   return (
     <>
       {IS_IOS ? (
-        <SplashScreen canDismiss={accountFetchResolved} />
+        <SplashScreen canDismiss={isLoaded} />
       ) : (
-        <ThemedStatusBar onSignUpScreen={accountFetchResolved && !hasAccount} />
+        <ThemedStatusBar isAppLoaded={isLoaded} accountStatus={accountStatus} />
       )}
 
-      <Stack.Navigator
-        screenOptions={{ gestureEnabled: false, headerShown: false }}
-      >
-        {updateRequired ? (
-          <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
-        ) : accountFetchResolved && !hasAccount ? (
-          <Stack.Screen name='SignOnStack' component={SignOnScreen} />
-        ) : (
-          <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
-        )}
-      </Stack.Navigator>
+      {isLoaded ? (
+        <Stack.Navigator
+          screenOptions={{ gestureEnabled: false, headerShown: false }}
+        >
+          {updateRequired ? (
+            <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
+          ) : hasAccount ? (
+            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
+          ) : (
+            <Stack.Screen name='SignOnStack' component={SignOnScreen} />
+          )}
+        </Stack.Navigator>
+      ) : null}
     </>
   )
 }

@@ -2,7 +2,6 @@ import { Name, accountSelectors, getContext } from '@audius/common'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import * as searchActions from './actions'
@@ -38,7 +37,7 @@ export function* getSearchResults(searchText: string) {
 }
 
 function* fetchSearchAsync(action: searchActions.FetchSearchAction) {
-  yield* call(waitForBackendSetup)
+  yield* call(waitForRead)
   yield* put(searchActions.fetchSearchRequested(action.searchText))
   const search = yield* select(getSearch)
   if (action.searchText === search.searchText) {

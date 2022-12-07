@@ -8,13 +8,13 @@ import {
 } from '@audius/common'
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/feed/lineup/sagas'
 import { fetchSuggestedFollowUserIds } from 'common/store/pages/signon/sagas'
+import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 function* fetchSuggestedFollowUsers() {
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
   try {
     const userIds: ID[] = yield call(fetchSuggestedFollowUserIds)
     yield put(discoverActions.setSuggestedFollows(userIds))
@@ -44,7 +44,7 @@ function* confirmFollowsAndRefresh(userIds: ID[]) {
 }
 
 function* followUsers(action: ReturnType<typeof discoverActions.followUsers>) {
-  yield call(waitForBackendSetup)
+  yield call(waitForWrite)
   try {
     yield put(feedActions.setLoading())
     yield fork(confirmFollowsAndRefresh, action.userIds)

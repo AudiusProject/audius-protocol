@@ -9,10 +9,10 @@ import { each } from 'lodash'
 import moment from 'moment'
 import { all, call, put, take, takeEvery, getContext } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { DASHBOARD_PAGE } from 'utils/route'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import * as dashboardActions from './actions'
 const { getBalance } = walletActions
@@ -47,7 +47,7 @@ function* fetchDashboardTracksAsync(action) {
 
 function* fetchDashboardAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
 
   const account = yield call(waitForValue, getAccountUser)
   const { offset, limit } = action

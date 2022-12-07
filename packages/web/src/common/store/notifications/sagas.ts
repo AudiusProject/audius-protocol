@@ -40,7 +40,6 @@ import {
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -48,7 +47,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
-import { waitForRead } from 'utils/sagaHelpers'
+import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
 const { fetchReactionValues } = reactionsUIActions
@@ -638,13 +637,13 @@ export function* getNotifications(isFirstFetch: boolean) {
 
 export function* markAllNotificationsViewed() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* call(waitForBackendSetup)
+  yield* call(waitForWrite)
   yield* call(audiusBackendInstance.markAllNotificationAsViewed)
   yield* put(notificationActions.markedAllAsViewed())
 }
 
 function* watchTogglePanel() {
-  yield* call(waitForBackendSetup)
+  yield* call(waitForWrite)
   yield* takeEvery(notificationActions.TOGGLE_NOTIFICATION_PANEL, function* () {
     const isOpen = yield* select(getNotificationPanelIsOpen)
     if (isOpen) {

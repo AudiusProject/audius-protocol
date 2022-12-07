@@ -19,13 +19,12 @@ import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { waitForWrite } from 'utils/sagaHelpers'
+import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 const { updateOptimisticListenStreak } = audioRewardsPageActions
@@ -651,7 +650,7 @@ function* watchDownloadTrack() {
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
       const trackDownload = yield* getContext('trackDownload')
-      yield* call(waitForBackendSetup)
+      yield* call(waitForRead)
 
       // Check if there is a logged in account and if not,
       // wait for one so we can trigger the download immediately after

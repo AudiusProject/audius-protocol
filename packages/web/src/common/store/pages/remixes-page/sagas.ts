@@ -1,11 +1,11 @@
 import { TrackMetadata, remixesPageActions, Track } from '@audius/common'
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
   retrieveTrackByHandleAndSlug,
   retrieveTracks
 } from 'common/store/cache/tracks/utils/retrieveTracks'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/tracks/sagas'
 
@@ -15,7 +15,7 @@ function* watchFetch() {
   yield takeEvery(
     fetchTrack.type,
     function* (action: ReturnType<typeof fetchTrack>) {
-      yield call(waitForBackendSetup)
+      yield call(waitForRead)
       const { handle, slug, id } = action.payload
       if (!id && (!handle || !slug)) {
         throw new Error(

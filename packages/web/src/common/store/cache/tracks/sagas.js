@@ -27,7 +27,6 @@ import {
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
@@ -101,7 +100,7 @@ export function* trackNewRemixEvent(remixTrack) {
 }
 
 function* editTrackAsync(action) {
-  yield call(waitForBackendSetup)
+  yield call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)
 
   const currentTrack = yield select(getTrack, { id: action.trackId })

@@ -379,8 +379,12 @@ const SignOn = ({ navigation }: SignOnProps) => {
   useEffect(() => {
     if (signedIn && accountUser) {
       setIsWorking(false)
-      setEmail('')
-      setPassword('')
+
+      // Debounce resetting state
+      setTimeout(() => {
+        setEmail('')
+        setPassword('')
+      }, 1000)
 
       remindUserToTurnOnNotifications(dispatch)
     }

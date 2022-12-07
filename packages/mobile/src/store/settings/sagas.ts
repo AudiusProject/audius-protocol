@@ -9,7 +9,7 @@ import {
   getContext,
   waitForValue
 } from '@audius/common'
-import { waitForBackendSetup } from 'common/store/backend/sagas'
+import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
 import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import { select, call, put, takeEvery } from 'typed-redux-saga'
 
@@ -28,7 +28,7 @@ export function* disablePushNotifications() {
 function* watchGetPushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_PUSH_NOTIFICATION_SETTINGS, function* () {
-    yield* call(waitForBackendSetup)
+    yield* call(waitForRead)
     try {
       const settings = (yield* call(
         audiusBackendInstance.getPushNotificationSettings
