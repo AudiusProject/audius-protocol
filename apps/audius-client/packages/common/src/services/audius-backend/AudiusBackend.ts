@@ -867,18 +867,11 @@ export const audiusBackend = ({
     )
   }
 
-  async function getAccount(fromSource = false) {
+  async function getAccount() {
     await waitForLibsInit()
     try {
-      let account
-      if (fromSource) {
-        const wallet = audiusLibs.Account.getCurrentUser().wallet
-        account = await audiusLibs.discoveryProvider.getUserAccount(wallet)
-        audiusLibs.userStateManager.setCurrentUser(account)
-      } else {
-        account = audiusLibs.Account.getCurrentUser()
-        if (!account) return null
-      }
+      const account = audiusLibs.Account.getCurrentUser()
+      if (!account) return null
 
       // If reading the artist pick from discovery, set _artist_pick on
       // the user to the value from discovery (set in artist_pick_track_id

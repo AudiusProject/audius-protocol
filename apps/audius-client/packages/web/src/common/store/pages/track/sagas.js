@@ -22,9 +22,9 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { NOT_FOUND_PAGE, trackRemixesPage } from '../../../../utils/route'
 
@@ -44,7 +44,7 @@ function* watchFetchTrackBadge() {
 
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
-      yield call(waitForBackendSetup)
+      yield call(waitForRead)
       yield call(remoteConfigInstance.waitForRemoteConfig)
       const TF = new Set(
         remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []

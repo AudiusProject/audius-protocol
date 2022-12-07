@@ -40,7 +40,6 @@ const {
 
 const {
   signedIn,
-  unsubscribeBrowserPushNotifications,
   showPushNotificationConfirmation,
   fetchAccountSucceeded,
   fetchAccountFailed,
@@ -182,34 +181,30 @@ function* onSignedIn({ payload: { account, isSignUp = false } }) {
   }
 }
 
-export function* fetchAccountAsync({ fromSource = false, isSignUp = false }) {
+export function* fetchAccountAsync({ isSignUp = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
-  const localStorage = yield getContext('localStorage')
   const isNativeMobile = yield getContext('isNativeMobile')
   const isElectron = yield getContext('isElectron')
   const fingerprintClient = yield getContext('fingerprintClient')
 
   yield put(accountActions.fetchAccountRequested())
 
-  if (!fromSource) {
-    yield fetchLocalAccountAsync()
-  }
-
-  const account = yield call(audiusBackendInstance.getAccount, fromSource)
-  if (!account || account.is_deactivated) {
+  const account = yield call(audiusBackendInstance.getAccount)
+  if (!account) {
     yield put(
       fetchAccountFailed({
-        reason: account ? 'ACCOUNT_DEACTIVATED' : 'ACCOUNT_NOT_FOUND'
+        reason: 'ACCOUNT_NOT_FOUND'
       })
     )
-    // Clear local storage users if present
-    yield call([localStorage, 'clearAudiusAccount'])
-    yield call([localStorage, 'clearAudiusAccountUser'])
-
-    // If the user is not signed in
-    // Remove browser has requested push notifications.
-    yield put(unsubscribeBrowserPushNotifications())
+    return
+  }
+  if (account.is_deactivated) {
+    yield put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_DEACTIVATED'
+      })
+    )
     return
   }
 

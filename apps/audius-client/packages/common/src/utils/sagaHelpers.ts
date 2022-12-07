@@ -122,6 +122,6 @@ export function* waitForAccount() {
     waitForValue,
     (state) => state.account.status,
     null,
-    (status) => status !== Status.LOADING
+    (status) => status !== Status.LOADING && status !== Status.IDLE
   )
 }

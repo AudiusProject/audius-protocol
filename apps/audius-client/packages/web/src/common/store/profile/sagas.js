@@ -32,7 +32,6 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
   fetchUsers,
   fetchUserByHandle,
@@ -48,7 +47,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
-import { waitForWrite } from 'utils/sagaHelpers'
+import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -315,7 +314,7 @@ function* fetchProfileAsync(action) {
 
 function* watchFetchFollowUsers(action) {
   yield takeEvery(profileActions.FETCH_FOLLOW_USERS, function* (action) {
-    yield call(waitForBackendSetup)
+    yield call(waitForRead)
     switch (action.followerGroup) {
       case FollowType.FOLLOWEE_FOLLOWS:
         yield call(fetchFolloweeFollows, action)

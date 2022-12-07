@@ -75,7 +75,6 @@ export default function* rootSaga() {
     ...searchResultsSagas(),
 
     // Account
-
     ...accountSagas(),
     ...recoveryEmailSagas(),
     ...playlistLibrarySagas(),
@@ -125,7 +124,6 @@ export default function* rootSaga() {
     ...historySagas(),
     ...rewardsPageSagas(),
     ...settingsSagas(),
-    ...signOutSagas(),
 
     // Cast
     ...castSagas(),

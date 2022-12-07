@@ -7,7 +7,6 @@ import {
 } from '@audius/common'
 import { select, call, takeLatest, put, getContext } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -46,7 +45,7 @@ export function* getTagSearchResults(tag, kind, limit, offset) {
 }
 
 export function* fetchSearchPageTags(action) {
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
   const query = trimToAlphaNumeric(action.tag)
 
   const rawResults = yield call(
@@ -117,7 +116,7 @@ export function* getSearchResults(searchText, kind, limit, offset) {
 }
 
 function* fetchSearchPageResults(action) {
-  yield call(waitForBackendSetup)
+  yield call(waitForRead)
 
   const rawResults = yield call(
     getSearchResults,

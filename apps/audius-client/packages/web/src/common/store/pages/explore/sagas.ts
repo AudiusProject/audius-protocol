@@ -1,10 +1,10 @@
 import { ID, explorePageActions, getContext } from '@audius/common'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { STATIC_EXPLORE_CONTENT_URL } from 'utils/constants'
+import { waitForRead } from 'utils/sagaHelpers'
 const { fetchExplore, fetchExploreSucceeded, fetchExploreFailed } =
   explorePageActions
 
@@ -25,7 +25,7 @@ export const fetchExploreContent = async (
 
 function* watchFetchExplore() {
   yield* takeEvery(fetchExplore.type, function* () {
-    yield* call(waitForBackendSetup)
+    yield* call(waitForRead)
     const { EXPLORE_CONTENT_URL } = yield* getContext('env')
     try {
       const exploreContent = yield* call(
