@@ -169,6 +169,7 @@ class ManageEntityParameters:
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
 
+
 def copy_record(
     old_record: Union[User, Track, Playlist],
     block_number: int,

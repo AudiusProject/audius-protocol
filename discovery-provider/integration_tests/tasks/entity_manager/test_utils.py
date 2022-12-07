@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List
+
 from integration_tests.utils import populate_mock_db
 from src.models.users.user import User
-from src.utils.db_session import get_db
 from src.tasks.entity_manager.utils import copy_record
+from src.utils.db_session import get_db
 
 
 def test_copy_record(app):
@@ -19,7 +20,7 @@ def test_copy_record(app):
                 "bio": "hi",
                 "primary_id": 1,
                 "secondary_ids": [2, 3],
-                "artist_pick_track_id": 1
+                "artist_pick_track_id": 1,
             }
         ]
     }
@@ -38,11 +39,7 @@ def test_copy_record(app):
         txhash = "0x01"
         block_datetime = datetime.now()
         user_1_copy = copy_record(
-            user_1,
-            block_number,
-            event_blockhash,
-            txhash,
-            block_datetime
+            user_1, block_number, event_blockhash, txhash, block_datetime
         )
 
         old_user_attributes = user_1.get_attributes_dict()

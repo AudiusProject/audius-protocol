@@ -51,6 +51,7 @@ def validate_track_tx(params: ManageEntityParameters):
 
     return True
 
+
 def get_handle(params: ManageEntityParameters):
     # TODO: get the track owner user handle
     handle = (
@@ -148,7 +149,7 @@ def delete_track(params: ManageEntityParameters):
         # override with last updated playlist is in this block
         existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
 
-    deleted_track = copy_track_record(
+    deleted_track = copy_record(
         existing_track, params.block_number, params.event_blockhash, params.txhash
     )
     deleted_track.is_delete = True
