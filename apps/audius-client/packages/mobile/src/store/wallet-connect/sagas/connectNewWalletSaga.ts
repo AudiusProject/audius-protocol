@@ -3,8 +3,9 @@ import {
   Chain,
   tokenDashboardPageActions
 } from '@audius/common'
-import BN from 'bn.js'
 import bs58 from 'bs58'
+import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
+import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
 import { Linking } from 'react-native'
 import nacl from 'tweetnacl'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
@@ -47,6 +48,14 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
       const connectData = decryptPayload(data, nonce, sharedSecretDapp)
       const { session, public_key } = connectData
 
+      const isNewWallet = yield* checkIsNewWallet(public_key, Chain.Sol)
+      if (!isNewWallet) return
+
+      const { balance, collectibleCount } = yield* getWalletInfo(
+        public_key,
+        Chain.Sol
+      )
+
       yield* put(
         setSharedSecret({ sharedSecret: bs58.encode(sharedSecretDapp) })
       )
@@ -56,8 +65,8 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet: public_key,
           chain: Chain.Sol,
-          balance: new BN(0),
-          collectibleCount: 0
+          balance,
+          collectibleCount
         })
       )
 

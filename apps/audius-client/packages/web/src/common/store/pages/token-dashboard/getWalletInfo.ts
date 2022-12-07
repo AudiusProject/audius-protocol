@@ -17,12 +17,12 @@ export function* getWalletInfo(walletAddress: string, chain: Chain) {
     [walletAddress]
   )
 
-  const collectiblesMap = yield* call(
+  const collectiblesMap = (yield* call(
     chain === Chain.Eth
       ? fetchOpenSeaAssetsForWallets
       : fetchSolanaCollectiblesForWallets,
     [walletAddress]
-  )
+  )) as Record<string, string[]>
 
   const collectibleCount = collectiblesMap[walletAddress]?.length ?? 0
 
