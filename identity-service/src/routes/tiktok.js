@@ -67,8 +67,6 @@ module.exports = function (app) {
       try {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(urlAccessToken)
-        // const accessTokenResponse = { data: { access_token: 'act.0aa2abca0c7dd10b474f601bd4e6d75fcvovzlDYxr27mXhRDklZI21BiMtw!6394' } }
-
         const { access_token: accessToken } = accessTokenResponse.data
 
         // Fetch TikTok user from the TikTok API
@@ -83,20 +81,6 @@ module.exports = function (app) {
             ]
           }
         )
-
-
-        // const userResponse = {
-        //   data: {
-        //     data: {
-        //       user: {
-        //         open_id: '1',
-        //         display_name: 'sebastian',
-        //         is_verified: true
-        //       }
-        //     },
-        //     error: {}
-        //   }
-        // }
 
         const { data, error } = userResponse.data
 
