@@ -249,13 +249,12 @@ export const useShareToStory = ({
 
       try {
         session = await FFmpegKit.execute(
-          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=720x1280:c0=${dominantColorHex1}:c1=${dominantColorHex2}:x0=360:y0=0:x1=360:y1=1280:duration=10:speed=0.042:rate=30[bg];[0:a]aformat=channel_layouts=mono,showwaves=mode=cline:n=1:s=720x135:scale=cbrt:colors=#ffffff[fg];[bg][fg]overlay=format=auto:x=0:y=H-h-100" -vb 5M -t 10 ${storyVideoPath}`
+          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30[bg];[0:a]aformat=channel_layouts=mono,showfreqs=s=540x80:fscale=log:colors=#ffffff[fg];[bg][fg]overlay=format=auto:x=0:y=H-h-80" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
         )
       } catch (e) {
         handleError(e, 'Share to IG Story error')
         return
       }
-
       if (cancelRef.current) {
         // The job was cancelled.
         cleanup()
@@ -275,7 +274,7 @@ export const useShareToStory = ({
 
       // Step 4: Put everything together and push to IG
       const shareOptions = {
-        backgroundVideo: storyVideoPath,
+        backgroundVideo: `file://${storyVideoPath}`,
         stickerImage: stickerUri,
         attributionURL: Config.AUDIUS_URL,
         social: Share.Social.INSTAGRAM_STORIES,
