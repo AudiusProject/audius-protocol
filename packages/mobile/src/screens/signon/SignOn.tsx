@@ -381,12 +381,16 @@ const SignOn = ({ navigation }: SignOnProps) => {
       setIsWorking(false)
 
       // Debounce resetting state
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setEmail('')
         setPassword('')
       }, 1000)
 
       remindUserToTurnOnNotifications(dispatch)
+
+      return () => {
+        clearTimeout(timeout)
+      }
     }
   }, [signedIn, accountUser, dispatch])
 
