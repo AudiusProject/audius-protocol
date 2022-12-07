@@ -22,10 +22,21 @@ depends_on = None
 
 def upgrade():
     env = os.getenv("audius_discprov_env")
+    print(f"REED migration env: {env}")
     if env == "stage" or env == "dev":
         return
 
     connection = op.get_bind()
+
+    # Don't run if audio_transactions_history is already populated with the
+    # expected 1342621 rows (leaving a bit of wiggle room).
+    query = """
+        select count(*) from audio_transactions_history;
+    """
+    audio_tx_count = connection.execute(query).scalar()
+    if audio_tx_count >= 1342600:
+        return
+
     query = """
         delete from audio_transactions_history where slot < 164000000;
     """
