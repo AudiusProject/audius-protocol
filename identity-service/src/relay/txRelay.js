@@ -22,6 +22,9 @@ const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 const UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT = config.get(
   'updateReplicaSetReconfigurationLimit'
 )
+const UPDATE_REPLICA_SET_WALLET_WHITELIST = config.get(
+  'updateReplicaSetWalletWhitelist'
+)
 
 const transactionRateLimiter = {
   updateReplicaSetReconfiguration: 0
@@ -132,6 +135,13 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
       ) {
         throw new Error('updateReplicaSet rate limit reached')
+      }
+
+      if (
+        UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
+        !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
+      ) {
+        throw new Error(`Sender ${senderAddress} not allowed to make updateReplicaSet calls`)
       }
     }
   }
