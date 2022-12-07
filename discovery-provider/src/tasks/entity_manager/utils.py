@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict
+from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.notifications.notification import NotificationSeen
@@ -170,7 +170,7 @@ def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
 
 def copy_record(
-    old_record: User,
+    old_record: Union[User, Track],
     block_number: int,
     event_blockhash: str,
     txhash: str,
