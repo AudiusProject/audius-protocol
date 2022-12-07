@@ -38,9 +38,11 @@ export function* addWalletToUser(
         `Could not confirm connect wallet for account user id ${accountUserId}`
       )
     }
+
     const { blockHash, blockNumber } = result
 
     const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
+
     if (!confirmed) {
       throw new Error(
         `Could not confirm connect wallet for account user id ${accountUserId}`

@@ -146,12 +146,10 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       const walletConnectPath = /^\/(wallet-connect)/
       if (path.match(walletConnectPath)) {
-        console.log('okay this is happening?', path)
         path = `${path.replace(
           walletConnectPath,
           '/wallets'
         )}&path=wallet-connect`
-        console.log('path now..', path)
       }
 
       const walletSignPath = /^\/(wallet-sign-message)/

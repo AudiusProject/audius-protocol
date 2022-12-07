@@ -1,13 +1,14 @@
 import { tokenDashboardPageActions } from '@audius/common'
 import { put, takeEvery } from 'typed-redux-saga'
 
-import { addWalletToUser } from './addWalletToUser'
-import { associateNewWallet } from './associateNewWallet'
-import { checkIsNewWallet } from './checkIsNewWallet'
+import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
+import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'
+import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
+import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
+
 import { disconnectWallet } from './disconnectWallet'
 import { establishWalletConnection } from './establishWalletConnection'
 import { getWalletAddress } from './getWalletAddress'
-import { getWalletInfo } from './getWalletInfo'
 import { signMessage } from './signMessage'
 const { connectNewWallet } = tokenDashboardPageActions
 

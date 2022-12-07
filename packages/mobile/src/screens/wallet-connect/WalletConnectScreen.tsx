@@ -64,7 +64,8 @@ export const WalletConnectScreen = () => {
     } else if (params.path === 'wallet-sign-message') {
       dispatch(signMessage(params))
     }
-  }, [params?.path, params, dispatch, connector])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- connector changes often
+  }, [params?.path, params, dispatch])
 
   const handleConnectWallet = useCallback(() => {
     // The wallet connect modal houses all of our wallet

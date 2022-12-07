@@ -25,6 +25,7 @@ import {
 
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
+import { getAccountMetadataCID } from 'common/store/pages/token-dashboard/getAccountMetadataCID'
 import commonTokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import {
   loadWalletLink,
@@ -34,7 +35,6 @@ import {
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchConnectNewWallet } from './connectNewWalletSaga'
-import { getAccountMetadataCID } from './getAccountMetadataCID'
 const { setVisibility } = modalsActions
 const {
   send: walletSend,

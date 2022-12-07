@@ -1,3 +1,6 @@
+import bs58 from 'bs58'
+import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
+import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { setVisibility } from 'app/store/drawers/slice'
@@ -25,15 +28,20 @@ function* signMessageAsync(action: SignMessageAction) {
       if (!sharedSecret) return
       if (!nonce) return
 
-      const { signature, publicKey }: SignMessagePayload = decryptPayload(
+      const { signature }: SignMessagePayload = decryptPayload(
         data,
         nonce,
         sharedSecret
       )
+      const sigByteArray = bs58.decode(signature)
+      const sigBuffer = Buffer.from(sigByteArray)
+      const sigHexString = sigBuffer.toString('hex')
 
-      // TODO: Refactor token-dashboard sagas #
-      // yield* put(addNewWallet({ signature, publicKey }))
-      console.log('signedMessagPayload', signature, publicKey)
+      const updatedUserMetadata = yield* associateNewWallet(sigHexString)
+
+      function* disconnect() {}
+
+      yield* addWalletToUser(updatedUserMetadata, disconnect)
       break
     }
     case 'solana-phone-wallet-adapter': {
