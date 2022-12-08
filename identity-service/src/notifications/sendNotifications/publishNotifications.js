@@ -143,6 +143,10 @@ const getPublishTypes = (
     types.push(deviceType.Mobile)
   if (userSettings && userSettings.browser && userSettings.browser[settingKey])
     types.push(deviceType.Browser)
+  logger.info(
+    `publishNotifications | types publish ${JSON.stringify(types)} for settings ${JSON.stringify(userSettings)}`
+  )
+
   return types
 }
 
@@ -195,6 +199,10 @@ const publishNotifications = async (
   tx,
   optimizelyClient
 ) => {
+  logger.info(
+    `publishNotifications | There are ${notifications.length} notifications to process`
+  )
+
   const initiators = models.User.findAll({
     where: {
       blockchainUserId: notifications.map((notif) => notif.initiator)
@@ -235,6 +243,9 @@ const publishNotifications = async (
       (initiatingUser.isBlockedFromRelay ||
         initiatingUser.isBlockedFromNotifications)
     if (isReceiverDeactivated) {
+      logger.info(
+        `publishNotifications | notification initiator with user id ${initiatorUserId} is deactivated, skipping...`
+      )
       continue
     }
     if (isInitiatorAbusive) {
@@ -249,6 +260,9 @@ const publishNotifications = async (
       optimizelyClient
     )
     if (shouldFilter) {
+      logger.info(
+        `publishNotifications | notification initiator with user id ${initiatorUserId} should filter`
+      )
       continue
     }
 

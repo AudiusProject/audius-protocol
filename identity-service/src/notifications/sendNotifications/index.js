@@ -3,6 +3,7 @@ const { notificationTypes } = require('../constants')
 const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
 const formatNotifications = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
+const { logger } = require('../../logging')
 
 function getUserIdsToNotify(notifications) {
   return notifications.reduce((userIds, notification) => {
@@ -147,6 +148,9 @@ async function sendNotifications(
   const userNotificationSettings = await getUserNotificationSettings(
     userIdsToNotify,
     tx
+  )
+  logger.info(
+    `getUserNotificationSettings | There are ${Object.keys(userNotificationSettings).length} notifications settings and ${userIdsToNotify.length} user Ids`
   )
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format

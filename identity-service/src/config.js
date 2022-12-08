@@ -300,7 +300,7 @@ const config = convict({
     format: Number,
     env: 'finalPOABlock',
     nullable: true,
-    default: null
+    default: 1
   },
   minimumRelayerBalance: {
     doc: 'Minimum token balance for relayer below which /balance_check fails',
