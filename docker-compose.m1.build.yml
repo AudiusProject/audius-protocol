@@ -2,11 +2,7 @@ version: "3.9"
 
 services:
   solana-test-validator:
-    extends:
-      file: docker-compose.yml
-      service: solana-test-validator
-    # need audius dockerhub push access
-    image: endliine/solana-programs:m1
+    image: audius/solana-programs:m1-latest
     build:
       context: solana-programs
       dockerfile: Dockerfile.m1
@@ -27,7 +23,3 @@ services:
         reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
         reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
         valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
-    ports:
-     - "8899:8899/tcp"
-    environment:
-      SOLANA_HOST: "http://127.0.0.1:8899"

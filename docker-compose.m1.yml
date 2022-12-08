@@ -39,8 +39,7 @@ services:
       service: eth-blockscout
 
   solana-test-validator:
-    # TODO: audius dockerhub auth
-    image: endliine/solana-programs:m1
+    image: audius/solana-programs:m1-latest
     environment:
       SOLANA_HOST: "http://127.0.0.1:8899"
     volumes:
@@ -48,6 +47,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    ports:
+      - "8899:8899"
 
   build-audius-libs:
     extends:
@@ -93,6 +94,11 @@ services:
     extends:
       file: docker-compose.yml
       service: port-forwarder
+
+  sshuttle-server:
+    extends:
+      file: docker-compose.yml
+      service: sshuttle-server
 
 volumes:
   poa-contracts-abis:
