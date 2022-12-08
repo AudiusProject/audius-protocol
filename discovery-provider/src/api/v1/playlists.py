@@ -464,4 +464,5 @@ class GetUnclaimedPlaylistId(Resource):
         description="""Gets an unclaimed blockchain playlist ID""",
     )
     def get(self):
-        return get_unclaimed_id("playlist")
+        unclaimed_id = get_unclaimed_id("playlist")
+        return success_response(unclaimed_id)
