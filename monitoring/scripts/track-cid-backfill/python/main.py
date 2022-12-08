@@ -38,11 +38,11 @@ def generate_aggregate_csv():
         pass
 
     final_result = final_result.sort_values(by=['track_id'])
-    final_result.to_csv('../final_result.csv')
+    final_result.to_csv('../track_cids.csv')
     # print(final_result)
 
 def get_missing_track_cids_csv():
-    final_result_read = pd.read_csv('../final_result.csv')
+    final_result_read = pd.read_csv('../track_cids.csv')
     # print(final_result_read)
 
     all_track_ids_read = pd.read_csv('../all_track_ids.csv').sort_values(by=['TrackId'])
@@ -52,12 +52,12 @@ def get_missing_track_cids_csv():
     # print(final_result_read['TrackId'].isnotin(all_track_ids_read['TrackId']).value_counts())
 
     the_missing = all_track_ids_read[~all_track_ids_read['TrackId'].isin(final_result_read['track_id'])].sort_values(by=['TrackId'])
-    the_missing.to_csv('../the_missing.csv', index=False, header=False)
+    the_missing.to_csv('../missing_cids.csv', index=False, header=False)
 
 def main():
     generate_aggregate_csv()
     # get_missing_track_cids_csv()
-    # df = pd.read_csv('../the_missing.csv')
+    # df = pd.read_csv('../missing_cids.csv')
     # print(df.size)
 
 if __name__ == '__main__':

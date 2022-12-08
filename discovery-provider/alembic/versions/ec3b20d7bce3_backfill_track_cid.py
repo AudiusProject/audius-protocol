@@ -65,14 +65,20 @@ def upgrade():
     # sql, params = build_sql(True, env)
     # connection.execute(sql, params)
 
-    path_tmp = Path(__file__).parent.joinpath("../tmp")
-    path_csv = Path(__file__).parent.joinpath("../tmp/track_cids.csv")
-    path_zip = Path(__file__).parent.joinpath("../tmp/track_cids.csv.zip")
+    path_tmp = Path(__file__).parent.joinpath("../tmp/stage")
+    path_csv = Path(__file__).parent.joinpath("../tmp/stage/track_cids.csv")
+    path_zip = Path(__file__).parent.joinpath("../tmp/stage/track_cids.csv.zip")
 
     # if we want to download from s3 rather than check in the csv zip in the code
     # then uncomment below
+    # env = os.getenv("audius_discprov_env")
+    # if env != "stage" and env != "prod":
+    #     return
+    # if env == "stage":
+    #     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/stage-track_cids.csv.zip"
+    # else:
+    #     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/prod-track_cids.csv.zip"
     # os.mkdir(path_tmp)
-    # aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/track_cids.csv.zip"
     # print(f"Migration - downloading {aws_url}")
     # urllib.request.urlretrieve(aws_url, path_zip)
     # print("Migration - download complete")
