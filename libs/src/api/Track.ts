@@ -29,6 +29,8 @@ type ChainInfo = {
   transcodedTrackUUID: string
 }
 
+const { decodeHashId } = Utils
+
 export class Track extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
@@ -462,7 +464,7 @@ export class Track extends Base {
       let txReceipt: TransactionReceipt
       let trackId: number
       if (useEntityManager) {
-        trackId = Track.generateTrackId()
+        trackId = await this._generateTrackId()
         const response = await this.contracts.EntityManagerClient!.manageEntity(
           ownerId,
           EntityManagerClient.EntityType.TRACK,
@@ -602,7 +604,7 @@ export class Track extends Base {
           let txReceipt: TransactionReceipt
           let trackId: number
           if (useEntityManager && this.contracts.EntityManagerClient) {
-            trackId = Track.generateTrackId()
+            trackId = await this._generateTrackId()
             const response =
               await this.contracts.EntityManagerClient.manageEntity(
                 ownerId,
@@ -821,14 +823,13 @@ export class Track extends Base {
     }
   }
 
-  // Minimum track ID, intentionally higher than legacy track ID range
-  static MIN_TRACK_ID = 2000000
-
-  // Maximum track ID, reflects postgres max integer value
-  static MAX_TRACK_ID = 2147483647
-
-  static generateTrackId(): number {
-    return Utils.getRandomInt(Track.MIN_TRACK_ID, Track.MAX_TRACK_ID)
+  async _generateTrackId(): Promise<number> {
+    // call DN
+    const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
+    if (!encodedId) {
+      throw new Error('No unclaimed track IDs')
+    }
+    return decodeHashId(encodedId)!
   }
   /* ------- PRIVATE  ------- */
 
