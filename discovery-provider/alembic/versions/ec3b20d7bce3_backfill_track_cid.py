@@ -23,47 +23,16 @@ branch_labels = None
 depends_on = None
 
 
-def build_sql(up, env):
-    if env == "stage":
-        path = Path(__file__).parent.joinpath("./final_boss_stage.csv")
-    elif env == "prod":
-        path = Path(__file__).parent.joinpath("./final_boss.csv")
-
-    with open(path, "r") as f:
-        track_cids = []
-        track_ids = []
-        for entry in f:
-            track_id, track_cid = entry.split(",")
-
-            if up:
-                track_id = int(track_id.strip())
-                track_ids.append(track_id)
-                track_cids.append(track_cid)
-
-    params = {
-        "track_cids": track_cids,
-        "track_ids": track_ids,
-    }
-    if up:
-        inner_sql = "UPDATE track SET track_cid = data_table.track_cid WHERE users.is_current = True AND users.track_id = data_table.track_id;"
-    else:
-        inner_sql = "UPDATE track SET track_cid = null WHERE users.is_current = True AND users.track_id = data_table.track_id;"
-
+def copy_mapping_into_temp_table():
+    ####################################################################
+    # Create temporary table and copy track id <> cid mapping into table
+    # Also create index on track_id
+    ####################################################################
+    inner_sql = f"""
+        create table if not exists tmp_track_cid_mapping (track_id varchar unique, track_cid varchar(46));
+        """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
-    sql = sql.bindparams(sa.bindparam("track_cids", ARRAY(String)))
-    if up:
-        sql = sql.bindparams(sa.bindparam("track_ids", ARRAY(Integer)))
-
-    return (sql, params)
-
-
-def upgrade():
-    # env = os.getenv("audius_discprov_env")
-    # if env != "stage" and env != "prod":
-    #     return
-    # connection = op.get_bind()
-    # sql, params = build_sql(True, env)
-    # connection.execute(sql, params)
+    op.get_bind().execute(sql)
 
     path_tmp = Path(__file__).parent.joinpath("../tmp/stage")
     path_csv = Path(__file__).parent.joinpath("../tmp/stage/track_cids.csv")
@@ -88,7 +57,21 @@ def upgrade():
 
     cursor = op.get_bind().connection.cursor()
     with open(path_csv, "r") as f:
-        cursor.copy_from(f, "yolo", sep=",", columns=("track_id", "track_cid"))
+        # Skip the header row of the csv
+        next(f)
+        cursor.copy_from(
+            f, "tmp_track_cid_mapping", sep=",", columns=("track_id", "track_cid")
+        )
+
+    #############################################################
+    # Change the track id column type to be integer and add index
+    #############################################################
+    inner_sql = f"""
+        alter table tmp_track_cid_mapping alter column track_id type integer using track_id::int;
+        create index if not exists tmp_track_cid_mapping_idx on tmp_track_cid_mapping USING btree (track_id);
+        """
+    sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
+    op.get_bind().execute(sql)
 
     os.remove(path_csv)
     # if we downloaded from s3 rather than use checked in csv zip in the code
@@ -97,11 +80,53 @@ def upgrade():
     # os.rmdir(path_tmp)
 
 
+def remove_temp_table():
+    # Drop index then table
+    inner_sql = f"""
+        drop index if exists tmp_track_cid_mapping_idx;
+        drop table if exists tmp_track_cid_mapping;
+        """
+    sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
+    op.get_bind().execute(sql)
+
+
+def upgrade():
+    copy_mapping_into_temp_table()
+
+    ###############################################################
+    # Update the tracks table using the new temporary mapping table
+    ###############################################################
+    inner_sql = f"""
+        update tracks set track_cid = sub.track_cid
+        from (
+            select track_id, track_cid from tmp_track_cid_mapping
+        ) as sub
+        where tracks.track_id = sub.track_id
+        and tracks.is_current is true
+        and tracks.is_delete is false;
+        """
+    sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
+    op.get_bind().execute(sql)
+
+    remove_temp_table()
+
+
 def downgrade():
-    # env = os.getenv("audius_discprov_env")
-    # if env != "stage" and env != "prod":
-    #     return
-    # connection = op.get_bind()
-    # sql, params = build_sql(False, env)
-    # connection.execute(sql, params)
-    pass
+    copy_mapping_into_temp_table()
+
+    ################################################################################
+    # Update the tracks table by setting track cid to null for tracks in the mapping
+    ################################################################################
+    inner_sql = f"""
+        update tracks set track_cid = null
+        from (
+            select track_id, track_cid from tmp_track_cid_mapping
+        ) as sub
+        where tracks.track_id = (sub.track_id)::int
+        and tracks.is_current is true
+        and tracks.is_delete is false;
+        """
+    sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
+    op.get_bind().execute(sql)
+
+    remove_temp_table()

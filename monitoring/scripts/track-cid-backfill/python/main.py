@@ -56,9 +56,7 @@ def get_missing_track_cids_csv():
 
 def main():
     generate_aggregate_csv()
-    # get_missing_track_cids_csv()
-    # df = pd.read_csv('../missing_cids.csv')
-    # print(df.size)
+    get_missing_track_cids_csv()
 
 if __name__ == '__main__':
     main()
