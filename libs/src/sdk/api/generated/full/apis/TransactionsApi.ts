@@ -51,6 +51,17 @@ export interface GetAudioTransactionHistoryRequest {
     sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
 }
 
+export interface GetAudioTransactionHistoryCountRequest {
+    /**
+     * The data that was signed by the user for signature recovery
+     */
+    encodedDataMessage: string;
+    /**
+     * The signature of data, used for signature recovery
+     */
+    encodedDataSignature: string;
+}
+
 /**
  * 
  */
@@ -107,10 +118,26 @@ export class TransactionsApi extends runtime.BaseAPI {
     /**
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCount(): Promise<NonNullable<TransactionHistoryCountResponse["data"]>> {
+    async getAudioTransactionHistoryCount(requestParameters: GetAudioTransactionHistoryCountRequest): Promise<NonNullable<TransactionHistoryCountResponse["data"]>> {
+        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
+        }
+
+        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        }
+
+        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        }
 
         return this.request({
             path: `/transactions/count`,

@@ -1,7 +1,8 @@
 import logging
 
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_request_param,
     extend_transaction_details,
     make_full_response,
@@ -90,6 +91,22 @@ transaction_history_count_response = make_full_response(
     "transaction_history_count_response", full_ns, fields.Integer()
 )
 
+transaction_history_count_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+transaction_history_count_parser.add_argument(
+    MESSAGE_HEADER,
+    required=True,
+    description="The data that was signed by the user for signature recovery",
+    location="headers",
+)
+transaction_history_count_parser.add_argument(
+    SIGNATURE_HEADER,
+    required=True,
+    description="The signature of data, used for signature recovery",
+    location="headers",
+)
+
 
 @full_ns.route("/count")
 class GetTransactionHistoryCount(Resource):
@@ -97,6 +114,7 @@ class GetTransactionHistoryCount(Resource):
         id="""Get Audio Transaction History Count""",
         description="""Gets the count of the user's $AUDIO transaction history within the App""",
     )
+    @full_ns.expect(transaction_history_count_parser)
     @full_ns.marshal_with(transaction_history_count_response)
     @auth_middleware()
     def get(self, authed_user_id=None):
