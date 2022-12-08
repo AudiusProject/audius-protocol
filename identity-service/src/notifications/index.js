@@ -422,13 +422,14 @@ class NotificationProcessor {
       trackIdOwnersToRequestList,
       timeout
     )
-    logger.info(`publishNotifications | ${notificationsFromDN.notifications.length} notifs from dn`)
+
+    logger.info(`publishNotifications | ${notificationsFromDN.notifications.length} notifs from dn with miin block ${minBlock}`)
 
     const { info: metadata, owners, milestones } = notificationsFromDN
     const notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
-    logger.info(`publishNotifications | ${notifications} after filter out`)
+    logger.info(`publishNotifications | ${notifications.length} after filter out`)
 
     logger.info(
       `notifications main indexAll job - query notifications from discovery node complete in ${
