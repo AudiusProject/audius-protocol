@@ -8,7 +8,10 @@ from src.api.v1.helpers import (
     pagination_parser,
     success_response,
 )
-from src.queries.get_audio_transactions_history import get_audio_transactions_history
+from src.queries.get_audio_transactions_history import (
+    get_audio_transactions_history,
+    get_audio_transactions_history_count,
+)
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
 from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER, auth_middleware
 
@@ -81,3 +84,24 @@ class GetTransactionHistory(Resource):
             }
         )
         return success_response(list(map(extend_transaction_details, transactions)))
+
+
+transaction_history_count_response = make_full_response(
+    "transaction_history_count_response", full_ns, fields.Integer()
+)
+
+
+@full_ns.route("/count")
+class GetTransactionHistoryCount(Resource):
+    @full_ns.doc(
+        id="""Get Audio Transaction History Count""",
+        description="""Gets the count of the user's $AUDIO transaction history within the App""",
+    )
+    @full_ns.marshal_with(transaction_history_count_response)
+    @auth_middleware()
+    def get(self, authed_user_id=None):
+        if authed_user_id is None:
+            abort_bad_request_param(None, full_ns)
+        transactions_count = get_audio_transactions_history_count(authed_user_id)
+        response = success_response(transactions_count)
+        return response
