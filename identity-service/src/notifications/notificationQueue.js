@@ -141,7 +141,9 @@ async function promiseAllInBatches(task, logger, items, batchSize) {
     const itemsForBatch = items.slice(position, position + batchSize)
     results = [
       ...results,
-      ...(await Promise.allSettled(itemsForBatch.map((item) => task(logger, item))))
+      ...(await Promise.allSettled(
+        itemsForBatch.map((item) => task(logger, item))
+      ))
     ]
     position += batchSize
   }
