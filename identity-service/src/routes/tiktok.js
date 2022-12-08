@@ -90,31 +90,17 @@ module.exports = function (app) {
 
         const { user: tikTokUser } = data
 
-        const existingTikTokUser = await models.TikTokUser.findOne({
-          where: {
+        // Store the user id, and current profile for user in db
+        await models.TikTokUser.findOrCreate({
+          where: { uuid: tikTokUser.open_id },
+          defaults: {
             uuid: tikTokUser.open_id,
-            blockchainUserId: {
-              [models.Sequelize.Op.not]: null
-            }
+            profile: tikTokUser,
+            verified: tikTokUser.is_verified
           }
         })
 
-        if (existingTikTokUser) {
-          return successResponse(accessTokenResponse.data)
-        } else {
-          // Store the user id, and current profile for user in db
-          try {
-            await models.TikTokUser.upsert({
-              uuid: tikTokUser.open_id,
-              profile: tikTokUser,
-              verified: tikTokUser.is_verified
-            })
-
-            return successResponse(accessTokenResponse.data)
-          } catch (err) {
-            return errorResponseBadRequest(err)
-          }
-        }
+        return successResponse(accessTokenResponse.data)
       } catch (err) {
         return errorResponseBadRequest(err)
       }
