@@ -1,6 +1,8 @@
+import type { WalletAddress } from '@audius/common'
 import {
   accountSelectors,
   Chain,
+  getContext,
   tokenDashboardPageActions
 } from '@audius/common'
 import bs58 from 'bs58'
@@ -10,28 +12,33 @@ import { Linking } from 'react-native'
 import nacl from 'tweetnacl'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
-import { getConnectionType, getDappKeyPair } from '../selectors'
+import { getDappKeyPair } from '../selectors'
 import {
   connectNewWallet,
+  setConnectionStatus,
   setPublicKey,
   setSession,
-  setSharedSecret,
-  signMessage
+  setSharedSecret
 } from '../slice'
 import type { ConnectNewWalletAction } from '../types'
 import { buildUrl, decryptPayload, encryptPayload } from '../utils'
 const { setIsConnectingWallet } = tokenDashboardPageActions
 const { getUserId } = accountSelectors
 
-function* connectNewWalletAsync(action: ConnectNewWalletAction) {
-  const connectionType = yield* select(getConnectionType)
+export function* convertToChecksumAddress(address: WalletAddress) {
+  const audiusBackend = yield* getContext('audiusBackendInstance')
+  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
+  const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+  return ethWeb3.utils.toChecksumAddress(address)
+}
 
+function* connectNewWalletAsync(action: ConnectNewWalletAction) {
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
 
   const message = `AudiusUserID:${accountUserId}`
 
-  switch (connectionType) {
+  switch (action.payload.connectionType) {
     case null:
       console.error('No connection type set')
       break
@@ -97,11 +104,28 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
       break
     }
     case 'wallet-connect': {
-      const { connector } = action.payload
-      if (!connector) return
+      const { publicKey } = action.payload
+      const wallet = yield* call(convertToChecksumAddress, publicKey)
 
-      const signature = yield* call(connector.signMessage, [message])
-      yield put(signMessage({ path: 'wallet-sign-message', data: signature }))
+      const isNewWallet = yield* checkIsNewWallet(wallet, Chain.Eth)
+      if (!isNewWallet) return
+
+      const { balance, collectibleCount } = yield* getWalletInfo(
+        wallet,
+        Chain.Eth
+      )
+
+      yield* put(
+        setIsConnectingWallet({
+          wallet,
+          chain: Chain.Eth,
+          balance,
+          collectibleCount
+        })
+      )
+
+      yield* put(setConnectionStatus({ status: 'connected' }))
+
       break
     }
   }

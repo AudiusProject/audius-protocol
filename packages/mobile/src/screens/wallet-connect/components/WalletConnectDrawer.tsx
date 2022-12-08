@@ -4,13 +4,16 @@ import type {
   RenderQrcodeModalProps,
   WalletService
 } from '@walletconnect/react-native-dapp'
-import { useWalletConnectContext } from '@walletconnect/react-native-dapp'
+import {
+  useWalletConnect,
+  useWalletConnectContext
+} from '@walletconnect/react-native-dapp'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
-import { getVisibility } from 'app/store/drawers/selectors'
+import { getVisibility, getData } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
@@ -51,9 +54,10 @@ export const WalletConnectDrawer = () => {
   const styles = useStyles()
   const { walletServices } = useWalletConnectContext()
 
-  const supportedWalletServices = (walletServices || []).filter((service) =>
+  const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
   )
+  const data = useSelector(getData)
 
   return (
     <NativeDrawer drawerName={MODAL_NAME}>
@@ -67,11 +71,13 @@ export const WalletConnectDrawer = () => {
           {messages.title}
         </Text>
         <View style={styles.container}>
-          {supportedWalletServices.map((walletService: WalletService) => {
+          {supportedWalletServices?.map((walletService: WalletService) => {
+            const uri = data?.uri as string
             return (
               <EthWalletConnectOption
                 key={walletService.name}
                 walletService={walletService}
+                uri={uri}
               />
             )
           })}
@@ -85,23 +91,28 @@ export const WalletConnectDrawer = () => {
 
 export const WalletConnectProviderRenderModal = ({
   visible,
-  onDismiss
+  onDismiss,
+  uri
 }: RenderQrcodeModalProps) => {
   const dispatch = useDispatch()
   const isDrawerVisible = useSelector(getVisibility('ConnectWallets'))
+  const connector = useWalletConnect()
   // When wallet connect visibility changes, show drawer
   useEffect(() => {
     if (visible) {
-      dispatch(setVisibility({ drawer: MODAL_NAME, visible: true }))
+      dispatch(
+        setVisibility({ drawer: MODAL_NAME, visible: true, data: { uri } })
+      )
     }
-  }, [visible, dispatch])
+  }, [visible, dispatch, uri])
 
   // When the drawer gets dismissed, dismiss the wallet connect popup
   useEffect(() => {
     if (visible && !isDrawerVisible) {
-      onDismiss()
+      // TODO: this isn't working properly
+      // onDismiss()
     }
-  }, [visible, isDrawerVisible, onDismiss])
+  }, [visible, isDrawerVisible, onDismiss, connector])
 
   // Must be an element to comply with interface
   return <></>

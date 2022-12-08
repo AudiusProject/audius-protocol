@@ -5,13 +5,17 @@ import { useWalletConnectContext } from '@walletconnect/react-native-dapp'
 import { Image } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { setConnectionType } from 'app/store/wallet-connect/slice'
+import {
+  setConnectionStatus,
+  setConnectionType
+} from 'app/store/wallet-connect/slice'
 import { makeStyles } from 'app/styles'
 
 import { WalletConnectOption } from './WalletConnectOption'
 
 type EthWalletConnectOptionProps = {
   walletService: WalletService
+  uri: string
 }
 
 const useStyles = makeStyles(() => ({
@@ -22,17 +26,18 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-export const EthWalletConnectOption = ({
-  walletService
-}: EthWalletConnectOptionProps) => {
+export const EthWalletConnectOption = (props: EthWalletConnectOptionProps) => {
+  const { walletService, uri } = props
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { connectToWalletService } = useWalletConnectContext()
+  const context = useWalletConnectContext()
+  const { connectToWalletService } = context
 
   const handleConnectWallet = useCallback(() => {
     dispatch(setConnectionType({ connectionType: 'wallet-connect' }))
-    connectToWalletService?.(walletService, 'audius://connet-wallet')
-  }, [dispatch, walletService, connectToWalletService])
+    dispatch(setConnectionStatus({ status: 'connecting' }))
+    connectToWalletService?.(walletService, uri)
+  }, [dispatch, walletService, connectToWalletService, uri])
 
   return (
     <WalletConnectOption

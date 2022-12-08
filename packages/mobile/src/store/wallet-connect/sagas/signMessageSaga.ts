@@ -5,7 +5,7 @@ import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { setVisibility } from 'app/store/drawers/slice'
 
-import { getConnectionType, getSharedSecret } from '../selectors'
+import { getSharedSecret } from '../selectors'
 import { signMessage } from '../slice'
 import type { SignMessageAction } from '../types'
 import { decryptPayload } from '../utils'
@@ -16,14 +16,12 @@ type SignMessagePayload = {
 }
 
 function* signMessageAsync(action: SignMessageAction) {
-  const { data, nonce, publicKey } = action.payload
-  const connectionType = yield* select(getConnectionType)
-
-  switch (connectionType) {
+  switch (action.payload.connectionType) {
     case null:
       console.error('No connection type set')
       break
     case 'phantom': {
+      const { data, nonce } = action.payload
       const sharedSecret = yield* select(getSharedSecret)
       if (!sharedSecret) return
       if (!nonce) return
@@ -45,18 +43,19 @@ function* signMessageAsync(action: SignMessageAction) {
       break
     }
     case 'solana-phone-wallet-adapter': {
-      const signature = data
-      if (!publicKey) return
-      // TODO: Refactor token-dashboard sagas #
-      // yield* put(addNewWallet({ signature, publicKey }))
+      const { data: signature, publicKey } = action.payload
+      // TODO: connect to account
       console.log('signedMessagPayload', signature, publicKey)
       break
     }
     case 'wallet-connect': {
-      const signature = data
-      // TODO: Refactor token-dashboard sagas #
-      // yield* put(addNewWallet({ signature, publicKey }))
-      console.log('signedMessagPayload', signature, publicKey)
+      const { data: signature } = action.payload
+
+      const updatedUserMetadata = yield* associateNewWallet(signature)
+
+      function* disconnect() {}
+
+      yield* addWalletToUser(updatedUserMetadata, disconnect)
       break
     }
   }

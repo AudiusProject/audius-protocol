@@ -1,21 +1,31 @@
 import { useCallback, useEffect } from 'react'
 
+import { accountSelectors, tokenDashboardPageSelectors } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 import { useWalletConnect } from '@walletconnect/react-native-dapp'
 import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { Button, Text, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { connectNewWallet, signMessage } from 'app/store/wallet-connect/slice'
+import { getStatus } from 'app/store/wallet-connect/selectors'
+import {
+  connectNewWallet,
+  setConnectionStatus,
+  signMessage
+} from 'app/store/wallet-connect/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 
 import { LinkedWallets } from './components'
 import type { WalletConnectParamList, WalletConnectRoute } from './types'
+
+const { getUserId } = accountSelectors
+
+const { getConfirmingWallet } = tokenDashboardPageSelectors
 
 const messages = {
   title: 'Connect Wallets',
@@ -56,15 +66,61 @@ export const WalletConnectScreen = () => {
   const connector = useWalletConnect()
   const dispatch = useDispatch()
   const { params } = useRoute<WalletConnectRoute<'Wallets'>>()
+  const connectionStatus = useSelector(getStatus)
+  const { wallet } = useSelector(getConfirmingWallet)
+  const accountUserId = useSelector(getUserId)
+
+  useEffect(() => {
+    if (
+      connectionStatus === 'connected' &&
+      connector.session.connected &&
+      wallet
+    ) {
+      dispatch(setConnectionStatus({ status: 'signing' }))
+
+      const message = `AudiusUserID:${accountUserId}`
+      const messageParams = [message, wallet]
+
+      setTimeout(() => {
+        connector
+          .signPersonalMessage(messageParams)
+          .then((result) => {
+            dispatch(
+              signMessage({ data: result, connectionType: 'wallet-connect' })
+            )
+          })
+          .catch((e) => {
+            console.log('personal sign error', e)
+          })
+      }, 1000)
+      // return () => clearTimeout(signMessagetTimeout)
+    }
+  }, [wallet, accountUserId, connector, dispatch, connectionStatus])
+
+  useEffect(() => {
+    connector.on('connect', (_, payload) => {
+      const { accounts } = payload.params[0]
+      const wallet = accounts[0]
+
+      dispatch(
+        connectNewWallet({
+          publicKey: wallet,
+          connectionType: 'wallet-connect'
+        })
+      )
+    })
+    return () => {
+      connector?.off('connect')
+    }
+  }, [connector, dispatch])
 
   useEffect(() => {
     if (!params) return
     if (params.path === 'wallet-connect') {
-      dispatch(connectNewWallet({ connector, ...params }))
+      dispatch(connectNewWallet({ ...params, connectionType: 'phantom' }))
     } else if (params.path === 'wallet-sign-message') {
-      dispatch(signMessage(params))
+      dispatch(signMessage({ ...params, connectionType: 'phantom' }))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- connector changes often
   }, [params?.path, params, dispatch])
 
   const handleConnectWallet = useCallback(() => {

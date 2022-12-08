@@ -17,3 +17,5 @@ export const getSharedSecret = createSelector(
 
 export const getConnectionType = (state: AppState) =>
   state.walletConnect.connectionType
+
+export const getStatus = (state: AppState) => state.walletConnect.status
