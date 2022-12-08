@@ -1339,4 +1339,5 @@ class GetUnclaimedTrackId(Resource):
         description="""Gets an unclaimed blockchain track ID""",
     )
     def get(self):
-        return get_unclaimed_id("track")
+        unclaimed_id = get_unclaimed_id("track")
+        return success_response(unclaimed_id)
