@@ -1806,4 +1806,5 @@ class GetUnclaimedUserId(Resource):
         description="""Gets an unclaimed blockchain user ID""",
     )
     def get(self):
-        return get_unclaimed_id("user")
+        unclaimed_id = get_unclaimed_id("user")
+        return success_response(unclaimed_id)
