@@ -141,7 +141,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
         !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
       ) {
-        throw new Error(`Sender ${senderAddress} not allowed to make updateReplicaSet calls`)
+        throw new Error(
+          `Sender ${senderAddress} not allowed to make updateReplicaSet calls`
+        )
       }
     }
   }
