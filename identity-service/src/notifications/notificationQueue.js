@@ -112,6 +112,10 @@ async function _sendNotification(notifFn, bufferObj, logger) {
   const logPrefix = `[notificationQueue:sendNotification] [${notifFn.name}] [userId ${bufferObj.userId}]`
 
   let numSentNotifs = 0
+  logger.info(
+    `[notificationQueue:drainPublishedMessages] in send of it`
+  )
+
   try {
     const start = Date.now()
 
@@ -150,16 +154,30 @@ async function promiseAllInBatches(task, logger, items, batchSize) {
 
 async function processNotification(logger, notification) {
   let numProcessedNotifs = 0
-
-  if (notification.types.includes(deviceType.Mobile)) {
+  
+  logger.info(
+    `[notificationQueue:drainPublishedMessages] types is ${notification.types}`
+  )
+if (notification.types.includes(deviceType.Mobile)) {
+    logger.info(
+      `[notificationQueue:drainPublishedMessages] Send mobile`
+    )
+  
     const numSentNotifs = await _sendNotification(
       sendAwsSns,
       notification,
       logger
     )
     numProcessedNotifs += numSentNotifs
+  } else {
+    logger.info(
+      `[notificationQueue:drainPublishedMessages] not Send mobile`
+    )
   }
   if (notification.types.includes(deviceType.Browser)) {
+    logger.info(
+      `[notificationQueue:drainPublishedMessages] Send browser`
+    )
     const numSentNotifsArr = await Promise.all([
       _sendNotification(sendBrowserNotification, notification, logger),
       _sendNotification(sendSafariNotification, notification, logger)
@@ -167,6 +185,10 @@ async function processNotification(logger, notification) {
     numSentNotifsArr.forEach((numSentNotifs) => {
       numProcessedNotifs += numSentNotifs
     })
+  } else {
+    logger.info(
+      `[notificationQueue:drainPublishedMessages] not Send browser`
+    )
   }
   return numProcessedNotifs
 }

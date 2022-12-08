@@ -277,6 +277,9 @@ const publishNotifications = async (
         notification
       )
     } else {
+      logger.info(
+        `publishNotifications | user id ${initiatorUserId}, type ${JSON.stringify(types)} , title ${JSON.stringify(titles)} , nolt ${JSON.stringify(notification)}`
+      )
       await publish(msg, userId, tx, true, title, types, notification)
     }
   }
