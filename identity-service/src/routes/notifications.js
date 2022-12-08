@@ -808,7 +808,19 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const userId = req.user.blockchainUserId
       try {
-        const [settings] = await models.UserNotificationSettings.findOrCreate({
+        await models.sequelize.query(
+          `
+          INSERT INTO "UserNotificationSettings" ("userId", "updatedAt", "createdAt")
+          VALUES (:userId, now(), now())
+          ON CONFLICT
+          DO NOTHING;
+        `,
+          {
+            replacements: { userId }
+          }
+        )
+
+        const settings = await models.UserNotificationSettings.findOne({
           where: { userId },
           attributes: [
             'favorites',
@@ -870,9 +882,17 @@ module.exports = function (app) {
         return errorResponseBadRequest('Invalid request body')
       }
       if (isSubscribed) {
-        await models.Subscription.findOrCreate({
-          where: { subscriberId, userId }
-        })
+        await models.sequelize.query(
+          `
+          INSERT INTO "Subscriptions" ("subscriberId", "userId", "updatedAt", "createdAt")
+          VALUES (:subscriberId, :userId, now(), now())
+          ON CONFLICT
+          DO NOTHING;
+        `,
+          {
+            replacements: { subscriberId, userId }
+          }
+        )
       } else {
         await models.Subscription.destroy({
           where: { subscriberId, userId }

@@ -432,7 +432,7 @@ def format_artifacts(
         # display reservation list
         click.clear()
         with open("/tmp/summary.md", "a") as f:
-            f.write("Reservation List:\n")
+            f.write("Reservation List:\n```\n")
             for h in hosts:
                 host = release_summary[PRE_DEPLOY][h]
                 tag = host["tag"][:7]
@@ -452,7 +452,7 @@ def format_artifacts(
                 output = f"{h.ljust(25)}{owner.ljust(20)}{tag.ljust(10)}{branch}"
                 click.echo(click.style(output, fg=fg))
                 f.write(f"{output}\n")
-            f.write("\n\n")
+            f.write("```\n\n")
 
 
 @click.command()
@@ -589,6 +589,7 @@ def cli(
                 show_output=True,
                 exit_on_error=IGNORE,
                 dry_run=dry_run,
+                timeout_sec=180,
             )
 
             if environment == "prod":

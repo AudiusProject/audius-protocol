@@ -363,7 +363,8 @@ export class IdentityService {
     contractAddress: string | null | undefined,
     senderAddress: string,
     encodedABI: string,
-    gasLimit: number
+    gasLimit: number,
+    handle: string | null = null
   ): Promise<{ receipt: TransactionReceipt }> {
     const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
@@ -384,7 +385,8 @@ export class IdentityService {
         senderAddress,
         encodedABI,
         gasLimit,
-        token
+        token,
+        handle
       }
     })
   }

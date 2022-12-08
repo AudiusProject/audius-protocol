@@ -1,12 +1,14 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -55,11 +57,6 @@ from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
     save_duration_metric,
-)
-from src.utils.redis_cache import (
-    remove_cached_playlist_ids,
-    remove_cached_track_ids,
-    remove_cached_user_ids,
 )
 from src.utils.redis_constants import (
     latest_block_hash_redis_key,
@@ -391,7 +388,7 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
-    return cid_metadata
+    return cid_metadata, cid_type
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -468,9 +465,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             break
 
-    logger.info(
-        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
-    )
     return contract_type
 
 
@@ -509,13 +503,6 @@ def process_state_changes(
         "number", "hash", "timestamp"
     )(block)
 
-    changed_entity_ids_map = {
-        USER_FACTORY: [],
-        TRACK_FACTORY: [],
-        PLAYLIST_FACTORY: [],
-        USER_REPLICA_SET_MANAGER: [],
-    }
-
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
 
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -532,34 +519,35 @@ def process_state_changes(
 
         (
             total_changes_for_tx_type,
-            changed_entity_ids,
+            _,
         ) = bulk_processor(*tx_processing_args)
-
-        if tx_type in changed_entity_ids_map.keys():
-            changed_entity_ids_map[tx_type] = changed_entity_ids
 
         logger.info(
             f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
 
-    return changed_entity_ids_map
+
+cid_types = ["track", "user", "playlist_data"]
+UPSERT_CID_METADATA_QUERY = """
+    INSERT INTO cid_data (cid, type, data)
+    VALUES (:cid, :type, :data)
+    ON CONFLICT DO NOTHING;
+"""
 
 
-def remove_updated_entities_from_cache(redis, changed_entity_type_to_updated_ids_map):
-    CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS = {
-        USER_FACTORY: remove_cached_user_ids,
-        USER_REPLICA_SET_MANAGER: remove_cached_user_ids,
-        TRACK_FACTORY: remove_cached_track_ids,
-        PLAYLIST_FACTORY: remove_cached_playlist_ids,
-    }
-    for (
-        contract_type,
-        clear_cache_handler,
-    ) in CONTRACT_TYPE_TO_CLEAR_CACHE_HANDLERS.items():
-        changed_entity_ids = changed_entity_type_to_updated_ids_map[contract_type]
-        if changed_entity_ids:
-            clear_cache_handler(redis, changed_entity_ids)
+def save_cid_metadata(
+    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
+):
+
+    if not cid_metadata:
+        return
+
+    vals = []
+    for cid, val in cid_metadata.items():
+        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+
+    session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def create_and_raise_indexing_error(err, redis):
@@ -587,7 +575,6 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
-    changed_entity_ids_map = {}
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
@@ -682,14 +669,11 @@ def index_blocks(self, db, blocks_list):
                     fetch_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    cid_metadata = fetch_cid_metadata(
+                    cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
                         txs_grouped_by_type[ENTITY_MANAGER],
-                    )
-                    logger.info(
-                        f"index.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(
@@ -729,7 +713,7 @@ def index_blocks(self, db, blocks_list):
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
-                    changed_entity_ids_map = process_state_changes(
+                    process_state_changes(
                         self,
                         session,
                         cid_metadata,
@@ -743,6 +727,23 @@ def index_blocks(self, db, blocks_list):
                     logger.info(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    if is_save_cid_enabled:
+                        """
+                        Add CID Metadata to db (cid -> json blob, etc.)
+                        """
+                        save_cid_metadata_time = time.time()
+                        # bulk process operations once all tx's for block have been parsed
+                        # and get changed entity IDs for cache clearing
+                        # after session commit
+                        save_cid_metadata(session, cid_metadata, cid_type)
+                        metric.save_time(
+                            {"scope": "save_cid_metadata"},
+                            start_time=save_cid_metadata_time,
+                        )
+                        logger.info(
+                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                        )
 
                 except Exception as e:
 
@@ -785,13 +786,6 @@ def index_blocks(self, db, blocks_list):
                 )
             if skip_tx_hash:
                 clear_indexing_error(redis)
-
-        if changed_entity_ids_map:
-            remove_updated_entities_from_cache(redis, changed_entity_ids_map)
-
-        logger.info(
-            f"index.py | redis cache clean operations complete for block=${block_number}"
-        )
 
         add_indexed_block_to_redis(block, redis)
         logger.info(
@@ -1099,12 +1093,26 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
+
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis
+    final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    current_block_query_results = None
+
+    with db.scoped_session() as session:
+        current_block_query = session.query(Block).filter_by(is_current=True)
+        current_block_query_results = current_block_query.all()
+        if (
+            final_poa_block
+            and current_block_query_results
+            and current_block_query_results[0].number >= final_poa_block
+        ):
+            # done indexing POA
+            return
 
     # Initialize contracts and attach to the task singleton
     track_abi = update_task.abi_values[TRACK_FACTORY_CONTRACT_NAME]["abi"]

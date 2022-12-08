@@ -2,16 +2,24 @@ import concurrent.futures
 import datetime
 import logging
 import time
-from typing import Callable, List, Optional, TypedDict
+from decimal import Decimal
+from typing import Callable, Dict, List, Optional, TypedDict
 
 import base58
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
@@ -36,6 +44,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import get_solana_tx_token_balances
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
@@ -49,6 +58,9 @@ logger = logging.getLogger(__name__)
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 MIN_SLOT = int(shared_config["solana"]["rewards_manager_min_slot"])
+
+# Used to find the correct accounts for sender/receiver in the transaction
+TRANSFER_RECEIVER_ACCOUNT_INDEX = 4
 
 
 def check_valid_rewards_manager_program():
@@ -84,6 +96,8 @@ class RewardTransferInstruction(TypedDict):
     challenge_id: str
     specifier: str
     eth_recipient: str
+    prebalance: int
+    postbalance: int
 
 
 class RewardManagerTransactionInfo(TypedDict):
@@ -97,6 +111,30 @@ class RewardManagerTransactionInfo(TypedDict):
 # Used for quick retrieval in health check
 def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
     cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
+
+
+challenge_type_map_global: Dict[str, TransactionType] = {}
+
+
+def get_challenge_type_map(
+    session: Session,
+):
+    # pylint: disable=W0603
+    global challenge_type_map_global
+    if not bool(challenge_type_map_global):
+        challenges = (
+            session.query(Challenge.id, Challenge.type)
+            .filter(bool(Challenge.active))
+            .all()
+        )
+        challenge_type_map_global = {
+            challenge[0]: TransactionType.trending_reward
+            if challenge[1] == ChallengeType.trending
+            else TransactionType.user_reward
+            for challenge in challenges
+        }
+
+    return challenge_type_map_global
 
 
 def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
@@ -209,11 +247,17 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             return tx_metadata
 
         challenge_id, specifier = transfer_instruction
+        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
+        pre_balance, post_balance = get_solana_tx_token_balances(meta, receiver_index)
+        if pre_balance == -1 or post_balance == -1:
+            raise Exception("Reward recipient balance missing!")
         tx_metadata["transfer_instruction"] = {
             "amount": amount,
             "eth_recipient": eth_recipient,
             "challenge_id": challenge_id,
             "specifier": specifier,
+            "prebalance": pre_balance,
+            "postbalance": post_balance,
         }
         return tx_metadata
     except Exception as e:
@@ -230,25 +274,28 @@ def process_batch_sol_reward_manager_txs(
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
-        logger.error(f"index_reward_manager | {reward_manager_txs}")
+        logger.info(f"index_rewards_manager | processing {reward_manager_txs}")
         eth_recipients = [
             tx["transfer_instruction"]["eth_recipient"]
             for tx in reward_manager_txs
             if tx["transfer_instruction"] is not None
         ]
         users = (
-            session.query(User.wallet, User.user_id)
+            session.query(User.wallet, User.user_id, UserBankAccount.bank_account)
+            .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
             .filter(User.wallet.in_(eth_recipients), User.is_current == True)
             .all()
         )
-        users_map = {user[0]: user[1] for user in users}
+
+        users_map = {
+            user[0]: {"user_id": user[1], "user_bank": user[2]} for user in users
+        }
 
         specifiers = [
             tx["transfer_instruction"]["specifier"]
             for tx in reward_manager_txs
             if tx["transfer_instruction"] is not None
         ]
-
         user_challenges = (
             session.query(UserChallenge.specifier)
             .filter(
@@ -257,15 +304,16 @@ def process_batch_sol_reward_manager_txs(
             .all()
         )
         user_challenge_specifiers = {challenge[0] for challenge in user_challenges}
+        challenge_type_map = get_challenge_type_map(session)
 
         challenge_disbursements = []
+        audio_tx_histories = []
         for tx in reward_manager_txs:
+            timestamp = datetime.datetime.utcfromtimestamp(tx["timestamp"])
             # Add transaction
             session.add(
                 RewardManagerTransaction(
-                    signature=tx["tx_sig"],
-                    slot=tx["slot"],
-                    created_at=datetime.datetime.utcfromtimestamp(tx["timestamp"]),
+                    signature=tx["tx_sig"], slot=tx["slot"], created_at=timestamp
                 )
             )
             session.flush()
@@ -295,18 +343,19 @@ def process_batch_sol_reward_manager_txs(
                     f"tx slot={tx_slot}"
                     f"specifier = {specifier}"
                 )
-                # Set this user's id to 0 instead of blocking indexing
+                # Set this user's id and user bank to 0 instead of blocking indexing
                 # This state can be rectified asynchronously
-                users_map[eth_recipient] = 0
+                users_map[eth_recipient] = {"user_id": 0, "user_bank": 0}
 
-            user_id = users_map[eth_recipient]
+            user_id = users_map[eth_recipient]["user_id"]
+            challenge_id = transfer_instr["challenge_id"]
             logger.info(
                 f"index_rewards_manager.py | found successful disbursement for user_id: [{user_id}]"
             )
 
             challenge_disbursements.append(
                 ChallengeDisbursement(
-                    challenge_id=transfer_instr["challenge_id"],
+                    challenge_id=challenge_id,
                     user_id=user_id,
                     specifier=specifier,
                     amount=str(transfer_instr["amount"]),
@@ -315,9 +364,27 @@ def process_batch_sol_reward_manager_txs(
                 )
             )
 
+            prebalance = transfer_instr["prebalance"]
+            postbalance = transfer_instr["postbalance"]
+            balance_change = postbalance - prebalance
+            audio_tx_histories.append(
+                AudioTransactionsHistory(
+                    user_bank=users_map[eth_recipient]["user_bank"],
+                    slot=tx["slot"],
+                    signature=tx["tx_sig"],
+                    transaction_type=challenge_type_map[challenge_id],
+                    method=TransactionMethod.receive,
+                    transaction_created_at=timestamp,
+                    change=Decimal(balance_change),
+                    balance=Decimal(postbalance),
+                    tx_metadata=challenge_id,
+                )
+            )
+
         if challenge_disbursements:
-            # Save out the disbursements
+            # Save out the disbursements and transaction history list
             session.bulk_save_objects(challenge_disbursements)
+            session.bulk_save_objects(audio_tx_histories)
             # Enqueue balance refreshes for the users
             user_ids = [c.user_id for c in challenge_disbursements]
             enqueue_immediate_balance_refresh(redis, user_ids)
@@ -399,7 +466,7 @@ def get_transaction_signatures(
                 for tx_info in transactions_array:
                     tx_sig = tx_info["signature"]
                     tx_slot = tx_info["slot"]
-                    logger.info(
+                    logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
                     if tx_info["slot"] > latest_processed_slot:

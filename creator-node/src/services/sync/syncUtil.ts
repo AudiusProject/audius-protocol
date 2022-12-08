@@ -186,3 +186,16 @@ export function getMaxSyncMonitoringMs(syncType: string) {
     ? maxManualSyncMonitoringDurationInMs
     : maxSyncMonitoringDurationInMs
 }
+
+export function verifySPOverride(overridePassword: string): boolean {
+  const overridePasswordConfig = config.get('overridePassword')
+  const spID = config.get('spID')
+
+  const foundationNodeSPIDs = [1, 2, 3, 4, 27]
+
+  return (
+    foundationNodeSPIDs.includes(spID) &&
+    overridePasswordConfig && // ensure non-null
+    overridePasswordConfig === overridePassword
+  )
+}

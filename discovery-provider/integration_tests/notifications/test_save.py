@@ -38,7 +38,6 @@ def test_save_notification(app):
         notification = notifications[0]
         assert notification.specifier == "1"
         assert notification.group_id == "save:100:type:track"
-        assert notification.notification_group_id == None
         assert notification.type == "save"
         assert notification.slot == None
         assert notification.blocknumber == 2

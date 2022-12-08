@@ -837,8 +837,8 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getLatest(type: string) {
-    const req = Requests.getLatest(type)
+  async getLatest(type: string, limit = 1, offset = 0) {
+    const req = Requests.getLatest(type, limit, offset)
     return await this._makeRequest(req)
   }
 
@@ -868,6 +868,30 @@ export class DiscoveryProvider {
     timeout: number
   ) {
     const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Retrieves subscribers for a given user.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.timeout timeout in ms
+   * @returns Array of User metadata objects for each subscriber
+   */
+  async getUserSubscribers(encodedUserId: string, timeout: number) {
+    const req = Requests.getUserSubscribers(encodedUserId, timeout)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Retrieves subscribers for the given users.
+   * @param params.encodedUserIds JSON stringified array of
+   *   encoded user ids
+   * @param params.timeout timeout in ms
+   * @returns Array of {user_id: <encoded user id>,
+   *   subscriber_ids: Array[<encoded subscriber ids>]} objects
+   */
+  async bulkGetUserSubscribers(encodedUserIds: string, timeout: number) {
+    const req = Requests.bulkGetUserSubscribers(encodedUserIds, timeout)
     return await this._makeRequest(req)
   }
 
@@ -952,7 +976,7 @@ export class DiscoveryProvider {
   /**
    * Retrieves the user's replica set
    * @param params.encodedUserId string of the encoded user id
-   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
+   * @param params.blockNumber optional integer pass to wait until the discovery node has indexed that block number
    * @return object containing the user replica set
    */
   async getUserReplicaSet({
@@ -1117,6 +1141,7 @@ export class DiscoveryProvider {
    *  queryParams: object
    *  method: string
    *  headers: object
+   *  data: object
    * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route

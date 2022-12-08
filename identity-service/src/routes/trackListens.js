@@ -325,7 +325,7 @@ module.exports = function (app) {
           redisTxTrackingExpirySeconds
         )
 
-        req.logger.info(
+        req.logger.debug(
           `TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(
             trackingRedisKeys
           )}`
@@ -357,7 +357,11 @@ module.exports = function (app) {
             country: locationResponse.country_name
           }
         } catch (e) {
-          req.logger.info(`TrackListen location fetch failed: ${e}`)
+          req.logger.error(
+            `TrackListen location fetch failed: ${e}, trackId=${trackId} userId=${userId}, ${JSON.stringify(
+              trackingRedisKeys
+            )}`
+          )
           location = {}
         }
 
@@ -374,7 +378,7 @@ module.exports = function (app) {
           const feePayerAccount = getFeePayerKeypair(false)
           let solTxSignature
           if (sendRawTransaction) {
-            req.logger.info(
+            req.logger.debug(
               `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
             )
             solTxSignature = await sendAndSignTransaction(
@@ -387,7 +391,7 @@ module.exports = function (app) {
           } else {
             await retry(
               async () => {
-                req.logger.info(
+                req.logger.debug(
                   `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendAndConfirmTransaction`
                 )
                 solTxSignature = await solanaWeb3.sendAndConfirmTransaction(
@@ -419,7 +423,7 @@ module.exports = function (app) {
             )
           }
 
-          req.logger.info(
+          req.logger.debug(
             `TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}, sendRawTransaction=${sendRawTransaction}`
           )
 

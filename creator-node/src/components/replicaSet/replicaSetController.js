@@ -20,7 +20,11 @@ const {
   SyncType,
   SYNC_MODES
 } = require('../../services/stateMachineManager/stateMachineConstants')
-const { getSyncStatus, setSyncStatus } = require('../../services/sync/syncUtil')
+const {
+  getSyncStatus,
+  setSyncStatus,
+  verifySPOverride
+} = require('../../services/sync/syncUtil')
 const {
   enqueueSync,
   processManualImmediateSync
@@ -96,6 +100,9 @@ const _syncRouteController = async (req, _res) => {
   const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
+  const overridePassword = req.body.overridePassword
+
+  const syncOverride = verifySPOverride(overridePassword)
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -141,6 +148,7 @@ const _syncRouteController = async (req, _res) => {
           wallet
         },
         forceWipe: req.body.forceWipe,
+        syncOverride,
         logContext: req.logContext,
         syncUuid,
 
@@ -180,6 +188,7 @@ const _syncRouteController = async (req, _res) => {
         },
         forceWipe: req.body.forceWipe,
         logContext: req.logContext,
+        syncOverride,
         syncUuid,
         parentSpanContext: tracing.currentSpanContext()
       })
@@ -239,11 +248,15 @@ const mergePrimaryAndSecondaryController = async (req, _res) => {
     }
   }
 
-  await recurringSyncQueue.add('recurring-sync', {
-    syncType,
-    syncMode,
-    syncRequestParameters
-  })
+  await recurringSyncQueue.add(
+    'recurring-sync',
+    {
+      syncType,
+      syncMode,
+      syncRequestParameters
+    },
+    { lifo: !!forceWipe }
+  )
 
   return successResponse()
 }
@@ -256,15 +269,18 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { nodeConfig: config } = serviceRegistry
 
-  const isRouteEnabled = config.get('devMode')
-  if (!isRouteEnabled) {
+  const overridePassword = req.query.overridePassword
+  const override = verifySPOverride(overridePassword)
+
+  // If override not provided AND devMode not enabled, error
+  if (!override && !config.get('devMode')) {
     return errorResponseBadRequest('This route is disabled')
   }
 
-  const userId = req.query.userId
-  const newPrimarySpId = req.query.newPrimarySpId
-  const newSecondary1SpId = req.query.newSecondary1SpId
-  const newSecondary2SpId = req.query.newSecondary2SpId
+  const userId = parseInt(req.query.userId)
+  const newPrimarySpId = parseInt(req.query.newPrimarySpId)
+  const newSecondary1SpId = parseInt(req.query.newSecondary1SpId)
+  const newSecondary2SpId = parseInt(req.query.newSecondary2SpId)
 
   if (!userId) {
     return errorResponseBadRequest(
@@ -277,31 +293,64 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
     )
   }
 
+  const newReplicaSetSPIds = [
+    newPrimarySpId,
+    newSecondary1SpId,
+    newSecondary2SpId
+  ]
+  const newSecondarySpIds = [newSecondary1SpId, newSecondary2SpId]
+
   const currentSpIds = await getReplicaSetSpIdsByUserId({
     libs: serviceRegistry.libs,
     userId,
     parentLogger: req.logger,
     logger: req.logger
   })
-  if (config.get('entityManagerReplicaSetEnabled')) {
-    await audiusLibs.User.updateEntityManagerReplicaSet({
-      userId: parseInt(userId),
-      primary: parseInt(newPrimarySpId),
-      secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: currentSpIds.primaryId,
-      oldSecondaries: currentSpIds.secondaryIds
-    })
-  } else {
+
+  // First try updateReplicaSet via URSM
+  // Fallback to EntityManager when relay errors
+  try {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-      parseInt(userId),
-      parseInt(newPrimarySpId),
-      [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      userId,
+      newPrimarySpId,
+      newSecondarySpIds,
       currentSpIds.primaryId,
       currentSpIds.secondaryIds
     )
-  }
 
-  return successResponse()
+    return successResponse({ msg: 'Success via UserReplicaSetManager' })
+  } catch (e) {
+    if (!config.get('entityManagerReplicaSetEnabled')) {
+      return errorResponseServerError(
+        `Failed via UserReplicaSetManager with error ${e.message} & EntityManager disabled`
+      )
+    }
+
+    const { blockNumber } = await audiusLibs.User.updateEntityManagerReplicaSet(
+      {
+        userId,
+        primary: newPrimarySpId,
+        secondaries: newSecondarySpIds,
+        oldPrimary: currentSpIds.primaryId,
+        oldSecondaries: currentSpIds.secondaryIds
+      }
+    )
+
+    // Wait for blockhash/blockNumber to be indexed
+    try {
+      await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+        userId,
+        newReplicaSetSPIds,
+        blockNumber
+      )
+    } catch (e) {
+      return errorResponseServerError(
+        `Failed via EntityManager - Indexing unable to confirm updated replica set`
+      )
+    }
+
+    return successResponse({ msg: 'Success via EntityManager' })
+  }
 }
 
 // Routes
@@ -316,7 +365,13 @@ router.get(
 )
 router.post(
   '/sync',
-  ensureStorageMiddleware,
+  // Force wipe syncs will free up storage space so we want to perform them regardless of current usage
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  async (req, res, next) => {
+    return req.body?.forceWipe
+      ? next()
+      : ensureStorageMiddleware(req, res, next)
+  },
   handleResponse(syncRouteController)
 )
 router.post(

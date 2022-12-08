@@ -12,6 +12,8 @@ const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const DecisionTree = require('./utils/decisionTree')
 const { asyncRetry } = require('./utils/asyncRetry')
+const { getAllRegisteredCNodes } = require('./services/ContentNodeInfoManager')
+const { getIfAttemptedStateFix } = require('./utils')
 
 const LibsUtils = audiusLibs.Utils
 
@@ -35,7 +37,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   )
 
   // Write file to disk by cid for future retrieval
-  const dstPath = await DiskManager.computeFilePath(cid)
+  const dstPath = await Utils.computeFilePathAndEnsureItExists(cid)
   await fs.writeFile(dstPath, buffer)
 
   // verify that the contents of the file match the file's cid
@@ -79,7 +81,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
  */
 async function copyMultihashToFs(multihash, srcPath, logContext) {
   const logger = genericLogger.child(logContext)
-  const dstPath = await DiskManager.computeFilePath(multihash)
+  const dstPath = await Utils.computeFilePathAndEnsureItExists(multihash)
 
   try {
     await fs.copyFile(srcPath, dstPath)
@@ -101,28 +103,29 @@ async function copyMultihashToFs(multihash, srcPath, logContext) {
  * Fetches a file from the target gateways (usually the replica set of a user),
  * then the network if it is not found on the target gateways.
  *
+ * This is an internal function, not intended to be called directly outside FileManager
+ *
  * Retries occur when:
  * - fetching from the target gateways result in 500s or 404s
  * - writing to fs fails
  * - verifying cids fails
  * - fetching from network gateways result in 500s
  *
- * @param {Object} param
- * @param {Object} param.libs instance of audiusLibs
- * @param {string[]} param.gatewayContentRoutes list of CN endpoints with /ipfs/<cid>
- * @param {string[]} param.targetGateways list of CN endpoints
+ * @param {Object} param Object passed into function
+ * @param {string[]} param.targetGatewayContentRoutes list of CN endpoints with /ipfs/<cid>
+ * @param {string[]} param.nonTargetGatewayContentRoutes list of non-targetGateway CN endpoints with /ipfs/<cid>. this is an optimization used for falling back to fetching from non-replica set nodes
  * @param {string} param.multihash the target cid
- * @param {string} param.path the path to save the cid to
+ * @param {string} param.storageLocation the path to save the cid to
  * @param {number} param.numRetries the number of max retries
  * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
  * @param {Object} param.decisionTree instance of DecisionTree
  * @param {Object} param.logger
  */
 async function fetchFileFromNetworkAndWriteToDisk({
-  gatewayContentRoutes,
-  targetGateways,
+  targetGatewayContentRoutes = [],
+  nonTargetGatewayContentRoutes = [],
   multihash,
-  path,
+  storageLocation,
   numRetries,
   trackId,
   decisionTree,
@@ -130,74 +133,25 @@ async function fetchFileFromNetworkAndWriteToDisk({
 }) {
   // First try to fetch from other cnode gateways if user has non-empty replica set.
   decisionTree.recordStage({
-    name: 'About to fetch content via gateways',
-    data: { gatewayContentRoutes }
+    name: 'About to fetch content via gateways'
   })
 
   // Note - Requests are intentionally not parallel to minimize additional load on gateways
-  for (const contentUrl of gatewayContentRoutes) {
+  for (const contentUrl of targetGatewayContentRoutes) {
     decisionTree.recordStage({
       name: 'Fetching from target gateways',
       data: { targetGateway: contentUrl }
     })
 
     try {
-      await asyncRetry({
-        asyncFn: async (bail, num) => {
-          try {
-            await fetchFileFromTargetGatewayAndWriteToDisk({
-              contentUrl,
-              trackId,
-              multihash,
-              decisionTree,
-              path,
-              logger
-            })
-          } catch (e) {
-            /**
-             * Abort retries if fetch fails with 403, 401, or 400 status code
-             *
-             * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
-             */
-            if (
-              e.response?.status === 403 || // delist
-              e.response?.status === 401 || // unauth
-              e.response?.status === 400 // bad request
-            ) {
-              decisionTree.recordStage({
-                name: 'Could not fetch content from target gateway',
-                data: {
-                  statusCode: e.response.status,
-                  url: contentUrl
-                }
-              })
-              bail(
-                new Error(
-                  `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
-                )
-              )
-              return
-            }
-
-            // Re-throw any other error to continue with retry logic
-            if (num === numRetries + 1) {
-              // Final error thrown
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status} after ${num} retries`
-              )
-            } else {
-              throw new Error(
-                `Failed to fetch content with statusCode=${e.response?.status}. Retrying..`
-              )
-            }
-          }
-        },
+      await _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+        contentUrl,
+        trackId,
+        multihash,
+        decisionTree,
+        storageLocation,
         logger,
-        log: false,
-        options: {
-          retries: numRetries,
-          minTimeout: 3000
-        }
+        numRetries
       })
 
       decisionTree.recordStage({
@@ -220,30 +174,57 @@ async function fetchFileFromNetworkAndWriteToDisk({
   }
 
   // If file is not found in replica set, check network (remaining registered nodes)
-  try {
-    const found = await Utils.findCIDInNetwork(
-      path,
-      multihash,
-      logger,
-      /** trackId */ null,
-      /** excludeList */ targetGateways
+  // this is the replacement for the old findCIDInNetwork call
+  // short circuit calling the rest of the network if env var is not enabled or
+  // the rest of the network has already been checked the network today
+  if (!config.get('findCIDInNetworkEnabled'))
+    throw new Error(`findCIDInNetworkEnabled = false`)
+
+  const attemptedStateFix = await getIfAttemptedStateFix(storageLocation)
+  if (attemptedStateFix)
+    throw new Error(
+      `Already attempted to find from network; Currently cannot try again`
     )
 
-    if (!found) {
-      throw new Error(`Did not find multihash=${multihash} from network`)
+  for (const contentUrl of nonTargetGatewayContentRoutes) {
+    decisionTree.recordStage({
+      name: 'Fetching from non-replica set gateways from the rest of the network',
+      data: { gateway: contentUrl }
+    })
+
+    try {
+      await _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+        contentUrl,
+        trackId,
+        multihash,
+        decisionTree,
+        storageLocation,
+        logger,
+        numRetries
+      })
+
+      decisionTree.recordStage({
+        name: 'Successfully fetched CID from non-replica set gateway',
+        data: { gateway: contentUrl }
+      })
+
+      // If successful, will reach this point in code. Return out of fn
+      return
+    } catch (e) {
+      decisionTree.recordStage({
+        name: 'Error - Could not retrieve file from non-replica set gateway',
+        data: {
+          url: contentUrl,
+          errorMsg: e.message,
+          multihash
+        }
+      })
     }
-
-    decisionTree.recordStage({
-      name: 'Found file from network'
-    })
-
-    return
-  } catch (e) {
-    decisionTree.recordStage({
-      name: `Failed to find file from network`,
-      data: { errorMsg: e.message }
-    })
   }
+
+  decisionTree.recordStage({
+    name: `Failed to find file from network`
+  })
 
   // error if file was not found on any gateway
   const errorMsg = `Failed to retrieve file for multihash ${multihash} after trying entire network`
@@ -254,13 +235,97 @@ async function fetchFileFromNetworkAndWriteToDisk({
 }
 
 /**
+ * Helper for fetchFileFromNetworkAndWriteToDisk() that wraps asyncRetry logic
+ * and parses response and error codes
+ * @param {Object} param0
+ * @param {string} param.contentUrl content gateway url eg example.io/ipfs/Qmxyz
+ * @param {number|undefined} param.trackId the trackId associated with a multihash if there is one
+ * @param {string} param.multihash the target cid
+ * @param {Object} param.decisionTree instance of DecisionTree
+ * @param {string} param.storageLocation the path to save the cid to
+ * @param {Object} param.logger
+ * @param {number} param.numRetries the number of max retries
+ */
+async function _fetchFileFromNetworkAndWriteToDiskAscyncRetryHelper({
+  contentUrl,
+  trackId,
+  multihash,
+  decisionTree,
+  storageLocation,
+  logger,
+  numRetries
+}) {
+  await asyncRetry({
+    asyncFn: async (bail, num) => {
+      try {
+        await fetchFileFromTargetGatewayAndWriteToDisk({
+          contentUrl,
+          trackId,
+          multihash,
+          decisionTree,
+          storageLocation,
+          logger
+        })
+      } catch (e) {
+        /**
+         * Abort retries if fetch fails with 403, 401, or 400 status code
+         *
+         * e.response.status will contain error from axios request inside fetchFileFromTargetGatewayAndWriteToDisk(), if one is thrown
+         */
+        if (
+          e.response?.status === 403 || // delist
+          e.response?.status === 401 || // unauth
+          e.response?.status === 400 // bad request
+        ) {
+          decisionTree.recordStage({
+            name: 'Could not fetch content from target gateway',
+            data: {
+              statusCode: e.response.status,
+              url: contentUrl
+            }
+          })
+          bail(
+            new Error(
+              `Content is delisted, request is unauthorized, or the request is bad with statusCode=${e.response?.status}`
+            )
+          )
+          return
+        }
+
+        // Re-throw any other error to continue with retry logic
+        const errorMsgStr = e.response?.status
+          ? `statusCode=${e.response?.status}`
+          : `error=${e.message}`
+        if (num === numRetries + 1) {
+          // Final error thrown
+          throw new Error(
+            `Failed to fetch content with ${errorMsgStr} after ${num} retries`
+          )
+        } else {
+          throw new Error(
+            `Failed to fetch content with ${errorMsgStr}. Retrying..`
+          )
+        }
+      }
+    },
+    logger,
+    log: false,
+    options: {
+      retries: numRetries
+    }
+  })
+}
+
+/**
  * Fetches a multihash via the /ipfs route, writes to disk, and verifies that the CID is what we
  * expect it to be with retries
+ *
+ * This is an internal function, not intended to be called directly outside FileManager
  * @param {Object} param
  * @param {string} param.contentUrl the target content node ipfs gateway route
  * @param {number} param.trackId the track id if one is associated with the multihash fetched
  * @param {Object} param.decisionTree an instance of DecisionTree
- * @param {string} param.path the path at which to save the fetched multihash from
+ * @param {string} param.storageLocation the path at which to save the fetched multihash from
  * @param {Object} param.logger
  */
 async function fetchFileFromTargetGatewayAndWriteToDisk({
@@ -268,14 +333,15 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
   trackId,
   multihash,
   decisionTree,
-  path,
+  storageLocation,
   logger
 }) {
   const fetchReqParams = {
     method: 'get',
     url: contentUrl,
     responseType: 'stream',
-    timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+    timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */,
+    params: { localOnly: true }
   }
 
   if (trackId) {
@@ -296,25 +362,27 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
     data: { url: contentUrl }
   })
 
-  await Utils.writeStreamToFileSystem(response.data, path)
+  await Utils.writeStreamToFileSystem(response.data, storageLocation)
 
   decisionTree.recordStage({
     name: 'Wrote file to file system after fetching from target gateway',
-    data: { expectedStoragePath: path }
+    data: { storageLocation }
   })
 
   const CIDMatchesExpected = await Utils.verifyCIDMatchesExpected({
     cid: multihash,
-    path: path,
+    path: storageLocation,
     logger,
     decisionTree
   })
 
   if (!CIDMatchesExpected) {
     try {
-      await fs.unlink(path)
+      await fs.unlink(storageLocation)
     } catch (e) {
-      logger.error(`Could not remove file at path=${path}`)
+      logger.error(
+        `Could not remove file at storageLocation=${storageLocation}`
+      )
     }
     throw new Error('CID does not match what is expected to be')
   }
@@ -324,105 +392,106 @@ async function fetchFileFromTargetGatewayAndWriteToDisk({
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
  *    creating directories
- * 2. attempt to fetch the CID from a variety of sources
+ * 2. attempt to fetch the CID from user's replica set nodes followed by
+ *    all other nodes in the network
  * 3. return boolean failure content retrieval or content verification failure
  * @param {Object} libs
  * @param {Object} logger
  * @param {String} multihash CID
- * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
- *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
- * @param {Array} targetGateways List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
+ * @param {String?} dirCID image dir CID if applicable
+ * @param {Array?} targetGateways List of gateway endpoints to try. May be all the registered Content Nodes, or just the user replica set.
  * @param {String?} fileNameForImage file name if the CID is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the CID is of a segment type, the trackId to which it belongs to
  * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
- * @return {Error?} error object or null
+ * @return {error?: Error, storagePath?: String} object with nested fields containing error object or storagePath string
  */
-async function saveFileForMultihashToFS(
+async function fetchFileFromNetworkAndSaveToFS(
   libs,
   logger,
   multihash,
-  expectedStoragePath,
-  targetGateways,
+  dirCID = null,
+  targetGateways = [],
   fileNameForImage = null,
   trackId = null,
   numRetries = 3
 ) {
   const decisionTree = new DecisionTree({
-    name: `saveFileForMultihashToFS() [multihash: ${multihash}]`,
+    name: `fetchFileFromNetworkAndSaveToFS() [multihash: ${multihash}][dirCID: ${dirCID}][fileNameForImage: ${fileNameForImage}][trackId: ${trackId}]`,
     logger
   })
 
+  let storageLocation
   try {
-    // will be modified to directory compatible route later if directory
-    // TODO - don't concat url's by hand like this, use module like urljoin
-    // ..replace(/\/$/, "") removes trailing slashes
+    let targetGatewayContentRoutes
+    let nonTargetGatewayContentRoutes
 
-    let gatewayContentRoutes = targetGateways.map((endpoint) => {
-      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
-      if (trackId) baseUrl += `?trackId=${trackId}`
+    const allContentNodes = (await getAllRegisteredCNodes(logger)).map(
+      (gateway) => gateway.endpoint
+    )
 
-      return baseUrl
-    })
-
-    const parsedStoragePath = path.parse(expectedStoragePath).dir
-
-    decisionTree.recordStage({
-      name: 'About to start running saveFileForMultihashToFS()',
-      data: {
-        multihash,
-        targetGateways,
-        gatewayContentRoutes,
-        expectedStoragePath,
-        parsedStoragePath
-      },
-      log: true
-    })
-
-    // Create dir at expected storage path in which to store retrieved data
-    try {
-      // calling this on an existing directory doesn't overwrite the existing data or throw an error
-      // the mkdir recursive is equivalent to `mkdir -p`
-      await fs.mkdir(parsedStoragePath, { recursive: true })
-      decisionTree.recordStage({
-        name: 'Successfully called mkdir on local file system',
-        data: {
-          parsedStoragePath
-        }
-      })
-    } catch (e) {
-      decisionTree.recordStage({
-        name: 'Error calling mkdir on local file system',
-        data: { parsedStoragePath }
-      })
-      throw new Error(
-        `Error making directory at ${parsedStoragePath} - ${e.message}`
-      )
-    }
-
-    // regex match to check if a directory or just a regular file
-    // if directory will have both outer and inner properties in match.groups
-    // else will have just outer
-    const matchObj = DiskManager.extractCIDsFromFSPath(expectedStoragePath)
+    // Remove target gateways + this self endpoint from list
+    const nonTargetGateways = allContentNodes.filter(
+      (c) =>
+        !targetGateways.includes(c) && config.get('creatorNodeEndpoint') !== c
+    )
 
     // if this is a directory, make it compatible with our dir cid gateway url
-    if (matchObj && matchObj.isDir && matchObj.outer && fileNameForImage) {
-      // override gateway urls to make it compatible with directory given an endpoint
-      // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
-      // in the case of a directory, override the gatewayUrlsMapped array to look like
-      // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
-      // ..replace(/\/$/, "") removes trailing slashes
-      gatewayContentRoutes = targetGateways.map(
+    // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
+    if (dirCID && fileNameForImage) {
+      targetGatewayContentRoutes = targetGateways.map(
         (endpoint) =>
-          `${endpoint.replace(/\/$/, '')}/ipfs/${
-            matchObj.outer
-          }/${fileNameForImage}`
+          `${endpoint.replace(/\/$/, '')}/ipfs/${dirCID}/${fileNameForImage}`
+      )
+      nonTargetGatewayContentRoutes = nonTargetGateways.map(
+        (endpoint) =>
+          `${endpoint.replace(/\/$/, '')}/ipfs/${dirCID}/${fileNameForImage}`
       )
       decisionTree.recordStage({
-        name: 'Updated gatewayUrlsMapped',
-        data: { gatewayContentRoutes }
+        name: 'Set targetGatewayContentRoutes and nonTargetGatewayContentRoutes for dir',
+        data: { nonTargetGatewayContentRoutes, targetGatewayContentRoutes }
+      })
+
+      storageLocation = await Utils.computeFilePathInDirAndEnsureItExists(
+        dirCID,
+        multihash
+      )
+    } else {
+      // if it's not a directory, make it a regular gateway route
+      // eg [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
+      // TODO - don't concat url's by hand like this, use module like urljoin
+      // ..replace(/\/$/, "") removes trailing slashes
+
+      targetGatewayContentRoutes = targetGateways.map((endpoint) => {
+        let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+        if (trackId) baseUrl += `?trackId=${trackId}`
+
+        return baseUrl
+      })
+
+      nonTargetGatewayContentRoutes = nonTargetGateways.map((endpoint) => {
+        let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+        if (trackId) baseUrl += `?trackId=${trackId}`
+
+        return baseUrl
+      })
+
+      storageLocation = await Utils.computeFilePathAndEnsureItExists(multihash)
+
+      decisionTree.recordStage({
+        name: 'Set targetGatewayContentRoutes and nonTargetGatewayContentRoutes for non-dir file',
+        data: { nonTargetGatewayContentRoutes, targetGatewayContentRoutes }
       })
     }
+
+    decisionTree.recordStage({
+      name: 'About to start running fetchFileFromNetworkAndSaveToFS()',
+      data: {
+        multihash,
+        storageLocation
+      },
+      logLevel: 'debug'
+    })
 
     /**
      * Attempts to fetch CID:
@@ -431,20 +500,43 @@ async function saveFileForMultihashToFS(
      *  - If file does not exist on user's replca set, try the network and write to disk if file exists
      */
 
-    if (await fs.pathExists(expectedStoragePath)) {
+    if (await fs.pathExists(storageLocation)) {
       decisionTree.recordStage({
         name: 'Success - File already stored on disk',
-        data: { expectedStoragePath }
+        data: { storageLocation }
       })
 
-      return
+      return { storagePath: storageLocation }
     }
 
+    // Create dir at expected storage path in which to store retrieved data
+    const storageLocationParentDir = path.parse(storageLocation).dir
+    try {
+      // calling this on an existing directory doesn't overwrite the existing data or throw an error
+      // the mkdir recursive is equivalent to `mkdir -p`
+      await fs.mkdir(storageLocationParentDir, { recursive: true })
+      decisionTree.recordStage({
+        name: 'Successfully called mkdir on local file system',
+        data: {
+          storageLocationParentDir
+        }
+      })
+    } catch (e) {
+      decisionTree.recordStage({
+        name: 'Error calling mkdir on local file system',
+        data: { storageLocationParentDir }
+      })
+      throw new Error(
+        `Error making directory at ${storageLocationParentDir} - ${e.message}`
+      )
+    }
+
+    // This function will throw error in any scenario where the file was not successfully saved to disk at expected `storageLocation`
     await fetchFileFromNetworkAndWriteToDisk({
-      gatewayContentRoutes,
-      targetGateways,
+      targetGatewayContentRoutes,
+      nonTargetGatewayContentRoutes,
       multihash,
-      path: expectedStoragePath,
+      storageLocation,
       numRetries,
       logger,
       decisionTree,
@@ -452,16 +544,16 @@ async function saveFileForMultihashToFS(
     })
   } catch (e) {
     decisionTree.recordStage({
-      name: 'saveFileForMultihashToFS Error',
+      name: 'fetchFileFromNetworkAndSaveToFS Error',
       data: { errorMsg: e.message }
     })
 
-    return e
+    return { error: e }
   } finally {
-    decisionTree.printTree()
+    decisionTree.printTree({ logLevel: 'debug' })
   }
 
-  // If no error, return nothing
+  return { storagePath: storageLocation }
 }
 
 /**
@@ -476,6 +568,9 @@ async function saveFileForMultihashToFS(
 async function removeTrackFolder({ logContext }, fileDir) {
   const logger = genericLogger.child(logContext)
   try {
+    const deleteTrackUploadArtifacts = config.get('deleteTrackUploadArtifacts')
+    if (!deleteTrackUploadArtifacts) return
+
     if (!fileDir) {
       throw new Error('Cannot remove null fileDir')
     }
@@ -587,7 +682,7 @@ const trackDiskStorage = multer.diskStorage({
       req.fileNameNoExtension = fileName
       req.fileName = fileName + fileExtension
 
-      req.logger.info(
+      req.logger.debug(
         `Created track disk storage: ${req.fileDir}, ${req.fileName}`
       )
       cb(null, fileDir)
@@ -651,7 +746,7 @@ function checkFileType(logger, { fileName, fileMimeType }) {
     ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) &&
     AUDIO_MIME_TYPE_REGEX.test(fileMimeType)
   ) {
-    logger.info(
+    logger.debug(
       `fileManager#checkFileType - FileName: ${fileName}, Filetype: ${fileExtension}, Mimetype: ${fileMimeType}`
     )
   } else {
@@ -746,7 +841,7 @@ async function removeFile(storagePath) {
 
 module.exports = {
   saveFileFromBufferToDisk,
-  saveFileForMultihashToFS,
+  fetchFileFromNetworkAndSaveToFS,
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,

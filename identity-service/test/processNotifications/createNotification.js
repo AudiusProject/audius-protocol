@@ -134,7 +134,7 @@ const additionalNotifications = [
   }
 ]
 
-describe('Test Favorite Notification', function () {
+describe('Test Create Notification', function () {
   beforeEach(async () => {
     await clearDatabase()
     await runMigrations()
@@ -238,5 +238,41 @@ describe('Test Favorite Notification', function () {
     const user10AlbumActions = await models.NotificationAction.findAll({ where: { notificationId: user10AlbumNotif.id } })
     assert.deepStrictEqual(user10AlbumActions.length, 1)
     assert.deepStrictEqual(user10AlbumActions[0].actionEntityId, 2)
+  })
+
+
+  it('should handle a lot of subscribers for create', async function () {
+    // Set timeout to 30 seconds
+    this.timeout(30 * 1000)
+    // ======================================= Set subscribers for create notifications =======================================
+    const NUM_SUBSCRIBERS = 100000
+    await models.Subscription.bulkCreate(
+      [...Array(NUM_SUBSCRIBERS).keys()]
+        .map((num) => ({
+          subscriberId: num+1,
+          userId: 1
+        }))
+    )
+
+    // ======================================= Process initial Notifications =======================================
+    const tx1 = await models.sequelize.transaction()
+    await processCreateNotifications([{
+      'blocknumber': 1,
+      'initiator': 1,
+      'metadata': {
+        'entity_id': 1,
+        'entity_owner_id': 1,
+        'entity_type': 'track'
+      },
+      'timestamp': '2020-10-27T15:14:20 Z',
+      'type': 'Create'
+    }], tx1)
+    await tx1.commit()
+
+    // ======================================= Run checks against the Notifications =======================================
+    // User 11 subscribes to user 1 and gets the notification when user 1 creates tracks 1, 2, 3, and playlist 1 which contains track 2
+    const notifications = await models.Notification.findAll()
+    assert.deepStrictEqual(notifications.length, NUM_SUBSCRIBERS)
+
   })
 })

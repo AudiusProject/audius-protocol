@@ -1,12 +1,15 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict
+from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.notifications.notification import NotificationSeen
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
@@ -31,6 +34,9 @@ class Action(str, Enum):
     REPOST = "Repost"
     UNREPOST = "Unrepost"
     VERIFY = "Verify"
+    SUBSCRIBE = "Subscribe"
+    UNSUBSCRIBE = "Unsubscribe"
+    VIEW = "View"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -44,6 +50,8 @@ class EntityType(str, Enum):
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
+    SUBSCRIPTION = "Subscription"
+    NOTIFICATION = "Notification"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -56,6 +64,8 @@ class RecordDict(TypedDict):
     Follow: Dict[Tuple, List[Follow]]
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
+    Subscription: Dict[Tuple, List[Subscription]]
+    Notification: Dict[Tuple, List[NotificationSeen]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -64,6 +74,7 @@ class ExistingRecordDict(TypedDict):
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
+    Subscription: Dict[Tuple, Subscription]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -72,6 +83,7 @@ class EntitiesToFetchDict(TypedDict):
     User: Set[int]
     Follow: Set[Tuple]
     Save: Set[Tuple]
+    Subscription: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -87,6 +99,7 @@ class ManageEntityParameters:
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
+        pending_playlist_routes: List[PlaylistRoute],
         metadata: Dict[str, Dict[str, Dict]],
         eth_manager: EthManager,
         web3: Web3,
@@ -110,6 +123,7 @@ class ManageEntityParameters:
         self.web3 = web3
         self.eth_manager = eth_manager
         self.pending_track_routes = pending_track_routes
+        self.pending_playlist_routes = pending_playlist_routes
 
         self.event = event
         self.metadata = metadata
@@ -142,47 +156,40 @@ class ManageEntityParameters:
         self.new_records[EntityType.USER][user_id].append(user)  # type: ignore
         self.existing_records[EntityType.USER][user_id] = user  # type: ignore
 
+    def add_notification_seen_record(
+        self,
+        key: Tuple[int, datetime],
+        record: NotificationSeen,
+    ):
+        if key not in self.new_records[EntityType.NOTIFICATION]:  # type: ignore
+            self.new_records[EntityType.NOTIFICATION][key].append(record)  # type: ignore
+        # If key exists, do nothing
+
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
     return (user_id, entity_type.capitalize(), entity_id)
 
 
-def copy_user_record(
-    old_user: User,
+def copy_record(
+    old_record: Union[User, Track, Playlist],
     block_number: int,
     event_blockhash: str,
     txhash: str,
     block_datetime: datetime,
 ):
-    return User(
-        user_id=old_user.user_id,
-        wallet=old_user.wallet,
-        created_at=old_user.created_at,
-        handle=old_user.handle,
-        name=old_user.name,
-        profile_picture=old_user.profile_picture,
-        cover_photo=old_user.cover_photo,
-        bio=old_user.bio,
-        location=old_user.location,
-        metadata_multihash=old_user.metadata_multihash,
-        creator_node_endpoint=old_user.creator_node_endpoint,
-        is_verified=old_user.is_verified,
-        handle_lc=old_user.handle_lc,
-        cover_photo_sizes=old_user.cover_photo_sizes,
-        profile_picture_sizes=old_user.profile_picture_sizes,
-        primary_id=old_user.primary_id,
-        secondary_ids=old_user.secondary_ids,
-        replica_set_update_signer=old_user.replica_set_update_signer,
-        has_collectibles=old_user.has_collectibles,
-        playlist_library=old_user.playlist_library,
-        is_deactivated=old_user.is_deactivated,
-        slot=old_user.slot,
-        user_storage_account=old_user.user_storage_account,
-        user_authority_account=old_user.user_authority_account,
-        updated_at=block_datetime,
-        blocknumber=block_number,
-        blockhash=event_blockhash,
-        txhash=txhash,
-        artist_pick_track_id=old_user.artist_pick_track_id,
-        is_current=False,
-    )
+    old_user_attributes = old_record.get_attributes_dict()
+    record_copy = type(old_record)()
+    for key, value in old_user_attributes.items():
+        if key == "is_current":
+            setattr(record_copy, key, False)
+        elif key == "updated_at":
+            setattr(record_copy, key, block_datetime)
+        elif key == "blocknumber":
+            setattr(record_copy, key, block_number)
+        elif key == "blockhash":
+            setattr(record_copy, key, event_blockhash)
+        elif key == "txhash":
+            setattr(record_copy, key, txhash)
+        else:
+            setattr(record_copy, key, value)
+    return record_copy

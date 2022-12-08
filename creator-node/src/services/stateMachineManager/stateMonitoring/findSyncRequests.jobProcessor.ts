@@ -5,15 +5,18 @@ import type {
   FindSyncRequestsJobReturnValue,
   OutcomeCountsMap,
   ReplicaToAllUserInfoMaps,
-  StateMonitoringUser,
-  UserSecondarySyncMetrics
+  StateMonitoringUser
 } from './types'
-import type { IssueSyncRequestJobParams } from '../stateReconciliation/types'
+import type {
+  IssueSyncRequestJobParams,
+  SecondarySyncHealthTrackerState
+} from '../stateReconciliation/types'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const _: LoDashStatic = require('lodash')
 
@@ -29,11 +32,6 @@ const {
 const { computeSyncModeForUserAndReplica } = require('./stateMonitoringUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
-const minSecondaryUserSyncSuccessPercent =
-  config.get('minimumSecondaryUserSyncSuccessPercent') / 100
-const minFailedSyncRequestsBeforeReconfig = config.get(
-  'minimumFailedSyncRequestsBeforeReconfig'
-)
 
 type FindSyncsForUserResult = {
   syncReqsToEnqueue: IssueSyncRequestJobParams[]
@@ -55,13 +53,13 @@ type FindSyncsForUserResult = {
  * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string[]} param.unhealthyPeers array of unhealthy peers
  * @param {Object} param.replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock, filesHash }))
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {SecondarySyncHealthTrackerState} param.secondarySyncHealthTrackerState used to determine if wallet should continue action on secondary
  */
 async function findSyncRequests({
   users,
   unhealthyPeers,
   replicaToAllUserInfoMaps,
-  userSecondarySyncMetricsMap,
+  secondarySyncHealthTrackerState,
   logger
 }: DecoratedJobParams<FindSyncRequestsJobParams>): Promise<
   DecoratedJobReturnValue<FindSyncRequestsJobReturnValue>
@@ -78,19 +76,7 @@ async function findSyncRequests({
   let duplicateSyncReqs: IssueSyncRequestJobParams[] = []
   let errors: string[] = []
   for (const user of users) {
-    const { wallet, primary, secondary1, secondary2 } = user
-
-    const userSecondarySyncMetrics = {
-      [secondary1]: { successRate: 1, failureCount: 0, successCount: 0 },
-      [secondary2]: { successRate: 1, failureCount: 0, successCount: 0 },
-      ...userSecondarySyncMetricsMap[wallet]
-    }
-    logger.info(
-      `Finding sync requests for user ${JSON.stringify(
-        user
-      )} with secondarySyncMetrics ${JSON.stringify(userSecondarySyncMetrics)}`
-    )
-
+    const { wallet, primary } = user
     const {
       syncReqsToEnqueue: userSyncReqsToEnqueue,
       duplicateSyncReqs: userDuplicateSyncReqs,
@@ -99,9 +85,7 @@ async function findSyncRequests({
     } = await _findSyncsForUser(
       user,
       unhealthyPeersSet,
-      userSecondarySyncMetrics,
-      minSecondaryUserSyncSuccessPercent,
-      minFailedSyncRequestsBeforeReconfig,
+      secondarySyncHealthTrackerState,
       replicaToAllUserInfoMaps,
       cNodeEndpointToSpIdMap
     )
@@ -168,20 +152,14 @@ async function findSyncRequests({
  *
  * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the user has had syncing to it
- * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
- * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
+ * @param {SecondarySyncHealthTrackerState} secondarySyncHealthTrackerState used to determine if wallet should continue action on secondary
  * @param {Object} replicaToAllUserInfoMaps map(secondary endpoint => map(user wallet => { clock value, filesHash }))
  * @param {Map<string, number>} cNodeEndpointToSpIdMap map of cnode endpoints to SP IDs
  */
 async function _findSyncsForUser(
   user: StateMonitoringUser,
   unhealthyPeers: Set<string>,
-  userSecondarySyncMetricsMap: {
-    [secondary: string]: UserSecondarySyncMetrics
-  },
-  minSecondaryUserSyncSuccessPercent: number,
-  minFailedSyncRequestsBeforeReconfig: number,
+  secondarySyncHealthTrackerState: SecondarySyncHealthTrackerState,
   replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps,
   cNodeEndpointToSpIdMap: Map<string, number>
 ): Promise<FindSyncsForUserResult> {
@@ -223,11 +201,13 @@ async function _findSyncsForUser(
   const duplicateSyncReqs = []
   const errors: string[] = []
 
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker(
+    secondarySyncHealthTrackerState
+  )
+
   // For each secondary, add a potential sync request if healthy
   for (const secondaryInfo of secondariesInfo) {
     const secondary = secondaryInfo.endpoint
-
-    const { successRate, failureCount } = userSecondarySyncMetricsMap[secondary]
 
     // Secondary is unhealthy if we already marked it as unhealthy previously -- don't sync to it
     if (unhealthyPeers.has(secondary)) {
@@ -243,11 +223,13 @@ async function _findSyncsForUser(
     }
 
     // Secondary has too low of a success rate -- don't sync to it
-    if (
-      failureCount >= minFailedSyncRequestsBeforeReconfig &&
-      successRate < minSecondaryUserSyncSuccessPercent
-    ) {
-      outcomesBySecondary[secondary].result = 'no_sync_success_rate_too_low'
+    const walletOnSecondaryExceedsMaxErrorsAllowed =
+      secondarySyncHealthTracker.doesWalletOnSecondaryExceedMaxErrorsAllowed(
+        wallet,
+        secondary
+      )
+    if (walletOnSecondaryExceedsMaxErrorsAllowed) {
+      outcomesBySecondary[secondary].result = 'no_sync_max_errors_encountered'
       continue
     }
 

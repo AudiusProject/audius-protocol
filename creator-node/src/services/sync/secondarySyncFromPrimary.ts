@@ -1,5 +1,6 @@
 import type Logger from 'bunyan'
 import type { SyncStatus } from './syncUtil'
+import type { LogContext } from '../../utils'
 
 import axios from 'axios'
 import _ from 'lodash'
@@ -9,8 +10,12 @@ import {
   getStartTime,
   logInfoWithDuration
 } from '../../logging'
-import { saveFileForMultihashToFS } from '../../fileManager'
-import DiskManager from '../../diskManager'
+import { fetchFileFromNetworkAndSaveToFS } from '../../fileManager'
+import {
+  gatherCNodeUserDataToDelete,
+  clearFilePathsToDelete,
+  deleteAllCNodeUserDataFromDisk
+} from '../../diskManager'
 import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
@@ -21,6 +26,7 @@ import { instrumentTracing, tracing } from '../../tracer'
 import { fetchExportFromNode, setSyncStatus } from './syncUtil'
 import { getReplicaSetEndpointsByWallet } from '../ContentNodeInfoManager'
 import { ForceResyncConfig } from '../../services/stateMachineManager/stateReconciliation/types'
+import { computeFilePath, computeFilePathInDir } from '../../utils'
 
 const models = require('../../models')
 const config = require('../../config')
@@ -32,8 +38,9 @@ type SecondarySyncFromPrimaryParams = {
   wallet: string
   creatorNodeEndpoint: string
   forceResyncConfig: ForceResyncConfig
-  logContext: Object
+  logContext: LogContext
   forceWipe?: boolean
+  syncOverride?: boolean
   blockNumber?: number | null
   syncUuid?: string | null
 }
@@ -44,6 +51,7 @@ const handleSyncFromPrimary = async ({
   creatorNodeEndpoint,
   forceResyncConfig,
   forceWipe,
+  syncOverride,
   logContext,
   secondarySyncFromPrimaryLogger
 }: SecondarySyncFromPrimaryParams & {
@@ -94,7 +102,7 @@ const handleSyncFromPrimary = async ({
       throw error
     }
 
-    if (userReplicaSet.primary !== creatorNodeEndpoint) {
+    if (!syncOverride && userReplicaSet.primary !== creatorNodeEndpoint) {
       return {
         abort: `Node being synced from is not primary. Node being synced from: ${creatorNodeEndpoint} Primary: ${userReplicaSet.primary}`,
         result: 'abort_current_node_is_not_user_primary'
@@ -106,7 +114,8 @@ const handleSyncFromPrimary = async ({
      */
     const forceResync = await shouldForceResync(
       { libs, logContext },
-      forceResyncConfig
+      forceResyncConfig,
+      syncOverride
     )
     const forceResyncQueryParam = forceResyncConfig?.forceResync
     if (forceResyncQueryParam && !forceResync) {
@@ -136,9 +145,9 @@ const handleSyncFromPrimary = async ({
       }
 
       // Short circuit if wiping is disabled via env var
-      if (!config.get('syncForceWipeEnabled')) {
+      if (!config.get('syncForceWipeDBEnabled')) {
         return {
-          abort: 'Stopping sync early because syncForceWipeEnabled=false',
+          abort: 'Stopping sync early because syncForceWipeDBEnabled=false',
           result: 'abort_force_wipe_disabled'
         }
       }
@@ -155,19 +164,18 @@ const handleSyncFromPrimary = async ({
 
       // Store this user's file paths in redis to delete later (after wiping db)
       let numFilesToDelete = 0
-      try {
-        numFilesToDelete = await DiskManager.gatherCNodeUserDataToDelete(
-          wallet,
-          logger
-        )
-      } catch (error) {
-        await DiskManager.clearFilePathsToDelete(wallet)
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          numFilesToDelete = await gatherCNodeUserDataToDelete(wallet, logger)
+        } catch (error) {
+          await clearFilePathsToDelete(wallet)
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       /**
@@ -186,7 +194,7 @@ const handleSyncFromPrimary = async ({
       }
 
       if (deleteError) {
-        await DiskManager.clearFilePathsToDelete(wallet)
+        await clearFilePathsToDelete(wallet)
         error = deleteError
         errorResponse = {
           error,
@@ -197,23 +205,25 @@ const handleSyncFromPrimary = async ({
       }
 
       // Wipe disk - delete files whose paths we stored in redis earlier
-      try {
-        const numFilesDeleted =
-          await DiskManager.deleteAllCNodeUserDataFromDisk(
+      // Note - even if syncForceWipeDiskEnabled = false, we cannot exit since the below logic must be run
+      if (config.get('syncForceWipeDiskEnabled')) {
+        try {
+          const numFilesDeleted = await deleteAllCNodeUserDataFromDisk(
             wallet,
             numFilesToDelete,
             logger
           )
-        logger.info(
-          `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
-        )
-      } catch (error) {
-        errorResponse = {
-          error,
-          result: 'failure_delete_disk_data'
-        }
+          logger.info(
+            `Deleted ${numFilesDeleted}/${numFilesToDelete} files for ${wallet}`
+          )
+        } catch (error) {
+          errorResponse = {
+            error,
+            result: 'failure_delete_disk_data'
+          }
 
-        throw error
+          throw error
+        }
       }
 
       if (forceWipe) {
@@ -232,6 +242,7 @@ const handleSyncFromPrimary = async ({
     // Ensure this node is one of the user's secondaries (except when wiping a node with orphaned data).
     // We know we're not wiping an orphaned node at this point because it would've returned earlier if forceWipe=true
     if (
+      !syncOverride &&
       thisContentNodeEndpoint !== userReplicaSet.secondary1 &&
       thisContentNodeEndpoint !== userReplicaSet.secondary2
     ) {
@@ -303,7 +314,7 @@ const handleSyncFromPrimary = async ({
      * Replace CNodeUser's local DB state with retrieved data + fetch + save missing files.
      */
 
-    // Use user's replica set as gateways for content fetching in saveFileForMultihashToFS.
+    // Use user's replica set as gateways for content fetching in fetchFileFromNetworkAndSaveToFS.
     // Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
     let gatewaysToTry: string[] = []
     try {
@@ -324,11 +335,11 @@ const handleSyncFromPrimary = async ({
     } catch (e: any) {
       tracing.recordException(e)
       logger.error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
 
       error = new Error(
-        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in saveFileForMultihashToFS - ${e.message}`
+        `Couldn't filter out own endpoint from user's replica set to use as cnode gateways in fetchFileFromNetworkAndSaveToFS - ${e.message}`
       )
       errorResponse = {
         error,
@@ -503,16 +514,28 @@ const handleSyncFromPrimary = async ({
       /*
        * Make list of all track Files to add after track creation
        *
-       * Files with trackBlockchainIds cannot be created until tracks have been created,
-       *    but tracks cannot be created until metadata and cover art files have been created.
+       * Files with trackBlockchainIds cannot be created until tracks have been created.
        */
 
       const startSaveFiles = getStartTime()
-      const trackFiles = fetchedCNodeUser.files.filter((file: any) =>
+
+      // Recompute storage paths to use this node's path prefix
+      const filesWithRecomputedStoragePaths = fetchedCNodeUser.files.map(
+        (file: any) => {
+          return {
+            ...file,
+            storagePath: file.dirMultihash
+              ? computeFilePathInDir(file.dirMultihash, file.multihash)
+              : computeFilePath(file.multihash)
+          }
+        }
+      )
+
+      const trackFiles = filesWithRecomputedStoragePaths.filter((file: any) =>
         models.File.TrackTypes.includes(file.type)
       )
-      const nonTrackFiles = fetchedCNodeUser.files.filter((file: any) =>
-        models.File.NonTrackTypes.includes(file.type)
+      const nonTrackFiles = filesWithRecomputedStoragePaths.filter(
+        (file: any) => models.File.NonTrackTypes.includes(file.type)
       )
       const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
@@ -521,8 +544,8 @@ const handleSyncFromPrimary = async ({
       // Save all track files to disk in batches (to limit concurrent load)
       for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
         const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-        logger.info(
-          `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${
+        logger.debug(
+          `TrackFiles fetchFileFromNetworkAndSaveToFS - processing trackFiles ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${trackFiles.length}...`
         )
@@ -530,15 +553,15 @@ const handleSyncFromPrimary = async ({
         /**
          * Fetch content for each CID + save to FS
          * Record any CIDs that failed retrieval/saving for later use
-         * @notice `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+         * @notice `fetchFileFromNetworkAndSaveToFS()` should never reject - it will return error indicator for post processing
          */
         await Promise.all(
           trackFilesSlice.map(async (trackFile: any) => {
-            const error = await saveFileForMultihashToFS(
+            const { error } = await fetchFileFromNetworkAndSaveToFS(
               libs,
               logger,
               trackFile.multihash,
-              trackFile.storagePath,
+              trackFile.dirMultihash,
               gatewaysToTry,
               null,
               trackFile.trackBlockchainId
@@ -559,8 +582,8 @@ const handleSyncFromPrimary = async ({
           i,
           i + FileSaveMaxConcurrency
         )
-        logger.info(
-          `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${
+        logger.debug(
+          `NonTrackFiles fetchFileFromNetworkAndSaveToFS - processing files ${i} to ${
             i + FileSaveMaxConcurrency
           } out of total ${nonTrackFiles.length}...`
         )
@@ -578,22 +601,26 @@ const handleSyncFromPrimary = async ({
                 nonTrackFile.type === 'image' &&
                 nonTrackFile.fileName !== null
               ) {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry,
-                  nonTrackFile.fileName
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry,
+                    nonTrackFile.fileName
+                  )
+                error = fetchError
               } else {
-                error = await saveFileForMultihashToFS(
-                  libs,
-                  logger,
-                  multihash,
-                  nonTrackFile.storagePath,
-                  gatewaysToTry
-                )
+                const { error: fetchError } =
+                  await fetchFileFromNetworkAndSaveToFS(
+                    libs,
+                    logger,
+                    multihash,
+                    nonTrackFile.dirMultihash,
+                    gatewaysToTry
+                  )
+                error = fetchError
               }
 
               // If saveFile op failed, record CID for later processing
@@ -623,7 +650,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all ClockRecord entries to DB')
+      logger.debug('Saved all ClockRecord entries to DB')
 
       await models.File.bulkCreate(
         nonTrackFiles.map((file: any) => {
@@ -638,7 +665,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all non-track File entries to DB')
+      logger.debug('Saved all non-track File entries to DB')
 
       await models.Track.bulkCreate(
         fetchedCNodeUser.tracks.map((track: any) => ({
@@ -647,7 +674,7 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all Track entries to DB')
+      logger.debug('Saved all Track entries to DB')
 
       await models.File.bulkCreate(
         trackFiles.map((trackFile: any) => {
@@ -661,7 +688,7 @@ const handleSyncFromPrimary = async ({
         }),
         { transaction }
       )
-      logger.info('Saved all track File entries to DB')
+      logger.debug('Saved all track File entries to DB')
 
       await models.AudiusUser.bulkCreate(
         fetchedCNodeUser.audiusUsers.map((audiusUser: any) => ({
@@ -670,11 +697,11 @@ const handleSyncFromPrimary = async ({
         })),
         { transaction }
       )
-      logger.info('Saved all AudiusUser entries to DB')
+      logger.debug('Saved all AudiusUser entries to DB')
 
       await transaction.commit()
 
-      logger.info(
+      logger.debug(
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
@@ -758,7 +785,7 @@ const handleSyncFromPrimary = async ({
  * @param {string} param.wallet
  * @param {string} param.creatorNodeEndpoint
  * @param {Object} param.forceResyncConfig
- * @param {Object} param.logContext
+ * @param {LogContext} param.logContext
  * @param {boolean} [param.forceWipe]
  * @param {number} [param.blockNumber]
  */
@@ -769,6 +796,7 @@ async function _secondarySyncFromPrimary({
   forceResyncConfig,
   logContext,
   forceWipe = false,
+  syncOverride = false,
   blockNumber = null,
   syncUuid = null // Could be null for backwards compatibility
 }: SecondarySyncFromPrimaryParams) {
@@ -802,6 +830,7 @@ async function _secondarySyncFromPrimary({
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     secondarySyncFromPrimaryLogger
   })

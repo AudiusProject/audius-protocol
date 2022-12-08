@@ -122,7 +122,7 @@ def persist_summed_unique_counts(
             .first()
         )
         if day_unique_record:
-            logger.info(
+            logger.debug(
                 f"summed unique count record for day {day} before update: {day_unique_record.summed_count}"
             )
             day_unique_record.summed_count = max(
@@ -139,7 +139,7 @@ def persist_summed_unique_counts(
             .first()
         )
         if month_unique_record:
-            logger.info(
+            logger.debug(
                 f"summed unique count record for month {month} before update: \
                 {month_unique_record.summed_count}"
             )
@@ -163,9 +163,9 @@ def persist_route_metrics(
             .first()
         )
         if day_unique_record:
-            logger.info(
+            logger.debug(
                 f"unique count record for day {day} before adding new unique count \
-                {unique_daily_count}: {day_unique_record.count}"
+                {unique_daily_count}: {day_unique_record.count} + "
             )
             day_unique_record.count += unique_daily_count
             logger.info(
@@ -187,7 +187,7 @@ def persist_route_metrics(
             .first()
         )
         if day_total_record:
-            logger.info(
+            logger.debug(
                 f"total count record for day {day} before adding new total count \
                 {count}: {day_total_record.count}"
             )
@@ -211,7 +211,7 @@ def persist_route_metrics(
             .first()
         )
         if month_unique_record:
-            logger.info(
+            logger.debug(
                 f"unique count record for month {month} before adding new unique count \
                 {unique_monthly_count}: {month_unique_record.count}"
             )
@@ -236,7 +236,7 @@ def persist_route_metrics(
             .first()
         )
         if month_total_record:
-            logger.info(
+            logger.debug(
                 f"total count record for month {month} before adding new total count \
                 {count}: {month_total_record.count}"
             )
@@ -267,7 +267,7 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if day_record:
-                logger.info(
+                logger.debug(
                     f"daily app record for day {day} and application {application_name} \
                     before adding new count {count}: {day_record.count}"
                 )
@@ -295,7 +295,7 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if month_record:
-                logger.info(
+                logger.debug(
                     f"monthly app record for month {month} and application {application_name} \
                     before adding new count {count}: {month_record.count}"
                 )
@@ -328,7 +328,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
 
         Persist metrics in the database
     """
-    logger.info(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
+    logger.debug(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
     day = end_time.split(":")[0]
     month = f"{day[:7]}/01"
 

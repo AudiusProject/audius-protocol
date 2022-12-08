@@ -1,5 +1,6 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const Accounts = require('web3-eth-accounts')
 
 const models = require('../models')
 const config = require('../config')
@@ -8,8 +9,7 @@ const { Lock } = require('../redis')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
-
-const { primaryWeb3, secondaryWeb3 } = require('../web3')
+const { primaryWeb3, nethermindWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
 const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
@@ -19,6 +19,17 @@ const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT = config.get(
+  'updateReplicaSetReconfigurationLimit'
+)
+
+const transactionRateLimiter = {
+  updateReplicaSetReconfiguration: 0
+}
+
+setInterval(() => {
+  transactionRateLimiter.updateReplicaSetReconfiguration = 0
+}, 10000)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -71,12 +82,6 @@ const sendTransaction = async (
   return resp
 }
 
-/**
- * TODO(roneilr): this should check that in the registry, contractRegistryKey maps to
- *  contractAddress, rejecting the tx if not. Also needs to maintain a whitelist of
- *  contracts (eg. storage contracts, discovery service contract, should not be allowed
- *  to relay TXes from here but can today).
- */
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const {
     contractRegistryKey,
@@ -86,6 +91,16 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     gasLimit
   } = txProps
   const redis = req.app.get('redis')
+
+  // SEND to either POA or Nethermind here...
+  let sendToNethermind = false
+  if (config.get('environment') === 'staging') {
+    sendToNethermind = true
+  } else {
+    const currentBlock = await web3.eth.getBlockNumber()
+    const finalPOABlock = config.get('finalPOABlock')
+    sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
+  }
 
   const existingTx = await models.Transaction.findOne({
     where: {
@@ -102,13 +117,33 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
+  // Rate limit replica set reconfiguration transactions
+  // A reconfiguration (as opposed to a first time selection) will have an
+  // _oldPrimaryId value of "0"
+  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
+  if (isReplicaSetTransaction) {
+    const isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+    if (!isFirstReplicaSetConfig) {
+      transactionRateLimiter.updateReplicaSetReconfiguration += 1
+      if (
+        transactionRateLimiter.updateReplicaSetReconfiguration >
+        UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
+      ) {
+        throw new Error('updateReplicaSet rate limit reached')
+      }
+    }
+  }
+
   // will be set later. necessary for code outside scope of try block
   let txReceipt
+  let txParams
   let redisLogParams
   let wallet = await selectWallet()
 
   // If all wallets are currently in use, keep iterating until a wallet is freed up
-  while (!wallet) {
+  while (!sendToNethermind && !wallet) {
     await delay(200)
     wallet = await selectWallet()
   }
@@ -117,16 +152,25 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     req.logger.info(
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
     )
-    const { receipt, txParams } = await createAndSendTransaction(
-      wallet,
-      contractAddress,
-      '0x00',
-      web3,
-      req.logger,
-      gasLimit,
-      encodedABI
-    )
-    txReceipt = receipt
+
+    if (sendToNethermind) {
+      const ok = await relayToNethermind(encodedABI)
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    } else {
+      // use POA receipt as main receipt
+      const ok = await createAndSendTransaction(
+        wallet,
+        contractAddress,
+        '0x00',
+        web3,
+        req.logger,
+        gasLimit,
+        encodedABI
+      )
+      txParams = ok.txParams
+      txReceipt = ok.receipt
+    }
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
@@ -156,7 +200,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
     await redis.hset(
       'txHashToSenderAddress',
-      receipt.transactionHash,
+      txReceipt.transactionHash,
       senderAddress
     )
   } catch (e) {
@@ -316,6 +360,62 @@ const createAndSendTransaction = async (
   )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
   return { receipt, txParams }
+}
+
+//
+// Relay txn to nethermind
+//
+
+let inFlight = 0
+
+async function relayToNethermind(encodedABI) {
+  // generate a new private key per transaction (gas is free)
+  const accounts = new Accounts(config.get('nethermindWeb3Provider'))
+
+  const wallet = accounts.create()
+  const privateKey = wallet.privateKey.substring(2)
+  const start = new Date().getTime()
+
+  try {
+    const transaction = {
+      to: config.get('entityManagerAddress'),
+      value: 0,
+      gas: '100880',
+      gasPrice: 0,
+      data: encodedABI
+    }
+
+    const signedTx = await nethermindWeb3.eth.accounts.signTransaction(
+      transaction,
+      privateKey
+    )
+
+    inFlight++
+    const myDepth = inFlight
+
+    logger.info(
+      `relayToNethermind sending txhash: ${signedTx.transactionHash} num: ${myDepth}`
+    )
+
+    const receipt = await nethermindWeb3.eth.sendSignedTransaction(
+      signedTx.rawTransaction
+    )
+    receipt.blockNumber += config.get('finalPOABlock')
+
+    const end = new Date().getTime()
+    const took = end - start
+    inFlight--
+    logger.info(
+      `relayToNethermind ok txhash: ${signedTx.transactionHash} num: ${myDepth} took: ${took} pending: ${inFlight}`
+    )
+    return {
+      txParams: transaction,
+      receipt
+    }
+  } catch (err) {
+    console.log('relayToNethermind error:', err.toString())
+    throw err
+  }
 }
 
 const getRelayerFunds = async (walletPublicKey) => {

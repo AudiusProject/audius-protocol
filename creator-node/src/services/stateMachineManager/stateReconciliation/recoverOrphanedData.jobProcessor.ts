@@ -265,6 +265,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
         await redisClient.srem(WALLETS_ORPHANED_KEY, wallet)
       } catch (e: any) {
         logger.error(
+          { primaryEndpoint, wallet },
           `Error issuing request to recover orphaned data: ${e.message}`
         )
       }
@@ -295,7 +296,7 @@ const _getPrimaryForWallet = async (
   try {
     const resp = await asyncRetry({
       logLabel: "fetch user's primary endpoint",
-      options: { retries: 3 },
+      options: { retries: 3, maxTimeout: 5000 },
       asyncFn: async () => {
         return axios({
           method: 'get',

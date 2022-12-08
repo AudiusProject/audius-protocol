@@ -25,9 +25,6 @@ const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
-const {
-  PremiumContentAccessChecker
-} = require('./premiumContent/premiumContentAccessChecker')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -49,10 +46,9 @@ class ServiceRegistry {
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
     this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
-    this.premiumContentAccessChecker = new PremiumContentAccessChecker() // Service that checks for premium content access
 
     // Queues
-    this.monitoringQueue = new MonitoringQueue(this.prometheusRegistry) // Recurring job to monitor node state & performance metrics
+    this.monitoringQueue = null // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = new ImageProcessingQueue() // Resizes all images on Audius
     this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
@@ -68,6 +64,8 @@ class ServiceRegistry {
     this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
     this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
     this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
+    this.stateMonitoringManager = null // Handles all the queues for monitoring state of the system
+    this.stateReconciliationManager = null // Handles all the queues for reconciliting state of the system
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -95,30 +93,8 @@ class ServiceRegistry {
 
     this.synchronousServicesInitialized = true
 
-    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
-    // Retries indefinitely
-    await this._recoverNodeL1Identity()
-
-    // Init StateMachineManager
-    this.stateMachineManager = new StateMachineManager()
-    const {
-      monitorStateQueue,
-      findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
-      cNodeEndpointToSpIdMapQueue,
-      manualSyncQueue,
-      recurringSyncQueue,
-      updateReplicaSetQueue,
-      recoverOrphanedDataQueue
-    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.monitorStateQueue = monitorStateQueue
-    this.findSyncRequestsQueue = findSyncRequestsQueue
-    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
-    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = recurringSyncQueue
-    this.updateReplicaSetQueue = updateReplicaSetQueue
-    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
+    this.monitoringQueue = new MonitoringQueue()
+    await this.monitoringQueue.init(this.prometheusRegistry)
 
     logInfoWithDuration(
       { logger: genericLogger, startTime: start },
@@ -319,18 +295,62 @@ class ServiceRegistry {
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
+   *
+   * The server will be in read only mode at the beginning of this function. Once the L1 identity
+   * has been recovered, it will be in read + write mode
    */
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
+    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    // because some queues and write routes depend on spID
+    // Retries indefinitely
+    await this._recoverNodeL1Identity()
+
+    // Init StateMachineManager
+    this.stateMachineManager = new StateMachineManager()
+    const {
+      monitorStateQueue,
+      findSyncRequestsQueue,
+      findReplicaSetUpdatesQueue,
+      cNodeEndpointToSpIdMapQueue,
+      manualSyncQueue,
+      recurringSyncQueue,
+      updateReplicaSetQueue,
+      recoverOrphanedDataQueue,
+      stateMonitoringManager,
+      stateReconciliationManager
+    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    this.monitorStateQueue = monitorStateQueue
+    this.findSyncRequestsQueue = findSyncRequestsQueue
+    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
+    this.updateReplicaSetQueue = updateReplicaSetQueue
+    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
+    this.stateMonitoringManager = stateMonitoringManager
+    this.stateReconciliationManager = stateReconciliationManager
+
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.syncQueue = new SyncQueue(config, this.redis, this)
-    this.syncImmediateQueue = new SyncImmediateQueue(config, this.redis, this)
+    this.syncQueue = new SyncQueue()
+    await this.syncQueue.init(config, this.redis, this)
+    this.syncImmediateQueue = new SyncImmediateQueue()
+    await this.syncImmediateQueue.init(config, this.redis, this)
 
-    // L2URSMRegistration (requires L1 identity)
-    // Retries indefinitely
-    await this._registerNodeOnL2URSM()
+    // If entity manager is enabled, there's no need to register on L2 because
+    // discovery node will use L1 to validate
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      config.set('isRegisteredOnURSM', true)
+      this.logInfo(
+        `When EntityManager is enabled, skip register node on l2 ursm`
+      )
+    } else {
+      // L2URSMRegistration (requires L1 identity)
+      // Retries indefinitely
+      await this._registerNodeOnL2URSM()
+    }
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -351,6 +371,38 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized services that require server'
     )
+  }
+
+  /**
+   * Checks for queues that are missing a job and adds a job to them.
+   * Some queues run on a cron and should always have 1 job either active or delayed.
+   */
+  async recoverStateMachineQueues() {
+    if (await this._isQueueEmpty(this.cNodeEndpointToSpIdMapQueue)) {
+      this.logError('cNodeEndpointToSpIdMapQueue was empty - restarting it')
+      await this.stateMonitoringManager.startEndpointToSpIdMapQueue(
+        this.cNodeEndpointToSpIdMapQueue
+      )
+    }
+    if (await this._isQueueEmpty(this.monitorStateQueue)) {
+      this.logError('monitorStateQueue was empty - restarting it')
+      await this.stateMonitoringManager.startMonitorStateQueue(
+        this.monitorStateQueue,
+        this.libs.discoveryProvider.discoveryProviderEndpoint
+      )
+    }
+    if (await this._isQueueEmpty(this.recoverOrphanedDataQueue)) {
+      this.logError('recoverOrphanedDataQueue was empty - restarting it')
+      await this.stateReconciliationManager.startRecoverOrphanedDataQueue(
+        this.recoverOrphanedDataQueue,
+        this.libs.discoveryProvider.discoveryProviderEndpoint
+      )
+    }
+  }
+
+  async _isQueueEmpty(queue) {
+    const activeAndDelayedJobs = await queue.getJobs(['active', 'delayed'])
+    return !activeAndDelayedJobs?.length
   }
 
   /**

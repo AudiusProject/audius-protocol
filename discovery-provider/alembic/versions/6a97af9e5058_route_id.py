@@ -5,8 +5,8 @@ Revises: cf614359625e
 Create Date: 2019-11-14 17:07:02.579491
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.orm import sessionmaker
 from src.utils import helpers
 

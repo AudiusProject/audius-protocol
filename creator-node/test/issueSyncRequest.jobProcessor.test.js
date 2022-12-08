@@ -27,7 +27,6 @@ describe('test issueSyncRequest job processor', function () {
     sandbox,
     originalContentNodeEndpoint,
     logger,
-    recordSuccessStub,
     recordFailureStub,
     syncType,
     syncMode,
@@ -66,7 +65,6 @@ describe('test issueSyncRequest job processor', function () {
       warn: sandbox.stub(),
       error: sandbox.stub()
     }
-    recordSuccessStub = sandbox.stub().resolves()
     recordFailureStub = sandbox.stub().resolves()
     nock.disableNetConnect()
   })
@@ -82,10 +80,10 @@ describe('test issueSyncRequest job processor', function () {
 
   function getJobProcessorStub({
     getNewOrExistingSyncReqStub,
-    getSecondaryUserSyncFailureCountForTodayStub,
     retrieveClockValueForUserFromReplicaStub,
     primarySyncFromSecondaryStub,
-    getSyncStatusByUuidStub
+    getSyncStatusByUuidStub,
+    secondarySyncHealthCheckerStub
   }) {
     const stubs = {
       '../../../config': config,
@@ -98,10 +96,12 @@ describe('test issueSyncRequest job processor', function () {
         getSyncStatusByUuid: getSyncStatusByUuidStub
       },
       './SecondarySyncHealthTracker': {
-        getSecondaryUserSyncFailureCountForToday:
-          getSecondaryUserSyncFailureCountForTodayStub,
-        recordSuccess: recordSuccessStub,
-        recordFailure: recordFailureStub
+        SecondarySyncHealthTracker: sinon.stub().callsFake(() => {
+          return {
+            recordFailure: recordFailureStub,
+            ...secondarySyncHealthCheckerStub
+          }
+        })
       },
       '../stateMachineUtils': {
         retrieveClockValueForUserFromReplica:
@@ -144,10 +144,6 @@ describe('test issueSyncRequest job processor', function () {
       throw new Error('getNewOrExistingSyncReq was not expected to be called')
     })
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
     const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
@@ -157,9 +153,16 @@ describe('test issueSyncRequest job processor', function () {
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
-      getSecondaryUserSyncFailureCountForTodayStub,
       retrieveClockValueForUserFromReplicaStub,
-      primarySyncFromSecondaryStub
+      primarySyncFromSecondaryStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
@@ -192,28 +195,25 @@ describe('test issueSyncRequest job processor', function () {
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
 
-  it('does not issue sync when SecondaryUserSyncFailureCountForToday exceeds threshold', async function () {
+  it('does not issue sync when SecondarySyncHealthTracker marks wallet as max errors exceeded', async function () {
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error('getNewOrExistingSyncReq was not expected to be called')
     })
-
-    // Make sync failure count exceed the threshold
-    const failureThreshold = 20
-    const failureCount = 21
-    config.set('secondaryUserSyncDailyFailureCountThreshold', failureThreshold)
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(failureCount)
 
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
-      getSecondaryUserSyncFailureCountForTodayStub,
-      retrieveClockValueForUserFromReplicaStub
+      retrieveClockValueForUserFromReplicaStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon.stub().resolves(true)
+      }
     })
 
-    const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
+    const expectedErrorMessage = `_handleIssueSyncRequest() (${syncType})(${syncMode}) User ${wallet} | Secondary: ${secondary} || Wallet exceeded max errors allowed. Will not issue further syncRequests today.`
 
     // Verify job outputs the correct results: error and no sync issued (nock will error if a network req was made)
     const result = await issueSyncRequestJobProcessor({
@@ -222,6 +222,7 @@ describe('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
+
     expect(result).to.have.deep.property('error', expectedErrorMessage)
     expect(result).to.have.deep.property('jobsToEnqueue', {
       [QUEUE_NAMES.MANUAL_SYNC]: [],
@@ -269,10 +270,6 @@ describe('test issueSyncRequest job processor', function () {
       }
     }
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const retrieveClockValueForUserFromReplicaStub = sandbox
       .stub()
       .resolves(finalSecondaryClockValue)
@@ -281,8 +278,15 @@ describe('test issueSyncRequest job processor', function () {
       .resolves(initialSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSecondaryUserSyncFailureCountForTodayStub,
-      retrieveClockValueForUserFromReplicaStub
+      retrieveClockValueForUserFromReplicaStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     sandbox
@@ -325,11 +329,6 @@ describe('test issueSyncRequest job processor', function () {
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
-    expect(recordSuccessStub).to.have.been.calledOnceWithExactly(
-      secondary,
-      wallet,
-      syncType
-    )
     expect(recordFailureStub).to.have.not.been.called
   })
 
@@ -353,17 +352,20 @@ describe('test issueSyncRequest job processor', function () {
       }
     }
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const retrieveClockValueForUserFromReplicaStub = sandbox
       .stub()
       .resolves(finalSecondaryClockValue)
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSecondaryUserSyncFailureCountForTodayStub,
-      retrieveClockValueForUserFromReplicaStub
+      retrieveClockValueForUserFromReplicaStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     sandbox
@@ -406,12 +408,11 @@ describe('test issueSyncRequest job processor', function () {
     expect(
       retrieveClockValueForUserFromReplicaStub.callCount
     ).to.be.greaterThanOrEqual(2)
-    expect(recordFailureStub).to.have.been.calledOnceWithExactly(
+    expect(recordFailureStub).to.have.been.calledOnceWithExactly({
       secondary,
       wallet,
-      syncType
-    )
-    expect(recordSuccessStub).to.have.not.been.called
+      prometheusError: 'failure_secondary_failed_to_progress'
+    })
   })
 
   it('requires additional sync when secondary returns failure for syncUuid', async function () {
@@ -431,17 +432,20 @@ describe('test issueSyncRequest job processor', function () {
       }
     }
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const getSyncStatusByUuidStub = sandbox
       .stub()
       .resolves('failure_fetching_user_replica_set')
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSecondaryUserSyncFailureCountForTodayStub,
-      getSyncStatusByUuidStub
+      getSyncStatusByUuidStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Make the axios request succeed with a syncUuid
@@ -479,26 +483,28 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(recordFailureStub).to.have.been.calledOnceWithExactly(
+    expect(recordFailureStub).to.have.been.calledOnceWithExactly({
       secondary,
       wallet,
-      syncType
-    )
-    expect(recordSuccessStub).to.have.not.been.called
+      prometheusError: 'failure_fetching_user_replica_set'
+    })
   })
 
   it('does not require additional sync when secondary returns success for syncUuid', async function () {
     config.set('maxManualSyncMonitoringDurationInMs', 100)
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const getSyncStatusByUuidStub = sandbox.stub().resolves('success')
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getSecondaryUserSyncFailureCountForTodayStub,
-      getSyncStatusByUuidStub
+      getSyncStatusByUuidStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Make the axios request succeed with a syncUuid
@@ -529,11 +535,6 @@ describe('test issueSyncRequest job processor', function () {
       'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
-    expect(recordSuccessStub).to.have.been.calledOnceWithExactly(
-      secondary,
-      wallet,
-      syncType
-    )
     expect(recordFailureStub).to.have.not.been.called
   })
 
@@ -544,10 +545,6 @@ describe('test issueSyncRequest job processor', function () {
       throw new Error('getNewOrExistingSyncReq was not expected to be called')
     })
 
-    const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-      .stub()
-      .returns(0)
-
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
     const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
@@ -557,9 +554,16 @@ describe('test issueSyncRequest job processor', function () {
 
     const issueSyncRequestJobProcessor = getJobProcessorStub({
       getNewOrExistingSyncReqStub,
-      getSecondaryUserSyncFailureCountForTodayStub,
       retrieveClockValueForUserFromReplicaStub,
-      primarySyncFromSecondaryStub
+      primarySyncFromSecondaryStub,
+      secondarySyncHealthCheckerStub: {
+        computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(),
+        doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+          .stub()
+          .resolves(false)
+      }
     })
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
@@ -602,10 +606,6 @@ describe('test issueSyncRequest job processor', function () {
         throw new Error('getNewOrExistingSyncReq was not expected to be called')
       })
 
-      const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-        .stub()
-        .returns(0)
-
       const retrieveClockValueForUserFromReplicaStub = sandbox
         .stub()
         .resolves(1)
@@ -624,9 +624,16 @@ describe('test issueSyncRequest job processor', function () {
 
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
-        getSecondaryUserSyncFailureCountForTodayStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Make the sync request succeed regardless
@@ -671,10 +678,6 @@ describe('test issueSyncRequest job processor', function () {
         throw new Error('getNewOrExistingSyncReq was not expected to be called')
       })
 
-      const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-        .stub()
-        .returns(0)
-
       const retrieveClockValueForUserFromReplicaStub = sandbox
         .stub()
         .resolves(1)
@@ -693,9 +696,16 @@ describe('test issueSyncRequest job processor', function () {
 
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
-        getSecondaryUserSyncFailureCountForTodayStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Verify job outputs the correct results: no sync issued
@@ -733,10 +743,6 @@ describe('test issueSyncRequest job processor', function () {
         throw new Error('getNewOrExistingSyncReq was not expected to be called')
       })
 
-      const getSecondaryUserSyncFailureCountForTodayStub = sandbox
-        .stub()
-        .returns(0)
-
       const retrieveClockValueForUserFromReplicaStub = sandbox
         .stub()
         .resolves(1)
@@ -751,9 +757,16 @@ describe('test issueSyncRequest job processor', function () {
 
       const issueSyncRequestJobProcessor = getJobProcessorStub({
         getNewOrExistingSyncReqStub,
-        getSecondaryUserSyncFailureCountForTodayStub,
         retrieveClockValueForUserFromReplicaStub,
-        primarySyncFromSecondaryStub
+        primarySyncFromSecondaryStub,
+        secondarySyncHealthCheckerStub: {
+          computeWalletOnSecondaryExceedsMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(),
+          doesWalletOnSecondaryExceedMaxErrorsAllowed: sinon
+            .stub()
+            .resolves(false)
+        }
       })
 
       // Make the axios request succeed

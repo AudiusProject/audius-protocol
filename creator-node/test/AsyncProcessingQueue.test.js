@@ -10,9 +10,9 @@ const {
 } = require('../src/AsyncProcessingQueue')
 
 describe('test AsyncProcessingQueue', function () {
-  let apq, libsMock, doneMock
-  const serviceRegistryMock = getServiceRegistryMock()
-  before(function () {
+  let apq, libsMock, doneMock, serviceRegistryMock
+  before(async function () {
+    serviceRegistryMock = await getServiceRegistryMock()
     libsMock = {}
     doneMock = () => {}
     apq = new AsyncProcessingQueue(

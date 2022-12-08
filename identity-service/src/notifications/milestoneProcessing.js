@@ -383,7 +383,7 @@ async function _processMilestone(
       { transaction: tx }
     )
     const notificationId = createMilestoneTx.id
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId,
         actionEntityType: entityType,
@@ -392,6 +392,19 @@ async function _processMilestone(
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId,
+          actionEntityType: entityType,
+          actionEntityId: milestoneValue,
+          blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
     logger.info(
       `processMilestone - Process milestone ${userId}, type ${milestoneType}, entityId ${entityId}, type ${entityType}, milestoneValue ${milestoneValue}`
     )

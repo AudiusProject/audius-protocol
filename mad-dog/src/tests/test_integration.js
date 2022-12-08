@@ -4,7 +4,6 @@ const fs = require('fs-extra')
 const axios = require('axios')
 const retry = require('async-retry')
 const assert = require('assert')
-const ServiceCommands = require('@audius/service-commands')
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
@@ -41,7 +40,7 @@ const {
   updateCreator,
   getURSMContentNodes,
   addPlaylistTrack
-} = ServiceCommands
+} = require('@audius/service-commands')
 const {
   getRandomTrackMetadata,
   getRandomTrackFilePath,

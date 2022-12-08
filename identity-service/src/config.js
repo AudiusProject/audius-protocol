@@ -39,6 +39,12 @@ const config = convict({
     env: 'web3Provider',
     default: null
   },
+  nethermindWeb3Provider: {
+    doc: 'nethermind web3 provider url',
+    format: String,
+    env: 'nethermindWeb3Provider',
+    default: null
+  },
   secondaryWeb3Provider: {
     doc: 'secondary web3 provider url',
     format: String,
@@ -287,6 +293,13 @@ const config = convict({
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,
     env: 'minimumBalance',
+    default: null
+  },
+  finalPOABlock: {
+    doc: 'Last block number on POA',
+    format: Number,
+    env: 'finalPOABlock',
+    nullable: true,
     default: null
   },
   minimumRelayerBalance: {
@@ -831,6 +844,12 @@ const config = convict({
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
     default: false
+  },
+  updateReplicaSetReconfigurationLimit: {
+    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds',
+    format: Number,
+    env: 'updateReplicaSetReconfigurationLimit',
+    default: 30
   }
 })
 

@@ -51,3 +51,6 @@ class Playlist(Base, RepresentableMixin):
         return validate_field_helper(
             field, value, "Playlist", getattr(Playlist, field).type
         )
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

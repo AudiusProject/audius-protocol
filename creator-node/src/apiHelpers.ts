@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import type { AxiosResponse } from 'axios'
 import type Logger from 'bunyan'
+import type { ApiResponse, CustomRequest } from './utils'
 
 import { tracing } from './tracer'
 
@@ -12,19 +13,6 @@ import {
   logger as genericLogger
 } from './logging'
 import { generateTimestampAndSignature } from './apiSigning'
-
-type RequestWithLogger = Request & { logger: Logger }
-
-type ApiResponse = {
-  statusCode: number
-  object: {
-    error?: any
-    timestamp?: Date
-    signature?: string
-    data?: any
-    signer?: string
-  }
-}
 
 export const handleResponse = <
   TAsyncFunction extends (...args: any[]) => Promise<any>
@@ -98,7 +86,7 @@ export const sendResponse = (
   res: Response,
   resp: ApiResponse
 ) => {
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   const duration = getDuration(req as any)
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
@@ -136,7 +124,7 @@ export const sendResponseWithHeartbeatTerminator = (
   resp: ApiResponse
 ) => {
   const duration = getDuration(req as any)
-  const reqWithLogger = req as RequestWithLogger
+  const reqWithLogger = req as CustomRequest
   let logger = createChildLogger(reqWithLogger.logger, {
     duration,
     statusCode: resp.statusCode

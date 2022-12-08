@@ -1,9 +1,14 @@
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../utils'
 
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
-import { clusterUtils } from '../../utils'
+import {
+  clusterUtilsForWorker,
+  getConcurrencyPerWorker,
+  clearActiveJobs
+} from '../../utils'
 import { instrumentTracing, tracing } from '../../tracer'
 import {
   logger,
@@ -22,7 +27,8 @@ type EnqueueSyncArgs = {
   blockNumber: number
   forceResyncConfig: ForceResyncConfig
   forceWipe?: boolean
-  logContext: Object
+  syncOverride?: boolean
+  logContext: LogContext
   parentSpanContext: SpanContext
   syncUuid: string | null
 }
@@ -33,15 +39,15 @@ type EnqueueSyncArgs = {
  */
 export class SyncQueue {
   nodeConfig: any
-  redis: Redis
+  redis?: Redis
   serviceRegistry: any
-  queue: Queue
+  queue?: Queue
   /**
    * Construct bull queue and define job processor
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig: any, redis: Redis, serviceRegistry: any) {
+  async init(nodeConfig: any, redis: Redis, serviceRegistry: any) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
@@ -60,6 +66,12 @@ export class SyncQueue {
         removeOnFail: SYNC_QUEUE_HISTORY
       }
     })
+
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
+    }
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
@@ -98,7 +110,7 @@ export class SyncQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(
+        concurrency: getConcurrencyPerWorker(
           this.nodeConfig.get('syncQueueMaxConcurrency')
         )
       }
@@ -115,6 +127,7 @@ export class SyncQueue {
       creatorNodeEndpoint,
       forceResyncConfig,
       forceWipe,
+      syncOverride,
       blockNumber,
       logContext,
       serviceRegistry,
@@ -131,6 +144,7 @@ export class SyncQueue {
         blockNumber,
         forceResyncConfig,
         forceWipe,
+        syncOverride,
         logContext,
         syncUuid: syncUuid || null
       })
@@ -156,20 +170,28 @@ export class SyncQueue {
     blockNumber,
     forceResyncConfig,
     forceWipe,
+    syncOverride,
     logContext,
     parentSpanContext,
     syncUuid = null // Could be null for backwards compatibility
   }: EnqueueSyncArgs) {
-    const job = await this.queue.add('process-sync', {
-      wallet,
-      creatorNodeEndpoint,
-      blockNumber,
-      forceResyncConfig,
-      forceWipe,
-      logContext,
-      parentSpanContext,
-      syncUuid: syncUuid || null
-    })
+    // safe null check assuming `init()` is called after constructor
+    // (which it should be)
+    const job = await this.queue!.add(
+      'process-sync',
+      {
+        wallet,
+        creatorNodeEndpoint,
+        blockNumber,
+        forceResyncConfig,
+        forceWipe,
+        syncOverride,
+        logContext,
+        parentSpanContext,
+        syncUuid: syncUuid || null
+      },
+      { lifo: !!forceWipe }
+    )
     return job
   }
 }

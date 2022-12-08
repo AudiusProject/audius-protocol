@@ -1,5 +1,6 @@
 // eslint-disable-next-line node/no-extraneous-import
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../../utils'
 
 export type SyncRequestAxiosData = {
   wallet: string[]
@@ -39,7 +40,7 @@ export type ForceResyncConfig = {
   wallet: string
   forceResync?: boolean
   libs: any
-  logContext?: any
+  logContext?: LogContext
   logger?: any
 } | null
 
@@ -102,4 +103,14 @@ export type RecoverOrphanedDataJobReturnValue = {
   numWalletsOnNode: number
   numWalletsWithNodeInReplicaSet: number
   numWalletsWithOrphanedData: number
+}
+
+export type SecondarySyncHealthTrackerState = {
+  walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+}
+
+export type WalletToSecondaryAndMaxErrorReached = {
+  [wallet: string]: {
+    [secondary: string]: string /* the encountered error */
+  }
 }

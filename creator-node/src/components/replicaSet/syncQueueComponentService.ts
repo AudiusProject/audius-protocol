@@ -1,4 +1,5 @@
 import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../utils'
 
 /**
  * Enqueues sync operation into syncQueue for provided walletPublicKeys against provided creatorNodeEndpoint
@@ -18,7 +19,8 @@ export const enqueueSync = async (params: {
     wallet: string
   }
   forceWipe: boolean
-  logContext: Object
+  syncOverride: boolean
+  logContext: LogContext
   parentSpanContext: SpanContext
   serviceRegistry: any
 }) => {
@@ -45,7 +47,8 @@ export const processManualImmediateSync = async (params: {
     wallet: string
   }
   forceWipe: boolean
-  logContext: Object
+  syncOverride: boolean
+  logContext: LogContext
   parentSpanContext: SpanContext
   serviceRegistry: any
 }) => {

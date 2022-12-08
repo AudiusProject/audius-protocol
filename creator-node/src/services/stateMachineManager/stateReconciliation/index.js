@@ -3,7 +3,6 @@ const { QUEUE_HISTORY, QUEUE_NAMES } = require('../stateMachineConstants')
 const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
-const { clusterUtils } = require('../../../utils')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 const {
@@ -31,7 +30,7 @@ const recoverOrphanedDataLogger = createChildLogger(baseLogger, {
  */
 class StateReconciliationManager {
   async init(prometheusRegistry) {
-    const { queue: manualSyncQueue } = makeQueue({
+    const { queue: manualSyncQueue } = await makeQueue({
       name: QUEUE_NAMES.MANUAL_SYNC,
       processor: this.makeProcessJob(
         handleSyncRequestJobProcessor,
@@ -45,7 +44,7 @@ class StateReconciliationManager {
       prometheusRegistry
     })
 
-    const { queue: recurringSyncQueue } = makeQueue({
+    const { queue: recurringSyncQueue } = await makeQueue({
       name: QUEUE_NAMES.RECURRING_SYNC,
       processor: this.makeProcessJob(
         handleSyncRequestJobProcessor,
@@ -63,7 +62,7 @@ class StateReconciliationManager {
       await recurringSyncQueue.pause()
     }
 
-    const { queue: updateReplicaSetQueue } = makeQueue({
+    const { queue: updateReplicaSetQueue } = await makeQueue({
       name: QUEUE_NAMES.UPDATE_REPLICA_SET,
       processor: this.makeProcessJob(
         updateReplicaSetJobProcessor,
@@ -81,7 +80,7 @@ class StateReconciliationManager {
       await updateReplicaSetQueue.pause()
     }
 
-    const { queue: recoverOrphanedDataQueue } = makeQueue({
+    const { queue: recoverOrphanedDataQueue } = await makeQueue({
       name: QUEUE_NAMES.RECOVER_ORPHANED_DATA,
       processor: this.makeProcessJob(
         recoverOrphanedDataJobProcessor,
@@ -97,29 +96,8 @@ class StateReconciliationManager {
         max:
           config.get('recoverOrphanedDataQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('recoverOrphanedDataQueueRateLimitInterval') || 1
-      },
-      onFailCallback: (job, error, _prev) => {
-        const logger = createChildLogger(recoverOrphanedDataLogger, {
-          jobId: job?.id || 'unknown'
-        })
-        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
-        // This is a recurring job that re-enqueues itself on success, so we want to also re-enqueue on failure
-        const {
-          data: { discoveryNodeEndpoint }
-        } = job
-        recoverOrphanedDataQueue.add('retry-after-fail', {
-          discoveryNodeEndpoint
-        })
       }
     })
-
-    // Clear any old state if redis was running but the rest of the server restarted
-    if (clusterUtils.isThisWorkerInit()) {
-      await manualSyncQueue.obliterate({ force: true })
-      await recurringSyncQueue.obliterate({ force: true })
-      await updateReplicaSetQueue.obliterate({ force: true })
-      await recoverOrphanedDataQueue.obliterate({ force: true })
-    }
 
     return {
       manualSyncQueue,
@@ -144,9 +122,7 @@ class StateReconciliationManager {
     }
 
     // Enqueue first recoverOrphanedData job after a delay. This job requeues itself upon completion or failure
-    if (clusterUtils.isThisWorkerInit()) {
-      await queue.add('first-job', { discoveryNodeEndpoint })
-    }
+    await queue.add('first-job', { discoveryNodeEndpoint })
   }
 
   makeProcessJob(processor, logger, prometheusRegistry) {

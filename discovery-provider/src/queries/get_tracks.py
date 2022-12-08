@@ -57,9 +57,12 @@ class GetTrackArgs(TypedDict):
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
-    base_query = base_query.filter(
-        TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
-    )
+    base_query = base_query.filter(TrackWithAggregates.is_current == True)
+
+    # NOTE: the stem_of filter is added for content node to validate the track's owner id
+    # This is a temporary fix and should be replaced with a new endpoint to fetch a track's owner id
+    if not args.get("skip_stem_of_filter", False):
+        base_query = base_query.filter(TrackWithAggregates.stem_of == None)
 
     # Filter out tracks the user is not authorized to view
     if "routes" in args and args.get("routes") is not None:
@@ -79,7 +82,7 @@ def _get_tracks(session, args):
                 )
             )
         base_query = base_query.filter(or_(*filter_cond))
-    elif "skip_unlisted_filter" in args and args.get("skip_unlisted_filter"):
+    elif args.get("skip_unlisted_filter", False):
         pass
     else:
         # Only return unlisted tracks if either

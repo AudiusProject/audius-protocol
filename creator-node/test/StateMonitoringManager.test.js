@@ -9,7 +9,6 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
-const StateMonitoringManager = require('../src/services/stateMachineManager/stateMonitoring')
 
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
@@ -56,11 +55,6 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     const MockStateMonitoringManager = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/index.js',
       {
-        '../../../utils': {
-          clusterUtils: {
-            isThisWorkerInit: () => true
-          }
-        },
         '../../../config': config
       }
     )
@@ -114,32 +108,5 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     expect(isQueuePaused).to.be.true
     return expect(monitorStateQueue.getJobs('delayed')).to.eventually.be
       .fulfilled.and.be.empty
-  })
-
-  it('re-enqueues a new job with the correct data after a job fails', async function () {
-    // Initialize StateMonitoringManager and stubbed queue.add()
-    const discoveryNodeEndpoint = 'http://test_dn.co'
-    const stateMonitoringManager = new StateMonitoringManager()
-    await stateMonitoringManager.init(getPrometheusRegistry())
-    const queueAdd = sandbox.stub()
-
-    // Call function that enqueues a new job after the previous job failed
-    const prevJobProcessedUserId = 100
-    const failedJob = {
-      data: {
-        lastProcessedUserId: prevJobProcessedUserId,
-        discoveryNodeEndpoint: discoveryNodeEndpoint
-      }
-    }
-    stateMonitoringManager.enqueueMonitorStateJobAfterFailure(
-      { add: queueAdd },
-      failedJob
-    )
-
-    // Verify that the queue has the correct initial job in it
-    expect(queueAdd).to.have.been.calledOnceWithExactly('retry-after-fail', {
-      lastProcessedUserId: prevJobProcessedUserId,
-      discoveryNodeEndpoint: discoveryNodeEndpoint
-    })
   })
 })

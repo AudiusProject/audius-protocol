@@ -1,4 +1,4 @@
-const { Queue, Worker, QueueScheduler } = require('bullmq')
+const { Queue, Worker } = require('bullmq')
 
 const { libs } = require('@audius/sdk')
 const CreatorNode = libs.CreatorNode
@@ -19,7 +19,11 @@ const {
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
 const { instrumentTracing, tracing } = require('../../tracer')
-const { clusterUtils } = require('../../utils')
+const {
+  clusterUtilsForWorker,
+  getConcurrencyPerWorker,
+  clearActiveJobs
+} = require('../../utils')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -266,7 +270,7 @@ const makeMetricToRecord = (
   return metric
 }
 
-const makeQueue = ({
+const makeQueue = async ({
   name,
   processor,
   logger,
@@ -274,8 +278,7 @@ const makeQueue = ({
   removeOnFail,
   prometheusRegistry,
   globalConcurrency = 1,
-  limiter = null,
-  onFailCallback = null
+  limiter = null
 }) => {
   const connection = {
     host: config.get('redisHost'),
@@ -289,28 +292,19 @@ const makeQueue = ({
     }
   })
 
-  const worker = new Worker(name, processor, {
-    connection,
-    concurrency: clusterUtils.getConcurrencyPerWorker(globalConcurrency),
-    limiter
-  })
-  if (limiter) {
-    const _scheduler = new QueueScheduler(name, { connection })
+  // Clear any old state if redis was running but the rest of the server restarted
+  if (clusterUtilsForWorker.isThisWorkerFirst()) {
+    await queue.obliterate({ force: true })
+    await clearActiveJobs(queue, logger)
   }
 
+  const worker = new Worker(name, processor, {
+    connection,
+    concurrency: getConcurrencyPerWorker(globalConcurrency),
+    limiter
+  })
+
   _registerQueueEvents(worker, logger)
-  queue.on(
-    'failed',
-    onFailCallback ||
-      ((job, error, _prev) => {
-        const loggerWithId = createChildLogger(logger, {
-          jobId: job?.id || 'unknown'
-        })
-        loggerWithId.error(
-          `Job failed to complete. ID=${job?.id}. Error=${error}`
-        )
-      })
-  )
 
   if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
     prometheusRegistry.startQueueMetrics(queue, worker)
@@ -324,8 +318,14 @@ const _registerQueueEvents = (worker, queueLogger) => {
     const logger = createChildLogger(queueLogger, { jobId: job.id })
     logger.debug('Job active')
   })
-  worker.on('error', (error) => {
-    queueLogger.error(`Job error - ${error}`)
+  worker.on('failed', (job, error, _prev) => {
+    const loggerWithId = createChildLogger(queueLogger, {
+      jobId: job?.id || 'unknown'
+    })
+    loggerWithId.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
+  })
+  worker.on('error', (failedReason) => {
+    queueLogger.error(`Job error - ${failedReason}`)
   })
   worker.on('stalled', (jobId, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId })

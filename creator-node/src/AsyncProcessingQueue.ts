@@ -3,8 +3,8 @@ import type { Request } from 'express'
 import type { SpanContext } from '@opentelemetry/api'
 
 import { Queue, Worker } from 'bullmq'
-import { logger as genericLogger } from './logging'
-import { clusterUtils, ValuesOf } from './utils'
+import { logger } from './logging'
+import { getConcurrencyPerWorker, ValuesOf, LogContext } from './utils'
 
 // Processing fns
 import {
@@ -41,7 +41,7 @@ export const ProcessStates = {
 } as const
 
 type AddTaskParams = {
-  logContext: { requestID: string }
+  logContext: LogContext
   task: string
   req: Request
   parentSpanContext?: SpanContext
@@ -95,7 +95,7 @@ export class AsyncProcessingQueue {
                 ]
               : [],
             attributes: {
-              requestID: logContext.requestID,
+              requestID: logContext.requestId,
               [tracing.CODE_FILEPATH]: __filename
             }
           }
@@ -105,7 +105,7 @@ export class AsyncProcessingQueue {
       },
       {
         connection,
-        concurrency: clusterUtils.getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
       }
     )
     prometheusRegistry.startQueueMetrics(this.queue, worker)
@@ -126,7 +126,7 @@ export class AsyncProcessingQueue {
 
       if (!transcodeFilePath || !segmentFileNames) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.logStatus(
+        logger.debug(
           'Failed to hand off transcode. Retrying upload to current node...'
         )
         await this.addTrackContentUploadTask({
@@ -136,7 +136,7 @@ export class AsyncProcessingQueue {
         })
       } else {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.logStatus(
+        logger.debug(
           `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
         )
         await this.addProcessTranscodeAndSegmentTask({
@@ -153,7 +153,7 @@ export class AsyncProcessingQueue {
       } catch (e: any) {
         tracing.recordException(e)
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.logError(
+        logger.error(
           `Could not process taskType=${task} uuid=${
             logContext.requestID
           }: ${e.toString()}`,
@@ -162,30 +162,6 @@ export class AsyncProcessingQueue {
         return e.toString()
       }
     }
-  }
-
-  async logStatus(message: string, logContext = {}) {
-    const logger = genericLogger.child(logContext)
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.info(
-      `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
-    tracing.info(
-      `AsyncProcessingQueue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
-  }
-
-  async logError(message: string, logContext = {}) {
-    const logger = genericLogger.child(logContext)
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.error(
-      `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
-    )
-    tracing.error(
-      `AsyncProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`
-    )
   }
 
   // TODO: Make these jobs background processes
@@ -221,7 +197,7 @@ export class AsyncProcessingQueue {
   async addTask(params: AddTaskParams) {
     const { logContext, task } = params
 
-    await this.logStatus(
+    await logger.debug(
       `Adding ${task} task! uuid=${logContext.requestID}}`,
       logContext
     )
@@ -274,7 +250,7 @@ export class AsyncProcessingQueue {
   async monitorProgress(
     task: string,
     func: (...args: any) => any,
-    { logContext, req }: { logContext: any; req: Request }
+    { logContext, req }: { logContext: LogContext; req: Request }
   ) {
     const uuid = logContext.requestID
     const redisKey = this.constructAsyncProcessingKey(uuid)
@@ -285,7 +261,7 @@ export class AsyncProcessingQueue {
       resp?: any
     } = { task, status: ProcessStates.IN_PROGRESS }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.logStatus(`Starting ${task}, uuid=${uuid}`, logContext)
+    logger.debug(`Starting ${task}, uuid=${uuid}`, logContext)
     await redisClient.set(
       redisKey,
       JSON.stringify(state),
@@ -298,7 +274,7 @@ export class AsyncProcessingQueue {
       response = await func({ logContext }, { ...req, libs: this.libs })
       state = { task, status: ProcessStates.DONE, resp: response }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
+      logger.debug(`Successful ${task}, uuid=${uuid}`, logContext)
       await redisClient.set(
         redisKey,
         JSON.stringify(state),
@@ -308,7 +284,7 @@ export class AsyncProcessingQueue {
     } catch (e: any) {
       state = { task, status: ProcessStates.FAILED, resp: e.message }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.logError(
+      logger.debug(
         `Error with ${task}. uuid=${uuid}} resp=${JSON.stringify(e.message)}`,
         logContext
       )

@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
 from time import time
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
-from sqlalchemy.sql import functions, null
+from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
@@ -14,6 +14,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
+from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -265,7 +266,7 @@ def update_track_routes_table(
 
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
-    new_track_slug_title = helpers.create_track_slug(
+    new_track_slug_title = helpers.sanitize_slug(
         track_metadata["title"], track_record.track_id
     )
     new_track_slug = new_track_slug_title
@@ -280,6 +281,7 @@ def update_track_routes_table(
         ),
         None,
     )
+
     # Then query the DB if necessary
     if prev_track_route_record is None:
         prev_track_route_record = (
@@ -298,105 +300,16 @@ def update_track_routes_table(
         # The new route will be current
         prev_track_route_record.is_current = False
 
-    # Check for collisions by slug titles, and get the max collision_id
-    max_collision_id: Optional[int] = None
-    # Check pending updates first
-    for route in pending_track_routes:
-        if (
-            route.title_slug == new_track_slug_title
-            and route.owner_id == track_record.owner_id
-        ):
-            max_collision_id = (
-                route.collision_id
-                if max_collision_id is None
-                else max(max_collision_id, route.collision_id)
-            )
-    # Check DB if necessary
-    if max_collision_id is None:
-        max_collision_id = (
-            session.query(functions.max(TrackRoute.collision_id))
-            .filter(
-                TrackRoute.title_slug == new_track_slug_title,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
-        )[0]
-
-    existing_track_route: Optional[TrackRoute] = None
-    # If the new track_slug ends in a digit, there's a possibility it collides
-    # with an existing route when the collision_id is appended to its title_slug
-    if new_track_slug[-1].isdigit():
-        existing_track_route = next(
-            (
-                route
-                for route in pending_track_routes
-                if route.slug == new_track_slug
-                and route.owner_id == track_record.owner_id
-            ),
-            None,
-        )
-        if existing_track_route is None:
-            existing_track_route = (
-                session.query(TrackRoute)
-                .filter(
-                    TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == track_record.owner_id,
-                )
-                .one_or_none()
-            )
-
-    new_collision_id = 0
-    has_collisions = existing_track_route is not None
-
-    if max_collision_id is not None:
-        has_collisions = True
-        new_collision_id = max_collision_id
-    while has_collisions:
-        # If there is an existing track by the user with that slug,
-        # then we need to append the collision number to the slug
-        new_collision_id += 1
-        new_track_slug = helpers.create_track_slug(
-            track_metadata["title"], track_record.track_id, new_collision_id
-        )
-
-        # Check for new collisions after making the new slug
-        # In rare cases the user may have track names that end in numbers that
-        # conflict with this track name when the collision id is appended,
-        # for example they could be trying to create a route that conflicts
-        # with the old routing (of appending -{track_id}) This is a fail safe
-        # to increment the collision ID until no such collisions are present.
-        #
-        # Example scenario:
-        #   - User uploads track titled "Track" (title_slug: 'track')
-        #   - User uploads track titled "Track 1" (title_slug: 'track-1')
-        #   - User uploads track titled "Track" (title_slug: 'track')
-        #       - Try collision_id: 1, slug: 'track-1' and find new collision
-        #       - Use collision_id: 2, slug: 'track-2'
-        #   - User uploads track titled "Track" (title_slug: 'track')
-        #       - Use collision_id: 3, slug: 'track-3'
-        #   - User uploads track titled "Track 1" (title_slug: 'track-1')
-        #       - Use collision_id: 1, slug: 'track-1-1'
-        #
-        # This may be expensive with many collisions, but should be rare.
-        existing_track_route = next(
-            (
-                route
-                for route in pending_track_routes
-                if route.slug == new_track_slug
-                and route.owner_id == track_record.owner_id
-            ),
-            None,
-        )
-        if existing_track_route is None:
-            existing_track_route = (
-                session.query(TrackRoute)
-                .filter(
-                    TrackRoute.slug == new_track_slug,
-                    TrackRoute.owner_id == track_record.owner_id,
-                )
-                .one_or_none()
-            )
-        has_collisions = existing_track_route is not None
+    new_track_slug, new_collision_id = generate_slug_and_collision_id(
+        session,
+        TrackRoute,
+        track_record.track_id,
+        track_metadata["title"],
+        track_record.owner_id,
+        pending_track_routes,
+        new_track_slug_title,
+        new_track_slug,
+    )
 
     # Add the new track route
     new_track_route = TrackRoute()
@@ -558,6 +471,7 @@ def is_valid_json_field(metadata, field):
 
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
+    track_record.track_cid = track_metadata["track_cid"]
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]

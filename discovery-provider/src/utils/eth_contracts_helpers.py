@@ -13,24 +13,22 @@ logger = logging.getLogger(__name__)
 sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
 content_node_service_type = bytes("content-node", "utf-8")
 
-cnode_info_redis_ttl = 1800
+# 30 minutes = 60 sec * 30 min
+cnode_info_redis_ttl_s = 1800
 
 
 def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     sp_id_key = get_cn_sp_id_key(sp_id)
     sp_info_cached = get_json_cached_key(redis, sp_id_key)
     if sp_info_cached:
-        logger.info(
-            f"eth_contract_helpers.py | Found cached value for spID={sp_id} - {sp_info_cached}"
-        )
         return sp_info_cached
 
     cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
         content_node_service_type, sp_id
     ).call()
-    set_json_cached_key(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
+    set_json_cached_key(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl_s)
     logger.info(
-        f"eth_contract_helpers.py | Configured redis {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
+        f"eth_contract_helpers.py | set cache valud for sp_id: {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl_s}"
     )
     return cn_endpoint_info
 

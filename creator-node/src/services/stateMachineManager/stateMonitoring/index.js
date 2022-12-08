@@ -9,7 +9,6 @@ const {
 const { makeQueue } = require('../stateMachineUtils')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
-const { clusterUtils } = require('../../../utils')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const monitorStateJobProcessor = require('./monitorState.jobProcessor')
 const findSyncRequestsJobProcessor = require('./findSyncRequests.jobProcessor')
@@ -38,7 +37,7 @@ const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
 class StateMonitoringManager {
   async init(prometheusRegistry) {
     // Create queue to fetch cNodeEndpoint->spId mapping
-    const { queue: cNodeEndpointToSpIdMapQueue } = makeQueue({
+    const { queue: cNodeEndpointToSpIdMapQueue } = await makeQueue({
       name: QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP,
       processor: this.makeProcessJob(
         fetchCNodeEndpointToSpIdMapJobProcessor,
@@ -52,17 +51,11 @@ class StateMonitoringManager {
       limiter: {
         max: 1,
         duration: config.get('fetchCNodeEndpointToSpIdMapIntervalMs')
-      },
-      onFailCallback: (job, error, _prev) => {
-        cNodeEndpointToSpIdMapQueueLogger.error(
-          `Queue Job Failed - ID ${job?.id} - Error ${error}`
-        )
-        cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
       }
     })
 
     // Create queue to slice through batches of users and gather data to be passed to find-sync and find-replica-set-update jobs
-    const { queue: monitorStateQueue } = makeQueue({
+    const { queue: monitorStateQueue } = await makeQueue({
       name: QUEUE_NAMES.MONITOR_STATE,
       processor: this.makeProcessJob(
         monitorStateJobProcessor,
@@ -77,18 +70,11 @@ class StateMonitoringManager {
         // Bull doesn't allow either of these to be set to 0, so we'll pause the queue later if the jobs per interval is 0
         max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
         duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
-      },
-      onFailCallback: (job, error, _prev) => {
-        const logger = createChildLogger(monitorStateLogger, {
-          jobId: job?.id || 'unknown'
-        })
-        logger.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
-        this.enqueueMonitorStateJobAfterFailure(monitorStateQueue, job)
       }
     })
 
     // Create queue to find sync requests
-    const { queue: findSyncRequestsQueue } = makeQueue({
+    const { queue: findSyncRequestsQueue } = await makeQueue({
       name: QUEUE_NAMES.FIND_SYNC_REQUESTS,
       processor: this.makeProcessJob(
         findSyncRequestsJobProcessor,
@@ -102,7 +88,7 @@ class StateMonitoringManager {
     })
 
     // Create queue to find replica set updates
-    const { queue: findReplicaSetUpdatesQueue } = makeQueue({
+    const { queue: findReplicaSetUpdatesQueue } = await makeQueue({
       name: QUEUE_NAMES.FIND_REPLICA_SET_UPDATES,
       processor: this.makeProcessJob(
         findReplicaSetUpdatesJobProcessor,
@@ -115,14 +101,6 @@ class StateMonitoringManager {
       prometheusRegistry
     })
 
-    // Clear any old state if redis was running but the rest of the server restarted
-    if (clusterUtils.isThisWorkerInit()) {
-      await cNodeEndpointToSpIdMapQueue.obliterate({ force: true })
-      await monitorStateQueue.obliterate({ force: true })
-      await findSyncRequestsQueue.obliterate({ force: true })
-      await findReplicaSetUpdatesQueue.obliterate({ force: true })
-    }
-
     return {
       monitorStateQueue,
       findSyncRequestsQueue,
@@ -132,14 +110,16 @@ class StateMonitoringManager {
   }
 
   /**
-   * Enqueues a job that picks up where the previous failed job left off.
+   * Enqueues a job that starts at a random user.
+   * Bull's onError doesn't pass in the previous job's info so there's no way to know where it left off.
+   * Otherwise this should start where the failed job left off
    * @param monitoringQueue the queue to re-add the job to
-   * @param failedJob the jobData for the previous job that failed
    */
-  enqueueMonitorStateJobAfterFailure(monitoringQueue, failedJob) {
-    const {
-      data: { lastProcessedUserId, discoveryNodeEndpoint }
-    } = failedJob
+  async recoverFromJobFailure(monitoringQueue, discoveryNodeEndpoint) {
+    const latestUserId = await getLatestUserIdFromDiscovery(
+      discoveryNodeEndpoint
+    )
+    const lastProcessedUserId = _.random(0, latestUserId)
 
     monitoringQueue.add('retry-after-fail', {
       lastProcessedUserId,
@@ -169,16 +149,14 @@ class StateMonitoringManager {
     const lastProcessedUserId = _.random(0, latestUserId)
 
     // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
-    if (clusterUtils.isThisWorkerInit()) {
-      await queue.add(
-        'first-job',
-        {
-          lastProcessedUserId,
-          discoveryNodeEndpoint
-        },
-        { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
-      )
-    }
+    await queue.add(
+      'first-job',
+      {
+        lastProcessedUserId,
+        discoveryNodeEndpoint
+      },
+      { delay: STATE_MONITORING_QUEUE_INIT_DELAY_MS }
+    )
   }
 
   /**
@@ -196,9 +174,7 @@ class StateMonitoringManager {
     }
 
     // Enqueue first job, which requeues itself upon completion or failure
-    if (clusterUtils.isThisWorkerInit()) {
-      await queue.add('first-job', {})
-    }
+    await queue.add('first-job', {})
   }
 
   makeProcessJob(processor, logger, prometheusRegistry) {

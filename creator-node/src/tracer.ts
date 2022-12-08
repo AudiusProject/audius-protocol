@@ -16,12 +16,12 @@ import {
   SemanticResourceAttributes as ResourceAttributesSC
 } from '@opentelemetry/semantic-conventions'
 import { FsInstrumentation } from '@opentelemetry/instrumentation-fs'
-import { RedisInstrumentation } from '@opentelemetry/instrumentation-redis'
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { BunyanInstrumentation } from '@opentelemetry/instrumentation-bunyan'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis'
 
 import config from './config'
 
@@ -64,6 +64,9 @@ export const setupTracing = () => {
     })
   })
 
+  // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
+  provider.register()
+
   /**
    * prebuilt tracing instrumentations are registered
    * in order to add trace information and context to
@@ -83,7 +86,7 @@ export const setupTracing = () => {
       new ExpressInstrumentation(),
 
       // Adds spans to redis operations
-      new RedisInstrumentation(),
+      new IORedisInstrumentation({}),
 
       // Adds spans to filesystem operatioons
       new FsInstrumentation(),
@@ -103,6 +106,11 @@ export const setupTracing = () => {
             provider.resource.attributes['service.name']
           record['resource.service.spid'] = SPID
           record['resource.service.endpoint'] = ENDPOINT
+
+          const logLevel = record.logLevel || 'debug'
+          if (logLevel !== 'debug') {
+            span.addEvent(record.msg, record)
+          }
         }
       })
     ]
@@ -112,9 +120,6 @@ export const setupTracing = () => {
     url: COLLECTOR_URL
   })
   provider.addSpanProcessor(new BatchSpanProcessor(exporter))
-
-  // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
-  provider.register()
 }
 
 /**

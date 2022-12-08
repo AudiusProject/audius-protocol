@@ -9,6 +9,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
+    copy_record,
 )
 from src.tasks.tracks import (
     dispatch_challenge_track_upload,
@@ -21,78 +22,34 @@ from src.tasks.tracks import (
 logger = logging.getLogger(__name__)
 
 
-def is_valid_track_tx(params: ManageEntityParameters):
+def validate_track_tx(params: ManageEntityParameters):
     user_id = params.user_id
     track_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        # user does not exist
-        return False
+        raise Exception(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        # user does not match signer
-        return False
+        raise Exception(f"User {user_id} does not match signer")
 
     if params.entity_type != EntityType.TRACK:
-        return False
+        raise Exception(f"Entity type {params.entity_type} is not a track")
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
-            # playlist already exists
-            return False
+            raise Exception(f"Track {track_id} already exists")
+
         if track_id < TRACK_ID_OFFSET:
-            return False
+            raise Exception(f"Cannot create track {track_id} below the offset")
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
-            # playlist does not exist
-            return False
+            raise Exception(f"Track {track_id} does not exist")
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
-            # existing playlist does not match user
-            return False
+            raise Exception(f"Existing track {track_id} does not match user")
 
     return True
-
-
-def copy_track_record(
-    old_track: Track, block_number: int, event_blockhash: str, txhash: str
-):
-    return Track(
-        track_id=old_track.track_id,
-        owner_id=old_track.owner_id,
-        title=old_track.title,
-        length=old_track.length,
-        cover_art=old_track.cover_art,
-        tags=old_track.tags,
-        genre=old_track.genre,
-        mood=old_track.mood,
-        credits_splits=old_track.credits_splits,
-        create_date=old_track.create_date,
-        release_date=old_track.release_date,
-        file_type=old_track.file_type,
-        metadata_multihash=old_track.metadata_multihash,
-        track_segments=old_track.track_segments,
-        description=old_track.description,
-        isrc=old_track.isrc,
-        iswc=old_track.iswc,
-        license=old_track.license,
-        cover_art_sizes=old_track.cover_art_sizes,
-        download=old_track.download,
-        is_unlisted=old_track.is_unlisted,
-        field_visibility=old_track.field_visibility,
-        route_id=old_track.route_id,
-        stem_of=old_track.stem_of,
-        remix_of=old_track.remix_of,
-        is_available=old_track.is_available,
-        is_delete=old_track.is_delete,
-        created_at=old_track.created_at,
-        updated_at=old_track.updated_at,
-        blocknumber=block_number,
-        blockhash=event_blockhash,
-        txhash=txhash,
-        is_current=False,
-    )
 
 
 def get_handle(params: ManageEntityParameters):
@@ -121,8 +78,7 @@ def update_track_record(params: ManageEntityParameters, track: Track, metadata: 
 
 
 def create_track(params: ManageEntityParameters):
-    if not is_valid_track_tx(params):
-        return
+    validate_track_tx(params)
 
     track_id = params.entity_id
     owner_id = params.user_id
@@ -155,9 +111,7 @@ def create_track(params: ManageEntityParameters):
 
 
 def update_track(params: ManageEntityParameters):
-    if not is_valid_track_tx(params):
-        return
-    # TODO ignore updates on deleted playlists?
+    validate_track_tx(params)
 
     track_metadata = params.metadata[params.metadata_cid]
     track_id = params.entity_id
@@ -165,11 +119,15 @@ def update_track(params: ManageEntityParameters):
     existing_track.is_current = False  # invalidate
     if (
         track_id in params.new_records[EntityType.TRACK]
-    ):  # override with last updated playlist is in this block
+    ):  # override with last updated track is in this block
         existing_track = params.new_records[EntityType.TRACK][track_id][-1]
 
-    updated_track = copy_track_record(
-        existing_track, params.block_number, params.event_blockhash, params.txhash
+    updated_track = copy_record(
+        existing_track,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
 
     update_track_routes_table(
@@ -182,8 +140,7 @@ def update_track(params: ManageEntityParameters):
 
 
 def delete_track(params: ManageEntityParameters):
-    if not is_valid_track_tx(params):
-        return
+    validate_track_tx(params)
 
     track_id = params.entity_id
     existing_track = params.existing_records[EntityType.TRACK][track_id]
@@ -192,8 +149,12 @@ def delete_track(params: ManageEntityParameters):
         # override with last updated playlist is in this block
         existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
 
-    deleted_track = copy_track_record(
-        existing_track, params.block_number, params.event_blockhash, params.txhash
+    deleted_track = copy_record(
+        existing_track,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     deleted_track.is_delete = True
     deleted_track.stem_of = null()

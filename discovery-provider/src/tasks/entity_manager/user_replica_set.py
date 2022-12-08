@@ -5,7 +5,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
-    copy_user_record,
+    copy_record,
 )
 from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.utils.eth_manager import ServiceProviderType
@@ -35,7 +35,7 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
     user_id = params.user_id
     if user_id not in params.existing_records[EntityType.USER]:
         # user does not exist
-        raise Exception("User does not exist")
+        raise Exception(f"User {user_id} does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
     user = params.existing_records[EntityType.USER][user_id]
     user_sp_ids = [user.primary_id]
@@ -94,7 +94,7 @@ def update_user_replica_set(params: ManageEntityParameters):
         user_id in params.new_records[EntityType.USER]
     ):  # override with last updated user is in this block
         existing_user = params.new_records[EntityType.USER][user_id][-1]
-    updated_user = copy_user_record(
+    updated_user = copy_record(
         existing_user,
         params.block_number,
         params.event_blockhash,
