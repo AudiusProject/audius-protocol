@@ -35,6 +35,7 @@ from src.queries.get_trending_playlists import (
     get_full_trending_playlists,
     get_trending_playlists,
 )
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
@@ -454,3 +455,13 @@ def playlist_stream(playlist_id):
         status=200,
         mimetype="application/mpegurl",
     )
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedPlaylistId(Resource):
+    @ns.doc(
+        id="""Get unclaimed playlist ID""",
+        description="""Gets an unclaimed blockchain playlist ID""",
+    )
+    def get(self):
+        return get_unclaimed_id("playlist")
