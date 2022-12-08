@@ -206,7 +206,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     )
     this.setBackupsList(backupsList, backupTimings)
 
-    const secondaries = this.getSecondaries()
+    const secondaries = this.getSecondaries(primary)
 
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
@@ -279,7 +279,11 @@ export class CreatorNodeSelection extends ServiceSelection {
    * Selects secondary Content Nodes
    * Returns first nodes from `services`, optionally sorted by version
    */
-  getSecondaries() {
+  getSecondaries(primary?: string) {
+    if (primary) {
+      return [primary, primary]
+    }
+
     const numberOfSecondaries = this.numberOfNodes - 1
     const backupsList = this.getBackupsList()
     const backupTimings = this.getBackupTimings()

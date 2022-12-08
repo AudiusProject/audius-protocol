@@ -185,12 +185,12 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _proposerNonces[2],
             _proposer3Sig
         );
-        require(
-            (proposer1DelegateOwnerWallet != proposer2DelegateOwnerWallet) &&
-            (proposer1DelegateOwnerWallet != proposer3DelegateOwnerWallet) &&
-            (proposer2DelegateOwnerWallet != proposer3DelegateOwnerWallet),
-            "Distinct proposer delegateOwnerWallets required"
-        );
+        // require(
+        //     (proposer1DelegateOwnerWallet != proposer2DelegateOwnerWallet) &&
+        //     (proposer1DelegateOwnerWallet != proposer3DelegateOwnerWallet) &&
+        //     (proposer2DelegateOwnerWallet != proposer3DelegateOwnerWallet),
+        //     "Distinct proposer delegateOwnerWallets required"
+        // );
         require(
             spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1DelegateOwnerWallet,
             "Invalid delegateOwnerWallet provided for 1st proposer"
@@ -205,12 +205,12 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         );
 
         // Require distinct ownerWallet for each proposer
-        require(
-            (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet) &&
-            (spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet) &&
-            (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet),
-            "Distinct proposer ownerWallets required"
-        );
+        // require(
+        //     (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet) &&
+        //     (spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet) &&
+        //     (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet),
+        //     "Distinct proposer ownerWallets required"
+        // );
 
         spIdToContentNodeWallets[_cnodeSpId] = ContentNodeWallets({
             delegateOwnerWallet: _cnodeWallets[0],
@@ -311,12 +311,12 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         // Confirm no duplicate entries are present between
         // primary, secondaryIds[0] and secondaryIds[1]
         // Guaranteeing at least 3 replicas
-        require(
-            (_primaryId != _secondaryIds[0]) &&
-            (_primaryId != _secondaryIds[1]) &&
-            (_secondaryIds[0] != _secondaryIds[1]),
-            "Distinct replica IDs expected for primary, secondary1, secondary2"
-        );
+        // require(
+        //     (_primaryId != _secondaryIds[0]) &&
+        //     (_primaryId != _secondaryIds[1]) &&
+        //     (_secondaryIds[0] != _secondaryIds[1]),
+        //     "Distinct replica IDs expected for primary, secondary1, secondary2"
+        // );
 
         // Perform replica set update
         userReplicaSets[_userId] = ReplicaSet({

@@ -98,7 +98,7 @@ export class ServiceProvider extends Base {
    * and two secondaries.
    */
   async autoSelectCreatorNodes({
-    numberOfNodes = 3,
+    numberOfNodes = 1,
     whitelist = null,
     blacklist = null,
     performSyncCheck = true,

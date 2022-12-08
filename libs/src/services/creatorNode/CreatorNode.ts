@@ -85,6 +85,12 @@ export class CreatorNode {
    * @param endpoints user.creator_node_endpoint
    */
   static getSecondaries(endpoints: string) {
+    // make 'http://creator-node-1' look like 
+    // http://creator-node-1,http://creator-node-1,http://creator-node-1
+    const useMonoReplicaSet = true
+    if (useMonoReplicaSet) {
+      endpoints = [endpoints,endpoints,endpoints].join()
+    }
     return endpoints ? endpoints.split(',').slice(1) : []
   }
 
@@ -852,7 +858,9 @@ export class CreatorNode {
       const requestId = uuid()
       axiosRequestObj.headers['X-Request-ID'] = requestId
 
-      axiosRequestObj.baseURL = this.creatorNodeEndpoint
+      // axiosRequestObj.baseURL = this.creatorNodeEndpoint
+      console.log('this.creatorNodeEndpoint', this.creatorNodeEndpoint)
+      axiosRequestObj.baseURL = this.creatorNodeEndpoint || process.env['FALLBACK_CREATOR_NODE_URL']
 
       // Axios throws for non-200 responses
       const url = new URL(`${axiosRequestObj.baseURL}${axiosRequestObj.url}`)

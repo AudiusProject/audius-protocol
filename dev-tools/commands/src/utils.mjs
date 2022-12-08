@@ -12,6 +12,8 @@ export const initializeAudiusLibs = async (handle) => {
     web3Config: AudiusLibs.configInternalWeb3(
       process.env.POA_REGISTRY_ADDRESS,
       process.env.POA_PROVIDER_URL,
+      undefined,
+      process.env.ENTITY_MANAGER_ADDRESS,
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
@@ -27,7 +29,6 @@ export const initializeAudiusLibs = async (handle) => {
     discoveryProviderConfig: {},
     creatorNodeConfig: AudiusLibs.configCreatorNode(
       "http://audius-protocol-creator-node-1.audius-protocol_default:4000",
-      // process.env.FALLBACK_CREATOR_NODE_URL,
     ),
     identityServiceConfig: AudiusLibs.configIdentityService(
       process.env.IDENTITY_SERVICE_URL,
