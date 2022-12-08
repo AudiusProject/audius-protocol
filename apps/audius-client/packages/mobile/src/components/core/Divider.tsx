@@ -1,26 +1,40 @@
+import { useMemo } from 'react'
+
 import type { ViewProps } from 'react-native'
 import { View } from 'react-native'
 
 import { makeStyles } from 'app/styles'
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1
-  },
-  vertical: {
-    borderRightColor: palette.neutralLight8,
-    borderRightWidth: 1
-  }
-}))
+import type { ThemeColors } from 'app/utils/theme'
 
 type DividerProps = ViewProps & {
   orientation?: 'horizontal' | 'vertical'
+  color?: keyof ThemeColors
+  width?: number
 }
 
+const useStyles = makeStyles<{ color: string; width: number }>(
+  ({ palette }, { color, width }) => ({
+    root: {
+      borderBottomColor: palette[color],
+      borderBottomWidth: width
+    },
+    vertical: {
+      borderRightColor: palette[color],
+      borderRightWidth: width
+    }
+  })
+)
+
 export const Divider = (props: DividerProps) => {
-  const { style, orientation = 'horizontal', ...other } = props
-  const styles = useStyles()
+  const {
+    style,
+    orientation = 'horizontal',
+    width = 1,
+    color = 'neutralLight8',
+    ...other
+  } = props
+  const styleOptions = useMemo(() => ({ width, color }), [width, color])
+  const styles = useStyles(styleOptions)
   return (
     <View
       style={[

@@ -7,20 +7,12 @@ import type { SetRequired } from 'type-fest'
 import type { FontSize, FontWeight, typography } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { ThemeColors } from 'app/utils/theme'
 
 export type TextProps = RNTextProps & {
   variant?: keyof typeof typography
   noGutter?: boolean
-  color?:
-    | 'primary'
-    | 'secondary'
-    | 'neutral'
-    | 'neutralLight4'
-    | 'neutralLight2'
-    | 'inherit'
-    | 'error'
-    | 'warning'
-    | 'white'
+  color?: 'inherit' | 'error' | 'warning' | keyof ThemeColors
   weight?: FontWeight
   fontSize?: FontSize | 'inherit'
   textTransform?: TextStyle['textTransform']
