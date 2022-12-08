@@ -33,11 +33,20 @@ module.exports = function (app) {
         }
       })
 
+      const tikTokUser = await models.TikTokuser.findOne({
+        where: {
+          // TikTok does not store case sensitive screen names
+          'profile.display_name': handle.toLowerCase(),
+          verified: true
+        }
+      })
+
       if (socialHandles) {
         return successResponse({
           ...socialHandles.dataValues,
           twitterVerified: !!twitterUser,
-          instagramVerified: !!instagramUser
+          instagramVerified: !!instagramUser,
+          tikTokVerified: !!tikTokUser
         })
       } else return successResponse()
     })

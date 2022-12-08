@@ -71,6 +71,7 @@ export type UserMetadata = {
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
 }
 
 export type User = UserMetadata

@@ -230,6 +230,24 @@ export class IdentityService {
   }
 
   /**
+   * Associates a user with an TikTok uuid.
+   * @param uuid from the TikTok API
+   * @param userId
+   * @param handle
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    return await this._makeRequest({
+      url: '/tiktok/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle
+      }
+    })
+  }
+
+  /**
    * Logs a track listen for a given user id.
    * @param trackId
    * @param userId
