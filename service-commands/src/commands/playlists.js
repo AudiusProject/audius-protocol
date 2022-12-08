@@ -49,7 +49,8 @@ Playlist.getPlaylists = async (
   targetUserId = null,
   withUsers = false
 ) => {
-  return await libs.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
+  return null
+  // return await libs.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
 }
 
 Playlist.addPlaylistTrack = async (

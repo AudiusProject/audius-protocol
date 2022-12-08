@@ -206,6 +206,7 @@ module.exports = coreIntegration = async ({
       }
       case OPERATION_TYPE.CREATE_PLAYLIST: {
         try {
+          console.log('asdf in hereee')
           // create playlist
           const randomPlaylistName = genRandomString(8)
           const playlist = await executeOne(walletIndex, l =>
@@ -215,6 +216,7 @@ module.exports = coreIntegration = async ({
           await executeOne(walletIndex, l => l.waitForLatestBlock())
           await retry(async () => {
             // verify playlist
+            console.log('asdf in hereee')
             const verifiedPlaylist = await executeOne(walletIndex, l =>
               getPlaylists(l, 100, 0, [playlist.playlistId], userId)
             )
