@@ -1,7 +1,10 @@
 import queue, { Worker } from 'react-native-job-queue'
 
 import { store } from 'app/store'
-import { errorDownload, startDownload } from 'app/store/offline-downloads/slice'
+import {
+  batchStartDownload,
+  errorDownload
+} from 'app/store/offline-downloads/slice'
 
 import { downloadTrack } from './offline-downloader'
 
@@ -16,8 +19,6 @@ export const enqueueTrackDownload = async (
   trackId: number,
   collection: string
 ) => {
-  store.dispatch(startDownload(trackId.toString()))
-
   queue.addJob(
     TRACK_DOWNLOAD_WORKER,
     { trackId, collection },
@@ -41,23 +42,35 @@ export const startDownloadWorker = async () => {
   if (worker) queue.removeWorker(TRACK_DOWNLOAD_WORKER, true)
   queue.addWorker(
     new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack, {
-      onFailure: ({ payload }) =>
-        store.dispatch(errorDownload(payload.trackId.toString())),
+      onFailure: ({ payload }) => {
+        store.dispatch(errorDownload(payload.trackId.toString()))
+      },
       concurrency: 10
     })
   )
+
+  // Sync leftover jobs from last session to redux state
   const jobs = await queue.getJobs()
+  const trackIdsInQueue: string[] = []
   jobs
     .filter((job) => job.workerName === TRACK_DOWNLOAD_WORKER)
-    .forEach(({ payload }) => {
+    .forEach((job) => {
       try {
+        const { payload, failed } = job
         const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
         const trackId = parsedPayload.trackId
-        store.dispatch(startDownload(trackId.toString()))
+        if (failed) {
+          store.dispatch(errorDownload(trackId.toString()))
+          queue.removeJob(job)
+        } else {
+          trackIdsInQueue.push(parsedPayload.trackId.toString())
+        }
       } catch (e) {
         console.warn(e)
       }
     })
 
-  setTimeout(queue.start, 1000)
+  store.dispatch(batchStartDownload(trackIdsInQueue))
+
+  queue.start()
 }

@@ -35,6 +35,14 @@ const slice = createSlice({
     startDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
     },
+    batchStartDownload: (
+      state,
+      { payload: trackIds }: PayloadAction<string[]>
+    ) => {
+      trackIds.forEach((trackId) => {
+        state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
+      })
+    },
     completeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       state.downloadStatus[trackId] = OfflineTrackDownloadStatus.SUCCESS
     },
@@ -77,6 +85,7 @@ const slice = createSlice({
 
 export const {
   startDownload,
+  batchStartDownload,
   completeDownload,
   errorDownload,
   removeDownload,

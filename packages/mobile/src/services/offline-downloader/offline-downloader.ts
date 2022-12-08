@@ -13,6 +13,7 @@ import RNFS, { exists } from 'react-native-fs'
 import { store } from 'app/store'
 import {
   addCollection,
+  batchStartDownload,
   startDownload,
   completeDownload,
   errorDownload,
@@ -46,6 +47,7 @@ export const downloadCollection = async (
 ) => {
   store.dispatch(addCollection(collection))
   persistCollectionDownloadStatus(collection, true)
+  store.dispatch(batchStartDownload(trackIds.map(toString)))
   trackIds.forEach((trackId) => enqueueTrackDownload(trackId, collection))
 }
 
@@ -99,6 +101,12 @@ export const downloadTrack = async ({
 
   if (!track) {
     throw failJob(`track to download not found on discovery - ${trackIdStr}`)
+  }
+  if (
+    track?.is_delete ||
+    (track?.is_unlisted && currentUserId !== track.user.user_id)
+  ) {
+    throw failJob(`track to download is not available - ${trackIdStr}`)
   }
 
   track = (await populateCoverArtSizes(track)) ?? track
