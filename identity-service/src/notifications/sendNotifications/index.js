@@ -141,6 +141,10 @@ async function sendNotifications(
   tx,
   optimizelyClient
 ) {
+  logger.info(
+    `sendNotifications | Called with ${Object.keys(notifications).length} notifications`
+  )
+
   // Parse the notification to grab the user ids that we want to notify
   const userIdsToNotify = getUserIdsToNotify(notifications)
 
@@ -150,7 +154,7 @@ async function sendNotifications(
     tx
   )
   logger.info(
-    `getUserNotificationSettings | There are ${Object.keys(userNotificationSettings).length} notifications settings and ${userIdsToNotify.length} user Ids`
+    `sendNotifications | There are ${Object.keys(userNotificationSettings).length} notifications settings and ${userIdsToNotify.length} user Ids`
   )
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format

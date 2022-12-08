@@ -23,16 +23,5 @@
 // require('./routes/solanaTest.js')
 // require('./routes/trackListensTest.js')
 // require('./processNotifications/playlistUpdateNotification.js')
+// require('./sendNotifications/drainNotifications.js')
 require('./sendNotifications/getUserNotificationSettings.js')
-<<<<<<< Updated upstream
-require('./emailNotifications/formatEmail.js')
-require('./emailNotifications/renderEmail.js')
-require('../src/utils/contentNodeIPCheckTest.js')
-require('../src/utils/cognitoHelpersTest.js')
-require('./sendNotifications/sendNotificationEmail.js')
-require('./routes/solanaTest.js')
-require('./routes/trackListensTest.js')
-require('./processNotifications/playlistUpdateNotification.js')
-require('./sendNotifications/drainNotifications.js')
-=======
->>>>>>> Stashed changes

@@ -422,10 +422,14 @@ class NotificationProcessor {
       trackIdOwnersToRequestList,
       timeout
     )
+    logger.info(`publishNotifications | ${notificationsFromDN.notifications.length} notifs from dn`)
+
     const { info: metadata, owners, milestones } = notificationsFromDN
     const notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+    logger.info(`publishNotifications | ${notifications} after filter out`)
+
     logger.info(
       `notifications main indexAll job - query notifications from discovery node complete in ${
         Date.now() - time
@@ -447,6 +451,7 @@ class NotificationProcessor {
         }ms`
       )
       time = Date.now()
+      logger.info(`publishNotifications | ${notifications.length} pased into send notifs`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx, optimizelyClient)
