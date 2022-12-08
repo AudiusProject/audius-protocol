@@ -114,3 +114,6 @@ class Track(Base, RepresentableMixin):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "Track", getattr(Track, field).type)
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
