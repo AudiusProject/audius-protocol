@@ -823,17 +823,17 @@ export class Track extends Base {
     }
   }
 
+  /* ------- PRIVATE  ------- */
+
+  _validateTrackMetadata(metadata: TrackMetadata) {
+    this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
+  }
+
   async _generateTrackId(): Promise<number> {
-    // call DN
     const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
     if (!encodedId) {
       throw new Error('No unclaimed track IDs')
     }
     return decodeHashId(encodedId)!
-  }
-  /* ------- PRIVATE  ------- */
-
-  _validateTrackMetadata(metadata: TrackMetadata) {
-    this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
   }
 }
