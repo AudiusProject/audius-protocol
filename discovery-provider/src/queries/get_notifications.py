@@ -1,9 +1,9 @@
 import logging
-from sqlalchemy import bindparam, text
-from typing import Optional, TypedDict, List, Union
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+from typing import Dict, List, Optional, TypedDict, Union
 
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class GetNotificationArgs(TypedDict):
 
 
 notification_groups_sql = text(
-"""
+    """
 --- Create Intervals of user seen
 WITH user_seen as (
   SELECT
@@ -86,22 +86,29 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     Gets the user's notifiations in the database
     """
-    # 
 
-    limit = min(args.get('limit', DEFAULT_LIMIT), MAX_LIMIT)
+    limit = min(args.get("limit", DEFAULT_LIMIT), MAX_LIMIT)  # type: ignore
 
     rows = session.execute(
         notification_groups_sql,
-        {"user_id": args["user_id"], "limit": limit, "timestamp_offset": None, "group_id_offset": None},
+        {
+            "user_id": args["user_id"],
+            "limit": limit,
+            "timestamp_offset": None,
+            "group_id_offset": None,
+        },
     )
-    res: List[NotificationGroup] = [{
-      "group_id": r[0],
-      "notification_ids": r[1],
-      "is_seen": r[2] if r[2] != None else False,
-      "seen_at": r[3],
-      "prev_seen_at": r[4],
-      "count": r[5],
-    } for r in rows]
+    res: List[NotificationGroup] = [
+        {
+            "group_id": r[0],
+            "notification_ids": r[1],
+            "is_seen": r[2] if r[2] != None else False,
+            "seen_at": r[3],
+            "prev_seen_at": r[4],
+            "count": r[5],
+        }
+        for r in rows
+    ]
     logger.info(res)
 
     return res
@@ -140,12 +147,12 @@ class CosignRemixNotification(TypedDict):
 
 
 NotificationData = Union[
-  FollowNotification,
-  RepostNotification,
-  SaveNotification,
-  MilestoneNotification,
-  RemixNotification,
-  CosignRemixNotification
+    FollowNotification,
+    RepostNotification,
+    SaveNotification,
+    MilestoneNotification,
+    RemixNotification,
+    CosignRemixNotification,
 ]
 
 
@@ -163,7 +170,8 @@ class Notification(TypedDict):
     actions: List[NotificationAction]
 
 
-notifications_sql = text("""
+notifications_sql = text(
+    """
 SELECT
     id,
     type,
@@ -172,8 +180,11 @@ SELECT
     data
 FROM notification n
 WHERE n.id in :notification_ids
-""")
-notifications_sql = notifications_sql.bindparams(bindparam("notification_ids", expanding=True))
+"""
+)
+notifications_sql = notifications_sql.bindparams(
+    bindparam("notification_ids", expanding=True)
+)
 
 
 def get_notifications(session: Session, args: GetNotificationArgs):
@@ -183,29 +194,26 @@ def get_notifications(session: Session, args: GetNotificationArgs):
     for notification in notifications:
         notification_ids.extend(notification["notification_ids"])
 
-    rows = session.execute(
-        notifications_sql,
-        {"notification_ids": notification_ids}
-    )
+    rows = session.execute(notifications_sql, {"notification_ids": notification_ids})
 
-    notification_id_data = defaultdict()
+    notification_id_data: Dict[int, NotificationAction] = defaultdict()
 
     for row in rows:
         notification_id_data[row[0]] = {
             "type": row[1],
             "specifier": row[2],
             "timestamp": row[3],
-            "data": row[4]
+            "data": row[4],
         }
 
     notifications_and_actions = [
-      {
-        **notification,
-        "actions": [
-          notification_id_data[id]
-          for id in notification["notification_ids"]
-        ]
-      } for notification in notifications
+        {
+            **notification,
+            "actions": [
+                notification_id_data[id] for id in notification["notification_ids"]
+            ],
+        }
+        for notification in notifications
     ]
 
     logger.info(notifications_and_actions)
