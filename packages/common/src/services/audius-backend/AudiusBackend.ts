@@ -1,4 +1,4 @@
-import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
+import { DiscoveryAPI } from '@audius/sdk/dist/core'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
@@ -1144,32 +1144,7 @@ export const audiusBackend = ({
       }
     }
   }
-
-  // trackIds, start, end, period
-  async function getTrackListens(
-    ...args: Parameters<typeof IdentityAPI.getTrackListens>
-  ) {
-    const [period, trackIds, start, end] = args
-    if (trackIds?.length === 0) return []
-    try {
-      return withEagerOption(
-        {
-          normal: (libs) => libs.Track.getTrackListens,
-          eager: IdentityAPI.getTrackListens,
-          endpoint: identityServiceUrl
-        },
-        period,
-        trackIds,
-        start,
-        end,
-        trackIds?.length
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
-  }
-
+  
   // userId, start, end
   async function getUserListenCountsMonthly(
     currentUserId: number,
@@ -3466,7 +3441,6 @@ export const audiusBackend = ({
     getSignature,
     getSocialFeed,
     getTrackImages,
-    getTrackListens,
     getTracksIncludingUnlisted,
     getUserEmail,
     getUserFeed,
