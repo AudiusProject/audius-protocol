@@ -141,11 +141,13 @@ async function _sendNotification(notifFn, bufferObj, logger) {
 async function promiseAllInBatches(task, logger, items, batchSize) {
   let position = 0
   let results = []
+  logger.info('[notificationQueue:sendNotification] | start promise all in backes')
   while (position < items.length) {
     const itemsForBatch = items.slice(position, position + batchSize)
+    logger.info(`[notificationQueue:sendNotification] | position ${position}, end: ${position + batchSize}, batch: ${itemsForBatch}`)
     results = [
       ...results,
-      ...(await Promise.allSettled(itemsForBatch.map((item) => task(item))))
+      ...(await Promise.allSettled(itemsForBatch.map((item) => task(logger, item))))
     ]
     position += batchSize
   }
