@@ -43,7 +43,12 @@ export const SolanaPhoneOption = () => {
     })
 
     dispatch(
-      signMessage({ path: 'wallet-sign-message', data: signature, publicKey })
+      signMessage({
+        path: 'wallet-sign-message',
+        data: signature,
+        publicKey,
+        connectionType: 'solana-phone-wallet-adapter'
+      })
     )
   }, [dispatch, authorizeSession, selectedAccount, accountUserId])
 

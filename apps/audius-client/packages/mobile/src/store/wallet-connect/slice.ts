@@ -8,12 +8,15 @@ import type {
   SignMessageAction
 } from './types'
 
+type Status = 'idle' | 'connecting' | 'connected' | 'signing' | 'done'
+
 export type WalletConnectState = {
   dappKeyPair: Nullable<string>
   sharedSecret: Nullable<string>
   session: Nullable<string>
   publicKey: Nullable<string>
   connectionType: Nullable<ConnectionType>
+  status: Status
 }
 
 const initialState: WalletConnectState = {
@@ -21,7 +24,8 @@ const initialState: WalletConnectState = {
   sharedSecret: null,
   session: null,
   publicKey: null,
-  connectionType: null
+  connectionType: null,
+  status: 'idle'
 }
 
 const walletConnectSlice = createSlice({
@@ -50,6 +54,9 @@ const walletConnectSlice = createSlice({
       action: PayloadAction<{ connectionType: ConnectionType }>
     ) => {
       state.connectionType = action.payload.connectionType
+    },
+    setConnectionStatus: (state, action: PayloadAction<{ status: Status }>) => {
+      state.status = action.payload.status
     }
   }
 })
@@ -61,6 +68,7 @@ export const {
   setSharedSecret,
   setSession,
   setPublicKey,
-  setConnectionType
+  setConnectionType,
+  setConnectionStatus
 } = walletConnectSlice.actions
 export default walletConnectSlice.reducer
