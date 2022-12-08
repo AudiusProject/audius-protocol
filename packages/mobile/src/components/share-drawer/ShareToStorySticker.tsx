@@ -46,6 +46,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
+  },
+  title: {
+    marginTop: spacing(2)
+  },
+  subtitle: {
+    flexGrow: 0
+  },
+  badges: {
+    flexShrink: 0
+  },
+  attribution: {
+    letterSpacing: 0.6
   }
 }))
 
@@ -73,34 +85,43 @@ export const ShareToStorySticker = ({
             borderRadius={4}
           />
         ) : null}
-        <Text variant='h2' numberOfLines={1} style={{ marginTop: 8 }}>
+        <Text
+          color='staticNeutral'
+          allowFontScaling={false}
+          variant='h2'
+          numberOfLines={1}
+          style={styles.title}
+        >
           {track.title}
         </Text>
         <View style={styles.infoContainer}>
           <Text
+            allowFontScaling={false}
+            color='staticNeutral'
             weight='medium'
             fontSize='medium'
             noGutter
             numberOfLines={1}
-            style={{ flexGrow: 0 }}
+            style={styles.subtitle}
           >
             {messages.by} {artist.name}
           </Text>
           <UserBadges
             user={artist}
             badgeSize={12}
-            style={{ flexShrink: 0 }}
+            style={styles.badges}
             hideName
           />
         </View>
-        <Divider style={{ borderBottomWidth: 2 }} />
+        <Divider color='staticNeutralLight8' width={2} />
         <View style={styles.belowDividerContainer}>
           <Text
-            color='neutralLight2'
+            allowFontScaling={false}
+            color='staticNeutralLight2'
             weight='bold'
             fontSize='xs'
             textTransform='uppercase'
-            style={{ letterSpacing: 0.6 }}
+            style={styles.attribution}
           >
             {messages.nowPlayingOn}
           </Text>

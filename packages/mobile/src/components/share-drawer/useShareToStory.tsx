@@ -356,7 +356,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginTop: spacing(4)
   },
   titleIcon: {
-    alignSelf: 'flex-end',
+    position: 'relative',
+    top: 7,
     color: palette.neutral,
     marginRight: spacing(3)
   },
