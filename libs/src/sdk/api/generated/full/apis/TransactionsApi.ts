@@ -16,6 +16,9 @@
 
 import * as runtime from '../runtime';
 import {
+    TransactionHistoryCountResponse,
+    TransactionHistoryCountResponseFromJSON,
+    TransactionHistoryCountResponseToJSON,
     TransactionHistoryResponse,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
@@ -99,6 +102,22 @@ export class TransactionsApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<TransactionHistoryResponse["data"]>>;
+    }
+
+    /**
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionHistoryCount(): Promise<NonNullable<TransactionHistoryCountResponse["data"]>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        return this.request({
+            path: `/transactions/count`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<TransactionHistoryCountResponse["data"]>>;
     }
 
 }
