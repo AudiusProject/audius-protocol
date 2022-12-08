@@ -1,7 +1,9 @@
 """backfill_track_cid
-Revision ID: 2fad3671bf9f
-Revises: f91c041d1d8d
-Create Date: 2022-10-27 02:14:19.935610
+
+Revision ID: ec3b20d7bce3
+Revises: 7b843f2d3a0d
+Create Date: 2022-12-08 14:34:59.163989
+
 """
 import os
 
@@ -15,8 +17,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Integer, String
 
 # revision identifiers, used by Alembic.
-# revision = '2fad3671bf9f'
-# down_revision = 'f91c041d1d8d'
+revision = "ec3b20d7bce3"
+down_revision = "7b843f2d3a0d"
 branch_labels = None
 depends_on = None
 
@@ -80,7 +82,7 @@ def upgrade():
 
     cursor = op.get_bind().connection.cursor()
     with open(path_csv, "r") as f:
-        cursor.copy_from(f, "yolo", sep=",")
+        cursor.copy_from(f, "yolo", sep=",", columns=("track_id", "track_cid"))
 
     os.remove(path_csv)
     # if we downloaded from s3 rather than use checked in csv zip in the code
