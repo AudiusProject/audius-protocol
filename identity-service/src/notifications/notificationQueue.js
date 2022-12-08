@@ -121,10 +121,10 @@ async function _sendNotification(notifFn, bufferObj, logger) {
       `Timed out in ${SEND_NOTIF_TIMEOUT_MS}ms`
     )
 
-    logger.debug(`${logPrefix} Succeeded in ${Date.now() - start}ms`)
+    logger.info(`${logPrefix} Succeeded in ${Date.now() - start}ms`)
   } catch (e) {
     // Swallow error - log and continue
-    logger.error(`${logPrefix} ERROR ${e.message}`)
+    logger.info(`${logPrefix} ERROR ${e.message}`)
   }
 
   return numSentNotifs || 0
