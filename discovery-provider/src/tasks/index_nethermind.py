@@ -543,8 +543,7 @@ def index_blocks(self, db, blocks_list):
                     Fetch JSON metadata
                     """
                     fetch_metadata_start_time = time.time()
-                    # pre-fetch cids asynchronously to not have it block in user_state_update
-                    # and track_state_update
+                    # pre-fetch cids asynchronously to not have it block in entity_manager_update
                     cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[ENTITY_MANAGER],
