@@ -1144,7 +1144,7 @@ export const audiusBackend = ({
       }
     }
   }
-  
+
   // userId, start, end
   async function getUserListenCountsMonthly(
     currentUserId: number,
@@ -1182,7 +1182,7 @@ export const audiusBackend = ({
   }
 
   async function repostTrack(trackId: ID) {
-    try{
+    try {
       return await audiusLibs.EntityManager.repostTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
