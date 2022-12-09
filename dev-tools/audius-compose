@@ -229,6 +229,14 @@ def test():
 @test.command(name="build")
 @click.pass_obj
 def test_build(protocol_dir):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
@@ -258,6 +266,14 @@ def test_build(protocol_dir):
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_obj
 def test_run(protocol_dir, service, args):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
@@ -276,6 +292,14 @@ def test_run(protocol_dir, service, args):
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
