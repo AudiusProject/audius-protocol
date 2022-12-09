@@ -39,3 +39,48 @@ sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyC
 ```
 
 Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
+
+### Examples
+
+#### audius-compose
+
+View a list of commands
+```
+audius-compose --help
+```
+
+Periodically prune docker cache
+```
+audius-compose prune
+```
+
+Get logs
+```
+audius-compose logs discovery-provider-1
+```
+
+Set environment variables
+```
+audius-compose set-env discovery-provider-1 audius_discprov_url https://discoveryprovider.testing.com/
+```
+
+Load environment variables
+```
+audius-compose load-env discovery-provider prod
+```
+
+#### audius-cloud
+
+View a list of commands
+```
+audius-cloud --help
+```
+
+#### audius-cmd
+
+This requires services to be running
+
+View a list of commands
+```
+audius-cmd --help
+```
