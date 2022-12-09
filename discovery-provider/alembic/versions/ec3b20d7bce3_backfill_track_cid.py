@@ -6,8 +6,7 @@ Create Date: 2022-12-08 14:34:59.163989
 
 """
 import os
-
-# import urllib.request
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -34,23 +33,24 @@ def copy_mapping_into_temp_table():
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
 
-    path_tmp = Path(__file__).parent.joinpath("../tmp/stage")
-    path_csv = Path(__file__).parent.joinpath("../tmp/stage/track_cids.csv")
-    path_zip = Path(__file__).parent.joinpath("../tmp/stage/track_cids.csv.zip")
+    path_tmp = Path(__file__).parent.joinpath("../tmp")
+    path_csv = Path(__file__).parent.joinpath("../tmp/track_cids.csv")
+    path_zip = Path(__file__).parent.joinpath("../tmp/track_cids.csv.zip")
 
-    # if we want to download from s3 rather than check in the csv zip in the code
-    # then uncomment below
-    # env = os.getenv("audius_discprov_env")
-    # if env != "stage" and env != "prod":
-    #     return
-    # if env == "stage":
-    #     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/stage-track_cids.csv.zip"
-    # else:
-    #     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/prod-track_cids.csv.zip"
-    # os.mkdir(path_tmp)
-    # print(f"Migration - downloading {aws_url}")
-    # urllib.request.urlretrieve(aws_url, path_zip)
-    # print("Migration - download complete")
+    env = os.getenv("audius_discprov_env")
+    if env != "stage" and env != "prod":
+        return
+    if env == "stage":
+        aws_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/track_cids.csv.zip"
+    else:
+        aws_url = (
+            "https://s3.us-west-1.amazonaws.com/download.audius.co/track_cids.csv.zip"
+        )
+
+    os.mkdir(path_tmp)
+    print(f"Migration - downloading {aws_url}")
+    urllib.request.urlretrieve(aws_url, path_zip)
+    print("Migration - download complete")
 
     with zipfile.ZipFile(path_zip, "r") as zip_ref:
         zip_ref.extractall(path_tmp)
@@ -74,10 +74,8 @@ def copy_mapping_into_temp_table():
     op.get_bind().execute(sql)
 
     os.remove(path_csv)
-    # if we downloaded from s3 rather than use checked in csv zip in the code
-    # then uncomment below
-    # os.remove(path_zip)
-    # os.rmdir(path_tmp)
+    os.remove(path_zip)
+    os.rmdir(path_tmp)
 
 
 def remove_temp_table():
