@@ -46,7 +46,7 @@ async function main() {
           );
 
           if (Object.keys(mapping).length === 0) {
-            // continue-ing here may not be correct as it's possible that
+            // immediately continue-ing here may not be correct as it's possible that
             // getTrackIdToCIDMapping was canceled, or
             // getTrackIdToCIDMapping caught an error
             // so we save the missing batch in a csv to later be able to
