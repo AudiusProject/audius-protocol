@@ -6,6 +6,7 @@ Create Date: 2022-12-08 14:34:59.163989
 
 """
 import os
+import shutil
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -13,7 +14,6 @@ from pathlib import Path
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import Integer, String
 
 # revision identifiers, used by Alembic.
 revision = "ec3b20d7bce3"
@@ -75,7 +75,7 @@ def copy_mapping_into_temp_table():
 
     os.remove(path_csv)
     os.remove(path_zip)
-    os.rmdir(path_tmp)
+    shutil.rmtree(path_tmp, ignore_errors=True)
 
 
 def remove_temp_table():
