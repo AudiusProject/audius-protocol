@@ -13,6 +13,19 @@ audius-compose build # About 10 minutes
 audius-compose up
 ```
 
+## Resource Requirements
+
+Increase `docker` resource allocations to avoid OOM kills and your local docker image repository running out of space.
+Below are suggested minimum values.
+```
+Docker > Preferences > Resources > Advanced
+- CPUs 4
+- Memory 12 GB
+- Disk Image Size 80 GB
+```
+
+If you still run into issues, you may execute a `docker system prune` to free additional space.
+
 ## Port Forwarding Instructions
 
 To use the client from a mac, we need to setup a transparent proxy server to interact with the machine running the backend
