@@ -20,7 +20,7 @@ To use the client from a mac, we need to setup a transparent proxy server to int
 brew install sshuttle
 ```
 
-### localhost
+### Localhost
 
 If running protocol and client on localhost
 
@@ -29,7 +29,7 @@ sshuttle -N -H -r sshuttle@localhost:2222 -e 'ssh -o StrictHostKeyChecking=no -o
 # the password is sshuttle
 ```
 
-### GCP
+### Remote Machine
 
 If running protocol on remote instance and client on localhost
 
