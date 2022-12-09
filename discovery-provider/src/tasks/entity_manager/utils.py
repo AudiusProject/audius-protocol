@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Set, Tuple, TypedDict, Union
 
+from redis import Redis
+from src.app import get_eth_abi_values
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.notifications.notification import NotificationSeen
 from src.models.playlists.playlist import Playlist
@@ -14,23 +17,20 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.utils import helpers, web3_provider
-from src.utils.eth_manager import EthManager
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from redis import Redis
 from src.utils.config import shared_config
-from src.app import get_eth_abi_values
-from src.utils.redis_cache import (
-    get_cn_sp_id_key,
-    get_json_cached_key,
-    set_json_cached_key,
-)
 from src.utils.eth_contracts_helpers import (
     cnode_info_redis_ttl_s,
     content_node_service_type,
     sp_factory_registry_key,
 )
-import logging
+from src.utils.eth_manager import EthManager
+from src.utils.redis_cache import (
+    get_cn_sp_id_key,
+    get_json_cached_key,
+    set_json_cached_key,
+)
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
@@ -280,9 +280,7 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
             content_node_service_type, sp_id
         ).call()
-        logger.info(
-            f"index.py | utils.py | spID={sp_id} fetched {cn_endpoint_info}"
-        )
+        logger.info(f"index.py | utils.py | spID={sp_id} fetched {cn_endpoint_info}")
         set_json_cached_key(redis, cache_key, cn_endpoint_info, cnode_info_redis_ttl_s)
         endpoint = cn_endpoint_info[1]
 

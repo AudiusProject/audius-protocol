@@ -4,6 +4,7 @@ from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.indexing.block import Block
 from src.models.social.follow import Follow
@@ -17,7 +18,6 @@ from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
 )
-from src.challenges.challenge_event import ChallengeEvent
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 from sqlalchemy import desc
 from src.models.indexing.cid_data import CIDData
-from src.tasks.index import save_cid_metadata
+from src.tasks.index_nethermind import save_cid_metadata
 from src.utils.db_session import get_db
 
 

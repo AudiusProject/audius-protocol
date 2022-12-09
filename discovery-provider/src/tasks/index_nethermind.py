@@ -1,14 +1,15 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import os
 import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
-import json
 
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -59,7 +60,6 @@ from src.utils.redis_constants import (
 )
 from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
-from sqlalchemy.orm.session import Session
 from web3.datastructures import AttributeDict
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value

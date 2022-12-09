@@ -6,7 +6,7 @@ from itertools import islice
 
 import requests
 from src.tasks.celery_app import celery
-from src.tasks.index import save_cid_metadata
+from src.tasks.index_nethermind import save_cid_metadata
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager

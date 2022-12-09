@@ -1,9 +1,18 @@
 import logging
 from typing import Dict, TypedDict
 
+import base58
+from eth_account.messages import defunct_hash_message
+from nacl.encoding import HexEncoder
+from nacl.signing import VerifyKey
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.tracks.track import Track
+from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
+from src.models.users.user_events import UserEvent
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.entity_manager.user_replica_set import parse_sp_ids
 from src.tasks.entity_manager.utils import (
     USER_ID_OFFSET,
@@ -14,18 +23,9 @@ from src.tasks.entity_manager.utils import (
     get_endpoint_string_from_sp_ids,
 )
 from src.utils.config import shared_config
-from web3 import Web3
-from src.challenges.challenge_event_bus import ChallengeEventBus
-from sqlalchemy.orm.session import Session
-from src.models.users.user_events import UserEvent
-from src.models.users.associated_wallet import AssociatedWallet
-from src.queries.get_balances import enqueue_immediate_balance_refresh
-from nacl.signing import VerifyKey
-from nacl.encoding import HexEncoder
-import base58
-from eth_account.messages import defunct_hash_message
-from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
+from src.utils.model_nullable_validator import all_required_fields_present
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
