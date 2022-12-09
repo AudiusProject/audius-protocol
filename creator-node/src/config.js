@@ -591,7 +591,7 @@ const config = convict({
     doc: 'Maximum range of clock values to export at once to prevent process OOM',
     format: Number,
     env: 'maxExportClockValueRange',
-    default: 10000
+    default: 1000
   },
   nodeSyncFileSaveMaxConcurrency: {
     doc: 'Max concurrency of fetchFileFromNetworkAndSaveToFS calls inside nodesync',
