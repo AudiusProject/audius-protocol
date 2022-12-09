@@ -12,8 +12,7 @@ export class Notifications extends Base {
   }
 
   /**
-   * Submit a user's reaction, represented by a numberic ID,
-   * to an entity e.g. a notification for a received tip.
+   * Submit a user's view of notification event
    */
   async viewNotification({
     logger = console
@@ -31,7 +30,7 @@ export class Notifications extends Base {
           userId,
           EntityType.NOTIFICATION,
           userId,
-          Action.View,
+          Action.VIEW,
           ''
         )
       return { txReceipt }
