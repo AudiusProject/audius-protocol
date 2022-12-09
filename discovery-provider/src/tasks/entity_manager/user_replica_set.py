@@ -6,8 +6,8 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    get_endpoint_string_from_sp_ids,
 )
-from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.utils.eth_manager import ServiceProviderType
 
 logger = logging.getLogger(__name__)

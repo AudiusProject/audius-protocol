@@ -37,7 +37,6 @@ from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.tasks.user_library import user_library_state_update
-from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils import helpers
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
@@ -64,21 +63,16 @@ from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
 
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
-USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
 USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
 USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_LIBRARY_FACTORY
 ]
-USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
-    CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
-]
 ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_LIBRARY_FACTORY: user_library_state_update,
-    USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
     ENTITY_MANAGER: entity_manager_update,
 }
 
@@ -94,7 +88,7 @@ default_padded_start_hash = (
 )
 default_config_start_hash = "0x0"
 
-# Used to update user_replica_set_manager address and skip txs conditionally
+# Used to skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
 
 
@@ -271,7 +265,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                    if not cid:
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
@@ -333,39 +327,6 @@ def fetch_cid_metadata(db, entity_manager_txs):
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
     return cid_metadata, cid_type
-
-
-# During each indexing iteration, check if the address for UserReplicaSetManager
-# has been set in the L2 contract registry - if so, update the global contract_addresses object
-# This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
-# added to the registry.
-def update_ursm_address(self):
-    web3 = update_task.web3
-    shared_config = update_task.shared_config
-    abi_values = update_task.abi_values
-    user_replica_set_manager_address = get_contract_addresses()[
-        USER_REPLICA_SET_MANAGER
-    ]
-    if user_replica_set_manager_address == zero_address:
-        logger.info(
-            f"index.py | update_ursm_address, found {user_replica_set_manager_address}"
-        )
-        registry_address = web3.toChecksumAddress(
-            shared_config["contracts"]["registry"]
-        )
-        registry_instance = web3.eth.contract(
-            address=registry_address, abi=abi_values["Registry"]["abi"]
-        )
-        user_replica_set_manager_address = registry_instance.functions.getContract(
-            bytes(USER_REPLICA_SET_MANAGER_CONTRACT_NAME, "utf-8")
-        ).call()
-        if user_replica_set_manager_address != zero_address:
-            get_contract_addresses()[USER_REPLICA_SET_MANAGER] = web3.toChecksumAddress(
-                user_replica_set_manager_address
-            )
-            logger.info(
-                f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}"
-            )
 
 
 def get_tx_hash_to_skip(session, redis):
@@ -523,7 +484,6 @@ def index_blocks(self, db, blocks_list):
     for i in block_order_range:
         start_time = time.time()
         metric.reset_timer()
-        update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
         block_number, block_hash, latest_block_timestamp = itemgetter(
@@ -546,7 +506,6 @@ def index_blocks(self, db, blocks_list):
             else:
                 txs_grouped_by_type = {
                     USER_LIBRARY_FACTORY: [],
-                    USER_REPLICA_SET_MANAGER: [],
                     ENTITY_MANAGER: [],
                 }
                 try:
@@ -1051,18 +1010,9 @@ def update_task(self):
             return
 
     # Initialize contracts and attach to the task singleton
-    user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
     user_library_abi = update_task.abi_values[USER_LIBRARY_FACTORY_CONTRACT_NAME]["abi"]
     user_library_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()[USER_LIBRARY_FACTORY], abi=user_library_abi
-    )
-
-    user_replica_set_manager_abi = update_task.abi_values[
-        USER_REPLICA_SET_MANAGER_CONTRACT_NAME
-    ]["abi"]
-    user_replica_set_manager_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[USER_REPLICA_SET_MANAGER],
-        abi=user_replica_set_manager_abi,
     )
 
     entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
@@ -1074,7 +1024,6 @@ def update_task(self):
     )
 
     update_task.user_library_contract = user_library_contract
-    update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
     update_task.entity_manager_contract = entity_manager_contract
 
     # Update redis cache for health check queries

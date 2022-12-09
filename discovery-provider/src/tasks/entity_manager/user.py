@@ -11,8 +11,8 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    get_endpoint_string_from_sp_ids,
 )
-from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.utils.config import shared_config
 from web3 import Web3
 from src.challenges.challenge_event_bus import ChallengeEventBus
