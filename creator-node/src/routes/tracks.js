@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 const express = require('express')
 const path = require('path')
 const fs = require('fs-extra')
@@ -930,6 +931,7 @@ router.get(
     req.params.CID = fileRecord.multihash
     req.params.streamable = true
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Copy320-CID', fileRecord.multihash)
     next()
   },
   getCID
