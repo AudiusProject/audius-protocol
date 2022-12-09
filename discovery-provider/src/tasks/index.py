@@ -39,7 +39,6 @@ from src.tasks.social_features import social_feature_state_update
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
-from src.tasks.users import user_event_types_lookup, user_state_update
 from src.utils import helpers
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
@@ -65,7 +64,6 @@ from src.utils.redis_constants import (
 from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
 
-USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
 SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
 USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
@@ -84,7 +82,6 @@ USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
 ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
 
 TX_TYPE_TO_HANDLER_MAP = {
-    USER_FACTORY: user_state_update,
     SOCIAL_FEATURE_FACTORY: social_feature_state_update,
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
@@ -255,9 +252,8 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_cid_metadata(db, user_factory_txs, entity_manager_txs):
+def fetch_cid_metadata(db, entity_manager_txs):
     start_time = datetime.now()
-    user_contract = update_task.user_contract
     entity_manager_contract = update_task.entity_manager_contract
 
     cids_txhash_set: Tuple[str, Any] = set()
@@ -269,19 +265,6 @@ def fetch_cid_metadata(db, user_factory_txs, entity_manager_txs):
 
     # fetch transactions
     with db.scoped_session() as session:
-        for tx_receipt in user_factory_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            user_events_tx = getattr(
-                user_contract.events, user_event_types_lookup["update_multihash"]
-            )().processReceipt(tx_receipt)
-            for entry in user_events_tx:
-                event_args = entry["args"]
-                cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
-                cids_txhash_set.add((cid, txhash))
-                cid_type[cid] = "user"
-                user_id = event_args._userId
-                cid_to_user_id[cid] = user_id
-
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in entity_manager_event_types_arr:
@@ -632,10 +615,8 @@ def index_blocks(self, db, blocks_list):
                     Fetch JSON metadata
                     """
                     fetch_metadata_start_time = time.time()
-                    # pre-fetch cids asynchronously to not have it block in user_state_update
                     cid_metadata, cid_type = fetch_cid_metadata(
                         db,
-                        txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[ENTITY_MANAGER],
                     )
                     # Record the time this took in redis
@@ -1079,18 +1060,6 @@ def update_task(self):
 
     # Initialize contracts and attach to the task singleton
     user_abi = update_task.abi_values[USER_FACTORY_CONTRACT_NAME]["abi"]
-    user_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[USER_FACTORY], abi=user_abi
-    )
-
-    social_feature_abi = update_task.abi_values[SOCIAL_FEATURE_FACTORY_CONTRACT_NAME][
-        "abi"
-    ]
-    social_feature_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[SOCIAL_FEATURE_FACTORY],
-        abi=social_feature_abi,
-    )
-
     user_library_abi = update_task.abi_values[USER_LIBRARY_FACTORY_CONTRACT_NAME]["abi"]
     user_library_contract = update_task.web3.eth.contract(
         address=get_contract_addresses()[USER_LIBRARY_FACTORY], abi=user_library_abi
@@ -1112,8 +1081,6 @@ def update_task(self):
         abi=entity_manager_contract_abi,
     )
 
-    update_task.user_contract = user_contract
-    update_task.social_feature_contract = social_feature_contract
     update_task.user_library_contract = user_library_contract
     update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
     update_task.entity_manager_contract = entity_manager_contract
