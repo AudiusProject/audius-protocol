@@ -1,5 +1,6 @@
-import { ID, PremiumContentSignature } from 'models'
 import { createCustomAction } from 'typesafe-actions'
+
+import { ID, PremiumContentSignature } from 'models'
 
 export const ETH_NFTS_FETCHED = 'PREMIUM_CONTENT/ETH_NFTS_FETCHED'
 export const SOL_NFTS_FETCHED = 'PREMIUM_CONTENT/SOL_NFTS_FETCHED'
