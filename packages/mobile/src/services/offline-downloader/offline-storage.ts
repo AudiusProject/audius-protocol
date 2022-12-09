@@ -67,12 +67,14 @@ export const listTracks = async (): Promise<string[]> => {
 export const getTrackJson = async (
   trackId: string
 ): Promise<UserTrackMetadata> => {
-  const trackJson = await readFile(getLocalTrackJsonPath(trackId))
   try {
+    const trackJson = await readFile(getLocalTrackJsonPath(trackId))
     return JSON.parse(trackJson)
   } catch (e) {
-    console.error(e)
-    return e
+    if (e instanceof SyntaxError) {
+      purgeDownloadedTrack(trackId)
+    }
+    return Promise.reject(e)
   }
 }
 

@@ -47,7 +47,7 @@ export const downloadCollection = async (
 ) => {
   store.dispatch(addCollection(collection))
   persistCollectionDownloadStatus(collection, true)
-  store.dispatch(batchStartDownload(trackIds.map(toString)))
+  store.dispatch(batchStartDownload(trackIds.map((id) => id.toString())))
   trackIds.forEach((trackId) => enqueueTrackDownload(trackId, collection))
 }
 
@@ -161,26 +161,32 @@ export const removeCollectionDownload = async (
   store.dispatch(removeCollection(collection))
   persistCollectionDownloadStatus(collection, false)
   trackIds.forEach(async (trackId) => {
-    const trackIdStr = trackId.toString()
-    const diskTrack = await getTrackJson(trackIdStr)
-    const collections = diskTrack.offline?.downloaded_from_collection ?? []
-    const otherCollections = collections.filter(
-      (downloadReasonCollection) => downloadReasonCollection !== collection
-    )
-    if (otherCollections.length === 0) {
-      purgeDownloadedTrack(trackIdStr)
-    } else {
-      const trackToWrite = {
-        ...diskTrack,
-        offline: {
-          download_completed_time:
-            diskTrack.offline?.download_completed_time ?? Date.now(),
-          last_verified_time:
-            diskTrack.offline?.last_verified_time ?? Date.now(),
-          downloaded_from_collection: otherCollections
+    try {
+      const trackIdStr = trackId.toString()
+      const diskTrack = await getTrackJson(trackIdStr)
+      const collections = diskTrack.offline?.downloaded_from_collection ?? []
+      const otherCollections = collections.filter(
+        (downloadReasonCollection) => downloadReasonCollection !== collection
+      )
+      if (otherCollections.length === 0) {
+        purgeDownloadedTrack(trackIdStr)
+      } else {
+        const trackToWrite = {
+          ...diskTrack,
+          offline: {
+            download_completed_time:
+              diskTrack.offline?.download_completed_time ?? Date.now(),
+            last_verified_time:
+              diskTrack.offline?.last_verified_time ?? Date.now(),
+            downloaded_from_collection: otherCollections
+          }
         }
+        await writeTrackJson(trackIdStr, trackToWrite)
       }
-      await writeTrackJson(trackIdStr, trackToWrite)
+    } catch (e) {
+      console.debug(
+        `failed to remove track ${trackId} from collection ${collection}`
+      )
     }
   })
 }

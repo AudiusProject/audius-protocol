@@ -1,12 +1,7 @@
 import { useMemo } from 'react'
 
-import type { CommonState, Track } from '@audius/common'
-import {
-  useProxySelector,
-  savedPageSelectors,
-  lineupSelectors,
-  accountActions
-} from '@audius/common'
+import type { CommonState } from '@audius/common'
+import { accountActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -17,6 +12,7 @@ import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { DownloadToggle } from 'app/components/offline-downloads'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
+import { useFetchAllFavoritedTrackIds } from 'app/hooks/useFetchAllFavoritedTrackIds'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
@@ -26,12 +22,7 @@ import { AlbumsTab } from './AlbumsTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
 import { getAccountCollections } from './selectors'
-const { makeGetTableMetadatas } = lineupSelectors
-
-const { getSavedTracksLineup } = savedPageSelectors
 const { fetchSavedPlaylists, fetchSavedAlbums } = accountActions
-
-const getTracks = makeGetTableMetadatas(getSavedTracksLineup)
 
 const messages = {
   header: 'Favorites'
@@ -60,7 +51,7 @@ export const FavoritesScreen = () => {
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
-  const savedTracks = useProxySelector(getTracks, [])
+  const { value: allFavoritedTrackIds } = useFetchAllFavoritedTrackIds()
 
   useEffectOnce(() => {
     dispatch(fetchSavedPlaylists())
@@ -73,15 +64,13 @@ export const FavoritesScreen = () => {
   )
 
   const allSavesTrackIds = useMemo(() => {
-    const allIds = (savedTracks?.entries ?? [])
-      .map((track: Track) => track.track_id)
-      .concat(
-        userCollections.flatMap((collection) =>
-          collection.playlist_contents.track_ids.map((trackId) => trackId.track)
-        )
+    const allIds = (allFavoritedTrackIds ?? []).concat(
+      userCollections.flatMap((collection) =>
+        collection.playlist_contents.track_ids.map((trackId) => trackId.track)
       )
+    )
     return allIds
-  }, [savedTracks, userCollections])
+  }, [allFavoritedTrackIds, userCollections])
 
   return (
     <Screen>
