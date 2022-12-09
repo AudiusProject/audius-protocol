@@ -103,7 +103,6 @@ class PrometheusMetricNames:
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
-    TRACK_STATE_UPDATE_DURATION_SECONDS = "track_state_update_duration_seconds"
     UPDATE_AGGREGATE_TABLE_DURATION_SECONDS = "update_aggregate_table_duration_seconds"
     UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS = (
         "update_track_is_available_duration_seconds"
@@ -195,11 +194,6 @@ PrometheusRegistry = {
     PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS}",
         "Runtimes for src.task.index_trending:index_trending()",
-    ),
-    PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS}",
-        "Runtimes for src.task.tracks:track_state_update()",
-        ("scope",),
     ),
     PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_DURATION_SECONDS}",
