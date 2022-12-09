@@ -78,6 +78,7 @@ export const typeDefs = gql`
     is_followed: Boolean!
 
     tracks(
+      id: ID
       query: String
       limit: Int = 3
       offset: Int = 0
@@ -149,6 +150,15 @@ export const typeDefs = gql`
 
   type Query {
     user(handle: String): User
+
+    users(
+      query: String
+      has_reposted_track_id: ID
+      has_favorited_track_id: ID
+      is_followed_by_current_user: Boolean
+      limit: Int = 50
+      offset: Int = 0
+    ): [User!]!
 
     track(permalink: String!): Track
 

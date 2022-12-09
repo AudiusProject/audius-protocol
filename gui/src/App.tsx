@@ -1,41 +1,55 @@
 import { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router-dom'
+import { PlayerUI } from './components/Player'
 import { PlaylistDetail } from './pages/PlaylistDetail'
 import { Profile } from './pages/Profile'
 import { TrackDetail } from './pages/TrackDetail'
+import { NowPlaying } from './stores/nowPlaying'
 
 function Layout() {
   return (
     <div>
-      <Link to="/">Home</Link>
-      <Link to="/stereosteve">stereosteve</Link>
-      <hr />
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          padding: 10,
+          background: '#303',
+        }}
+      >
+        <Link to="/">Home</Link>
+        <Link to="/stereosteve">stereosteve</Link>
+        <Link to="/jan_larz">jan_larz</Link>
+        <Link to="/alunaaa">alunaaa</Link>
+      </div>
       <Outlet />
+      <PlayerUI />
     </div>
   )
 }
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<h1>home</h1>} />
-          <Route path=":handle" element={<Profile />} />
-          <Route path=":handle/:track" element={<TrackDetail />} />
-          <Route
-            path=":handle/playlist/:playlist"
-            element={<PlaylistDetail />}
-          />
-          <Route path=":handle/album/:playlist" element={<PlaylistDetail />} />
-        </Route>
-
-        {/* <Route path="/" element={<Layout />}>
-      <Route index element={<App />} />
-      <Route path="teams" element={<h1>teams</h1>}>
-        <Route path="new" element={<h1>new team</h1>} />
-      </Route>
-    </Route> */}
-      </Routes>
-    </BrowserRouter>
+    <NowPlaying.Provider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<h1>home</h1>} />
+            <Route path=":handle" element={<Profile />} />
+            <Route
+              path=":handle/:trackSlug/:trackId"
+              element={<TrackDetail />}
+            />
+            <Route
+              path=":handle/playlist/:playlistSlug"
+              element={<PlaylistDetail />}
+            />
+            <Route
+              path=":handle/album/:playlist"
+              element={<PlaylistDetail />}
+            />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </NowPlaying.Provider>
   )
 }

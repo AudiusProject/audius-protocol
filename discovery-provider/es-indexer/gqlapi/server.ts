@@ -42,6 +42,10 @@ function newMgetLoader(index: string) {
     const found = await esc.mget({
       index,
       body: { ids },
+      _source: {
+        // @ts-ignore
+        excludes: ['track_segments'],
+      },
     })
     const byID = keyHitsByID(found.docs)
     return ids.map((id) => byID[id])
@@ -157,6 +161,8 @@ const playlistResolvers: PlaylistResolvers<Ctx, Playlist & PlaylistDoc> = {
 const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
   id: (user) => user.user_id.toString(),
 
+  name: (user) => user.name || `missing`,
+
   tracks: async (user, args, ctx) => {
     const bb = bodybuilder()
       .filter('term', 'owner_id', user.user_id.toString())
@@ -167,6 +173,9 @@ const userResolvers: UserResolvers<Ctx, User & UserDoc> = {
       .sort(args.sort || 'created_at', args.sort_direction || 'desc')
     if (args.query) {
       bb.query('match', 'suggest', args.query)
+    }
+    if (args.id) {
+      bb.query('match', '_id', args.id)
     }
     const tracks = await bbSearch(indexNames.tracks, bb)
     return tracks as any
@@ -297,6 +306,61 @@ const queryResolvers: QueryResolvers<Ctx> = {
     }
     const users = await bbSearch<User>(indexNames.users, bb)
     return users[0]
+  },
+
+  users: async (root, args, ctx) => {
+    const me = await ctx.me
+    const bb = bodybuilder()
+
+    if (args.query) {
+      bb.query('multi_match', {
+        query: args.query,
+        fields: ['suggest', 'suggest._2gram', 'suggest._3gram'],
+        operator: 'or',
+        type: 'bool_prefix',
+        fuzziness: 'AUTO',
+      })
+    }
+
+    if (args.has_reposted_track_id) {
+      bb.filter('terms', '_id', {
+        index: indexNames.tracks,
+        id: args.has_reposted_track_id,
+        path: 'reposted_by',
+      })
+    }
+
+    if (args.has_favorited_track_id) {
+      bb.filter('terms', '_id', {
+        index: indexNames.tracks,
+        id: args.has_favorited_track_id,
+        path: 'saved_by', // so much save / favorite carnage
+      })
+    }
+
+    if (me && args.is_followed_by_current_user != undefined) {
+      if (args.is_followed_by_current_user) {
+        bb.filter('terms', '_id', {
+          index: indexNames.users,
+          id: me.user_id.toString(),
+          path: 'following_ids',
+        })
+      } else {
+        bb.notFilter('terms', '_id', {
+          index: indexNames.users,
+          id: me.user_id.toString(),
+          path: 'following_ids',
+        })
+      }
+    }
+
+    bb.sort('follower_count', 'desc')
+    bb.size(args.limit).from(args.offset)
+
+    // console.log(JSON.stringify(bb.build(), undefined, 2))
+
+    const users = await bbSearch<User>(indexNames.users, bb)
+    return users
   },
 
   track: async (root, args, ctx) => {

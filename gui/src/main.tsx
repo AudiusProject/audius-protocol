@@ -1,20 +1,22 @@
-import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
-import React from 'react'
+import { ApolloProvider } from '@apollo/client'
 import ReactDOM from 'react-dom/client'
-import './index.css'
 import { App } from './App'
-
-const client = new ApolloClient({
-  uri: 'http://localhost:4000',
-  cache: new InMemoryCache(),
-})
+import { MantineProvider } from '@mantine/core'
+import { apolloClient } from './clients'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 
 root.render(
-  <React.StrictMode>
-    <ApolloProvider client={client}>
+  <ApolloProvider client={apolloClient}>
+    <MantineProvider
+      theme={{
+        colorScheme: 'dark',
+        primaryColor: 'violet',
+      }}
+      withGlobalStyles
+      withNormalizeCSS
+    >
       <App />
-    </ApolloProvider>
-  </React.StrictMode>
+    </MantineProvider>
+  </ApolloProvider>
 )

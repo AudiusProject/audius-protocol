@@ -1,7 +1,7 @@
 import { Anchor, AnchorProps } from '@mantine/core'
 import { Link } from 'react-router-dom'
 
-type LinkToProps = AnchorProps<any> & {
+type LinkToProps = AnchorProps & {
   item: any
   suffix?: string
   children: any

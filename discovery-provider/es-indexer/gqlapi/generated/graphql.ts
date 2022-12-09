@@ -63,6 +63,7 @@ export type Query = {
   feed: Array<FeedItem>;
   track?: Maybe<Track>;
   user?: Maybe<User>;
+  users: Array<User>;
   wip_notifications?: Maybe<Scalars['JSON']>;
 };
 
@@ -81,6 +82,16 @@ export type QueryTrackArgs = {
 
 export type QueryUserArgs = {
   handle?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryUsersArgs = {
+  has_favorited_track_id?: InputMaybe<Scalars['ID']>;
+  has_reposted_track_id?: InputMaybe<Scalars['ID']>;
+  is_followed_by_current_user?: InputMaybe<Scalars['Boolean']>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  query?: InputMaybe<Scalars['String']>;
 };
 
 export enum SizeSquare {
@@ -210,6 +221,7 @@ export type UserReposted_TracksArgs = {
 
 
 export type UserTracksArgs = {
+  id?: InputMaybe<Scalars['ID']>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
   query?: InputMaybe<Scalars['String']>;
@@ -296,6 +308,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   FeedItem: ResolversTypes['Playlist'] | ResolversTypes['Track'];
+  ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
   Playlist: ResolverTypeWrapper<Playlist>;
@@ -316,6 +329,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Date: Scalars['Date'];
   FeedItem: ResolversParentTypes['Playlist'] | ResolversParentTypes['Track'];
+  ID: Scalars['ID'];
   Int: Scalars['Int'];
   JSON: Scalars['JSON'];
   Playlist: Playlist;
@@ -358,6 +372,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit' | 'original' | 'reposts'>>;
   track?: Resolver<Maybe<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<QueryTrackArgs, 'permalink'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUserArgs>>;
+  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'limit' | 'offset'>>;
   wip_notifications?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
 };
 
