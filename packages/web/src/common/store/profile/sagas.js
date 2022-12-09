@@ -595,17 +595,10 @@ function* watchSetNotificationSubscription() {
 
           // Dual write to discovery. Part of the migration of subscriptions
           // from identity to discovery.
-          const socialFeatureEntityManagerEnabled =
-            (yield call(
-              getFeatureEnabled,
-              FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-            )) ?? false
-          if (socialFeatureEntityManagerEnabled) {
-            if (action.isSubscribed) {
-              yield fork(subscribeToUserAsync, action.userId)
-            } else {
-              yield fork(unsubscribeFromUserAsync, action.userId)
-            }
+          if (action.isSubscribed) {
+            yield fork(subscribeToUserAsync, action.userId)
+          } else {
+            yield fork(unsubscribeFromUserAsync, action.userId)
           }
         } catch (err) {
           const isReachable = yield select(getIsReachable)

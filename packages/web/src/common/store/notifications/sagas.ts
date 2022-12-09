@@ -401,14 +401,7 @@ export function* subscribeUserSettings(action: SubscribeUser) {
 
   // Dual write to discovery. Part of the migration of subscriptions
   // from identity to discovery.
-  const socialFeatureEntityManagerEnabled =
-    ((yield* call(
-      getFeatureEnabled,
-      FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-    )) as boolean | null) ?? false
-  if (socialFeatureEntityManagerEnabled) {
-    yield* fork(subscribeToUserAsync, action.userId)
-  }
+  yield* fork(subscribeToUserAsync, action.userId)
 }
 
 export function* unsubscribeUserSettings(action: UnsubscribeUser) {
@@ -423,14 +416,7 @@ export function* unsubscribeUserSettings(action: UnsubscribeUser) {
 
   // Dual write to discovery. Part of the migration of subscriptions
   // from identity to discovery.
-  const socialFeatureEntityManagerEnabled =
-    ((yield* call(
-      getFeatureEnabled,
-      FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-    )) as boolean | null) ?? false
-  if (socialFeatureEntityManagerEnabled) {
-    yield* fork(unsubscribeFromUserAsync, action.userId)
-  }
+  yield* fork(unsubscribeFromUserAsync, action.userId)
 }
 
 export function* updatePlaylistLastViewedAt(

@@ -1182,15 +1182,8 @@ export const audiusBackend = ({
   }
 
   async function repostTrack(trackId: ID) {
-    try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.repostTrack(trackId)
-      }
-      return audiusLibs.Track.addTrackRepost(trackId)
+    try{
+      return await audiusLibs.EntityManager.repostTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1199,15 +1192,7 @@ export const audiusBackend = ({
 
   async function undoRepostTrack(trackId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.unrepostTrack(trackId)
-      }
-      return audiusLibs.Track.deleteTrackRepost(trackId)
+      return await audiusLibs.EntityManager.unrepostTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1216,16 +1201,7 @@ export const audiusBackend = ({
 
   async function repostCollection(playlistId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return audiusLibs.EntityManager.repostPlaylist(playlistId)
-      }
-
-      return audiusLibs.Playlist.addPlaylistRepost(playlistId)
+      return audiusLibs.EntityManager.repostPlaylist(playlistId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1234,15 +1210,7 @@ export const audiusBackend = ({
 
   async function undoRepostCollection(playlistId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return audiusLibs.EntityManager.unrepostPlaylist(playlistId)
-      }
-      return audiusLibs.Playlist.deletePlaylistRepost(playlistId)
+      return audiusLibs.EntityManager.unrepostPlaylist(playlistId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1576,16 +1544,7 @@ export const audiusBackend = ({
 
   async function followUser(followeeUserId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.followUser(followeeUserId)
-      }
-
-      return await audiusLibs.User.addUserFollow(followeeUserId)
+      return await audiusLibs.EntityManager.followUser(followeeUserId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -1594,16 +1553,7 @@ export const audiusBackend = ({
 
   async function unfollowUser(followeeUserId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
-      }
-
-      return await audiusLibs.User.deleteUserFollow(followeeUserId)
+      return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -2056,16 +2006,7 @@ export const audiusBackend = ({
   // Favoriting a track
   async function saveTrack(trackId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.saveTrack(trackId)
-      }
-
-      return await audiusLibs.Track.addTrackSave(trackId)
+      return await audiusLibs.EntityManager.saveTrack(trackId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -2095,15 +2036,7 @@ export const audiusBackend = ({
   // Favorite a playlist
   async function saveCollection(playlistId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.savePlaylist(playlistId)
-      }
-      return await audiusLibs.Playlist.addPlaylistSave(playlistId)
+      return await audiusLibs.EntityManager.savePlaylist(playlistId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -2113,16 +2046,7 @@ export const audiusBackend = ({
   // Unfavoriting a track
   async function unsaveTrack(trackId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.unsaveTrack(trackId)
-      }
-
-      return await audiusLibs.Track.deleteTrackSave(trackId)
+      return await audiusLibs.EntityManager.unsaveTrack(trackId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -2132,15 +2056,7 @@ export const audiusBackend = ({
   // Unfavorite a playlist
   async function unsaveCollection(playlistId: ID) {
     try {
-      const socialFeatureEntityManagerEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.SOCIAL_FEATURE_ENTITY_MANAGER_ENABLED
-        )) ?? false
-
-      if (socialFeatureEntityManagerEnabled) {
-        return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
-      }
-      return await audiusLibs.Playlist.deletePlaylistSave(playlistId)
+      return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
