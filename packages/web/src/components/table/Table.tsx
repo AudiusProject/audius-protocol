@@ -61,7 +61,8 @@ export const dateSorter = (accessor: string) => (rowA: any, rowB: any) => {
   return 0
 }
 
-const isEmptyRow = (row: any) => {
+// Used in TracksTable, CollectiblesPlaylistTable
+const isEmptyRowDefault = (row: any) => {
   return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
 }
 
@@ -84,6 +85,7 @@ type TableProps = {
   onReorder?: (source: number, destination: number) => void
   onShowMoreToggle?: (setting: boolean) => void
   onSort?: (...props: any[]) => void
+  isEmptyRow?: (row: any) => boolean
   pageSize?: number
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
@@ -112,6 +114,7 @@ export const Table = ({
   onReorder,
   onShowMoreToggle,
   onSort,
+  isEmptyRow = isEmptyRowDefault,
   pageSize = 50,
   scrollRef,
   showMoreLimit,
@@ -438,7 +441,8 @@ export const Table = ({
       renderSkeletonRow,
       isReorderable,
       renderDraggableRow,
-      renderTableRow
+      renderTableRow,
+      isEmptyRow
     ]
   )
 
@@ -474,7 +478,7 @@ export const Table = ({
 
   const isRowLoaded = useCallback(
     ({ index }) => !isEmptyRow(rows[index]),
-    [rows]
+    [rows, isEmptyRow]
   )
 
   // Pagination Functions
