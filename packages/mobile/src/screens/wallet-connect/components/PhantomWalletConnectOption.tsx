@@ -37,7 +37,7 @@ export const PhantomWalletConnectOption = () => {
   return (
     <WalletConnectOption
       name='Phantom'
-      icon={<IconPhantom height={50} width={50} />}
+      icon={<IconPhantom height={64} width={64} />}
       onPress={handleConnectWallet}
     />
   )

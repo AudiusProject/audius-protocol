@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { accountSelectors, tokenDashboardPageActions } from '@audius/common'
+import {
+  accountSelectors,
+  tokenDashboardPageActions,
+  Theme
+} from '@audius/common'
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,6 +15,7 @@ import {
   setConnectionType,
   signMessage
 } from 'app/store/wallet-connect/slice'
+import { makeStyles } from 'app/styles'
 
 import { WalletConnectOption } from './WalletConnectOption'
 import useAuthorization from './useSolanaPhoneAuthorization'
@@ -18,7 +23,23 @@ import useAuthorization from './useSolanaPhoneAuthorization'
 const { updateWalletError } = tokenDashboardPageActions
 const { getUserId } = accountSelectors
 
+const messages = {
+  title: 'Solana Mobile'
+}
+
+const useStyles = makeStyles(({ type }) => ({
+  root: {
+    backgroundColor: type === Theme.DEFAULT ? 'black' : 'white',
+    height: 64,
+    width: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 32
+  }
+}))
+
 export const SolanaPhoneOption = () => {
+  const styles = useStyles()
   const dispatch = useDispatch()
   const accountUserId = useSelector(getUserId)
 
@@ -77,19 +98,10 @@ export const SolanaPhoneOption = () => {
 
   return (
     <WalletConnectOption
-      name='Solana'
+      name={messages.title}
       icon={
-        <View
-          style={{
-            backgroundColor: 'black',
-            height: 50,
-            width: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 25
-          }}
-        >
-          <IconSolana height={30} width={30} />
+        <View style={styles.root}>
+          <IconSolana height={36} width={36} />
         </View>
       }
       onPress={handleConnectWallet}

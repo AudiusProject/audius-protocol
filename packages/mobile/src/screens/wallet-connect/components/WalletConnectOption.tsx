@@ -7,16 +7,16 @@ import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
   wallet: {
-    flexBasis: '25%',
-    marginVertical: spacing(3),
-    alignItems: 'center',
-    justifyContent: 'center'
+    flexBasis: '45%',
+    marginTop: spacing(6),
+    marginBottom: spacing(4),
+    alignItems: 'center'
   },
   walletIcon: {
     display: 'flex',
-    height: 50,
-    width: 50,
-    marginBottom: spacing(1)
+    height: 64,
+    width: 64,
+    marginBottom: spacing(2)
   }
 }))
 
