@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 
+import type { Nullable } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
 // TODO: declare this at the root and use actual audiusLibs type
@@ -11,11 +12,11 @@ declare global {
 
 export const libsInitEventEmitter = new EventEmitter()
 
-export let audiusLibs: AudiusLibs
+export let audiusLibs: Nullable<AudiusLibs> = null
 
 export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
 
-export const setLibs = (libs: AudiusLibs) => (audiusLibs = libs)
+export const setLibs = (libs: Nullable<AudiusLibs>) => (audiusLibs = libs)
 
 /**
  * Wait for the `LIBS_INITTED_EVENT` or pass through if there
