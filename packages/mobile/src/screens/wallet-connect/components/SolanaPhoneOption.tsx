@@ -1,16 +1,21 @@
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, tokenDashboardPageActions } from '@audius/common'
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconSolana from 'app/assets/images/iconSolana.svg'
-import { setConnectionType, signMessage } from 'app/store/wallet-connect/slice'
+import {
+  connectNewWallet,
+  setConnectionType,
+  signMessage
+} from 'app/store/wallet-connect/slice'
 
 import { WalletConnectOption } from './WalletConnectOption'
 import useAuthorization from './useSolanaPhoneAuthorization'
 
+const { updateWalletError } = tokenDashboardPageActions
 const { getUserId } = accountSelectors
 
 export const SolanaPhoneOption = () => {
@@ -28,25 +33,43 @@ export const SolanaPhoneOption = () => {
       message.split('').map((c) => c.charCodeAt(0))
     )
 
-    let publicKey
+    let publicKey: string
 
-    // @ts-ignore: wallet adapter types are wrong
-    const [signature] = await transact(async (wallet) => {
+    const {
+      // @ts-ignore: wallet adapter types are wrong
+      signed_payloads: [signature]
+    } = await transact(async (wallet) => {
       const freshAccount = await authorizeSession(wallet)
       // Existing account or newly connected account
       publicKey = selectedAccount?.address ?? freshAccount.address
-      return await wallet.signMessages({
-        addresses: [publicKey],
-        // @ts-ignore: wallet adapter types are wrong
-        payloads: [messageBuffer]
-      })
+
+      dispatch(
+        connectNewWallet({
+          connectionType: 'solana-phone-wallet-adapter',
+          publicKey
+        })
+      )
+
+      try {
+        return await wallet.signMessages({
+          addresses: [publicKey],
+          payloads: [Buffer.from(messageBuffer).toString('base64')]
+        })
+      } catch (e) {
+        dispatch(
+          updateWalletError({
+            errorMessage:
+              'An error occured while connecting a wallet with your account.'
+          })
+        )
+        return { signed_payloads: [''] }
+      }
     })
 
     dispatch(
       signMessage({
         path: 'wallet-sign-message',
         data: signature,
-        publicKey,
         connectionType: 'solana-phone-wallet-adapter'
       })
     )

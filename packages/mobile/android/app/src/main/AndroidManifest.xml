@@ -1,18 +1,11 @@
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    package="co.audius.app"
-    android:versionCode="2"
-    android:versionName="1.0.1"
->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="co.audius.app" android:versionCode="2" android:versionName="1.0.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
+    <!-- < Only if you're using GCM or localNotificationSchedule() > -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <permission
-        android:name="${applicationId}.permission.C2D_MESSAGE"
-        android:protectionLevel="signature" />
+    <permission android:name="${applicationId}.permission.C2D_MESSAGE" android:protectionLevel="signature" />
     <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />
     <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
@@ -20,92 +13,64 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <application
-      android:usesCleartextTraffic="true"
-      android:name=".MainApplication"
-      android:label="@string/app_name"
-      android:icon="${appIcon}"
-      android:resource="@mipmap/ic_notification"
-      android:allowBackup="false"
-      android:largeHeap="true"
-      android:theme="@style/BootTheme">
-      <activity
-        android:name=".MainActivity"
-        android:launchMode="singleTask"
-        android:label="@string/app_name"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
-        android:screenOrientation="portrait"
-        android:windowSoftInputMode="adjustPan"
-        android:exported="true"
-        >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-            <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" android:host="redirect.audius.co" />
-            <data android:scheme="https" android:host="audius.co" />
-            <data android:scheme="audius" android:host="/"/>
-        </intent-filter>
-      </activity>
+    <application android:usesCleartextTraffic="true" android:name=".MainApplication" android:label="@string/app_name" android:icon="${appIcon}" android:resource="@mipmap/ic_notification" android:allowBackup="false" android:largeHeap="true" android:theme="@style/BootTheme">
+        <activity android:name=".MainActivity" android:launchMode="singleTask" android:label="@string/app_name" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode" android:screenOrientation="portrait" android:windowSoftInputMode="adjustPan" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="redirect.audius.co" />
+                <data android:scheme="https" android:host="audius.co" />
+                <data android:scheme="audius" android:host="/"/>
+            </intent-filter>
+        </activity>
 
-      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_name"
-              android:value="Activity"/>
-      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_channel_description"
-                  android:value="Your activity on Audius"/>
-      <!-- Change the resource name to your App's accent color - or any other color you want -->
-      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
-                  android:resource="@android:color/white"/>
-      
-      <!-- Google Cast -->
-      <meta-data
-        android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-        android:value="com.reactnative.googlecast.GoogleCastOptionsProvider" />
-      <meta-data
-        android:name="com.reactnative.googlecast.RECEIVER_APPLICATION_ID"
-        android:value="222B31C8" />
-      <!-- < Only if you're using GCM or localNotificationSchedule() > -->
+        <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="Activity"/>
+        <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="Your activity on Audius"/>
+        <!-- Change the resource name to your App's accent color - or any other color you want -->
+        <meta-data android:name="com.dieam.reactnativepushnotification.notification_color" android:resource="@android:color/white"/>
 
-      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-      <receiver
-        android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
-        android:exported="true" >
-          <intent-filter>
-              <action android:name="android.intent.action.BOOT_COMPLETED" />
-          </intent-filter>
-      </receiver>
-      <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
+        <!-- Google Cast -->
+        <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.reactnative.googlecast.GoogleCastOptionsProvider" />
+        <meta-data android:name="com.reactnative.googlecast.RECEIVER_APPLICATION_ID" android:value="222B31C8" />
+        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
-      <!-- < Only if you're using GCM or localNotificationSchedule() > -->
-      <service
-          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm"
-          android:exported="true" >
-          <intent-filter>
-              <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-          </intent-filter>
-      </service>
-      <!-- </ Only if you're using GCM or localNotificationSchedule() > -->
+        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
+        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
 
-      <!-- < Else > -->
-      <service
-          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
-          android:exported="true" >
-          <intent-filter>
-              <action android:name="com.google.firebase.MESSAGING_EVENT" />
-          </intent-filter>
-      </service>
-      <meta-data 
-        android:name="com.google.firebase.messaging.default_notification_icon"
-        android:resource="@mipmap/ic_notification"
-      />
+        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
+        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <!-- </ Only if you're using GCM or localNotificationSchedule() > -->
+
+        <!-- < Else > -->
+        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notification" />
 
     </application>
 
     <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="wc"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" android:host="*"/>
@@ -117,10 +82,6 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="mailto" android:host="*"/>
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="wc"/>
         </intent>
     </queries>
 

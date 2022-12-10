@@ -99,8 +99,26 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
       break
     }
     case 'solana-phone-wallet-adapter': {
-      // Solana phone wallet adapter supports a single
-      // connect + signMessage, so nothing is necessary at this stage.
+      const { publicKey } = action.payload
+      const publicKeyEncoded = bs58.encode(Buffer.from(publicKey, 'base64'))
+
+      const isNewWallet = yield* checkIsNewWallet(publicKeyEncoded, Chain.Sol)
+      if (!isNewWallet) return
+
+      const { balance, collectibleCount } = yield* getWalletInfo(
+        publicKeyEncoded,
+        Chain.Sol
+      )
+
+      yield* put(
+        setIsConnectingWallet({
+          wallet: publicKeyEncoded,
+          chain: Chain.Sol,
+          balance,
+          collectibleCount
+        })
+      )
+
       break
     }
     case 'wallet-connect': {

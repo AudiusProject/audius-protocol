@@ -49,3 +49,6 @@ export const getCanRecipientReceiveWAudio = (state: CommonState) => {
 }
 export const getConfirmingWallet = (state: CommonState) =>
   state.pages.tokenDashboard.associatedWallets.confirmingWallet
+
+export const getError = (state: CommonState) =>
+  state.pages.tokenDashboard.associatedWallets.errorMessage

@@ -1,6 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
-import { accountSelectors, tokenDashboardPageSelectors } from '@audius/common'
+import {
+  accountSelectors,
+  tokenDashboardPageActions,
+  tokenDashboardPageSelectors
+} from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 import { useWalletConnect } from '@walletconnect/react-native-dapp'
 import { View } from 'react-native'
@@ -23,8 +27,8 @@ import { TopBarIconButton } from '../app-screen'
 import { LinkedWallets } from './components'
 import type { WalletConnectParamList, WalletConnectRoute } from './types'
 
+const { updateWalletError } = tokenDashboardPageActions
 const { getUserId } = accountSelectors
-
 const { getConfirmingWallet } = tokenDashboardPageSelectors
 
 const messages = {
@@ -81,6 +85,8 @@ export const WalletConnectScreen = () => {
       const message = `AudiusUserID:${accountUserId}`
       const messageParams = [message, wallet]
 
+      // unfortunately this doesn't trigger when called right away,
+      // even when session.connected is true
       setTimeout(() => {
         connector
           .signPersonalMessage(messageParams)
@@ -89,11 +95,17 @@ export const WalletConnectScreen = () => {
               signMessage({ data: result, connectionType: 'wallet-connect' })
             )
           })
-          .catch((e) => {
-            console.log('personal sign error', e)
+          .catch(() => {
+            dispatch(
+              updateWalletError({
+                errorMessage:
+                  'An error occured while connecting a wallet with your account.'
+              })
+            )
           })
       }, 1000)
-      // return () => clearTimeout(signMessagetTimeout)
+    } else if (connectionStatus === 'done') {
+      connector.killSession()
     }
   }, [wallet, accountUserId, connector, dispatch, connectionStatus])
 
@@ -124,9 +136,6 @@ export const WalletConnectScreen = () => {
   }, [params?.path, params, dispatch])
 
   const handleConnectWallet = useCallback(() => {
-    // The wallet connect modal houses all of our wallet
-    // connections, so asking it to connect opens the
-    // drawer to connect any wallet.
     connector.connect()
   }, [connector])
 

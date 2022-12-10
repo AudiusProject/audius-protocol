@@ -22,6 +22,7 @@ type ConnectNewEthWallet = {
 
 type ConnectSolanaPhoneWallet = {
   connectionType: 'solana-phone-wallet-adapter'
+  publicKey: string
 }
 
 export type ConnectNewWalletAction = PayloadAction<
@@ -45,7 +46,6 @@ type SignSolanaPhoneWallet = {
   connectionType: 'solana-phone-wallet-adapter'
   data: string
   path: string
-  publicKey: string
 }
 
 export type SignMessageAction = PayloadAction<

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { WalletService } from '@walletconnect/react-native-dapp'
 import { useWalletConnectContext } from '@walletconnect/react-native-dapp'
-import { Image } from 'react-native'
+import { Image, Linking, Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -33,10 +33,14 @@ export const EthWalletConnectOption = (props: EthWalletConnectOptionProps) => {
   const context = useWalletConnectContext()
   const { connectToWalletService } = context
 
-  const handleConnectWallet = useCallback(() => {
+  const handleConnectWallet = useCallback(async () => {
     dispatch(setConnectionType({ connectionType: 'wallet-connect' }))
     dispatch(setConnectionStatus({ status: 'connecting' }))
-    connectToWalletService?.(walletService, uri)
+    if (Platform.OS === 'android') {
+      await Linking.openURL(uri)
+    } else if (Platform.OS === 'ios') {
+      connectToWalletService?.(walletService, uri)
+    }
   }, [dispatch, walletService, connectToWalletService, uri])
 
   return (
