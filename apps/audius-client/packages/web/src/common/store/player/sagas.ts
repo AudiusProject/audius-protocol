@@ -11,6 +11,7 @@ import {
   actionChannelDispatcher,
   playerActions,
   playerSelectors,
+  reachabilitySelectors,
   Nullable,
   FeatureFlags,
   premiumContentSelectors,
@@ -51,6 +52,7 @@ const { recordListen } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
@@ -61,10 +63,6 @@ const RECORD_LISTEN_INTERVAL = 1000
 let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
 
 export function* watchPlay() {
-  yield* waitForWrite()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const streamMp3IsEnabled = yield* call(
     getFeatureEnabled,
@@ -74,25 +72,20 @@ export function* watchPlay() {
     getFeatureEnabled,
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   ) ?? false
+  const isOfflineModeEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.OFFLINE_MODE_ENABLED
+  ) ?? false
 
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload ?? {}
-
-    if (!FORCE_MP3_STREAM_TRACK_IDS) {
-      FORCE_MP3_STREAM_TRACK_IDS = new Set(
-        (
-          remoteConfigInstance.getRemoteVar(
-            StringKeys.FORCE_MP3_STREAM_TRACK_IDS
-          ) || ''
-        ).split(',')
-      )
-    }
 
     const audioPlayer = yield* getContext('audioPlayer')
 
     if (trackId) {
       // Load and set end action.
       const track = yield* select(getTrack, { id: trackId })
+      const isReachable = yield* select(getIsReachable)
       if (!track) return
       if (track.is_premium && !track.premium_content_signature) {
         console.warn(
@@ -104,12 +97,35 @@ export function* watchPlay() {
         id: track.owner_id
       })
 
+      if (!isReachable && isOfflineModeEnabled) {
+        // Play offline.
+        audioPlayer.play()
+        yield* put(playSucceeded({ uid, trackId }))
+        return
+      }
+
+      yield* waitForWrite()
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const apiClient = yield* getContext('apiClient')
+      const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+
       const gateways = owner
         ? audiusBackendInstance.getCreatorNodeIPFSGateways(
             owner.creator_node_endpoint
           )
         : []
       const encodedTrackId = encodeHashId(trackId)
+
+      if (!FORCE_MP3_STREAM_TRACK_IDS) {
+        FORCE_MP3_STREAM_TRACK_IDS = new Set(
+          (
+            remoteConfigInstance.getRemoteVar(
+              StringKeys.FORCE_MP3_STREAM_TRACK_IDS
+            ) || ''
+          ).split(',')
+        )
+      }
+
       const forceStreamMp3 =
         // TODO: remove feature flag - https://github.com/AudiusProject/audius-client/pull/2147
         streamMp3IsEnabled ||
