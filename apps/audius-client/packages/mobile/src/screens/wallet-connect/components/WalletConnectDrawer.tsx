@@ -32,7 +32,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     marginTop: spacing(4),
     marginHorizontal: spacing(4),
-    marginBottom: spacing(6),
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'flex-start'
@@ -42,10 +41,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginBottom: spacing(2),
     color: palette.neutralLight2
   },
-  container: {
-    marginTop: spacing(4),
-    flex: 1,
+  walletConnectionList: {
     flexDirection: 'row',
+    justifyContent: 'center',
     flexWrap: 'wrap'
   }
 }))
@@ -70,7 +68,9 @@ export const WalletConnectDrawer = () => {
         >
           {messages.title}
         </Text>
-        <View style={styles.container}>
+        <View style={styles.walletConnectionList}>
+          <SolanaPhoneOption />
+          <PhantomWalletConnectOption />
           {supportedWalletServices?.map((walletService: WalletService) => {
             const uri = data?.uri as string
             return (
@@ -81,8 +81,6 @@ export const WalletConnectDrawer = () => {
               />
             )
           })}
-          <PhantomWalletConnectOption />
-          <SolanaPhoneOption />
         </View>
       </View>
     </NativeDrawer>

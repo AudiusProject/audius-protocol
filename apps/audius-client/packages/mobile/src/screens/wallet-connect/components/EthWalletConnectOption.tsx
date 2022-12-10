@@ -20,9 +20,9 @@ type EthWalletConnectOptionProps = {
 
 const useStyles = makeStyles(() => ({
   walletImage: {
-    height: 50,
-    width: 50,
-    borderRadius: 25
+    height: 64,
+    width: 64,
+    borderRadius: 32
   }
 }))
 
@@ -51,7 +51,7 @@ export const EthWalletConnectOption = (props: EthWalletConnectOptionProps) => {
           style={styles.walletImage}
           source={{
             // @ts-ignore: image_url is valid
-            uri: `${walletService.image_url.sm}`
+            uri: `${walletService.image_url.lg}`
           }}
         />
       }
