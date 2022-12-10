@@ -16,10 +16,11 @@ const { getConfirmingWallet } = tokenDashboardPageSelectors
 
 export function* associateNewWallet(signature: string) {
   const { wallet, chain } = yield* select(getConfirmingWallet)
-  if (!wallet || !chain) return
+  if (!wallet || !chain) return null
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const userMetadata = yield* select(getAccountUser)
+
   let updatedMetadata = newUserMetadata({ ...userMetadata })
 
   if (
@@ -32,10 +33,10 @@ export function* associateNewWallet(signature: string) {
       yield* put(
         updateWalletError({
           errorMessage:
-            'An error occured while connecting a wallet with your account.'
+            'An error occured while connecting a wallet with your account'
         })
       )
-      return
+      return null
     }
     const updatedUserMetadata = yield* select(getAccountUser)
     updatedMetadata = newUserMetadata({ ...updatedUserMetadata })

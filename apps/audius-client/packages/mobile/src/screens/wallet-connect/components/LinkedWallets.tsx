@@ -8,7 +8,7 @@ import {
   tokenDashboardPageActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { View } from 'react-native'
+import { FlatList, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -16,7 +16,7 @@ import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
-import { Divider, FlatList, IconButton, Text } from 'app/components/core'
+import { Divider, IconButton, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -267,9 +267,9 @@ export const LinkedWallets = () => {
             chain={item.chain}
             address={item.address}
             audioBalance={item.balance}
-            isLoading={
+            isLoading={Boolean(
               removeWallets.wallet === item.address || item.isConfirming
-            }
+            )}
           />
         )}
         data={wallets}

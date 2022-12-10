@@ -97,6 +97,7 @@ export const WalletConnectProviderRenderModal = ({
   const dispatch = useDispatch()
   const isDrawerVisible = useSelector(getVisibility('ConnectWallets'))
   const connector = useWalletConnect()
+
   // When wallet connect visibility changes, show drawer
   useEffect(() => {
     if (visible) {
@@ -113,6 +114,12 @@ export const WalletConnectProviderRenderModal = ({
       // onDismiss()
     }
   }, [visible, isDrawerVisible, onDismiss, connector])
+
+  useEffect(() => {
+    if (!isDrawerVisible && connector.connected) {
+      connector.killSession()
+    }
+  }, [isDrawerVisible, connector])
 
   // Must be an element to comply with interface
   return <></>
