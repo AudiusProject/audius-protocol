@@ -473,7 +473,7 @@ type GetUserSupporterArgs = {
 
 type AudiusAPIClientConfig = {
   audiusBackendInstance: AudiusBackend
-  getAudiusLibs: () => AudiusLibs
+  getAudiusLibs: () => Nullable<AudiusLibs>
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
@@ -486,7 +486,7 @@ export class AudiusAPIClient {
   }
 
   audiusBackendInstance: AudiusBackend
-  getAudiusLibs: () => AudiusLibs
+  getAudiusLibs: () => Nullable<AudiusLibs>
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
