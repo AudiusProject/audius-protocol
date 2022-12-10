@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
-    "@audius/common": "1.4.4",
+    "@audius/common": "1.4.5",
     "@audius/sdk": "1.0.24",
     "@babel/runtime": "7.15.4",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
@@ -70,7 +70,7 @@
     "@svgr/core": "5.5.0",
     "@walletconnect/react-native-dapp": "1.8.0",
     "array.prototype.flat": "1.2.5",
-    "audius-client": "1.4.4",
+    "audius-client": "1.4.5",
     "babel-plugin-transform-remove-console": "6.9.4",
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
