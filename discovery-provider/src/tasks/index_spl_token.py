@@ -58,6 +58,7 @@ SPL_TOKEN_PUBKEY = PublicKey(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_PUBKEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+TRANSFER_CHECKED_INSTRUCTION = "Program log: Instruction: TransferChecked"
 
 REDIS_TX_CACHE_QUEUE_PREFIX = "spl-token-tx-cache-queue"
 
@@ -155,14 +156,19 @@ def parse_spl_token_transaction(
             return None
 
         has_transfer_checked_instruction = has_instruction(
-            meta, "Program log: Instruction: TransferChecked"
+            meta, TRANSFER_CHECKED_INSTRUCTION
         )
         if not has_transfer_checked_instruction:
+            logger.info(
+                f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
+            )
             return None
         tx_message = result["transaction"]["message"]
         instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
         if not instruction:
-            logger.error(f"index_spl_token.py | {tx_sig} No Valid instruction found")
+            logger.error(
+                f"index_spl_token.py | {tx_sig} No valid instruction for spl token program found"
+            )
             return None
 
         memo_encoded = parse_memo_instruction(result)
@@ -176,9 +182,15 @@ def parse_spl_token_transaction(
         sender_root_account = get_solana_tx_owner(meta, sender_idx)
         receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
         prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
-        # Skip if there is no balance change.
-        if postbalance - prebalance == 0:
+
+        # Balance is expected to change if there is a transfer instruction.
+        if postbalance == -1 or prebalance == -1:
+            logger.error(f"index_spl_token.py | {tx_sig} error while parsing pre and post balances")
             return None
+        if postbalance - prebalance == 0:
+            logger.error(f"index_spl_token.py | {tx_sig} no balance change found")
+            return None
+
         receiver_spl_tx_info: SplTokenTransactionInfo = {
             "user_bank": receiver_token_account,
             "signature": tx_sig["signature"],
