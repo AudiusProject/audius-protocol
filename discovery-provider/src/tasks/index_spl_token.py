@@ -26,7 +26,7 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import get_base_address
+from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
     ConfirmedTransaction,
@@ -38,7 +38,13 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balances
+from src.utils.helpers import (
+    get_account_index,
+    get_solana_tx_owner,
+    get_solana_tx_token_balances,
+    get_valid_instruction,
+    has_instruction,
+)
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
@@ -65,10 +71,10 @@ MEMO_INSTRUCTION_INDEX = 4
 # Index of receiver account in solana transaction pre/post balances
 # Note: the receiver index is currently the same for purchase and transfer instructions
 # but this assumption could change in the future.
-RECEIVER_ACCOUNT_INDEX = 1
-# Thought we don't index transfers from the sender's side in this task, we must still
+RECEIVER_ACCOUNT_INDEX = 2
+# Though we don't index transfers from the sender's side in this task, we must still
 # enqueue the sender's accounts for balance refreshes if they are Audius accounts.
-SENDER_ACCOUNT_INDEX = 2
+SENDER_ACCOUNT_INDEX = 0
 
 purchase_vendor_map = {
     "Link by Stripe": TransactionType.purchase_stripe,
@@ -148,17 +154,28 @@ def parse_spl_token_transaction(
         if error:
             return None
 
+        has_transfer_checked_instruction = has_instruction(
+            meta, "Program log: Instruction: TransferChecked"
+        )
+        if not has_transfer_checked_instruction:
+            return None
+        tx_message = result["transaction"]["message"]
+        instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
+        if not instruction:
+            logger.error(f"index_spl_token.py | {tx_sig} No Valid instruction found")
+            return None
+
         memo_encoded = parse_memo_instruction(result)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
-        sender_root_account = get_solana_tx_owner(meta, SENDER_ACCOUNT_INDEX)
-        receiver_root_account = get_solana_tx_owner(meta, RECEIVER_ACCOUNT_INDEX)
-        account_keys = result["transaction"]["message"]["accountKeys"]
-        receiver_token_account = account_keys[RECEIVER_ACCOUNT_INDEX]
-        sender_token_account = account_keys[SENDER_ACCOUNT_INDEX]
-        prebalance, postbalance = get_solana_tx_token_balances(
-            meta, RECEIVER_ACCOUNT_INDEX
-        )
+        sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
+        receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
+        account_keys = tx_message["accountKeys"]
+        sender_token_account = account_keys[sender_idx]
+        receiver_token_account = account_keys[receiver_idx]
+        sender_root_account = get_solana_tx_owner(meta, sender_idx)
+        receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
+        prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
         # Skip if there is no balance change.
         if postbalance - prebalance == 0:
             return None
@@ -464,6 +481,9 @@ def process_spl_token_tx(
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
+        logger.info(
+            f"index_spl_token.py | Retrieved transactions before {last_tx_signature}"
+        )
         transactions_array = transactions_history["result"]
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
