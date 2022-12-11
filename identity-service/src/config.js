@@ -846,10 +846,16 @@ const config = convict({
     default: false
   },
   updateReplicaSetReconfigurationLimit: {
-    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds',
+    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds. This limit is per cluster worker, not service wide',
     format: Number,
     env: 'updateReplicaSetReconfigurationLimit',
-    default: 30
+    default: 10
+  },
+  updateReplicaSetWalletWhitelist: {
+    doc: '`senderAddress` values allowed to make updateReplicaSet calls. Will still adhere to updateReplicaSetReconfigurationLimit. Empty means no whitelist, all addresses allowed.',
+    format: 'string-array',
+    env: 'updateReplicaSetWalletWhitelist',
+    default: ''
   }
 })
 

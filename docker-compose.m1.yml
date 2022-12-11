@@ -1,0 +1,107 @@
+version: "3.9"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
+
+services:
+  poa-ganache:
+    extends:
+      file: docker-compose.yml
+      service: poa-ganache
+
+  poa-blockscout-db:
+    extends:
+      file: docker-compose.yml
+      service: poa-blockscout-db
+
+  poa-blockscout:
+    extends:
+      file: docker-compose.yml
+      service: poa-blockscout
+
+  eth-ganache:
+    extends:
+      file: docker-compose.yml
+      service: eth-ganache
+
+  eth-blockscout-db:
+    extends:
+      file: docker-compose.yml
+      service: eth-blockscout-db
+
+  eth-blockscout:
+    extends:
+      file: docker-compose.yml
+      service: eth-blockscout
+
+  solana-test-validator:
+    image: audius/solana-programs:m1-latest
+    environment:
+      SOLANA_HOST: "http://127.0.0.1:8899"
+    volumes:
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+    logging: *default-logging
+    deploy:
+      mode: global
+    ports:
+      - "8899:8899"
+
+  build-audius-libs:
+    extends:
+      file: docker-compose.yml
+      service: build-audius-libs
+
+  audius-cmd:
+    extends:
+      file: docker-compose.yml
+      service: audius-cmd
+
+  identity-service-db:
+    extends:
+      file: docker-compose.yml
+      service: identity-service-db
+
+  identity-service-redis:
+    extends:
+      file: docker-compose.yml
+      service: identity-service-redis
+
+  identity-service:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
+
+  discovery-provider-elasticsearch:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider-elasticsearch
+
+  discovery-provider:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider
+
+  creator-node:
+    extends:
+      file: docker-compose.yml
+      service: creator-node
+
+  port-forwarder:
+    extends:
+      file: docker-compose.yml
+      service: port-forwarder
+
+  sshuttle-server:
+    extends:
+      file: docker-compose.yml
+      service: sshuttle-server
+
+volumes:
+  poa-contracts-abis:
+  eth-contracts-abis:
+  solana-programs-idl:
+  audius-libs:

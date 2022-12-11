@@ -336,7 +336,7 @@ mock_purchase_meta = {
             "recentBlockhash": "CChCbrfGJgYkqSf3FUHqMmhEd3TXxBoKDAk6ZZx9QGfZ",
         },
         "signatures": [
-            "2n4gYtnZLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw"
+            "testtestLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw"
         ],
     },
 }
@@ -437,7 +437,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     mock_confirmed_signature_for_address = {
         "err": None,
         "memo": None,
-        "signature": "2n4gYtnZLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw",
+        "signature": "testtestLFjEnv3gSEoTHwoUsi5pbj4xu1LmETex1P5tbrSafCEkBDNXM9hmBGBb7AH5VUJtMsYDoeo8TpskJ7pw",
         "slot": 155160519,
         "blockTime": 1665685554,
         "confirmationStatus": "finalized",

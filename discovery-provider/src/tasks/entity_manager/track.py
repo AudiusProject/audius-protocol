@@ -9,6 +9,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
+    copy_record,
 )
 from src.tasks.tracks import (
     dispatch_challenge_track_upload,
@@ -49,49 +50,6 @@ def validate_track_tx(params: ManageEntityParameters):
             raise Exception(f"Existing track {track_id} does not match user")
 
     return True
-
-
-def copy_track_record(
-    old_track: Track, block_number: int, event_blockhash: str, txhash: str
-):
-    return Track(
-        track_id=old_track.track_id,
-        owner_id=old_track.owner_id,
-        title=old_track.title,
-        length=old_track.length,
-        cover_art=old_track.cover_art,
-        tags=old_track.tags,
-        genre=old_track.genre,
-        mood=old_track.mood,
-        credits_splits=old_track.credits_splits,
-        create_date=old_track.create_date,
-        release_date=old_track.release_date,
-        file_type=old_track.file_type,
-        metadata_multihash=old_track.metadata_multihash,
-        track_segments=old_track.track_segments,
-        description=old_track.description,
-        isrc=old_track.isrc,
-        iswc=old_track.iswc,
-        license=old_track.license,
-        cover_art_sizes=old_track.cover_art_sizes,
-        download=old_track.download,
-        is_unlisted=old_track.is_unlisted,
-        field_visibility=old_track.field_visibility,
-        route_id=old_track.route_id,
-        stem_of=old_track.stem_of,
-        remix_of=old_track.remix_of,
-        slot=old_track.slot,
-        is_premium=old_track.is_premium,
-        premium_conditions=old_track.premium_conditions,
-        is_available=old_track.is_available,
-        is_delete=old_track.is_delete,
-        created_at=old_track.created_at,
-        updated_at=old_track.updated_at,
-        blocknumber=block_number,
-        blockhash=event_blockhash,
-        txhash=txhash,
-        is_current=False,
-    )
 
 
 def get_handle(params: ManageEntityParameters):
@@ -164,8 +122,12 @@ def update_track(params: ManageEntityParameters):
     ):  # override with last updated track is in this block
         existing_track = params.new_records[EntityType.TRACK][track_id][-1]
 
-    updated_track = copy_track_record(
-        existing_track, params.block_number, params.event_blockhash, params.txhash
+    updated_track = copy_record(
+        existing_track,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
 
     update_track_routes_table(
@@ -187,8 +149,12 @@ def delete_track(params: ManageEntityParameters):
         # override with last updated playlist is in this block
         existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
 
-    deleted_track = copy_track_record(
-        existing_track, params.block_number, params.event_blockhash, params.txhash
+    deleted_track = copy_record(
+        existing_track,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     deleted_track.is_delete = True
     deleted_track.stem_of = null()

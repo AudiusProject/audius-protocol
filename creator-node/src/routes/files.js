@@ -35,7 +35,12 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getAllRegisteredCNodes } = require('../services/ContentNodeInfoManager')
-const { timeout, computeFilePath, computeFilePathInDir } = require('../utils')
+const {
+  timeout,
+  computeFilePath,
+  computeFilePathInDir,
+  computeLegacyFilePath
+} = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
@@ -291,7 +296,7 @@ const getCID = async (req, res) => {
     // Compute expected legacyStoragePath for CID
     let legacyStoragePath
     try {
-      legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
+      legacyStoragePath = computeLegacyFilePath(CID)
       decisionTree.push({
         stage: `COMPUTE_LEGACY_FILE_PATH_COMPLETE`
       })

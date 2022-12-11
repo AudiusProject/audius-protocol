@@ -61,7 +61,8 @@ const metricNames: Record<string, string> = {
     'recover_orphaned_data_wallet_counts',
   RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE: 'recover_orphaned_data_sync_counts',
   STORAGE_PATH_SIZE_BYTES: 'storage_path_size_bytes',
-  FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE: 'files_migrated_from_legacy_path'
+  FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE: 'files_migrated_from_legacy_path',
+  FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE: 'files_migrated_from_custom_path'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -226,6 +227,9 @@ export const METRIC_LABELS = Object.freeze({
     ]
   },
   [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
+    result: ['success', 'failure']
+  },
+  [METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]: {
     result: ['success', 'failure']
   }
 })
@@ -442,6 +446,16 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: 'Number of total files migrated from a legacy storage path to a non legacy storage path',
       labelNames:
         METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE],
+      aggregator: 'sum' as AggregatorType // Only runs on primary process
+    }
+  },
+  [METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
+    metricConfig: {
+      name: METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+      help: 'Number of total files migrated from a custom storage path to the standard storage path',
+      labelNames:
+        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE],
       aggregator: 'sum' as AggregatorType // Only runs on primary process
     }
   },

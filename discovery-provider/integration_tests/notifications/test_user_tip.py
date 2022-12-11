@@ -45,7 +45,6 @@ def test_supporter_rank_up_notification(app):
 
         assert send_notifications[0].specifier == "1"
         assert send_notifications[0].group_id == "tip_send:user_id:1:slot:2"
-        assert send_notifications[0].notification_group_id == None
         assert send_notifications[0].type == "tip_send"
         assert send_notifications[0].slot == 2
         assert send_notifications[0].blocknumber == None
@@ -58,7 +57,6 @@ def test_supporter_rank_up_notification(app):
 
         assert receive_notifications[0].specifier == "3"
         assert receive_notifications[0].group_id == "tip_receive:user_id:3:slot:2"
-        assert receive_notifications[0].notification_group_id == None
         assert receive_notifications[0].type == "tip_receive"
         assert receive_notifications[0].slot == 2
         assert receive_notifications[0].blocknumber == None

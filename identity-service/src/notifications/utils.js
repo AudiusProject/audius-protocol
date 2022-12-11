@@ -62,9 +62,14 @@ async function updateBlockchainIds() {
           logger.info(
             `Updated wallet ${walletAddress} to blockchainUserId: ${missingUserId}, ${updateUser.handle}`
           )
-          await models.UserNotificationSettings.findOrCreate({
+          const userSettings = await models.UserNotificationSettings.findOne({
             where: { userId: missingUserId }
           })
+          if (userSettings == null) {
+            await models.UserNotificationSettings.create({
+              userId: missingUserId
+            })
+          }
         }
       }
     } catch (e) {

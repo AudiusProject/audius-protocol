@@ -10,7 +10,9 @@ if [[ "$ledger_dir" == "" ]]; then
     exit 1
 fi
 
-./scripts/build.sh
+if [[ $BUILDTARGET == "x86_64" ]]; then
+    ./scripts/build.sh
+fi
 
 mkdir -p $ledger_dir
 solana-test-validator --ledger $ledger_dir &
