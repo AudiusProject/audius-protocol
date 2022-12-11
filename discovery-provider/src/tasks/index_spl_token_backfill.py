@@ -27,13 +27,20 @@ from src.solana.constants import (
     TX_SIGNATURES_MAX_BATCHES,
 )
 from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_helpers import SPL_TOKEN_ID
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
     ConfirmedTransaction,
 )
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balances
+from src.utils.helpers import (
+    get_account_index,
+    get_solana_tx_owner,
+    get_solana_tx_token_balances,
+    get_valid_instruction,
+    has_instruction,
+)
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing_logger import SolanaIndexingLogger
@@ -157,20 +164,31 @@ def parse_spl_token_transaction(
         error = meta["err"]
         if error:
             return None
-
         tx_sig = tx["signature"]
         tx_slot = result["slot"]
+
+        has_transfer_checked_instruction = has_instruction(
+            meta, "Program log: Instruction: TransferChecked"
+        )
+        if not has_transfer_checked_instruction:
+            return None
+        tx_message = result["transaction"]["message"]
+        instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
+        if not instruction:
+            logger.error(f"index_spl_token.py | {tx_sig} No Valid instruction found")
+            return None
 
         memo_encoded = parse_memo_instruction(result)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
-        sender_root_account = get_solana_tx_owner(meta, SENDER_ACCOUNT_INDEX)
+        sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
+        receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
         account_keys = result["transaction"]["message"]["accountKeys"]
-        receiver_token_account = account_keys[RECEIVER_ACCOUNT_INDEX]
-        sender_token_account = account_keys[SENDER_ACCOUNT_INDEX]
-        prebalance, postbalance = get_solana_tx_token_balances(
-            meta, RECEIVER_ACCOUNT_INDEX
-        )
+        sender_token_account = account_keys[sender_idx]
+        receiver_token_account = account_keys[receiver_idx]
+        sender_root_account = get_solana_tx_owner(meta, sender_idx)
+        prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
+
         # Skip if there is no balance change.
         if postbalance - prebalance == 0:
             return None
