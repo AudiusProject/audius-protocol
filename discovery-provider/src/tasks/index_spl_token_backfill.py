@@ -51,6 +51,7 @@ USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_PUBKEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
 MIN_SIG = str(shared_config["solana"]["spl_token_backfill_min_sig"])
+TRANSFER_CHECKED_INSTRUCTION = "Program log: Instruction: TransferChecked"
 
 # Number of signatures that are fetched from RPC and written at once
 # For example, in a batch of 1000 only 100 will be fetched and written in parallel
@@ -62,10 +63,10 @@ MEMO_INSTRUCTION_INDEX = 4
 # Index of receiver account in solana transaction pre/post balances
 # Note: the receiver index is currently the same for purchase and transfer instructions
 # but this assumption could change in the future.
-RECEIVER_ACCOUNT_INDEX = 1
+RECEIVER_ACCOUNT_INDEX = 2
 # Thought we don't index transfers from the sender's side in this task, we must still
 # enqueue the sender's accounts for balance refreshes if they are Audius accounts.
-SENDER_ACCOUNT_INDEX = 2
+SENDER_ACCOUNT_INDEX = 0
 
 purchase_vendor_map = {
     "Link by Stripe": TransactionType.purchase_stripe,
@@ -168,14 +169,19 @@ def parse_spl_token_transaction(
         tx_slot = result["slot"]
 
         has_transfer_checked_instruction = has_instruction(
-            meta, "Program log: Instruction: TransferChecked"
+            meta, TRANSFER_CHECKED_INSTRUCTION
         )
         if not has_transfer_checked_instruction:
+            logger.info(
+                f"index_spl_token_backfill.py | {tx_sig} no transfer checked instruction"
+            )
             return None
         tx_message = result["transaction"]["message"]
         instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
         if not instruction:
-            logger.error(f"index_spl_token.py | {tx_sig} No Valid instruction found")
+            logger.error(
+                f"index_spl_token_backfill.py | {tx_sig} No Valid instruction for spl token program {SPL_TOKEN_ID} found"
+            )
             return None
 
         memo_encoded = parse_memo_instruction(result)
@@ -188,10 +194,21 @@ def parse_spl_token_transaction(
         receiver_token_account = account_keys[receiver_idx]
         sender_root_account = get_solana_tx_owner(meta, sender_idx)
         prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
-
-        # Skip if there is no balance change.
-        if postbalance - prebalance == 0:
+        logger.info(
+            f"index_spl_token_backfill.py | receiver_idx: {receiver_idx} prebalance: {prebalance} post_balance: {postbalance} sig: {tx_sig} meta: {meta}"
+        )
+        # Balance is expected to change if there is a transfer instruction.
+        if postbalance == -1 or prebalance == -1:
+            logger.error(
+                f"index_spl_token_backfill.py | {tx_sig} error while parsing pre and post balances"
+            )
             return None
+        if postbalance - prebalance == 0:
+            logger.error(
+                f"index_spl_token_backfill.py | {tx_sig} no balance change found"
+            )
+            return None
+
         receiver_spl_tx_info: SplTokenTransactionInfo = {
             "user_bank": receiver_token_account,
             "signature": tx_sig,
