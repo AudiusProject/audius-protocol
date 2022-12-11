@@ -16,6 +16,11 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
+from src.solana.solana_transaction_types import (
+    ResultMeta,
+    TransactionMessage,
+    TransactionMessageInstruction,
+)
 from src.utils import redis_connection
 from src.utils.redis_constants import final_poa_block_redis_key
 
@@ -518,6 +523,33 @@ def get_solana_tx_owner(meta, idx) -> str:
         if "owner" in balance and balance["accountIndex"] == idx:
             return balance["owner"]
     return ""
+
+
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta, program_address: str
+) -> Optional[TransactionMessageInstruction]:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for claimable token program
+    """
+    account_keys = tx_message["accountKeys"]
+    instructions = tx_message["instructions"]
+    program_index = account_keys.index(program_address)
+    for instruction in instructions:
+        if instruction["programIdIndex"] == program_index:
+            return instruction
+
+    return None
+
+
+def has_instruction(meta: ResultMeta, instruction: str):
+    return any(log == instruction for log in meta["logMessages"])
+
+
+# The transaction might list sender/receiver in a different order in the pubKeys.
+# The "accounts" field of the instruction has the mapping of accounts to pubKey index
+def get_account_index(instruction: TransactionMessageInstruction, index: int):
+    return instruction["accounts"][index]
 
 
 def get_final_poa_block(shared_config) -> Optional[int]:
