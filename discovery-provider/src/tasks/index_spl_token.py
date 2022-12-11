@@ -481,9 +481,6 @@ def process_spl_token_tx(
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
-        logger.info(
-            f"index_spl_token.py | Retrieved transactions before {last_tx_signature}"
-        )
         transactions_array = transactions_history["result"]
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
