@@ -38,7 +38,10 @@ import { convertRGBToHex } from 'app/utils/convertRGBtoHex'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
 
-import { getDominantRgb } from '../../../threads/dominantColors.thread'
+import {
+  getDominantRgb,
+  pickTwoMostDominantAndVibrant
+} from '../../../threads/dominantColors.thread'
 import { NativeDrawer } from '../drawer'
 import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
 import { ToastContext } from '../toast/ToastContext'
@@ -204,12 +207,12 @@ export const useShareToStory = ({
       }
       dispatch(setProgress(10))
       // Step 2: Calculate the dominant colors of the cover art
-      let dominantColorsResult: Color[]
+      let rawDominantColorsResult: Color[] | string // `getDominantRgb` returns a string containing a single default color if it couldn't find dominant colors
       let dominantColorHex1: string
       let dominantColorHex2: string
       if (trackImageUri) {
         try {
-          dominantColorsResult = await getDominantRgb(trackImageUri)
+          rawDominantColorsResult = await getDominantRgb(trackImageUri)
         } catch (e) {
           handleError(
             e,
@@ -217,13 +220,13 @@ export const useShareToStory = ({
           )
           return
         }
-        dominantColorHex1 = Array.isArray(dominantColorsResult)
-          ? convertRGBToHex(dominantColorsResult[0])
-          : DEFAULT_DOMINANT_COLORS[0]
-
-        dominantColorHex2 = Array.isArray(dominantColorsResult)
-          ? convertRGBToHex(dominantColorsResult[1])
-          : DEFAULT_DOMINANT_COLORS[1]
+        const finalDominantColorsResult = Array.isArray(rawDominantColorsResult)
+          ? pickTwoMostDominantAndVibrant(rawDominantColorsResult).map(
+              (c: Color) => convertRGBToHex(c)
+            )
+          : DEFAULT_DOMINANT_COLORS
+        dominantColorHex1 = finalDominantColorsResult[0]
+        dominantColorHex2 = finalDominantColorsResult[1]
       } else {
         ;[dominantColorHex1, dominantColorHex2] = DEFAULT_DOMINANT_COLORS
       }
@@ -246,10 +249,11 @@ export const useShareToStory = ({
         dispatch(setProgress(Math.min(20 + percentageLoaded + 10, 100)))
       })
       let session: FFmpegSession
-
+      const SHOWFREQS_SEGMENT =
+        'aformat=channel_layouts=mono,adynamicsmooth,showfreqs=s=900x40:fscale=log:colors=#ffffff70'
       try {
         session = await FFmpegKit.execute(
-          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30[bg];[0:a]aformat=channel_layouts=mono,showfreqs=s=540x80:fscale=log:colors=#ffffff[fg];[bg][fg]overlay=format=auto:x=0:y=H-h-80" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
+          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30[bg];[0:a]${SHOWFREQS_SEGMENT}[fg];[0:a]${SHOWFREQS_SEGMENT},vflip[fgflip];[bg][fg]overlay=format=auto:x=-100:y=H-h-100[fo];[fo][fgflip]overlay=format=auto:x=-100:y=H-h-60" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
         )
       } catch (e) {
         handleError(e, 'Share to IG Story error')
