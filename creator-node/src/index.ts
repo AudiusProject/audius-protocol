@@ -17,7 +17,10 @@ import cluster from 'cluster'
 import ON_DEATH from 'death'
 import { Keypair } from '@solana/web3.js'
 
-import { recordMetrics } from './services/prometheusMonitoring/prometheusUsageUtils'
+import {
+  validateMetricToRecord,
+  recordMetrics
+} from './services/prometheusMonitoring/prometheusUsageUtils'
 import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
@@ -135,7 +138,9 @@ const runAsyncBackgroundTasks = async () => {
   migrateFilesWithNonStandardStoragePaths(
     500,
     serviceRegistry.prometheusRegistry,
-    logger
+    logger,
+    validateMetricToRecord,
+    recordMetrics
   )
 }
 

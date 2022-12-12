@@ -50,12 +50,12 @@ export const makeHistogramToRecord = (
   metricValue: number,
   metricLabels: Record<string, string> = {}
 ): MetricToRecord => {
-  return _makeMetricToRecord(
-    METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE,
+  return validateMetricToRecord({
+    metricType: METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE,
     metricName,
     metricValue,
     metricLabels
-  )
+  })
 }
 
 /**
@@ -71,12 +71,12 @@ export const makeGaugeIncToRecord = (
   incBy: number,
   metricLabels: Record<string, string> = {}
 ): MetricToRecord => {
-  return _makeMetricToRecord(
-    METRIC_RECORD_TYPE.GAUGE_INC,
+  return validateMetricToRecord({
+    metricType: METRIC_RECORD_TYPE.GAUGE_INC,
     metricName,
-    incBy,
+    metricValue: incBy,
     metricLabels
-  )
+  })
 }
 
 /**
@@ -92,12 +92,12 @@ export const makeGaugeSetToRecord = (
   valueToSet: number,
   metricLabels: Record<string, string> = {}
 ): MetricToRecord => {
-  return _makeMetricToRecord(
-    METRIC_RECORD_TYPE.GAUGE_SET,
+  return validateMetricToRecord({
+    metricType: METRIC_RECORD_TYPE.GAUGE_SET,
     metricName,
-    valueToSet,
+    metricValue: valueToSet,
     metricLabels
-  )
+  })
 }
 
 /**
@@ -108,12 +108,12 @@ export const makeGaugeSetToRecord = (
  * @param {number} metricValue the value to observe
  * @param {Record<string, string>} [metricLabels] the optional mapping of metric label name => metric label value
  */
-const _makeMetricToRecord = (
-  metricType: string,
-  metricName: string,
-  metricValue: number,
-  metricLabels: Record<string, string> = {}
-): MetricToRecord => {
+export const validateMetricToRecord = ({
+  metricType,
+  metricName,
+  metricValue,
+  metricLabels = {}
+}: MetricToRecord): MetricToRecord => {
   if (!Object.values(METRIC_RECORD_TYPE).includes(metricType)) {
     throw new Error(
       `Invalid metricType. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
