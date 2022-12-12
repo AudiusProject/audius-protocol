@@ -9,7 +9,7 @@ import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './api/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
-import { MessagesApi } from './api/MessagesApi'
+import { ChatsApi } from './api/chats/ChatsApi'
 import {
   Configuration,
   PlaylistsApi,
@@ -191,13 +191,17 @@ const initializeApis = ({
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
-  const messages = new MessagesApi(
-    new Configuration({
-      fetchApi: fetch,
-      walletApi,
-      basePath: 'http://localhost:8925/comms'
-    })
-  )
+  let chats
+  // Only init chats if config has walletApi
+  if (walletApi !== undefined) {
+    chats = new ChatsApi(
+      new Configuration({
+        fetchApi: async (...args) => await fetch(...args),
+        walletApi,
+        basePath: 'http://localhost:8925'
+      })
+    )
+  }
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi
@@ -219,8 +223,8 @@ const initializeApis = ({
     playlists,
     tips,
     resolve,
-    messages,
-    full
+    full,
+    chats
   }
 }
 
