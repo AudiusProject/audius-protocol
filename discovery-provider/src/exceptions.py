@@ -15,7 +15,7 @@ class NotFoundError(Base):
 
 
 class UnsupportedVersionError(Base):
-    """Invalid arguments passed to request"""
+    """Unsupported Solana transaction version"""
 
     pass  # pylint: disable=W0107
 
