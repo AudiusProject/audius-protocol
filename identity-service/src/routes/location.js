@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { getIP } = require('utils/antiAbuse')
+const { getIP } = require('../utils/antiAbuse')
 const {
   errorResponseBadRequest,
   handleResponse,
