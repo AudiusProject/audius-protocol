@@ -1,3 +1,5 @@
+// NOTE: No imports allowed - quicktype is not yet able to track imports!
+
 export type ChatCreateRPC = {
   method: 'chat.create'
   params: {
@@ -63,7 +65,7 @@ export type ChatBlockRPC = {
 export type ChatPermitRPC = {
   method: 'chat.permit'
   params: {
-    permit: 'all' | 'tippers' | 'followees' | 'none'
+    permit: ChatPermission
   }
 }
 
@@ -83,7 +85,7 @@ export type UserChat = {
   // User agnostic
   chat_id: string
   last_message_at: String
-  members: Array<{ user_id: string }>
+  chat_members: Array<{ user_id: string }>
 
   // User specific
   invite_code: string
@@ -103,6 +105,33 @@ export type ChatMessage = {
   }>
 }
 
+export type ChatInvite = {
+  user_id: string
+  invite_code: string
+}
+
+/**
+ * Defines who the user allows to message them
+ */
+export enum ChatPermission {
+  /**
+   * Messages are allowed for everyone
+   */
+  ALL = 'all',
+  /**
+   * Messages are only allowed for users that have tipped me
+   */
+  TIPPERS = 'tippers',
+  /**
+   * Messages are only allowed for users I follow
+   */
+  FOLLOWEES = 'followees',
+  /**
+   * Messages are not allowed
+   */
+  NONE = 'none'
+}
+
 export type CommsResponse = {
   health: {
     is_healthy: boolean
@@ -112,5 +141,7 @@ export type CommsResponse = {
     remaining_count: number
     total_count: number
   }
+  // Overridden in client types but left as any for the server.
+  // quicktype/golang doesn't do well with union types
   data: any
 }

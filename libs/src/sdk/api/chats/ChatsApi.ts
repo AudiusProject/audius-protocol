@@ -10,18 +10,20 @@ import { base64 } from '@scure/base'
 import cuid from 'cuid'
 
 import * as secp from '@noble/secp256k1'
-import type { RPCPayload } from './serverTypes'
 import type {
-  Chat,
+  RPCPayload,
+  ChatInvite,
+  UserChat,
+  ChatMessage
+} from './serverTypes'
+import type {
   ChatBlockRequest,
   ChatCreateRequest,
   ChatDeleteRequest,
   ChatGetAllRequest,
   ChatGetMessagesRequest,
   ChatGetRequest,
-  ChatInvite,
   ChatInviteRequest,
-  ChatMessage,
   ChatMessageRequest,
   ChatPermitRequest,
   ChatReactRequest,
@@ -52,7 +54,7 @@ export class ChatsApi extends BaseAPI {
       'getChat'
     )
     const path = `/comms/chats/${requestParameters.chatId}`
-    const response = await this.request<TypedCommsResponse<Chat>>({
+    const response = await this.request<TypedCommsResponse<UserChat>>({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path)
@@ -69,7 +71,7 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters?.cursor) {
       queryParameters.offset = requestParameters.cursor
     }
-    const response = await this.request<TypedCommsResponse<Chat[]>>({
+    const response = await this.request<TypedCommsResponse<UserChat[]>>({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path),
@@ -395,7 +397,7 @@ export class ChatsApi extends BaseAPI {
     if (!existingChatSecret) {
       const response = await this.get({ chatId })
       const chatSecret = await this.readInviteCode(
-        base64.decode(response.data.chat_secret)
+        base64.decode(response.data.invite_code)
       )
       this.chatSecrets[chatId] = chatSecret
       return chatSecret

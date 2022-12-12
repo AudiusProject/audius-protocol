@@ -1,18 +1,4 @@
-import type { CommsResponse } from './serverTypes'
-
-// MODELS
-
-export enum ChatPermission {
-  ALL = 'all',
-  TIPPERS = 'tippers',
-  FOLLOWEES = 'followees',
-  NONE = 'none'
-}
-
-export type ChatInvite = {
-  user_id: string
-  invite_code: string
-}
+import type { CommsResponse, ChatPermission } from './serverTypes'
 
 // REQUEST PARAMETERS
 
@@ -68,29 +54,6 @@ export type ChatDeleteRequest = {
 
 export type ChatPermitRequest = {
   permit: ChatPermission
-}
-
-// RESPONSE MODELS
-
-export type Chat = {
-  chat_id: string
-  last_message_at: string
-  unread_message_count: number
-  members: Array<{ user_id: string }>
-  last_read_at: string
-  chat_secret: string
-}
-
-export type ChatMessage = {
-  message_id: string
-  sender_user_id: string
-  created_at: string
-  message: string
-  reactions: Array<{
-    user_id: string
-    created_at: string
-    reaction: string
-  }>
 }
 
 export type TypedCommsResponse<T> = Omit<CommsResponse, 'data'> & {
