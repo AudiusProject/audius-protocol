@@ -18,7 +18,7 @@ import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { SuggestedFollows } from 'app/components/suggested-follows'
-import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
+import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
@@ -35,7 +35,7 @@ const messages = {
 }
 
 export const FeedScreen = () => {
-  usePopToTopOnDrawerOpen()
+  useAppTabScreen()
 
   const dispatch = useDispatch()
 

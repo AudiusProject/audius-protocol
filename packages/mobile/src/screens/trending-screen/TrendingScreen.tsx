@@ -8,7 +8,7 @@ import IconTrending from 'app/assets/images/iconTrending.svg'
 import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
-import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
+import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
@@ -54,7 +54,7 @@ const trendingScreens = [
 ]
 
 export const TrendingScreen = () => {
-  usePopToTopOnDrawerOpen()
+  useAppTabScreen()
 
   return (
     <Screen>
