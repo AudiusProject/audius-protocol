@@ -21,13 +21,13 @@
 
 ## Packages
 
-| Name                          | Description                              |
-| ----------------------------- | ---------------------------------------- |
-| [`web`](./packages/web)       | The Audius web and desktop application   |
-| [`mobile`](./packages/mobile) | The Audius mobile application            |
-| [`stems`](./packages/stems)   | The Audius client component library      |
-| [`common`](./packages/common) | Shared code between web and mobile       |
-| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration       |
+| Name                                                      | Description                            |
+| --------------------------------------------------------- | -------------------------------------- |
+| [`web`](./packages/web)                                   | The Audius web and desktop application |
+| [`mobile`](./packages/mobile)                             | The Audius mobile application          |
+| [`stems`](./packages/stems)                               | The Audius client component library    |
+| [`common`](./packages/common)                             | Shared code between web and mobile     |
+| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration              |
 
 ### Getting Started
 
@@ -47,9 +47,9 @@ This will do the following:
 
 Environments:
 
-- *:dev runs against local services
-- *:stage runs against the staging testnet
-- *:prod runs against production infrastructure
+- \*:dev runs against local services
+- \*:stage runs against the staging testnet
+- \*:prod runs against production infrastructure
 
 ```bash
 # web
@@ -94,11 +94,13 @@ Installing and updating a package in a sub-package requires a special approach i
 ```bash
 npx lerna add <package-name> [--dev] packages/<sub-repo>
 ```
+
 where <package-name> is the name of the package from npm, and <sub-repo> is the name of the sub-project you want to add the package to. (use --dev if it's a dev dependency)
 
-To update a package, manually update the version in the relevant package.json, and then run `npm i` from the root. A script to upgrade `@audius/sdk` in all sub-packages is a present in root package.json is available:
+To update a package, manually update the version in the relevant package.json, and then run `npm i` from the root. A script to upgrade `@audius/sdk` in all sub-packages is present in the root package.json:
 
 ```bash
 npm run update-sdk
 ```
+
 It's possible to run a modified version of this command to do more complex upgrade logic across sub-repos, so use it as a guide.
