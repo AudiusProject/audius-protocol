@@ -10,8 +10,7 @@ import {
   walletSelectors,
   accountSelectors,
   useSelectTierInfo,
-  useAccountHasClaimableRewards,
-  FeatureFlags
+  useAccountHasClaimableRewards
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
@@ -30,7 +29,7 @@ import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Divider, Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -147,10 +146,6 @@ const WrappedLeftNavDrawer = () => {
 
   const dispatch = useDispatch()
   const navigation = useAppDrawerNavigation()
-
-  const { isEnabled: isMobileUploadEnabled } = useFeatureFlag(
-    FeatureFlags.MOBILE_UPLOAD
-  )
 
   const handlePressAccount = useCallback(() => {
     navigation.push('Profile', { handle: 'accountUser' })
@@ -269,19 +264,17 @@ const WrappedLeftNavDrawer = () => {
           <View style={styles.notificationBubble} />
         ) : null}
       </LeftNavLink>
-      {isMobileUploadEnabled ? (
-        <LeftNavLink
-          icon={IconUpload}
-          iconProps={{
-            height: spacing(8),
-            width: spacing(8),
-            style: { marginLeft: -2 }
-          }}
-          label={messages.upload}
-          to='Upload'
-          params={{ fromAppDrawer: false }}
-        />
-      ) : null}
+      <LeftNavLink
+        icon={IconUpload}
+        iconProps={{
+          height: spacing(8),
+          width: spacing(8),
+          style: { marginLeft: -2 }
+        }}
+        label={messages.upload}
+        to='Upload'
+        params={{ fromAppDrawer: false }}
+      />
       <LeftNavLink
         icon={IconListeningHistory}
         label={messages.listeningHistory}
