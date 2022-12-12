@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
-import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
+import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 export const ProfileScreen = () => {
-  usePopToTopOnDrawerOpen()
+  useAppTabScreen()
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params

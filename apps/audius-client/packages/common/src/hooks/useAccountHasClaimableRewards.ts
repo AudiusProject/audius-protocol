@@ -1,7 +1,7 @@
-import { useSelector } from 'react-redux'
-
 import { ChallengeRewardID } from '../models'
 import { getOptimisticUserChallenges } from '../store/challenges/selectors'
+
+import { useProxySelector } from './useProxySelector'
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
   'track-upload',
@@ -17,7 +17,7 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
 ])
 
 /** Pulls rewards from remoteconfig */
-const useActiveRewardIds = (challengeRewardsIds: string) => {
+const getActiveRewardIds = (challengeRewardsIds: string) => {
   if (challengeRewardsIds === null) return []
   const rewards = challengeRewardsIds.split(',') as ChallengeRewardID[]
   const activeRewards = rewards.filter((reward) => validRewardIds.has(reward))
@@ -25,10 +25,18 @@ const useActiveRewardIds = (challengeRewardsIds: string) => {
 }
 
 export const useAccountHasClaimableRewards = (challengeRewardsIds: string) => {
-  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
-  const activeRewardIds = useActiveRewardIds(challengeRewardsIds)
-  const activeUserChallenges = Object.values(optimisticUserChallenges).filter(
-    (challenge) => activeRewardIds.includes(challenge.challenge_id)
+  return useProxySelector(
+    (state) => {
+      const optimisticUserChallenges = getOptimisticUserChallenges(state)
+      const activeRewardIds = getActiveRewardIds(challengeRewardsIds)
+      const activeUserChallenges = Object.values(
+        optimisticUserChallenges
+      ).filter((challenge) => activeRewardIds.includes(challenge.challenge_id))
+
+      return activeUserChallenges.some(
+        (challenge) => challenge.claimableAmount > 0
+      )
+    },
+    [challengeRewardsIds]
   )
-  return activeUserChallenges.some((challenge) => challenge.claimableAmount > 0)
 }

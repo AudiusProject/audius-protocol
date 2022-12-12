@@ -127,7 +127,7 @@ const getLineupTileComponent = (item: LineupItem) => {
   return null
 }
 
-const SkeletonTrackTileView = memo(function BaseTrackTileView() {
+const SkeletonTrackTileView = memo(function SkeletonTrackTileView() {
   return (
     <View style={styles.item}>
       <LineupTileSkeleton />
@@ -135,7 +135,7 @@ const SkeletonTrackTileView = memo(function BaseTrackTileView() {
   )
 })
 
-const LineupTileView = memo(function BaseLineupTileView({
+const LineupTileView = memo(function LineupTileView({
   item,
   index,
   isTrending,
@@ -165,7 +165,7 @@ const LineupTileView = memo(function BaseLineupTileView({
   }
 })
 
-const LineupItemTile = memo(function BaseLineupItem({
+const LineupItemTile = memo(function LineupItemTile({
   item,
   index,
   isTrending,
