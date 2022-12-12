@@ -17,7 +17,6 @@ import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
-import { MobileUploadDrawer } from 'app/components/mobile-upload-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -84,7 +83,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   Cognito: CognitoDrawer,
   FeedFilter: FeedFilterDrawer,
   TrendingGenreSelection: TrendingFilterDrawer,
-  MobileUpload: MobileUploadDrawer,
   Overflow: OverflowMenuDrawer,
   SignOutConfirmation: SignOutConfirmationDrawer,
   AddToPlaylist: AddToPlaylistDrawer,
