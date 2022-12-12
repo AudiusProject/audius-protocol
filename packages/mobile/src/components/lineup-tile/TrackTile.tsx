@@ -74,8 +74,8 @@ export const TrackTileComponent = ({
   const navigation = useNavigation()
   const isOnArtistsTracksTab = useNavigationState((state) => {
     // @ts-expect-error -- history returning unknown[]
-    const currentScreen = state.history?.[0]?.key
-    return currentScreen.includes('Tracks')
+    const currentScreen = state.history?.[0].key
+    return currentScreen?.includes('Tracks')
   })
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === lineupTileProps.uid
