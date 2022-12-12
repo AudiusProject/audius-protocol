@@ -250,10 +250,10 @@ export const useShareToStory = ({
       })
       let session: FFmpegSession
       const SHOWFREQS_SEGMENT =
-        'aformat=channel_layouts=mono,adynamicsmooth,showfreqs=s=900x40:fscale=log:colors=#ffffff70'
+        'aformat=channel_layouts=mono:sample_rates=16000,adynamicsmooth,showfreqs=s=900x40:fscale=log:colors=#ffffff70'
       try {
         session = await FFmpegKit.execute(
-          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30[bg];[0:a]${SHOWFREQS_SEGMENT}[fg];[0:a]${SHOWFREQS_SEGMENT},vflip[fgflip];[bg][fg]overlay=format=auto:x=-100:y=H-h-100[fo];[fo][fgflip]overlay=format=auto:x=-100:y=H-h-60" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
+          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30[bg];[0:a]${SHOWFREQS_SEGMENT}[fg];[0:a]${SHOWFREQS_SEGMENT},vflip[fgflip];[bg][fg]overlay=format=auto:x=-100:y=H-h-100[fo];[fo][fgflip]overlay=format=auto:x=-100:y=H-h-60;[0:a]anull" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
         )
       } catch (e) {
         handleError(e, 'Share to IG Story error')
