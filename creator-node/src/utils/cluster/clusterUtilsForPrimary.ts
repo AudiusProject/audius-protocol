@@ -1,4 +1,11 @@
 import type { Cluster } from 'cluster'
+import type Logger from 'bunyan'
+
+import {
+  MetricToRecord,
+  recordMetrics
+} from '../../services/prometheusMonitoring/prometheusUsageUtils'
+
 import { isClusterEnabled } from './clusterUtils'
 const cluster: Cluster = require('cluster')
 
@@ -23,6 +30,33 @@ class ClusterUtilsForPrimary {
   setSpecialWorkerId(specialWorkerId: number) {
     this._ensureThisProcessIsThePrimary()
     this._specialWorkerId = specialWorkerId
+  }
+
+  /**
+   * The primary can't record prometheus metrics in cluster mode, so this sends a metric to a worker to record it.
+   */
+  sendMetricToWorker(
+    metricToRecord: MetricToRecord,
+    prometheusRegistry: any,
+    logger: Logger
+  ) {
+    // Non-cluster mode can just record the metric now
+    if (!isClusterEnabled()) {
+      recordMetrics(prometheusRegistry, logger, [metricToRecord])
+      return
+    }
+
+    const msgToRecordMetric = {
+      cmd: 'recordMetric',
+      val: metricToRecord
+    }
+    // Send out to all workers. Only the special worker will end up recording it
+    for (const id in cluster.workers) {
+      const worker = cluster.workers?.[id]
+      if (worker?.isConnected()) {
+        worker.send(msgToRecordMetric)
+      }
+    }
   }
 
   _ensureThisProcessIsThePrimary() {

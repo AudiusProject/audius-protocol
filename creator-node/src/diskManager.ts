@@ -22,10 +22,12 @@ import {
   computeFilePath,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
-  getCharsInRanges
+  getCharsInRanges,
+  clusterUtilsForPrimary
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
 import BlacklistManager from './blacklistManager'
+import { makeGaugeIncToRecord } from './services/prometheusMonitoring/prometheusUsageUtils'
 
 const models = require('./models')
 
@@ -523,11 +525,26 @@ async function _copyLegacyFiles(
   }
 
   // Record results in Prometheus metric and log errors
-  const metric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  const successMetric = makeGaugeIncToRecord(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+    copiedPaths.length,
+    { result: 'success' }
   )
-  metric.inc({ result: 'success' }, copiedPaths.length)
-  metric.inc({ result: 'failure' }, erroredPaths.length)
+  const failureMetric = makeGaugeIncToRecord(
+    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+    Object.keys(erroredPaths).length,
+    { result: 'failure' }
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    successMetric,
+    prometheusRegistry,
+    logger
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    failureMetric,
+    prometheusRegistry,
+    logger
+  )
   if (!isEmpty(erroredPaths)) {
     logger.debug(
       `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
@@ -731,11 +748,26 @@ const _migrateFilesWithCustomStoragePaths = async (
           await timeout(1000)
         }
         // Record results in Prometheus metric
-        const metric = prometheusRegistry.getMetric(
-          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
+        const successMetric = makeGaugeIncToRecord(
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+          numFilesMigratedSuccessfully,
+          { result: 'success' }
         )
-        metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
-        metric.inc({ result: 'failure' }, numFilesFailedToMigrate)
+        const failureMetric = makeGaugeIncToRecord(
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+          numFilesFailedToMigrate,
+          { result: 'failure' }
+        )
+        clusterUtilsForPrimary.sendMetricToWorker(
+          successMetric,
+          prometheusRegistry,
+          logger
+        )
+        clusterUtilsForPrimary.sendMetricToWorker(
+          failureMetric,
+          prometheusRegistry,
+          logger
+        )
       } else {
         newResultsFound = false
       }
