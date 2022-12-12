@@ -12,7 +12,7 @@ if [[ -f "/tmp/dev-tools/startup/$name.env" ]]; then
   set +o allexport
 fi
 
-if [[ -f "/tmp/dev-tools/startup/${name%-*}.sh" ]]; then
+if [[ -f "/tmp/dev-tools/startup/${name%-*}.env" ]]; then
   set -o allexport
   echo "Loading ${name%-*}.env"
   . "/tmp/dev-tools/startup/${name%-*}.env"
