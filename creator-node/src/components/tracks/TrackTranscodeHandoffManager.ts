@@ -1,4 +1,4 @@
-import type { LogContext } from '../../apiHelpers'
+import type { LogContext } from '../../utils'
 import type Logger from 'bunyan'
 
 import axios from 'axios'

@@ -22,7 +22,8 @@ import {
   computeFilePath,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
-  getCharsInRanges
+  getCharsInRanges,
+  clusterUtilsForPrimary
 } from './utils'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
 import BlacklistManager from './blacklistManager'
@@ -445,7 +446,13 @@ async function _touch(path: string) {
 async function _copyLegacyFiles(
   legacyPathsAndCids: { storagePath: string; cid: string; skipped: boolean }[],
   prometheusRegistry: any,
-  logger: Logger
+  logger: Logger,
+  validateMetricToRecord: (metric: any) => any,
+  recordMetrics: (
+    prometheusRegistry: any,
+    logger: Logger,
+    metrics: any[]
+  ) => void
 ): Promise<
   {
     legacyPath: string
@@ -523,11 +530,37 @@ async function _copyLegacyFiles(
   }
 
   // Record results in Prometheus metric and log errors
-  const metric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
-  )
-  metric.inc({ result: 'success' }, copiedPaths.length)
-  metric.inc({ result: 'failure' }, erroredPaths.length)
+  // Record results in Prometheus metric
+  if (copiedPaths.length > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      validateMetricToRecord,
+      recordMetrics,
+      {
+        metricType: 'GAUGE_INC',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: copiedPaths.length,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  }
+  if (Object.keys(erroredPaths).length > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      validateMetricToRecord,
+      recordMetrics,
+      {
+        metricType: 'GAUGE_INC',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: Object.keys(erroredPaths).length,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  }
   if (!isEmpty(erroredPaths)) {
     logger.debug(
       `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
@@ -567,7 +600,13 @@ const _migrateNonDirFilesWithLegacyStoragePaths = async (
   queryDelayMs: number,
   batchSize: number,
   prometheusRegistry: any,
-  logger: Logger
+  logger: Logger,
+  validateMetricToRecord: (metric: any) => any,
+  recordMetrics: (
+    prometheusRegistry: any,
+    logger: Logger,
+    metrics: any[]
+  ) => void
 ) =>
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for legacy storagePaths in the pagination range until no new results are returned
@@ -585,7 +624,9 @@ const _migrateNonDirFilesWithLegacyStoragePaths = async (
         const copiedFilePaths = await _copyLegacyFiles(
           results,
           prometheusRegistry,
-          logger
+          logger,
+          validateMetricToRecord,
+          recordMetrics
         )
         await DbManager.updateLegacyPathDbRows(copiedFilePaths, logger)
       } else {
@@ -685,7 +726,13 @@ const _migrateFilesWithCustomStoragePaths = async (
   queryDelayMs: number,
   batchSize: number,
   prometheusRegistry: any,
-  logger: Logger
+  logger: Logger,
+  validateMetricToRecord: (metric: any) => any,
+  recordMetrics: (
+    prometheusRegistry: any,
+    logger: Logger,
+    metrics: any[]
+  ) => void
 ) =>
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for custom storagePaths in the pagination range until no new results are returned
@@ -731,11 +778,38 @@ const _migrateFilesWithCustomStoragePaths = async (
           await timeout(1000)
         }
         // Record results in Prometheus metric
-        const metric = prometheusRegistry.getMetric(
-          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
-        )
-        metric.inc({ result: 'success' }, numFilesMigratedSuccessfully)
-        metric.inc({ result: 'failure' }, numFilesFailedToMigrate)
+        if (numFilesMigratedSuccessfully > 0) {
+          clusterUtilsForPrimary.sendMetricToWorker(
+            validateMetricToRecord,
+            recordMetrics,
+            {
+              metricType: 'GAUGE_INC',
+              metricName:
+                prometheusRegistry.metricNames
+                  .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+              metricValue: numFilesMigratedSuccessfully,
+              metricLabels: { result: 'success' }
+            },
+            prometheusRegistry,
+            logger
+          )
+        }
+        if (numFilesFailedToMigrate > 0) {
+          clusterUtilsForPrimary.sendMetricToWorker(
+            validateMetricToRecord,
+            recordMetrics,
+            {
+              metricType: 'GAUGE_INC',
+              metricName:
+                prometheusRegistry.metricNames
+                  .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+              metricValue: numFilesFailedToMigrate,
+              metricLabels: { result: 'failure' }
+            },
+            prometheusRegistry,
+            logger
+          )
+        }
       } else {
         newResultsFound = false
       }
@@ -762,7 +836,13 @@ const _migrateFilesWithCustomStoragePaths = async (
 export async function migrateFilesWithNonStandardStoragePaths(
   queryDelayMs: number,
   prometheusRegistry: any,
-  logger: Logger
+  logger: Logger,
+  validateMetricToRecord: (metric: any) => any,
+  recordMetrics: (
+    prometheusRegistry: any,
+    logger: Logger,
+    metrics: any[]
+  ) => void
 ): Promise<void> {
   const BATCH_SIZE = 5_000
   // Legacy storagePaths
@@ -772,7 +852,9 @@ export async function migrateFilesWithNonStandardStoragePaths(
         queryDelayMs,
         BATCH_SIZE,
         prometheusRegistry,
-        logger
+        logger,
+        validateMetricToRecord,
+        recordMetrics
       )
       await _migrateDirsWithLegacyStoragePaths(queryDelayMs, BATCH_SIZE, logger)
     } catch (e: any) {
@@ -787,7 +869,9 @@ export async function migrateFilesWithNonStandardStoragePaths(
         queryDelayMs,
         BATCH_SIZE,
         prometheusRegistry,
-        logger
+        logger,
+        validateMetricToRecord,
+        recordMetrics
       )
     } catch (e: any) {
       logger.error(`Error migrating custom storagePaths: ${e}`)
@@ -798,6 +882,8 @@ export async function migrateFilesWithNonStandardStoragePaths(
   return migrateFilesWithNonStandardStoragePaths(
     5000,
     prometheusRegistry,
-    logger
+    logger,
+    validateMetricToRecord,
+    recordMetrics
   )
 }
