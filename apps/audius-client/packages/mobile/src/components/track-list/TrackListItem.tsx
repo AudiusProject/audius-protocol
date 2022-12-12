@@ -50,17 +50,26 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingHorizontal: spacing(6)
   },
   nameArtistContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    height: '100%'
+    flexShrink: 1,
+    flexBasis: '100%',
+    height: '100%',
+    justifyContent: 'center'
+  },
+  topLine: {
+    flexDirection: 'row'
   },
   trackTitle: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    flexShrink: 1,
+    alignItems: 'center'
   },
   trackTitleText: {
     ...font('demiBold'),
     color: palette.neutral
+  },
+  downloadIndicator: {
+    marginTop: -3,
+    marginLeft: spacing(1)
   },
   artistName: {
     ...font('medium'),
@@ -205,34 +214,41 @@ export const TrackListItem = ({
         ) : null}
         {isReorderable && <IconDrag style={styles.dragIcon} />}
         <View style={styles.nameArtistContainer}>
-          <View
-            style={styles.trackTitle}
-            onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
-          >
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.trackTitleText,
-                {
-                  maxWidth: titleWidth ? titleWidth - deletedTextWidth : '100%'
-                }
-              ]}
+          <View style={styles.topLine}>
+            <View
+              style={styles.trackTitle}
+              onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
             >
-              {title}
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}
-            >
-              {messages.deleted}
-            </Text>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.trackTitleText,
+                  {
+                    maxWidth: titleWidth
+                      ? titleWidth - deletedTextWidth
+                      : '100%'
+                  }
+                ]}
+              >
+                {title}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}
+              >
+                {messages.deleted}
+              </Text>
+            </View>
+
+            <View style={styles.downloadIndicator}>
+              <DownloadStatusIndicator trackId={track_id} size={18} />
+            </View>
           </View>
           <Text numberOfLines={1} style={styles.artistName}>
             {name}
             <UserBadges user={track.user} badgeSize={12} hideName />
           </Text>
         </View>
-        <DownloadStatusIndicator trackId={track_id} />
         {trackItemAction === 'save' ? (
           <IconButton
             icon={IconHeart}
