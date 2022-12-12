@@ -84,7 +84,7 @@ export type RPCMethod = RPCPayload['method']
 export type UserChat = {
   // User agnostic
   chat_id: string
-  last_message_at: String
+  last_message_at: string
   chat_members: Array<{ user_id: string }>
 
   // User specific

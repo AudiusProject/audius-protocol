@@ -96,7 +96,7 @@ export class ChatsApi extends BaseAPI {
       queryParameters.limit = requestParameters.limit
     }
     if (requestParameters.cursor) {
-      queryParameters.before = requestParameters.cursor
+      queryParameters.cursor = requestParameters.cursor
     }
     const response = await this.request<TypedCommsResponse<ChatMessage[]>>({
       method: 'GET',
