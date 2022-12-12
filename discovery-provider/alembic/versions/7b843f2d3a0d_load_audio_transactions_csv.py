@@ -26,18 +26,12 @@ def upgrade():
         return
 
     connection = op.get_bind()
-
-    # Don't run if audio_transactions_history is already populated with the
-    # expected 1342621 rows (leaving a bit of wiggle room).
-    max_csv_slot = 164000000
-    query = (
-        f"select count(*) from audio_transactions_history where slot < {max_csv_slot}; "
-    )
-    audio_tx_count = connection.execute(query).scalar()
-    if audio_tx_count >= 1342600:
-        return
-
-    query = f"delete from audio_transactions_history where slot < {max_csv_slot};"
+    query = """
+        delete from audio_transactions_history where slot < 164000000;
+        delete from audio_transactions_history where
+        ((transaction_type in ('purchase_stripe', 'purchase_unknown', 'purchase_coinbase'))
+        or (transaction_type = 'transfer' and method = 'receive')) and slot > 164000000;
+    """
     connection.execute(query)
 
     path_zip = Path(__file__).parent.joinpath(
