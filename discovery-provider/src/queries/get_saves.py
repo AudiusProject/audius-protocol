@@ -1,3 +1,5 @@
+from sqlalchemy import desc
+
 from src import exceptions
 from src.models.playlists.playlist import Playlist
 from src.models.social.save import Save, SaveType
@@ -50,6 +52,7 @@ def get_saves(save_type, user_id):
                     session.query(Track.track_id).filter(Track.is_current == True)
                 )
             )
+        query = query.order_by(Save.created_at.desc())
 
         query_results = paginate_query(query).all()
         save_results = helpers.query_result_to_list(query_results)
