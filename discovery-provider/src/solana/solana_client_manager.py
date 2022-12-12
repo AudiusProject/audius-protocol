@@ -54,6 +54,8 @@ class SolanaClientManager:
                     _check_unsupported_version(tx_info, tx_sig)
                     if tx_info["result"] is not None:
                         return tx_info
+                # We currently only support "legacy" solana transactions. If we encounter
+                # a newer version, raise this specific error so that it can be handled upstream.
                 except UnsupportedVersionError as e:
                     raise e
                 except Exception as e:
