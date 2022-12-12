@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { getIP } = require('utils/antiAbuse')
 const {
   errorResponseBadRequest,
   handleResponse,
@@ -14,9 +15,9 @@ module.exports = function (app) {
   app.get(
     '/location',
     handleResponse(async (req) => {
-      const { ip } = req.query
+      const ip = getIP(req)
       if (!ip) {
-        return errorResponseBadRequest("Didn't include IP address")
+        return errorResponseBadRequest('Unexpectedly no IP')
       }
       const url = `https://ipapi.co/${ip}/json/`
       try {
