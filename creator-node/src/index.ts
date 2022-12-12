@@ -17,6 +17,10 @@ import cluster from 'cluster'
 import ON_DEATH from 'death'
 import { Keypair } from '@solana/web3.js'
 
+import {
+  validateMetricToRecord,
+  recordMetrics
+} from './services/prometheusMonitoring/prometheusUsageUtils'
 import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
@@ -134,7 +138,9 @@ const runAsyncBackgroundTasks = async () => {
   migrateFilesWithNonStandardStoragePaths(
     500,
     serviceRegistry.prometheusRegistry,
-    logger
+    logger,
+    validateMetricToRecord,
+    recordMetrics
   )
 }
 
@@ -249,6 +255,17 @@ const startAppForWorker = async () => {
       } catch (error: any) {
         logger.error(
           `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
+    } else if (msg?.cmd === 'recordMetric') {
+      try {
+        // The primary can't record prometheus metrics in cluster mode, so we record a metric that the primary sent to this worker if it's the special worker
+        if (clusterUtilsForWorker.isThisWorkerSpecial()) {
+          recordMetrics(serviceRegistry.prometheusRegistry, logger, [msg.val])
+        }
+      } catch (error: any) {
+        logger.error(
+          `Primary requested worker to record a metric, and the worker failed to record it: ${error}`
         )
       }
     }
