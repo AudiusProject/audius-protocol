@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
+import { DownloadStatusIndicator } from 'app/components/offline-downloads'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
@@ -68,6 +69,7 @@ type Props = {
   hidePlays?: boolean
   id: ID
   index: number
+  isCollection?: boolean
   isTrending?: boolean
   isUnlisted?: boolean
   playCount?: number
@@ -82,6 +84,7 @@ export const LineupTileStats = ({
   hidePlays,
   id,
   index,
+  isCollection,
   isTrending,
   isUnlisted,
   playCount,
@@ -106,6 +109,11 @@ export const LineupTileStats = ({
     dispatch(setRepost(id, repostType))
     navigation.push('Reposts', { id, repostType })
   }, [dispatch, id, navigation, repostType])
+
+  const downloadIndicatorProps = {
+    size: 18,
+    [isCollection ? 'collectionId' : 'trackId']: id.toString()
+  }
 
   return (
     <View style={styles.stats}>
@@ -150,6 +158,9 @@ export const LineupTileStats = ({
               fill={neutralLight4}
             />
           </TouchableOpacity>
+          <View style={[trackTileStyles.statItem]}>
+            <DownloadStatusIndicator {...downloadIndicatorProps} />
+          </View>
         </View>
       )}
       {!hidePlays && (

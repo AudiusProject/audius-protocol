@@ -35,6 +35,7 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
       style={style}
       renderImage={renderImage}
       type='collection'
+      id={collection.playlist_id.toString()}
       primaryText={collection.playlist_name}
       secondaryText={formatPlaylistCardSecondaryText(
         collection.save_count,

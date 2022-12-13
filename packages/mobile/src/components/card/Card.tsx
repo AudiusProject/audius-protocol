@@ -6,7 +6,9 @@ import { Text, View } from 'react-native'
 
 import { Tile } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
-import { makeStyles } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
+
+import { DownloadStatusIndicator } from '../offline-downloads'
 
 export type CardType = 'user' | 'collection'
 
@@ -40,11 +42,17 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   secondaryText: {
     ...typography.body2,
     color: palette.neutral,
+    marginHorizontal: spacing(1),
     textAlign: 'center'
+  },
+  secondaryTextContainer: {
+    ...flexRowCentered(),
+    justifyContent: 'center'
   }
 }))
 
 export type CardProps = {
+  id?: string
   onPress: () => void
   primaryText: string
   renderImage: () => ReactNode
@@ -56,6 +64,7 @@ export type CardProps = {
 
 export const Card = (props: CardProps) => {
   const {
+    id,
     onPress,
     primaryText,
     renderImage,
@@ -84,9 +93,14 @@ export const Card = (props: CardProps) => {
             <UserBadges user={user} badgeSize={12} hideName />
           ) : null}
         </Text>
-        <Text numberOfLines={1} style={styles.secondaryText}>
-          {secondaryText}
-        </Text>
+        <View style={styles.secondaryTextContainer}>
+          <Text numberOfLines={1} style={styles.secondaryText}>
+            {secondaryText}
+          </Text>
+          {type === 'collection' ? (
+            <DownloadStatusIndicator size={18} collectionId={id} />
+          ) : null}
+        </View>
       </View>
     </Tile>
   )

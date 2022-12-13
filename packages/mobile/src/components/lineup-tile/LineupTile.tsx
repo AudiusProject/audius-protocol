@@ -56,6 +56,7 @@ export const LineupTile = ({
   } = item
   const { _artist_pick, name, user_id } = user
   const currentUserId = useSelector(getUserId)
+  const isCollection = 'playlist_id' in item
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
@@ -109,6 +110,7 @@ export const LineupTile = ({
           hidePlays={hidePlays}
           id={id}
           index={index}
+          isCollection={isCollection}
           isTrending={isTrending}
           isUnlisted={isUnlisted}
           playCount={playCount}
