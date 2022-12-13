@@ -64,6 +64,7 @@ models/TrackId.ts
 models/TrackRepostsResponseFull.ts
 models/TrackSegment.ts
 models/TransactionDetails.ts
+models/TransactionHistoryCountResponse.ts
 models/TransactionHistoryResponse.ts
 models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
