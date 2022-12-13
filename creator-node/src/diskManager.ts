@@ -545,13 +545,12 @@ async function _copyLegacyFiles(
           // Add delay between calls since each call will make an internal request to every node
           await timeout(1000)
 
-          if (!success) {
-            logger.error(
-              `Error fixing fileRecord (legacy fetch from network fallback) ${JSON.stringify(
-                fileRecord
-              )}: ${error}`
+          if (success) {
+            copiedPaths.push({ legacyPath, nonLegacyPath })
+          } else {
+            throw new Error(
+              `Legacy fetch from network fallback error: ${error}. Copy error: ${copyError}`
             )
-            throw copyError
           }
         } else throw copyError
       }
