@@ -8,21 +8,24 @@ import { EventNames } from '../types/analytics'
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
 const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
+const AmplitudeProxy = Config.AMPLITUDE_PROXY
 const ampInstance = Amplitude.getInstance()
 
 export const init = async () => {
   try {
-    if (AmplitudeWriteKey) {
+    if (AmplitudeWriteKey && AmplitudeProxy) {
+      await ampInstance.setServerUrl(AmplitudeProxy)
       await ampInstance.init(AmplitudeWriteKey)
       analyticsSetupStatus = 'ready'
     } else {
       analyticsSetupStatus = 'error'
-      console.info('Analytics unable to setup: missing amplitude write key')
+      console.error(
+        'Analytics unable to setup: missing amplitude write key or proxy url'
+      )
     }
   } catch (err) {
     analyticsSetupStatus = 'error'
-    console.info('Analytics error')
-    console.log(err)
+    console.error(`Amplitude error: ${err}`)
   }
 }
 
