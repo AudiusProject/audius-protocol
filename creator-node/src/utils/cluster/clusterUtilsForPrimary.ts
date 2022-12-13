@@ -1,8 +1,23 @@
 import type { Cluster } from 'cluster'
 import type Logger from 'bunyan'
+import type { MetricToRecord } from '../../services/prometheusMonitoring/types'
 
 import { isClusterEnabled } from './clusterUtils'
 const cluster: Cluster = require('cluster')
+
+// Lazy-load prometheus utils to avoid DiskManager tests throwing errors when loading it too soon doens't allow everything to be mocked properly
+let promUtils: () => {
+  validateMetricToRecord: (metric: MetricToRecord) => MetricToRecord
+  recordMetrics: (
+    prometheusRegistry: any,
+    logger: Logger,
+    metrics: MetricToRecord[]
+  ) => void
+} = () => {
+  const data = require('../../services/prometheusMonitoring/prometheusUsageUtils')
+  promUtils = () => data
+  return data
+}
 
 /**
  * Cluster utils that are only needed by the primary process (not worker processes).
@@ -31,20 +46,17 @@ class ClusterUtilsForPrimary {
    * The primary can't record prometheus metrics in cluster mode, so this sends a metric to a worker to record it.
    */
   sendMetricToWorker(
-    validateMetricToRecord: (metric: any) => any,
-    recordMetrics: (
-      prometheusRegistry: any,
-      logger: Logger,
-      metrics: any[]
-    ) => void,
-    metricToRecord: any,
+    metricToRecord: MetricToRecord,
     prometheusRegistry: any,
     logger: Logger
   ) {
-    const validatedMetricToRecord = validateMetricToRecord(metricToRecord)
+    const validatedMetricToRecord =
+      promUtils().validateMetricToRecord(metricToRecord)
     // Non-cluster mode can just record the metric now
     if (!isClusterEnabled()) {
-      recordMetrics(prometheusRegistry, logger, [validatedMetricToRecord])
+      promUtils().recordMetrics(prometheusRegistry, logger, [
+        validatedMetricToRecord
+      ])
       return
     }
 
