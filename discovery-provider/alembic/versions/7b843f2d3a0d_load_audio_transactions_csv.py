@@ -29,8 +29,8 @@ def upgrade():
     # Highest slot for user_bank and rewards_manager txs in audio_transactions_history table
     max_backfill_slot = 164000000
     # Highest slot for spl_token txs in audio_transactions_history table
-    latest_spl_token_slot = 1
-    latest_spl_token_sig = "adsf"
+    latest_spl_token_slot = 165961521
+    latest_spl_token_sig = "8iwjvTmHn8Q7ssB35SGnnayLj5UyYZNxvqMyAqUCy9sZ"
     query = f"""
         delete from audio_transactions_history where slot < {max_backfill_slot};
         delete from audio_transactions_history where
