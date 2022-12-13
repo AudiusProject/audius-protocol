@@ -495,6 +495,25 @@ async function _copyLegacyFiles(
         // Update mtime again just in case copyFile changed it
         const now = new Date()
         await fs.utimes(nonLegacyPath, now, now)
+
+        // Verify that the correct contents were copied
+        const cidMatchesExpected = await verifyCIDMatchesExpected({
+          cid: fileRecord.multihash,
+          path: nonLegacyPath,
+          logger
+        })
+        if (cidMatchesExpected) {
+          copiedPaths.push({ legacyPath, nonLegacyPath })
+        } else {
+          try {
+            await fs.unlink(nonLegacyPath)
+          } catch (e) {
+            logger.error(
+              `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
+            )
+          }
+          throw new Error('CID does not match what is expected to be')
+        }
       } catch (copyError: any) {
         if (copyError.message.includes('ENOSPC')) {
           // If we see a ENOSPC error, log out the disk space and inode details from the system
@@ -507,6 +526,13 @@ async function _copyLegacyFiles(
           // If we see an ENOENT error ("no such file"), try fetching the file from network
           let success, error
           try {
+            try {
+              await fs.unlink(nonLegacyPath)
+            } catch (e) {
+              logger.error(
+                `_copyLegacyFiles() could not remove 'touch'ed file at storageLocation=${nonLegacyPath}`
+              )
+            }
             ;({ success, error } = await _migrateFileByFetchingFromNetwork(
               fileRecord,
               logger
@@ -528,25 +554,6 @@ async function _copyLegacyFiles(
             throw copyError
           }
         } else throw copyError
-      }
-
-      // Verify that the correct contents were copied
-      const cidMatchesExpected = await verifyCIDMatchesExpected({
-        cid: fileRecord.multihash,
-        path: nonLegacyPath,
-        logger
-      })
-      if (cidMatchesExpected) {
-        copiedPaths.push({ legacyPath, nonLegacyPath })
-      } else {
-        try {
-          await fs.unlink(nonLegacyPath)
-        } catch (e) {
-          logger.error(
-            `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
-          )
-        }
-        throw new Error('CID does not match what is expected to be')
       }
     } catch (e: any) {
       // If the file is skipped (blacklisted) then we don't care if it failed to copy
