@@ -850,6 +850,12 @@ const config = convict({
     format: Number,
     env: 'updateReplicaSetReconfigurationLimit',
     default: 30
+  },
+  ipApiKey: {
+    doc: 'Key for IPAPI',
+    format: String,
+    env: 'ipApiKey',
+    default: ''
   }
 })
 
