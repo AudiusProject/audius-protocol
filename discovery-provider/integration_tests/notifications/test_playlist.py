@@ -73,3 +73,54 @@ def test_playlist_track_added_notification(app):
         assert notifications[1].blocknumber == 0
         assert notifications[1].data == {"track_id": 30, "playlist_id": 0}
         assert notifications[1].user_ids == [15]
+
+# ========================================== Start Tests ==========================================
+def test_playlist_create_notification(app):
+    with app.app_context():
+        db = get_db()
+
+    # Insert Playlist with two new tracks and check that a notificaiton is created for the track owners
+    now = datetime.now()
+    entities = {
+        "users": [{"user_id": i+1} for i in range(5)],
+        "subscriptions": [{"subscriber_id": i, "user_id": 1} for i in range(1, 5)]
+    }
+    populate_mock_db(db, entities)
+
+    entities = {
+        "tracks": [
+            {"track_id": 20, "owner_id": 1, "is_playlist_upload": True},
+        ],
+        "playlists": [
+            {
+                "playlist_id": 1,
+                "playlist_owner_id": 1,
+                "created_at": now,
+                "updated_at": now,
+                "playlist_contents": {
+                    "track_ids": [
+                        {"time": datetime.timestamp(now), "track": 20},
+                    ]
+                },
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+
+        notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == 'create')
+            .all()
+        )
+        assert len(notifications) == 1
+        assert (
+            notifications[0].group_id
+            == "create:playlist_id:1"
+        )
+        assert notifications[0].specifier == "1"
+        assert notifications[0].type == "create"
+        assert notifications[0].slot == None
+        assert notifications[0].data == { "playlist_id": 1, "is_album": False}
+        assert notifications[0].user_ids == list(range(1, 5))
