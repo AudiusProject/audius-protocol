@@ -87,6 +87,14 @@ export const mergeCustomizer = (
     return objValue
   }
 
+  if (key === 'associated_wallets') {
+    return srcValue
+  }
+
+  if (key === 'associated_sol_wallets') {
+    return srcValue
+  }
+
   // For playlist_contents, this is trickier.
   // We want to never merge because playlists can have
   // tracks be deleted since last time, but
