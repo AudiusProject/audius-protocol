@@ -2,7 +2,7 @@ import type Logger from 'bunyan'
 
 import path from 'path'
 import fs from 'fs-extra'
-import { chunk, isEqual, isEmpty, countBy } from 'lodash'
+import { chunk, isEqual, isEmpty } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
@@ -15,7 +15,6 @@ import {
 import { tracing } from './tracer'
 import {
   execShellCommand,
-  replaceAll,
   runShellCommand,
   verifyCIDMatchesExpected,
   timeout,
@@ -455,7 +454,6 @@ async function _copyLegacyFiles(
   }[]
 > {
   const erroredPaths: { [path: string]: [error: string] } = {}
-  const errorsWithoutPaths: string[] = []
   const copiedPaths: {
     legacyPath: string
     nonLegacyPath: string
@@ -521,12 +519,6 @@ async function _copyLegacyFiles(
         copiedPaths.push({ legacyPath, nonLegacyPath })
       } else {
         erroredPaths[legacyPath] = e.toString()
-        const errWithoutPaths = replaceAll(
-          replaceAll(e.toString(), nonLegacyPath, '[nonLegacyPath redacted]'),
-          legacyPath,
-          '[legacyPath redacted]'
-        )
-        errorsWithoutPaths.push(errWithoutPaths)
       }
     }
   }
@@ -545,25 +537,21 @@ async function _copyLegacyFiles(
       logger
     )
   }
-  if (errorsWithoutPaths.length > 0) {
-    const errCounts = countBy(errorsWithoutPaths)
-    for (const errMsg of Object.keys(errCounts)) {
-      clusterUtilsForPrimary.sendMetricToWorker(
-        {
-          metricType: 'GAUGE_INC',
-          metricName:
-            prometheusRegistry.metricNames
-              .FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-          metricValue: errCounts[errMsg],
-          metricLabels: { errMsg }
-        },
-        prometheusRegistry,
-        logger
-      )
-    }
+  if (Object.keys(erroredPaths).length > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_INC',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: Object.keys(erroredPaths).length,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
   }
   if (!isEmpty(erroredPaths)) {
-    logger.debug(
+    logger.warn(
       `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
     )
   }
@@ -672,7 +660,7 @@ async function _migrateFileWithCustomStoragePath(
     trackBlockchainId?: number
   },
   logger: Logger
-): Promise<{ success: boolean; newPath: string; error: any }> {
+): Promise<{ success: boolean; error: any }> {
   const fetchStartTime = getStartTime()
   // Will retry internally
   const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
@@ -696,13 +684,13 @@ async function _migrateFileWithCustomStoragePath(
           where: { fileUUID: fileRecord.fileUUID }
         }
       )
-      return { success: true, newPath: storagePath, error: '' }
+      return { success: true, error: '' }
     }
     logErrorWithDuration(
       { logger, startTime: fetchStartTime },
       `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
     )
-    return { success: false, newPath: storagePath, error }
+    return { success: false, error }
   } else {
     // Update file's storagePath in DB to newly saved location, and ensure it's not marked as skipped
     await models.File.update(
@@ -711,7 +699,7 @@ async function _migrateFileWithCustomStoragePath(
         where: { fileUUID: fileRecord.fileUUID, skipped: false }
       }
     )
-    return { success: true, newPath: storagePath, error: '' }
+    return { success: true, error: '' }
   }
 }
 
@@ -744,42 +732,25 @@ const _migrateFilesWithCustomStoragePaths = async (
         newResultsFound = !isEqual(prevResults, results)
         // Process sequentially to minimize load since this is not time-sensitive
         let numFilesMigratedSuccessfully = 0
-        const errorsWithoutPaths: string[] = []
+        let numFilesFailedToMigrate = 0
         for (const fileRecord of results) {
-          let success, error, newPath
+          let success, error
           try {
-            ;({ success, error, newPath } =
-              await _migrateFileWithCustomStoragePath(fileRecord, logger))
+            ;({ success, error } = await _migrateFileWithCustomStoragePath(
+              fileRecord,
+              logger
+            ))
           } catch (e: any) {
-            logger.error(
-              `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${e}`
-            )
             success = false
             error = e
           }
           if (success) {
             numFilesMigratedSuccessfully++
           } else {
-            const errWithoutPaths = replaceAll(
-              replaceAll(
-                error.toString(),
-                fileRecord.storagePath,
-                '[oldPath redacted]'
-              ),
-              newPath || '',
-              '[newPath redacted]'
+            numFilesFailedToMigrate++
+            logger.error(
+              `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
             )
-            // Also replace fields that could end up in the error message
-            const errWithoutFields = replaceAll(
-              replaceAll(
-                errWithoutPaths,
-                fileRecord.multihash,
-                '[multihash redacted]'
-              ),
-              fileRecord.dirMultihash || '',
-              '[dirMultihash redacted]'
-            )
-            errorsWithoutPaths.push(errWithoutFields)
           }
 
           // Add delay between calls since each call will make an internal request to every node
@@ -800,22 +771,19 @@ const _migrateFilesWithCustomStoragePaths = async (
             logger
           )
         }
-        if (errorsWithoutPaths.length > 0) {
-          const errCounts = countBy(errorsWithoutPaths)
-          for (const errMsg of Object.keys(errCounts)) {
-            clusterUtilsForPrimary.sendMetricToWorker(
-              {
-                metricType: 'GAUGE_INC',
-                metricName:
-                  prometheusRegistry.metricNames
-                    .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-                metricValue: errCounts[errMsg],
-                metricLabels: { errMsg }
-              },
-              prometheusRegistry,
-              logger
-            )
-          }
+        if (numFilesFailedToMigrate > 0) {
+          clusterUtilsForPrimary.sendMetricToWorker(
+            {
+              metricType: 'GAUGE_INC',
+              metricName:
+                prometheusRegistry.metricNames
+                  .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+              metricValue: numFilesFailedToMigrate,
+              metricLabels: { result: 'failure' }
+            },
+            prometheusRegistry,
+            logger
+          )
         }
       } else {
         newResultsFound = false
@@ -823,6 +791,56 @@ const _migrateFilesWithCustomStoragePaths = async (
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
   })
+
+function _resetStoragePathMetrics(prometheusRegistry: any, logger: Logger) {
+  // Reset metric for legacy migrations
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'success' }
+    },
+    prometheusRegistry,
+    logger
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'failure' }
+    },
+    prometheusRegistry,
+    logger
+  )
+
+  // Reset metric for custom migrations
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'success' }
+    },
+    prometheusRegistry,
+    logger
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'failure' }
+    },
+    prometheusRegistry,
+    logger
+  )
+}
 
 /**
  * For non-directory files and then later for files, this:
@@ -845,6 +863,9 @@ export async function migrateFilesWithNonStandardStoragePaths(
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
+  // Reset gauges on each run so the metrics aren't infinitely increasing
+  _resetStoragePathMetrics(prometheusRegistry, logger)
+
   const BATCH_SIZE = 5_000
   // Legacy storagePaths
   if (config.get('migrateFilesWithLegacyStoragePath')) {

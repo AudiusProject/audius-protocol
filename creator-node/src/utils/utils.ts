@@ -60,12 +60,3 @@ export function getCharsInRanges(...ranges: string[]): string[] {
   }
   return charsInRanges
 }
-
-function _escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
-}
-
-// This could be string.replaceAll() in Node 15+, but we use Node 14
-export function replaceAll(str: string, find: string, replace: string) {
-  return str.replace(new RegExp(_escapeRegExp(find), 'g'), replace)
-}

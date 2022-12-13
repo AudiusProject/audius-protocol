@@ -14,8 +14,7 @@ import {
   isFqdn,
   getCharsInRange,
   getCharsInRanges,
-  clearActiveJobs,
-  replaceAll
+  clearActiveJobs
 } from './utils'
 import {
   validateMetadata,
@@ -78,8 +77,7 @@ export {
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
   getCharsInRange,
-  getCharsInRanges,
-  replaceAll
+  getCharsInRanges
 }
 
 module.exports = {
@@ -114,6 +112,5 @@ module.exports = {
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
   getCharsInRange,
-  getCharsInRanges,
-  replaceAll
+  getCharsInRanges
 }
