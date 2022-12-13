@@ -43,7 +43,7 @@ from src.utils.helpers import (
     get_solana_tx_owner,
     get_solana_tx_token_balances,
     get_valid_instruction,
-    has_instruction,
+    has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
@@ -155,9 +155,7 @@ def parse_spl_token_transaction(
         if error:
             return None
 
-        has_transfer_checked_instruction = has_instruction(
-            meta, TRANSFER_CHECKED_INSTRUCTION
-        )
+        has_transfer_checked_instruction = has_log(meta, TRANSFER_CHECKED_INSTRUCTION)
         if not has_transfer_checked_instruction:
             logger.info(
                 f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
@@ -185,7 +183,9 @@ def parse_spl_token_transaction(
 
         # Balance is expected to change if there is a transfer instruction.
         if postbalance == -1 or prebalance == -1:
-            logger.error(f"index_spl_token.py | {tx_sig} error while parsing pre and post balances")
+            logger.error(
+                f"index_spl_token.py | {tx_sig} error while parsing pre and post balances"
+            )
             return None
         if postbalance - prebalance == 0:
             logger.error(f"index_spl_token.py | {tx_sig} no balance change found")

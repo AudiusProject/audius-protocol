@@ -548,12 +548,52 @@ def get_valid_instruction(
     return None
 
 
-def has_instruction(meta: ResultMeta, instruction: str):
+def has_log(meta: ResultMeta, instruction: str):
     return any(log == instruction for log in meta["logMessages"])
 
 
 # The transaction might list sender/receiver in a different order in the pubKeys.
 # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+# Example of transaction JSON returned from solana getTransaction():
+# Eg: accounts[0] = 1, so to look up pre and post balances for
+# 3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt, look for accountIndex: 1
+# "transaction": {
+#     "message": {
+#         "header": {
+#             "numReadonlySignedAccounts": 0,
+#             "numReadonlyUnsignedAccounts": 3,
+#             "numRequiredSignatures": 1
+#         },
+#         "accountKeys": [
+#             "FFQB4iQRXWqQHDRbpixXyGoufw8qdVt8SDLuFzZSZZka",
+#             "3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt",
+#             "E2LCbKdo2L3ikt1gK6pwp1pDLuhAfHBNf6fEQXpAqrf9",
+#             "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+#             "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+#             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+#         ],
+#         "recentBlockhash": "22F56uRSayJV1AKMN5jiim5xyGCxvShamW4VrZyfgM9U",
+#         "instructions": [
+#             {
+#             "accounts": [
+#                 0
+#             ],
+#             "data": "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz",
+#             "programIdIndex": 4
+#             },
+#             {
+#             "accounts": [
+#                 1,
+#                 3,
+#                 2,
+#                 0
+#             ],
+#             "data": "ixUKHa1t4JYGF",
+#             "programIdIndex": 5
+#             }
+#       ],
+#       "indexToProgramIds": {}
+#     },
 def get_account_index(instruction: TransactionMessageInstruction, index: int):
     return instruction["accounts"][index]
 
