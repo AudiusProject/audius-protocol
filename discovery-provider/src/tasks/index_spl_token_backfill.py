@@ -39,7 +39,7 @@ from src.utils.helpers import (
     get_solana_tx_owner,
     get_solana_tx_token_balances,
     get_valid_instruction,
-    has_instruction,
+    has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
@@ -168,9 +168,7 @@ def parse_spl_token_transaction(
         tx_sig = tx["signature"]
         tx_slot = result["slot"]
 
-        has_transfer_checked_instruction = has_instruction(
-            meta, TRANSFER_CHECKED_INSTRUCTION
-        )
+        has_transfer_checked_instruction = has_log(meta, TRANSFER_CHECKED_INSTRUCTION)
         if not has_transfer_checked_instruction:
             logger.info(
                 f"index_spl_token_backfill.py | {tx_sig} no transfer checked instruction"
