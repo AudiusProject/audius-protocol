@@ -26,11 +26,17 @@ def upgrade():
         return
 
     connection = op.get_bind()
-    query = """
-        delete from audio_transactions_history where slot < 164000000;
+    # Highest slot for user_bank and rewards_manager txs in audio_transactions_history table
+    max_backfill_slot = 164000000
+    # Highest slot for spl_token txs in audio_transactions_history table
+    latest_spl_token_slot = 1
+    latest_spl_token_sig = "adsf"
+    query = f"""
+        delete from audio_transactions_history where slot < {max_backfill_slot};
         delete from audio_transactions_history where
         ((transaction_type in ('purchase_stripe', 'purchase_unknown', 'purchase_coinbase'))
-        or (transaction_type = 'transfer' and method = 'receive')) and slot > 164000000;
+        or (transaction_type = 'transfer' and method = 'receive')) and slot > {max_backfill_slot};
+        update spl_token_tx set last_scanned_slot = {latest_spl_token_slot}, signature = '{latest_spl_token_sig}';
     """
     connection.execute(query)
 
