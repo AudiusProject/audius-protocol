@@ -14,6 +14,12 @@ class NotFoundError(Base):
     pass  # pylint: disable=W0107
 
 
+class UnsupportedVersionError(Base):
+    """Unsupported Solana transaction version"""
+
+    pass  # pylint: disable=W0107
+
+
 class MissingEthRecipientError(Base):
     """Exception raised for missing eth recipient error while indexing
     Attributes:
