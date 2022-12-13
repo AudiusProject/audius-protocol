@@ -92,6 +92,7 @@ track_metadata_format: TrackMetadata = {
     "stem_of": None,
     "is_premium": False,
     "premium_conditions": None,
+    "is_playlist_upload": False,
 }
 
 # Required format for user metadata retrieved from the content system

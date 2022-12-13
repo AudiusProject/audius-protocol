@@ -493,6 +493,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
 
     track_record.is_premium = track_metadata["is_premium"]
+    track_record.is_playlist_upload = track_metadata["is_playlist_upload"] if "is_playlist_upload" in track_metadata else False
     if is_valid_json_field(track_metadata, "premium_conditions"):
         track_record.premium_conditions = track_metadata["premium_conditions"]
     else:
