@@ -443,8 +443,18 @@ async function _touch(path: string) {
   }
 }
 
+type FileRecord = {
+  storagePath: string
+  multihash: string
+  fileUUID: string
+  skipped: boolean
+  dirMultihash?: string
+  fileName?: string
+  trackBlockchainId?: number
+}
+
 async function _copyLegacyFiles(
-  legacyPathsAndCids: { storagePath: string; cid: string; skipped: boolean }[],
+  fileRecords: FileRecord[],
   prometheusRegistry: any,
   logger: Logger
 ): Promise<
@@ -458,7 +468,8 @@ async function _copyLegacyFiles(
     legacyPath: string
     nonLegacyPath: string
   }[] = []
-  for (const { storagePath: legacyPath, cid, skipped } of legacyPathsAndCids) {
+  for (const fileRecord of fileRecords) {
+    const legacyPath = fileRecord.storagePath
     let nonLegacyPath = ''
     try {
       // Compute new path
@@ -484,38 +495,68 @@ async function _copyLegacyFiles(
         // Update mtime again just in case copyFile changed it
         const now = new Date()
         await fs.utimes(nonLegacyPath, now, now)
-      } catch (e: any) {
-        // If we see a ENOSPC error, log out the disk space and inode details from the system
-        if (e.message.includes('ENOSPC')) {
+
+        // Verify that the correct contents were copied
+        const cidMatchesExpected = await verifyCIDMatchesExpected({
+          cid: fileRecord.multihash,
+          path: nonLegacyPath,
+          logger
+        })
+        if (cidMatchesExpected) {
+          copiedPaths.push({ legacyPath, nonLegacyPath })
+        } else {
+          try {
+            await fs.unlink(nonLegacyPath)
+          } catch (e) {
+            logger.error(
+              `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
+            )
+          }
+          throw new Error('CID does not match what is expected to be')
+        }
+      } catch (copyError: any) {
+        if (copyError.message.includes('ENOSPC')) {
+          // If we see a ENOSPC error, log out the disk space and inode details from the system
           await Promise.all([
             runShellCommand(`df`, ['-h'], logger),
             runShellCommand(`df`, ['-ih'], logger)
           ])
-        }
-        throw e
-      }
+          throw copyError
+        } else if (copyError.message.includes('ENOENT')) {
+          // If we see an ENOENT error ("no such file"), try fetching the file from network
+          let success, error
+          try {
+            try {
+              await fs.unlink(nonLegacyPath)
+            } catch (e) {
+              logger.error(
+                `_copyLegacyFiles() could not remove 'touch'ed file at storageLocation=${nonLegacyPath}`
+              )
+            }
+            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
+              fileRecord,
+              logger
+            ))
+          } catch (fetchFallbackError: any) {
+            success = false
+            error = fetchFallbackError
+          }
 
-      // Verify that the correct contents were copied
-      const cidMatchesExpected = await verifyCIDMatchesExpected({
-        cid,
-        path: nonLegacyPath,
-        logger
-      })
-      if (cidMatchesExpected) {
-        copiedPaths.push({ legacyPath, nonLegacyPath })
-      } else {
-        try {
-          await fs.unlink(nonLegacyPath)
-        } catch (e) {
-          logger.error(
-            `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
-          )
-        }
-        throw new Error('CID does not match what is expected to be')
+          // Add delay between calls since each call will make an internal request to every node
+          await timeout(1000)
+
+          if (success) {
+            copiedPaths.push({ legacyPath, nonLegacyPath })
+          } else {
+            throw new Error(
+              `Legacy fetch from network fallback error: ${error}. Copy error: ${copyError}`
+            )
+          }
+        } else throw copyError
       }
     } catch (e: any) {
       // If the file is skipped (blacklisted) then we don't care if it failed to copy
-      if (skipped && nonLegacyPath?.length) {
+      if (fileRecord.skipped && nonLegacyPath?.length) {
         copiedPaths.push({ legacyPath, nonLegacyPath })
       } else {
         erroredPaths[legacyPath] = e.toString()
@@ -524,32 +565,12 @@ async function _copyLegacyFiles(
   }
 
   // Record results in Prometheus metric and log errors
-  if (copiedPaths.length > 0) {
-    clusterUtilsForPrimary.sendMetricToWorker(
-      {
-        metricType: 'GAUGE_INC',
-        metricName:
-          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-        metricValue: copiedPaths.length,
-        metricLabels: { result: 'success' }
-      },
-      prometheusRegistry,
-      logger
-    )
-  }
-  if (Object.keys(erroredPaths).length > 0) {
-    clusterUtilsForPrimary.sendMetricToWorker(
-      {
-        metricType: 'GAUGE_INC',
-        metricName:
-          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-        metricValue: Object.keys(erroredPaths).length,
-        metricLabels: { result: 'failure' }
-      },
-      prometheusRegistry,
-      logger
-    )
-  }
+  _recordLegacyMigrationMetrics(
+    copiedPaths.length,
+    Object.keys(erroredPaths).length,
+    prometheusRegistry,
+    logger
+  )
   if (!isEmpty(erroredPaths)) {
     logger.warn(
       `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
@@ -594,10 +615,10 @@ const _migrateNonDirFilesWithLegacyStoragePaths = async (
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for legacy storagePaths in the pagination range until no new results are returned
     let newResultsFound = true
-    let results: { storagePath: string; cid: string; skipped: boolean }[] = []
+    let results: FileRecord[] = []
     while (newResultsFound) {
       const prevResults = results
-      results = await DbManager.getNonDirLegacyStoragePathsAndCids(
+      results = await DbManager.getNonDirLegacyStoragePathRecords(
         minCid,
         maxCid,
         batchSize
@@ -625,20 +646,20 @@ const _migrateDirsWithLegacyStoragePaths = async (
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for legacy storagePaths in the pagination range until no new results are returned
     let newResultsFound = true
-    let results: { storagePath: string; cid: string; skipped: boolean }[] = []
+    let results: FileRecord[] = []
     while (newResultsFound) {
       const prevResults = results
-      results = await DbManager.getDirLegacyStoragePathsAndCids(
+      results = await DbManager.getDirLegacyStoragePathRecords(
         minCid,
         maxCid,
         batchSize
       )
       if (results.length) {
         newResultsFound = !isEqual(prevResults, results)
-        const legacyAndNonLegacyPaths = results.map((storagePathAndCid) => {
+        const legacyAndNonLegacyPaths = results.map((fileRecord) => {
           return {
-            legacyPath: storagePathAndCid.storagePath,
-            nonLegacyPath: computeFilePath(storagePathAndCid.cid)
+            legacyPath: fileRecord.storagePath,
+            nonLegacyPath: computeFilePath(fileRecord.multihash)
           }
         })
         await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
@@ -649,16 +670,8 @@ const _migrateDirsWithLegacyStoragePaths = async (
     }
   })
 
-async function _migrateFileWithCustomStoragePath(
-  fileRecord: {
-    storagePath: string
-    multihash: string
-    fileUUID: string
-    skipped: boolean
-    dirMultihash?: string
-    fileName?: string
-    trackBlockchainId?: number
-  },
+async function _migrateFileByFetchingFromNetwork(
+  fileRecord: FileRecord,
   logger: Logger
 ): Promise<{ success: boolean; error: any }> {
   const fetchStartTime = getStartTime()
@@ -712,15 +725,7 @@ const _migrateFilesWithCustomStoragePaths = async (
   _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for custom storagePaths in the pagination range until no new results are returned
     let newResultsFound
-    let results: {
-      storagePath: string
-      multihash: string
-      fileUUID: string
-      skipped: boolean
-      dirMultihash?: string
-      fileName?: string
-      trackBlockchainId?: number
-    }[] = []
+    let results: FileRecord[] = []
     while (newResultsFound) {
       const prevResults = results
       results = await DbManager.getCustomStoragePathsRecords(
@@ -736,7 +741,7 @@ const _migrateFilesWithCustomStoragePaths = async (
         for (const fileRecord of results) {
           let success, error
           try {
-            ;({ success, error } = await _migrateFileWithCustomStoragePath(
+            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
               fileRecord,
               logger
             ))
@@ -749,48 +754,94 @@ const _migrateFilesWithCustomStoragePaths = async (
           } else {
             numFilesFailedToMigrate++
             logger.error(
-              `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
+              `Error fixing fileRecord (custom) ${JSON.stringify(
+                fileRecord
+              )}: ${error}`
             )
           }
 
           // Add delay between calls since each call will make an internal request to every node
           await timeout(1000)
         }
-        // Record results in Prometheus metric
-        if (numFilesMigratedSuccessfully > 0) {
-          clusterUtilsForPrimary.sendMetricToWorker(
-            {
-              metricType: 'GAUGE_INC',
-              metricName:
-                prometheusRegistry.metricNames
-                  .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-              metricValue: numFilesMigratedSuccessfully,
-              metricLabels: { result: 'success' }
-            },
-            prometheusRegistry,
-            logger
-          )
-        }
-        if (numFilesFailedToMigrate > 0) {
-          clusterUtilsForPrimary.sendMetricToWorker(
-            {
-              metricType: 'GAUGE_INC',
-              metricName:
-                prometheusRegistry.metricNames
-                  .FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-              metricValue: numFilesFailedToMigrate,
-              metricLabels: { result: 'failure' }
-            },
-            prometheusRegistry,
-            logger
-          )
-        }
+
+        _recordCustomMigrationMetrics(
+          numFilesMigratedSuccessfully,
+          numFilesFailedToMigrate,
+          prometheusRegistry,
+          logger
+        )
       } else {
         newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
   })
+
+function _recordLegacyMigrationMetrics(
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  _recordMigrationMetrics(
+    true,
+    numSuccess,
+    numFailure,
+    prometheusRegistry,
+    logger
+  )
+}
+
+function _recordCustomMigrationMetrics(
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  _recordMigrationMetrics(
+    false,
+    numSuccess,
+    numFailure,
+    prometheusRegistry,
+    logger
+  )
+}
+
+function _recordMigrationMetrics(
+  legacy: boolean,
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  const metricName = legacy
+    ? prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+    : prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
+  if (numSuccess > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_INC',
+        metricName,
+        metricValue: numSuccess,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  }
+  if (numFailure > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_INC',
+        metricName,
+        metricValue: numFailure,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  }
+}
 
 function _resetStoragePathMetrics(prometheusRegistry: any, logger: Logger) {
   // Reset metric for legacy migrations
