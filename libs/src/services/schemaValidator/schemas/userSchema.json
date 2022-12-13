@@ -97,7 +97,9 @@
       "type": ["object", "null"],
       "default": null,
       "patternProperties": {
-        "^[a-zA-Z0-9]{43,44}$": { "$ref": "#/definitions/WalletMetadata" }
+        "^[1-9A-HJ-NP-Za-km-z]{32,44}$": {
+          "$ref": "#/definitions/WalletMetadata"
+        }
       },
       "additionalProperties": false,
       "properties": {},
