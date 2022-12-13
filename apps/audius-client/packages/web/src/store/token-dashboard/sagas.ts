@@ -213,7 +213,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
             cacheActions.update(Kind.USERS, [
               {
                 id: accountUserId,
-                metadata: { metadata_multihash: updatedCID }
+                metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
               }
             ])
           )
