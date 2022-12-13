@@ -1,5 +1,6 @@
 import { AudiusLibs } from "@audius/sdk";
 import { QueryTypes } from "sequelize";
+import { getEnv } from "../config";
 import { sequelizeConn } from "../db";
 import { instrumentTracing, tracing } from "../tracer";
 
@@ -103,20 +104,23 @@ export const deleteOldRunData = instrumentTracing({
 const _importContentNodes = async (run_id: number) => {
   tracing.info(`[${run_id}] importing content nodes`);
 
-  const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS;
-  const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS;
-  const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET;
-  const ETH_PROVIDER_URL = process.env.REACT_APP_ETH_PROVIDER_URL;
+  const {
+    ethRegistryAddress,
+    ethTokenAddress,
+    ethOwnerWallet,
+    ethProviderUrl,
+  } = getEnv();
 
   const ethWeb3Config = AudiusLibs.configEthWeb3(
-    ETH_TOKEN_ADDRESS,
-    ETH_REGISTRY_ADDRESS,
-    ETH_PROVIDER_URL,
-    ETH_OWNER_WALLET,
+    ethTokenAddress,
+    ethRegistryAddress,
+    ethProviderUrl,
+    ethOwnerWallet,
     undefined,
-    undefined,
+    undefined
   );
 
+  // @ts-ignore
   const audiusLibs = new AudiusLibs({
     ethWeb3Config,
     isServer: true,
@@ -126,31 +130,31 @@ const _importContentNodes = async (run_id: number) => {
   await audiusLibs.init();
   const contentNodes = await audiusLibs.ServiceProvider?.listCreatorNodes();
   if (contentNodes === undefined || contentNodes === null) {
-    throw new Error('could not fetch content nodes');
+    throw new Error("could not fetch content nodes");
   }
 
-  for (const { spID, endpoint } of contentNodes) {
-
-  await sequelizeConn.query(
-    `
-        INSERT INTO network_monitoring_content_nodes (
-            spID, 
-            endpoint, 
-            run_id
-        )
-        VALUES (
-            :spid,
-            :endpoint,
-            :run_id
-        );
-    `,
-    {
-      replacements: { run_id, spID, endpoint },
-      logging: false,
-    }
+  await Promise.all(
+    contentNodes.map(async ({ spID, endpoint }) => {
+      await sequelizeConn.query(
+        `
+          INSERT INTO network_monitoring_content_nodes (
+              spID, 
+              endpoint, 
+              run_id
+          )
+          VALUES (
+              :spID,
+              :endpoint,
+              :run_id
+          );
+      `,
+        {
+          replacements: { run_id, spID, endpoint },
+          logging: false,
+        }
+      );
+    })
   );
-
-  }
 };
 
 export const importContentNodes = instrumentTracing({
