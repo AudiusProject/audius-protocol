@@ -227,10 +227,12 @@ export const METRIC_LABELS = Object.freeze({
     ]
   },
   [METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]: {
-    result: ['success', 'failure']
+    result: ['success'],
+    errMsg: []
   },
   [METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]: {
-    result: ['success', 'failure']
+    result: ['success'],
+    errMsg: []
   }
 })
 

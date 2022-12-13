@@ -1,17 +1,11 @@
 import type Logger from 'bunyan'
+import type { MetricToRecord } from './types'
 
 const {
   METRIC_RECORD_TYPE,
   METRIC_NAMES,
   METRIC_LABELS
 } = require('./prometheus.constants')
-
-export type MetricToRecord = {
-  metricName: string
-  metricType: string
-  metricValue: number
-  metricLabels: Record<string, string>
-}
 
 export const recordMetrics = (
   prometheusRegistry: any,
@@ -164,6 +158,7 @@ export const validateMetricToRecord = ({
 }
 
 module.exports = {
+  validateMetricToRecord,
   recordMetrics,
   makeHistogramToRecord,
   makeGaugeSetToRecord,
