@@ -67,9 +67,9 @@ module.exports = function (app) {
       try {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(urlAccessToken)
-        console.log('tiktok token response', accessTokenResponse)
-        console.log('tiktok token response data', accessTokenResponse.data)
-        const { access_token: accessToken } = accessTokenResponse.data
+        const {
+          data: { access_token: accessToken }
+        } = accessTokenResponse.data
 
         // Fetch TikTok user from the TikTok API
         const userResponse = await axios.post(
