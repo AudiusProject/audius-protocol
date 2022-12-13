@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import type { DownloadReason } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -17,10 +18,15 @@ import { makeStyles } from 'app/styles'
 
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
+export type TrackForDownload = {
+  trackId: number
+  downloadReason: DownloadReason
+}
+
 type DownloadToggleProps = {
-  collection?: string
   labelText?: string
-  trackIds: number[]
+  tracksForDownload: TrackForDownload[]
+  collection?: string
 }
 
 const messages = {
@@ -79,7 +85,7 @@ const useStyles = makeStyles<{ labelText?: string }>(
 )
 
 export const DownloadToggle = ({
-  trackIds,
+  tracksForDownload,
   collection,
   labelText
 }: DownloadToggleProps) => {
@@ -88,11 +94,11 @@ export const DownloadToggle = ({
   const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
   const isAnyDownloadInProgress = useMemo(
     () =>
-      trackIds.some((trackId: number) => {
+      tracksForDownload.some(({ trackId }) => {
         const status = offlineDownloadStatus[trackId.toString()]
         return status === OfflineDownloadStatus.LOADING
       }),
-    [offlineDownloadStatus, trackIds]
+    [offlineDownloadStatus, tracksForDownload]
   )
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(collection)
@@ -101,12 +107,12 @@ export const DownloadToggle = ({
     (isDownloadEnabled: boolean) => {
       if (!collection) return
       if (isDownloadEnabled) {
-        downloadCollection(collection, trackIds)
+        downloadCollection(collection, tracksForDownload)
       } else {
-        removeCollectionDownload(collection, trackIds)
+        removeCollectionDownload(collection, tracksForDownload)
       }
     },
-    [collection, trackIds]
+    [collection, tracksForDownload]
   )
 
   if (!collection) return null

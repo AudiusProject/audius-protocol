@@ -200,20 +200,27 @@ export const CollectionScreenDetailsTile = ({
     return messages.playlist
   }, [isAlbum, isPrivate, isPublishing])
 
-  const trackIds = useMemo(
-    () => entries.map((track) => track.track_id),
-    [entries]
+  const tracksForDownload = useMemo(
+    () =>
+      entries.map((track) => ({
+        trackId: track.track_id,
+        downloadReason: {
+          is_from_favorites: false,
+          collection_id: collectionId?.toString()
+        }
+      })),
+    [collectionId, entries]
   )
 
   const renderHeader = useCallback(() => {
     return (
       <DownloadToggle
         collection={collectionId?.toString()}
-        trackIds={trackIds}
+        tracksForDownload={tracksForDownload}
         labelText={headerText}
       />
     )
-  }, [collectionId, headerText, trackIds])
+  }, [collectionId, headerText, tracksForDownload])
 
   const renderTrackList = () => {
     if (tracksLoading)

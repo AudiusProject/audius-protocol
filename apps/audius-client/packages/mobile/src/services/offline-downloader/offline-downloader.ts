@@ -1,15 +1,23 @@
 import path from 'path'
 
-import type { Track, UserMetadata, UserTrackMetadata } from '@audius/common'
+import type {
+  DownloadReason,
+  Track,
+  UserMetadata,
+  UserTrackMetadata
+} from '@audius/common'
 import {
+  Kind,
+  makeUid,
   DefaultSizes,
   SquareSizes,
   encodeHashId,
   accountSelectors
 } from '@audius/common'
-import { uniq } from 'lodash'
+import { uniq, isEqual } from 'lodash'
 import RNFS, { exists } from 'react-native-fs'
 
+import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
 import {
   addCollection,
@@ -43,12 +51,18 @@ export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 /** Main entrypoint - perform all steps required to complete a download for each track */
 export const downloadCollection = async (
   collection: string,
-  trackIds: number[]
+  tracksForDownload: TrackForDownload[]
 ) => {
   store.dispatch(addCollection(collection))
   persistCollectionDownloadStatus(collection, true)
-  store.dispatch(batchStartDownload(trackIds.map((id) => id.toString())))
-  trackIds.forEach((trackId) => enqueueTrackDownload(trackId, collection))
+  store.dispatch(
+    batchStartDownload(
+      tracksForDownload.map(({ trackId }) => trackId.toString())
+    )
+  )
+  tracksForDownload.forEach((trackForDownload) =>
+    enqueueTrackDownload(trackForDownload, collection)
+  )
 }
 
 const populateCoverArtSizes = async (track: UserTrackMetadata & Track) => {
@@ -77,9 +91,10 @@ const populateCoverArtSizes = async (track: UserTrackMetadata & Track) => {
 }
 
 export const downloadTrack = async ({
-  trackId,
+  trackForDownload,
   collection
 }: TrackDownloadWorkerPayload) => {
+  const { trackId, downloadReason } = trackForDownload
   const trackIdStr = trackId.toString()
 
   // Throw this
@@ -110,12 +125,16 @@ export const downloadTrack = async ({
   }
 
   track = (await populateCoverArtSizes(track)) ?? track
+  const lineupTrack = {
+    uid: makeUid(Kind.TRACKS, track.track_id),
+    ...track
+  }
 
   try {
     store.dispatch(startDownload(trackIdStr))
     if (await verifyTrack(trackIdStr, false)) {
       // Track is already downloaded, so rewrite the json
-      // to include this collection in the downloaded_from_collection list
+      // to include this collection in the reasons_for_download list
       const trackJson = await getTrackJson(trackIdStr)
       const trackToWrite: UserTrackMetadata = {
         ...trackJson,
@@ -124,24 +143,23 @@ export const downloadTrack = async ({
             trackJson.offline?.download_completed_time ?? Date.now(),
           last_verified_time:
             trackJson.offline?.last_verified_time ?? Date.now(),
-          downloaded_from_collection:
-            trackJson.offline?.downloaded_from_collection?.concat(
-              collection
-            ) ?? [collection]
+          reasons_for_download: trackJson.offline?.reasons_for_download?.concat(
+            downloadReason
+          ) ?? [downloadReason]
         }
       }
       await writeTrackJson(trackIdStr, trackToWrite)
-      store.dispatch(loadTrack(track))
+      store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
       return
     }
 
     await downloadCoverArt(track)
     await tryDownloadTrackFromEachCreatorNode(track)
-    await writeUserTrackJson(track, collection)
+    await writeUserTrackJson(track, downloadReason)
     const verified = await verifyTrack(trackIdStr, true)
     if (verified) {
-      store.dispatch(loadTrack(track))
+      store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
     } else {
       throw failJob(
@@ -156,19 +174,19 @@ export const downloadTrack = async ({
 
 export const removeCollectionDownload = async (
   collection: string,
-  trackIds: number[]
+  tracksForDownload: TrackForDownload[]
 ) => {
   store.dispatch(removeCollection(collection))
   persistCollectionDownloadStatus(collection, false)
-  trackIds.forEach(async (trackId) => {
+  tracksForDownload.forEach(async ({ trackId, downloadReason }) => {
     try {
       const trackIdStr = trackId.toString()
       const diskTrack = await getTrackJson(trackIdStr)
-      const collections = diskTrack.offline?.downloaded_from_collection ?? []
-      const otherCollections = collections.filter(
-        (downloadReasonCollection) => downloadReasonCollection !== collection
+      const downloadReasons = diskTrack.offline?.reasons_for_download ?? []
+      const remainingReasons = downloadReasons.filter(
+        (reason) => !isEqual(reason, downloadReason)
       )
-      if (otherCollections.length === 0) {
+      if (remainingReasons.length === 0) {
         purgeDownloadedTrack(trackIdStr)
       } else {
         const trackToWrite = {
@@ -178,7 +196,7 @@ export const removeCollectionDownload = async (
               diskTrack.offline?.download_completed_time ?? Date.now(),
             last_verified_time:
               diskTrack.offline?.last_verified_time ?? Date.now(),
-            downloaded_from_collection: otherCollections
+            reasons_for_download: remainingReasons
           }
         }
         await writeTrackJson(trackIdStr, trackToWrite)
@@ -194,14 +212,14 @@ export const removeCollectionDownload = async (
 /** Unlike mp3 and album art, here we overwrite even if the file exists to ensure we have the latest */
 export const writeUserTrackJson = async (
   track: UserTrackMetadata,
-  collection: string
+  downloadReason: DownloadReason
 ) => {
   const trackToWrite: UserTrackMetadata = {
     ...track,
     offline: {
-      downloaded_from_collection: uniq([
-        collection,
-        ...(track?.offline?.downloaded_from_collection ?? [])
+      reasons_for_download: uniq([
+        downloadReason,
+        ...(track?.offline?.reasons_for_download ?? [])
       ]),
       download_completed_time: Date.now(),
       last_verified_time: Date.now()

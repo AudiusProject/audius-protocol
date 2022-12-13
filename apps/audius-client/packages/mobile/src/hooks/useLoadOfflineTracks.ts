@@ -6,10 +6,10 @@ import {
   savedPageTracksLineupActions,
   reachabilitySelectors
 } from '@audius/common'
-import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 import { addCollection, loadTracks } from 'app/store/offline-downloads/slice'
 
 import {
@@ -22,10 +22,8 @@ import {
 import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
 const { getIsReachable } = reachabilitySelectors
 
-export const useLoadOfflineTracks = (collection: string) => {
+export const useLoadOfflineTracks = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const isReachable = useSelector(getIsReachable)
-
   const dispatch = useDispatch()
 
   useAsync(async () => {
@@ -37,11 +35,9 @@ export const useLoadOfflineTracks = (collection: string) => {
     })
 
     const trackIds = await listTracks()
-    const savesLineupTracks: (Track & UserTrackMetadata & { uid: string })[] =
-      []
     const cacheTracks: { uid: string; id: number; metadata: Track }[] = []
     const cacheUsers: { uid: string; id: number; metadata: UserMetadata }[] = []
-
+    const lineupTracks: (Track & UserTrackMetadata & { uid: string })[] = []
     for (const trackId of trackIds) {
       try {
         const verified = await verifyTrack(trackId, true)
@@ -64,12 +60,7 @@ export const useLoadOfflineTracks = (collection: string) => {
                 metadata: track.user
               })
             }
-            if (
-              track.offline &&
-              track.offline.downloaded_from_collection.includes(collection)
-            ) {
-              savesLineupTracks.push(lineupTrack)
-            }
+            lineupTracks.push(lineupTrack)
           })
           .catch(() => console.warn('Failed to load track from disk', trackId))
       } catch (e) {
@@ -79,20 +70,33 @@ export const useLoadOfflineTracks = (collection: string) => {
 
     dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
     dispatch(cacheActions.add(Kind.USERS, cacheUsers, false, true))
-    dispatch(loadTracks(savesLineupTracks))
+    dispatch(loadTracks(lineupTracks))
+  })
+}
+
+export const useOfflineCollectionLineup = (collection: string) => {
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isReachable = useSelector(getIsReachable)
+  const offlineTracks = useSelector(getOfflineTracks)
+
+  const dispatch = useDispatch()
+
+  useAsync(async () => {
+    if (!isOfflineModeEnabled) return
+
+    const lineupTracks = Object.values(offlineTracks).filter((track) =>
+      track.offline?.reasons_for_download.some(
+        (reason) => reason.collection_id === collection
+      )
+    )
 
     if (!isReachable) {
       // TODO: support for collection lineups
       dispatch(
         savedPageTracksLineupActions.fetchLineupMetadatasSucceeded(
-          savesLineupTracks.map((track) => ({
-            uid: track.uid,
-            kind: Kind.TRACKS,
-            id: track.track_id,
-            dateSaved: moment()
-          })),
+          lineupTracks,
           0,
-          savesLineupTracks.length,
+          lineupTracks.length,
           false,
           false
         )

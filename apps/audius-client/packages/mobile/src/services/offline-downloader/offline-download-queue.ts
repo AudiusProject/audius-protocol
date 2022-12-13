@@ -1,5 +1,6 @@
 import queue, { Worker } from 'react-native-job-queue'
 
+import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
 import {
   batchStartDownload,
@@ -11,17 +12,17 @@ import { downloadTrack } from './offline-downloader'
 const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
 
 export type TrackDownloadWorkerPayload = {
-  trackId: number
+  trackForDownload: TrackForDownload
   collection: string
 }
 
 export const enqueueTrackDownload = async (
-  trackId: number,
+  trackForDownload: TrackForDownload,
   collection: string
 ) => {
-  queue.addJob(
+  queue.addJob<TrackDownloadWorkerPayload>(
     TRACK_DOWNLOAD_WORKER,
-    { trackId, collection },
+    { trackForDownload, collection },
     {
       attempts: 3,
       priority: 1,
@@ -43,7 +44,9 @@ export const startDownloadWorker = async () => {
   queue.addWorker(
     new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack, {
       onFailure: ({ payload }) => {
-        store.dispatch(errorDownload(payload.trackId.toString()))
+        store.dispatch(
+          errorDownload(payload.trackForDownload.trackId.toString())
+        )
       },
       concurrency: 10
     })
@@ -58,12 +61,12 @@ export const startDownloadWorker = async () => {
       try {
         const { payload, failed } = job
         const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
-        const trackId = parsedPayload.trackId
+        const { trackId } = parsedPayload.trackForDownload
         if (failed) {
           store.dispatch(errorDownload(trackId.toString()))
           queue.removeJob(job)
         } else {
-          trackIdsInQueue.push(parsedPayload.trackId.toString())
+          trackIdsInQueue.push(trackId.toString())
         }
       } catch (e) {
         console.warn(e)
