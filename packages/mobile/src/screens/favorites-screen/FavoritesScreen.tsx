@@ -10,12 +10,12 @@ import IconFavorite from 'app/assets/images/iconFavorite.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
+import type { TrackForDownload } from 'app/components/offline-downloads'
 import { DownloadToggle } from 'app/components/offline-downloads'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFetchAllFavoritedTrackIds } from 'app/hooks/useFetchAllFavoritedTrackIds'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
 import { AlbumsTab } from './AlbumsTab'
@@ -57,19 +57,33 @@ export const FavoritesScreen = () => {
     dispatch(fetchSavedPlaylists())
     dispatch(fetchSavedAlbums())
   })
-  useLoadOfflineTracks(DOWNLOAD_REASON_FAVORITES)
 
   const userCollections = useSelector((state: CommonState) =>
     getAccountCollections(state, '')
   )
 
-  const allSavesTrackIds = useMemo(() => {
-    const allIds = (allFavoritedTrackIds ?? []).concat(
+  const tracksForDownload: TrackForDownload[] = useMemo(() => {
+    const trackFavoritesToDownload: TrackForDownload[] = (
+      allFavoritedTrackIds ?? []
+    ).map((trackId) => ({
+      trackId,
+      downloadReason: {
+        is_from_favorites: true,
+        collection_id: 'favorites'
+      }
+    }))
+    const collectionFavoritesToDownload: TrackForDownload[] =
       userCollections.flatMap((collection) =>
-        collection.playlist_contents.track_ids.map((trackId) => trackId.track)
+        collection.playlist_contents.track_ids.map(({ track: trackId }) => ({
+          trackId,
+          downloadReason: {
+            is_from_favorites: true,
+            collection_id: collection.playlist_id.toString()
+          }
+        }))
       )
-    )
-    return allIds
+
+    return trackFavoritesToDownload.concat(collectionFavoritesToDownload)
   }, [allFavoritedTrackIds, userCollections])
 
   return (
@@ -82,7 +96,7 @@ export const FavoritesScreen = () => {
         {isOfflineModeEnabled && (
           <DownloadToggle
             collection={DOWNLOAD_REASON_FAVORITES}
-            trackIds={allSavesTrackIds}
+            tracksForDownload={tracksForDownload}
           />
         )}
       </ScreenHeader>

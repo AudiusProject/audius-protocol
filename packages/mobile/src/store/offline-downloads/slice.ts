@@ -1,15 +1,15 @@
-import type { Track } from '@audius/common'
+import type { Track, UserTrackMetadata } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
-export type OfflineDownloadsState = typeof initialState
+type LineupTrack = Track & UserTrackMetadata & { uid: string }
 
-type State = {
+export type OfflineDownloadsState = {
   downloadStatus: {
     [key: string]: OfflineTrackDownloadStatus
   }
   tracks: {
-    [key: string]: Track
+    [key: string]: LineupTrack
   }
   collections: {
     [key: string]: boolean
@@ -22,7 +22,7 @@ export enum OfflineTrackDownloadStatus {
   ERROR = 'ERROR'
 }
 
-const initialState: State = {
+const initialState: OfflineDownloadsState = {
   downloadStatus: {},
   tracks: {},
   collections: {}
@@ -64,14 +64,14 @@ const slice = createSlice({
     ) => {
       state.collections[collectionId] = false
     },
-    loadTracks: (state, { payload: tracks }: PayloadAction<Track[]>) => {
+    loadTracks: (state, { payload: tracks }: PayloadAction<LineupTrack[]>) => {
       tracks.forEach((track) => {
         const trackIdStr = track.track_id.toString()
         state.tracks[trackIdStr] = track
         state.downloadStatus[trackIdStr] = OfflineTrackDownloadStatus.SUCCESS
       })
     },
-    loadTrack: (state, { payload: track }: PayloadAction<Track>) => {
+    loadTrack: (state, { payload: track }: PayloadAction<LineupTrack>) => {
       const trackIdStr = track.track_id.toString()
       state.tracks[trackIdStr] = track
       state.downloadStatus[trackIdStr] = OfflineTrackDownloadStatus.SUCCESS
