@@ -63,7 +63,7 @@ begin
       end if;
     end if;
 	exception
-		when others then raise;
+		when others then null;
 	end;
 
   begin

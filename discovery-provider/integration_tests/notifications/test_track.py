@@ -51,15 +51,15 @@ def test_track_create_notification(app):
         db = get_db()
 
     entities = {
-        "users": [{"user_id": i+1} for i in range(5)],
-        "subscriptions": [{"subscriber_id": i, "user_id": 1} for i in range(1, 5)]
+        "users": [{"user_id": i + 1} for i in range(5)],
+        "subscriptions": [{"subscriber_id": i, "user_id": 1} for i in range(1, 5)],
     }
     populate_mock_db(db, entities)
     entities = {
         "tracks": [
             {"track_id": 20, "owner_id": 1},
             {"track_id": 21, "owner_id": 1, "is_playlist_upload": True},
-            {"track_id": 2, "owner_id": 2}
+            {"track_id": 2, "owner_id": 2},
         ],
     }
     populate_mock_db(db, entities)
@@ -67,9 +67,7 @@ def test_track_create_notification(app):
     with db.scoped_session() as session:
 
         notifications: List[Notification] = (
-            session.query(Notification)
-            .filter(Notification.type == "create")
-            .all()
+            session.query(Notification).filter(Notification.type == "create").all()
         )
         assert len(notifications) == 1
         notification = notifications[0]

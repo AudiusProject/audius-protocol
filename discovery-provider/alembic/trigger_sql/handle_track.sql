@@ -38,7 +38,6 @@ begin
           user_id=new.owner_id
       ) into subscriber_user_ids;
 
-
       if array_length(subscriber_user_ids, 1)	> 0 then
         insert into notification
           (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
@@ -56,7 +55,7 @@ begin
       end if;
     end if;
 	exception
-		when others then RAISE;
+		when others then null;
 	end;
 
   -- If remix, create notification
@@ -84,7 +83,7 @@ begin
       end if;
     end if;
 	exception
-		when others then RAISE WARNING 'failed in create remix notif';
+		when others then null;
 	end;
 
   return null;
