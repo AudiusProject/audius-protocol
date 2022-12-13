@@ -137,6 +137,7 @@ export type CommsResponse = {
     is_healthy: boolean
   }
   summary?: {
+    prev_cursor: string
     next_cursor: string
     remaining_count: number
     total_count: number

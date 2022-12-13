@@ -14,7 +14,8 @@ export type ChatGetRequest = {
 export type ChatGetMessagesRequest = {
   chatId: string
   limit?: number
-  cursor?: string
+  before?: string
+  after?: string
 }
 
 export type ChatCreateRequest = {
