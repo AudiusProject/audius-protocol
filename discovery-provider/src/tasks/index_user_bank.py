@@ -50,7 +50,7 @@ from src.utils.helpers import (
     get_account_index,
     get_solana_tx_token_balances,
     get_valid_instruction,
-    has_instruction,
+    has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
@@ -315,12 +315,10 @@ def process_user_bank_tx_details(
     tx_message = result["transaction"]["message"]
 
     # Check for valid instruction
-    has_create_token_instruction = has_instruction(
+    has_create_token_instruction = has_log(
         meta, "Program log: Instruction: CreateTokenAccount"
     )
-    has_transfer_instruction = has_instruction(
-        meta, "Program log: Instruction: Transfer"
-    )
+    has_transfer_instruction = has_log(meta, "Program log: Instruction: Transfer")
 
     if not has_create_token_instruction and not has_transfer_instruction:
         return
