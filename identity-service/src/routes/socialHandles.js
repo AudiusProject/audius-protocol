@@ -33,7 +33,7 @@ module.exports = function (app) {
         }
       })
 
-      const tikTokUser = await models.TikTokuser.findOne({
+      const tikTokUser = await models.TikTokUser.findOne({
         where: {
           // TikTok does not store case sensitive screen names
           'profile.display_name': handle.toLowerCase(),
