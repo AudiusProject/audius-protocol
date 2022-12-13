@@ -50,7 +50,7 @@ def get_saves(save_type, user_id):
                     session.query(Track.track_id).filter(Track.is_current == True)
                 )
             )
-        query = query.order_by(Save.blocknumber.desc())
+        query = query.order_by(Save.blocknumber.desc(), Save.save_item_id.desc())
 
         query_results = paginate_query(query).all()
         save_results = helpers.query_result_to_list(query_results)
