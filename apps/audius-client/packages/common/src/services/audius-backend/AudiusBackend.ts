@@ -1338,11 +1338,25 @@ export const audiusBackend = ({
     try {
       const res = await fetch(
         `${identityServiceUrl}/social_handles?handle=${handle}`
-      ).then((res) => res.json())
-      return res
+      )
+      const json = await res.json()
+      return json
     } catch (e) {
       console.error(e)
       return {}
+    }
+  }
+
+  async function getEntityManagerReplicaSetEnabled() {
+    try {
+      const res = await fetch(
+        `${identityServiceUrl}/health_check/entity_manager_replica_set_enabled`
+      )
+      const json = await res.json()
+      return json.entityManagerReplicaSetEnabled
+    } catch (e) {
+      console.error(e)
+      return false
     }
   }
 
@@ -1464,9 +1478,7 @@ export const audiusBackend = ({
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
-      const userEntityManagerEnabled =
-        (await getFeatureEnabled(FeatureFlags.USER_ENTITY_MANAGER_ENABLED)) ??
-        false
+      const userEntityManagerEnabled = await getEntityManagerReplicaSetEnabled()
       const { blockHash, blockNumber, userId } =
         await audiusLibs.User.updateCreator(
           newMetadata.user_id,
@@ -2155,9 +2167,7 @@ export const audiusBackend = ({
     }
 
     // Returns { userId, error, phase }
-    const userEntityManagerEnabled =
-      (await getFeatureEnabled(FeatureFlags.USER_ENTITY_MANAGER_ENABLED)) ??
-      false
+    const userEntityManagerEnabled = await getEntityManagerReplicaSetEnabled()
 
     return audiusLibs.Account.signUp(
       email,
