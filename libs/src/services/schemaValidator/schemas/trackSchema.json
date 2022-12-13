@@ -322,11 +322,11 @@
           "type": "string",
           "const": "sol"
         },
-        "name": {
+        "address": {
           "type": "string"
         }
       },
-      "required": ["chain", "name"],
+      "required": ["chain", "address"],
       "title": "PremiumConditionsSolNFTCollection"
     },
     "PremiumConditionsFollowUserId": {

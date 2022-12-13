@@ -409,13 +409,13 @@
                     "type": "string",
                     "const": "sol"
                 },
-                "name": {
+                "address": {
                     "type": "string"
                 }
             },
             "required": [
                 "chain",
-                "name"
+                "address"
             ],
             "title": "PremiumConditionsSolNFTCollection"
         },
