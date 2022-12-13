@@ -27,7 +27,7 @@ export enum FeatureFlags {
   AUTO_SUBSCRIBE_ON_FOLLOW = 'auto_subscribe_on_follow',
   STREAM_MP3 = 'stream_mp3',
   READ_ARTIST_PICK_FROM_DISCOVERY = 'read_artist_pick_from_discovery',
-  SHARE_TO_STORY = 'share_to_story',
+  SHARE_TO_STORY = 'share_to_story_2',
   READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED = 'read_subscribers_from_discovery_enabled',
   MOBILE_WALLET_CONNECT = 'mobile_wallet_connect',
   COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok'
