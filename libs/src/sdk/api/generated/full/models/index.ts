@@ -56,6 +56,7 @@ export * from './TrackId';
 export * from './TrackRepostsResponseFull';
 export * from './TrackSegment';
 export * from './TransactionDetails';
+export * from './TransactionHistoryCountResponse';
 export * from './TransactionHistoryResponse';
 export * from './TrendingIdsResponse';
 export * from './TrendingTimesIds';
