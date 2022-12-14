@@ -28,6 +28,7 @@ import { CollectionImage } from 'app/components/image/CollectionImage'
 import { DownloadToggle } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import { useOfflineCollectionLineup } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
@@ -116,6 +117,7 @@ export const CollectionScreenDetailsTile = ({
   }, [dispatch])
 
   useFocusEffect(resetCollectionLineup)
+  useOfflineCollectionLineup(collectionId?.toString())
 
   const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,
@@ -213,13 +215,13 @@ export const CollectionScreenDetailsTile = ({
   )
 
   const renderHeader = useCallback(() => {
-    return (
+    return collectionId ? (
       <DownloadToggle
-        collection={collectionId?.toString()}
+        collectionId={collectionId}
         tracksForDownload={tracksForDownload}
         labelText={headerText}
       />
-    )
+    ) : null
   }, [collectionId, headerText, tracksForDownload])
 
   const renderTrackList = () => {

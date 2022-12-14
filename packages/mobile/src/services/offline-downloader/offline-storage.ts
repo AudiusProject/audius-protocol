@@ -1,17 +1,36 @@
 import path from 'path'
 
-import type { UserTrackMetadata } from '@audius/common'
+import type {
+  Collection,
+  User,
+  UserMetadata,
+  UserTrackMetadata
+} from '@audius/common'
 import { SquareSizes } from '@audius/common'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import RNFS, { exists, readDir, readFile } from 'react-native-fs'
 
 import { store } from 'app/store'
-import { unloadTrack } from 'app/store/offline-downloads/slice'
+import {
+  removeCollection,
+  unloadTrack
+} from 'app/store/offline-downloads/slice'
+
+import { DOWNLOAD_REASON_FAVORITES } from './offline-downloader'
+
+export type OfflineCollection = Collection & { user: UserMetadata }
 
 export const downloadsRoot = path.join(RNFS.CachesDirectoryPath, 'downloads')
 
 export const getPathFromRoot = (string: string) => {
   return string.replace(downloadsRoot, '~')
+}
+
+export const getLocalCollectionsRoot = () => {
+  return path.join(downloadsRoot, `/collections`)
+}
+
+export const getLocalCollectionDir = (collectionId: string): string => {
+  return path.join(getLocalCollectionsRoot(), collectionId)
 }
 
 export const getLocalTracksRoot = () => {
@@ -22,6 +41,72 @@ export const getLocalTrackDir = (trackId: string): string => {
   return path.join(getLocalTracksRoot(), trackId)
 }
 
+// Collections
+
+export const getLocalCollectionJsonPath = (collectionId: string) => {
+  return path.join(getLocalCollectionDir(collectionId), `${collectionId}.json`)
+}
+
+export const writeCollectionJson = async (
+  collectionId: string,
+  collectionToWrite: Collection,
+  user: User
+) => {
+  const pathToWrite = getLocalCollectionJsonPath(collectionId)
+  if (await exists(pathToWrite)) {
+    await RNFS.unlink(pathToWrite)
+  }
+  await RNFS.mkdir(getLocalCollectionDir(collectionId))
+  await RNFS.write(
+    pathToWrite,
+    JSON.stringify({
+      ...collectionToWrite,
+      user
+    })
+  )
+}
+
+// Special case for favorites which is not a real collection with metadata
+export const writeFavoritesCollectionJson = async () => {
+  const pathToWrite = getLocalCollectionDir(DOWNLOAD_REASON_FAVORITES)
+  if (await exists(pathToWrite)) {
+    await RNFS.unlink(pathToWrite)
+  }
+  RNFS.mkdir(pathToWrite)
+}
+
+export const getCollectionJson = async (
+  collectionId: string
+): Promise<OfflineCollection> => {
+  try {
+    const collectionJson = await readFile(
+      getLocalCollectionJsonPath(collectionId)
+    )
+    return JSON.parse(collectionJson)
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      purgeDownloadedCollection(collectionId)
+    }
+    return Promise.reject(e)
+  }
+}
+
+export const getOfflineCollections = async () => {
+  const collectionsDir = getLocalCollectionsRoot()
+  if (!(await exists(collectionsDir))) {
+    return []
+  }
+  const files = await readDir(collectionsDir)
+  return files.filter((file) => file.isDirectory()).map((file) => file.name)
+}
+
+export const purgeDownloadedCollection = async (collectionId: string) => {
+  const collectionDir = getLocalCollectionDir(collectionId)
+  if (!(await exists(collectionDir))) return
+  await RNFS.unlink(collectionDir)
+  store.dispatch(removeCollection(collectionId))
+}
+
 // Track Json
 
 export const getLocalTrackJsonPath = (trackId: string) => {
@@ -30,11 +115,31 @@ export const getLocalTrackJsonPath = (trackId: string) => {
 
 // Cover Art
 
-export const getLocalCoverArtDestination = (trackId: string, uri: string) => {
+export const getLocalCollectionCoverArtDestination = (
+  collectionId: string,
+  uri: string
+) => {
+  return path.join(
+    getLocalCollectionDir(collectionId),
+    getArtFileNameFromUri(uri)
+  )
+}
+
+export const getLocalCollectionCoverArtPath = (
+  collectionId: string,
+  size: string
+) => {
+  return path.join(getLocalCollectionDir(collectionId), `${size}.jpg`)
+}
+
+export const getLocalTrackCoverArtDestination = (
+  trackId: string,
+  uri: string
+) => {
   return path.join(getLocalTrackDir(trackId), getArtFileNameFromUri(uri))
 }
 
-export const getLocalCoverArtPath = (trackId: string, size: string) => {
+export const getLocalTrackCoverArtPath = (trackId: string, size: string) => {
   return path.join(getLocalTrackDir(trackId), `${size}.jpg`)
 }
 
@@ -61,7 +166,7 @@ export const listTracks = async (): Promise<string[]> => {
     return []
   }
   const files = await readDir(tracksDir)
-  return files.filter((file) => file.isDirectory).map((file) => file.name)
+  return files.filter((file) => file.isDirectory()).map((file) => file.name)
 }
 
 export const getTrackJson = async (
@@ -126,38 +231,6 @@ export const purgeAllDownloads = async () => {
   trackIds.forEach((trackId) => {
     store.dispatch(unloadTrack(trackId))
   })
-}
-
-export const persistCollectionDownloadStatus = async (
-  collection: string,
-  downloaded: boolean
-) => {
-  try {
-    await AsyncStorage.mergeItem(
-      '@offline_collections',
-      JSON.stringify({
-        [collection]: downloaded
-      })
-    )
-  } catch (e) {
-    console.warn('Error writing offline collections', e)
-  }
-}
-
-export const getOfflineCollections = async () => {
-  try {
-    const offlineCollectionsAsync = await AsyncStorage.getItem(
-      '@offline_collections'
-    )
-
-    if (!offlineCollectionsAsync) return []
-
-    return Object.entries(JSON.parse(offlineCollectionsAsync))
-      .filter(([collection, downloaded]) => downloaded)
-      .map(([collection, downloaded]) => collection)
-  } catch (e) {
-    console.warn('Error reading offline collections', e)
-  }
 }
 
 export const purgeDownloadedTrack = async (trackId: string) => {

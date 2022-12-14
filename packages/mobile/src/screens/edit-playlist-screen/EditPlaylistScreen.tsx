@@ -107,7 +107,7 @@ export const EditPlaylistScreen = () => {
   const dispatch = useDispatch()
   const tracks = useSelector(getTracks)
 
-  const { source: coverArt } = useCollectionImage(playlist)
+  const collectionImageSource = useCollectionImage(playlist)
 
   const handleSubmit = useCallback(
     (values: PlaylistValues) => {
@@ -141,7 +141,7 @@ export const EditPlaylistScreen = () => {
   const initialValues = {
     playlist_name,
     description,
-    artwork: { url: coverArt[0].uri ?? '' },
+    artwork: { url: collectionImageSource?.source[0].uri ?? '' },
     removedTracks: [],
     tracks,
     track_ids: playlist.playlist_contents.track_ids

@@ -16,3 +16,7 @@ export const getIsCollectionMarkedForDownload =
 export const getOfflineTracks = (
   state: AppState
 ): OfflineDownloadsState['tracks'] => state.offlineDownloads.tracks
+
+export const getOfflineCollections = (
+  state: AppState
+): OfflineDownloadsState['collections'] => state.offlineDownloads.collections
