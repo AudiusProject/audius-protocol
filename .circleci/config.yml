@@ -1283,7 +1283,8 @@ jobs:
           docker_layer_caching: true
       - run: |
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          cd release-scripts
+          pwd
+          ls
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
           SLASH_ADDRESS=<< parameters.slash_address >> \
