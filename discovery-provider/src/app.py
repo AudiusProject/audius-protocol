@@ -610,6 +610,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("spl_token_backfill_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
     redis_inst.delete("backfill_cid_data_lock")
+    redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
