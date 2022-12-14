@@ -40,9 +40,9 @@ export const TrackingBar = ({ translationAnim }: TrackingBarProps) => {
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
-      const { currentTime, seekableDuration } = global.progress
-      if (seekableDuration !== undefined) {
-        setPercentComplete(currentTime / seekableDuration)
+      const { currentTime, duration } = global.progress
+      if (duration) {
+        setPercentComplete(currentTime / duration)
       } else {
         setPercentComplete(0)
       }
