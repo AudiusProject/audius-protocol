@@ -38,6 +38,12 @@ export interface Favorite
         * @memberof Favorite
         */
         user_id: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Favorite
+        */
+        created_at: string;
     }
 
 

@@ -751,6 +751,13 @@ export const getUserReplicaSet = (encodedUserId: string) => {
   }
 }
 
+export const getUnclaimedId = (type: 'users' | 'playlists' | 'tracks') => {
+  return {
+    endpoint: `/v1/${type}/unclaimed_id`,
+    timeout: 5000
+  }
+}
+
 export const getUserListenCountsMonthly = (
   encodedUserId: string,
   startTime: string,

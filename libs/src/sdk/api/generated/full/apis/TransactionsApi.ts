@@ -16,6 +16,9 @@
 
 import * as runtime from '../runtime';
 import {
+    TransactionHistoryCountResponse,
+    TransactionHistoryCountResponseFromJSON,
+    TransactionHistoryCountResponseToJSON,
     TransactionHistoryResponse,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
@@ -46,6 +49,17 @@ export interface GetAudioTransactionHistoryRequest {
      * The sort direction
      */
     sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
+}
+
+export interface GetAudioTransactionHistoryCountRequest {
+    /**
+     * The data that was signed by the user for signature recovery
+     */
+    encodedDataMessage: string;
+    /**
+     * The signature of data, used for signature recovery
+     */
+    encodedDataSignature: string;
 }
 
 /**
@@ -99,6 +113,38 @@ export class TransactionsApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }) as Promise<NonNullable<TransactionHistoryResponse["data"]>>;
+    }
+
+    /**
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionHistoryCount(requestParameters: GetAudioTransactionHistoryCountRequest): Promise<NonNullable<TransactionHistoryCountResponse["data"]>> {
+        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
+        }
+
+        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        }
+
+        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        }
+
+        return this.request({
+            path: `/transactions/count`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }) as Promise<NonNullable<TransactionHistoryCountResponse["data"]>>;
     }
 
 }

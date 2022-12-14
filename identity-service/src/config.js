@@ -856,6 +856,12 @@ const config = convict({
     format: 'string-array',
     env: 'updateReplicaSetWalletWhitelist',
     default: ''
+  },
+  ipApiKey: {
+    doc: 'Key for IPAPI',
+    format: String,
+    env: 'ipApiKey',
+    default: ''
   }
 })
 

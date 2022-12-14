@@ -24,6 +24,14 @@ export const getEnv = () => {
         envInitialized = true
     }
 
+    const ethRegistryAddress = process.env['ETH_REGISTRY_ADDRESS'] || '';
+    const ethTokenAddress = process.env['ETH_TOKEN_ADDRESS'];
+    const ethOwnerWallet = process.env['ETH_OWNER_WALLET'];
+    const ethProviderUrl = process.env['ETH_PROVIDER_URL'];
+
+    if (ethRegistryAddress === '' || ethTokenAddress === '' || ethOwnerWallet === '' || ethProviderUrl === '') {
+        throw new Error('Missing required eth params');
+    }
 
     const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
     const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
@@ -73,5 +81,9 @@ export const getEnv = () => {
         slackUrl,
         tracingEnabled,
         collectorUrl,
+        ethRegistryAddress,
+        ethTokenAddress,
+        ethOwnerWallet,
+        ethProviderUrl,
     }
 }
