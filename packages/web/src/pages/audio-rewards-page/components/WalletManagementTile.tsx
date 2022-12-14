@@ -57,11 +57,11 @@ const messages = {
   connectWallets: 'Connect Other Wallets',
   totalAudio: 'Total $AUDIO',
   buyAudio: 'Buy $AUDIO',
-  checkoutWithStripeOrCoinbase: 'Checkout with a credit card or Coinbase Pay',
-  checkoutWithStripe: 'Checkout with a credit card',
-  checkoutWithCoinbase: 'Checkout with Coinbase Pay',
-  showAdvanced: 'Show Advanced',
-  hideAdvanced: 'Hide Advanced',
+  buyAudioSubheader:
+    'Buy $Audio tokens to unlock VIP tiers, earn badges, and tip artists',
+  showAdvanced: 'Show More Options',
+  hideAdvanced: 'Hide More Options',
+  additionalPaymentMethods: 'Additional Payment Methods',
   advancedOptions: 'Advanced Options',
   stripeRegionNotSupported:
     'Link by Stripe is not yet supported in your region',
@@ -120,7 +120,7 @@ const AdvancedWalletActions = () => {
 
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   return (
-    <div className={styles.advancedSection}>
+    <div className={styles.moreOptionsSection}>
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
       <div className={styles.advancedOptions}>
         <Button
@@ -178,6 +178,60 @@ const AdvancedWalletActions = () => {
   )
 }
 
+type OnRampTooltipButtonProps = {
+  provider: OnRampProvider
+  isDisabled: boolean
+  bannedState: string | boolean
+}
+
+const OnRampTooltipButton = ({
+  provider,
+  isDisabled,
+  bannedState
+}: OnRampTooltipButtonProps) => {
+  const dispatch = useDispatch()
+  const onClick = useCallback(() => {
+    dispatch(
+      startBuyAudioFlow({
+        provider,
+        onSuccess: {
+          action: pushUniqueRoute(TRENDING_PAGE),
+          message: messages.findArtists
+        }
+      })
+    )
+  }, [dispatch, provider])
+  const bannedRegionText =
+    provider === OnRampProvider.COINBASE
+      ? messages.coinbasePayRegionNotSupported
+      : messages.stripeRegionNotSupported
+  const disabledText =
+    typeof bannedState === 'string'
+      ? provider === OnRampProvider.COINBASE
+        ? messages.coinbaseStateNotSupported(bannedState)
+        : messages.stripeStateNotSupported(bannedState)
+      : bannedRegionText
+  return (
+    <Tooltip
+      disabled={!isDisabled}
+      className={styles.tooltip}
+      text={disabledText}
+      color={'--secondary'}
+      shouldWrapContent={false}
+    >
+      <div className={styles.onRampButtonTooltipContainer}>
+        <OnRampButton
+          provider={provider}
+          className={styles.onRampButton}
+          disabled={isDisabled}
+          isDisabled={isDisabled}
+          onClick={onClick}
+        />
+      </div>
+    </Tooltip>
+  )
+}
+
 const isLocationSupported = ({
   location,
   allowedCountries,
@@ -194,13 +248,7 @@ const isLocationSupported = ({
   )
 }
 
-export const WalletManagementTile = () => {
-  const dispatch = useDispatch()
-  const totalBalance: Nullable<BNWei> =
-    useSelector(getAccountTotalBalance) ?? null
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
-  const [, setOpen] = useModalState('AudioBreakdown')
-
+const useOnRampProviderInfo = () => {
   const { isEnabled: isCoinbaseEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_COINBASE_ENABLED
   )
@@ -241,38 +289,45 @@ export const WalletManagementTile = () => {
     [value, stripeAllowedCountries, stripeDeniedRegions]
   )
   // Assume USA is supported, so if in USA but still not supported, it's a state ban
-  const isBannedStripeState =
-    value && value.country_code_iso3 === 'USA' && !isStripeAllowed
-  const isBannedCoinbaseState =
-    value && value.country_code_iso3 === 'USA' && !isCoinbaseAllowed
+  const isState = value && value.country_code_iso3 === 'USA'
+
+  return {
+    [OnRampProvider.STRIPE]: {
+      isEnabled: isStripeEnabled,
+      isAllowed: isStripeAllowed,
+      bannedState: isState && !isStripeAllowed ? value.region_code : false
+    },
+    [OnRampProvider.COINBASE]: {
+      isEnabled: isCoinbaseEnabled,
+      isAllowed: isCoinbaseAllowed,
+      bannedState: isState && !isCoinbaseAllowed ? value.region_code : false
+    }
+  }
+}
+
+export const WalletManagementTile = () => {
+  const totalBalance: Nullable<BNWei> =
+    useSelector(getAccountTotalBalance) ?? null
+  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
+  const [, setOpen] = useModalState('AudioBreakdown')
+
+  const onRampProviders = useOnRampProviderInfo()
+  const isStripeEnabled = onRampProviders[OnRampProvider.STRIPE].isEnabled
+  const isCoinbaseEnabled = onRampProviders[OnRampProvider.COINBASE].isEnabled
+  const primaryProvider =
+    (!onRampProviders[OnRampProvider.STRIPE].isAllowed || !isStripeEnabled) &&
+    onRampProviders[OnRampProvider.COINBASE].isAllowed &&
+    isCoinbaseEnabled
+      ? OnRampProvider.COINBASE
+      : OnRampProvider.STRIPE
+  const secondaryProvider =
+    primaryProvider === OnRampProvider.COINBASE
+      ? OnRampProvider.STRIPE
+      : OnRampProvider.COINBASE
 
   const onClickOpen = useCallback(() => {
     setOpen(true)
   }, [setOpen])
-
-  const onBuyWithCoinbaseClicked = useCallback(() => {
-    dispatch(
-      startBuyAudioFlow({
-        provider: OnRampProvider.COINBASE,
-        onSuccess: {
-          action: pushUniqueRoute(TRENDING_PAGE),
-          message: messages.findArtists
-        }
-      })
-    )
-  }, [dispatch])
-
-  const onBuyWithStripeClicked = useCallback(() => {
-    dispatch(
-      startBuyAudioFlow({
-        provider: OnRampProvider.STRIPE,
-        onSuccess: {
-          action: pushUniqueRoute(TRENDING_PAGE),
-          message: messages.findArtists
-        }
-      })
-    )
-  }, [dispatch])
 
   return (
     <div className={styles.walletManagementTile}>
@@ -313,60 +368,17 @@ export const WalletManagementTile = () => {
               <div className={styles.headerText}>
                 <div className={styles.title}>{messages.buyAudio}</div>
                 <div className={styles.subtitle}>
-                  {isCoinbaseEnabled && isStripeEnabled
-                    ? messages.checkoutWithStripeOrCoinbase
-                    : isCoinbaseEnabled
-                    ? messages.checkoutWithCoinbase
-                    : messages.checkoutWithStripe}
+                  {messages.buyAudioSubheader}
                 </div>
               </div>
             </div>
             <div className={styles.onRampButtons}>
-              {isStripeEnabled ? (
-                <Tooltip
-                  disabled={isStripeAllowed}
-                  className={styles.tooltip}
-                  text={
-                    isBannedStripeState
-                      ? messages.stripeStateNotSupported(value.region_code)
-                      : messages.stripeRegionNotSupported
-                  }
-                  color={'--secondary'}
-                  shouldWrapContent={false}
-                >
-                  <div>
-                    <OnRampButton
-                      provider={OnRampProvider.STRIPE}
-                      className={styles.onRampButton}
-                      disabled={!isStripeAllowed}
-                      isDisabled={!isStripeAllowed}
-                      onClick={onBuyWithStripeClicked}
-                    />
-                  </div>
-                </Tooltip>
-              ) : null}
-              {isCoinbaseEnabled ? (
-                <Tooltip
-                  disabled={isCoinbaseAllowed}
-                  className={styles.tooltip}
-                  text={
-                    isBannedCoinbaseState
-                      ? messages.stripeStateNotSupported(value.region_code)
-                      : messages.coinbasePayRegionNotSupported
-                  }
-                  color={'--secondary'}
-                  shouldWrapContent={false}
-                >
-                  <div>
-                    <OnRampButton
-                      provider={OnRampProvider.COINBASE}
-                      className={styles.onRampButton}
-                      disabled={!isCoinbaseAllowed}
-                      isDisabled={!isCoinbaseAllowed}
-                      onClick={onBuyWithCoinbaseClicked}
-                    />
-                  </div>
-                </Tooltip>
+              {onRampProviders[primaryProvider].isEnabled ? (
+                <OnRampTooltipButton
+                  provider={primaryProvider}
+                  isDisabled={!onRampProviders[primaryProvider].isAllowed}
+                  bannedState={onRampProviders[primaryProvider].bannedState}
+                />
               ) : null}
             </div>
           </>
@@ -378,7 +390,21 @@ export const WalletManagementTile = () => {
           showText={messages.showAdvanced}
           hideText={messages.hideAdvanced}
         >
-          <AdvancedWalletActions />
+          <div className={styles.moreOptions}>
+            {onRampProviders[secondaryProvider].isEnabled ? (
+              <div className={styles.moreOptionsSection}>
+                <div className={styles.subtitle}>
+                  {messages.additionalPaymentMethods}
+                </div>
+                <OnRampTooltipButton
+                  provider={secondaryProvider}
+                  isDisabled={!onRampProviders[secondaryProvider].isAllowed}
+                  bannedState={onRampProviders[secondaryProvider].bannedState}
+                />
+              </div>
+            ) : null}
+            <AdvancedWalletActions />
+          </div>
         </CollapsibleContent>
       </div>
     </div>

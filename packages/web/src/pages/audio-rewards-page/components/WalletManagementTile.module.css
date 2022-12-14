@@ -106,15 +106,21 @@
   padding-top: 20px;
 }
 
-.advancedSection {
+.moreOptions {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  gap: 16px;
+  padding: 24px;
+  gap: 24px;
   border-bottom: 1px solid var(--neutral-light-8);
+}
+.moreOptionsSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
 }
 .advancedOptions {
   display: flex;
@@ -147,6 +153,7 @@
 .onRampButtons > div {
   flex: 1;
 }
+.onRampButtonTooltipContainer,
 .onRampButton {
   width: 100%;
 }
@@ -155,11 +162,8 @@
 }
 
 .manageWalletsButton:hover,
-div:only-child > .onRampButton:not(:disabled):hover:not(:active) {
-  transform: perspective(1px) scale3d(1.02, 1.02, 1.02);
-}
-div:not(:only-child) > .onRampButton:not(:disabled):hover:not(:active) {
-  transform: perspective(1px) scale3d(1.03, 1.03, 1.03);
+div > .onRampButton:not(:disabled):hover:not(:active) {
+  transform: perspective(1px) scale3d(1.01, 1.01, 1.01);
 }
 
 .tooltip :global(.ant-tooltip-inner) {
