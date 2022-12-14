@@ -20,9 +20,9 @@ from src.queries.get_plays_metrics import get_plays_metrics
 from src.queries.get_historical_route_metrics import (
     get_historical_route_metrics
 )
-from src.queries.get_aggregate_route_metrics import {
+from src.queries.get_aggregate_route_metrics import (
     get_aggregate_route_metrics
-}
+)
 from src.queries.get_trailing_metrics import (
     get_aggregate_route_metrics_trailing_month,
 )

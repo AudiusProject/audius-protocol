@@ -615,7 +615,7 @@ def record_metrics(func):
                 e,
             )
 
-        route = route.split("?")[0]
+        route = request.path
         if "/v1/full/search/autocomplete" in route:
             route = "/".join(route.split("/")[:5])
         elif "/v1/full/" in route or "/users/intersection/" in route:
