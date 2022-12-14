@@ -136,10 +136,10 @@ export const Scrubber = ({
     if (!isDragging) {
       seekInterval.current = setInterval(() => {
         if (isPlaying && global.progress) {
-          const { currentTime, seekableDuration } = global.progress
-          if (seekableDuration !== undefined) {
+          const { currentTime, duration } = global.progress
+          if (duration !== undefined) {
             setTimestampStart(formatSeconds(currentTime))
-            setTimestampEnd(formatSeconds(seekableDuration))
+            setTimestampEnd(formatSeconds(duration))
           }
         }
       }, SEEK_INTERVAL)

@@ -1,5 +1,6 @@
 import 'react-native-gesture-handler'
 import { AppRegistry, LogBox } from 'react-native'
+import TrackPlayer from 'react-native-track-player'
 
 import { name as appName } from './app.json'
 
@@ -18,3 +19,4 @@ const App = require('./src/App').default
 LogBox.ignoreAllLogs()
 
 AppRegistry.registerComponent(appName, () => App)
+TrackPlayer.registerPlaybackService(() => require('./audio-service'))
