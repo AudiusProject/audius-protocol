@@ -416,10 +416,6 @@ def configure_celery(celery, test_config=None):
                 "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),
             },
-            "update_metrics": {
-                "task": "update_metrics",
-                "schedule": crontab(minute=0, hour="*"),
-            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
