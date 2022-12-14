@@ -1,5 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, text
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
@@ -7,8 +6,8 @@ from src.models.model_utils import RepresentableMixin
 class Subscription(Base, RepresentableMixin):
     __tablename__ = "subscriptions"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
+    blockhash = Column(String)
+    blocknumber = Column(Integer, index=True)
     subscriber_id = Column(Integer, primary_key=True, nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     is_current = Column(Boolean, primary_key=True, nullable=False)
@@ -21,11 +20,4 @@ class Subscription(Base, RepresentableMixin):
         primary_key=True,
         nullable=False,
         server_default=text("''::character varying"),
-    )
-
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Subscription.blockhash == Block.blockhash"
-    )
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Subscription.blocknumber == Block.number"
     )
