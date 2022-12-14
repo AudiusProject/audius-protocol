@@ -113,9 +113,9 @@ def upgrade():
     # Update the tracks table using the new temporary mapping table
     ###############################################################
     inner_sql = f"""
-        update tracks set track_cid = sub.track_cid
+        update tracks set track_cid = sub.track_cid::integer
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id
+        where tracks.track_id = sub.track_id::integer
         and tracks.is_current is true;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
