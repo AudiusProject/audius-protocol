@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-import { Animated, StatusBar, StyleSheet } from 'react-native'
+import { Animated, Platform, StatusBar, StyleSheet } from 'react-native'
 import * as BootSplash from 'react-native-bootsplash'
 
 import SplashLogo from 'app/assets/images/bootsplash_logo.svg'
@@ -51,7 +51,9 @@ export const SplashScreen = ({ canDismiss }: SplashScreenProps) => {
   const secondary = useColor('secondary')
   const statusBarColor = useColor('white')
   useEffect(() => {
-    StatusBar.setBackgroundColor(secondary)
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor(secondary)
+    }
   }, [secondary])
 
   useEffect(() => {
@@ -66,7 +68,9 @@ export const SplashScreen = ({ canDismiss }: SplashScreenProps) => {
         friction: 200,
         toValue: START_SIZE * 0.8
       }).start(() => {
-        StatusBar.setBackgroundColor(statusBarColor, true)
+        if (Platform.OS === 'android') {
+          StatusBar.setBackgroundColor(statusBarColor, true)
+        }
         Animated.parallel([
           Animated.spring(scale, {
             useNativeDriver: true,

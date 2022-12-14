@@ -625,9 +625,7 @@ export const Drawer: DrawerComponent = ({
     if (isOpen) {
       return (
         <TouchableWithoutFeedback
-          onPress={() => {
-            onClose()
-          }}
+          onPress={isGestureSupported ? onClose : undefined}
         >
           {renderBackgroundView()}
         </TouchableWithoutFeedback>

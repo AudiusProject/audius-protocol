@@ -1,5 +1,4 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
-import type WalletConnect from '@walletconnect/client'
 
 export type ConnectionType =
   | 'phantom'
@@ -12,7 +11,6 @@ type ConnectNewPhantomWallet = {
   phantom_encryption_public_key: string
   data: string
   nonce: string
-  connector?: WalletConnect
 }
 
 type ConnectNewEthWallet = {

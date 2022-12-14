@@ -6,6 +6,11 @@ export type ConnectNewWalletParams = {
   data: string
   nonce: string
 }
+type CancelPhantomConnectParams = {
+  path: 'wallet-connect' | 'wallet-sign-message'
+  errorCode: string
+  errorMessage: string
+}
 
 export type SignedMessageParams = {
   path: 'wallet-sign-message'
@@ -14,7 +19,10 @@ export type SignedMessageParams = {
 }
 
 export type WalletConnectParamList = {
-  Wallets: undefined | ConnectNewWalletParams | SignedMessageParams
+  Wallets:
+    | ConnectNewWalletParams
+    | CancelPhantomConnectParams
+    | SignedMessageParams
   ConfirmWalletConnection: {
     phantom_encryption_public_key: string
     data: string

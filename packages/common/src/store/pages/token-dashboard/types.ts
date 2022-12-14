@@ -84,7 +84,7 @@ export type AssociatedWalletsState = {
   removeWallet: {
     wallet: Nullable<string>
     chain: Nullable<Chain>
-    status: Nullable<'Confirming'>
+    status: Nullable<'Confirming' | 'Confirmed'>
   }
 }
 

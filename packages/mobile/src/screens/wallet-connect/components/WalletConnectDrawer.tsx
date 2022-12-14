@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import { tokenDashboardPageSelectors } from '@audius/common'
 import type {
   RenderQrcodeModalProps,
   WalletService
@@ -8,24 +9,30 @@ import {
   useWalletConnect,
   useWalletConnectContext
 } from '@walletconnect/react-native-dapp'
-import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { Platform, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
-import { getVisibility, getData } from 'app/store/drawers/selectors'
-import { setVisibility } from 'app/store/drawers/slice'
+import LoadingSpinner from 'app/components/loading-spinner'
+import { useDrawer } from 'app/hooks/useDrawer'
+import { getData } from 'app/store/drawers/selectors'
 import { makeStyles } from 'app/styles'
+
+import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
 
 import { EthWalletConnectOption } from './EthWalletConnectOption'
 import { PhantomWalletConnectOption } from './PhantomWalletConnectOption'
 import { SolanaPhoneOption } from './SolanaPhoneOption'
 
+const { getError } = tokenDashboardPageSelectors
+
 const SUPPORTED_SERVICES = new Set(['MetaMask', 'Rainbow'])
 const MODAL_NAME = 'ConnectWallets'
 
 const messages = {
-  title: 'Select Wallet'
+  title: 'Select Wallet',
+  connecting: 'Connecting...'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -34,7 +41,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginHorizontal: spacing(4),
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
+    position: 'relative'
   },
   title: {
     marginTop: spacing(4),
@@ -45,12 +53,25 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap'
+  },
+  connectingOverlay: {
+    position: 'absolute',
+    opacity: 0.3,
+    zIndex: 2,
+    backgroundColor: palette.white,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }))
 
 export const WalletConnectDrawer = () => {
   const styles = useStyles()
   const { walletServices } = useWalletConnectContext()
+  const canConnectNewWallet = useCanConnectNewWallet()
 
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
@@ -58,18 +79,28 @@ export const WalletConnectDrawer = () => {
   const data = useSelector(getData)
 
   return (
-    <NativeDrawer drawerName={MODAL_NAME}>
+    <NativeDrawer
+      drawerName={MODAL_NAME}
+      isGestureSupported={canConnectNewWallet}
+    >
       <View style={styles.root}>
-        <Text
-          style={styles.title}
-          fontSize='xl'
-          weight='heavy'
-          textTransform='uppercase'
-        >
-          {messages.title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text
+            style={styles.title}
+            fontSize='xl'
+            weight='heavy'
+            textTransform='uppercase'
+          >
+            {canConnectNewWallet ? messages.title : messages.connecting}
+          </Text>
+          {!canConnectNewWallet ? (
+            <LoadingSpinner
+              style={{ height: 25, width: 25, marginLeft: 4, marginTop: 2 }}
+            />
+          ) : null}
+        </View>
         <View style={styles.walletConnectionList}>
-          <SolanaPhoneOption />
+          {Platform.OS === 'android' ? <SolanaPhoneOption /> : null}
           <PhantomWalletConnectOption />
           {supportedWalletServices?.map((walletService: WalletService) => {
             const uri = data?.uri as string
@@ -83,6 +114,9 @@ export const WalletConnectDrawer = () => {
           })}
         </View>
       </View>
+      {!canConnectNewWallet ? (
+        <View style={styles.connectingOverlay}></View>
+      ) : null}
     </NativeDrawer>
   )
 }
@@ -92,32 +126,47 @@ export const WalletConnectProviderRenderModal = ({
   onDismiss,
   uri
 }: RenderQrcodeModalProps) => {
-  const dispatch = useDispatch()
-  const isDrawerVisible = useSelector(getVisibility('ConnectWallets'))
+  const { isOpen, onOpen, onClose } = useDrawer('ConnectWallets')
+  const [drawerStatus, setDrawerStatus] = useState('closed')
+  const errorMessage = useSelector(getError)
   const connector = useWalletConnect()
 
-  // When wallet connect visibility changes, show drawer
   useEffect(() => {
-    if (visible) {
-      dispatch(
-        setVisibility({ drawer: MODAL_NAME, visible: true, data: { uri } })
-      )
+    if (drawerStatus === 'closed' && visible && !isOpen) {
+      setDrawerStatus('opening')
+      onOpen({ uri })
     }
-  }, [visible, dispatch, uri])
-
-  // When the drawer gets dismissed, dismiss the wallet connect popup
-  useEffect(() => {
-    if (visible && !isDrawerVisible) {
-      // TODO: this isn't working properly
-      // onDismiss()
+    if (drawerStatus === 'opening' && visible && isOpen) {
+      setDrawerStatus('open')
     }
-  }, [visible, isDrawerVisible, onDismiss, connector])
+    if (drawerStatus === 'open' && visible && !isOpen) {
+      setDrawerStatus('closing')
+      onDismiss()
+    }
+
+    if (drawerStatus === 'open' && !visible && isOpen) {
+      setDrawerStatus('closing')
+      onClose()
+    }
+    if (drawerStatus === 'closing' && !visible && !isOpen) {
+      setDrawerStatus('closed')
+    }
+  }, [visible, isOpen, onOpen, onClose, drawerStatus, onDismiss, uri])
 
   useEffect(() => {
-    if (!isDrawerVisible && connector.connected) {
+    if (errorMessage) {
+      setDrawerStatus('closing')
+      onDismiss()
+      onClose()
+    }
+  }, [errorMessage, onClose, onDismiss])
+
+  useEffect(() => {
+    if (!isOpen && !visible && connector.session?.connected) {
       connector.killSession()
     }
-  }, [isDrawerVisible, connector])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, connector.session?.connected])
 
   // Must be an element to comply with interface
   return <></>
