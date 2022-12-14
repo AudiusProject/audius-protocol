@@ -62,7 +62,7 @@ const notarizeFn = async (appId, params) => {
   try {
     await notarize({
       appBundleId: appId,
-      appPath: appPath,
+      appPath,
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_ID_PASSWORD,
       ascProvider: process.env.ASC_PROVIDER
@@ -79,7 +79,7 @@ const notarizeFn = async (appId, params) => {
  * Write a json file indicating what environment the application is running in
  * @param {boolean} isProduction
  */
-const writeEnv = isProduction => {
+const writeEnv = (isProduction) => {
   if (isProduction) {
     return fse.writeFile(
       'electronConfig.json',
@@ -96,7 +96,7 @@ const writeEnv = isProduction => {
  * Generates the correct application info/build config based on the environment
  * @param {boolean} isProduction
  */
-const makeBuildParams = isProduction => {
+const makeBuildParams = (isProduction) => {
   const appId = isProduction ? PRODUCTION_APP_ID : STAGING_APP_ID
   const productName = isProduction ? PRODUCTION_NAME : STAGING_NAME
   const packageJsonName = isProduction
@@ -113,9 +113,9 @@ const makeBuildParams = isProduction => {
 
   return {
     config: {
-      appId: appId,
+      appId,
       npmRebuild: false,
-      productName: productName,
+      productName,
       // Inject data into package.json
       // https://www.electron.build/configuration/configuration
       extraMetadata: {
@@ -123,7 +123,7 @@ const makeBuildParams = isProduction => {
         // the app's app-data does not collide (in addition to a different `scheme`).
         // `productName` controls the app-data location on most platforms.
         // https://github.com/electron-userland/electron-builder/issues/3429#issuecomment-434024379
-        productName: productName,
+        productName,
         // `name` controls the app-data location on some linux platforms.
         // https://github.com/electron/electron/blob/main/docs/api/app.md#appgetname
         name: packageJsonName
@@ -132,7 +132,12 @@ const makeBuildParams = isProduction => {
       directories: {
         buildResources: buildDir
       },
-      files: [`${buildDir}/**/*`, 'electronConfig.json', 'src/electron.js'],
+      files: [
+        `${buildDir}/**/*`,
+        'electronConfig.json',
+        'src/electron.js',
+        'package.json'
+      ],
       protocols: {
         // Scheme controls deep links as well as local-storage prefix
         name: scheme,
@@ -170,7 +175,7 @@ const makeBuildParams = isProduction => {
       },
       win: {
         target: 'nsis',
-        icon: icon,
+        icon,
         publisherName: 'Audius, Inc.'
       },
       linux: {
@@ -187,7 +192,7 @@ const makeBuildParams = isProduction => {
           url: 'https://audius.co'
         }
       },
-      afterSign: async params => notarizeFn(appId, params),
+      afterSign: async (params) => notarizeFn(appId, params),
       publish: {
         provider: 's3',
         bucket,
@@ -217,7 +222,7 @@ console.log('Creating distribution with the following build params:')
 console.log(buildParams)
 
 writeEnv(program.env === 'production').then(() => {
-  builder.build(buildParams).catch(e => {
+  builder.build(buildParams).catch((e) => {
     console.error(e)
     process.exit(1)
   })
