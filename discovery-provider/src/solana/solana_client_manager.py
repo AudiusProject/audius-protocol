@@ -51,7 +51,7 @@ class SolanaClientManager:
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
-                    _check_unsupported_version(tx_info, tx_sig)
+                    _check_error(tx_info, tx_sig)
                     if tx_info["result"] is not None:
                         return tx_info
                 # We currently only support "legacy" solana transactions. If we encounter
@@ -171,8 +171,8 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 
-def _check_unsupported_version(tx, tx_sig):
-    if "error" in tx and tx["error"]["code"] == UNSUPPORTED_VERSION_ERROR_CODE:
+def _check_error(tx, tx_sig):
+    if "error" in tx:
         logger.error(
             f"solana_client_manager.py | _check_unsupported_version | Transaction {tx_sig} version is unsupported"
         )
