@@ -975,6 +975,7 @@ def get_karma(
             or_(User.cover_photo != None, User.cover_photo_sizes != None),
             or_(User.profile_picture != None, User.profile_picture_sizes != None),
             User.bio != None,
+            User.is_current == True
         )
         saves_and_reposts = saves_and_reposts.subquery()
 
