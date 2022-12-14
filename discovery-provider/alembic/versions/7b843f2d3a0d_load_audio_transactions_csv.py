@@ -21,6 +21,7 @@ depends_on = None
 
 
 def upgrade():
+    return
     env = os.getenv("audius_discprov_env")
     if env != "prod":
         return
