@@ -22,7 +22,8 @@ import {
 } from '../slice'
 import type { ConnectNewWalletAction } from '../types'
 import { buildUrl, decryptPayload, encryptPayload } from '../utils'
-const { setIsConnectingWallet } = tokenDashboardPageActions
+const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
+  tokenDashboardPageActions
 const { getUserId } = accountSelectors
 
 export function* convertToChecksumAddress(address: WalletAddress) {
@@ -36,7 +37,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
 
-  const message = `AudiusUserID:${accountUserId}`
+  yield* put(baseConnectNewWallet())
 
   switch (action.payload.connectionType) {
     case null:
@@ -76,6 +77,8 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
           collectibleCount
         })
       )
+
+      const message = `AudiusUserID:${accountUserId}`
 
       const payload = {
         session,

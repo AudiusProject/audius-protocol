@@ -25,7 +25,6 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
-import { ConfirmRemoveWalletDrawer } from './components/confirm-remove-wallet-drawer'
 import { useDrawerState } from './components/drawer'
 import { DeleteConfirmationDrawer } from './components/drawers/DeleteConfirmationDrawer'
 import { ShareToStoryProgressDrawer } from './components/share-drawer/useShareToStory'
@@ -96,7 +95,6 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteConfirmation: DeleteConfirmationDrawer,
-  ConfirmRemoveWallet: ConfirmRemoveWalletDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer
 }
 

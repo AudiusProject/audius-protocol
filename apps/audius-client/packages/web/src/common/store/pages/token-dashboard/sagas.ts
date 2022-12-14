@@ -13,6 +13,8 @@ import {
 } from 'common/store/profile/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
+import { watchRemoveWallet } from './removeWalletSaga'
+
 const { fetchAssociatedWallets, setAssociatedWallets } =
   tokenDashboardPageActions
 
@@ -101,7 +103,7 @@ function* watchGetAssociatedWallets() {
 }
 
 const sagas = () => {
-  return [watchGetAssociatedWallets]
+  return [watchGetAssociatedWallets, watchRemoveWallet]
 }
 
 export default sagas

@@ -1,1 +1,0 @@
-export { ConfirmRemoveWalletDrawer } from './ConfirmRemoveWalletDrawer'

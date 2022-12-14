@@ -1,6 +1,6 @@
 import type { SystemAppearance, Nullable } from '@audius/common'
 import { themeSelectors } from '@audius/common'
-import { StatusBar } from 'react-native'
+import { Platform, StatusBar } from 'react-native'
 import { useSelector } from 'react-redux'
 
 const { getTheme, getSystemAppearance } = themeSelectors
@@ -18,10 +18,16 @@ export enum Theme {
 export const setStatusBarTheme = (theme: 'light' | 'dark') => {
   if (theme === 'light') {
     StatusBar.setBarStyle('dark-content')
-    StatusBar.setBackgroundColor(defaultTheme.white)
+
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor(defaultTheme.white)
+    }
   } else {
     StatusBar.setBarStyle('light-content')
-    StatusBar.setBackgroundColor(darkTheme.white)
+
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor(darkTheme.white)
+    }
   }
 }
 

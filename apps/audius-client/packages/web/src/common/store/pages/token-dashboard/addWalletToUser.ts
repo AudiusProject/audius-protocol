@@ -13,11 +13,10 @@ import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'
+import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
 const { getUserId } = accountSelectors
 const { getBalance } = walletActions
 const { setWalletAddedConfirmed, updateWalletError } = tokenDashboardPageActions
-
-const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
 export function* addWalletToUser(
   updatedMetadata: User,
@@ -63,7 +62,7 @@ export function* addWalletToUser(
         cacheActions.update(Kind.USERS, [
           {
             id: accountUserId,
-            metadata: { metadata_multihash: updatedCID }
+            metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
           }
         ])
       )

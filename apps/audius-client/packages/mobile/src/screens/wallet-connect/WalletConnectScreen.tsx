@@ -1,41 +1,22 @@
-import { useCallback, useEffect } from 'react'
-
-import {
-  accountSelectors,
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
-import { useRoute } from '@react-navigation/native'
-import { useWalletConnect } from '@walletconnect/react-native-dapp'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
-import { Button, Text, Screen } from 'app/components/core'
+import { Text, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { getStatus } from 'app/store/wallet-connect/selectors'
-import {
-  connectNewWallet,
-  setConnectionStatus,
-  signMessage
-} from 'app/store/wallet-connect/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 
+import { ConnectNewWalletButton } from './ConnectNewWalletButton'
 import { LinkedWallets } from './components'
-import type { WalletConnectParamList, WalletConnectRoute } from './types'
-
-const { updateWalletError } = tokenDashboardPageActions
-const { getUserId } = accountSelectors
-const { getConfirmingWallet } = tokenDashboardPageSelectors
+import type { WalletConnectParamList } from './types'
+import { useWalletStatusToasts } from './useWalletStatusToasts'
 
 const messages = {
   title: 'Connect Wallets',
   subtitle: 'Connect Additional Wallets With Your Account',
   text: 'Show off your NFT Collectibles and flaunt your $AUDIO with a VIP badge on your profile.',
-  connect: 'Connect New Wallet',
   linkedWallets: 'Linked Wallets',
   audio: '$AUDIO'
 }
@@ -43,7 +24,8 @@ const messages = {
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     paddingVertical: spacing(4),
-    paddingHorizontal: spacing(4)
+    paddingHorizontal: spacing(4),
+    flex: 1
   },
   subtitle: {
     textAlign: 'center',
@@ -58,86 +40,13 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   connectButton: {
     marginTop: spacing(6)
-  },
-  linkedWallets: {
-    marginTop: spacing(6)
   }
 }))
 
 export const WalletConnectScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<WalletConnectParamList>()
-  const connector = useWalletConnect()
-  const dispatch = useDispatch()
-  const { params } = useRoute<WalletConnectRoute<'Wallets'>>()
-  const connectionStatus = useSelector(getStatus)
-  const { wallet } = useSelector(getConfirmingWallet)
-  const accountUserId = useSelector(getUserId)
-
-  useEffect(() => {
-    if (
-      connectionStatus === 'connected' &&
-      connector.session.connected &&
-      wallet
-    ) {
-      dispatch(setConnectionStatus({ status: 'signing' }))
-
-      const message = `AudiusUserID:${accountUserId}`
-      const messageParams = [message, wallet]
-
-      // unfortunately this doesn't trigger when called right away,
-      // even when session.connected is true
-      setTimeout(() => {
-        connector
-          .signPersonalMessage(messageParams)
-          .then((result) => {
-            dispatch(
-              signMessage({ data: result, connectionType: 'wallet-connect' })
-            )
-          })
-          .catch(() => {
-            dispatch(
-              updateWalletError({
-                errorMessage:
-                  'An error occured while connecting a wallet with your account.'
-              })
-            )
-          })
-      }, 1000)
-    } else if (connectionStatus === 'done') {
-      connector.killSession()
-    }
-  }, [wallet, accountUserId, connector, dispatch, connectionStatus])
-
-  useEffect(() => {
-    connector.on('connect', (_, payload) => {
-      const { accounts } = payload.params[0]
-      const wallet = accounts[0]
-
-      dispatch(
-        connectNewWallet({
-          publicKey: wallet,
-          connectionType: 'wallet-connect'
-        })
-      )
-    })
-    return () => {
-      connector?.off('connect')
-    }
-  }, [connector, dispatch])
-
-  useEffect(() => {
-    if (!params) return
-    if (params.path === 'wallet-connect') {
-      dispatch(connectNewWallet({ ...params, connectionType: 'phantom' }))
-    } else if (params.path === 'wallet-sign-message') {
-      dispatch(signMessage({ ...params, connectionType: 'phantom' }))
-    }
-  }, [params?.path, params, dispatch])
-
-  const handleConnectWallet = useCallback(() => {
-    connector.connect()
-  }, [connector])
+  useWalletStatusToasts()
 
   return (
     <Screen
@@ -156,16 +65,8 @@ export const WalletConnectScreen = () => {
         <Text weight='medium' fontSize='medium' style={styles.text}>
           {messages.text}
         </Text>
-        <Button
-          style={styles.connectButton}
-          title={messages.connect}
-          variant='primary'
-          size='large'
-          onPress={handleConnectWallet}
-        />
-        <View style={styles.linkedWallets}>
-          <LinkedWallets />
-        </View>
+        <ConnectNewWalletButton />
+        <LinkedWallets />
       </View>
     </Screen>
   )

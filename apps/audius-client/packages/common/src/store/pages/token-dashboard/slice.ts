@@ -22,6 +22,12 @@ const initialConfirmingWallet = {
   signature: null
 }
 
+const initialRemoveWallet = {
+  wallet: null,
+  chain: null,
+  status: null
+}
+
 const initialState: TokenDashboardState = {
   modalState: null,
   modalVisible: false,
@@ -32,11 +38,7 @@ const initialState: TokenDashboardState = {
     confirmingWallet: initialConfirmingWallet,
     connectedSolWallets: null,
     errorMessage: null,
-    removeWallet: {
-      wallet: null,
-      chain: null,
-      status: null
-    }
+    removeWallet: initialRemoveWallet
   }
 }
 
@@ -239,6 +241,10 @@ const slice = createSlice({
       }
       state.associatedWallets.errorMessage = null
     },
+    cancelRemoveWallet: (state) => {
+      state.associatedWallets.removeWallet = initialRemoveWallet
+      state.modalState = null
+    },
     confirmRemoveWallet: (state, _payload: ConfirmRemoveWalletAction) => {
       state.associatedWallets.removeWallet.status = 'Confirming'
       state.modalState = {
@@ -252,9 +258,10 @@ const slice = createSlice({
         payload: { wallet, chain }
       }: PayloadAction<{ wallet: WalletAddress; chain: Chain }>
     ) => {
-      state.associatedWallets.removeWallet.status = null
-      state.associatedWallets.removeWallet.wallet = null
-      state.associatedWallets.removeWallet.chain = null
+      state.associatedWallets.removeWallet = {
+        ...initialRemoveWallet,
+        status: 'Confirmed'
+      }
       if (chain === Chain.Sol) {
         state.associatedWallets.connectedSolWallets =
           state.associatedWallets.connectedSolWallets?.filter(
@@ -283,6 +290,9 @@ const slice = createSlice({
     preloadWalletProviders: (_state) => {},
     resetStatus: (state) => {
       state.associatedWallets.status = null
+    },
+    resetRemovedStatus: (state) => {
+      state.associatedWallets.removeWallet.status = null
     }
   }
 })
@@ -302,11 +312,13 @@ export const {
   pressConnectWallets,
   setIsConnectingWallet,
   requestRemoveWallet,
+  cancelRemoveWallet,
   confirmRemoveWallet,
   removeWallet,
   updateWalletError,
   preloadWalletProviders,
   resetStatus,
+  resetRemovedStatus,
   transferEthAudioToSolWAudio,
   setCanRecipientReceiveWAudio
 } = slice.actions

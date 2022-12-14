@@ -21,9 +21,12 @@ export const useDrawer = (drawerName: Drawer) => {
     dispatch(setVisibility({ drawer: drawerName, visible: false }))
   }, [dispatch, drawerName])
 
-  const onOpen = useCallback(() => {
-    dispatch(setVisibility({ drawer: drawerName, visible: true }))
-  }, [dispatch, drawerName])
+  const onOpen = useCallback(
+    (data?: any) => {
+      dispatch(setVisibility({ drawer: drawerName, visible: true, data }))
+    },
+    [dispatch, drawerName]
+  )
 
   return { isOpen, onClose, onClosed, onOpen, visibleState, data }
 }

@@ -52,3 +52,6 @@ export const getConfirmingWallet = (state: CommonState) =>
 
 export const getError = (state: CommonState) =>
   state.pages.tokenDashboard.associatedWallets.errorMessage
+
+export const getConfirmingWalletStatus = (state: CommonState) =>
+  state.pages.tokenDashboard.associatedWallets.status
