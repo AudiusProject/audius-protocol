@@ -28,10 +28,10 @@ import SignOnModal from 'components/sign-on/SignOnModal'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import LoadingPage from 'pages/sign-on/components/LoadingPage'
+import ProfilePage from 'pages/sign-on/components/ProfilePage'
 import { EmailPage } from 'pages/sign-on/components/desktop/EmailPage'
 import FollowPage from 'pages/sign-on/components/desktop/FollowPage'
 import PasswordPage from 'pages/sign-on/components/desktop/PasswordPage'
-import ProfilePage from 'pages/sign-on/components/desktop/ProfilePage'
 import { SignInPage } from 'pages/sign-on/components/desktop/SignInPage'
 import StartPlatformPage from 'pages/sign-on/components/desktop/StartPlatformPage'
 import lazyWithPreload from 'utils/lazyWithPreload'
@@ -279,21 +279,21 @@ const SignOnPage = ({
         }}
       >
         <ProfilePage
-          name={name}
           handle={handle}
           isVerified={verified}
-          twitterId={twitterId}
+          name={name}
           onHandleChange={onHandleChange}
           onNameChange={onNameChange}
-          profileImage={profileImage}
-          setProfileImage={onSetProfileImage}
-          setTwitterProfile={setTwitterProfile}
-          setInstagramProfile={setInstagramProfile}
-          setTikTokProfile={setTikTokProfile}
-          validateHandle={validateHandle}
-          recordTwitterStart={recordTwitterStart}
-          recordInstagramStart={recordInstagramStart}
           onNextPage={onNextPage}
+          profileImage={profileImage}
+          recordInstagramStart={recordInstagramStart}
+          recordTwitterStart={recordTwitterStart}
+          setInstagramProfile={setInstagramProfile}
+          setProfileImage={onSetProfileImage}
+          setTikTokProfile={setTikTokProfile}
+          setTwitterProfile={setTwitterProfile}
+          twitterId={twitterId}
+          validateHandle={validateHandle}
         />
       </animated.div>
     ),

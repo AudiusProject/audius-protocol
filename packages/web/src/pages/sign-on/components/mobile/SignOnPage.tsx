@@ -5,7 +5,9 @@ import {
   User,
   AccountImage,
   InstagramProfile,
-  TwitterProfile
+  TwitterProfile,
+  TikTokProfile,
+  BooleanKeys
 } from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
@@ -13,6 +15,7 @@ import { Transition } from 'react-spring/renderprops'
 
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import ProfilePage from 'pages/sign-on/components/ProfilePage'
 import FollowPage, {
   BottomSection as FollowPageBottom
 } from 'pages/sign-on/components/mobile/FollowPage'
@@ -20,7 +23,6 @@ import Header from 'pages/sign-on/components/mobile/Header'
 import InitialPage from 'pages/sign-on/components/mobile/InitialPage'
 import NotificationPermissionsPage from 'pages/sign-on/components/mobile/NotificationPermissionsPage'
 import PasswordPage from 'pages/sign-on/components/mobile/PasswordPage'
-import ProfilePage from 'pages/sign-on/components/mobile/ProfilePage'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
 import LoadingPage from './LoadingPage'
@@ -57,6 +59,12 @@ export type SignOnProps = {
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
+    profileImg?: AccountImage,
+    skipEdit?: boolean
+  ) => void
+  setTikTokProfile: (
+    uuid: string,
+    profile: TikTokProfile,
     profileImg?: AccountImage,
     skipEdit?: boolean
   ) => void
@@ -106,6 +114,7 @@ const SignOnPage = ({
   onSetProfileImage,
   setTwitterProfile,
   setInstagramProfile,
+  setTikTokProfile,
   recordTwitterStart,
   recordInstagramStart,
   validateHandle,
@@ -200,20 +209,24 @@ const SignOnPage = ({
       >
         <Header />
         <ProfilePage
-          name={name}
+          displayInstagramRemoteVarKey={
+            BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
+          }
           handle={handle}
           isVerified={verified}
-          twitterId={twitterId}
+          name={name}
           onHandleChange={onHandleChange}
           onNameChange={onNameChange}
-          profileImage={profileImage}
-          setProfileImage={onSetProfileImage}
-          setTwitterProfile={setTwitterProfile}
-          setInstagramProfile={setInstagramProfile}
-          recordTwitterStart={recordTwitterStart}
-          recordInstagramStart={recordInstagramStart}
-          validateHandle={validateHandle}
           onNextPage={onNextPage}
+          profileImage={profileImage}
+          recordInstagramStart={recordInstagramStart}
+          recordTwitterStart={recordTwitterStart}
+          setInstagramProfile={setInstagramProfile}
+          setProfileImage={onSetProfileImage}
+          setTikTokProfile={setTikTokProfile}
+          setTwitterProfile={setTwitterProfile}
+          twitterId={twitterId}
+          validateHandle={validateHandle}
         />
       </animated.div>
     ),

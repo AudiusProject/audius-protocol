@@ -29,16 +29,16 @@
   position: absolute;
   top: 60px;
   left: 38px;
-  background-color: #dad9e0;
-}
-
-.hide {
-  display: none;
 }
 
 /* Mobile */
 .isMobile.container {
   padding: 24px 16px;
+}
+
+.isMobile .backButton {
+  top: 8px;
+  left: 8px;
 }
 
 .isMobile .header {
@@ -52,10 +52,4 @@
   width: 100%;
   max-width: 368px;
   height: 536px;
-}
-
-.isMobile .header {
-  margin: 0px 0px 16px;
-  font-size: var(--font-m);
-  line-height: 26px;
 }

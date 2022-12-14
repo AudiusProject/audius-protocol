@@ -428,21 +428,17 @@ function* signUp() {
           }
         }
 
-        // if (
-        //   !signOn.useMetaMask &&
-        //   signOn.tikTokId &&
-        //   handle.toLowerCase() === (signOn.tikTokId || '').toLowerCase()
-        // ) {
-        //   const { error } = yield call(
-        //     audiusBackendInstance.associateTikTokAccount,
-        //     handle.toLowerCase(),
-        //     userId,
-        //     handle
-        //   )
-        //   if (error) {
-        //     yield put(signOnActions.setTikTokProfileError(error))
-        //   }
-        // }
+        if (!signOn.useMetaMask && signOn.tikTokId) {
+          const { error } = yield call(
+            audiusBackendInstance.associateTikTokAccount,
+            handle.toLowerCase(),
+            userId,
+            handle
+          )
+          if (error) {
+            yield put(signOnActions.setTikTokProfileError(error))
+          }
+        }
 
         yield put(
           identify(handle, {
