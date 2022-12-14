@@ -6,6 +6,7 @@ Create Date: 2022-12-05 20:30:57.288526
 
 """
 import os
+import shutil
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -41,14 +42,17 @@ def upgrade():
     connection.execute(query)
 
     path_zip = Path(__file__).parent.joinpath(
-        "../tmp/audio_transactions_history.csv.zip"
+        "../audio_transactions_csv/audio_transactions_history.csv.zip"
     )
-    path_csv = Path(__file__).parent.joinpath("../tmp/audio_transactions_history.csv")
-    path_tmp = Path(__file__).parent.joinpath("../tmp")
-    if os.path.isfile(path_zip):
-        os.rmdir(path_tmp)
-
+    path_csv = Path(__file__).parent.joinpath(
+        "../audio_transactions_csv/audio_transactions_history.csv"
+    )
+    path_tmp = Path(__file__).parent.joinpath("../audio_transactions_csv")
+    if os.path.isdir(path_tmp):
+        shutil.rmtree(path_tmp)
     os.mkdir(path_tmp)
+
+    print(path_tmp)
     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
     print(f"Migration - downloading {aws_url}")
     urllib.request.urlretrieve(aws_url, path_zip)
@@ -59,9 +63,8 @@ def upgrade():
     cursor = connection.connection.cursor()
     with open(path_csv, "r") as f:
         cursor.copy_from(f, "audio_transactions_history", sep=",")
-    os.remove(path_zip)
-    os.remove(path_csv)
-    os.rmdir(path_tmp)
+    if os.path.isdir(path_tmp):
+        shutil.rmtree(path_tmp)
 
 
 def downgrade():
