@@ -1,12 +1,20 @@
-import { Environment, remoteConfig } from '@audius/common'
-import optimizely from '@optimizely/optimizely-sdk'
+import { Environment, ErrorLevel, remoteConfig } from '@audius/common'
+import optimizely, { Config } from '@optimizely/optimizely-sdk'
+import { isEmpty } from 'lodash'
+
+import { reportToSentry } from 'store/errors/reportToSentry'
+
+declare global {
+  interface Window {
+    optimizelyDatafile: Config['datafile']
+  }
+}
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
   createOptimizelyClient: async () => {
     // Wait for optimizely to load if necessary (as it can be an async or defer tag)
-    // @ts-ignore: injected in index.html
     if (!window.optimizelyDatafile) {
       let cb
       await new Promise((resolve) => {
@@ -16,9 +24,24 @@ export const remoteConfigInstance = remoteConfig({
       if (cb) window.removeEventListener('OPTIMIZELY_LOADED', cb)
     }
 
+    const datafile = window.optimizelyDatafile
+    if (isEmpty(datafile)) {
+      reportToSentry({
+        level: ErrorLevel.Error,
+        error: new Error('Optimizely failed to load')
+      })
+    }
+
     return optimizely.createInstance({
-      // @ts-ignore: injected in index.html
-      datafile: window.optimizelyDatafile
+      datafile,
+      errorHandler: {
+        handleError: (error) => {
+          reportToSentry({
+            level: ErrorLevel.Error,
+            error
+          })
+        }
+      }
     })
   },
   getFeatureFlagSessionId: async () => {
