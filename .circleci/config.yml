@@ -1273,6 +1273,7 @@ jobs:
         type: string
         default: ""
     steps:
+      - checkout
       - add_ssh_keys:
           fingerprints:
             # github.com
@@ -1282,8 +1283,7 @@ jobs:
           docker_layer_caching: true
       - run: |
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:AudiusProject/audius-tooling.git
-          cd audius-tooling
+          cd release-scripts
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
           SLASH_ADDRESS=<< parameters.slash_address >> \
@@ -1813,6 +1813,10 @@ workflows:
             - GCP2
           requires:
             - tests
+
+      - release-scripts:
+          name: dheeraj-test
+          target: dheeraj-test
 
 
   # in order to trigger this job
