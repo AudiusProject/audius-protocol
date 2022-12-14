@@ -45,6 +45,9 @@ def upgrade():
     )
     path_csv = Path(__file__).parent.joinpath("../tmp/audio_transactions_history.csv")
     path_tmp = Path(__file__).parent.joinpath("../tmp")
+    if os.path.isfile(path_zip):
+        os.rmdir(path_tmp)
+
     os.mkdir(path_tmp)
     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
     print(f"Migration - downloading {aws_url}")
