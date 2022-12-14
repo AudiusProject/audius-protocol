@@ -16,9 +16,9 @@ from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
-from src.models.social.subscription import Subscription
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
@@ -867,7 +867,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(Follow).filter(Follow.blockhash == revert_hash).all()
             )
             revert_subscription_entries = (
-                session.query(Subscription).filter(Subscription.blockhash == revert_hash).all()
+                session.query(Subscription)
+                .filter(Subscription.blockhash == revert_hash)
+                .all()
             )
             revert_playlist_entries = (
                 session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
@@ -959,11 +961,10 @@ def revert_blocks(self, db, revert_blocks_list):
                 previous_subscription_entry = (
                     session.query(Subscription)
                     .filter(
-                        Subscription.subscriber_id == subscription_to_revert.subscriber_id
+                        Subscription.subscriber_id
+                        == subscription_to_revert.subscriber_id
                     )
-                    .filter(
-                        Subscription.user_id == subscription_to_revert.user_id
-                    )
+                    .filter(Subscription.user_id == subscription_to_revert.user_id)
                     .order_by(Subscription.blocknumber.desc())
                     .first()
                 )
