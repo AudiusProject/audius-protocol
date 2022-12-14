@@ -930,6 +930,7 @@ router.get(
     req.params.CID = fileRecord.multihash
     req.params.streamable = true
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Copy320-CID', fileRecord.multihash)
     next()
   },
   getCID

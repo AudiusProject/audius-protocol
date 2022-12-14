@@ -558,6 +558,7 @@ export class AudiusLibs {
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
         this.web3Config ? this.web3Config.entityManagerAddress : null,
+        this.web3Config ? this.web3Config.entityManagerAddress : null,
         this.isServer,
         this.logger
       )

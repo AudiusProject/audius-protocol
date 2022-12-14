@@ -9,6 +9,7 @@ from typing import Any, List, Optional, Set, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
+from src.exceptions import UnsupportedVersionError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.audio_transactions_history import (
@@ -175,6 +176,8 @@ def parse_spl_token_transaction(
         }
         return receiver_spl_tx_info
 
+    except UnsupportedVersionError:
+        return None
     except Exception as e:
         signature = tx_sig["signature"]
         logger.error(

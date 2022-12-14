@@ -12,7 +12,7 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import { makeHistogramToRecord } from '../stateMachineUtils'
+import { makeHistogramToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
 import { stringifyMap } from '../../../utils'
 import {

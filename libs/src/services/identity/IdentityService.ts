@@ -230,6 +230,24 @@ export class IdentityService {
   }
 
   /**
+   * Associates a user with an TikTok uuid.
+   * @param uuid from the TikTok API
+   * @param userId
+   * @param handle
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    return await this._makeRequest({
+      url: '/tiktok/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle
+      }
+    })
+  }
+
+  /**
    * Logs a track listen for a given user id.
    * @param trackId
    * @param userId
@@ -395,7 +413,9 @@ export class IdentityService {
     senderAddress: string,
     encodedABI: string,
     gasLimit: number,
-    handle: string | null = null
+    handle: string | null = null,
+    nethermindContractAddress: string | null | undefined,
+    nethermindEncodedAbi: string
   ): Promise<{ receipt: TransactionReceipt }> {
     const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
@@ -417,7 +437,9 @@ export class IdentityService {
         encodedABI,
         gasLimit,
         token,
-        handle
+        handle,
+        nethermindContractAddress,
+        nethermindEncodedAbi
       }
     })
   }

@@ -63,6 +63,7 @@ from src.queries.get_tracks_including_unlisted import get_tracks_including_unlis
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
@@ -1329,3 +1330,14 @@ class SubsequentTrack(Resource):
 
         subsequent_tracks = get_subsequent_tracks(decoded_track_id, limit)
         return success_response(subsequent_tracks)
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedTrackId(Resource):
+    @ns.doc(
+        id="""Get unclaimed track ID""",
+        description="""Gets an unclaimed blockchain track ID""",
+    )
+    def get(self):
+        unclaimed_id = get_unclaimed_id("track")
+        return success_response(unclaimed_id)

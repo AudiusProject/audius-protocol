@@ -997,6 +997,17 @@ export class DiscoveryProvider {
     )
   }
 
+  /**
+   * Retrieves an unclaimed ID
+   * @return encoded ID
+   */
+  async getUnclaimedId(
+    type: 'users' | 'playlists' | 'tracks'
+  ): Promise<null | undefined | string> {
+    const req = Requests.getUnclaimedId(type)
+    return await this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
