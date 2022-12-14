@@ -1,23 +1,29 @@
 import path from 'path'
 
 import type {
+  Collection,
+  CommonState,
+  CoverArtSizes,
   DownloadReason,
   Track,
   UserMetadata,
   UserTrackMetadata
 } from '@audius/common'
 import {
+  cacheCollectionsSelectors,
   Kind,
   makeUid,
   DefaultSizes,
   SquareSizes,
   encodeHashId,
-  accountSelectors
+  accountSelectors,
+  cacheUsersSelectors
 } from '@audius/common'
 import { uniq, isEqual } from 'lodash'
 import RNFS, { exists } from 'react-native-fs'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
+import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { store } from 'app/store'
 import {
   addCollection,
@@ -25,8 +31,7 @@ import {
   startDownload,
   completeDownload,
   errorDownload,
-  loadTrack,
-  removeCollection
+  loadTrack
 } from 'app/store/offline-downloads/slice'
 
 import { apiClient } from '../audius-api-client'
@@ -36,58 +41,106 @@ import type { TrackDownloadWorkerPayload } from './offline-download-queue'
 import { enqueueTrackDownload } from './offline-download-queue'
 import {
   getLocalAudioPath,
-  getLocalCoverArtDestination,
+  getLocalTrackCoverArtDestination,
   getLocalTrackJsonPath,
   purgeDownloadedTrack,
   getTrackJson,
-  persistCollectionDownloadStatus,
   verifyTrack,
-  writeTrackJson
+  writeTrackJson,
+  writeCollectionJson,
+  writeFavoritesCollectionJson,
+  purgeDownloadedCollection,
+  getLocalCollectionCoverArtDestination
 } from './offline-storage'
 const { getUserId } = accountSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { getUserFromCollection } = cacheUsersSelectors
 
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 /** Main entrypoint - perform all steps required to complete a download for each track */
 export const downloadCollection = async (
-  collection: string,
-  tracksForDownload: TrackForDownload[]
+  tracksForDownload: TrackForDownload[],
+  collectionId?: number,
+  isFavoritesDownload?: boolean
 ) => {
-  store.dispatch(addCollection(collection))
-  persistCollectionDownloadStatus(collection, true)
+  const state = store.getState()
+  let collection = getCollection(state, { id: collectionId })
+  const user = getUserFromCollection(state, { id: collectionId })
+  const collectionIdStr: string = isFavoritesDownload
+    ? DOWNLOAD_REASON_FAVORITES
+    : collectionId!.toString()
+  if (isFavoritesDownload) {
+    writeFavoritesCollectionJson()
+    // @ts-ignore state is CommonState
+    const userCollections = getAccountCollections(state as CommonState, '')
+    userCollections.forEach(async (userCollection) => {
+      const user = getUserFromCollection(state, {
+        id: userCollection.playlist_id
+      })
+      if (!user) return
+      userCollection =
+        (await populateCoverArtSizes({
+          ...userCollection,
+          user
+        })) ?? userCollection
+      downloadCollectionCoverArt(userCollection)
+      writeCollectionJson(
+        userCollection.playlist_id.toString(),
+        userCollection,
+        user
+      )
+    })
+  } else {
+    if (!collection || !user) return
+    collection =
+      (await populateCoverArtSizes({
+        ...collection,
+        user
+      })) ?? collection
+    downloadCollectionCoverArt(collection)
+    await writeCollectionJson(collectionIdStr, collection!, user)
+  }
+  store.dispatch(addCollection(collectionIdStr))
   store.dispatch(
     batchStartDownload(
       tracksForDownload.map(({ trackId }) => trackId.toString())
     )
   )
   tracksForDownload.forEach((trackForDownload) =>
-    enqueueTrackDownload(trackForDownload, collection)
+    enqueueTrackDownload(trackForDownload, collectionIdStr)
   )
 }
 
-const populateCoverArtSizes = async (track: UserTrackMetadata & Track) => {
-  if (!track || !track.user || (!track.cover_art_sizes && !track.cover_art))
+const populateCoverArtSizes = async <
+  T extends Pick<Track, 'cover_art_sizes' | 'cover_art'> & {
+    user: UserMetadata
+  }
+>(
+  entity: T & { _cover_art_sizes: CoverArtSizes }
+) => {
+  if (!entity || !entity.user || (!entity.cover_art_sizes && !entity.cover_art))
     return
   const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-    track.user.creator_node_endpoint
+    entity.user.creator_node_endpoint
   )
-  const multihash = track.cover_art_sizes || track.cover_art
-  if (!multihash) return track
+  const multihash = entity.cover_art_sizes || entity.cover_art
+  if (!multihash) return entity
   await Promise.allSettled(
     Object.values(SquareSizes).map(async (size) => {
-      const coverArtSize = multihash === track.cover_art_sizes ? size : null
+      const coverArtSize = multihash === entity.cover_art_sizes ? size : null
       const url = await audiusBackendInstance.getImageUrl(
         multihash,
         coverArtSize,
         gateways
       )
-      track._cover_art_sizes = {
-        ...track._cover_art_sizes,
+      entity._cover_art_sizes = {
+        ...entity._cover_art_sizes,
         [coverArtSize || DefaultSizes.OVERRIDE]: url
       }
     })
   )
-  return track
+  return entity
 }
 
 export const downloadTrack = async ({
@@ -154,7 +207,7 @@ export const downloadTrack = async ({
       return
     }
 
-    await downloadCoverArt(track)
+    await downloadTrackCoverArt(track)
     await tryDownloadTrackFromEachCreatorNode(track)
     await writeUserTrackJson(track, downloadReason)
     const verified = await verifyTrack(trackIdStr, true)
@@ -173,11 +226,10 @@ export const downloadTrack = async ({
 }
 
 export const removeCollectionDownload = async (
-  collection: string,
+  collectionId: string,
   tracksForDownload: TrackForDownload[]
 ) => {
-  store.dispatch(removeCollection(collection))
-  persistCollectionDownloadStatus(collection, false)
+  purgeDownloadedCollection(collectionId)
   tracksForDownload.forEach(async ({ trackId, downloadReason }) => {
     try {
       const trackIdStr = trackId.toString()
@@ -203,7 +255,7 @@ export const removeCollectionDownload = async (
       }
     } catch (e) {
       console.debug(
-        `failed to remove track ${trackId} from collection ${collection}`
+        `failed to remove track ${trackId} from collection ${collectionId}`
       )
     }
   })
@@ -233,12 +285,25 @@ export const writeUserTrackJson = async (
   await RNFS.write(pathToWrite, JSON.stringify(trackToWrite))
 }
 
-export const downloadCoverArt = async (track: Track) => {
+export const downloadTrackCoverArt = async (track: Track) => {
   const coverArtUris = Object.values(track._cover_art_sizes)
   await Promise.all(
     coverArtUris.map(async (coverArtUri) => {
-      const destination = getLocalCoverArtDestination(
+      const destination = getLocalTrackCoverArtDestination(
         track.track_id.toString(),
+        coverArtUri
+      )
+      await downloadIfNotExists(coverArtUri, destination)
+    })
+  )
+}
+
+export const downloadCollectionCoverArt = async (collection: Collection) => {
+  const coverArtUris = Object.values(collection._cover_art_sizes)
+  await Promise.all(
+    coverArtUris.map(async (coverArtUri) => {
+      const destination = getLocalCollectionCoverArtDestination(
+        collection.playlist_id.toString(),
         coverArtUri
       )
       await downloadIfNotExists(coverArtUri, destination)

@@ -6,12 +6,24 @@ import { exists } from 'react-native-fs'
 import { useAsync } from 'react-use'
 import type { AsyncState } from 'react-use/lib/useAsync'
 
-import { getLocalCoverArtPath } from 'app/services/offline-downloader'
+import {
+  getLocalCollectionCoverArtPath,
+  getLocalTrackCoverArtPath
+} from 'app/services/offline-downloader'
+
+export const useLocalCollectionImage = (trackId?: string) => {
+  const getLocalPath = useCallback(
+    (size: string) =>
+      trackId ? getLocalCollectionCoverArtPath(trackId, size) : undefined,
+    [trackId]
+  )
+  return useLocalImage(getLocalPath)
+}
 
 export const useLocalTrackImage = (trackId?: string) => {
   const getLocalPath = useCallback(
     (size: string) =>
-      trackId ? getLocalCoverArtPath(trackId, size) : undefined,
+      trackId ? getLocalTrackCoverArtPath(trackId, size) : undefined,
     [trackId]
   )
   return useLocalImage(getLocalPath)

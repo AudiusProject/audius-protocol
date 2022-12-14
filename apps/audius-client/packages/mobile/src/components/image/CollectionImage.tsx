@@ -6,12 +6,16 @@ import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import type { DynamicImageProps } from 'app/components/core'
 import { DynamicImage } from 'app/components/core'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
+import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
 
 const { getUser } = cacheUsersSelectors
 
 export const useCollectionImage = (
   collection: Nullable<
-    Pick<Collection, 'cover_art_sizes' | 'cover_art' | 'playlist_owner_id'>
+    Pick<
+      Collection,
+      'cover_art_sizes' | 'cover_art' | 'playlist_owner_id' | 'playlist_id'
+    >
   >,
   user?: Pick<User, 'creator_node_endpoint'>
 ) => {
@@ -23,11 +27,18 @@ export const useCollectionImage = (
     getUser(state, { id: collection?.playlist_owner_id })
   )
 
-  return useContentNodeImage({
+  const { value: localSource, loading } = useLocalCollectionImage(
+    collection?.playlist_id.toString()
+  )
+
+  const contentNodeSource = useContentNodeImage({
     cid,
     user: selectedUser ?? user ?? null,
-    fallbackImageSource: imageEmpty
+    fallbackImageSource: imageEmpty,
+    localSource
   })
+
+  return loading ? null : contentNodeSource
 }
 
 type CollectionImageProps = {
@@ -37,7 +48,13 @@ type CollectionImageProps = {
 
 export const CollectionImage = (props: CollectionImageProps) => {
   const { collection, user, ...imageProps } = props
-  const { source, handleError } = useCollectionImage(collection, user)
+  const collectionImageSource = useCollectionImage(collection, user)
 
-  return <DynamicImage {...imageProps} source={source} onError={handleError} />
+  return collectionImageSource ? (
+    <DynamicImage
+      {...imageProps}
+      source={collectionImageSource.source}
+      onError={collectionImageSource.handleError}
+    />
+  ) : null
 }
