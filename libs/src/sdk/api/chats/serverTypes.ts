@@ -62,6 +62,13 @@ export type ChatBlockRPC = {
   }
 }
 
+export type ChatUnblockRPC = {
+  method: 'chat.unblock'
+  params: {
+    user_id: string
+  }
+}
+
 export type ChatPermitRPC = {
   method: 'chat.permit'
   params: {
@@ -77,6 +84,7 @@ export type RPCPayload =
   | ChatReactRPC
   | ChatReadRPC
   | ChatBlockRPC
+  | ChatUnblockRPC
   | ChatPermitRPC
 
 export type RPCMethod = RPCPayload['method']
