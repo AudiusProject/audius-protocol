@@ -2292,6 +2292,21 @@ export const audiusBackend = ({
     }
   }
 
+  async function associateTikTokAccount(
+    tikTokId: string,
+    userId: ID,
+    handle: string
+  ) {
+    await waitForLibsInit()
+    try {
+      await audiusLibs.Account.associateTikTokAccount(tikTokId, userId, handle)
+      return { success: true }
+    } catch (error) {
+      console.error(getErrorMessage(error))
+      return { success: false, error }
+    }
+  }
+
   async function getNotifications({
     limit,
     timeOffset,
@@ -3312,6 +3327,7 @@ export const audiusBackend = ({
     associateAudiusUserForAuth,
     associateInstagramAccount,
     associateTwitterAccount,
+    associateTikTokAccount,
     autoSelectCreatorNodes,
     changePassword,
     clearNotificationBadges,

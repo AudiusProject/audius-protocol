@@ -1,4 +1,4 @@
-.twitterOverlayContainer {
+.completProfileWithSocialContainer {
   width: 100%;
   height: 100%;
   padding: 40px 24px 24px;
@@ -7,7 +7,14 @@
   flex-direction: column;
 }
 
-.twitterOverlayContainer > div {
+.completProfileWithSocialContainer.isMobile {
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.completProfileWithSocialContainer > div {
   width: 100%;
 }
 
@@ -18,6 +25,10 @@
   font-weight: bold;
   text-align: center;
   line-height: 26px;
+}
+
+.isMobile .header {
+  margin-top: auto;
 }
 
 .tile {
@@ -49,6 +60,10 @@
   height: 24px;
   margin-right: 8px;
   flex-shrink: 0;
+}
+
+.verifiedIcon {
+  margin-right: 16px;
 }
 
 .tileListItemIconCircle {
@@ -110,11 +125,15 @@
 .manualText {
   all: unset;
   color: var(--secondary-light-2);
-  font-size: var(--font-s);
+  font-size: var(--font-m);
   font-weight: var(--font-medium);
   text-align: center;
   cursor: pointer;
   user-select: none;
+}
+
+.isMobile .manualText {
+  margin-top: auto;
 }
 
 .manualText:hover {

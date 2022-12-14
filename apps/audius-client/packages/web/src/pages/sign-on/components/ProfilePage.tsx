@@ -11,16 +11,20 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import BackButton from 'components/back-button/BackButton'
+import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import CompleteProfileWithSocial, {
+  CompleteProfileWithSocialProps
+} from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
-import CompleteProfileWithSocial from 'pages/sign-on/components/desktop/CompleteProfileWithSocial'
+import { isMobile as getIsMobile } from 'utils/clientUtil'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
 const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION ?? ''
+const isMobile = getIsMobile()
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
@@ -31,6 +35,7 @@ type ProfilePageProps = {
   twitterId: any
   isVerified: boolean
   onNextPage: () => void
+
   setTwitterProfile: (
     uuid: string,
     profile: TwitterProfile,
@@ -60,24 +65,26 @@ type ProfilePageProps = {
 } & Pick<
   ProfileFormProps,
   'name' | 'handle' | 'onHandleChange' | 'onNameChange' | 'setProfileImage'
->
+> &
+  Pick<CompleteProfileWithSocialProps, 'displayInstagramRemoteVarKey'>
 
 const ProfilePage = (props: ProfilePageProps) => {
   const {
-    name,
+    displayInstagramRemoteVarKey,
     handle,
     isVerified,
-    profileImage,
-    setProfileImage,
+    name,
     onHandleChange,
     onNameChange,
     onNextPage,
-    twitterId,
-    recordTwitterStart,
+    profileImage,
     recordInstagramStart,
-    setTwitterProfile,
+    recordTwitterStart,
     setInstagramProfile,
+    setProfileImage,
     setTikTokProfile,
+    setTwitterProfile,
+    twitterId,
     validateHandle
   } = props
 
@@ -215,11 +222,12 @@ const ProfilePage = (props: ProfilePageProps) => {
   const profileValid = getProfileValid()
 
   return (
-    <div className={cn(styles.container)}>
+    <div className={cn(styles.container, isMobile && styles.isMobile)}>
       {showCompleteProfileWithSocial ? (
         <CompleteProfileWithSocial
+          displayInstagramRemoteVarKey={displayInstagramRemoteVarKey}
           isLoading={isLoading}
-          isMobile={false}
+          isMobile={isMobile}
           initial={isInitial}
           onClick={setLoading}
           onFailure={setFinishedLoading}
@@ -234,12 +242,11 @@ const ProfilePage = (props: ProfilePageProps) => {
       ) : (
         <>
           <h2 className={styles.header}>{messages.header}</h2>
-          <BackButton
-            light
-            onClickBack={onToggleCompleteProfileWithSocial}
-            className={cn(styles.backButton, {
-              [styles.hide]: showCompleteProfileWithSocial
-            })}
+          <IconCaretLeft
+            height={24}
+            width={24}
+            onClick={onToggleCompleteProfileWithSocial}
+            className={styles.backButton}
           />
           <div className={styles.profileContentContainer}>
             <ProfileForm

@@ -230,6 +230,7 @@ const actionsMap = {
   [SET_TIKTOK_PROFILE](state, action) {
     return {
       ...state,
+      tikTokId: action.tikTokId,
       tikTokProfile: action.tikTokProfile,
       name: {
         value: action.profile.display_name || '',
