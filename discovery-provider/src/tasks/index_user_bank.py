@@ -181,13 +181,11 @@ def process_transfer_instruction(
         )
         return
 
-    sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
-    receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
     pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
-        meta, sender_index
+        meta, sender_idx
     )
     pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
-        meta, receiver_index
+        meta, receiver_idx
     )
     if (
         pre_sender_balance is None
