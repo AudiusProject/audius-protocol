@@ -52,7 +52,6 @@ def upgrade():
         shutil.rmtree(path_tmp)
     os.mkdir(path_tmp)
 
-    print(path_tmp)
     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
     print(f"Migration - downloading {aws_url}")
     urllib.request.urlretrieve(aws_url, path_zip)
