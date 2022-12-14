@@ -6,6 +6,7 @@ Create Date: 2022-12-05 20:30:57.288526
 
 """
 import os
+import shutil
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -26,26 +27,31 @@ def upgrade():
         return
 
     connection = op.get_bind()
-
-    # Don't run if audio_transactions_history is already populated with the
-    # expected 1342621 rows (leaving a bit of wiggle room).
-    max_csv_slot = 164000000
-    query = (
-        f"select count(*) from audio_transactions_history where slot < {max_csv_slot}; "
-    )
-    audio_tx_count = connection.execute(query).scalar()
-    if audio_tx_count >= 1342600:
-        return
-
-    query = f"delete from audio_transactions_history where slot < {max_csv_slot};"
+    # Highest slot for user_bank and rewards_manager txs in audio_transactions_history table
+    max_backfill_slot = 164000000
+    # Highest slot for spl_token txs in audio_transactions_history table
+    latest_spl_token_slot = 165961521
+    latest_spl_token_sig = "8iwjvTmHn8Q7ssB35SGnnayLj5UyYZNxvqMyAqUCy9sZ"
+    query = f"""
+        delete from audio_transactions_history where slot < {max_backfill_slot};
+        delete from audio_transactions_history where
+        ((transaction_type in ('purchase_stripe', 'purchase_unknown', 'purchase_coinbase'))
+        or (transaction_type = 'transfer' and method = 'receive')) and slot > {max_backfill_slot};
+        update spl_token_tx set last_scanned_slot = {latest_spl_token_slot}, signature = '{latest_spl_token_sig}';
+    """
     connection.execute(query)
 
     path_zip = Path(__file__).parent.joinpath(
-        "../tmp/audio_transactions_history.csv.zip"
+        "../audio_transactions_csv/audio_transactions_history.csv.zip"
     )
-    path_csv = Path(__file__).parent.joinpath("../tmp/audio_transactions_history.csv")
-    path_tmp = Path(__file__).parent.joinpath("../tmp")
+    path_csv = Path(__file__).parent.joinpath(
+        "../audio_transactions_csv/audio_transactions_history.csv"
+    )
+    path_tmp = Path(__file__).parent.joinpath("../audio_transactions_csv")
+    if os.path.isdir(path_tmp):
+        shutil.rmtree(path_tmp)
     os.mkdir(path_tmp)
+
     aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/audio_transactions_history.csv.zip"
     print(f"Migration - downloading {aws_url}")
     urllib.request.urlretrieve(aws_url, path_zip)
@@ -56,9 +62,8 @@ def upgrade():
     cursor = connection.connection.cursor()
     with open(path_csv, "r") as f:
         cursor.copy_from(f, "audio_transactions_history", sep=",")
-    os.remove(path_zip)
-    os.remove(path_csv)
-    os.rmdir(path_tmp)
+    if os.path.isdir(path_tmp):
+        shutil.rmtree(path_tmp)
 
 
 def downgrade():
