@@ -49,6 +49,7 @@ class SolanaClientManager:
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
+                    logger.info(f"solana_client_manager.py {tx_info}")
                     if tx_info["result"] is not None:
                         return tx_info
                 except Exception as e:
