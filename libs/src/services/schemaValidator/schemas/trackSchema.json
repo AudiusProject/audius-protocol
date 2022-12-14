@@ -134,6 +134,10 @@
                             }
                         ]
                     }
+                },
+                "is_playlist_upload": {
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "required": [
@@ -159,7 +163,8 @@
                 "title",
                 "track_segments",
                 "is_premium",
-                "premium_conditions"
+                "premium_conditions",
+                "is_playlist_upload"
             ],
             "title": "Track"
         },

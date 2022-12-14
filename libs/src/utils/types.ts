@@ -155,6 +155,8 @@ export type TrackMetadata = {
   // Added fields
   dateListened?: string
   duration: number
+
+  is_playlist_upload?: boolean
 }
 
 export type CollectionMetadata = {
