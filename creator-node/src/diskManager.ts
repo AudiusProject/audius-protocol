@@ -582,14 +582,18 @@ async function _copyLegacyFiles(
 
 /**
  * Creates pagination windows and calls the given function to query for CIDs within the windows.
- * The [min, max] windows are:
- * - [Qmaaa, Qmaaz] to [Qmzza, Qmzzz]; and
- * - [Qmaa0, Qmaa9] to [Qmz90, Qmz99]
+ * There's a separate [min, max] window for letters and numbers:
+ * - for letters: [Qmaa, Qmzz]
+ * - for numbers [Qma0, Qmz9]
  *
- * We don't have any CIDs that start with Qm[0,9], so that's why we:
- * - start at Qma00 instead of Qm000; and
- * - end at Qmz99 instead of Qm999
- * @param func the function to call on each pagination window (there are 1872 windows)
+ * We don't have any CIDs that start with Qm[0,9], so that's why for numbers we:
+ * - start at Qma0 instead of Qm00; and
+ * - end at Qmz9 instead of Qm99
+ *
+ * At each window, we find all CIDs in the window by appending:
+ * - '0000000000000000000000000000000000000000000' to the min; and
+ * - 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz' to the max
+ * @param func the function to call on each pagination window (there are 936 windows)
  */
 async function _callFuncOnAllCidsPaginated(
   func: (minCid: string, maxCid: string) => Promise<void>
@@ -598,10 +602,12 @@ async function _callFuncOnAllCidsPaginated(
   for (const char1 of getCharsInRanges('az')) {
     // Loop [Qm*a,Qm*z] and [Qm*0,Qm*9]
     for (const char2 of getCharsInRanges('az', '09')) {
-      // For each permutation, search in the pagination window of a-z and 0-0.
+      // For each permutation, search in the pagination window of a-z and 0-9.
       // I.e., window Qm**a through Qm**z and window Qm**0 through Qm**9
-      await func('Qm' + char1 + char2 + 'a', 'Qm' + char1 + char2 + 'z')
-      await func('Qm' + char1 + char2 + '0', 'Qm' + char1 + char2 + '9')
+      await func(
+        'Qm' + char1 + char2 + '0000000000000000000000000000000000000000000',
+        'Qm' + char1 + char2 + 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+      )
     }
   }
 }
