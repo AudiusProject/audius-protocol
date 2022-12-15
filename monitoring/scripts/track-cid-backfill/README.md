@@ -26,25 +26,9 @@ for trackIdBatch in trackIds:
         send the request
         save to new csv
 
-combine csvs in to one mega csv
+* combine csvs in to one mega csv
+* run migration against discovery DB
 
-create discovery based on Michelle's PR
-* load csv (napkin math, how big should this file is?)
-* for trackId row, update the copy320 column with the copy320 value from the csv
-
-
----------
-
-TODO afterward
-
-* Update trusted notifier to send copy320 CID to content node blacklist
-    * 
-* confirm Saliou's indexing copy320 changes are live and that the copy320 is exposed
-* Have clients use the new stream route
-
-* Remove old route and all legacy trackId stuff
-
-    
 # Queries
 
 - [_] getAllContentNodes
