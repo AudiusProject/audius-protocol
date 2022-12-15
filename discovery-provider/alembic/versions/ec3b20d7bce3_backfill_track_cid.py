@@ -99,7 +99,6 @@ def disable_track_triggers():
 def enable_track_triggers():
     inner_sql = f"""
     alter table tracks enable trigger on_track;
-    
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
@@ -115,8 +114,7 @@ def upgrade():
     inner_sql = f"""
         update tracks set track_cid = sub.track_cid::integer
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id::integer
-        and tracks.is_current is true;
+        where tracks.track_id = sub.track_id::integer;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
@@ -135,8 +133,7 @@ def downgrade():
     inner_sql = f"""
         update tracks set track_cid = null
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id
-        and tracks.is_current is true;
+        where tracks.track_id = sub.track_id;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
