@@ -38,7 +38,7 @@ def build_sql(up, env):
         'is_deletes': [False] * num_records,
     }
     if up:
-        inner_sql = "INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) VALUES (unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes));"
+        inner_sql = "INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) VALUES (unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes)) ON CONFLICT (subscriber_id, user_id, is_current) DO NOTHING;"
     else:
         inner_sql = "DELETE FROM subscriptions WHERE (subscriber_id, user_id, is_current, is_delete) IN (SELECT unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes));"
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
