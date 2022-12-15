@@ -216,17 +216,21 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
-const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
-  // Rate limit replica set reconfiguration transactions
-  // A reconfiguration (as opposed to a first time selection) will have an
-  // _oldPrimaryId value of "0"
+/**
+ * Rate limit replica set reconfiguration transactions
+ * the available wallets using mod
+ *
+ * A reconfiguration (as opposed to a first time selection) will have an
+ * _oldPrimaryId value of "0"
+ */
 
+const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
   let isReplicaSetTransaction = false
   let isFirstReplicaSetConfig = false
 
   if (decodedABI.name === 'updateReplicaSet') {
     // TODO remove legacy replica set updates
-    isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
+    isReplicaSetTransaction = true
     if (isReplicaSetTransaction) {
       isFirstReplicaSetConfig = decodedABI.params.find(
         (param) => param.name === '_oldPrimaryId' && param.value === '0'
@@ -241,7 +245,7 @@ const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
     // EntityManager create user actions include the initial replica set
   }
 
-  if (!isFirstReplicaSetConfig) {
+  if (isReplicaSetTransaction && !isFirstReplicaSetConfig) {
     transactionRateLimiter.updateReplicaSetReconfiguration += 1
     if (
       transactionRateLimiter.updateReplicaSetReconfiguration >
