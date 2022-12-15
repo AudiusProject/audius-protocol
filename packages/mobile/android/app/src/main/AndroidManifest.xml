@@ -15,18 +15,24 @@
 
     <application android:usesCleartextTraffic="true" android:name=".MainApplication" android:label="@string/app_name" android:icon="${appIcon}" android:resource="@mipmap/ic_notification" android:allowBackup="false" android:largeHeap="true" android:theme="@style/BootTheme">
         <activity android:name=".MainActivity" android:launchMode="singleTask" android:label="@string/app_name" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode" android:screenOrientation="portrait" android:windowSoftInputMode="adjustPan" android:exported="true">
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
             </intent-filter>
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="redirect.audius.co" />
-                <data android:scheme="https" android:host="audius.co" />
-                <data android:scheme="audius" android:host="/"/>
+                <data android:scheme="https" />
+                <data android:scheme="http" />
+                <data android:host="redirect.audius.co" />
+                <data android:host="audius.co" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="audius" />
             </intent-filter>
         </activity>
 
