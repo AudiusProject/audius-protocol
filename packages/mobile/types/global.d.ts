@@ -1,5 +1,5 @@
 declare module '*.svg' {
-  import * as React from 'react'
+  import type * as React from 'react'
 
   export const ReactComponent: React.FunctionComponent<
     React.SVGProps<SVGSVGElement> & { title?: string }
@@ -13,3 +13,5 @@ declare module 'antd/lib/popover'
 declare module 'classnames/types' {
   export type ClassValue = any
 }
+
+declare module 'promise.allsettled'
