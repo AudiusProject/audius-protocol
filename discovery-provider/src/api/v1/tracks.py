@@ -459,6 +459,8 @@ class TrackStream(Resource):
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
         if CID_STREAM_ENABLED:
+            if not track_cid:
+                abort_not_found(track_id, ns)
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
         else:
             path = f"tracks/stream/{track_id}"
