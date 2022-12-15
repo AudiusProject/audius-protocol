@@ -133,7 +133,7 @@ def downgrade():
     inner_sql = f"""
         update tracks set track_cid = null
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id;
+        where tracks.track_id = sub.track_id::integer;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
