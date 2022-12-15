@@ -3,9 +3,10 @@ import { saveMappingToCSV, saveMissingBatch } from "./csv";
 import { closeDBConnection, verifyDBConnection } from "./db";
 import { 
   // dumpTrackIds,
-  getAllContentNodes,
+  // getAllContentNodes,
   getTrackCount,
-  getTrackIdBatch
+  getTrackIdBatch,
+  prodContentNodes
 } from "./queries";
 
 const BATCH_SIZE = 10_000;
@@ -13,16 +14,17 @@ const BATCH_SIZE = 10_000;
 async function main() {
   await verifyDBConnection();
 
-  const contentNodes: {
-    spid: number;
-    endpoint: string;
-  }[] = await getAllContentNodes();
+  // const contentNodes: {
+  //   spid: number;
+  //   endpoint: string;
+  // }[] = await getAllContentNodes();
   // const contentNodes = [
   //   {
   //     spid: 1,
   //     endpoint: "https://creatornode7.staging.audius.co",
   //   },
   // ];
+  const contentNodes = prodContentNodes
   console.log(`[INFO] content nodes: ${contentNodes.length}`);
   const sortedContentNodes = contentNodes.sort((x,y) => x.spid - y.spid)
 
