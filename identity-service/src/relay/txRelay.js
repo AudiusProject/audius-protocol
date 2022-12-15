@@ -230,13 +230,10 @@ const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
 
   if (decodedABI.name === 'updateReplicaSet') {
     // TODO remove legacy replica set updates
-    isReplicaSetTransaction = true
-    if (isReplicaSetTransaction) {
-      isFirstReplicaSetConfig = decodedABI.params.find(
-        (param) => param.name === '_oldPrimaryId' && param.value === '0'
-      )
-    }
-  } else if (decodedABI.name === 'EntityManager') {
+    isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+  } else if (decodedABI.name === 'manageEntity') {
     isReplicaSetTransaction = decodedABI.params.find(
       (param) =>
         param.name === '_entityType' && param.value === 'UserReplicaSet'
