@@ -478,7 +478,14 @@
               }
             ]
           }
+<<<<<<< HEAD
 >>>>>>> cb0f4db83 ([C-1670] Fix acceptable sol wallet length)
+=======
+        },
+        "is_playlist_upload": {
+          "type": "boolean",
+          "default": false
+>>>>>>> 1a33b2418 (add is_playlist_upload)
         }
       },
       "required": [
@@ -504,7 +511,8 @@
         "title",
         "track_segments",
         "is_premium",
-        "premium_conditions"
+        "premium_conditions",
+        "is_playlist_upload"
       ],
       "title": "Track"
     },
