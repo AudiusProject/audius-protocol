@@ -22,6 +22,14 @@ depends_on = None
 
 
 def upgrade():
+    # SKIP THIS MIGRATION
+    # We had cherry-picked migration 3cdcb5e303f8 onto release-v0.3.71, but that was also the head
+    # of release-v0.3.72, so when we rolled out the backfill csv migration on release-v0.3.72, it
+    # got skipped. We cherry-picked this migration onto release-v0.3.72, but before merging into main
+    # we'd like to nullify it so that it doesn't get run twice on foundation nodes + figment, which had
+    # already run the migration since they were not on release-v0.3.71.
+    return
+
     env = os.getenv("audius_discprov_env")
     if env != "prod":
         return
