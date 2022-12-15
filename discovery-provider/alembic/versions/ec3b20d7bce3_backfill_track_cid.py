@@ -13,7 +13,6 @@ from pathlib import Path
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import ARRAY
 
 # revision identifiers, used by Alembic.
 revision = "ec3b20d7bce3"
