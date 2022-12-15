@@ -120,7 +120,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
-  filterReplicaSetUpdates(decodedABI)
+  filterReplicaSetUpdates(decodedABI, senderAddress)
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
@@ -216,7 +216,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
-const filterReplicaSetUpdates = (decodedABI) => {
+const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
   // Rate limit replica set reconfiguration transactions
   // A reconfiguration (as opposed to a first time selection) will have an
   // _oldPrimaryId value of "0"
@@ -224,8 +224,8 @@ const filterReplicaSetUpdates = (decodedABI) => {
   let isReplicaSetTransaction = false
   let isFirstReplicaSetConfig = false
 
-
-  if (decodedABI.name === 'updateReplicaSet') {  // TODO remove legacy replica set updates
+  if (decodedABI.name === 'updateReplicaSet') {
+    // TODO remove legacy replica set updates
     isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
     if (isReplicaSetTransaction) {
       isFirstReplicaSetConfig = decodedABI.params.find(
@@ -233,11 +233,14 @@ const filterReplicaSetUpdates = (decodedABI) => {
       )
     }
   } else if (decodedABI.name === 'EntityManager') {
-    isReplicaSetTransaction = decodedABI.params.find(param => param.name === '_entityType' && param.value === 'UserReplicaSet')
+    isReplicaSetTransaction = decodedABI.params.find(
+      (param) =>
+        param.name === '_entityType' && param.value === 'UserReplicaSet'
+    )
     // isFirstReplicaSetConfig must be false
     // EntityManager create user actions include the initial replica set
   }
-  
+
   if (!isFirstReplicaSetConfig) {
     transactionRateLimiter.updateReplicaSetReconfiguration += 1
     if (
