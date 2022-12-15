@@ -24,14 +24,10 @@ WITH user_seen as (
     seen_at as prev_seen_at
   FROM
     notification_seen
----  Not sure if we should add the following - redundant, but could be faster/slower
----  WHERE
----    (:timestamp_offset is NULL or seen_at < :timestamp_offset)
   WHERE
     user_id = :user_id
----  Not sure if we should add the following - redundant, but could be faster/slower
----  ORDER BY
----    seen_at desc
+  ORDER BY
+    seen_at desc
 )
 SELECT
     n.group_id as group_id,
@@ -57,8 +53,10 @@ LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
   :user_id = ANY(n.user_ids) AND
-  (:timestamp_offset is NULL or n.timestamp <= :timestamp_offset) AND
-  (:group_id_offset is NULL OR n.group_id < :group_id_offset)
+  (
+    (:timestamp_offset is NULL OR user_seen.seen_at < :timestamp_offset) OR
+    (:group_id_offset is NULL OR :timestamp_offset is NULL OR (user_seen.seen_at = :timestamp_offset and n.group_id < :group_id_offset))
+  )
 GROUP BY
   n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
@@ -94,10 +92,11 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
         {
             "user_id": args["user_id"],
             "limit": limit,
-            "timestamp_offset": None,
-            "group_id_offset": None,
+            "timestamp_offset": args.get("timestamp", None),
+            "group_id_offset": args.get("group_id", None),
         },
     )
+
     res: List[NotificationGroup] = [
         {
             "group_id": r[0],
@@ -215,7 +214,5 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         }
         for notification in notifications
     ]
-
-    logger.info(notifications_and_actions)
 
     return notifications_and_actions
