@@ -34,7 +34,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
 
 
 def fetch_all_registered_content_nodes(
-    eth_web3, shared_config, redis, eth_abi_values
+    eth_web3, shared_config, redis, eth_abi_values, include_spID=False
 ) -> set:
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
@@ -67,10 +67,15 @@ def fetch_all_registered_content_nodes(
                 # As endpoints get deregistered, this peering system must not slow down with failed connections
                 #   or unanticipated load
                 eth_sp_endpoint = cn_endpoint_info[1]
+                cn_spID = cn_endpoint_info[2]
+
                 valid_endpoint = is_fqdn(eth_sp_endpoint)
                 # Only valid FQDN strings are worth validating
                 if valid_endpoint:
-                    eth_cn_endpoints_set.add(eth_sp_endpoint)
+                    if include_spID:
+                        eth_cn_endpoints_set.add((eth_sp_endpoint, cn_spID))
+                    else:
+                        eth_cn_endpoints_set.add(eth_sp_endpoint)
             except Exception as exc:
                 logger.error(
                     f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
