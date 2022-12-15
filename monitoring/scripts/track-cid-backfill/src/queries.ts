@@ -29,7 +29,6 @@ export async function getTrackCount() {
     SELECT COUNT(*) 
     FROM tracks 
     WHERE is_current = TRUE
-    AND is_delete = FALSE
     AND track_cid is NULL; 
   `,
     {
@@ -53,7 +52,6 @@ export async function getTrackIdBatch(
     SELECT track_id
     FROM tracks
     WHERE is_current = TRUE
-    AND is_delete = FALSE
     AND track_cid is NULL
     ORDER BY created_at
     OFFSET :offset
@@ -74,7 +72,6 @@ export async function dumpTrackIds() {
     SELECT track_id
     FROM tracks
     WHERE is_current = TRUE
-    AND is_delete = FALSE
     AND track_cid is NULL;
   `, {
     type: QueryTypes.SELECT
