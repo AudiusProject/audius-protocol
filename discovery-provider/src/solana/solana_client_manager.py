@@ -9,9 +9,8 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, Commitment
 from solana.rpc.types import TokenAccountOpts
-from spl.token.constants import TOKEN_PROGRAM_ID
 from src.exceptions import UnsupportedVersionError
-from src.solana.solana_helpers import SPL_TOKEN_ID, SPL_TOKEN_ID_PK
+from src.solana.solana_helpers import SPL_TOKEN_ID_PK
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
     ConfirmedTransaction,
