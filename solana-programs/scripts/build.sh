@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
+
+# TODO: refactor os switching
 
 function replace_address {
-    current_address=$(grep -Po '(?<=declare_id!\(").*(?=")' $1)
+    if [[ "$OSTYPE" =~ ^darwin ]]; then
+        # osx does not support `grep -P`
+        # update to this line only upon validating in CI
+        current_address=$(grep 'declare_id' $1 | awk -F'"' '{print $2}')
+    else
+        current_address=$(grep -Po '(?<=declare_id!\(").*(?=")' $1)
+    fi
     new_address=$(solana address -k ${@: -1})
 
     # do not touch the files if the address is the same
@@ -11,7 +19,12 @@ function replace_address {
     if [[ "$current_address" != "$new_address" ]]; then
         for file in "${@:1:$#-1}"; do
             echo "Replacing $current_address with $new_address in $file"
-            sed -i "s/$current_address/$new_address/g" $1
+            if [[ "$OSTYPE" =~ ^darwin ]]; then
+                # osx requires a backup file to be created when using sed
+                sed -i'.backup' "s/$current_address/$new_address/g" $1
+            else
+                sed -i "s/$current_address/$new_address/g" $1
+            fi
         done
     fi
 }
@@ -26,6 +39,15 @@ function generate_key {
 
 # cd into solana-programs
 cd $(dirname "$(readlink -f "$0")")/..
+
+# when running on host, env is missing what would be docker build args
+if [[ "$OSTYPE" =~ ^darwin ]]; then
+    export AUDIUS_ETH_REGISTRY_PRIVATE_KEY=$(grep SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
+    export TRACK_LISTEN_COUNT_PRIVATE_KEY=$(grep SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
+    export CLAIMABLE_TOKENS_PRIVATE_KEY=$(grep SOLANA_CLAIMABLE_TOKENS_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
+    export REWARD_MANAGER_PRIVATE_KEY=$(grep SOLANA_REWARD_MANAGER_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
+    export AUDIUS_DATA_PRIVATE_KEY=$(grep SOLANA_AUDIUS_DATA_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
+fi
 
 mkdir -p ${CARGO_TARGET_DIR:-target}/deploy anchor/audius-data/target/deploy
 
@@ -47,10 +69,15 @@ replace_address \
     anchor/audius-data/Anchor.toml \
     ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
 
-cargo build-bpf
-cargo install --debug --target-dir ./target --path cli
-cargo install --debug --target-dir ./target --path reward-manager/cli
-cargo install --debug --target-dir ./target --path claimable-tokens/cli
 
-cd anchor/audius-data
-anchor build
+if [[ ! "$OSTYPE" =~ ^darwin ]]; then
+    cargo install --debug --target-dir ./target --path cli
+    cargo install --debug --target-dir ./target --path reward-manager/cli
+    cargo install --debug --target-dir ./target --path claimable-tokens/cli
+
+    if [[ $BUILDTARGET == "x86_64" ]]; then
+        # on M1 (arm64) these files are required to be built on host and copied in during docker build
+        cargo build-bpf
+        cd anchor/audius-data && anchor build
+    fi
+fi

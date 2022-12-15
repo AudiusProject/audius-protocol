@@ -104,3 +104,13 @@ export type RecoverOrphanedDataJobReturnValue = {
   numWalletsWithNodeInReplicaSet: number
   numWalletsWithOrphanedData: number
 }
+
+export type SecondarySyncHealthTrackerState = {
+  walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+}
+
+export type WalletToSecondaryAndMaxErrorReached = {
+  [wallet: string]: {
+    [secondary: string]: string /* the encountered error */
+  }
+}

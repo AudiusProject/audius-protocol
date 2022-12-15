@@ -3,13 +3,16 @@
 import json
 import os
 import pathlib
+import platform
 import subprocess
+import urllib.request
 
 import click
 import dotenv
 import eth_account
 import solana.keypair
 
+ARM64 = 'arm64' in platform.platform()
 
 def generate_env(
     protocol_dir,
@@ -155,13 +158,45 @@ def build(
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
             "build",
         ],
     )
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=4, type=int)
+@click.argument("service")
+@click.argument("name")
+@click.argument("value")
+@click.pass_obj
+def set_env(protocol_dir, service, name, value):
+    env_file = protocol_dir / f"dev-tools/startup/{service}.env"
+    dotenv.set_key(env_file, name, value)
+
+
+@cli.command()
+@click.argument("service")
+@click.argument("environment")
+@click.pass_obj
+def load_env(protocol_dir, service, environment):
+    if not click.confirm(f"All existing env for {service} will be replaced continue?"):
+        return
+
+    replica = 1
+    parts = service.split("-")
+    if parts[-1].isdigit():
+        service, replica = "-".join(parts[:-1]), int(parts[-1])
+
+    env_file = protocol_dir / f"dev-tools/startup/{service}-{replica}.env"
+
+    with urllib.request.urlopen(
+        f"https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/main/{service}/{environment}.env"
+    ) as resp:
+        env_file.write_bytes(resp.read())
+
+
+@cli.command()
+@click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
@@ -192,7 +227,7 @@ def up(
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
             *(
                 [f"--file={AAO_DIR / 'audius-compose.yml'}"]
                 if anti_abuse_oracle
@@ -214,6 +249,7 @@ def down(protocol_dir):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
             "down",
             "--remove-orphans",
             "--volumes",
@@ -229,6 +265,14 @@ def test():
 @test.command(name="build")
 @click.pass_obj
 def test_build(protocol_dir):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
@@ -258,6 +302,14 @@ def test_build(protocol_dir):
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_obj
 def test_run(protocol_dir, service, args):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
@@ -276,6 +328,14 @@ def test_run(protocol_dir, service, args):
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
+    generate_env(
+        protocol_dir,
+        0,
+        0,
+        0,
+        False,
+    )
+
     subprocess.run(
         [
             "docker",
@@ -332,7 +392,7 @@ def ps(protocol_dir):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
             *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
             "ps",
             "--format=json",
@@ -409,6 +469,7 @@ def logs(protocol_dir, service):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
             "logs",
             service,
         ],

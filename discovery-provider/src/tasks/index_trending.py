@@ -250,16 +250,18 @@ def get_should_update_trending(
     """
     with db.scoped_session() as session:
         current_db_block = (
-            session.query(Block.blockhash).filter(Block.is_current == True).first()
+            session.query(Block.blockhash, Block.number)
+            .filter(Block.is_current == True)
+            .first()
         )
-        current_block_number = current_db_block[0]
+        current_block_hash, current_block_number = current_db_block
         final_poa_block = helpers.get_final_poa_block(shared_config)
         if final_poa_block:
             nethermind_web3 = web3_provider.get_web3()
             current_block_number -= final_poa_block
             current_block = nethermind_web3.eth.get_block(current_block_number, True)
         else:
-            current_block = web3.eth.get_block(current_block_number, True)
+            current_block = web3.eth.get_block(current_block_hash, True)
 
         current_timestamp = current_block["timestamp"]
         block_datetime = floor_time(
@@ -286,7 +288,8 @@ def index_trending_task(self):
     redis = index_trending_task.redis
     web3 = index_trending_task.web3
     have_lock = False
-    update_lock = redis.lock("index_trending_lock", timeout=86400)
+    timeout = 60 * 60 * 2
+    update_lock = redis.lock("index_trending_lock", timeout=timeout)
     try:
         should_update_timestamp = get_should_update_trending(
             db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC

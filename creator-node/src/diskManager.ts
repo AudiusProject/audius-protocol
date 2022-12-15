@@ -2,12 +2,16 @@ import type Logger from 'bunyan'
 
 import path from 'path'
 import fs from 'fs-extra'
-import { chunk, reverse, isEqual } from 'lodash'
+import { chunk, isEqual, isEmpty } from 'lodash'
 
 import DbManager from './dbManager'
 import redisClient from './redis'
 import config from './config'
-import { logger as genericLogger } from './logging'
+import {
+  logger as genericLogger,
+  getStartTime,
+  logErrorWithDuration
+} from './logging'
 import { tracing } from './tracer'
 import {
   execShellCommand,
@@ -18,8 +22,11 @@ import {
   computeFilePath,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
-  getCharsInRanges
+  getCharsInRanges,
+  clusterUtilsForPrimary
 } from './utils'
+import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
+import BlacklistManager from './blacklistManager'
 
 const models = require('./models')
 
@@ -422,8 +429,32 @@ export async function sweepSubdirectoriesInFiles(
     return sweepSubdirectoriesInFiles()
 }
 
+/**
+ * Performs the equivalent of Unix `touch` command - make file at given path with ctime and mtime of now.
+ */
+async function _touch(path: string) {
+  // Set mtime to now, and on error (file not found) create new file which will by default have mtime of now
+  const now = new Date()
+  try {
+    await fs.utimes(path, now, now)
+  } catch (e: any) {
+    const fd = await fs.open(path, 'w')
+    await fs.close(fd)
+  }
+}
+
+type FileRecord = {
+  storagePath: string
+  multihash: string
+  fileUUID: string
+  skipped: boolean
+  dirMultihash?: string
+  fileName?: string
+  trackBlockchainId?: number
+}
+
 async function _copyLegacyFiles(
-  legacyPathsAndCids: { storagePath: string; cid: string }[],
+  fileRecords: FileRecord[],
   prometheusRegistry: any,
   logger: Logger
 ): Promise<
@@ -437,7 +468,9 @@ async function _copyLegacyFiles(
     legacyPath: string
     nonLegacyPath: string
   }[] = []
-  for (const { storagePath: legacyPath, cid } of legacyPathsAndCids) {
+  for (const fileRecord of fileRecords) {
+    const legacyPath = fileRecord.storagePath
+    let nonLegacyPath = ''
     try {
       // Compute new path
       const nonLegacyPathInfo = extractCIDsFromFSPath(legacyPath)
@@ -447,140 +480,423 @@ async function _copyLegacyFiles(
       }
 
       // Ensure new path's parent exists
-      const nonLegacyPath = await (nonLegacyPathInfo.isDir
+      nonLegacyPath = await (nonLegacyPathInfo.isDir
         ? computeFilePathInDirAndEnsureItExists(
             nonLegacyPathInfo.outer,
             nonLegacyPathInfo.inner!
           )
         : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
 
-      // Copy to new path if it doesn't already exist
-      if (!(await fs.pathExists(nonLegacyPath))) {
-        try {
-          await fs.copyFile(legacyPath, nonLegacyPath)
-        } catch (e: any) {
-          // If we see a ENOSPC error, log out the disk space and inode details from the system
-          if (e.message.includes('ENOSPC')) {
-            await Promise.all([
-              runShellCommand(`df`, ['-h'], logger),
-              runShellCommand(`df`, ['-ih'], logger)
-            ])
-          }
-          throw e
-        }
-      }
+      // Copy to new path, overwriting if it already exists
+      try {
+        // Set the file's mtime to now so disk pruning doesn't delete it before we update db
+        await _touch(nonLegacyPath)
+        await fs.copyFile(legacyPath, nonLegacyPath)
+        // Update mtime again just in case copyFile changed it
+        const now = new Date()
+        await fs.utimes(nonLegacyPath, now, now)
 
-      // Verify that the correct contents were copied
-      const cidMatchesExpected = await verifyCIDMatchesExpected({
-        cid,
-        path: nonLegacyPath,
-        logger
-      })
-      if (cidMatchesExpected) {
-        copiedPaths.push({ legacyPath, nonLegacyPath })
-      } else {
-        try {
-          await fs.unlink(nonLegacyPath)
-        } catch (e) {
-          logger.error(
-            `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
-          )
+        // Verify that the correct contents were copied
+        const cidMatchesExpected = await verifyCIDMatchesExpected({
+          cid: fileRecord.multihash,
+          path: nonLegacyPath,
+          logger
+        })
+        if (cidMatchesExpected) {
+          copiedPaths.push({ legacyPath, nonLegacyPath })
+        } else {
+          try {
+            await fs.unlink(nonLegacyPath)
+          } catch (e) {
+            logger.error(
+              `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
+            )
+          }
+          throw new Error('CID does not match what is expected to be')
         }
-        throw new Error('CID does not match what is expected to be')
+      } catch (copyError: any) {
+        if (copyError.message.includes('ENOSPC')) {
+          // If we see a ENOSPC error, log out the disk space and inode details from the system
+          await Promise.all([
+            runShellCommand(`df`, ['-h'], logger),
+            runShellCommand(`df`, ['-ih'], logger)
+          ])
+          throw copyError
+        } else if (copyError.message.includes('ENOENT')) {
+          // If we see an ENOENT error ("no such file"), try fetching the file from network
+          let success, error
+          try {
+            try {
+              await fs.unlink(nonLegacyPath)
+            } catch (e) {
+              logger.error(
+                `_copyLegacyFiles() could not remove 'touch'ed file at storageLocation=${nonLegacyPath}`
+              )
+            }
+            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
+              fileRecord,
+              logger
+            ))
+          } catch (fetchFallbackError: any) {
+            success = false
+            error = fetchFallbackError
+          }
+
+          // Add delay between calls since each call will make an internal request to every node
+          await timeout(1000)
+
+          if (success) {
+            copiedPaths.push({ legacyPath, nonLegacyPath })
+          } else {
+            throw new Error(
+              `Legacy fetch from network fallback error: ${error}. Copy error: ${copyError}`
+            )
+          }
+        } else throw copyError
       }
     } catch (e: any) {
-      erroredPaths[legacyPath] = e.toString()
+      // If the file is skipped (blacklisted) then we don't care if it failed to copy
+      if (fileRecord.skipped && nonLegacyPath?.length) {
+        copiedPaths.push({ legacyPath, nonLegacyPath })
+      } else {
+        erroredPaths[legacyPath] = e.toString()
+      }
     }
   }
 
-  // Record results in Prometheus metric
-  const metric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+  // Record results in Prometheus metric and log errors
+  _recordLegacyMigrationMetrics(
+    copiedPaths.length,
+    Object.keys(erroredPaths).length,
+    prometheusRegistry,
+    logger
   )
-  metric.inc({ result: 'success' }, copiedPaths.length)
-  metric.inc({ result: 'failure' }, erroredPaths.length)
+  if (!isEmpty(erroredPaths)) {
+    logger.warn(
+      `Failed to copy some legacy files: ${JSON.stringify(erroredPaths)}`
+    )
+  }
 
   return copiedPaths
 }
 
-async function _deleteFiles(filePaths: string[], logger: Logger) {
-  for (const filePath of filePaths) {
-    try {
-      await fs.unlink(filePath)
-    } catch (e) {
-      logger.error(`Failed to delete file at ${filePath} because: ${e}`)
+/**
+ * Creates pagination windows and calls the given function to query for CIDs within the windows.
+ * There's a separate [min, max] window for letters and numbers:
+ * - for letters: [Qmaa, Qmzz]
+ * - for numbers [Qma0, Qmz9]
+ *
+ * We don't have any CIDs that start with Qm[0,9], so that's why for numbers we:
+ * - start at Qma0 instead of Qm00; and
+ * - end at Qmz9 instead of Qm99
+ *
+ * At each window, we find all CIDs in the window by appending:
+ * - '0000000000000000000000000000000000000000000' to the min; and
+ * - 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz' to the max
+ * @param func the function to call on each pagination window (there are 936 windows)
+ */
+async function _callFuncOnAllCidsPaginated(
+  func: (minCid: string, maxCid: string) => Promise<void>
+) {
+  // We don't have any CIDs that start with Qm[0,9], so just Qm[a,z] is sufficient
+  for (const char1 of getCharsInRanges('az')) {
+    // Loop [Qm*a,Qm*z] and [Qm*0,Qm*9]
+    for (const char2 of getCharsInRanges('az', '09')) {
+      // For each permutation, search in the pagination window of a-z and 0-9.
+      // I.e., window Qm**a through Qm**z and window Qm**0 through Qm**9
+      await func(
+        'Qm' + char1 + char2 + '0000000000000000000000000000000000000000000',
+        'Qm' + char1 + char2 + 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+      )
     }
   }
 }
 
-async function _migrateNonDirFilesWithLegacyStoragePaths(
+const _migrateNonDirFilesWithLegacyStoragePaths = async (
   queryDelayMs: number,
+  batchSize: number,
   prometheusRegistry: any,
   logger: Logger
-) {
-  const BATCH_SIZE = 1000
-  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
-  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
-    const cursor = 'Qm' + char
-
+) =>
+  _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
     // Query for legacy storagePaths in the pagination range until no new results are returned
-    let prevLegacyStoragePathsAndCids
-    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
-      prevLegacyStoragePathsAndCids = legacyStoragePathsAndCids
-      legacyStoragePathsAndCids =
-        await DbManager.getNonDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      if (legacyStoragePathsAndCids.length) {
+    let newResultsFound = true
+    let results: FileRecord[] = []
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getNonDirLegacyStoragePathRecords(
+        minCid,
+        maxCid,
+        batchSize
+      )
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
         const copiedFilePaths = await _copyLegacyFiles(
-          legacyStoragePathsAndCids,
+          results,
           prometheusRegistry,
           logger
         )
-        const dbUpdateSuccessful = await DbManager.updateLegacyPathDbRows(
-          copiedFilePaths,
-          logger
-        )
-        if (dbUpdateSuccessful) {
-          await _deleteFiles(
-            copiedFilePaths.map((file) => file.legacyPath),
-            logger
-          )
-        }
+        await DbManager.updateLegacyPathDbRows(copiedFilePaths, logger)
+      } else {
+        newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
+  })
+
+const _migrateDirsWithLegacyStoragePaths = async (
+  queryDelayMs: number,
+  batchSize: number,
+  logger: Logger
+) =>
+  _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
+    // Query for legacy storagePaths in the pagination range until no new results are returned
+    let newResultsFound = true
+    let results: FileRecord[] = []
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getDirLegacyStoragePathRecords(
+        minCid,
+        maxCid,
+        batchSize
+      )
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
+        const legacyAndNonLegacyPaths = results.map((fileRecord) => {
+          return {
+            legacyPath: fileRecord.storagePath,
+            nonLegacyPath: computeFilePath(fileRecord.multihash)
+          }
+        })
+        await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      } else {
+        newResultsFound = false
+      }
+      await timeout(queryDelayMs) // Avoid spamming fast queries
+    }
+  })
+
+async function _migrateFileByFetchingFromNetwork(
+  fileRecord: FileRecord,
+  logger: Logger
+): Promise<{ success: boolean; error: any }> {
+  const fetchStartTime = getStartTime()
+  // Will retry internally
+  const { error, storagePath } = await fetchFileFromNetworkAndSaveToFS(
+    {}, // libs param is unused, so empty object is sufficient
+    logger,
+    fileRecord.multihash,
+    fileRecord.dirMultihash,
+    [] /** targetGateways - empty to try all nodes */,
+    fileRecord.fileName,
+    fileRecord.trackBlockchainId,
+    2 /** numRetries */
+  )
+
+  if (error) {
+    // If copying errored because the file is delisted, we can ignore the error and update the db storagePath
+    const isServable = await BlacklistManager.isServable(fileRecord.multihash)
+    if (!isServable && fileRecord.skipped) {
+      await models.File.update(
+        { storagePath },
+        {
+          where: { fileUUID: fileRecord.fileUUID }
+        }
+      )
+      return { success: true, error: '' }
+    }
+    logErrorWithDuration(
+      { logger, startTime: fetchStartTime },
+      `Error fixing fileRecord ${JSON.stringify(fileRecord)}: ${error}`
+    )
+    return { success: false, error }
+  } else {
+    // Update file's storagePath in DB to newly saved location, and ensure it's not marked as skipped
+    await models.File.update(
+      { storagePath },
+      {
+        where: { fileUUID: fileRecord.fileUUID, skipped: false }
+      }
+    )
+    return { success: true, error: '' }
   }
 }
 
-async function _migrateDirsWithLegacyStoragePaths(
+const _migrateFilesWithCustomStoragePaths = async (
   queryDelayMs: number,
+  batchSize: number,
+  prometheusRegistry: any,
   logger: Logger
-) {
-  const BATCH_SIZE = 1000
-  // Paginate at each character in range [Qmz, ..., Qma, QmZ, ..., QmA, Qm9, ..., Qm0]
-  for (const char of reverse(getCharsInRanges('09', 'AZ', 'az'))) {
-    const cursor = 'Qm' + char
-
-    // Query for legacy storagePaths in the pagination range until no new results are returned
-    let prevLegacyStoragePathsAndCids
-    let legacyStoragePathsAndCids: { storagePath: string; cid: string }[] = []
-    while (!isEqual(prevLegacyStoragePathsAndCids, legacyStoragePathsAndCids)) {
-      legacyStoragePathsAndCids =
-        await DbManager.getDirLegacyStoragePathsAndCids(cursor, BATCH_SIZE)
-      if (legacyStoragePathsAndCids.length) {
-        const legacyAndNonLegacyPaths = legacyStoragePathsAndCids.map(
-          (storagePathAndCid) => {
-            return {
-              legacyPath: storagePathAndCid.storagePath,
-              nonLegacyPath: computeFilePath(storagePathAndCid.cid)
-            }
+) =>
+  _callFuncOnAllCidsPaginated(async (minCid, maxCid) => {
+    // Query for custom storagePaths in the pagination range until no new results are returned
+    let newResultsFound
+    let results: FileRecord[] = []
+    while (newResultsFound) {
+      const prevResults = results
+      results = await DbManager.getCustomStoragePathsRecords(
+        minCid,
+        maxCid,
+        batchSize
+      )
+      if (results.length) {
+        newResultsFound = !isEqual(prevResults, results)
+        // Process sequentially to minimize load since this is not time-sensitive
+        let numFilesMigratedSuccessfully = 0
+        let numFilesFailedToMigrate = 0
+        for (const fileRecord of results) {
+          let success, error
+          try {
+            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
+              fileRecord,
+              logger
+            ))
+          } catch (e: any) {
+            success = false
+            error = e
           }
+          if (success) {
+            numFilesMigratedSuccessfully++
+          } else {
+            numFilesFailedToMigrate++
+            logger.error(
+              `Error fixing fileRecord (custom) ${JSON.stringify(
+                fileRecord
+              )}: ${error}`
+            )
+          }
+
+          // Add delay between calls since each call will make an internal request to every node
+          await timeout(1000)
+        }
+
+        _recordCustomMigrationMetrics(
+          numFilesMigratedSuccessfully,
+          numFilesFailedToMigrate,
+          prometheusRegistry,
+          logger
         )
-        await DbManager.updateLegacyPathDbRows(legacyAndNonLegacyPaths, logger)
+      } else {
+        newResultsFound = false
       }
       await timeout(queryDelayMs) // Avoid spamming fast queries
     }
+  })
+
+function _recordLegacyMigrationMetrics(
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  _recordMigrationMetrics(
+    true,
+    numSuccess,
+    numFailure,
+    prometheusRegistry,
+    logger
+  )
+}
+
+function _recordCustomMigrationMetrics(
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  _recordMigrationMetrics(
+    false,
+    numSuccess,
+    numFailure,
+    prometheusRegistry,
+    logger
+  )
+}
+
+function _recordMigrationMetrics(
+  legacy: boolean,
+  numSuccess: number,
+  numFailure: number,
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  const metricName = legacy
+    ? prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE
+    : prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE
+  if (numSuccess > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_INC',
+        metricName,
+        metricValue: numSuccess,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
   }
+  if (numFailure > 0) {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_INC',
+        metricName,
+        metricValue: numFailure,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  }
+}
+
+function _resetStoragePathMetrics(prometheusRegistry: any, logger: Logger) {
+  // Reset metric for legacy migrations
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'success' }
+    },
+    prometheusRegistry,
+    logger
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'failure' }
+    },
+    prometheusRegistry,
+    logger
+  )
+
+  // Reset metric for custom migrations
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'success' }
+    },
+    prometheusRegistry,
+    logger
+  )
+  clusterUtilsForPrimary.sendMetricToWorker(
+    {
+      metricType: 'GAUGE_SET',
+      metricName:
+        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+      metricValue: 0,
+      metricLabels: { result: 'failure' }
+    },
+    prometheusRegistry,
+    logger
+  )
 }
 
 /**
@@ -589,26 +905,58 @@ async function _migrateDirsWithLegacyStoragePaths(
  * 2. Copies the file to to the non-legacy path (/file_storage/files/<CID or dirCID>)
  * 3. Updates the row in the Files table to reflect the new storagePath
  * 4. Increments Prometheus metric `filesMigratedFromLegacyPath` to reflect the number of files moved
+ *
+ * Then, for files with custom storage paths, this:
+ * 1. Finds rows in the Files table that have a custom storagePath (not /file_storage/<CID> and not /file_storage/files/<CID>)
+ * 2. Finds the file in network and saves it to the standard path (/file_storage/files/*)
+ * 3. Updates the row in the Files table to reflect the new storagePath
+ * 4. Increments Prometheus metric `filesMigratedFromCustomPath` to reflect the number of files moved
  * @param queryDelayMs millis to wait between SQL queries
  * @param prometheusRegistry registry to record Prometheus metrics
  * @param logger logger to print errors to
  */
-export async function migrateFilesWithLegacyStoragePaths(
+export async function migrateFilesWithNonStandardStoragePaths(
   queryDelayMs: number,
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
-  try {
-    await _migrateNonDirFilesWithLegacyStoragePaths(
-      queryDelayMs,
-      prometheusRegistry,
-      logger
-    )
-    await _migrateDirsWithLegacyStoragePaths(queryDelayMs, logger)
-  } catch (e: any) {
-    logger.error(`Error migrating legacy storagePaths: ${e}`)
+  // Reset gauges on each run so the metrics aren't infinitely increasing
+  _resetStoragePathMetrics(prometheusRegistry, logger)
+
+  const BATCH_SIZE = 5_000
+  // Legacy storagePaths
+  if (config.get('migrateFilesWithLegacyStoragePath')) {
+    try {
+      await _migrateNonDirFilesWithLegacyStoragePaths(
+        queryDelayMs,
+        BATCH_SIZE,
+        prometheusRegistry,
+        logger
+      )
+      await _migrateDirsWithLegacyStoragePaths(queryDelayMs, BATCH_SIZE, logger)
+    } catch (e: any) {
+      logger.error(`Error migrating legacy storagePaths: ${e}`)
+    }
+  }
+
+  // Custom storagePaths (not matching 'storagePath' env var)
+  if (config.get('migrateFilesWithCustomStoragePath')) {
+    try {
+      await _migrateFilesWithCustomStoragePaths(
+        queryDelayMs,
+        BATCH_SIZE,
+        prometheusRegistry,
+        logger
+      )
+    } catch (e: any) {
+      logger.error(`Error migrating custom storagePaths: ${e}`)
+    }
   }
 
   // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithLegacyStoragePaths(10_000, prometheusRegistry, logger)
+  return migrateFilesWithNonStandardStoragePaths(
+    5000,
+    prometheusRegistry,
+    logger
+  )
 }

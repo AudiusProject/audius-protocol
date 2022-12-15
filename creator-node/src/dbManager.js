@@ -3,6 +3,7 @@ const { isEmpty } = require('lodash')
 
 const { logger } = require('./logging')
 const models = require('./models')
+const config = require('./config')
 const sequelize = models.sequelize
 const { QueryTypes } = models.Sequelize
 
@@ -433,39 +434,82 @@ class DBManager {
     )?.length
   }
 
-  static async _getLegacyStoragePathsAndCids(cursor, batchSize, dir) {
-    const queryResult = await models.File.findAll({
-      attributes: ['storagePath', 'multihash'],
-      where: {
-        multihash: { [sequelize.Op.gte]: cursor },
-        type: {
-          [dir ? sequelize.Op.eq : sequelize.Op.ne]: models.File.Types.dir
-        },
-        storagePath: {
-          [sequelize.Op.notLike]: '/file_storage/files/%',
-          [sequelize.Op.like]: '/file_storage/%'
-        }
-      },
-      order: [['multihash', 'ASC']],
-      limit: batchSize
+  static async _getLegacyStoragePathRecords(minCid, maxCid, batchSize, dir) {
+    const dirQuery = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" = 'dir'
+          ORDER BY "multihash" DESC)
+      AS "LegacyResults"
+      WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    const nonDirQuery = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" != 'dir'
+          ORDER BY "multihash" DESC)
+      AS "LegacyResults"
+      WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    // Returns [[{ storagePath, multihash, skipped }]]
+    const queryResult = await sequelize.query(dir ? dirQuery : nonDirQuery, {
+      replacements: { minCid, maxCid, batchSize }
     })
+    const fileRecords = queryResult[0]
     logger.debug(
-      `queryResult for legacyStoragePaths (dir=${dir}) with cursor ${cursor}: ${JSON.stringify(
-        queryResult || {}
+      `fileRecords for legacy storagePaths (dir=${dir}) with CID in range [${minCid}, ${maxCid}]: ${JSON.stringify(
+        fileRecords
       )}`
     )
-    if (isEmpty(queryResult)) return []
-    return queryResult.map((result) => {
-      return { storagePath: result.storagePath, cid: result.multihash }
+    return fileRecords
+  }
+
+  static async getNonDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
+      minCid,
+      maxCid,
+      batchSize,
+      false
+    )
+  }
+
+  static async getDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
+      minCid,
+      maxCid,
+      batchSize,
+      true
+    )
+  }
+
+  static async getCustomStoragePathsRecords(minCid, maxCid, batchSize) {
+    const query = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid
+          ORDER BY "multihash" DESC)
+      AS "CustomResults"
+      WHERE "storagePath" NOT LIKE :standardStoragePath AND "storagePath" NOT LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    // Returns [[{ storagePath, multihash, dirMultihash, fileName, trackBlockchainId, fileUUID, skipped }]]
+    const queryResult = await sequelize.query(query, {
+      replacements: {
+        minCid,
+        maxCid,
+        batchSize,
+        standardStoragePath: `${config.get('storagePath')}/%`
+      }
     })
-  }
-
-  static async getNonDirLegacyStoragePathsAndCids(cursor, batchSize) {
-    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, false)
-  }
-
-  static async getDirLegacyStoragePathsAndCids(cursor, batchSize) {
-    return DBManager._getLegacyStoragePathsAndCids(cursor, batchSize, true)
+    const fileRecords = queryResult[0]
+    logger.debug(
+      `fileRecords for custom storagePaths with CID in range [${minCid}, ${maxCid}]: ${JSON.stringify(
+        fileRecords
+      )}`
+    )
+    return fileRecords
   }
 
   static async updateLegacyPathDbRows(copiedFilePaths, logger) {

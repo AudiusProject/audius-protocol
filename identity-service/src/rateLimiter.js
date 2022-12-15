@@ -4,7 +4,11 @@ const config = require('./config.js')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
 const { isIPFromContentNode } = require('./utils/contentNodeIPCheck')
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+const redisClient = new Redis(
+  config.get('redisPort'),
+  config.get('redisHost'),
+  { showFriendlyErrorStack: config.get('environment') !== 'production' }
+)
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 

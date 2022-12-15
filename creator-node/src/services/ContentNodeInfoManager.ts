@@ -179,7 +179,7 @@ export async function getReplicaSetSpIdsByUserId({
       },
       asyncFn: async () => {
         try {
-          // Sill throw error if blocknumber not found
+          // Still throw error if blocknumber not found
           const encodedUserId = libs.Utils.encodeHashId(userId)
           const spResponse = await libs.discoveryProvider.getUserReplicaSet({
             encodedUserId,

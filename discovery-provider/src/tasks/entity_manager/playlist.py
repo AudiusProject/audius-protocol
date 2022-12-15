@@ -11,7 +11,9 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
+    copy_record,
 )
+from src.tasks.playlists import update_playlist_routes_table
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,11 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
     )
+
+    update_playlist_routes_table(
+        params.session, create_playlist_record, params.pending_playlist_routes
+    )
+
     params.add_playlist_record(playlist_id, create_playlist_record)
 
     if tracks:
@@ -122,7 +129,11 @@ def update_playlist(params: ManageEntityParameters):
         existing_playlist = params.new_records[EntityType.PLAYLIST][playlist_id][-1]
 
     updated_playlist = copy_record(
-        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+        existing_playlist,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     process_playlist_data_event(
         updated_playlist,
@@ -131,6 +142,11 @@ def update_playlist(params: ManageEntityParameters):
         params.block_datetime,
         params.metadata_cid,
     )
+
+    update_playlist_routes_table(
+        params.session, updated_playlist, params.pending_playlist_routes
+    )
+
     params.add_playlist_record(playlist_id, updated_playlist)
 
     if updated_playlist.playlist_contents["track_ids"]:
@@ -150,35 +166,15 @@ def delete_playlist(params: ManageEntityParameters):
         ]
 
     deleted_playlist = copy_record(
-        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+        existing_playlist,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     deleted_playlist.is_delete = True
 
     params.new_records[EntityType.PLAYLIST][params.entity_id].append(deleted_playlist)
-
-
-def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
-    new_playlist = Playlist(
-        playlist_id=old_playlist.playlist_id,
-        playlist_owner_id=old_playlist.playlist_owner_id,
-        is_album=old_playlist.is_album,
-        description=old_playlist.description,
-        playlist_image_multihash=old_playlist.playlist_image_multihash,
-        playlist_image_sizes_multihash=old_playlist.playlist_image_sizes_multihash,
-        playlist_name=old_playlist.playlist_name,
-        is_private=old_playlist.is_private,
-        playlist_contents=old_playlist.playlist_contents,
-        created_at=old_playlist.created_at,
-        updated_at=old_playlist.updated_at,
-        blocknumber=block_number,
-        blockhash=event_blockhash,
-        txhash=txhash,
-        last_added_to=old_playlist.last_added_to,
-        is_current=False,
-        is_delete=old_playlist.is_delete,
-        metadata_multihash=old_playlist.metadata_multihash,
-    )
-    return new_playlist
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):

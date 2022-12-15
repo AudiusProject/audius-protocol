@@ -79,3 +79,6 @@ class User(Base, RepresentableMixin):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "User", getattr(User, field).type)
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

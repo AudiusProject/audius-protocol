@@ -8,7 +8,7 @@ import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 
 import axios from 'axios'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
-import { makeGaugeSetToRecord } from '../stateMachineUtils'
+import { makeGaugeSetToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 import { StateMonitoringUser } from '../stateMonitoring/types'
 
 import {
@@ -265,6 +265,7 @@ const _batchIssueReqsToRecoverOrphanedData = async (
         await redisClient.srem(WALLETS_ORPHANED_KEY, wallet)
       } catch (e: any) {
         logger.error(
+          { primaryEndpoint, wallet },
           `Error issuing request to recover orphaned data: ${e.message}`
         )
       }

@@ -47,7 +47,10 @@ async function processJob(
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
   try {
     await redis.set(`latestJobStart_${queueName}`, Date.now())
-    result = await jobProcessor({ logger: jobLogger, ...jobData })
+    result = await jobProcessor({
+      logger: jobLogger,
+      ...jobData
+    })
     metricEndTimerFn({ uncaughtError: false })
     await redis.set(`latestJobSuccess_${queueName}`, Date.now())
   } catch (error: any) {

@@ -88,11 +88,13 @@ def get_table_size_info(**kwargs):
     with db.scoped_session() as session:
         sql_statement = """SELECT c.relname AS table_name,
                 c.reltuples::text AS rows,
-                pg_size_pretty(pg_relation_size(s.relid)) AS data_size
+                pg_size_pretty(pg_relation_size(s.relid)) AS data_size,
+                pg_size_pretty(pg_indexes_size(s.relid)) AS indexes_size,
+                pg_size_pretty(pg_total_relation_size(s.relid)) as full_size
             FROM pg_class c
             JOIN pg_catalog.pg_statio_user_tables s ON s.relname = c.relname
             WHERE c.relkind = 'r'
-            ORDER BY c.reltuples DESC;"""
+            ORDER BY pg_relation_size(s.relid) DESC;"""
 
         q = sqlalchemy.text(sql_statement)
         result = session.execute(q).fetchall()

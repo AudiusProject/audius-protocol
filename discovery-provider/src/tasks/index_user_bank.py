@@ -38,7 +38,6 @@ from src.solana.solana_transaction_types import (
     ConfirmedTransaction,
     ResultMeta,
     TransactionInfoResult,
-    TransactionMessage,
     TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
@@ -47,7 +46,12 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_token_balances
+from src.utils.helpers import (
+    get_account_index,
+    get_solana_tx_token_balances,
+    get_valid_instruction,
+    has_log,
+)
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
@@ -148,12 +152,11 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime.datetime,
 ):
-    # The transaction might list sender/receiver in a different order in the pubKeys.
-    # The "accounts" field of the instruction has the mapping of accounts to pubKey index
-    sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
-    receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
-    sender_account = account_keys[sender_index]
-    receiver_account = account_keys[receiver_index]
+    sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
+    receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
+    sender_account = account_keys[sender_idx]
+    receiver_account = account_keys[receiver_idx]
+
     # Accounts to refresh balance
     logger.info(
         f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
@@ -179,10 +182,10 @@ def process_transfer_instruction(
         return
 
     pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
-        meta, sender_index
+        meta, sender_idx
     )
     pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
-        meta, receiver_index
+        meta, receiver_idx
     )
     if (
         pre_sender_balance is None
@@ -290,30 +293,6 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
     return parse_instruction_data(data, create_token_account_instr)
 
 
-def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta
-) -> Optional[TransactionMessageInstruction]:
-    """Checks that the tx is valid
-    checks for the transaction message for correct instruction log
-    checks accounts keys for claimable token program
-    """
-    try:
-        account_keys = tx_message["accountKeys"]
-        instructions = tx_message["instructions"]
-        user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
-        for instruction in instructions:
-            if instruction["programIdIndex"] == user_bank_program_index:
-                return instruction
-
-        return None
-    except Exception as e:
-        logger.error(
-            f"index_user_bank.py | Error processing instruction valid, {e}",
-            exc_info=True,
-        )
-        return None
-
-
 def process_user_bank_tx_details(
     session: Session,
     redis: Redis,
@@ -334,18 +313,15 @@ def process_user_bank_tx_details(
     tx_message = result["transaction"]["message"]
 
     # Check for valid instruction
-    has_create_token_instruction = any(
-        log == "Program log: Instruction: CreateTokenAccount"
-        for log in meta["logMessages"]
+    has_create_token_instruction = has_log(
+        meta, "Program log: Instruction: CreateTokenAccount"
     )
-    has_transfer_instruction = any(
-        log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
-    )
+    has_transfer_instruction = has_log(meta, "Program log: Instruction: Transfer")
 
     if not has_create_token_instruction and not has_transfer_instruction:
         return
 
-    instruction = get_valid_instruction(tx_message, meta)
+    instruction = get_valid_instruction(tx_message, meta, USER_BANK_ADDRESS)
     if instruction is None:
         logger.error(f"index_user_bank.py | {tx_sig} No Valid instruction found")
         return

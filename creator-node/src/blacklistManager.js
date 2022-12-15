@@ -2,7 +2,9 @@ const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
-const { clusterUtilsForWorker } = require('./utils')
+const {
+  clusterUtilsForWorker
+} = require('./utils/cluster/clusterUtilsForWorker')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 

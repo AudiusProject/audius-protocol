@@ -1,332 +1,298 @@
 /**
  * SecondarySyncHealthTracker
- * API for Primary to measure SyncRequest success and failure counts per Secondary, User, and Day
+ * API for Primary to track wallet-secondary encountered errors. Used to determine if further
+ * action should be taking place on a secondary for a wallet
  */
 
-import type { WalletsToSecondariesMapping } from '../types'
+import { ComputeWalletOnSecondaryUserInfo } from '../stateMonitoring/types'
+import {
+  SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES,
+  SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP
+} from './SecondarySyncHealthTrackerConstants'
+import { WalletToSecondaryAndMaxErrorReached } from './types'
 
-// eslint-disable-next-line import/no-unresolved
-import { UserSecondarySyncMetricsMap } from '../stateMonitoring/types'
-
-const config = require('../../../config')
+const { logger: genericLogger } = require('../../../logging')
 const redisClient = require('../../../redis')
-const { logger } = require('../../../logging')
 
-const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
+const REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE =
+  'PRIMARY_TO_SECONDARY_SYNC_FAILURE'
 
-const DailyRedisKeyExpirationSec =
-  90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
+const REDIS_KEY_EXPIRY_SECONDS = 259_200 // 3 days -- small range of buffer time to delete keys by
+const PROCESS_USERS_BATCH_SIZE = 30
 
-const RECORD_SYNC_RESULTS = config.get('recordSyncResults')
-const PROCESS_SYNC_RESULTS = config.get('processSyncResults')
+export class SecondarySyncHealthTracker {
+  walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
 
-export const Outcomes = Object.freeze({
-  SUCCESS: 'Success',
-  FAILURE: 'Failure'
-})
-
-type RedisFilters = {
-  secondary?: string
-  wallet?: string
-  syncType?: string
-  outcome?: string
-  date?: string | null
-}
-
-/**
- * Given a mapping of wallet to secondaries arrays, returns mapping from wallet to
- * sync metrics for that wallet, where sync metrics are a mapping of secondary endpoint
- * to successCount, failureCount, and successRate
- *
- * @param {Object { <wallet (string)>: <secondary endpoints (string array)}} walletsToSecondariesMapping
- * @returns {Object} { '0x...': { 'https://secondary1...': { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... } ... }
- */
-export async function computeUsersSecondarySyncSuccessRatesForToday(
-  walletsToSecondariesMapping: WalletsToSecondariesMapping
-): Promise<UserSecondarySyncMetricsMap> {
-  // Initialize sync success and failure counts for every secondary to 0
-  const secondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
-  const wallets = Object.keys(walletsToSecondariesMapping)
-  for (const wallet of wallets) {
-    const secondarySyncMetrics = secondarySyncMetricsMap[wallet] || {}
-    for (const secondary of walletsToSecondariesMapping[wallet]) {
-      secondarySyncMetrics[secondary] = {
-        successCount: 0,
-        failureCount: 0,
-        successRate: 1
-      }
-      secondarySyncMetricsMap[wallet] = secondarySyncMetrics
+  // Param exists so when processing jobs, data can be serialized into redis for processing later
+  constructor(
+    { walletToSecondaryAndMaxErrorReached } = {
+      walletToSecondaryAndMaxErrorReached: {}
     }
-  }
-
-  // Retrieve map of all SyncRequestOutcome keys and daily counts for wallets from all secondaries
-  if (PROCESS_SYNC_RESULTS) {
-    const userSecondarySyncHealthOutcomes =
-      await _batchGetSyncRequestOutcomeMetricsForToday(wallets)
-
-    // Aggregate all daily SyncRequest outcome counts by secondary
-    _aggregateSyncSuccessAndFailureCountBySecondaryPerWallet(
-      userSecondarySyncHealthOutcomes,
-      secondarySyncMetricsMap
-    )
-
-    // For each secondary, compute and store successRate
-    _aggregateSyncSuccessRateBySecondaryPerWallet(
-      wallets,
-      secondarySyncMetricsMap
-    )
-  }
-
-  return secondarySyncMetricsMap
-}
-
-function _aggregateSyncSuccessRateBySecondaryPerWallet(
-  wallets: string[],
-  secondarySyncMetricsMap: UserSecondarySyncMetricsMap
-) {
-  for (const wallet of wallets) {
-    Object.keys(secondarySyncMetricsMap[wallet]).forEach((secondary) => {
-      const { successCount, failureCount } =
-        secondarySyncMetricsMap[wallet][secondary]
-      secondarySyncMetricsMap[wallet][secondary].successRate =
-        failureCount === 0 ? 1 : successCount / (successCount + failureCount)
-    })
-  }
-}
-
-function _aggregateSyncSuccessAndFailureCountBySecondaryPerWallet(
-  userSecondarySyncHealthOutcomes: { [key: string]: any },
-  secondarySyncMetricsMap: UserSecondarySyncMetricsMap
-) {
-  for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
-    count = parseInt(count)
-    const { wallet, secondary, outcome } = _parseRedisKeyIntoComponents(key)
-    const secondarySyncMetrics = secondarySyncMetricsMap[wallet]
-    if (!(secondary in secondarySyncMetrics)) {
-      // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
-      continue
+  ) {
+    if (!walletToSecondaryAndMaxErrorReached) {
+      walletToSecondaryAndMaxErrorReached = {}
     }
-    if (outcome === Outcomes.SUCCESS) {
-      secondarySyncMetrics[secondary].successCount += count
-    } else if (outcome === Outcomes.FAILURE) {
-      secondarySyncMetrics[secondary].failureCount += count
-    }
-    secondarySyncMetricsMap[wallet] = secondarySyncMetrics
-    // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
-  }
-}
 
-export async function recordSuccess(
-  secondary: string,
-  wallet: string,
-  syncType: string
-) {
-  if (RECORD_SYNC_RESULTS) {
-    await _recordSyncRequestOutcome(secondary, wallet, syncType, true)
-  }
-}
-
-export async function recordFailure(
-  secondary: string,
-  wallet: string,
-  syncType: string
-) {
-  if (RECORD_SYNC_RESULTS) {
-    await _recordSyncRequestOutcome(secondary, wallet, syncType, false)
-  }
-}
-
-/**
- * Returns single int representing SyncRequestOutcome for secondary, wallet, syncType, date=today, and Outcome=Failure
- * Only one redis key should exist for above params, but takes 1st value if multiple are found
- */
-export async function getSecondaryUserSyncFailureCountForToday(
-  secondary: string,
-  wallet: string,
-  syncType: string
-) {
-  if (!PROCESS_SYNC_RESULTS) {
-    return 0
+    this.walletToSecondaryAndMaxErrorReached =
+      walletToSecondaryAndMaxErrorReached
   }
 
-  const resp = await getSyncRequestOutcomeMetrics({
+  /**
+   * On today, for a wallet on a secondary, record the failure as identified by `prometheusError` in Redis.
+   * This info is later used to determine whether or not to re-enqueue another sync job or issue replica set update
+   */
+  async recordFailure({
     secondary,
     wallet,
-    syncType,
-    outcome: Outcomes.FAILURE
-    /* date defaults to today */
-  })
-
-  const entries = Object.entries(resp)
-
-  if (entries.length === 0) {
-    return 0
-  } else {
-    return parseInt(entries[0][1])
-  }
-}
-
-/**
- * Get SyncRequest outcome metrics, optionally filtered on { `secondary`, `wallet`, `syncType`, `outcome`, `date` }.
- * Defaults to matching date=<today> and other params=* (wildcard / any value).
- * @param {Object} filters object specifying any of above filters
- * @returns {Object} map from every key matching pattern with above filters to associated value
- */
-export async function getSyncRequestOutcomeMetrics(filters: RedisFilters) {
-  try {
-    const pattern = _getRedisKeyPattern(filters)
-    return _getMetricsMatchingPattern(pattern)
-  } catch (e: any) {
-    logger.error(
-      `SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`
-    )
-    return {}
-  }
-}
-
-/**
- * Given redis key pattern, returns all keys matching pattern and associated values
- *
- * @param {string} pattern the pattern to run a redis SCAN on to find matching keys
- * @param {String[]} wallets optional array of wallets to filter matched keys by
- * @returns map of key-value pairs
- */
-async function _getMetricsMatchingPattern(
-  pattern: string,
-  wallets: string[] = []
-) {
-  const keys: string[] = wallets
-    ? await _getAllKeysMatchingPattern(pattern, (key) =>
-        wallets.some((wallet) => key.includes(wallet))
-      )
-    : await _getAllKeysMatchingPattern(pattern)
-
-  // Short-circuit here since redis `mget` throws if array param has 0-length
-  if (!keys || !keys.length) {
-    return {}
-  }
-
-  // This works because vals.length === keys.length
-  // https://redis.io/commands/mget
-  const vals = await redisClient.mget(keys)
-
-  // Zip keys and vals arrays into map of key-val pairs
-  const keyMap: { [key: string]: any } = {}
-  for (let i = 0; i < keys.length; i++) {
-    keyMap[keys[i]] = vals[i]
-  }
-
-  return keyMap
-}
-
-/**
- * Returns array of all keys in Redis matching pattern, using redis SCAN
- * https://github.com/luin/ioredis#streamify-scanning
- *
- * @returns array | Error
- */
-async function _getAllKeysMatchingPattern(
-  pattern: string,
-  extraFilter = (_: string) => true
-): Promise<string[]> {
-  const stream = redisClient.scanStream({ match: pattern })
-
-  const keySet = new Set<string>()
-  return new Promise<string[]>((resolve, reject) => {
-    stream.on('data', async (keys = []) => {
-      keys.filter(extraFilter).forEach((key) => {
-        keySet.add(key)
-      })
-    })
-    stream.on('end', () => {
-      resolve(Array.from<string>(keySet).filter(Boolean))
-    })
-    stream.on('error', (e: any) => {
-      reject(e)
-    })
-  })
-}
-
-/**
- * Builds redis key pattern given params, using today as the default date
- * and wildcard matcher for every other default param.
- * Key pattern string can map to one or multiple keys.
- */
-function _getRedisKeyPattern({
-  secondary = '*',
-  wallet = '*',
-  syncType = '*',
-  outcome = '*',
-  date = null
-}: RedisFilters) {
-  // format: YYYY-MM-DD
-  date = date || new Date().toISOString().split('T')[0]
-
-  return `${RedisKeyPrefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
-}
-
-function _parseRedisKeyIntoComponents(key: string) {
-  const components = key.split(':::')
-  const [, secondary, wallet, syncType, date, outcome] = components
-  return { secondary, wallet, syncType, date, outcome }
-}
-
-async function _recordSyncRequestOutcome(
-  secondary: string,
-  wallet: string,
-  syncType: string,
-  success = true
-) {
-  try {
-    const outcome = success ? Outcomes.SUCCESS : Outcomes.FAILURE
-    const redisKey = _getRedisKeyPattern({
+    prometheusError
+  }: {
+    secondary: string
+    wallet: string
+    prometheusError: string
+  }) {
+    const redisKey = this._getSyncFailureRedisKey({
       secondary,
-      wallet,
-      syncType,
-      outcome
+      wallet
     })
 
-    // incr() will create key with value 0 if non-existent
-    await redisClient.incr(redisKey)
+    try {
+      // For a secondary-wallet pairing for today, increment the error count for prometheusError by 1
+      await redisClient.hincrby(redisKey, prometheusError, 1 /* increment */)
 
-    // Set key expiration time (sec) in case it hasn't already been set (prob not most efficient)
-    await redisClient.expire(redisKey, DailyRedisKeyExpirationSec)
+      // Set the expiry by REDIS_KEY_EXPIRY_SECONDS
+      await redisClient.expire(redisKey, REDIS_KEY_EXPIRY_SECONDS)
 
-    logger.debug(
-      `SecondarySyncHealthTracker:_recordSyncRequestOutcome || Recorded ${redisKey}`
-    )
+      genericLogger.debug(
+        { SecondarySyncHealthTracker: 'recordFailure' },
+        `Incremented ${redisKey}:${prometheusError} count`
+      )
+    } catch (e: any) {
+      genericLogger.error(
+        { SecondarySyncHealthTracker: 'recordFailure' },
+        `Failed to increment ${redisKey}:${prometheusError} count`
+      )
+    }
+  }
 
-    // Swallow error + log
-  } catch (e: any) {
-    logger.error(
-      `SecondarySyncHealthTracker:_recordSyncRequestOutcome Error || ${e.message}`
-    )
+  /**
+   * If there is no presence of the wallet-secondary-error relationship, that means a wallet did not
+   * encounter any max error capacity. Else, a max error was encountered
+   * @param wallet
+   * @param secondary
+   * @returns flag on whether wallet on secondary exceeded the max attempts allowed
+   */
+  doesWalletOnSecondaryExceedMaxErrorsAllowed(
+    wallet: string,
+    secondary: string
+  ): boolean {
+    const error =
+      this.walletToSecondaryAndMaxErrorReached?.[wallet]?.[secondary]
+
+    if (error) {
+      genericLogger.warn(
+        {
+          SecondarySyncHealthTracker:
+            'doesWalletOnSecondaryExceedMaxErrorsAllowed',
+          wallet,
+          secondary,
+          error
+        },
+        `Wallet encountered max errors allowed on secondary`
+      )
+    }
+
+    return !!error
+  }
+
+  /**
+   * Given an array of user info, determine whether the further action on the secondary for the
+   * wallet should engage. Currently used for determining if a sync should reenqueue and if a
+   * replica set update should be issued.
+   */
+  async computeWalletOnSecondaryExceedsMaxErrorsAllowed(
+    userInfo: ComputeWalletOnSecondaryUserInfo[]
+  ) {
+    // For each secondary-wallet-date
+    for (let i = 0; i < userInfo.length; i += PROCESS_USERS_BATCH_SIZE) {
+      // Get batch slice of users
+      const userInfoSlice = userInfo.slice(i, i + PROCESS_USERS_BATCH_SIZE)
+
+      // Get all the keys for sync failures
+      const failedSyncKeys =
+        await this._getSyncFailureKeyForWalletOnSecondaries(userInfoSlice)
+
+      for (const failedSyncKey of failedSyncKeys) {
+        // Get all the errors encountered for the wallet-secondaray-date
+        const errorToErrorCount = await this._fetchErrorToErrorCount(
+          failedSyncKey
+        )
+
+        if (errorToErrorCount) {
+          // Get sync info from redis key
+          const info = this._getInfoFromRedisKey(failedSyncKey)
+
+          // Determine whether the wallet on the secondary exceeded max errors allowed
+          this._determineIfWalletOnSecondaryExceededMaxErrorsAllowed({
+            wallet: info.wallet,
+            secondary: info.secondary,
+            errorToErrorCount
+          })
+        }
+      }
+    }
+
+    if (Object.keys(this.walletToSecondaryAndMaxErrorReached).length) {
+      genericLogger.warn(
+        {
+          SecondarySyncHealthTracker:
+            'computeWalletOnSecondaryExceedsMaxErrorsAllowed'
+        },
+        `Wallets on secondaries have exceeded the allowed error capacity for today: ${JSON.stringify(
+          this.walletToSecondaryAndMaxErrorReached
+        )}`
+      )
+    }
+  }
+
+  // Used for passing around state for job processing. Ideally, do not consume this data directly and
+  // use the abstract methods
+  getState(): {
+    walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+  } {
+    return {
+      walletToSecondaryAndMaxErrorReached:
+        this.walletToSecondaryAndMaxErrorReached
+    }
+  }
+
+  /**
+   * Given user info, generate the redis keys
+   * @param userInfo user info
+   * @returns the redis keys
+   */
+  async _getSyncFailureKeyForWalletOnSecondaries(
+    userInfo: ComputeWalletOnSecondaryUserInfo[]
+  ): Promise<string[]> {
+    const syncFailureKeys = []
+    for (const { wallet, secondary1, secondary2 } of userInfo) {
+      const redisKeyWalletToSecondary1 = this._getSyncFailureRedisKey({
+        secondary: secondary1,
+        wallet
+      })
+      syncFailureKeys.push(redisKeyWalletToSecondary1)
+
+      if (secondary2) {
+        const redisKeyWalletToSecondary2 = this._getSyncFailureRedisKey({
+          secondary: secondary2,
+          wallet
+        })
+        syncFailureKeys.push(redisKeyWalletToSecondary2)
+      }
+    }
+
+    return syncFailureKeys
+  }
+
+  async _fetchErrorToErrorCount(failedSyncKey: string) {
+    const errorToErrorCount = await redisClient.hgetall(failedSyncKey)
+
+    if (!errorToErrorCount) {
+      return null
+    }
+
+    const errors = Object.keys(errorToErrorCount)
+
+    if (!errors.length) {
+      return null
+    }
+
+    const errorsToErrorCountParsed: { [error: string]: number } = {}
+    errors.forEach((e) => {
+      errorsToErrorCountParsed[e] = parseInt(errorToErrorCount[e])
+    })
+
+    return errorsToErrorCountParsed
+  }
+
+  _determineIfWalletOnSecondaryExceededMaxErrorsAllowed({
+    wallet,
+    secondary,
+    errorToErrorCount
+  }: {
+    wallet: string
+    secondary: string
+    errorToErrorCount: { [error: string]: number /* the error count */ }
+  }) {
+    // Get the error and number of times the error occurred
+    for (const [error, errorCount] of Object.entries(errorToErrorCount)) {
+      // Compare the above number to the max retry attempts
+      const exceedsMaxErrorsAllowed = this._didErrorExceedMaxRetries(
+        error,
+        errorCount
+      )
+
+      // If any error exceeded, mark wallet on secondary as exceeded and
+      // track down which error
+      if (exceedsMaxErrorsAllowed) {
+        this._updateWalletToSecondaryAndMaxErrorReached({
+          wallet,
+          secondary,
+          error
+        })
+      }
+    }
+  }
+
+  _updateWalletToSecondaryAndMaxErrorReached({
+    wallet,
+    secondary,
+    error
+  }: {
+    wallet: string
+    secondary: string
+    error: string
+  }) {
+    if (!this.walletToSecondaryAndMaxErrorReached[wallet]) {
+      this.walletToSecondaryAndMaxErrorReached[wallet] = {}
+    }
+
+    this.walletToSecondaryAndMaxErrorReached[wallet][secondary] = error
+  }
+
+  _didErrorExceedMaxRetries(error: string, errorCount: number) {
+    const maxRetries =
+      SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES_MAP.get(error) ??
+      SYNC_ERRORS_TO_MAX_NUMBER_OF_RETRIES.default
+
+    return errorCount >= maxRetries
+  }
+
+  _getSyncFailureRedisKey({
+    secondary,
+    wallet
+  }: {
+    secondary: string
+    wallet: string
+  }) {
+    // format: YYYY-MM-DD
+    const date = new Date().toISOString().split('T')[0]
+
+    return `${REDIS_KEY_PREFIX_PRIMARY_TO_SECONDARY_SYNC_FAILURE}::${date}::${secondary}::${wallet}`
+  }
+
+  _getInfoFromRedisKey(redisKey: string): {
+    date: string
+    secondary: string
+    wallet: string
+  } {
+    const info = redisKey.split('::')
+
+    return {
+      date: info[1],
+      secondary: info[2],
+      wallet: info[3]
+    }
   }
 }
 
-/**
- * Get today's SyncRequest outcome metrics for a batch of wallets
- * @param {String[]} wallets wallets to use as individual filters
- * @returns {Object} map from every redis key matching sync request pattern with any of the given wallets
- */
-async function _batchGetSyncRequestOutcomeMetricsForToday(wallets: string[]) {
-  try {
-    // Use all wildcards for the pattern and filter keys by wallet after retrieving them
-    const pattern = _getRedisKeyPattern({})
-    return _getMetricsMatchingPattern(pattern, wallets)
-  } catch (e: any) {
-    logger.error(
-      `SecondarySyncHealthTracker - _batchGetSyncRequestOutcomeMetricsForToday() Error || ${e.message}`
-    )
-    return {}
-  }
-}
-
-module.exports = {
-  Outcomes,
-  recordSuccess,
-  recordFailure,
-  computeUsersSecondarySyncSuccessRatesForToday,
-  getSyncRequestOutcomeMetrics,
-  getSecondaryUserSyncFailureCountForToday
-}
+module.exports = { SecondarySyncHealthTracker }

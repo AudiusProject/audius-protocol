@@ -6,8 +6,7 @@ import type {
   MonitorStateJobParams,
   MonitorStateJobReturnValue,
   ReplicaToAllUserInfoMaps,
-  StateMonitoringUser,
-  UserSecondarySyncMetricsMap
+  StateMonitoringUser
 } from './types'
 
 // eslint-disable-next-line import/no-unresolved
@@ -16,11 +15,11 @@ import { instrumentTracing, tracing } from '../../../tracer'
 import { CNodeHealthManager } from '../CNodeHealthManager'
 import config from '../../../config'
 import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
 const {
   getNodeUsers,
-  buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap
+  buildReplicaSetNodesToUserWalletsMap
 } = require('./stateMonitoringUtils')
 
 // Number of users to process each time monitor-state job processor is called
@@ -69,7 +68,9 @@ async function monitorState({
   let users: StateMonitoringUser[] = []
   let unhealthyPeers = new Set<string>()
   let replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps = {}
-  let userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
+
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
+
   try {
     try {
       users = await getNodeUsers(
@@ -181,29 +182,29 @@ async function monitorState({
 
     // Retrieve success metrics for all users syncing to their secondaries
     try {
-      userSecondarySyncMetricsMap =
-        await computeUserSecondarySyncSuccessRatesMap(users)
+      await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
+        users.map((user) => ({
+          wallet: user.wallet,
+          secondary1: user.secondary1,
+          secondary2: user.secondary2
+        }))
+      )
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Success',
-        logger,
-        {
-          userSecondarySyncMetricsMapLength: Object.keys(
-            userSecondarySyncMetricsMap
-          )?.length
-        }
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Success',
+        logger
       )
     } catch (e: any) {
       tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Error',
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Error',
         logger,
         { error: e.message }
       )
       throw new Error(
-        'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
+        'monitor-state job processor computeWalletOnSecondaryExceedsMaxErrorsAllowed Error'
       )
     }
   } catch (e: any) {
@@ -224,14 +225,14 @@ async function monitorState({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    userSecondarySyncMetricsMap,
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    userSecondarySyncMetricsMap,
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
     parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {

@@ -32,7 +32,8 @@ import {
   computeFilePath,
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
-  computeFilePathInDirAndEnsureItExists
+  computeFilePathInDirAndEnsureItExists,
+  computeLegacyFilePath
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
@@ -74,6 +75,7 @@ export {
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
+  computeLegacyFilePath,
   getCharsInRange,
   getCharsInRanges
 }
@@ -108,6 +110,7 @@ module.exports = {
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
+  computeLegacyFilePath,
   getCharsInRange,
   getCharsInRanges
 }

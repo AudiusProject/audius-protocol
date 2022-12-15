@@ -44,7 +44,7 @@ async function processMilestoneListenNotifications(notifications, tx) {
         { transaction: tx }
       )
       const notificationId = createMilestoneTx.id
-      await models.SolanaNotificationAction.findOrCreate({
+      const notificationAction = await models.SolanaNotificationAction.findOne({
         where: {
           notificationId,
           actionEntityType: actionEntityTypes.Track,
@@ -53,6 +53,19 @@ async function processMilestoneListenNotifications(notifications, tx) {
         },
         transaction: tx
       })
+      if (notificationAction == null) {
+        await models.SolanaNotificationAction.create(
+          {
+            notificationId,
+            actionEntityType: actionEntityTypes.Track,
+            actionEntityId: threshold,
+            slot
+          },
+          {
+            transaction: tx
+          }
+        )
+      }
       validNotifications.push(notification)
     }
   }

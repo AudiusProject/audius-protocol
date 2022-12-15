@@ -71,6 +71,7 @@ export type UserMetadata = {
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
 }
 
 export type User = UserMetadata
@@ -154,6 +155,8 @@ export type TrackMetadata = {
   // Added fields
   dateListened?: string
   duration: number
+
+  is_playlist_upload?: boolean
 }
 
 export type CollectionMetadata = {

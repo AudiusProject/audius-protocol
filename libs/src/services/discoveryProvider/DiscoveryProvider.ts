@@ -976,7 +976,7 @@ export class DiscoveryProvider {
   /**
    * Retrieves the user's replica set
    * @param params.encodedUserId string of the encoded user id
-   * @param params.blocNumber optional integer pass to wait until the discovery node has indexed that block number
+   * @param params.blockNumber optional integer pass to wait until the discovery node has indexed that block number
    * @return object containing the user replica set
    */
   async getUserReplicaSet({
@@ -995,6 +995,17 @@ export class DiscoveryProvider {
       false,
       blockNumber
     )
+  }
+
+  /**
+   * Retrieves an unclaimed ID
+   * @return encoded ID
+   */
+  async getUnclaimedId(
+    type: 'users' | 'playlists' | 'tracks'
+  ): Promise<null | undefined | string> {
+    const req = Requests.getUnclaimedId(type)
+    return await this._makeRequest(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */

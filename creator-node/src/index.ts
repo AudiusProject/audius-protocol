@@ -17,6 +17,7 @@ import cluster from 'cluster'
 import ON_DEATH from 'death'
 import { Keypair } from '@solana/web3.js'
 
+import { recordMetrics } from './services/prometheusMonitoring/prometheusUsageUtils'
 import { initializeApp } from './app'
 import config from './config'
 import { serviceRegistry } from './serviceRegistry'
@@ -28,7 +29,7 @@ import { sequelize } from './models'
 import {
   emptyTmpTrackUploadArtifacts,
   sweepSubdirectoriesInFiles,
-  migrateFilesWithLegacyStoragePaths
+  migrateFilesWithNonStandardStoragePaths
 } from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
@@ -130,14 +131,12 @@ const runAsyncBackgroundTasks = async () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     sweepSubdirectoriesInFiles()
   }
-  if (config.get('migrateFilesWithLegacyStoragePath')) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    migrateFilesWithLegacyStoragePaths(
-      1000,
-      serviceRegistry.prometheusRegistry,
-      logger
-    )
-  }
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  migrateFilesWithNonStandardStoragePaths(
+    500,
+    serviceRegistry.prometheusRegistry,
+    logger
+  )
 }
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app
@@ -251,6 +250,17 @@ const startAppForWorker = async () => {
       } catch (error: any) {
         logger.error(
           `Failed to send aggregated metrics data back to worker: ${error}`
+        )
+      }
+    } else if (msg?.cmd === 'recordMetric') {
+      try {
+        // The primary can't record prometheus metrics in cluster mode, so we record a metric that the primary sent to this worker if it's the special worker
+        if (clusterUtilsForWorker.isThisWorkerSpecial()) {
+          recordMetrics(serviceRegistry.prometheusRegistry, logger, [msg.val])
+        }
+      } catch (error: any) {
+        logger.error(
+          `Primary requested worker to record a metric, and the worker failed to record it: ${error}`
         )
       }
     }

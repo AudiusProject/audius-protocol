@@ -12,7 +12,7 @@ import type {
   UpdateReplicaSetJobParams,
   UpdateReplicaSetJobReturnValue
 } from './types'
-import { makeHistogramToRecord } from '../stateMachineUtils'
+import { makeHistogramToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 import { UpdateReplicaSetJobResult } from '../stateMachineConstants'
 import { stringifyMap } from '../../../utils'
 import {
@@ -614,20 +614,6 @@ const _issueUpdateReplicaSetOp = async (
     }
 
     if (!issueReconfig) {
-      response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
-      return response
-    }
-    /**
-     * TODO: Remove this after rollout. This is an extra gating condition that only applies to primary reconfigs:
-     * ONLY issue reconfigs of primaries when the cause of the reconfig is that the primary endpoint was deregistered or changed.
-     */
-    const primaryExistsOnChain = await getMapOfCNodeEndpointToSpId(
-      logger
-    ).hasOwnProperty(primary)
-    const isPrimaryReconfig =
-      reconfigType === RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES
-    const shouldSkipPrimaryReconfig = isPrimaryReconfig && primaryExistsOnChain
-    if (shouldSkipPrimaryReconfig) {
       response.result = UpdateReplicaSetJobResult.SuccessIssueReconfigDisabled
       return response
     }

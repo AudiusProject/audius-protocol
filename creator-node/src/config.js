@@ -41,9 +41,15 @@ const config = convict({
     default: '/file_storage'
   },
   migrateFilesWithLegacyStoragePath: {
-    doc: 'True to copy files with a legacy storage to the new storage path',
+    doc: 'True to copy files with a legacy storage path to the new storage path specified by the "storagePath" config option',
     format: Boolean,
     env: 'migrateFilesWithLegacyStoragePath',
+    default: true
+  },
+  migrateFilesWithCustomStoragePath: {
+    doc: 'True to copy files with a non-standard storage path to the new storage path specified by the "storagePath" config option',
+    format: Boolean,
+    env: 'migrateFilesWithCustomStoragePath',
     default: true
   },
   redisHost: {
@@ -684,18 +690,6 @@ const config = convict({
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
-  minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
-    format: 'nat',
-    env: 'minimumSecondaryUserSyncSuccessPercent',
-    default: 50
-  },
-  minimumFailedSyncRequestsBeforeReconfig: {
-    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
-    format: 'nat',
-    env: 'minimumFailedSyncRequestsBeforeReconfig',
-    default: 20
-  },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
     doc: "Max number of seconds since first failed health check before a primary's users start issuing replica set updates",
     format: 'nat',
@@ -839,24 +833,12 @@ const config = convict({
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
+    default: '1,4,5,9,10,21,27,33,39,43,52,58,62'
   },
-  recordSyncResults: {
-    doc: 'Flag to record sync results. If enabled sync results (successes and failures) will be recorded. This flag is not intended to be permanent.',
-    format: Boolean,
-    env: 'recordSyncResults',
-    default: true
-  },
-  processSyncResults: {
-    doc: 'Flag to process sync results. If enabled, syncs may be capped for a day depending on sync results. Else, do not process sync results. This flag is not intended to be permanent.',
-    format: Boolean,
-    env: 'processSyncResults',
-    default: true
-  },
-  syncOverridePassword: {
-    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+  overridePassword: {
+    doc: 'Used to allow manual actions to be issued on foundation nodes only',
     format: String,
-    env: 'syncOverridePassword',
+    env: 'overridePassword',
     default: '',
     sensitive: true
   },
