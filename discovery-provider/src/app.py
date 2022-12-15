@@ -525,7 +525,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": timedelta(hours=3),
+                "schedule": timedelta(seconds=10),
             },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",

@@ -3,10 +3,11 @@ from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
-from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
+from src.utils.config import shared_config
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -17,8 +18,6 @@ from src.utils.redis_constants import (
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
 )
-from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
-from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
