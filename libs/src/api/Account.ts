@@ -733,7 +733,7 @@ export class Account extends Base {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = await this.ethWeb3Manager.sign(
-      Buffer.from(message, 'utf-8')
+      Buffer.from(message, 'utf-8') as unknown as string
     )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(
