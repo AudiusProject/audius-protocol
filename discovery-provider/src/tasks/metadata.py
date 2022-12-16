@@ -63,6 +63,7 @@ class TrackMetadata(TypedDict):
     stem_of: Optional[TrackStem]
     is_premium: Optional[bool]
     premium_conditions: Optional[Any]
+    is_playlist_upload: Optional[bool]
 
 
 track_metadata_format: TrackMetadata = {
