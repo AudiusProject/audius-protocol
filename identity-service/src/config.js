@@ -855,7 +855,7 @@ const config = convict({
     doc: 'Key for IPAPI',
     format: String,
     env: 'ipApiKey',
-    default: 10
+    default: ''
   },
   updateReplicaSetWalletWhitelist: {
     doc: '`senderAddress` values allowed to make updateReplicaSet calls. Will still adhere to updateReplicaSetReconfigurationLimit. Empty means no whitelist, all addresses allowed.',
