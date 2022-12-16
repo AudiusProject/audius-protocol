@@ -125,7 +125,6 @@ describe('Staking tests', () => {
   describe('Registration', () => {
     let initialSPBalance
     let testEndpt
-    let testEndpt2
     let initialStake
     let defaultStake
 
@@ -252,6 +251,10 @@ describe('Staking tests', () => {
   })
 
   describe('Deregistration', () => {
+    let initialSPBalance
+    let testEndpt
+    let initialStake
+    let defaultStake
     beforeEach(async () => {
       // Clear any accounts registered w/the audius1 account
       initialSPBalance = await token.balanceOf(sp1)
