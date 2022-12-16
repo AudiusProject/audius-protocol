@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import {
   accountSelectors,
   cacheUsersSelectors,
+  cacheTracksSelectors,
   hlsUtils,
   playerSelectors,
   playerActions,
@@ -41,8 +42,16 @@ import { useChromecast } from './GoogleCast'
 import { logListen } from './listens'
 
 const { getUser } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
-const { getRepeat } = queueSelectors
+const {
+  getIndex,
+  getOrder,
+  getRepeat,
+  getShuffle,
+  getShuffleIndex,
+  getShuffleOrder
+} = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const { getUserId } = accountSelectors
@@ -58,7 +67,9 @@ declare global {
   var progress: ProgressData
 }
 
+// TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
+const RESTART_THRESHOLD_SEC = 3
 const RECORD_LISTEN_SECONDS = 1
 
 const defaultCapabilities = [
@@ -97,16 +108,11 @@ const updatePlayerOptions = async (isPodcast = false) => {
   })
 }
 
-// Perform initial setup for the track player
-const setupTrackPlayer = async () => {
-  await TrackPlayer.setupPlayer()
-  await updatePlayerOptions()
-}
-
 const playerEvents = [
   Event.PlaybackError,
-  Event.PlaybackQueueEnded,
   Event.PlaybackProgressUpdated,
+  Event.PlaybackQueueEnded,
+  Event.PlaybackTrackChanged,
   Event.RemotePlay,
   Event.RemotePause,
   Event.RemoteNext,
@@ -135,9 +141,32 @@ export const Audio = () => {
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
+  // Queue things
+  const queueIndex = useSelector(getIndex)
+  const queueOrder = useSelector(getOrder)
+  const queueShuffle = useSelector(getShuffle)
+  const queueShuffleIndex = useSelector(getShuffleIndex)
+  const queueShuffleOrder = useSelector(getShuffleOrder)
+
+  const nextTrackIndex = queueShuffle
+    ? queueShuffleOrder[queueShuffleIndex + 1]
+    : queueIndex + 1
+  const nextTrackId = queueOrder[nextTrackIndex]?.id
+  const nextTrack = useSelector((state) =>
+    getTrack(state, { id: Number(nextTrackId ?? 0) })
+  )
+  const nextTrackOwner = useSelector((state) =>
+    getUser(state, { id: nextTrack?.owner_id })
+  )
+  const nextTrackImageSource = useTrackImage(
+    nextTrack,
+    nextTrackOwner ?? undefined
+  )
+
   const { isCasting } = useChromecast()
   const dispatch = useDispatch()
 
+  const [isAudioSetup, setIsAudioSetup] = useState(false)
   const [listenLoggedForTrack, setListenLoggedForTrack] = useState(false)
 
   const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
@@ -151,6 +180,14 @@ export const Audio = () => {
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
   )
+
+  // Perform initial setup for the track player
+  const setupTrackPlayer = async () => {
+    if (isAudioSetup) return
+    await TrackPlayer.setupPlayer()
+    setIsAudioSetup(true)
+    await updatePlayerOptions()
+  }
 
   useEffectOnce(() => {
     setupTrackPlayer()
@@ -169,86 +206,101 @@ export const Audio = () => {
   }, [reset])
 
   useTrackPlayerEvents(playerEvents, async (event) => {
+    const duration = await TrackPlayer.getDuration()
+    const position = await TrackPlayer.getPosition()
+
     if (event.type === Event.PlaybackError) {
       console.error(`err ${event.code}:` + event.message)
     }
 
-    if (event.type === Event.RemotePlay) play()
-    if (event.type === Event.RemotePause) pause()
+    if (event.type === Event.RemotePlay || event.type === Event.RemotePause) {
+      playing ? pause() : play()
+    }
     if (event.type === Event.RemoteNext) next()
-    if (event.type === Event.RemotePrevious) previous()
+    if (event.type === Event.RemotePrevious) {
+      if (position > RESTART_THRESHOLD_SEC) {
+        setSeekPosition(0)
+      } else {
+        previous()
+      }
+    }
 
     if (event.type === Event.RemoteSeek) {
       setSeekPosition(event.position)
     }
     if (event.type === Event.RemoteJumpForward) {
-      setSeekPosition(
-        Math.min(progress.duration, progress.position + SKIP_DURATION_SEC)
-      )
+      setSeekPosition(Math.min(duration, position + SKIP_DURATION_SEC))
     }
     if (event.type === Event.RemoteJumpBackward) {
-      setSeekPosition(Math.max(0, progress.position - SKIP_DURATION_SEC))
+      setSeekPosition(Math.max(0, position - SKIP_DURATION_SEC))
     }
 
-    // TODO: Need to listen for different event when the queue is used for more than one track
-    if (event.type === Event.PlaybackQueueEnded) {
+    const autoPlayNext = async () => {
       if (repeatMode !== RepeatMode.SINGLE) {
-        TrackPlayer.reset()
+        await TrackPlayer.pause()
       } else {
-        global.progress.currentTime = 0
+        setSeekPosition(0)
       }
 
       next()
     }
+
+    // TODO: Need to listen for different event when the queue is used properly
+    if (event.type === Event.PlaybackQueueEnded) {
+      await autoPlayNext()
+    }
+
+    // TODO: Hacky solution to playing next. This should be changed when we update to use track player's queue properly
+    if (event.type === Event.PlaybackTrackChanged) {
+      const currentTrackIndex = await TrackPlayer.getCurrentTrack()
+      if (currentTrackIndex && currentTrackIndex > 0) await autoPlayNext()
+    }
   })
 
-  const onProgress = useCallback(
-    (progress: ProgressData) => {
-      if (!track || !currentUserId) return
-      if (progressInvalidator.current) {
-        progressInvalidator.current = false
-        return
-      }
-      // Replicates logic in dapp.
-      // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
-      if (
-        progress.currentTime > RECORD_LISTEN_SECONDS &&
-        (track.owner_id !== currentUserId || track.play_count < 10) &&
-        !listenLoggedForTrack &&
-        // TODO: log listens for offline plays when reconnected
-        (!isOfflineModeEnabled || isReachable)
-      ) {
-        // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
-        setListenLoggedForTrack(true)
-        logListen(track.track_id, currentUserId, () =>
-          setListenLoggedForTrack(false)
-        )
-      }
+  const onProgress = useCallback(async () => {
+    if (!track || !currentUserId) return
+    if (progressInvalidator.current) {
+      progressInvalidator.current = false
+      return
+    }
 
-      if (!isCasting) {
-        // If we aren't casting, update the progress
-        global.progress = progress
-      } else {
-        // If we are casting, only update the duration
-        // The currentTime is set via the effect in GoogleCast.tsx
-        global.progress.duration = progress.duration
-      }
-    },
-    [
-      track,
-      currentUserId,
-      listenLoggedForTrack,
-      isOfflineModeEnabled,
-      isReachable,
-      isCasting
-    ]
-  )
+    const duration = await TrackPlayer.getDuration()
+    const position = await TrackPlayer.getPosition()
+
+    // Replicates logic in dapp.
+    // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
+    if (
+      position > RECORD_LISTEN_SECONDS &&
+      (track.owner_id !== currentUserId || track.play_count < 10) &&
+      !listenLoggedForTrack &&
+      // TODO: log listens for offline plays when reconnected
+      (!isOfflineModeEnabled || isReachable)
+    ) {
+      // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
+      setListenLoggedForTrack(true)
+      logListen(track.track_id, currentUserId, () =>
+        setListenLoggedForTrack(false)
+      )
+    }
+    if (!isCasting) {
+      // If we aren't casting, update the progress
+      global.progress = { duration, currentTime: position }
+    } else {
+      // If we are casting, only update the duration
+      // The currentTime is set via the effect in GoogleCast.tsx
+      global.progress.duration = duration
+    }
+  }, [
+    currentUserId,
+    isCasting,
+    isOfflineModeEnabled,
+    isReachable,
+    listenLoggedForTrack,
+    track
+  ])
 
   useEffect(() => {
-    onProgress({
-      currentTime: progress.position,
-      duration: progress.duration
-    })
+    onProgress()
   }, [onProgress, progress])
 
   // A ref to invalidate the current progress counter and prevent
@@ -288,21 +340,39 @@ export const Audio = () => {
   const { value: offlineTrackUri } = useOfflineTrackUri(
     track?.track_id.toString()
   )
+  const { value: nextOfflineTrackUri } = useOfflineTrackUri(
+    nextTrack?.track_id.toString()
+  )
+
   const streamingUri = useMemo(() => {
     return track && isReachable
       ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
       : null
   }, [isReachable, track])
+  const nextStreamingUri = useMemo(() => {
+    return nextTrack && isReachable
+      ? apiClient.makeUrl(`/tracks/${encodeHashId(nextTrack.track_id)}/stream`)
+      : null
+  }, [isReachable, nextTrack])
 
   const gateways = trackOwner
     ? audiusBackendInstance.getCreatorNodeIPFSGateways(
         trackOwner.creator_node_endpoint
       )
     : []
+  const nextGateways = nextTrackOwner
+    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+        nextTrackOwner.creator_node_endpoint
+      )
+    : []
 
   const m3u8 = hlsUtils.generateM3U8Variants({
     segments: track?.track_segments ?? [],
     gateways
+  })
+  const nextM3u8 = hlsUtils.generateM3U8Variants({
+    segments: nextTrack?.track_segments ?? [],
+    gateways: nextGateways
   })
 
   let source
@@ -323,37 +393,82 @@ export const Audio = () => {
       uri: m3u8
     }
   }
+
+  let nextSource
+  if (nextOfflineTrackUri) {
+    nextSource = {
+      type: TrackType.Default,
+      uri: nextOfflineTrackUri
+    }
+    // TODO: remove feature flag - https://github.com/AudiusProject/audius-client/pull/2147
+  } else if (isStreamMp3Enabled && nextStreamingUri) {
+    nextSource = {
+      type: TrackType.Default,
+      uri: nextStreamingUri
+    }
+  } else if (nextM3u8) {
+    nextSource = {
+      type: TrackType.HLS,
+      uri: nextM3u8
+    }
+  }
+
   const currentUriRef = useRef<string | null>(null)
   const isPodcastRef = useRef<boolean>(false)
 
-  const handleSourceChange = useCallback(
-    async (newSource: { uri: string; type?: TrackType }) => {
-      const newUri = newSource.uri
-      if (currentUriRef.current !== newUri) {
-        currentUriRef.current = newUri
-        const imageUrl = trackImageSource?.source[2].uri ?? DEFAULT_IMAGE_URL
-        await TrackPlayer.reset()
-        await TrackPlayer.add({
+  const handleSourceChange = useCallback(async () => {
+    const newUri = source.uri
+    if (currentUriRef.current !== newUri) {
+      currentUriRef.current = newUri
+      const imageUrl = trackImageSource?.source[2].uri ?? DEFAULT_IMAGE_URL
+      const nextImageUrl =
+        nextTrackImageSource?.source[2].uri ?? DEFAULT_IMAGE_URL
+
+      await TrackPlayer.reset()
+      // NOTE: Adding two tracks into the queue to make sure that android has a next button on the lock screen and notification controls
+      // This should be removed when the track player queue is used properly
+      await TrackPlayer.add([
+        {
           url: newUri,
-          type: newSource.type ?? TrackType.Default,
+          type: source.type ?? TrackType.Default,
           title: track?.title,
           artist: trackOwner?.name,
           genre: track?.genre,
           date: track?.created_at,
           artwork: imageUrl,
           duration: track?.duration
-        })
-
-        const isPodcast = track?.genre === Genre.PODCASTS
-        if (isPodcast !== isPodcastRef.current) {
-          isPodcastRef.current = isPodcast
-          await updatePlayerOptions(isPodcast)
+        },
+        {
+          url: nextSource.uri,
+          type: nextSource.type ?? TrackType.Default,
+          title: nextTrack?.title,
+          artist: nextTrackOwner?.name,
+          genre: nextTrack?.genre,
+          date: nextTrack?.created_at,
+          artwork: nextImageUrl,
+          duration: nextTrack?.duration
         }
-        if (playing) await TrackPlayer.play()
+      ])
+
+      if (playing) await TrackPlayer.play()
+
+      const isPodcast = track?.genre === Genre.PODCASTS
+      if (isPodcast !== isPodcastRef.current) {
+        isPodcastRef.current = isPodcast
+        await updatePlayerOptions(isPodcast)
       }
-    },
-    [playing, track, trackImageSource, trackOwner]
-  )
+    }
+  }, [
+    nextSource,
+    nextTrack,
+    nextTrackImageSource?.source,
+    nextTrackOwner?.name,
+    playing,
+    source,
+    track,
+    trackImageSource?.source,
+    trackOwner?.name
+  ])
 
   const handleTogglePlay = useCallback(
     async (isPlaying: boolean) => {
@@ -367,7 +482,7 @@ export const Audio = () => {
   )
 
   useEffect(() => {
-    handleSourceChange(source)
+    handleSourceChange()
   }, [handleSourceChange, source])
 
   useEffect(() => {
