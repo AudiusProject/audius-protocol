@@ -36,7 +36,6 @@ export class AudiusContracts {
   web3Manager: Web3Manager
   registryAddress: string
   entityManagerAddress: string
-  nethermindEntityManagerAddress: string
   isServer: boolean
   logger: Logger
   RegistryClient: RegistryClient
@@ -56,14 +55,12 @@ export class AudiusContracts {
     web3Manager: Web3Manager,
     registryAddress: string,
     entityManagerAddress: string,
-    nethermindEntityManagerAddress: string,
     isServer: boolean,
     logger: Logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
     this.entityManagerAddress = entityManagerAddress
-    this.nethermindEntityManagerAddress = nethermindEntityManagerAddress
     this.isServer = isServer
     this.logger = logger
 

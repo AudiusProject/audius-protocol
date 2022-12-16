@@ -426,7 +426,6 @@ export class IdentityService {
         console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
       }
     }
-    console.log('asdf relay nethermindContractAddress', nethermindContractAddress)
     return await this._makeRequest({
       url: '/relay',
       method: 'post',

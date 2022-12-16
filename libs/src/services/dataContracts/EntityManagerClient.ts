@@ -115,16 +115,17 @@ export class EntityManagerClient extends ContractClient {
       metadataMultihash,
       nonce
     )
-    const nethermindSignatureData = signatureSchemas.generators.getManageEntityData(
-      1056800,  // TODO get from chain after web3Manager uses nethermind only
-      nethermindContractAddress,
-      userId,
-      entityType,
-      entityId,
-      action,
-      metadataMultihash,
-      nonce
-    )
+    const nethermindSignatureData =
+      signatureSchemas.generators.getManageEntityData(
+        1056800, // TODO get from chain after web3Manager uses nethermind only
+        nethermindContractAddress,
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadataMultihash,
+        nonce
+      )
 
     let sig
     let nethermindSig
@@ -137,7 +138,9 @@ export class EntityManagerClient extends ContractClient {
       )
     } else {
       sig = await this.web3Manager.signTypedData(signatureData)
-      nethermindSig = await this.web3Manager.signTypedData(nethermindSignatureData)
+      nethermindSig = await this.web3Manager.signTypedData(
+        nethermindSignatureData
+      )
     }
     const method = await this.getMethod(
       'manageEntity',
@@ -149,7 +152,7 @@ export class EntityManagerClient extends ContractClient {
       nonce,
       sig
     )
-    
+
     const nethermindMethod = await this.getMethod(
       'manageEntity',
       userId,
@@ -160,7 +163,7 @@ export class EntityManagerClient extends ContractClient {
       nonce,
       nethermindSig
     )
-    
+
     const tx = await this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
