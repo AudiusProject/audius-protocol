@@ -129,7 +129,9 @@ class SolanaProgramIndexer(IndexerBase):
         Parse an individual transaction, this will vary based on the program being indexed
         @param tx_sig: transaction signature to be parsed
         """
-        tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
+        tx_info = self._solana_client_manager.get_sol_tx_info(
+            tx_sig, tag="solana_program_indexer"
+        )
         result: TransactionInfoResult = tx_info["result"]
         return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 

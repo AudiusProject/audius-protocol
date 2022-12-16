@@ -162,7 +162,7 @@ def is_valid_tx(account_keys):
 def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_sig: str):
     try:
         fetch_start_time = time.time()
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig, tag="solana_plays")
         fetch_completion_time = time.time()
         fetch_time = fetch_completion_time - fetch_start_time
         logger.info(

@@ -219,7 +219,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     Validates the metadata fields
     """
     try:
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig, tag="rewards")
         result: TransactionInfoResult = tx_info["result"]
         # Create transaction metadata
         tx_metadata: RewardManagerTransactionInfo = {

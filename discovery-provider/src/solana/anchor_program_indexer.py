@@ -253,7 +253,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return entities
 
     async def parse_tx(self, tx_sig: str) -> ParsedTx:
-        tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
+        tx_receipt = self._solana_client_manager.get_sol_tx_info(
+            tx_sig, 5, "base64", tag="anchor"
+        )
         self.msg(tx_receipt)
         encoded_data = tx_receipt["result"].get("transaction")[0]
         decoded_data = base64.b64decode(encoded_data)

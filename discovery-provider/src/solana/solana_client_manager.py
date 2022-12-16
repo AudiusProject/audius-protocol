@@ -39,7 +39,7 @@ class SolanaClientManager:
         return self.clients[index]
 
     def get_sol_tx_info(
-        self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
+        self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json", tag=""
     ):
         """Fetches a solana transaction by signature with retries and a delay."""
 
@@ -48,6 +48,7 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
+                    logger.info(f"get_transaction:{tag}")
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
@@ -67,16 +68,16 @@ class SolanaClientManager:
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | get_sol_tx_info | Retrying tx fetch: {tx_sig} with endpoint {endpoint}"
+                    f"solana_client_manager.py | get_sol_tx_info | Retrying tx fetch: {tx_sig} with endpoint {endpoint} tag {tag}"
                 )
             raise Exception(
-                f"solana_client_manager.py | get_sol_tx_info | Failed to fetch {tx_sig} with endpoint {endpoint}"
+                f"solana_client_manager.py | get_sol_tx_info | Failed to fetch {tx_sig} with endpoint {endpoint} tag {tag}"
             )
 
         return _try_all(
             self.clients,
             handle_get_sol_tx_info,
-            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
+            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig} {tag}",
         )
 
     def get_signatures_for_address(
