@@ -1,7 +1,7 @@
 """backfill_track_cid
 
 Revision ID: ec3b20d7bce3
-Revises: 3cdcb5e303f8
+Revises: fe2c3daaa912
 Create Date: 2022-12-08 14:34:59.163989
 
 """
@@ -16,7 +16,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "ec3b20d7bce3"
-down_revision = "3cdcb5e303f8"
+down_revision = "fe2c3daaa912"
 branch_labels = None
 depends_on = None
 
