@@ -3,6 +3,7 @@ from datetime import datetime
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.notifications.notification import NotificationSeen
 from src.models.playlists.playlist import Playlist
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
@@ -128,6 +129,7 @@ def populate_mock_db(db, entities, block_offset=None):
         supporter_rank_ups = entities.get("supporter_rank_ups", [])
         reward_manager_txs = entities.get("reward_manager_txs", [])
         challenge_disbursements = entities.get("challenge_disbursements", [])
+        notification_seens = entities.get("notification_seens", [])
 
         num_blocks = max(
             len(tracks),
@@ -526,4 +528,12 @@ def populate_mock_db(db, entities, block_offset=None):
                 amount=challenge_disbursement.get("amount", i),
             )
             session.add(cb)
-        session.flush()
+        for i, notification_seen in enumerate(notification_seens):
+            ns = NotificationSeen(
+                user_id=notification_seen.get("user_id", i),
+                blocknumber=notification_seen.get("blocknumber", i),
+                blockhash=notification_seen.get("signature", str(i)),
+                seen_at=notification_seen.get("seen_at", datetime.now()),
+            )
+            session.add(ns)
+        session.commit()
