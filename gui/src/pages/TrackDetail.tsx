@@ -3,11 +3,12 @@ import { Avatar, Group } from '@mantine/core'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { LinkTo } from '../components/LinkTo'
+import { PlayButton } from '../components/Player'
 import { UserListing } from '../components/UserListing'
 import { useTrackDetailQuery } from '../generated/graphql'
 
 gql`
-  query TrackDetail($handle: String, $trackId: ID, $reposterLimit: Int) {
+  query TrackDetail($handle: String, $trackId: ID) {
     user(handle: $handle) {
       id
       handle
@@ -15,17 +16,18 @@ gql`
       tracks(id: $trackId, limit: 1) {
         id
         title
+        cover_art_urls(size: _480x480)
+        length
+        description
+
+        owner {
+          id
+          handle
+          name
+        }
+
         favorite_count
-        favorited_by {
-          id
-          handle
-        }
         repost_count
-        reposted_by(limit: $reposterLimit) {
-          id
-          handle
-          profile_picture_urls
-        }
         stream_urls
       }
     }
@@ -33,13 +35,11 @@ gql`
 `
 
 export function TrackDetail() {
-  const [reposterLimit, setReposterLimit] = useState(10)
   const { handle, trackSlug, trackId } = useParams()
   const { data, loading, error } = useTrackDetailQuery({
     variables: {
       handle,
       trackId,
-      reposterLimit,
     },
   })
   if (loading) return <div>loading</div>
@@ -53,11 +53,14 @@ export function TrackDetail() {
   return (
     <div>
       <LinkTo item={user}>{handle}</LinkTo>
-      <h1>
-        {handle} {trackSlug}
-      </h1>
+      <Avatar src={track.cover_art_urls[0]} size={480} />
+      <h1>{track.title}</h1>
+      <h1>{track.length}</h1>
+      <h1>{track.description}</h1>
 
-      <Group align="top">
+      <PlayButton track={track} />
+
+      {/* <Group align="top">
         <div>
           <h3>Repost Count: {track.repost_count}</h3>
           <UserListing has_reposted_track_id={track.id} />
@@ -67,7 +70,7 @@ export function TrackDetail() {
           <h3>Fav Count: {track.favorite_count}</h3>
           <UserListing has_favorited_track_id={track.id} />
         </div>
-      </Group>
+      </Group> */}
     </div>
   )
 }

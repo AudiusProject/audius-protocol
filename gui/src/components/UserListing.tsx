@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client'
-import { Avatar, Button, Group, Stack, Text } from '@mantine/core'
+import { Avatar, Button, Group, Loader, Stack, Text } from '@mantine/core'
 import { useEffect, useMemo, useState } from 'react'
 import { apolloClient } from '../clients'
 import {
@@ -18,11 +18,15 @@ gql`
     $query: String
     $has_reposted_track_id: ID
     $has_favorited_track_id: ID
+    $is_following_user_id: ID
+    $is_followed_by_user_id: ID
   ) {
     users(
       query: $query
       has_reposted_track_id: $has_reposted_track_id
       has_favorited_track_id: $has_favorited_track_id
+      is_following_user_id: $is_following_user_id
+      is_followed_by_user_id: $is_followed_by_user_id
       is_followed_by_current_user: $followed
       limit: $limit
       offset: $offset
@@ -37,9 +41,11 @@ gql`
   }
 `
 
-type UserListingProps = {
+export type UserListingProps = {
   has_reposted_track_id?: string
   has_favorited_track_id?: string
+  is_following_user_id?: string
+  is_followed_by_user_id?: string
 }
 
 export function UserListing(props: UserListingProps) {
@@ -100,8 +106,10 @@ export function UserListing(props: UserListingProps) {
     }
   }
 
+  if (!allUsers.length) return <Loader />
+
   return (
-    <div style={{ maxWidth: 500 }}>
+    <div>
       <input
         type="text"
         value={query}
@@ -109,7 +117,7 @@ export function UserListing(props: UserListingProps) {
       />
       {allUsers.map((user) => (
         <LinkTo key={user.id} item={user}>
-          <Group p={8}>
+          <Group p={8} noWrap>
             <Avatar src={user.profile_picture_urls[0]} size={75} radius={75} />
             <div style={{ flexGrow: 1 }}>
               <Text weight={'bold'}>{user.name}</Text>

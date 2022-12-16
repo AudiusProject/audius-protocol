@@ -13,11 +13,12 @@ import {
   QueryResolvers,
   FeedItem,
 } from './generated/graphql'
-import { UserRow, TrackRow } from '../src/types/db'
+import { UserRow, TrackRow, RepostRow } from '../src/types/db'
 import { PlaylistDoc, RepostDoc, TrackDoc, UserDoc } from '../src/types/docs'
 import { typeDefs } from './schema'
 import { SearchResponse } from '@elastic/elasticsearch/lib/api/types'
 import { dialPg } from '../src/conn'
+import Knex from 'knex'
 
 //
 // DataLoaders
@@ -27,6 +28,10 @@ let esUrl = process.env.audius_elasticsearch_url || 'http://localhost:9200'
 const esc = new Client({ node: esUrl })
 
 const pg = dialPg()
+const knex = Knex({
+  client: 'pg',
+  connection: process.env.audius_db_url,
+})
 
 const indexNames = {
   users: 'users',
@@ -123,6 +128,15 @@ const playlistResolvers: PlaylistResolvers<Ctx, Playlist & PlaylistDoc> = {
   id: (playlist) => playlist.playlist_id.toString(),
 
   name: (playlist) => playlist.playlist_name || '',
+
+  image_urls: async (playlist, args, ctx) => {
+    const user = await ctx.es.user.load(playlist.playlist_owner_id)
+    const multihash =
+      playlist.playlist_image_sizes_multihash ||
+      playlist.playlist_image_multihash ||
+      ''
+    return buildImageUrls(user, multihash, args.size)
+  },
 
   tracks: (playlist, args) => {
     return fetchTracks(playlist, args) as any
@@ -299,6 +313,24 @@ const queryResolvers: QueryResolvers<Ctx> = {
     return result.rows
   },
 
+  wip_reposts: async () => {
+    let sql = `select * from reposts join tracks`
+
+    const rows = await knex<RepostRow>('reposts')
+      .leftJoin('tracks', function () {
+        this.on('tracks.track_id', '=', 'repost_item_id')
+        this.on(knex.raw(`repost_type = 'track'`))
+        this.on(knex.raw(`tracks.is_current = true`))
+      })
+      .where({
+        'reposts.is_current': true,
+        user_id: 1,
+      })
+
+      .limit(100)
+    return rows
+  },
+
   user: async (root, args, ctx) => {
     const bb = bodybuilder()
     if (args.handle) {
@@ -306,6 +338,11 @@ const queryResolvers: QueryResolvers<Ctx> = {
     }
     const users = await bbSearch<User>(indexNames.users, bb)
     return users[0]
+  },
+
+  me: async (root, args, ctx) => {
+    const me = await ctx.me
+    return me as any
   },
 
   users: async (root, args, ctx) => {
@@ -338,6 +375,18 @@ const queryResolvers: QueryResolvers<Ctx> = {
       })
     }
 
+    if (args.is_following_user_id) {
+      bb.filter('term', 'following_ids', args.is_following_user_id)
+    }
+
+    if (args.is_followed_by_user_id) {
+      bb.filter('terms', '_id', {
+        index: indexNames.users,
+        id: args.is_followed_by_user_id,
+        path: 'following_ids',
+      })
+    }
+
     if (me && args.is_followed_by_current_user != undefined) {
       if (args.is_followed_by_current_user) {
         bb.filter('terms', '_id', {
@@ -361,6 +410,28 @@ const queryResolvers: QueryResolvers<Ctx> = {
 
     const users = await bbSearch<User>(indexNames.users, bb)
     return users
+  },
+
+  tracks: async (root, args, ctx) => {
+    const me = await ctx.me
+    const bb = bodybuilder()
+
+    if (args.reposted_by) {
+      bb.filter('term', 'reposted_by', args.reposted_by)
+    }
+
+    if (args.favorited_by) {
+      bb.filter('term', 'saved_by', args.favorited_by)
+    }
+
+    if (args.owned_by) {
+      bb.filter('term', 'owner_id', args.owned_by)
+    }
+
+    bb.size(args.limit).from(args.offset)
+
+    const tracks = await bbSearch<Track>(indexNames.tracks, bb)
+    return tracks
   },
 
   track: async (root, args, ctx) => {

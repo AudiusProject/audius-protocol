@@ -26,6 +26,7 @@ export type Playlist = {
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
   id: Scalars['String'];
+  image_urls: Array<Scalars['String']>;
   is_reposted: Scalars['Boolean'];
   is_saved: Scalars['Boolean'];
   name: Scalars['String'];
@@ -39,6 +40,11 @@ export type Playlist = {
 export type PlaylistFavorited_ByArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PlaylistImage_UrlsArgs = {
+  size?: SizeSquare;
 };
 
 
@@ -61,10 +67,13 @@ export enum PlaylistSort {
 export type Query = {
   __typename?: 'Query';
   feed: Array<FeedItem>;
+  me?: Maybe<User>;
   track?: Maybe<Track>;
+  tracks: Array<Track>;
   user?: Maybe<User>;
   users: Array<User>;
   wip_notifications?: Maybe<Scalars['JSON']>;
+  wip_reposts?: Maybe<Scalars['JSON']>;
 };
 
 
@@ -80,6 +89,16 @@ export type QueryTrackArgs = {
 };
 
 
+export type QueryTracksArgs = {
+  favorited_by?: InputMaybe<Scalars['ID']>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  owned_by?: InputMaybe<Scalars['ID']>;
+  query?: InputMaybe<Scalars['String']>;
+  reposted_by?: InputMaybe<Scalars['ID']>;
+};
+
+
 export type QueryUserArgs = {
   handle?: InputMaybe<Scalars['String']>;
 };
@@ -89,6 +108,8 @@ export type QueryUsersArgs = {
   has_favorited_track_id?: InputMaybe<Scalars['ID']>;
   has_reposted_track_id?: InputMaybe<Scalars['ID']>;
   is_followed_by_current_user?: InputMaybe<Scalars['Boolean']>;
+  is_followed_by_user_id?: InputMaybe<Scalars['ID']>;
+  is_following_user_id?: InputMaybe<Scalars['ID']>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
   query?: InputMaybe<Scalars['String']>;
@@ -115,6 +136,7 @@ export type Track = {
   activity_timestamp?: Maybe<Scalars['String']>;
   cover_art_urls: Array<Scalars['String']>;
   created_at: Scalars['String'];
+  description?: Maybe<Scalars['String']>;
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
   id: Scalars['String'];
@@ -168,8 +190,10 @@ export type User = {
   name: Scalars['String'];
   playlists: Array<Playlist>;
   profile_picture_urls: Array<Scalars['String']>;
+  repost_count: Scalars['Int'];
   reposted_playlists: Array<Playlist>;
   reposted_tracks: Array<Track>;
+  track_count: Scalars['Int'];
   tracks: Array<Track>;
 };
 
@@ -358,6 +382,7 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   favorited_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<PlaylistFavorited_ByArgs, 'limit' | 'offset'>>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  image_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<PlaylistImage_UrlsArgs, 'size'>>;
   is_reposted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_saved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -370,16 +395,20 @@ export type PlaylistResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   feed?: Resolver<Array<ResolversTypes['FeedItem']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'limit' | 'original' | 'reposts'>>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   track?: Resolver<Maybe<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<QueryTrackArgs, 'permalink'>>;
+  tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<QueryTracksArgs, 'limit' | 'offset'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<QueryUserArgs>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'limit' | 'offset'>>;
   wip_notifications?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  wip_reposts?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
 };
 
 export type TrackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Track'] = ResolversParentTypes['Track']> = {
   activity_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cover_art_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<TrackCover_Art_UrlsArgs, 'size'>>;
   created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   favorite_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   favorited_by?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<TrackFavorited_ByArgs, 'limit' | 'offset'>>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -410,8 +439,10 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType, RequireFields<UserPlaylistsArgs, 'limit' | 'offset'>>;
   profile_picture_urls?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<UserProfile_Picture_UrlsArgs, 'size'>>;
+  repost_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reposted_playlists?: Resolver<Array<ResolversTypes['Playlist']>, ParentType, ContextType>;
   reposted_tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserReposted_TracksArgs, 'limit' | 'offset'>>;
+  track_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   tracks?: Resolver<Array<ResolversTypes['Track']>, ParentType, ContextType, RequireFields<UserTracksArgs, 'limit' | 'offset'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

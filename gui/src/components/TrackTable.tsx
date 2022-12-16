@@ -1,8 +1,10 @@
-import { Menu, Table } from '@mantine/core'
+import { Avatar, Group, Menu, Table } from '@mantine/core'
 import { ExternalLink, Plus } from 'tabler-icons-react'
 import { NowPlaying } from '../stores/nowPlaying'
+import { ArtistCard } from './ArtistCard'
 import { LinkTo } from './LinkTo'
 import { PlayButton } from './Player'
+import { UserListModal } from './UserListModal'
 
 type TrackTableProps = {
   title?: string
@@ -19,8 +21,19 @@ type TrackTableProps = {
 
     owner: {
       id: string
-      handle: string
       name: string
+      handle: string
+      bio?: string | null
+
+      track_count: number
+      follower_count: number
+      following_count: number
+
+      is_followed: boolean
+      is_follower: boolean
+
+      cover_photo_urls: string[]
+      profile_picture_urls: string[]
     }
   }[]
 }
@@ -34,8 +47,6 @@ export function TrackTable({ title, tracks }: TrackTableProps) {
       <Table>
         <thead>
           <tr>
-            <th></th>
-            <th></th>
             <th>Title</th>
             <th>Artist</th>
             <th>Length</th>
@@ -49,21 +60,23 @@ export function TrackTable({ title, tracks }: TrackTableProps) {
           {tracks.map((track) => (
             <tr key={track.id}>
               <td>
-                <PlayButton track={track} trackList={tracks} />
+                <Group>
+                  <Avatar src={track.cover_art_urls[0]} size="lg" />
+                  <PlayButton track={track} trackList={tracks} />
+                  <LinkTo item={track} weight="bold">
+                    {track.title}
+                  </LinkTo>
+                </Group>
+              </td>
+              <td>
+                <ArtistCard user={track.owner} />
               </td>
               <td></td>
               <td>
-                <LinkTo item={track} weight="bold">
-                  {track.title}
-                </LinkTo>
+                <UserListModal has_reposted_track_id={track.id}>
+                  <div>{track.repost_count}</div>
+                </UserListModal>
               </td>
-              <td>
-                <LinkTo item={track.owner}>
-                  <span>{track.owner.name}</span>
-                </LinkTo>
-              </td>
-              <td></td>
-              <td>{track.repost_count}</td>
               <td>{track.favorite_count}</td>
               <td>
                 {/* <TimeAgo date={Date.parse(track.created_at)} timeStyle="mini" /> */}

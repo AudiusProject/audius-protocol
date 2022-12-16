@@ -27,6 +27,7 @@ export type Playlist = {
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
   id: Scalars['String'];
+  image_urls: Array<Scalars['String']>;
   is_reposted: Scalars['Boolean'];
   is_saved: Scalars['Boolean'];
   name: Scalars['String'];
@@ -40,6 +41,11 @@ export type Playlist = {
 export type PlaylistFavorited_ByArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type PlaylistImage_UrlsArgs = {
+  size?: SizeSquare;
 };
 
 
@@ -62,10 +68,13 @@ export enum PlaylistSort {
 export type Query = {
   __typename?: 'Query';
   feed: Array<FeedItem>;
+  me?: Maybe<User>;
   track?: Maybe<Track>;
+  tracks: Array<Track>;
   user?: Maybe<User>;
   users: Array<User>;
   wip_notifications?: Maybe<Scalars['JSON']>;
+  wip_reposts?: Maybe<Scalars['JSON']>;
 };
 
 
@@ -81,6 +90,16 @@ export type QueryTrackArgs = {
 };
 
 
+export type QueryTracksArgs = {
+  favorited_by?: InputMaybe<Scalars['ID']>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  owned_by?: InputMaybe<Scalars['ID']>;
+  query?: InputMaybe<Scalars['String']>;
+  reposted_by?: InputMaybe<Scalars['ID']>;
+};
+
+
 export type QueryUserArgs = {
   handle?: InputMaybe<Scalars['String']>;
 };
@@ -90,6 +109,8 @@ export type QueryUsersArgs = {
   has_favorited_track_id?: InputMaybe<Scalars['ID']>;
   has_reposted_track_id?: InputMaybe<Scalars['ID']>;
   is_followed_by_current_user?: InputMaybe<Scalars['Boolean']>;
+  is_followed_by_user_id?: InputMaybe<Scalars['ID']>;
+  is_following_user_id?: InputMaybe<Scalars['ID']>;
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
   query?: InputMaybe<Scalars['String']>;
@@ -116,6 +137,7 @@ export type Track = {
   activity_timestamp?: Maybe<Scalars['String']>;
   cover_art_urls: Array<Scalars['String']>;
   created_at: Scalars['String'];
+  description?: Maybe<Scalars['String']>;
   favorite_count: Scalars['Int'];
   favorited_by: Array<User>;
   id: Scalars['String'];
@@ -169,8 +191,10 @@ export type User = {
   name: Scalars['String'];
   playlists: Array<Playlist>;
   profile_picture_urls: Array<Scalars['String']>;
+  repost_count: Scalars['Int'];
   reposted_playlists: Array<Playlist>;
   reposted_tracks: Array<Track>;
+  track_count: Scalars['Int'];
   tracks: Array<Track>;
 };
 
@@ -244,10 +268,17 @@ export type UserListingQueryVariables = Exact<{
   query?: InputMaybe<Scalars['String']>;
   has_reposted_track_id?: InputMaybe<Scalars['ID']>;
   has_favorited_track_id?: InputMaybe<Scalars['ID']>;
+  is_following_user_id?: InputMaybe<Scalars['ID']>;
+  is_followed_by_user_id?: InputMaybe<Scalars['ID']>;
 }>;
 
 
 export type UserListingQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, handle: string, name: string, follower_count: number, is_followed: boolean, profile_picture_urls: Array<string> }> };
+
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, handle: string, name: string, cover_photo_urls: Array<string>, profile_picture_urls: Array<string>, tracks: Array<{ __typename?: 'Track', cover_art_urls: Array<string>, id: string, title: string, favorite_count: number, repost_count: number, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string }, favorited_by: Array<{ __typename?: 'User', id: string, handle: string }>, reposted_by: Array<{ __typename?: 'User', id: string, handle: string }> }>, playlists: Array<{ __typename?: 'Playlist', id: string, name: string }> } | null };
 
 export type PlaylistDetailQueryVariables = Exact<{
   handle?: InputMaybe<Scalars['String']>;
@@ -255,31 +286,62 @@ export type PlaylistDetailQueryVariables = Exact<{
 }>;
 
 
-export type PlaylistDetailQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, playlists: Array<{ __typename?: 'Playlist', id: string, name: string, tracks: Array<{ __typename?: 'Track', id: string, title: string, repost_count: number, favorite_count: number, cover_art_urls: Array<string>, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string } }> }> } | null };
+export type PlaylistDetailQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, playlists: Array<{ __typename?: 'Playlist', id: string, name: string, image_urls: Array<string>, tracks: Array<{ __typename?: 'Track', id: string, title: string, repost_count: number, favorite_count: number, cover_art_urls: Array<string>, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string, bio?: string | null, track_count: number, following_count: number, follower_count: number, is_followed: boolean, is_follower: boolean, cover_photo_urls: Array<string>, profile_picture_urls: Array<string> } }> }> } | null };
+
+export type TrackOwnerFragment = { __typename?: 'User', id: string, name: string, handle: string, bio?: string | null, track_count: number, following_count: number, follower_count: number, is_followed: boolean, is_follower: boolean, cover_photo_urls: Array<string>, profile_picture_urls: Array<string> };
 
 export type ProfileQueryVariables = Exact<{
   handle?: InputMaybe<Scalars['String']>;
 }>;
 
 
-export type ProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, cover_photo_urls: Array<string>, profile_picture_urls: Array<string>, tracks: Array<{ __typename?: 'Track', cover_art_urls: Array<string>, id: string, title: string, favorite_count: number, repost_count: number, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string }, favorited_by: Array<{ __typename?: 'User', id: string, handle: string }>, reposted_by: Array<{ __typename?: 'User', id: string, handle: string }> }>, playlists: Array<{ __typename?: 'Playlist', id: string, name: string }> } | null };
+export type ProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, cover_photo_urls: Array<string>, profile_picture_urls: Array<string>, follower_count: number, following_count: number, tracks: Array<{ __typename?: 'Track', cover_art_urls: Array<string>, id: string, title: string, favorite_count: number, repost_count: number, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string, bio?: string | null, track_count: number, following_count: number, follower_count: number, is_followed: boolean, is_follower: boolean, cover_photo_urls: Array<string>, profile_picture_urls: Array<string> }, favorited_by: Array<{ __typename?: 'User', id: string, handle: string }>, reposted_by: Array<{ __typename?: 'User', id: string, handle: string }> }>, playlists: Array<{ __typename?: 'Playlist', id: string, name: string }> } | null };
+
+export type ProfileLayoutQueryVariables = Exact<{
+  handle?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type ProfileLayoutQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, cover_photo_urls: Array<string>, profile_picture_urls: Array<string>, follower_count: number, following_count: number, is_follower: boolean, is_followed: boolean } | null };
+
+export type ProfileRepostsQueryVariables = Exact<{
+  handle?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type ProfileRepostsQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, repost_count: number, reposted_tracks: Array<{ __typename?: 'Track', id: string, title: string, cover_art_urls: Array<string>, favorite_count: number, repost_count: number, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, name: string, handle: string, bio?: string | null, track_count: number, following_count: number, follower_count: number, is_followed: boolean, is_follower: boolean, cover_photo_urls: Array<string>, profile_picture_urls: Array<string> } }> } | null };
 
 export type TrackDetailQueryVariables = Exact<{
   handle?: InputMaybe<Scalars['String']>;
   trackId?: InputMaybe<Scalars['ID']>;
-  reposterLimit?: InputMaybe<Scalars['Int']>;
 }>;
 
 
-export type TrackDetailQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, tracks: Array<{ __typename?: 'Track', id: string, title: string, favorite_count: number, repost_count: number, stream_urls: Array<string>, favorited_by: Array<{ __typename?: 'User', id: string, handle: string }>, reposted_by: Array<{ __typename?: 'User', id: string, handle: string, profile_picture_urls: Array<string> }> }> } | null };
+export type TrackDetailQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, handle: string, name: string, tracks: Array<{ __typename?: 'Track', id: string, title: string, cover_art_urls: Array<string>, length: number, description?: string | null, favorite_count: number, repost_count: number, stream_urls: Array<string>, owner: { __typename?: 'User', id: string, handle: string, name: string } }> } | null };
 
-
+export const TrackOwnerFragmentDoc = gql`
+    fragment TrackOwner on User {
+  id
+  name
+  handle
+  bio
+  track_count
+  following_count
+  follower_count
+  is_followed
+  is_follower
+  cover_photo_urls
+  profile_picture_urls
+}
+    `;
 export const UserListingDocument = gql`
-    query UserListing($followed: Boolean, $limit: Int, $offset: Int = 0, $query: String, $has_reposted_track_id: ID, $has_favorited_track_id: ID) {
+    query UserListing($followed: Boolean, $limit: Int, $offset: Int = 0, $query: String, $has_reposted_track_id: ID, $has_favorited_track_id: ID, $is_following_user_id: ID, $is_followed_by_user_id: ID) {
   users(
     query: $query
     has_reposted_track_id: $has_reposted_track_id
     has_favorited_track_id: $has_favorited_track_id
+    is_following_user_id: $is_following_user_id
+    is_followed_by_user_id: $is_followed_by_user_id
     is_followed_by_current_user: $followed
     limit: $limit
     offset: $offset
@@ -312,6 +374,8 @@ export const UserListingDocument = gql`
  *      query: // value for 'query'
  *      has_reposted_track_id: // value for 'has_reposted_track_id'
  *      has_favorited_track_id: // value for 'has_favorited_track_id'
+ *      is_following_user_id: // value for 'is_following_user_id'
+ *      is_followed_by_user_id: // value for 'is_followed_by_user_id'
  *   },
  * });
  */
@@ -326,6 +390,69 @@ export function useUserListingLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type UserListingQueryHookResult = ReturnType<typeof useUserListingQuery>;
 export type UserListingLazyQueryHookResult = ReturnType<typeof useUserListingLazyQuery>;
 export type UserListingQueryResult = Apollo.QueryResult<UserListingQuery, UserListingQueryVariables>;
+export const MeDocument = gql`
+    query Me {
+  me {
+    id
+    handle
+    name
+    cover_photo_urls(size: _2000x)
+    profile_picture_urls
+    tracks(limit: 100) {
+      cover_art_urls
+      owner {
+        id
+        name
+        handle
+      }
+      id
+      title
+      favorite_count
+      favorited_by {
+        id
+        handle
+      }
+      repost_count
+      reposted_by {
+        id
+        handle
+      }
+      stream_urls
+    }
+    playlists {
+      id
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useMeQuery__
+ *
+ * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+      }
+export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
+export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
+export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const PlaylistDetailDocument = gql`
     query PlaylistDetail($handle: String, $playlistSlug: String) {
   user(handle: $handle) {
@@ -335,7 +462,8 @@ export const PlaylistDetailDocument = gql`
     playlists(query: $playlistSlug, limit: 1) {
       id
       name
-      tracks {
+      image_urls(size: _480x480)
+      tracks(limit: 1000) {
         id
         title
         repost_count
@@ -343,15 +471,13 @@ export const PlaylistDetailDocument = gql`
         cover_art_urls
         stream_urls
         owner {
-          id
-          name
-          handle
+          ...TrackOwner
         }
       }
     }
   }
 }
-    `;
+    ${TrackOwnerFragmentDoc}`;
 
 /**
  * __usePlaylistDetailQuery__
@@ -389,12 +515,12 @@ export const ProfileDocument = gql`
     name
     cover_photo_urls(size: _2000x)
     profile_picture_urls
+    follower_count
+    following_count
     tracks(limit: 100) {
       cover_art_urls
       owner {
-        id
-        name
-        handle
+        ...TrackOwner
       }
       id
       title
@@ -410,13 +536,13 @@ export const ProfileDocument = gql`
       }
       stream_urls
     }
-    playlists {
+    playlists(limit: 100) {
       id
       name
     }
   }
 }
-    `;
+    ${TrackOwnerFragmentDoc}`;
 
 /**
  * __useProfileQuery__
@@ -445,8 +571,98 @@ export function useProfileLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Pr
 export type ProfileQueryHookResult = ReturnType<typeof useProfileQuery>;
 export type ProfileLazyQueryHookResult = ReturnType<typeof useProfileLazyQuery>;
 export type ProfileQueryResult = Apollo.QueryResult<ProfileQuery, ProfileQueryVariables>;
+export const ProfileLayoutDocument = gql`
+    query ProfileLayout($handle: String) {
+  user(handle: $handle) {
+    id
+    handle
+    name
+    cover_photo_urls(size: _2000x)
+    profile_picture_urls
+    follower_count
+    following_count
+    is_follower
+    is_followed
+  }
+}
+    `;
+
+/**
+ * __useProfileLayoutQuery__
+ *
+ * To run a query within a React component, call `useProfileLayoutQuery` and pass it any options that fit your needs.
+ * When your component renders, `useProfileLayoutQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useProfileLayoutQuery({
+ *   variables: {
+ *      handle: // value for 'handle'
+ *   },
+ * });
+ */
+export function useProfileLayoutQuery(baseOptions?: Apollo.QueryHookOptions<ProfileLayoutQuery, ProfileLayoutQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ProfileLayoutQuery, ProfileLayoutQueryVariables>(ProfileLayoutDocument, options);
+      }
+export function useProfileLayoutLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ProfileLayoutQuery, ProfileLayoutQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ProfileLayoutQuery, ProfileLayoutQueryVariables>(ProfileLayoutDocument, options);
+        }
+export type ProfileLayoutQueryHookResult = ReturnType<typeof useProfileLayoutQuery>;
+export type ProfileLayoutLazyQueryHookResult = ReturnType<typeof useProfileLayoutLazyQuery>;
+export type ProfileLayoutQueryResult = Apollo.QueryResult<ProfileLayoutQuery, ProfileLayoutQueryVariables>;
+export const ProfileRepostsDocument = gql`
+    query ProfileReposts($handle: String) {
+  user(handle: $handle) {
+    id
+    repost_count
+    reposted_tracks(limit: 100) {
+      id
+      title
+      cover_art_urls
+      favorite_count
+      repost_count
+      stream_urls
+      owner {
+        ...TrackOwner
+      }
+    }
+  }
+}
+    ${TrackOwnerFragmentDoc}`;
+
+/**
+ * __useProfileRepostsQuery__
+ *
+ * To run a query within a React component, call `useProfileRepostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useProfileRepostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useProfileRepostsQuery({
+ *   variables: {
+ *      handle: // value for 'handle'
+ *   },
+ * });
+ */
+export function useProfileRepostsQuery(baseOptions?: Apollo.QueryHookOptions<ProfileRepostsQuery, ProfileRepostsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ProfileRepostsQuery, ProfileRepostsQueryVariables>(ProfileRepostsDocument, options);
+      }
+export function useProfileRepostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ProfileRepostsQuery, ProfileRepostsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ProfileRepostsQuery, ProfileRepostsQueryVariables>(ProfileRepostsDocument, options);
+        }
+export type ProfileRepostsQueryHookResult = ReturnType<typeof useProfileRepostsQuery>;
+export type ProfileRepostsLazyQueryHookResult = ReturnType<typeof useProfileRepostsLazyQuery>;
+export type ProfileRepostsQueryResult = Apollo.QueryResult<ProfileRepostsQuery, ProfileRepostsQueryVariables>;
 export const TrackDetailDocument = gql`
-    query TrackDetail($handle: String, $trackId: ID, $reposterLimit: Int) {
+    query TrackDetail($handle: String, $trackId: ID) {
   user(handle: $handle) {
     id
     handle
@@ -454,17 +670,16 @@ export const TrackDetailDocument = gql`
     tracks(id: $trackId, limit: 1) {
       id
       title
+      cover_art_urls(size: _480x480)
+      length
+      description
+      owner {
+        id
+        handle
+        name
+      }
       favorite_count
-      favorited_by {
-        id
-        handle
-      }
       repost_count
-      reposted_by(limit: $reposterLimit) {
-        id
-        handle
-        profile_picture_urls
-      }
       stream_urls
     }
   }
@@ -485,7 +700,6 @@ export const TrackDetailDocument = gql`
  *   variables: {
  *      handle: // value for 'handle'
  *      trackId: // value for 'trackId'
- *      reposterLimit: // value for 'reposterLimit'
  *   },
  * });
  */

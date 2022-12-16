@@ -1,9 +1,30 @@
 import { gql } from '@apollo/client'
 import { Avatar, Group, Modal, Table } from '@mantine/core'
 import { Link, useParams } from 'react-router-dom'
+import { apolloClient } from '../clients'
 import { PlayButton } from '../components/Player'
-import { ImageCard } from '../components/user/CoverFade'
+import { TrackTable } from '../components/TrackTable'
+import { UserListing } from '../components/UserListing'
 import { useProfileQuery } from '../generated/graphql'
+
+gql`
+  fragment TrackOwner on User {
+    id
+    name
+    handle
+    bio
+
+    track_count
+    following_count
+    follower_count
+
+    is_followed
+    is_follower
+
+    cover_photo_urls
+    profile_picture_urls
+  }
+`
 
 gql`
   query Profile($handle: String) {
@@ -13,13 +34,13 @@ gql`
       name
       cover_photo_urls(size: _2000x)
       profile_picture_urls
+      follower_count
+      following_count
       tracks(limit: 100) {
         cover_art_urls
 
         owner {
-          id
-          name
-          handle
+          ...TrackOwner
         }
 
         id
@@ -39,7 +60,7 @@ gql`
         stream_urls
       }
 
-      playlists {
+      playlists(limit: 100) {
         id
         name
       }
@@ -62,80 +83,31 @@ export function Profile() {
 
   return (
     <div>
-      {/* profile header cover stuff */}
-      <div
-        style={{
-          position: 'relative',
-          height: 320,
-          backgroundImage: `url(${user.cover_photo_urls[0]})`,
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          marginBottom: 100,
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: '20%',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage:
-              'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .85) 90%)',
-          }}
-        ></div>
-        <Group
-          style={{
-            position: 'absolute',
-            bottom: -70,
-            color: 'white',
-          }}
-        >
-          <Avatar src={user.profile_picture_urls[0]} size={150} radius={150} />
+      <div style={{ padding: '0px 40px' }}>
+        <h3>Tracks</h3>
+        <TrackTable tracks={user.tracks} />
+
+        <h3>Playlists</h3>
+        {user.playlists.map((playlist) => (
+          <div key={playlist.id}>
+            <Link to={`/${handle}/playlist/${playlist.name}`}>
+              {playlist.name}
+            </Link>
+          </div>
+        ))}
+
+        <Group align="top">
           <div>
-            <div>{user.name}</div>
-            <div>@{user.handle}</div>
+            <h4>Following: {user.following_count}</h4>
+            <UserListing is_followed_by_user_id={user.id} />
+          </div>
+
+          <div>
+            <h4>Followers: {user.follower_count}</h4>
+            <UserListing is_following_user_id={user.id} />
           </div>
         </Group>
       </div>
-
-      <h3>Tracks</h3>
-      <Table>
-        <tbody>
-          {user.tracks.map((track) => (
-            <tr key={track.id}>
-              <td>
-                <PlayButton track={track} trackList={user.tracks} />
-                <b>{track.title}</b>
-              </td>
-
-              <td>{track.favorite_count} favs</td>
-              <td>{track.repost_count} reposts</td>
-
-              <td>
-                {/* {track.id} */}
-                <Link
-                  to={`/${user.handle}/${encodeURIComponent(track.title)}/${
-                    track.id
-                  }`}
-                >
-                  permalink
-                </Link>
-                {/* <LinkTo item={track}>permalink</LinkTo> */}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <h3>Playlists</h3>
-      {user.playlists.map((playlist) => (
-        <div key={playlist.id}>
-          <Link to={`/${handle}/playlist/${playlist.name}`}>
-            {playlist.name}
-          </Link>
-        </div>
-      ))}
     </div>
   )
 }

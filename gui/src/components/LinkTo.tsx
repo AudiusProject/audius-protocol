@@ -33,8 +33,7 @@ export function urlFor(item: any) {
       )}`
 
     case 'Track':
-      return `/${item.route_id}-${item.id}`
-    // return `/${item.artist.handle}/${slugify(item.title, item.id)}`
+      return `/${item.owner.handle}/${slugify(item.title)}/${item.id}`
   }
 }
 

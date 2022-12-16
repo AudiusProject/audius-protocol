@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client'
+import { Avatar, Container } from '@mantine/core'
 import { useParams } from 'react-router-dom'
 import { LinkTo } from '../components/LinkTo'
 import { LoadingStates } from '../components/LoadingStates'
@@ -14,8 +15,9 @@ gql`
       playlists(query: $playlistSlug, limit: 1) {
         id
         name
+        image_urls(size: _480x480)
 
-        tracks {
+        tracks(limit: 1000) {
           id
           title
           repost_count
@@ -25,9 +27,7 @@ gql`
           stream_urls
 
           owner {
-            id
-            name
-            handle
+            ...TrackOwner
           }
         }
       }
@@ -51,11 +51,12 @@ export function PlaylistDetail() {
   if (!playlist) return <div>not found</div>
 
   return (
-    <div>
-      <LinkTo item={user}>{user.name}</LinkTo>
+    <Container>
       <h1>{playlist.name}</h1>
 
+      <Avatar src={playlist.image_urls[0]} size={320} />
+
       <TrackTable tracks={playlist.tracks} />
-    </div>
+    </Container>
   )
 }

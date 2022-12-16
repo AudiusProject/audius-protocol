@@ -42,6 +42,7 @@ export const typeDefs = gql`
   type Track {
     id: String!
     title: String!
+    description: String
     length: Int!
     created_at: String!
     owner: User!
@@ -73,6 +74,8 @@ export const typeDefs = gql`
 
     follower_count: Int!
     following_count: Int!
+    track_count: Int!
+    repost_count: Int!
 
     is_follower: Boolean!
     is_followed: Boolean!
@@ -127,6 +130,9 @@ export const typeDefs = gql`
     description: String
     created_at: String!
     owner: User!
+    # playlist_image_multihash
+    # playlist_image_sizes_multihash
+    image_urls(size: SizeSquare! = _150x150): [String!]!
 
     favorite_count: Int!
     repost_count: Int!
@@ -151,16 +157,30 @@ export const typeDefs = gql`
   type Query {
     user(handle: String): User
 
+    me: User
+
     users(
       query: String
       has_reposted_track_id: ID
       has_favorited_track_id: ID
+
+      is_following_user_id: ID
+      is_followed_by_user_id: ID
       is_followed_by_current_user: Boolean
       limit: Int = 50
       offset: Int = 0
     ): [User!]!
 
     track(permalink: String!): Track
+
+    tracks(
+      query: String
+      owned_by: ID
+      reposted_by: ID
+      favorited_by: ID
+      limit: Int = 20
+      offset: Int = 0
+    ): [Track!]!
 
     feed(
       reposts: Boolean = true
@@ -169,5 +189,6 @@ export const typeDefs = gql`
     ): [FeedItem!]!
 
     wip_notifications: JSON
+    wip_reposts: JSON
   }
 `

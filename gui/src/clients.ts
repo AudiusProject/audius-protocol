@@ -12,12 +12,13 @@ const httpLink = createHttpLink({
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const token = localStorage.getItem('token')
+  const userId = localStorage.getItem('currentUserId') || '1'
+  console.log('req userId', userId)
   // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
-      'x-user-id': '1',
+      'x-user-id': userId,
     },
   }
 })
