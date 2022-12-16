@@ -405,7 +405,10 @@ export function* handleUploads({
     const request = {
       id,
       track: value.track,
-      metadata: value.metadata,
+      metadata: {
+        is_playlist_upload: isCollection,
+        ...value.metadata
+      },
       index: value.index,
       artwork: isCollection ? null : value.artwork,
       isCollection,

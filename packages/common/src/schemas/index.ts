@@ -41,7 +41,8 @@ const trackMetadataSchema = {
   license: null,
   isrc: null,
   iswc: null,
-  download: null
+  download: null,
+  is_playlist_upload: false
 }
 
 export const newTrackMetadata = (fields, validate = false) => {

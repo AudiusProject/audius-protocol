@@ -116,6 +116,7 @@ export type TrackMetadata = {
   permalink: string
 
   // Optional Fields
+  is_playlist_upload?: boolean
   is_invalid?: boolean
   stem_of?: {
     parent_track_id: ID
