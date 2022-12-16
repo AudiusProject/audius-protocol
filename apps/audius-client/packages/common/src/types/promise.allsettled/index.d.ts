@@ -1,1 +1,0 @@
-declare module 'promise.allsettled'
