@@ -348,7 +348,7 @@ def parse_user_bank_transaction(
     solana_client_manager: SolanaClientManager,
     tx_sig,
 ):
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig, tag="user_bank_backfill")
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)

@@ -143,7 +143,9 @@ def parse_spl_token_transaction(
     try:
         if tx_sig["err"]:
             return None
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"])
+        tx_info = solana_client_manager.get_sol_tx_info(
+            tx_sig["signature"], tag="spl_backfill"
+        )
         result = tx_info["result"]
         meta = result["meta"]
         error = meta["err"]
