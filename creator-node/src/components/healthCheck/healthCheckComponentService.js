@@ -143,6 +143,7 @@ const healthCheck = async (
     ...versionInfo,
     healthy,
     git: process.env.GIT_SHA,
+    audiusDockerCompose: process.env.AUDIUS_DOCKER_COMPOSE_GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),

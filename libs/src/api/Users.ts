@@ -670,7 +670,7 @@ export class Users extends Base {
   async updateCreator(
     userId: number,
     metadata: UserMetadata,
-    useEntityManager: boolean
+    useEntityManager?: boolean
   ) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
@@ -898,7 +898,7 @@ export class Users extends Base {
   }: {
     newMetadata: UserMetadata
     userId: number
-    useEntityManager: boolean
+    useEntityManager?: boolean
   }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)

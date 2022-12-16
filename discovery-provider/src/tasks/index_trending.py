@@ -250,16 +250,18 @@ def get_should_update_trending(
     """
     with db.scoped_session() as session:
         current_db_block = (
-            session.query(Block.blockhash).filter(Block.is_current == True).first()
+            session.query(Block.blockhash, Block.number)
+            .filter(Block.is_current == True)
+            .first()
         )
-        current_block_number = current_db_block[0]
+        current_block_hash, current_block_number = current_db_block
         final_poa_block = helpers.get_final_poa_block(shared_config)
         if final_poa_block:
             nethermind_web3 = web3_provider.get_web3()
             current_block_number -= final_poa_block
             current_block = nethermind_web3.eth.get_block(current_block_number, True)
         else:
-            current_block = web3.eth.get_block(current_block_number, True)
+            current_block = web3.eth.get_block(current_block_hash, True)
 
         current_timestamp = current_block["timestamp"]
         block_datetime = floor_time(

@@ -135,7 +135,7 @@ export class AudiusContracts {
     if (this.entityManagerAddress) {
       this.EntityManagerClient = new EntityManagerClient(
         this.web3Manager,
-        EntityManagerABI,
+        EntityManagerABI as AbiItem[],
         'EntityManager',
         this.getRegistryAddressForContract,
         this.logger,

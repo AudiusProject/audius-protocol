@@ -39,6 +39,7 @@ import { Playlists } from './api/Playlist'
 import { File } from './api/File'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
+import { Notifications } from './api/Notifications'
 import Web3 from './LibsWeb3'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
@@ -203,12 +204,12 @@ export class AudiusLibs {
    * Configures an eth web3
    */
   static configEthWeb3(
-    tokenAddress,
-    registryAddress,
-    providers,
-    ownerWallet,
-    claimDistributionContractAddress,
-    wormholeContractAddress
+    tokenAddress: string,
+    registryAddress: string,
+    providers: string | string[] | typeof Web3,
+    ownerWallet: string,
+    claimDistributionContractAddress: string,
+    wormholeContractAddress: string
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -368,6 +369,7 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  Notifications: Nullable<Notifications>
   EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
@@ -450,6 +452,7 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.Notifications = null
     this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
@@ -556,9 +559,10 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config ? this.web3Config.registryAddress : null,
-        this.web3Config ? this.web3Config.entityManagerAddress : null,
-        this.web3Config ? this.web3Config.entityManagerAddress : null,
+        (this.web3Config ? this.web3Config.registryAddress : null) as string,
+        (this.web3Config
+          ? this.web3Config.entityManagerAddress
+          : null) as string,
         this.isServer,
         this.logger
       )
@@ -658,6 +662,7 @@ export class AudiusLibs {
     this.File = new File(this.User, this.ServiceProvider, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.Notifications = new Notifications(...services)
     this.EntityManager = new EntityManager(...services)
   }
 }

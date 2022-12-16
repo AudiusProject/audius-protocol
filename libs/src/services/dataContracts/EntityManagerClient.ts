@@ -18,14 +18,16 @@ export enum Action {
   REPOST = 'Repost',
   UNREPOST = 'Unrepost',
   SUBSCRIBE = 'Subscribe',
-  UNSUBSCRIBE = 'Unsubscribe'
+  UNSUBSCRIBE = 'Unsubscribe',
+  VIEW = 'View'
 }
 
 export enum EntityType {
   PLAYLIST = 'Playlist',
   TRACK = 'Track',
   USER = 'User',
-  USER_REPLICA_SET = 'UserReplicaSet'
+  USER_REPLICA_SET = 'UserReplicaSet',
+  NOTIFICATION = 'Notification'
 }
 
 /**
