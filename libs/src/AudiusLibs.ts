@@ -203,12 +203,12 @@ export class AudiusLibs {
    * Configures an eth web3
    */
   static configEthWeb3(
-    tokenAddress,
-    registryAddress,
-    providers,
-    ownerWallet,
-    claimDistributionContractAddress,
-    wormholeContractAddress
+    tokenAddress: string,
+    registryAddress: string,
+    providers: string | string[] | typeof Web3,
+    ownerWallet: string,
+    claimDistributionContractAddress: string,
+    wormholeContractAddress: string
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -556,8 +556,10 @@ export class AudiusLibs {
     if (this.web3Manager) {
       this.contracts = new AudiusContracts(
         this.web3Manager,
-        this.web3Config ? this.web3Config.registryAddress : null,
-        this.web3Config ? this.web3Config.entityManagerAddress : null,
+        (this.web3Config ? this.web3Config.registryAddress : null) as string,
+        (this.web3Config
+          ? this.web3Config.entityManagerAddress
+          : null) as string,
         this.isServer,
         this.logger
       )
