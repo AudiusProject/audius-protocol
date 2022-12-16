@@ -397,6 +397,7 @@ def process_spl_token_tx(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            tag="spl_backfill_1",
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]
@@ -492,9 +493,7 @@ def check_if_backfilling_complete(
         stop_sig = stop_sig_tuple[0]
 
         one_sig_before_stop_result = solana_client_manager.get_signatures_for_address(
-            SPL_TOKEN_PROGRAM,
-            before=stop_sig,
-            limit=1,
+            SPL_TOKEN_PROGRAM, before=stop_sig, limit=1, tag="spl_backfill_2"
         )
         if not one_sig_before_stop_result:
             logger.error("index_spl_token_backfill.py | No sigs before stop_sig")
@@ -548,9 +547,7 @@ def find_true_stop_sig(
     count = 100
     while count:
         tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
-            SPL_TOKEN_PROGRAM,
-            before=stop_sig,
-            limit=1,
+            SPL_TOKEN_PROGRAM, before=stop_sig, limit=1, tag="spl_backfill_3"
         )
         if tx_before_stop_sig:
             tx_before_stop_sig = tx_before_stop_sig["result"][0]

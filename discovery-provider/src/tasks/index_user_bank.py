@@ -454,6 +454,7 @@ def process_user_bank_txs():
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
                 limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+                tag="userbank",
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:

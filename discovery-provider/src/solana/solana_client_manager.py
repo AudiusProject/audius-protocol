@@ -87,6 +87,7 @@ class SolanaClientManager:
         until: Optional[str] = None,
         limit: Optional[int] = None,
         retries: int = DEFAULT_MAX_RETRIES,
+        tag="",
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
@@ -95,6 +96,9 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
+                    logger.info(
+                        f"solana_client_manager.py | get_signatures_for_address called from {tag}"
+                    )
                     transactions: ConfirmedSignatureForAddressResponse = (
                         client.get_signatures_for_address(
                             account, before, until, limit, Commitment("finalized")
@@ -104,22 +108,22 @@ class SolanaClientManager:
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | handle_get_signatures_for_address | \
-                            Error fetching account {account} from endpoint {endpoint}, {e}",
+                            Error fetching account {account} from endpoint {endpoint}, {e} tag: {tag}",
                         exc_info=True,
                     )
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | handle_get_signatures_for_address | Retrying account fetch: {account} with endpoint {endpoint}"
+                    f"solana_client_manager.py | handle_get_signatures_for_address | Retrying account fetch: {account} with endpoint {endpoint} tag {tag}"
                 )
             raise Exception(
-                f"solana_client_manager.py | handle_get_signatures_for_address | Failed to fetch account {account} with endpoint {endpoint}"
+                f"solana_client_manager.py | handle_get_signatures_for_address | Failed to fetch account {account} with endpoint {endpoint} tag {tag}"
             )
 
         return _try_all_with_timeout(
             self.clients,
             handle_get_signatures_for_address,
-            "solana_client_manager.py | get_signatures_for_address | All requests failed",
+            f"solana_client_manager.py | get_signatures_for_address | All requests failed for tag {tag}",
         )
 
     def get_slot(self, retries=DEFAULT_MAX_RETRIES, encoding="json") -> Optional[int]:

@@ -464,6 +464,7 @@ def process_spl_token_tx(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            tag="spl",
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]

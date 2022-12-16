@@ -451,7 +451,10 @@ def get_transaction_signatures(
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
             transactions_history = solana_client_manager.get_signatures_for_address(
-                program, before=last_tx_signature, limit=FETCH_TX_SIGNATURES_BATCH_SIZE
+                program,
+                before=last_tx_signature,
+                limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+                tag="rewards",
             )
 
             transactions_array = transactions_history["result"]

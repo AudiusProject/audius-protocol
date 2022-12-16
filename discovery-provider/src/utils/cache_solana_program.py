@@ -53,7 +53,7 @@ def fetch_and_cache_latest_program_tx_redis(
     cache_key: str,
 ):
     transactions_history = solana_client_manager.get_signatures_for_address(
-        program, before=None, limit=1
+        program, before=None, limit=1, tag="cache_solana_program"
     )
     transactions_array = transactions_history["result"]
     if transactions_array:

@@ -586,6 +586,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             TRACK_LISTEN_PROGRAM,
             before=last_tx_signature,
             limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            tag="plays",
         )
         logger.info(
             f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"

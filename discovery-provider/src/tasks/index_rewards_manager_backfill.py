@@ -698,9 +698,7 @@ def find_true_stop_sig(
     count = 100
     while count:
         tx_before_stop_sig = solana_client_manager.get_signatures_for_address(
-            REWARDS_MANAGER_PROGRAM,
-            before=stop_sig,
-            limit=1,
+            REWARDS_MANAGER_PROGRAM, before=stop_sig, limit=1, tag="rewards_backfill"
         )
         if tx_before_stop_sig:
             tx_before_stop_sig = tx_before_stop_sig["result"][0]

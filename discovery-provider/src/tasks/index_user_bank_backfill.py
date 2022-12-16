@@ -397,6 +397,7 @@ def process_user_bank_txs(stop_sig: str):
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
                 limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+                tag="userbank_backfill_1",
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
@@ -522,6 +523,7 @@ def check_if_backfilling_complete(
             USER_BANK_ADDRESS,
             before=stop_sig,
             limit=1,
+            tag="userbank_backfill_2",
         )
         if not one_sig_before_stop_result:
             logger.error("index_user_bank_backfill.py | No sigs before stop_sig")
@@ -578,6 +580,7 @@ def find_true_stop_sig(
             USER_BANK_ADDRESS,
             before=stop_sig,
             limit=1,
+            tag="userbank_backfill_3",
         )
         if tx_before_stop_sig:
             tx_before_stop_sig = tx_before_stop_sig["result"][0]
