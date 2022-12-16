@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
+from redis import Redis
+from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
@@ -18,6 +20,8 @@ from src.utils.redis_constants import (
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
 )
+from src.utils.session_manager import SessionManager
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +37,18 @@ class ContentNodeInfo(TypedDict):
     spID: int
 
 
-def _get_redis_set_members_as_list(redis: Any, key: str) -> List[int]:
+def _get_redis_set_members_as_list(redis: Redis, key: str) -> List[int]:
     """Fetches the unavailable track ids per Content Node"""
     values = redis.smembers(key)
     return [int(value.decode()) for value in values]
 
 
 def fetch_unavailable_track_ids_in_network(
-    session: Any, redis: Any, eth_web3, eth_abi_values
+    session: Session, redis: Redis, eth_web3: Web3, eth_abi_values: Any
 ) -> None:
     """Fetches the unavailable track ids in the Content Node network"""
     content_nodes = query_registered_content_node_info(
-        session, eth_web3, redis, eth_abi_values
+        eth_web3, redis, eth_abi_values
     )
 
     # Clear redis for existing data
@@ -66,7 +70,7 @@ def fetch_unavailable_track_ids_in_network(
             redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *unavailable_track_ids_batch)
 
 
-def update_tracks_is_available_status(db: Any, redis: Any) -> None:
+def update_tracks_is_available_status(db: SessionManager, redis: Redis) -> None:
     """Check track availability on all unavailable tracks and update in Tracks table"""
     all_unavailable_track_ids = _get_redis_set_members_as_list(
         redis, ALL_UNAVAILABLE_TRACKS_REDIS_KEY
@@ -139,7 +143,7 @@ def fetch_unavailable_track_ids(node: str) -> List[int]:
 
 
 def query_replica_set_by_track_id(
-    session: Any, track_ids: List[int]
+    session: Session, track_ids: List[int]
 ) -> Union[List[Tuple[int, int, List[int]]], List[Tuple[int, None, List[None]]]]:
     """
     Returns an array of tuples with the structure: [(track_id | primary_id | secondary_ids), ...]
@@ -159,7 +163,7 @@ def query_replica_set_by_track_id(
     return track_ids_and_replica_sets
 
 
-def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
+def query_tracks_by_track_ids(session: Session, track_ids: List[int]) -> List[Any]:
     """Returns a list of Track objects that has a track id in `track_ids`"""
     tracks = (
         session.query(Track)
@@ -174,7 +178,7 @@ def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
 
 
 def query_registered_content_node_info(
-    session: Any, eth_web3, redis, eth_abi_values
+    eth_web3: Web3, redis: Redis, eth_abi_values: Any
 ) -> List[ContentNodeInfo]:
     """Returns a list of all registered Content Node endpoint and spID"""
     registered_content_nodes = list(
@@ -190,7 +194,7 @@ def query_registered_content_node_info(
 
 
 def check_track_is_available(
-    redis: Any, track_id: int, spID_replica_set: List[int]
+    redis: Redis, track_id: int, spID_replica_set: List[int]
 ) -> bool:
     """
     Checks if a track is available in the replica set. Needs to only be available
