@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { PortalProvider } from '@gorhom/portal'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
-import allPromisesSettled from 'promise.allsettled'
 import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
 import {
@@ -35,8 +34,6 @@ import { OfflineDownloader } from './components/offline-downloads/OfflineDownloa
 import { useEnterForeground } from './hooks/useAppState'
 import { WalletConnectProvider } from './screens/wallet-connect'
 import { setLibs } from './services/libs'
-
-allPromisesSettled.shim()
 
 Sentry.init({
   dsn: Config.SENTRY_DSN

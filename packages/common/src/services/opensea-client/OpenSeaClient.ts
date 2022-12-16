@@ -1,4 +1,4 @@
-import allPromisesSettled from 'promise.allsettled'
+import { allSettled } from 'utils/allSettled'
 
 import {
   Collectible,
@@ -38,7 +38,7 @@ export class OpenSeaClient {
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaEventExtended[]> {
-    return Promise.allSettled(
+    return allSettled(
       wallets.map((wallet) =>
         this.getTransferredCollectiblesForWallet(wallet, limit)
       )
@@ -75,7 +75,7 @@ export class OpenSeaClient {
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaEventExtended[]> {
-    return Promise.allSettled(
+    return allSettled(
       wallets.map((wallet) =>
         this.getCreatedCollectiblesForWallet(wallet, limit)
       )
@@ -112,7 +112,7 @@ export class OpenSeaClient {
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaAssetExtended[]> {
-    return Promise.allSettled(
+    return allSettled(
       wallets.map((wallet) => this.getCollectiblesForWallet(wallet, limit))
     ).then((results) =>
       results
@@ -251,7 +251,3 @@ export class OpenSeaClient {
     })
   }
 }
-
-;(function () {
-  if (!Promise.allSettled) Promise.allSettled = allPromisesSettled
-})()
