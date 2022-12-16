@@ -39,9 +39,13 @@ def _get_redis_set_members_as_list(redis: Any, key: str) -> List[int]:
     return [int(value.decode()) for value in values]
 
 
-def fetch_unavailable_track_ids_in_network(session: Any, redis: Any, eth_web3, eth_abi_values) -> None:
+def fetch_unavailable_track_ids_in_network(
+    session: Any, redis: Any, eth_web3, eth_abi_values
+) -> None:
     """Fetches the unavailable track ids in the Content Node network"""
-    content_nodes = query_registered_content_node_info(session, eth_web3, redis, eth_abi_values)
+    content_nodes = query_registered_content_node_info(
+        session, eth_web3, redis, eth_abi_values
+    )
 
     # Clear redis for existing data
     redis.delete(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
@@ -248,7 +252,9 @@ def update_track_is_available(self) -> None:
             )
 
             with db.scoped_session() as session:
-                fetch_unavailable_track_ids_in_network(session, redis, eth_web3, eth_abi_values)
+                fetch_unavailable_track_ids_in_network(
+                    session, redis, eth_web3, eth_abi_values
+                )
 
             update_tracks_is_available_status(db, redis)
 
