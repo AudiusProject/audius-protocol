@@ -48,7 +48,7 @@ def test_get_save_notifications(app):
 
             assert u1_notifiations[1]["group_id"] == "save:1:type:playlist"
             assert u1_notifiations[1]["is_seen"] == False
-            assert len(u1_notifiations[1]["actions"]) == 4
+            assert len(u1_notifiations[1]["actions"]) == 12
             for saver_user_id in range(2, 14):
                 assert any(
                     act["data"]["user_id"] == saver_user_id
