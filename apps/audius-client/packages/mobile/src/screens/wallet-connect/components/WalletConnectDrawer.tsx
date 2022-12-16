@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { tokenDashboardPageSelectors } from '@audius/common'
+import { FeatureFlags, tokenDashboardPageSelectors } from '@audius/common'
 import type {
   RenderQrcodeModalProps,
   WalletService
@@ -16,6 +16,7 @@ import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { getData } from 'app/store/drawers/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -72,6 +73,9 @@ export const WalletConnectDrawer = () => {
   const styles = useStyles()
   const { walletServices } = useWalletConnectContext()
   const canConnectNewWallet = useCanConnectNewWallet()
+  const { isEnabled: isSolPhoneEnabled } = useFeatureFlag(
+    FeatureFlags.SOLANA_PHONE_WALLET_CONNECT
+  )
 
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
@@ -100,7 +104,9 @@ export const WalletConnectDrawer = () => {
           ) : null}
         </View>
         <View style={styles.walletConnectionList}>
-          {Platform.OS === 'android' ? <SolanaPhoneOption /> : null}
+          {Platform.OS === 'android' && isSolPhoneEnabled ? (
+            <SolanaPhoneOption />
+          ) : null}
           <PhantomWalletConnectOption />
           {supportedWalletServices?.map((walletService: WalletService) => {
             const uri = data?.uri as string

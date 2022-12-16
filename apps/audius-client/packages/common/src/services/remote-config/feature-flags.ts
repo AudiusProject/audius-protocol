@@ -29,7 +29,8 @@ export enum FeatureFlags {
   SHARE_TO_STORY = 'share_to_story_2',
   READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED = 'read_subscribers_from_discovery_enabled',
   MOBILE_WALLET_CONNECT = 'mobile_wallet_connect',
-  COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok'
+  COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok',
+  SOLANA_PHONE_WALLET_CONNECT = 'solana_phone_wallet_connect'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -74,5 +75,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SHARE_TO_STORY]: false,
   [FeatureFlags.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED]: false,
   [FeatureFlags.MOBILE_WALLET_CONNECT]: false,
-  [FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK]: false
+  [FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK]: false,
+  [FeatureFlags.SOLANA_PHONE_WALLET_CONNECT]: false
 }

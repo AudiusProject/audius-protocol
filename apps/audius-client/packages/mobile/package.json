@@ -39,7 +39,7 @@
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
     "@audius/common": "1.5.1",
-    "@audius/sdk": "1.0.25",
+    "@audius/sdk": "1.0.27",
     "@babel/runtime": "7.15.4",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
     "@gorhom/portal": "1.0.9",

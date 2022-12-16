@@ -59,6 +59,10 @@ export const ConfirmRemoveWalletDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const { visibleState } = useDrawer(drawerName)
+
+  if (visibleState === false) return null
+
   return (
     <NativeDrawer
       drawerName={drawerName}
