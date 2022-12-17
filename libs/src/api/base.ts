@@ -10,7 +10,6 @@ import type { SolanaAudiusData } from '../services/solanaAudiusData/SolanaAudius
 import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
 import type { UserStateManager } from '../userStateManager'
-import type { Captcha } from '../utils'
 import type { Wormhole } from '../services/wormhole'
 
 export const Services = Object.freeze({
@@ -36,7 +35,6 @@ export type BaseConstructorArgs = [
   Wormhole,
   CreatorNode,
   Comstock,
-  Captcha,
   boolean,
   any
 ]
@@ -55,7 +53,6 @@ export class Base {
   wormholeClient: Wormhole
   creatorNode: CreatorNode
   comstock: Comstock
-  captcha: Captcha
   isServer: boolean
   logger: any = console
 
@@ -75,7 +72,6 @@ export class Base {
     wormholeClient: Wormhole,
     creatorNode: CreatorNode,
     comstock: Comstock,
-    captcha: Captcha,
     isServer: boolean,
     logger: any = console
   ) {
@@ -92,7 +88,6 @@ export class Base {
     this.wormholeClient = wormholeClient
     this.creatorNode = creatorNode
     this.comstock = comstock
-    this.captcha = captcha
     this.isServer = isServer
     this.logger = logger
 
