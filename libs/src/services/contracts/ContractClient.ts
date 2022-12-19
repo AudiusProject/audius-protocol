@@ -24,7 +24,6 @@ export class ContractClient {
   contractRegistryKey: string
   getRegistryAddress: GetRegistryAddress
   _contractAddress: Nullable<string>
-  _nethermindContractAddress: Nullable<string>
   _contract: Nullable<Contract>
   _isInitialized: boolean
   _isInitializing: boolean
@@ -47,11 +46,7 @@ export class ContractClient {
     this.logger = logger
 
     // Once initialized, contract address and contract are set up
-    const contractAddresses = contractAddress ? contractAddress.split(',') : []
-    this._contractAddress = contractAddresses[0] ? contractAddresses[0] : null
-    this._nethermindContractAddress = contractAddresses[1]
-      ? contractAddresses[1]
-      : null
+    this._contractAddress = contractAddress
     this._contract = null
 
     // Initialization setup
@@ -172,12 +167,6 @@ export class ContractClient {
     await this.init()
     // calling init first ensures _contactAddress is present
     return this._contractAddress as string
-  }
-
-  async getNethermindAddress() {
-    await this.init()
-    // calling init first ensures _contactAddress is present
-    return this._nethermindContractAddress as string
   }
 
   /**

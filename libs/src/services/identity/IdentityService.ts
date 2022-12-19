@@ -395,19 +395,8 @@ export class IdentityService {
     senderAddress: string,
     encodedABI: string,
     gasLimit: number,
-    handle: string | null = null,
-    nethermindContractAddress: string | null | undefined,
-    nethermindEncodedAbi: string
+    handle: string | null = null
   ): Promise<{ receipt: TransactionReceipt }> {
-    const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
-    let token
-    if (this.captcha && shouldCaptcha) {
-      try {
-        token = await this.captcha.generate('identity/relay')
-      } catch (e) {
-        console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
-      }
-    }
     return await this._makeRequest({
       url: '/relay',
       method: 'post',
@@ -417,10 +406,7 @@ export class IdentityService {
         senderAddress,
         encodedABI,
         gasLimit,
-        token,
-        handle,
-        nethermindContractAddress,
-        nethermindEncodedAbi
+        handle
       }
     })
   }

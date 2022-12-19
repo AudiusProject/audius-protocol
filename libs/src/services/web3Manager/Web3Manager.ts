@@ -204,9 +204,7 @@ export class Web3Manager {
     contractRegistryKey?: string | null,
     contractAddress?: string | null,
     txRetries = 5,
-    txGasLimit?: number,
-    nethermindContractAddress?: string | null,
-    nethermindContractMethod?: ContractMethod
+    txGasLimit?: number
   ): Promise<TransactionReceipt> {
     const gasLimit =
       txGasLimit ??
@@ -221,7 +219,7 @@ export class Web3Manager {
       })
     } else {
       const encodedABI = contractMethod.encodeABI()
-      const nethermindEncodedAbi = nethermindContractMethod!.encodeABI()
+
       const response = await retry(
         async (bail) => {
           try {
@@ -231,9 +229,7 @@ export class Web3Manager {
               this.ownerWallet!.getAddressString(),
               encodedABI,
               gasLimit,
-              this.userSuppliedHandle,
-              nethermindContractAddress,
-              nethermindEncodedAbi
+              this.userSuppliedHandle
             )
           } catch (e: any) {
             // If forbidden, don't retry
