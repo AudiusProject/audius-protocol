@@ -43,9 +43,7 @@ def copy_mapping_into_temp_table():
         if env == "stage":
             aws_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/track_cids.csv.zip"
         else:
-            aws_url = (
-                "https://s3.us-west-1.amazonaws.com/download.audius.co/track_cids.csv.zip"
-            )
+            aws_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/track_cids.csv.zip"
 
         if os.path.isdir(path_tmp):
             shutil.rmtree(path_tmp)
@@ -89,26 +87,31 @@ def remove_temp_table():
 
 
 def disable_track_triggers():
-    try:
-        inner_sql = f"""
-            alter table tracks disable trigger on_track;
-            alter table tracks disable trigger trg_tracks;
-            """
-        sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
-        op.get_bind().execute(sql)
-    except Exception:
-        pass
+    inner_sql = f"""
+        alter table tracks disable trigger on_track;
+        alter table tracks disable trigger trg_tracks;
+        """
+    sql = sa.text(
+        "do $$ begin; \n\n "
+        + inner_sql
+        + " \n\n exception when others then null; end $$"
+        + " \n\n commit;"
+    )
+    op.get_bind().execute(sql)
+
 
 def enable_track_triggers():
-    try:
-        inner_sql = f"""
-            alter table tracks enable trigger on_track;
-            alter table tracks enable trigger trg_tracks;
-            """
-        sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
-        op.get_bind().execute(sql)
-    except Exception:
-        pass
+    inner_sql = f"""
+        alter table tracks enable trigger on_track;
+        alter table tracks enable trigger trg_tracks;
+        """
+    sql = sa.text(
+        "do $$ begin \n\n "
+        + inner_sql
+        + " \n\n exception when others then null; end $$"
+        + " \n\n commit;"
+    )
+    op.get_bind().execute(sql)
 
 
 def upgrade():
