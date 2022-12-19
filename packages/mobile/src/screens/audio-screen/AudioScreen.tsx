@@ -203,6 +203,7 @@ export const AudioScreen = () => {
           tile: styles.tile,
           content: styles.tileContent
         }}
+        onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
       >
         <Text style={styles.audioAmount}>
           {formatWei((totalBalance || new BN(0)) as BNWei, true, 0)}{' '}
@@ -211,17 +212,7 @@ export const AudioScreen = () => {
           {hasMultipleWallets ? (
             <>
               <Text style={styles.audioText}>{messages.totalAudio}</Text>
-              <TouchableOpacity
-                hitSlop={{ left: 4, top: 4, bottom: 4, right: 4 }}
-                onPress={handlePressWalletInfo}
-                activeOpacity={0.7}
-              >
-                <IconInfo
-                  height={16}
-                  width={16}
-                  fill={'rgba(255,255,255,0.5)'}
-                />
-              </TouchableOpacity>
+              <IconInfo height={16} width={16} fill={'rgba(255,255,255,0.5)'} />
             </>
           ) : (
             <Text style={styles.audioText}>{messages.audio}</Text>

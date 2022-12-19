@@ -65,11 +65,6 @@ type WalletProps = { chain: Chain; address: string; balance: BNWei }
 
 export const Wallet = (props: WalletProps) => {
   const { chain, address, balance } = props
-  // todo: use feature flag to determine whether we show sol audio
-  // const { isEnabled: solWalletAudioEnabled } = useFlag(
-  //   FeatureFlags.SOL_WALLET_AUDIO_ENABLED
-  // )
-  const solWalletAudioEnabled = false
   const styles = useSyles()
 
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.98)
@@ -104,11 +99,9 @@ export const Wallet = (props: WalletProps) => {
           </View>
         </TouchableWithoutFeedback>
       </Animated.View>
-      {chain === Chain.Eth || solWalletAudioEnabled ? (
-        <Text style={styles.linkedAmount} weight='demiBold'>
-          {formatWei(balance, true)}
-        </Text>
-      ) : null}
+      <Text style={styles.linkedAmount} weight='demiBold'>
+        {formatWei(balance, true)}
+      </Text>
     </View>
   )
 }

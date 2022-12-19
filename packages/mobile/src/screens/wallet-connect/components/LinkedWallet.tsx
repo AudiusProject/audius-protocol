@@ -88,6 +88,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     width: 20
   },
   loading: {
+    marginLeft: -1,
     height: 22,
     width: 22
   }
