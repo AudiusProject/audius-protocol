@@ -28,7 +28,7 @@ def copy_mapping_into_temp_table():
     ####################################################################
     try:
         inner_sql = f"""
-            create table if not exists tmp_track_cid_mapping (track_id varchar unique, track_cid varchar(46));
+            create table if not exists tmp_track_cid_mapping (track_id integer unique, track_cid varchar(46));
             """
         sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
         op.get_bind().execute(sql)
@@ -121,7 +121,7 @@ def upgrade():
     inner_sql = f"""
         update tracks set track_cid = sub.track_cid
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id::integer;
+        where tracks.track_id = sub.track_id;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
