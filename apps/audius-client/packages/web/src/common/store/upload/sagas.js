@@ -710,7 +710,6 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         const { blockHash, blockNumber, playlistId, error } = yield call(
           audiusBackendInstance.createPlaylist,
           tempPlaylistId,
-          userId,
           collectionMetadata,
           isAlbum,
           trackIds,
