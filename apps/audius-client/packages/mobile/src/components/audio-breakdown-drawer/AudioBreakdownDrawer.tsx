@@ -14,6 +14,7 @@ import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 import { Wallet } from './Wallet'
 const { getAccountBalance } = walletSelectors
@@ -21,74 +22,70 @@ const { getAssociatedWallets } = tokenDashboardPageSelectors
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   drawer: {
-    display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 12,
+    padding: spacing(6),
+    paddingTop: spacing(3),
     height: '100%'
   },
   amount: {
     fontSize: 48
   },
   total: {
-    marginTop: 8,
-    marginBottom: 24,
-    fontSize: 18,
+    marginTop: spacing(2),
+    marginBottom: spacing(6),
+    fontSize: typography.fontSize.large,
     color: palette.neutralLight4
   },
   section: {
     width: '100%',
-    marginBottom: 24,
-    padding: 24,
-    borderRadius: 16,
+    marginBottom: spacing(6),
+    padding: spacing(6),
+    borderRadius: spacing(4),
     borderWidth: 2,
     borderColor: palette.neutralLight7,
     backgroundColor: palette.neutralLight10
   },
   sectionTitle: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center'
   },
   titleLabel: {
-    fontSize: 18,
+    fontSize: typography.fontSize.large,
     color: palette.neutral
   },
   titleAmount: {
-    marginLeft: 12,
-    fontSize: 18
+    marginLeft: spacing(3),
+    fontSize: typography.fontSize.large
   },
   sectionDescription: {
-    marginTop: 12
+    marginTop: spacing(3)
   },
   description: {
     textAlign: 'center',
     textTransform: 'uppercase',
     color: palette.neutralLight4,
-    fontSize: 12
+    fontSize: spacing(3)
   },
   infoIcon: {
     marginLeft: 8
   },
   walletsHeader: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 24,
-    paddingLeft: 24,
-    paddingRight: 24,
+    paddingTop: spacing(6),
+    paddingHorizontal: spacing(6),
     paddingBottom: 14,
-    fontSize: 16
+    fontSize: spacing(4)
   },
   headerLabel: {
     color: palette.neutralLight4
   },
   walletsBody: {
-    paddingLeft: 24,
-    paddingRight: 24,
+    paddingLeft: spacing(6),
+    paddingRight: spacing(6),
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight8
   }
@@ -120,8 +117,6 @@ export const AudioBreakdownDrawer = () => {
       ethWallets: null,
       solWallets: null
     }
-
-  console.log('eth wallets?', ethWallets, associatedWallets)
 
   const linkedWalletsBalance = ((ethWallets ?? [])
     .concat(solWallets ?? [])
@@ -196,7 +191,11 @@ export const AudioBreakdownDrawer = () => {
           <View style={styles.sectionDescription}>
             <Text style={styles.description} weight='bold'>
               {messages.linkedWalletsDescription}
-              <IconInfo style={styles.infoIcon} height={12} width={12} />
+              <IconInfo
+                style={styles.infoIcon}
+                height={spacing(3)}
+                width={spacing(3)}
+              />
             </Text>
           </View>
         </View>

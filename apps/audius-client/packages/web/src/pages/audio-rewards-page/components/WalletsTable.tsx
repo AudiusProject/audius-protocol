@@ -3,7 +3,6 @@ import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 import {
   Chain,
   BNWei,
-  FeatureFlags,
   shortenEthAddress,
   shortenSPLAddress,
   tokenDashboardPageActions,
@@ -19,7 +18,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -65,10 +63,6 @@ const Wallet = ({
   hasActions,
   hideCollectibles
 }: WalletProps) => {
-  const { isEnabled: solWalletAudioEnabled } = useFlag(
-    FeatureFlags.SOL_WALLET_AUDIO_ENABLED
-  )
-
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const onRequestRemoveWallet = useCallback(
@@ -119,14 +113,12 @@ const Wallet = ({
         </div>
       )}
       <div className={cn(styles.audioBalance, styles.walletText)}>
-        {(chain === Chain.Eth || solWalletAudioEnabled) && (
-          <DisplayAudio
-            showLabel={false}
-            amount={audioBalance}
-            className={styles.balanceContainer}
-            tokenClassName={styles.balance}
-          />
-        )}
+        <DisplayAudio
+          showLabel={false}
+          amount={audioBalance}
+          className={styles.balanceContainer}
+          tokenClassName={styles.balance}
+        />
       </div>
       {hasActions && (isConfirmAdding || isConfirmRemoving) && (
         <LoadingSpinner className={styles.loading}></LoadingSpinner>
