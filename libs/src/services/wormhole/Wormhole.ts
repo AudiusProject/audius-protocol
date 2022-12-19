@@ -165,7 +165,7 @@ export class Wormhole {
           }
 
           const { transactionSignature } =
-            await this.identityService.solanaRelayRaw(transactionData)
+            await this.identityService!.solanaRelayRaw(transactionData)
           logs.push(
             `Relay sol tx for postVAA with signature ${transactionSignature}`
           )
