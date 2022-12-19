@@ -55,12 +55,12 @@ def redis_restore(redis, key):
             logger.debug(f"successfully restored redis value for key: {key}")
             return redis.get(key)
     except FileNotFoundError as not_found:
-        logger.error(f"could not read redis dump file: {filename}")
-        logger.error(not_found)
+        logger.error(
+            f"could not read redis dump file: {filename} with error {not_found}"
+        )
         return None
     except Exception as e:
-        logger.error(f"could not perform redis restore for key: {key}")
-        logger.error(e)
+        logger.error(f"could not perform redis restore for key: {key} with error {e}")
         return None
 
 
@@ -97,8 +97,7 @@ def redis_dump(redis, key):
             f.write(dumped)
             logger.debug(f"successfully performed redis dump for key: {key}")
     except Exception as e:
-        logger.error(f"could not perform redis dump for key: {key}")
-        logger.error(e)
+        logger.error(f"could not perform redis dump for key: {key} with error {e}")
 
 
 def redis_set_json_and_dump(redis, key, value):

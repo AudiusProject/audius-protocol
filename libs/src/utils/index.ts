@@ -1,6 +1,5 @@
 export * from './utils'
 export * from './apiSigning'
-export * from './captcha'
 export * from './estimateGas'
 export * from './multiProvider'
 export * from './promiseFight'

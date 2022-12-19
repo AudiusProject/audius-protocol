@@ -29,7 +29,7 @@ import { Wormhole, WormholeConfig } from './services/wormhole'
 import { AudiusABIDecoder } from './services/ABIDecoder'
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
-import { Utils, Captcha, Nullable, Logger, CaptchaConfig } from './utils'
+import { Utils, Nullable, Logger } from './utils'
 import { ServiceProvider } from './api/ServiceProvider'
 
 import { Account } from './api/Account'
@@ -84,7 +84,6 @@ type AudiusLibsConfig = {
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
   wormholeConfig: WormholeConfig
-  captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   logger: Logger
@@ -334,7 +333,6 @@ export class AudiusLibs {
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   comstockConfig: LibsComstockConfig
   wormholeConfig: WormholeConfig
-  captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   isDebug: boolean
@@ -356,7 +354,6 @@ export class AudiusLibs {
   contracts: Nullable<AudiusContracts>
   wormholeClient: Nullable<Wormhole>
   creatorNode: Nullable<CreatorNode>
-  captcha: Nullable<Captcha>
   schemas?: Schemas
   comstock: Nullable<Comstock>
 
@@ -396,7 +393,6 @@ export class AudiusLibs {
     creatorNodeConfig,
     comstockConfig,
     wormholeConfig,
-    captchaConfig,
     hedgehogConfig,
     isServer,
     logger = console,
@@ -418,7 +414,6 @@ export class AudiusLibs {
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
     this.wormholeConfig = wormholeConfig
-    this.captchaConfig = captchaConfig
     this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
     this.isDebug = isDebug
@@ -440,7 +435,6 @@ export class AudiusLibs {
     this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
-    this.captcha = null
     this.comstock = null
 
     // API
@@ -473,16 +467,10 @@ export class AudiusLibs {
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
-    /** Captcha */
-    if (this.captchaConfig) {
-      this.captcha = new Captcha(this.captchaConfig)
-    }
-
     /** Identity Service */
     if (this.identityServiceConfig) {
       this.identityService = new IdentityService({
-        identityServiceEndpoint: this.identityServiceConfig.url,
-        captcha: this.captcha
+        identityServiceEndpoint: this.identityServiceConfig.url
       })
       const hedgehogService = new Hedgehog({
         identityService: this.identityService,
@@ -644,7 +632,6 @@ export class AudiusLibs {
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
-      this.captcha,
       this.isServer,
       this.logger
     ] as BaseConstructorArgs
