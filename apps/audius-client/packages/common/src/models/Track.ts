@@ -63,7 +63,7 @@ type PremiumConditionsEthNFTCollection = {
 
 type PremiumConditionsSolNFTCollection = {
   chain: Chain.Sol
-  name: string
+  address: string
 }
 
 export type PremiumConditions = {
