@@ -1,301 +1,161 @@
 import {
-  TransactionDetails,
-  TransactionMetadataType,
-  TransactionMethod,
-  TransactionType
-} from '@audius/common'
+  useCallback,
+  useEffect,
+  useState,
+  useContext,
+  useLayoutEffect
+} from 'react'
 
+import {
+  TransactionDetails,
+  TransactionType,
+  audioTransactionsPageActions,
+  audioTransactionsPageSelectors,
+  transactionDetailsActions
+} from '@audius/common'
+import { full } from '@audius/sdk'
+import { IconCaretRight } from '@audius/stems'
+import { useDispatch } from 'react-redux'
+
+import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionsTable } from 'components/audio-transactions-table'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
+import { MainContentContext } from 'pages/MainContentContext'
+import { useSelector } from 'utils/reducer'
 
 import styles from './AudioTransactionsPage.module.css'
+const {
+  fetchAudioTransactions,
+  setAudioTransactions,
+  fetchAudioTransactionMetadata,
+  fetchAudioTransactionsCount
+} = audioTransactionsPageActions
+const { getAudioTransactions, getAudioTransactionsCount } =
+  audioTransactionsPageSelectors
+const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
+const {
+  GetAudioTransactionHistorySortMethodEnum,
+  GetAudioTransactionHistorySortDirectionEnum
+} = full
 
 const messages = {
-  pageTitle: 'AudioTransactions',
-  pageDescription: 'View your listening history',
+  pageTitle: 'Audio Transactions History',
+  pageDescription: 'View your transactions history',
   emptyTableText: 'You don’t have any $AUDIO transactions yet.',
   emptyTableSecondaryText: 'Once you have, this is where you’ll find them!',
-  headerText: '$AUDIO Transactions'
+  headerText: '$AUDIO Transactions',
+  disclaimer:
+    'Transactions history does not include balances from linked wallets',
+  moreInfo: 'More Info'
 }
 
-export type AudioTransactionsPageProps = {}
+const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
-// Test Data for testing
-const data: TransactionDetails[] = [
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.SEND,
-    date: '6/23/2020',
-    change: '-100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.CHALLENGE_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.COINBASE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.COINBASE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.COINBASE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100100',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.STRIPE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100200',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.COINBASE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100300',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.SEND,
-    date: '6/23/2020',
-    change: '-100',
-    balance: '1000000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TRANSFER,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '55',
-    balance: '1000000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TRENDING_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '5',
-    balance: '1000000',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '1000000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.STRIPE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100200',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.SEND,
-    date: '6/23/2020',
-    change: '-100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TRENDING_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '5',
-    balance: '1000000',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.PURCHASE,
-    method: TransactionMethod.STRIPE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100200',
-    metadata: {
-      discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
-      usd: '0',
-      sol: '0',
-      audio: '0',
-      purchaseTransactionId: '0',
-      swapTransactionId: '0'
-    }
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.SEND,
-    date: '6/23/2020',
-    change: '-100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TRENDING_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '5',
-    balance: '1000000',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.CHALLENGE_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '1',
-    balance: '333333333',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.SEND,
-    date: '6/23/2020',
-    change: '-100',
-    balance: '100000',
-    metadata: {}
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TRENDING_REWARD,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '5',
-    balance: '1000000',
-    metadata: undefined
-  },
-  {
-    signature: 'banana_bread',
-    transactionType: TransactionType.TIP,
-    method: TransactionMethod.RECEIVE,
-    date: '6/23/2020',
-    change: '100',
-    balance: '100000',
-    metadata: {}
-  }
-]
-
-export const AudioTransactionsPage = (props: AudioTransactionsPageProps) => {
-  const tableLoading = !data.every((transaction: any) =>
-    Boolean(transaction.signature)
+const Disclaimer = () => {
+  const setVisibility = useSetVisibility()
+  return (
+    <div className={styles.container}>
+      <span className={styles.disclaimerMessage}>{messages.disclaimer}</span>
+      <div
+        className={styles.moreInfoContainer}
+        onClick={() => setVisibility('AudioBreakdown')(true)}
+      >
+        <span className={styles.moreInfo}>{messages.moreInfo}</span>
+        <IconCaretRight className={styles.iconCaretRight} />
+      </div>
+    </div>
   )
-  const isEmpty = data.length === 0
+}
+
+export const AudioTransactionsPage = () => {
+  const [offset, setOffset] = useState(0)
+  const [limit, setLimit] = useState(AUDIO_TRANSACTIONS_BATCH_SIZE)
+  const [sortMethod, setSortMethod] = useState(
+    GetAudioTransactionHistorySortMethodEnum.Date
+  )
+  const [sortDirection, setSortDirection] = useState(
+    GetAudioTransactionHistorySortDirectionEnum.Desc
+  )
+  const { mainContentRef } = useContext(MainContentContext)
+  const dispatch = useDispatch()
+  const setVisibility = useSetVisibility()
+
+  const audioTransactions: (TransactionDetails | {})[] =
+    useSelector(getAudioTransactions)
+  const audioTransactionsCount: number = useSelector(getAudioTransactionsCount)
+
+  useEffect(() => {
+    dispatch(fetchAudioTransactionsCount())
+  }, [dispatch])
+
+  // Reset audio transactions data on sort change, but not on offset and
+  // limit change to allow pagination.
+  useEffect(() => {
+    dispatch(
+      setAudioTransactions({
+        txDetails: Array(audioTransactionsCount ?? 0).fill({}) as {}[],
+        offset: 0
+      })
+    )
+  }, [dispatch, sortMethod, sortDirection, audioTransactionsCount])
+
+  useLayoutEffect(() => {
+    dispatch(
+      fetchAudioTransactions({ offset, limit, sortMethod, sortDirection })
+    )
+  }, [dispatch, offset, limit, sortMethod, sortDirection])
+
+  // Defaults: sort method = date, sort direction = desc
+  const onSort = useCallback(
+    (sortMethodInner: string, sortDirectionInner: string) => {
+      const sortMethodRes =
+        sortMethodInner === 'type'
+          ? GetAudioTransactionHistorySortMethodEnum.TransactionType
+          : GetAudioTransactionHistorySortMethodEnum.Date
+      setSortMethod(sortMethodRes)
+      const sortDirectionRes =
+        sortDirectionInner === 'asc'
+          ? GetAudioTransactionHistorySortDirectionEnum.Asc
+          : GetAudioTransactionHistorySortDirectionEnum.Desc
+      setSortDirection(sortDirectionRes)
+    },
+    [setSortMethod, setSortDirection]
+  )
+
+  const fetchMore = useCallback(
+    (offset: number, limit: number) => {
+      setOffset(offset)
+      setLimit(limit)
+    },
+    [setOffset, setLimit]
+  )
+
+  const onClickRow = useCallback(
+    (txDetails: TransactionDetails, index: number) => {
+      dispatch(
+        fetchTransactionDetailsSucceeded({
+          transactionId: txDetails.signature,
+          transactionDetails: txDetails
+        })
+      )
+      if (txDetails.transactionType === TransactionType.PURCHASE) {
+        dispatch(
+          fetchAudioTransactionMetadata({
+            txDetails
+          })
+        )
+      }
+      setVisibility('TransactionDetails')(true)
+    },
+    [dispatch, setVisibility]
+  )
+
+  const tableLoading = audioTransactions.every(
+    (transaction: any) => !transaction.signature
+  )
+  const isEmpty = audioTransactions.length === 0
 
   return (
     <Page
@@ -310,11 +170,21 @@ export const AudioTransactionsPage = (props: AudioTransactionsPageProps) => {
             secondaryText={messages.emptyTableSecondaryText}
           />
         ) : (
-          <AudioTransactionsTable
-            key='audioTransactions'
-            data={data}
-            loading={tableLoading}
-          />
+          <>
+            <Disclaimer />
+            <AudioTransactionsTable
+              key='audioTransactions'
+              data={audioTransactions}
+              loading={tableLoading}
+              onSort={onSort}
+              onClickRow={onClickRow}
+              fetchMore={fetchMore}
+              isVirtualized={true}
+              totalRowCount={audioTransactionsCount}
+              scrollRef={mainContentRef}
+              fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
+            />
+          </>
         )}
       </div>
     </Page>

@@ -9,6 +9,7 @@ import { ReactComponent as IconReceiveMini } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSendMini } from 'assets/img/iconSend.svg'
 import { ReactComponent as IconStripeMini } from 'assets/img/iconStripeMini.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import { ReactComponent as IconTransaction } from 'assets/img/iconTransaction.svg'
 import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
 
 import styles from './AudioTransactionIcon.module.css'
@@ -30,7 +31,7 @@ const typeIconSvgMap: Record<
   [TransactionType.CHALLENGE_REWARD]: IconTrophy,
   [TransactionType.PURCHASE]: null, // Not needed, AppLogo is used for purchases
   [TransactionType.TIP]: IconTip,
-  [TransactionType.TRANSFER]: null, // TODO: Add icon for this
+  [TransactionType.TRANSFER]: IconTransaction,
   [TransactionType.TRENDING_REWARD]: IconTrophy
 } as const
 

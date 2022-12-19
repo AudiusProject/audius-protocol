@@ -10,7 +10,6 @@ import {
   buyAudioActions,
   OnRampProvider,
   FeatureFlags,
-  BooleanKeys,
   StringKeys
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
@@ -82,8 +81,8 @@ const AdvancedWalletActions = () => {
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
   const mobile = isMobile()
-  const isTransactionsEnabled = useRemoteVar(
-    BooleanKeys.AUDIO_TRANSACTIONS_ENABLED
+  const { isEnabled: isTransactionsEnabled } = useFlag(
+    FeatureFlags.AUDIO_TRANSACTIONS_HISTORY
   )
   const onClickReceive = useCallback(() => {
     if (mobile) {

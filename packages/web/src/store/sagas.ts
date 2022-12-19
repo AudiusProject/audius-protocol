@@ -21,6 +21,7 @@ import changePasswordSagas from 'common/store/change-password/sagas'
 import confirmerSagas from 'common/store/confirmer/sagas'
 import notificationSagas from 'common/store/notifications/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
+import transactionsPageSagas from 'common/store/pages/audio-transactions/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
@@ -114,6 +115,7 @@ export default function* rootSaga() {
     profileSagas(),
     reactionSagas(),
     rewardsPageSagas(),
+    transactionsPageSagas(),
     savedSagas(),
     searchResultsSagas(),
     serviceSelectionSagas(),

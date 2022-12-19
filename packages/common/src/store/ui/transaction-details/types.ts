@@ -46,7 +46,7 @@ export type TransactionDetails =
       date: string
       change: StringAudio
       balance: StringAudio
-      metadata: InAppAudioPurchaseMetadata
+      metadata?: InAppAudioPurchaseMetadata
     }
   | {
       signature: string
@@ -55,7 +55,7 @@ export type TransactionDetails =
       date: string
       change: StringAudio
       balance: StringAudio
-      metadata?: {}
+      metadata: string
     }
   | {
       signature: string
@@ -66,7 +66,7 @@ export type TransactionDetails =
       date: string
       change: StringAudio
       balance: StringAudio
-      metadata: InAppAudioPurchaseMetadata | undefined
+      metadata: string
     }
 
 export type TransactionDetailsState = {
