@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AuthHeaders } from '../../constants'
 import { uuid } from '../../utils/uuid'
-import type { Captcha, Nullable } from '../../utils'
+import type { Nullable } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
@@ -87,22 +87,16 @@ type CreateStripeSessionResponse = {
   status: string
 }
 
-// Only probabilistically capture 50% of relay captchas
-const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
-
 export type IdentityServiceConfig = {
   identityServiceEndpoint: string
-  captcha?: Nullable<Captcha>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
-  captcha?: Nullable<Captcha>
   web3Manager: Web3Manager | null
 
-  constructor({ identityServiceEndpoint, captcha }: IdentityServiceConfig) {
+  constructor({ identityServiceEndpoint }: IdentityServiceConfig) {
     this.identityServiceEndpoint = identityServiceEndpoint
-    this.captcha = captcha
     this.web3Manager = null
   }
 
@@ -132,18 +126,6 @@ export class IdentityService {
   }
 
   async setUserFn(obj: Data & { token?: string }) {
-    if (this.captcha) {
-      try {
-        const token = await this.captcha.generate('identity/user')
-        obj.token = token
-      } catch (e) {
-        console.warn(
-          'CAPTCHA (user) - Recaptcha failed to generate token in :',
-          e
-        )
-      }
-    }
-
     return await this._makeRequest({
       url: '/user',
       method: 'post',

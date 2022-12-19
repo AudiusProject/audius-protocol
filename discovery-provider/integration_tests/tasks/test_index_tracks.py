@@ -117,6 +117,7 @@ cid_metadata_client = CIDMetadataClient(
             "has_current_user_reposted": False,
             "is_current": True,
             "is_unlisted": False,
+            "is_playlist_upload": False,
             "field_visibility": {
                 "mood": True,
                 "tags": True,
@@ -148,6 +149,7 @@ cid_metadata_client = CIDMetadataClient(
             "title": "real magic bassy flip 2",
             "length": None,
             "cover_art": None,
+            "is_playlist_upload": False,
             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
             "tags": "realmagic,rickyreed,theroom",
             "genre": "R&B/Soul",
@@ -304,6 +306,7 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.track_segments == track_metadata["track_segments"]
         assert track_record.is_unlisted == track_metadata["is_unlisted"]
         assert track_record.field_visibility == track_metadata["field_visibility"]
+        assert track_record.is_playlist_upload == track_metadata["is_playlist_upload"]
         assert track_record.remix_of == track_metadata["remix_of"]
         assert track_record.download == {
             "is_downloadable": track_metadata["download"].get("is_downloadable")
