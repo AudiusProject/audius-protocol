@@ -1263,7 +1263,7 @@ jobs:
       target:
         description: Name of the script, without .sh, like bump-hotfix or cut-release
         type: enum
-        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal]
+        enum: [cut-release, bump-hotfix, release-to-service-providers, evaluate-proposal, slash-proposal, dheeraj-test]
       slash_address:
         description: Required for target:slash-proposal. Address to be slashed.
         type: string
@@ -1813,7 +1813,7 @@ workflows:
           requires:
             - tests
 
-       - release-scripts:
+      - release-scripts:
           name: dheeraj-test
           target: dheeraj-test
           context:
