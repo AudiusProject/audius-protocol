@@ -2,7 +2,7 @@
 """add track is playlist upload
 
 Revision ID: f6f009132212
-Revises: 7b843f2d3a0d
+Revises: ec3b20d7bce3
 Create Date: 2022-12-13 16:54:11.916053
 
 """
@@ -12,7 +12,7 @@ from src.utils.alembic_helpers import build_sql
 
 # revision identifiers, used by Alembic.
 revision = 'f6f009132212'
-down_revision = '7b843f2d3a0d'
+down_revision = 'ec3b20d7bce3'
 branch_labels = None
 depends_on = None
 
