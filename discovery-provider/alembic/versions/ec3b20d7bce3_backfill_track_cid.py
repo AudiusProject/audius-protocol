@@ -92,6 +92,7 @@ def remove_temp_table():
 def disable_track_triggers():
     inner_sql = f"""
         alter table tracks disable trigger on_track;
+        alter table tracks disable trigger trg_tracks;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
@@ -99,7 +100,8 @@ def disable_track_triggers():
 
 def enable_track_triggers():
     inner_sql = f"""
-    alter table tracks enable trigger on_track;
+        alter table tracks enable trigger on_track;
+        alter table tracks enable trigger trg_tracks;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
