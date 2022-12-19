@@ -1,3 +1,5 @@
+import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
+
 import { Chain, Collectible, CollectibleMediaType } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
 
@@ -259,6 +261,7 @@ const nftComputedMedia = async (
 
 const metaplexNFTToCollectible = async (
   nft: MetaplexNFT,
+  solanaChainMetadata: Nullable<Metadata>,
   address: string
 ): Promise<Collectible> => {
   const identifier = [nft.symbol, nft.name, nft.image]
@@ -272,7 +275,8 @@ const metaplexNFTToCollectible = async (
     description: nft.description,
     externalLink: nft.external_url,
     isOwned: true,
-    chain: Chain.Sol
+    chain: Chain.Sol,
+    solanaChainMetadata
   } as Collectible
 
   if (
@@ -304,7 +308,8 @@ const metaplexNFTToCollectible = async (
 }
 
 const starAtlasNFTToCollectible = async (
-  nft: StarAtlasNFT
+  nft: StarAtlasNFT,
+  solanaChainMetadata: Nullable<Metadata>
 ): Promise<Collectible> => {
   const identifier = [nft._id, nft.symbol, nft.name, nft.image]
     .filter(Boolean)
@@ -316,7 +321,8 @@ const starAtlasNFTToCollectible = async (
     name: nft.name,
     description: nft.description,
     isOwned: true,
-    chain: Chain.Sol
+    chain: Chain.Sol,
+    solanaChainMetadata
   } as Collectible
 
   // todo: check if there are gif or video nfts for star atlas
@@ -357,13 +363,18 @@ const starAtlasNFTToCollectible = async (
 export const solanaNFTToCollectible = async (
   nft: SolanaNFT,
   address: string,
-  type: SolanaNFTType
+  type: SolanaNFTType,
+  solanaChainMetadata: Nullable<Metadata>
 ): Promise<Nullable<Collectible>> => {
   switch (type) {
     case SolanaNFTType.METAPLEX:
-      return metaplexNFTToCollectible(nft as MetaplexNFT, address)
+      return metaplexNFTToCollectible(
+        nft as MetaplexNFT,
+        solanaChainMetadata,
+        address
+      )
     case SolanaNFTType.STAR_ATLAS:
-      return starAtlasNFTToCollectible(nft as StarAtlasNFT)
+      return starAtlasNFTToCollectible(nft as StarAtlasNFT, solanaChainMetadata)
     default:
       return null
   }

@@ -57,8 +57,6 @@ function* getTokenIdMap({
 }) {
   const trackMap: { [id: number]: string[] } = {}
 
-  // Handle tracks gated by ethereum nft collections
-
   // Build map of eth nft contract address -> list of token ids
   // ERC1155 requires token ids to get the balance of a wallet for a given collection
   // We can ignore token ids for ERC721 nfts
@@ -73,7 +71,18 @@ function* getTokenIdMap({
     }
   })
 
-  // todo: Handle tracks gated by solana nft collections
+  // Build a set of sol nft collection mint addresses
+  const solCollectionMintSet: Set<string> = new Set()
+  solCollectibles.forEach((c: Collectible) => {
+    if (!c.solanaChainMetadata) return
+
+    // "If the Collection field is set, it means the NFT is part of the collection specified within that field."
+    // https://docs.metaplex.com/programs/token-metadata/certified-collections#linking-regular-nfts-to-collection-nfts
+    const { collection } = c.solanaChainMetadata
+    if (collection?.verified) {
+      solCollectionMintSet.add(collection.key.toBase58())
+    }
+  })
 
   Object.keys(tracks)
     .map(Number)
@@ -105,22 +114,21 @@ function* getTokenIdMap({
       }
 
       if (nftCollection.chain === Chain.Eth) {
-        const tokenIds =
-          'address' in nftCollection
-            ? ethContractMap[nftCollection.address]
-            : undefined
-        if (!tokenIds) return
+        // skip this track entry if user does not own an nft from its nft collection gate
+        const tokenIds = ethContractMap[nftCollection.address]
+        if (!tokenIds || !tokenIds.length) return
 
-        if (
-          'standard' in nftCollection &&
+        // add trackId <> tokenIds entry if track is gated on ERC1155 nft collection,
+        // otherwsise, set tokenIds for trackId to empty array
+        trackMap[trackId] =
           nftCollection.standard === 'ERC1155'
-        ) {
-          trackMap[trackId] = ethContractMap[nftCollection.address]
-        } else {
+            ? ethContractMap[nftCollection.address]
+            : []
+      } else if (nftCollection.chain === Chain.Sol) {
+        if (solCollectionMintSet.has(nftCollection.address)) {
+          // add trackId to trackMap, no need for tokenIds here
           trackMap[trackId] = []
         }
-      } else if (nftCollection.chain === Chain.Sol) {
-        // todo
       }
     })
 
@@ -182,7 +190,7 @@ function* updateNFTGatedTrackAccess(
     Object.keys(premiumTrackSignatureMap).map(Number)
   )
 
-  // update premium content signatures from tracks' metadata with the  signature
+  // update premium content signatures from tracks' metadata with the signature
   const areTracksAdded =
     'kind' in action && action.kind === Kind.TRACKS && !!action.entries.length
   if (areTracksAdded) {
