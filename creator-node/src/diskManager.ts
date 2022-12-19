@@ -425,8 +425,10 @@ export async function sweepSubdirectoriesInFiles(
 
   // keep calling this function recursively without an await so the original function scope can close
   // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
-  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled'))
+  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled')) {
+    await timeout(1000)
     return sweepSubdirectoriesInFiles()
+  }
 }
 
 /**
