@@ -157,7 +157,7 @@ def parse_spl_token_transaction(
 
         has_transfer_checked_instruction = has_log(meta, TRANSFER_CHECKED_INSTRUCTION)
         if not has_transfer_checked_instruction:
-            logger.error(
+            logger.debug(
                 f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
             )
             return None
