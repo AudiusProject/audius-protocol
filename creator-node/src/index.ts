@@ -131,12 +131,18 @@ const runAsyncBackgroundTasks = async () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     sweepSubdirectoriesInFiles()
   }
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  migrateFilesWithNonStandardStoragePaths(
-    500,
-    serviceRegistry.prometheusRegistry,
-    logger
-  )
+
+  if (
+    config.get('migrateFilesWithLegacyStoragePath') ||
+    config.get('migrateFilesWithCustomStoragePath')
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    migrateFilesWithNonStandardStoragePaths(
+      500,
+      serviceRegistry.prometheusRegistry,
+      logger
+    )
+  }
 }
 
 // The primary process performs one-time validation and spawns worker processes that each run the Express app

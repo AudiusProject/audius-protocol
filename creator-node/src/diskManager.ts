@@ -334,100 +334,103 @@ export async function listNestedCIDsInFilePath(
 export async function sweepSubdirectoriesInFiles(
   redoJob = true
 ): Promise<void> {
-  const subdirectories = await listSubdirectoriesInFiles()
-  if (!subdirectories) return
+  // infinite while loop with terminal conditions and a delay between iterations
+  while (true) {
+    const subdirectories = await listSubdirectoriesInFiles()
+    if (!subdirectories) return
 
-  for (let i = 0; i < subdirectories.length; i += 1) {
-    try {
-      const subdirectory = subdirectories[i]
+    for (let i = 0; i < subdirectories.length; i += 1) {
+      try {
+        const subdirectory = subdirectories[i]
 
-      const cidsToFilePathMap = await listNestedCIDsInFilePath(subdirectory)
-      const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
+        const cidsToFilePathMap = await listNestedCIDsInFilePath(subdirectory)
+        const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
 
-      if (cidsInSubdirectory.length === 0) {
-        continue
-      }
+        if (cidsInSubdirectory.length === 0) {
+          continue
+        }
 
-      const queryResults =
-        // add a `query_success` row to the result so we know the query ran successfully
-        // shouldn't need this because sequelize should throw an error, but when deleting
-        // from disk paranoia is probably justified
-        (
-          await models.sequelize.query(
-            `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
-            UNION
-            (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
-            { replacements: { cidsInSubdirectory } }
-          )
-        )[0]
+        const queryResults =
+          // add a `query_success` row to the result so we know the query ran successfully
+          // shouldn't need this because sequelize should throw an error, but when deleting
+          // from disk paranoia is probably justified
+          (
+            await models.sequelize.query(
+              `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
+              UNION
+              (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
+              { replacements: { cidsInSubdirectory } }
+            )
+          )[0]
 
-      genericLogger.debug(
-        `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
-          subdirectories.length
-        }. subdirectory: ${subdirectory}. got ${
-          Object.keys(cidsToFilePathMap).length
-        } files in folder and ${
-          queryResults.length
-        } results from db. files: ${Object.keys(
-          cidsToFilePathMap
-        ).toString()}. db records: ${JSON.stringify(queryResults)}`
-      )
-
-      const cidsInDB = new Set()
-      let foundSuccessRow = false
-      for (const file of queryResults) {
-        if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
-          foundSuccessRow = true
-        else cidsInDB.add(file.multihash)
-      }
-
-      if (!foundSuccessRow)
-        throw new Error(`DB did not return expected success row`)
-
-      const cidsToDelete = []
-      const cidsNotToDelete = []
-      // iterate through all files on disk and check if db contains it
-      for (const cid of cidsInSubdirectory) {
-        // if db doesn't contain file, log as okay to delete
-        if (!cidsInDB.has(cid)) {
-          cidsToDelete.push(cid)
-        } else cidsNotToDelete.push(cid)
-      }
-
-      if (cidsNotToDelete.length > 0) {
         genericLogger.debug(
-          `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
+            subdirectories.length
+          }. subdirectory: ${subdirectory}. got ${
+            Object.keys(cidsToFilePathMap).length
+          } files in folder and ${
+            queryResults.length
+          } results from db. files: ${Object.keys(
+            cidsToFilePathMap
+          ).toString()}. db records: ${JSON.stringify(queryResults)}`
         )
-      }
 
-      if (cidsToDelete.length > 0) {
-        genericLogger.info(
-          `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
-        )
+        const cidsInDB = new Set()
+        let foundSuccessRow = false
+        for (const file of queryResults) {
+          if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
+            foundSuccessRow = true
+          else cidsInDB.add(file.multihash)
+        }
 
-        // gate deleting files on disk with the same env var
-        if (config.get('backgroundDiskCleanupDeleteEnabled')) {
-          await execShellCommand(
-            `rm ${cidsToDelete.map((cid) => cidsToFilePathMap[cid]).join(' ')}`
+        if (!foundSuccessRow)
+          throw new Error(`DB did not return expected success row`)
+
+        const cidsToDelete = []
+        const cidsNotToDelete = []
+        // iterate through all files on disk and check if db contains it
+        for (const cid of cidsInSubdirectory) {
+          // if db doesn't contain file, log as okay to delete
+          if (!cidsInDB.has(cid)) {
+            cidsToDelete.push(cid)
+          } else cidsNotToDelete.push(cid)
+        }
+
+        if (cidsNotToDelete.length > 0) {
+          genericLogger.debug(
+            `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
           )
         }
+
+        if (cidsToDelete.length > 0) {
+          genericLogger.info(
+            `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+          )
+
+          // gate deleting files on disk with the same env var
+          if (config.get('backgroundDiskCleanupDeleteEnabled')) {
+            await execShellCommand(
+              `rm ${cidsToDelete
+                .map((cid) => cidsToFilePathMap[cid])
+                .join(' ')}`
+            )
+          }
+        }
+      } catch (e: any) {
+        tracing.recordException(e)
+        genericLogger.error(
+          `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
+        )
       }
-    } catch (e: any) {
-      tracing.recordException(e)
-      genericLogger.error(
-        `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
-      )
+
+      // Wait 10sec between batches to reduce server load
+      await timeout(10000)
     }
 
-    // Wait 10sec between batches to reduce server load
-    await timeout(10000)
-  }
-
-  // keep calling this function recursively without an await so the original function scope can close
-  // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
-  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled')) {
+    // keep calling this function recursively without an await so the original function scope can close
+    // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
+    if (!redoJob || !config.get('backgroundDiskCleanupDeleteEnabled')) return
     await timeout(1000)
-    return sweepSubdirectoriesInFiles()
   }
 }
 
@@ -922,20 +925,14 @@ export async function migrateFilesWithNonStandardStoragePaths(
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
-  if (
-    !config.get('migrateFilesWithLegacyStoragePath') &&
-    !config.get('migrateFilesWithCustomStoragePath')
-  ) {
-    return
-  }
-
   const BATCH_SIZE = 5_000
 
+  // infinite while loop with a delay between iterations
   while (true) {
     // Reset gauges on each run so the metrics aren't infinitely increasing
     _resetStoragePathMetrics(prometheusRegistry, logger)
 
-    // Legacy storagePaths
+    // Legacy storagePaths (/<storagePath env>/CID)
     if (config.get('migrateFilesWithLegacyStoragePath')) {
       try {
         await _migrateNonDirFilesWithLegacyStoragePaths(
