@@ -8,6 +8,7 @@ from src.models.indexing.eth_block import EthBlock
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.utils.helpers import redis_set_and_dump
 from web3 import Web3
 from web3._utils.events import get_event_data
 
@@ -111,7 +112,8 @@ class EventScanner:
         logger.info(
             f"event_scanner.py | Saving last scanned block ({self.last_scanned_block}) to redis"
         )
-        self.redis.set(
+        redis_set_and_dump(
+            self.redis,
             eth_indexing_last_scanned_block_key,
             str(self.last_scanned_block),
         )
