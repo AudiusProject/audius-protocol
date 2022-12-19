@@ -210,7 +210,7 @@ class NotificationProcessor {
 
         // Index notifications
         if (minSlot < oldMaxSlot) {
-          logger.debug(
+          logger.error(
             'solana notification queue processing error - tried to process a minSlot < oldMaxSlot',
             minSlot,
             oldMaxSlot
@@ -224,6 +224,16 @@ class NotificationProcessor {
             minSlot,
             oldMaxSlot
           )
+
+          // If we got an unexpectedly low maxSlot, use min as max
+          if (maxSlot < minSlot) {
+            logger.error(
+              'solana notification queue processing error - unexpectedly got maxSlot < minSlot from Discovery, using old minSlot as max',
+              minSlot,
+              oldMaxSlot
+            )
+            maxSlot = minSlot
+          }
         }
 
         // Update cached max slot number
