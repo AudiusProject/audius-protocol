@@ -114,9 +114,9 @@ def upgrade():
     # Update the tracks table using the new temporary mapping table
     ###############################################################
     inner_sql = f"""
-        update tracks set track_cid = sub.track_cid::integer
+        update tracks set track_cid = sub.track_cid
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id::integer;
+        where tracks.track_id = sub.track_id;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
@@ -136,7 +136,7 @@ def downgrade():
     inner_sql = f"""
         update tracks set track_cid = null
         from tmp_track_cid_mapping as sub
-        where tracks.track_id = sub.track_id::integer;
+        where tracks.track_id = sub.track_id;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
