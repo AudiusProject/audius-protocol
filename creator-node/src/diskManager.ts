@@ -502,18 +502,12 @@ async function _copyLegacyFiles(
           path: nonLegacyPath,
           logger
         })
-        if (cidMatchesExpected) {
-          copiedPaths.push({ legacyPath, nonLegacyPath })
-        } else {
-          try {
-            await fs.unlink(nonLegacyPath)
-          } catch (e) {
-            logger.error(
-              `_copyLegacyFiles() could not remove mismatched CID file at storageLocation=${nonLegacyPath}`
-            )
-          }
-          throw new Error('CID does not match what is expected to be')
+        if (!cidMatchesExpected) {
+          logger.warn(
+            'CID does not match what is expected to be based on contents hash, but contents were copied anyway'
+          )
         }
+        copiedPaths.push({ legacyPath, nonLegacyPath })
       } catch (copyError: any) {
         if (copyError.message.includes('ENOSPC')) {
           // If we see a ENOSPC error, log out the disk space and inode details from the system
