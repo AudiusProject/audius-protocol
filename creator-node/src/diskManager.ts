@@ -920,43 +920,54 @@ export async function migrateFilesWithNonStandardStoragePaths(
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
-  // Reset gauges on each run so the metrics aren't infinitely increasing
-  _resetStoragePathMetrics(prometheusRegistry, logger)
+  if (
+    !config.get('migrateFilesWithLegacyStoragePath') &&
+    !config.get('migrateFilesWithCustomStoragePath')
+  ) {
+    return
+  }
 
   const BATCH_SIZE = 5_000
-  // Legacy storagePaths
-  if (config.get('migrateFilesWithLegacyStoragePath')) {
-    try {
-      await _migrateNonDirFilesWithLegacyStoragePaths(
-        queryDelayMs,
-        BATCH_SIZE,
-        prometheusRegistry,
-        logger
-      )
-      await _migrateDirsWithLegacyStoragePaths(queryDelayMs, BATCH_SIZE, logger)
-    } catch (e: any) {
-      logger.error(`Error migrating legacy storagePaths: ${e}`)
-    }
-  }
 
-  // Custom storagePaths (not matching 'storagePath' env var)
-  if (config.get('migrateFilesWithCustomStoragePath')) {
-    try {
-      await _migrateFilesWithCustomStoragePaths(
-        queryDelayMs,
-        BATCH_SIZE,
-        prometheusRegistry,
-        logger
-      )
-    } catch (e: any) {
-      logger.error(`Error migrating custom storagePaths: ${e}`)
-    }
-  }
+  while (true) {
+    // Reset gauges on each run so the metrics aren't infinitely increasing
+    _resetStoragePathMetrics(prometheusRegistry, logger)
 
-  // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithNonStandardStoragePaths(
-    5000,
-    prometheusRegistry,
-    logger
-  )
+    // Legacy storagePaths
+    if (config.get('migrateFilesWithLegacyStoragePath')) {
+      try {
+        await _migrateNonDirFilesWithLegacyStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          prometheusRegistry,
+          logger
+        )
+        await _migrateDirsWithLegacyStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          logger
+        )
+      } catch (e: any) {
+        logger.error(`Error migrating legacy storagePaths: ${e}`)
+      }
+    }
+
+    // Custom storagePaths (not matching 'storagePath' env var)
+    if (config.get('migrateFilesWithCustomStoragePath')) {
+      try {
+        await _migrateFilesWithCustomStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          prometheusRegistry,
+          logger
+        )
+      } catch (e: any) {
+        logger.error(`Error migrating custom storagePaths: ${e}`)
+      }
+    }
+
+    queryDelayMs = 5000
+
+    await timeout(queryDelayMs)
+  }
 }
