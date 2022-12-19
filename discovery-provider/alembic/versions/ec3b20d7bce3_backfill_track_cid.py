@@ -99,7 +99,7 @@ def disable_track_triggers():
 
 def enable_track_triggers():
     inner_sql = f"""
-        alter table tracks disable trigger on_track;
+        alter table tracks enable trigger on_track;
         IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_tracks') THEN
             alter table tracks enable trigger trg_tracks;
         END IF;
