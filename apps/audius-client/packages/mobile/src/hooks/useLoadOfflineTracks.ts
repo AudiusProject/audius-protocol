@@ -17,7 +17,11 @@ import { useAsync } from 'react-use'
 
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
-import { addCollection, loadTracks } from 'app/store/offline-downloads/slice'
+import {
+  addCollection,
+  doneLoadingFromDisk,
+  loadTracks
+} from 'app/store/offline-downloads/slice'
 
 import {
   getCollectionJson,
@@ -99,6 +103,7 @@ export const useLoadOfflineTracks = () => {
     dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
     dispatch(cacheActions.add(Kind.USERS, cacheUsers, false, true))
     dispatch(loadTracks(lineupTracks))
+    dispatch(doneLoadingFromDisk())
   })
 }
 

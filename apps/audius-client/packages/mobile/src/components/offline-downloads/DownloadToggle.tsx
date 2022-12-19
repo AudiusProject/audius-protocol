@@ -6,7 +6,8 @@ import { useSelector } from 'react-redux'
 
 import { Switch, Text } from 'app/components/core'
 import {
-  downloadCollection,
+  batchDownloadTrack,
+  downloadCollectionById,
   DOWNLOAD_REASON_FAVORITES,
   removeCollectionDownload
 } from 'app/services/offline-downloader'
@@ -113,7 +114,8 @@ export const DownloadToggle = ({
     (isDownloadEnabled: boolean) => {
       if (!collectionId && !isFavoritesDownload) return
       if (isDownloadEnabled) {
-        downloadCollection(tracksForDownload, collectionId, isFavoritesDownload)
+        downloadCollectionById(collectionId, isFavoritesDownload)
+        batchDownloadTrack(tracksForDownload)
       } else {
         collectionIdStr &&
           removeCollectionDownload(collectionIdStr, tracksForDownload)

@@ -20,3 +20,6 @@ export const getOfflineTracks = (
 export const getOfflineCollections = (
   state: AppState
 ): OfflineDownloadsState['collections'] => state.offlineDownloads.collections
+
+export const getIsDoneLoadingFromDisk = (state: AppState): boolean =>
+  state.offlineDownloads.isDoneLoadingFromDisk
