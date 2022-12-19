@@ -92,9 +92,9 @@ def disable_track_triggers():
         alter table tracks disable trigger trg_tracks;
         """
     sql = sa.text(
-        "do $$ begin; \n\n "
+        "begin \n\n "
         + inner_sql
-        + " \n\n exception when others then null; end $$"
+        + " \n\n exception when others then null; end;"
         + " \n\n commit;"
     )
     op.get_bind().execute(sql)
@@ -106,9 +106,9 @@ def enable_track_triggers():
         alter table tracks enable trigger trg_tracks;
         """
     sql = sa.text(
-        "do $$ begin \n\n "
+        "begin \n\n "
         + inner_sql
-        + " \n\n exception when others then null; end $$"
+        + " \n\n exception when others then null; end;"
         + " \n\n commit;"
     )
     op.get_bind().execute(sql)
