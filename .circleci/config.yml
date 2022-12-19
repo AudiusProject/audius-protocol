@@ -1813,6 +1813,12 @@ workflows:
           requires:
             - tests
 
+       - release-scripts:
+          name: dheeraj-test
+          target: dheeraj-test
+          context:
+            - slack-secrets
+
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
