@@ -3,7 +3,6 @@ import path from 'path'
 import type {
   Collection,
   CommonState,
-  CoverArtSizes,
   DownloadReason,
   Track,
   UserMetadata,
@@ -13,8 +12,6 @@ import {
   cacheCollectionsSelectors,
   Kind,
   makeUid,
-  DefaultSizes,
-  SquareSizes,
   encodeHashId,
   accountSelectors,
   cacheUsersSelectors
@@ -33,11 +30,10 @@ import {
   errorDownload,
   loadTrack
 } from 'app/store/offline-downloads/slice'
+import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
 
 import { apiClient } from '../audius-api-client'
-import { audiusBackendInstance } from '../audius-backend-instance'
 
-import type { TrackDownloadWorkerPayload } from './offline-download-queue'
 import { enqueueTrackDownload } from './offline-download-queue'
 import {
   getLocalAudioPath,
@@ -59,17 +55,26 @@ const { getUserFromCollection } = cacheUsersSelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 /** Main entrypoint - perform all steps required to complete a download for each track */
-export const downloadCollection = async (
-  tracksForDownload: TrackForDownload[],
+export const downloadCollectionById = (
   collectionId?: number,
   isFavoritesDownload?: boolean
 ) => {
   const state = store.getState()
-  let collection = getCollection(state, { id: collectionId })
-  const user = getUserFromCollection(state, { id: collectionId })
-  const collectionIdStr: string = isFavoritesDownload
+  const collection = getCollection(state, { id: collectionId })
+  return downloadCollection(collection, isFavoritesDownload)
+}
+
+export const downloadCollection = async (
+  collection: Collection | null,
+  isFavoritesDownload?: boolean
+) => {
+  const state = store.getState()
+  const user = getUserFromCollection(state, { id: collection?.playlist_id })
+  const collectionIdStr: string | undefined = isFavoritesDownload
     ? DOWNLOAD_REASON_FAVORITES
-    : collectionId!.toString()
+    : collection?.playlist_id.toString()
+  if (!collectionIdStr) return
+  store.dispatch(addCollection(collectionIdStr))
   if (isFavoritesDownload) {
     writeFavoritesCollectionJson()
     // @ts-ignore state is CommonState
@@ -79,11 +84,10 @@ export const downloadCollection = async (
         id: userCollection.playlist_id
       })
       if (!user) return
-      userCollection =
-        (await populateCoverArtSizes({
-          ...userCollection,
-          user
-        })) ?? userCollection
+      userCollection = await populateCoverArtSizes({
+        ...userCollection,
+        user
+      })
       downloadCollectionCoverArt(userCollection)
       writeCollectionJson(
         userCollection.playlist_id.toString(),
@@ -93,60 +97,27 @@ export const downloadCollection = async (
     })
   } else {
     if (!collection || !user) return
-    collection =
-      (await populateCoverArtSizes({
-        ...collection,
-        user
-      })) ?? collection
+    collection = await populateCoverArtSizes({
+      ...collection,
+      user
+    })
     downloadCollectionCoverArt(collection)
     await writeCollectionJson(collectionIdStr, collection!, user)
   }
-  store.dispatch(addCollection(collectionIdStr))
+}
+
+export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
   store.dispatch(
     batchStartDownload(
       tracksForDownload.map(({ trackId }) => trackId.toString())
     )
   )
   tracksForDownload.forEach((trackForDownload) =>
-    enqueueTrackDownload(trackForDownload, collectionIdStr)
+    enqueueTrackDownload(trackForDownload)
   )
 }
 
-const populateCoverArtSizes = async <
-  T extends Pick<Track, 'cover_art_sizes' | 'cover_art'> & {
-    user: UserMetadata
-  }
->(
-  entity: T & { _cover_art_sizes: CoverArtSizes }
-) => {
-  if (!entity || !entity.user || (!entity.cover_art_sizes && !entity.cover_art))
-    return
-  const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-    entity.user.creator_node_endpoint
-  )
-  const multihash = entity.cover_art_sizes || entity.cover_art
-  if (!multihash) return entity
-  await Promise.allSettled(
-    Object.values(SquareSizes).map(async (size) => {
-      const coverArtSize = multihash === entity.cover_art_sizes ? size : null
-      const url = await audiusBackendInstance.getImageUrl(
-        multihash,
-        coverArtSize,
-        gateways
-      )
-      entity._cover_art_sizes = {
-        ...entity._cover_art_sizes,
-        [coverArtSize || DefaultSizes.OVERRIDE]: url
-      }
-    })
-  )
-  return entity
-}
-
-export const downloadTrack = async ({
-  trackForDownload,
-  collection
-}: TrackDownloadWorkerPayload) => {
+export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   const { trackId, downloadReason } = trackForDownload
   const trackIdStr = trackId.toString()
 
@@ -177,7 +148,7 @@ export const downloadTrack = async ({
     throw failJob(`track to download is not available - ${trackIdStr}`)
   }
 
-  track = (await populateCoverArtSizes(track)) ?? track
+  track = await populateCoverArtSizes(track)
   const lineupTrack = {
     uid: makeUid(Kind.TRACKS, track.track_id),
     ...track
@@ -230,6 +201,12 @@ export const removeCollectionDownload = async (
   tracksForDownload: TrackForDownload[]
 ) => {
   purgeDownloadedCollection(collectionId)
+  batchRemoveTrackDownload(tracksForDownload)
+}
+
+export const batchRemoveTrackDownload = async (
+  tracksForDownload: TrackForDownload[]
+) => {
   tracksForDownload.forEach(async ({ trackId, downloadReason }) => {
     try {
       const trackIdStr = trackId.toString()
@@ -255,7 +232,7 @@ export const removeCollectionDownload = async (
       }
     } catch (e) {
       console.debug(
-        `failed to remove track ${trackId} from collection ${collectionId}`
+        `failed to remove track ${trackId} from collection ${downloadReason.collection_id}`
       )
     }
   })

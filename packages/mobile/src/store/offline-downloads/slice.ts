@@ -14,6 +14,7 @@ export type OfflineDownloadsState = {
   collections: {
     [key: string]: boolean
   }
+  isDoneLoadingFromDisk: boolean
 }
 
 export enum OfflineTrackDownloadStatus {
@@ -25,7 +26,8 @@ export enum OfflineTrackDownloadStatus {
 const initialState: OfflineDownloadsState = {
   downloadStatus: {},
   tracks: {},
-  collections: {}
+  collections: {},
+  isDoneLoadingFromDisk: false
 }
 
 const slice = createSlice({
@@ -79,6 +81,9 @@ const slice = createSlice({
     unloadTrack: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.tracks[trackId]
       delete state.downloadStatus[trackId]
+    },
+    doneLoadingFromDisk: (state) => {
+      state.isDoneLoadingFromDisk = true
     }
   }
 })
@@ -93,7 +98,8 @@ export const {
   removeCollection,
   loadTracks,
   loadTrack,
-  unloadTrack
+  unloadTrack,
+  doneLoadingFromDisk
 } = slice.actions
 
 export default slice.reducer

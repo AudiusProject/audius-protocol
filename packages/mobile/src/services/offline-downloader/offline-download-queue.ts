@@ -9,20 +9,16 @@ import {
 
 import { downloadTrack } from './offline-downloader'
 
-const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
+export const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
 
-export type TrackDownloadWorkerPayload = {
-  trackForDownload: TrackForDownload
-  collection: string
-}
+export type TrackDownloadWorkerPayload = TrackForDownload
 
 export const enqueueTrackDownload = async (
-  trackForDownload: TrackForDownload,
-  collection: string
+  trackForDownload: TrackForDownload
 ) => {
   queue.addJob<TrackDownloadWorkerPayload>(
     TRACK_DOWNLOAD_WORKER,
-    { trackForDownload, collection },
+    trackForDownload,
     {
       attempts: 3,
       priority: 1,
@@ -44,9 +40,7 @@ export const startDownloadWorker = async () => {
   queue.addWorker(
     new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack, {
       onFailure: ({ payload }) => {
-        store.dispatch(
-          errorDownload(payload.trackForDownload.trackId.toString())
-        )
+        store.dispatch(errorDownload(payload.trackId.toString()))
       },
       concurrency: 10
     })
@@ -61,7 +55,7 @@ export const startDownloadWorker = async () => {
       try {
         const { payload, failed } = job
         const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
-        const { trackId } = parsedPayload.trackForDownload
+        const { trackId } = parsedPayload
         if (failed) {
           store.dispatch(errorDownload(trackId.toString()))
           queue.removeJob(job)
