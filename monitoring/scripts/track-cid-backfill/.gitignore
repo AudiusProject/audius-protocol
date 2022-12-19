@@ -1,0 +1,9 @@
+
+*.csv
+.env.stage
+.env.prod
+node_modules/
+local-csv/
+production-csv/
+local-missing-batches/
+production-missing-batches/

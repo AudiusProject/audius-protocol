@@ -120,33 +120,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
-  // Rate limit replica set reconfiguration transactions
-  // A reconfiguration (as opposed to a first time selection) will have an
-  // _oldPrimaryId value of "0"
-  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
-  if (isReplicaSetTransaction) {
-    const isFirstReplicaSetConfig = decodedABI.params.find(
-      (param) => param.name === '_oldPrimaryId' && param.value === '0'
-    )
-    if (!isFirstReplicaSetConfig) {
-      transactionRateLimiter.updateReplicaSetReconfiguration += 1
-      if (
-        transactionRateLimiter.updateReplicaSetReconfiguration >
-        UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
-      ) {
-        throw new Error('updateReplicaSet rate limit reached')
-      }
-
-      if (
-        UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
-        !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
-      ) {
-        throw new Error(
-          `Sender ${senderAddress} not allowed to make updateReplicaSet calls`
-        )
-      }
-    }
-  }
+  filterReplicaSetUpdates(decodedABI, senderAddress)
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
@@ -240,6 +214,52 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   })
 
   return txReceipt
+}
+
+/**
+ * Rate limit replica set reconfiguration transactions
+ * the available wallets using mod
+ *
+ * A reconfiguration (as opposed to a first time selection) will have an
+ * _oldPrimaryId value of "0"
+ */
+
+const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
+  let isReplicaSetTransaction = false
+  let isFirstReplicaSetConfig = false
+
+  if (decodedABI.name === 'updateReplicaSet') {
+    // TODO remove legacy replica set updates
+    isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+  } else if (decodedABI.name === 'manageEntity') {
+    isReplicaSetTransaction = decodedABI.params.find(
+      (param) =>
+        param.name === '_entityType' && param.value === 'UserReplicaSet'
+    )
+    // isFirstReplicaSetConfig must be false
+    // EntityManager create user actions include the initial replica set
+  }
+
+  if (isReplicaSetTransaction && !isFirstReplicaSetConfig) {
+    transactionRateLimiter.updateReplicaSetReconfiguration += 1
+    if (
+      transactionRateLimiter.updateReplicaSetReconfiguration >
+      UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
+    ) {
+      throw new Error('updateReplicaSet rate limit reached')
+    }
+
+    if (
+      UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
+      !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
+    ) {
+      throw new Error(
+        `Sender ${senderAddress} not allowed to make updateReplicaSet calls`
+      )
+    }
+  }
 }
 
 /**

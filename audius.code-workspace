@@ -30,5 +30,8 @@
     {
       "path": "dev-tools"
     },
+    {
+      "path": "monitoring"
+    }
   ]
 }
