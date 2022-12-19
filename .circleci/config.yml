@@ -1287,7 +1287,7 @@ jobs:
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
           SLASH_ADDRESS=<< parameters.slash_address >> \
           SLASH_AMOUNT=<< parameters.slash_amount >> \
-          release-scripts/<< parameters.target >>.sh
+          .circleci/release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
           condition:
