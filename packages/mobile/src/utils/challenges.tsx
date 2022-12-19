@@ -38,6 +38,7 @@ export type ChallengesParamList = {
   AccountVerificationScreen: undefined
   explore: undefined
   favorites: undefined
+  Upload: undefined
   params: { screen: string }
 }
 
