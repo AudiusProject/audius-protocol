@@ -287,6 +287,13 @@ def _get_token_account_info(token_account):
     return token_account["account"]["data"]["parsed"]["info"]
 
 
+# - Fet and parse token accounts from given wallets to get the mint addresses
+# - Filter out token accounts with positive amounts and whose decimal places are not 0
+# - Find the metadata PDAs for the mint addresses
+# - Get the account infos for the PDAs if they exist
+# - Unpack the chain metadatas from the account infos
+# - Verify that the nft is from a verified collection whose mint address is the same as that passed into the function
+# - If so, then user owns nft from that collection
 def _does_user_own_sol_nft_collection(
     collection_mint_address: str, user_sol_wallets: List[str]
 ):
