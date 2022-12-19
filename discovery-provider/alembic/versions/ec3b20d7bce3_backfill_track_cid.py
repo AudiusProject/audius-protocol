@@ -106,6 +106,7 @@ def enable_track_triggers():
 
 
 def upgrade():
+    remove_temp_table()
     copy_mapping_into_temp_table()
     disable_track_triggers()
 
@@ -125,6 +126,7 @@ def upgrade():
 
 
 def downgrade():
+    remove_temp_table()
     copy_mapping_into_temp_table()
     disable_track_triggers()
 
