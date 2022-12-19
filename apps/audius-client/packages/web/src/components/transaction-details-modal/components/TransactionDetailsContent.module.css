@@ -2,8 +2,19 @@
   fill: #00aaf5;
 }
 
-.method {
+.header {
   gap: 8px;
+}
+
+i {
+  margin: auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 2px !important;
+}
+
+.badge {
+  margin-left: 4px;
 }
 
 .flexHorizontal {
@@ -17,5 +28,46 @@
   color: var(--accent-green);
 }
 .change.negative {
-  color: var(--accent-red);
+  color: var(--accent-orange);
+}
+
+.name {
+  align-items: center;
+  line-height: 1px;
+  display: flex;
+}
+
+.name:hover {
+  cursor: pointer;
+}
+
+.spinner {
+  width: 48px;
+  margin: 0 auto;
+}
+.spinnerSmall {
+  width: 16px;
+  margin: 0 auto;
+}
+
+.link {
+  transition: color var(--quick);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+}
+.link svg {
+  width: 1em;
+  height: 1em;
+}
+.link svg path {
+  transition: fill var(--quick);
+  fill: var(--neutral-light-4);
+}
+.link:hover {
+  color: var(--secondary);
+}
+.link:hover svg path {
+  fill: var(--secondary);
 }

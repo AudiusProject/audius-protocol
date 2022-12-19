@@ -23,6 +23,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-bottom: 4px;
 
   font-weight: var(--font-bold);
   text-transform: uppercase;
