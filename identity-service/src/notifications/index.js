@@ -439,7 +439,7 @@ class NotificationProcessor {
 
     // Ensure we don't process any notifs
     // that are already in the db
-    const latestBlock = await models.Notification.blocknumber
+    const latestBlock = await models.Notification.max('blocknumber')
     notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
 
     logger.info(
