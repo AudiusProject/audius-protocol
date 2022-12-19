@@ -7,8 +7,7 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ClaimStatus,
-  audioRewardsPageSelectors,
-  modalsActions
+  audioRewardsPageSelectors
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -24,7 +23,6 @@ import { ToastContext } from '../toast/ToastContext'
 import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
-const { setVisibility } = modalsActions
 const { getChallengeRewardsModalType, getClaimStatus, getAAOErrorCode } =
   audioRewardsPageSelectors
 const { claimChallengeReward, resetAndCancelClaimReward } =
@@ -96,8 +94,8 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   const openUploadModal = useCallback(() => {
     handleClose()
-    dispatch(setVisibility({ modal: 'MobileUpload', visible: true }))
-  }, [dispatch, handleClose])
+    navigate('Upload')
+  }, [handleClose, navigate])
 
   // Claim rewards button config
   const quorumSize = useRemoteVar(IntKeys.ATTESTATION_QUORUM_SIZE)
