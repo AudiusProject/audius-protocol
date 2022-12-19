@@ -95,7 +95,6 @@ def disable_track_triggers():
         "begin \n\n "
         + inner_sql
         + " \n\n exception when others then null; end;"
-        + " \n\n commit;"
     )
     op.get_bind().execute(sql)
 
@@ -109,7 +108,6 @@ def enable_track_triggers():
         "begin \n\n "
         + inner_sql
         + " \n\n exception when others then null; end;"
-        + " \n\n commit;"
     )
     op.get_bind().execute(sql)
 
