@@ -69,7 +69,6 @@ def copy_mapping_into_temp_table():
         # Change the track id column type to be integer and add index
         #############################################################
         inner_sql = f"""
-            alter table tmp_track_cid_mapping alter column track_id type integer using track_id::int;
             create index if not exists tmp_track_cid_mapping_idx on tmp_track_cid_mapping USING btree (track_id);
             """
         sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
