@@ -153,7 +153,7 @@ class SolanaClientManager:
 
     def get_token_accounts_by_owner(
         self, owner: PublicKey, retries=DEFAULT_MAX_RETRIES
-    ) -> Optional[int]:
+    ):
         def _get_token_accounts_by_owner(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries

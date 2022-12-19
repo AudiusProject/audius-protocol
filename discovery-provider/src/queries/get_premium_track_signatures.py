@@ -237,7 +237,7 @@ def _get_eth_nft_gated_track_signatures(
 # Extended and simplified based on the reference links below
 # https://docs.metaplex.com/programs/token-metadata/accounts#metadata
 # https://github.com/metaplex-foundation/python-api/blob/441c2ba9be76962d234d7700405358c72ee1b35b/metaplex/metadata.py#L123
-def _unpack_metadata_account(data: Any):
+def _unpack_metadata_account_for_metaplex_nft(data: Any):
     assert data[0] == 4
     i = 1  # key
     i += 32  # update authority
@@ -283,6 +283,10 @@ def _get_metadata_account(mint_address: str):
     )[0]
 
 
+def _get_token_account_info(token_account):
+    return token_account["account"]["data"]["parsed"]["info"]
+
+
 def _does_user_own_sol_nft_collection(
     collection_mint_address: str, user_sol_wallets: List[str]
 ):
@@ -293,34 +297,26 @@ def _does_user_own_sol_nft_collection(
         try:
             result = solana_client_manager.get_token_accounts_by_owner(wallet)
             token_accounts = result["value"]
-            nft_mints = list(
-                map(
-                    lambda item: item["account"]["data"]["parsed"]["info"]["mint"],
-                    filter(
-                        lambda item: item["account"]["data"]["parsed"]["info"][
-                            "tokenAmount"
-                        ]["amount"]
-                        != "0"
-                        and item["account"]["data"]["parsed"]["info"]["tokenAmount"][
-                            "decimals"
-                        ]
-                        == 0,
-                        token_accounts,
-                    ),
-                )
+            nft_token_accounts = filter(
+                lambda item: _get_token_account_info(item)["tokenAmount"]["amount"]
+                != "0"
+                and _get_token_account_info(item)["tokenAmount"]["decimals"] == 0,
+                token_accounts,
             )
-            metadata_accounts = list(map(_get_metadata_account, nft_mints))
-            datas = list(
-                map(
-                    lambda metadata_account: base64.b64decode(
-                        solana_client_manager.get_account_info(metadata_account)[
-                            "value"
-                        ]["data"][0]
-                    ),
-                    metadata_accounts,
-                )
+            nft_mints = map(
+                lambda item: _get_token_account_info(item)["mint"],
+                nft_token_accounts,
             )
-            metadatas = list(map(_unpack_metadata_account, datas))
+            metadata_accounts = map(_get_metadata_account, nft_mints)
+            datas = map(
+                lambda metadata_account: base64.b64decode(
+                    solana_client_manager.get_account_info(metadata_account)["value"][
+                        "data"
+                    ][0]
+                ),
+                metadata_accounts,
+            )
+            metadatas = map(_unpack_metadata_account_for_metaplex_nft, datas)
             collections = list(
                 filter(
                     lambda collection: collection
