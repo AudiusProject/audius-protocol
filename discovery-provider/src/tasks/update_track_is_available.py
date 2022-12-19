@@ -47,9 +47,7 @@ def fetch_unavailable_track_ids_in_network(
     session: Session, redis: Redis, eth_web3: Web3, eth_abi_values: Any
 ) -> None:
     """Fetches the unavailable track ids in the Content Node network"""
-    content_nodes = query_registered_content_node_info(
-        eth_web3, redis, eth_abi_values
-    )
+    content_nodes = query_registered_content_node_info(eth_web3, redis, eth_abi_values)
 
     # Clear redis for existing data
     redis.delete(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
