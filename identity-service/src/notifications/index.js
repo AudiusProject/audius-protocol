@@ -433,9 +433,15 @@ class NotificationProcessor {
       timeout
     )
     const { info: metadata, owners, milestones } = notificationsFromDN
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestBlock = await models.Notification.blocknumber
+    notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
+
     logger.info(
       `notifications main indexAll job - query notifications from discovery node complete in ${
         Date.now() - time
@@ -554,9 +560,15 @@ class NotificationProcessor {
       timeout
     )
     const metadata = notificationsFromDN.info
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestSlot = await models.SolanaNotification.max('slot')
+    notifications = notifications.filter((n) => n.slot >= latestSlot)
+
     logger.info(
       `${logLabel} - query solana notifications from discovery node complete in ${
         Date.now() - time
