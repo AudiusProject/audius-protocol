@@ -232,7 +232,7 @@ class NotificationProcessor {
           // If we got an unexpectedly low maxSlot, use min as max
           if (maxSlot < minSlot) {
             logger.error(
-              'solana notification queue processing error - unexpectedly got maxSlot > minSlot from Discovery, using old minSlot as max',
+              'solana notification queue processing error - unexpectedly got maxSlot < minSlot from Discovery, using old minSlot as max',
               minSlot,
               oldMaxSlot
             )
