@@ -89,9 +89,13 @@ def remove_temp_table():
 def disable_track_triggers():
     inner_sql = f"""
         alter table tracks disable trigger on_track;
-        IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_tracks') THEN
-            alter table tracks disable trigger trg_tracks;
-        END IF;
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_tracks') THEN
+                alter table tracks disable trigger trg_tracks;
+            END IF;
+        END
+        $$;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
@@ -100,9 +104,13 @@ def disable_track_triggers():
 def enable_track_triggers():
     inner_sql = f"""
         alter table tracks enable trigger on_track;
-        IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_tracks') THEN
-            alter table tracks enable trigger trg_tracks;
-        END IF;
+        DO $$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_tracks') THEN
+                alter table tracks disable trigger trg_tracks;
+            END IF;
+        END
+        $$;
         """
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     op.get_bind().execute(sql)
