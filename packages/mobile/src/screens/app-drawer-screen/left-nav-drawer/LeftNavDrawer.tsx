@@ -2,10 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common'
 import {
-  followersUserListActions,
-  followingUserListActions,
   StringKeys,
-  formatCount,
   formatWei,
   walletSelectors,
   accountSelectors,
@@ -15,33 +12,28 @@ import {
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
-import IconNote from 'app/assets/images/iconNote.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import IconUserFollowers from 'app/assets/images/iconUserFollowers.svg'
-import IconUserList from 'app/assets/images/iconUserList.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { Divider, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
 
 import { AppDrawerContext, AppDrawerContextProvider } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 
 import { LeftNavLink } from './LeftNavLink'
+import { VanityMetrics } from './VanityMetrics'
 const { getAccountUser } = accountSelectors
 const { getAccountTotalBalance } = walletSelectors
-const { setFollowers } = followersUserListActions
-const { setFollowing } = followingUserListActions
 
 const messages = {
   profile: 'Profile',
@@ -49,13 +41,6 @@ const messages = {
   upload: 'Upload a Track',
   listeningHistory: 'Listening History',
   settings: 'Settings'
-}
-
-const accountStatHitSlop = {
-  top: spacing(2),
-  right: spacing(2),
-  bottom: spacing(2),
-  left: spacing(2)
 }
 
 type AccountDrawerProps = DrawerContentComponentProps & {
@@ -76,10 +61,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginBottom: spacing(3),
     borderWidth: 1
   },
-  divider: {
-    marginVertical: spacing(4)
-  },
-  accountInfo: {},
+  accountName: { flexDirection: 'row' },
   accountBadges: { alignSelf: 'center' },
   tokens: {
     flexDirection: 'row',
@@ -87,16 +69,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     paddingRight: spacing(4)
   },
   tokenBadge: {
-    marginRight: spacing(1)
-  },
-  accountStats: { flexDirection: 'row', paddingLeft: spacing(4) },
-  accountName: { flexDirection: 'row' },
-  accountStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: spacing(4)
-  },
-  accountStatIcon: {
     marginRight: spacing(1)
   },
   accountListItem: {
@@ -136,15 +108,12 @@ const WrappedLeftNavDrawer = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
-  const { user_id, name, handle, track_count, followee_count, follower_count } =
-    accountUser
+  const { user_id, name, handle } = accountUser
   const { tier } = useSelectTierInfo(user_id)
   const totalBalance = useSelector(getAccountTotalBalance)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
-  const { neutralLight4 } = useThemeColors()
 
-  const dispatch = useDispatch()
   const navigation = useAppDrawerNavigation()
 
   const handlePressAccount = useCallback(() => {
@@ -157,25 +126,10 @@ const WrappedLeftNavDrawer = () => {
     drawerHelpers.closeDrawer()
   }, [navigation, drawerHelpers])
 
-  const handlePressFollowing = useCallback(() => {
-    dispatch(setFollowing(user_id))
-    navigation.push('Following', { userId: user_id })
-    drawerHelpers.closeDrawer()
-  }, [dispatch, user_id, navigation, drawerHelpers])
-
-  const handlePressFollowers = useCallback(() => {
-    dispatch(setFollowers(user_id))
-    navigation.push('Followers', { userId: user_id })
-    drawerHelpers.closeDrawer()
-  }, [dispatch, user_id, navigation, drawerHelpers])
-
   return (
     <DrawerContentScrollView>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.accountInfo}
-          onPress={handlePressAccount}
-        >
+        <TouchableOpacity onPress={handlePressAccount}>
           <ProfilePicture profile={accountUser} style={styles.accountImage} />
           <View style={styles.accountName}>
             <Text variant='h1' noGutter>
@@ -204,50 +158,7 @@ const WrappedLeftNavDrawer = () => {
           </Text>
         </TouchableOpacity>
       </View>
-      <Divider style={styles.divider} />
-      <View style={styles.accountStats}>
-        <TouchableOpacity
-          style={styles.accountStat}
-          onPress={handlePressAccount}
-          hitSlop={accountStatHitSlop}
-        >
-          <IconNote
-            fill={neutralLight4}
-            style={[styles.accountStatIcon, { marginRight: 2 }]}
-            height={30}
-            width={30}
-          />
-          <View>
-            <Text fontSize='large' weight='heavy'>
-              {formatCount(track_count)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.accountStat}
-          onPress={handlePressFollowing}
-          hitSlop={accountStatHitSlop}
-        >
-          <IconUserList fill={neutralLight4} style={styles.accountStatIcon} />
-          <Text fontSize='large' weight='heavy'>
-            {formatCount(followee_count)}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.accountStat}
-          onPress={handlePressFollowers}
-          hitSlop={accountStatHitSlop}
-        >
-          <IconUserFollowers
-            fill={neutralLight4}
-            style={styles.accountStatIcon}
-          />
-          <Text fontSize='large' weight='heavy'>
-            {formatCount(follower_count)}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <Divider style={styles.divider} />
+      <VanityMetrics />
       <LeftNavLink
         icon={IconUser}
         label={messages.profile}
