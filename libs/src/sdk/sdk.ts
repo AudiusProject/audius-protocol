@@ -173,7 +173,7 @@ const initializeApis = ({
       ...context,
       endpoint: urlWithAppName
     }
-    return await discoveryProvider._makeRequestInternal(
+    return await discoveryProvider._makeRequest(
       requestParams,
       undefined,
       undefined,
