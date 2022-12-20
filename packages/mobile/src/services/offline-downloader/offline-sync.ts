@@ -18,6 +18,7 @@ import { fetchAllFavoritedTrackIds } from 'app/hooks/useFetchAllFavoritedTrackId
 import { store } from 'app/store'
 import { getOfflineCollections } from 'app/store/offline-downloads/selectors'
 import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
+import { pingTest } from 'app/utils/reachability'
 import { isAvailableForPlay } from 'app/utils/trackUtils'
 
 import { apiClient } from '../audius-api-client'
@@ -47,8 +48,10 @@ const STALE_DURATION_TRACKS = moment.duration(7, 'days')
  *  Check for new and removed collections
  */
 export const startSyncWorker = async () => {
-  const state = store.getState()
+  const reachable = await pingTest()
+  if (!reachable) return
 
+  const state = store.getState()
   const collections = getCollections(state)
   const offlineCollectionsState = getOfflineCollections(state)
   if (offlineCollectionsState[DOWNLOAD_REASON_FAVORITES]) {
