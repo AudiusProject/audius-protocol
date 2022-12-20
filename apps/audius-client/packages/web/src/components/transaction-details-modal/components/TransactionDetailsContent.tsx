@@ -193,7 +193,9 @@ export const TransactionDetailsContent = ({
   return (
     <>
       {isLoading ? (
-        <LoadingSpinner className={styles.spinner} />
+        <div className={styles.spinnerContainer}>
+          <LoadingSpinner className={styles.spinner} />
+        </div>
       ) : (
         <BlockContainer>
           <div className={styles.flexHorizontal}>
