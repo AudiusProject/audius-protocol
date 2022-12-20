@@ -154,7 +154,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullPlaylistResponse>>;
+        }) as Promise<NonNullable<FullPlaylistResponse["data"]>>;
     }
 
     /**
@@ -174,7 +174,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullPlaylistTracksResponse>>;
+        }) as Promise<NonNullable<FullPlaylistTracksResponse["data"]>>;
     }
 
     /**
@@ -206,7 +206,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTrendingPlaylistsResponse>>;
+        }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
     }
 
     /**
@@ -242,7 +242,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTrendingPlaylistsResponse>>;
+        }) as Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>>;
     }
 
     /**
@@ -274,7 +274,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponse>>;
+        }) as Promise<NonNullable<FollowingResponse["data"]>>;
     }
 
     /**
@@ -306,7 +306,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponse>>;
+        }) as Promise<NonNullable<FollowingResponse["data"]>>;
     }
 
 }

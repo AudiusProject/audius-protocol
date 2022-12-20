@@ -98,7 +98,7 @@ export class TipsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<GetTipsResponse>>;
+        }) as Promise<NonNullable<GetTipsResponse["data"]>>;
     }
 
 }

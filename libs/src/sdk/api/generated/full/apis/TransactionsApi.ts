@@ -112,7 +112,7 @@ export class TransactionsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TransactionHistoryResponse>>;
+        }) as Promise<NonNullable<TransactionHistoryResponse["data"]>>;
     }
 
     /**
@@ -144,7 +144,7 @@ export class TransactionsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TransactionHistoryCountResponse>>;
+        }) as Promise<NonNullable<TransactionHistoryCountResponse["data"]>>;
     }
 
 }
