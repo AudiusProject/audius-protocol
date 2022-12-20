@@ -1,10 +1,10 @@
-const { default: Axios } = require('axios')
-const audiusLibsWrapper = require('../../audiusLibsInstance')
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
-const { decodeHashId, encodeHashId } = require('../utils')
+const { decodeHashId } = require('../utils')
+const notificationUtils = require('../utils')
 
 async function processSupporterRankChangeNotification(notifications, tx) {
+  const notificationsToAdd = []
   for (const notification of notifications) {
     const {
       slot,
@@ -43,7 +43,7 @@ async function processSupporterRankChangeNotification(notifications, tx) {
 
     // If this is a new top supporter, see who just became dethroned
     if (rank === 1) {
-      const supporters = await getSupporters(receiverUserId)
+      const supporters = await notificationUtils.getSupporters(receiverUserId)
 
       const isSingleSupporter = supporters.length < 2
       if (!isSingleSupporter) {
@@ -76,7 +76,7 @@ async function processSupporterRankChangeNotification(notifications, tx) {
           promises.push(dethronedNotif)
 
           // Create a fake notif from discovery for further processing down the pipeline
-          notifications.push({
+          notificationsToAdd.push({
             slot,
             type: notificationTypes.SupporterDethroned,
             initiator: dethronedUserId, // Notif goes to the dethroned user
@@ -93,24 +93,7 @@ async function processSupporterRankChangeNotification(notifications, tx) {
 
     await Promise.all(promises)
   }
-  return notifications
-}
-
-const getSupporters = async (receiverUserId) => {
-  const encodedReceiverId = encodeHashId(receiverUserId)
-  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-  const url = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/${encodedReceiverId}/supporters`
-
-  try {
-    const response = await Axios({
-      method: 'get',
-      url
-    })
-    return response.data.data
-  } catch (e) {
-    console.error(`Error fetching supporters for user: ${receiverUserId}: ${e}`)
-    return []
-  }
+  return notifications.concat(notificationsToAdd)
 }
 
 module.exports = processSupporterRankChangeNotification
