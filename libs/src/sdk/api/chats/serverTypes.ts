@@ -42,7 +42,6 @@ export type ChatMessageRPC = {
 export type ChatReactRPC = {
   method: 'chat.react'
   params: {
-    chat_id: string
     message_id: string
     reaction: string
   }

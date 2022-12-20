@@ -226,11 +226,6 @@ export class ChatsApi extends BaseAPI {
 
   public async react(requestParameters: ChatReactRequest) {
     this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'react'
-    )
-    this.assertNotNullOrUndefined(
       requestParameters.messageId,
       'requestParameters.messageId',
       'react'
@@ -243,7 +238,6 @@ export class ChatsApi extends BaseAPI {
     return await this.sendRpc({
       method: 'chat.react',
       params: {
-        chat_id: requestParameters.chatId,
         message_id: requestParameters.messageId,
         reaction: requestParameters.reaction
       }
