@@ -333,6 +333,24 @@ const shouldSendEmail = (
   )
 }
 
+const getSupporters = async (receiverUserId) => {
+  console.log('do not call')
+  const encodedReceiverId = encodeHashId(receiverUserId)
+  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+  const url = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/${encodedReceiverId}/supporters`
+
+  try {
+    const response = await axios({
+      method: 'get',
+      url
+    })
+    return response.data.data
+  } catch (e) {
+    console.error(`Error fetching supporters for user: ${receiverUserId}: ${e}`)
+    return []
+  }
+}
+
 module.exports = {
   encodeHashId,
   decodeHashId,
@@ -340,6 +358,7 @@ module.exports = {
   calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
   bulkGetSubscribersFromDiscovery,
+  getSupporters,
   shouldReadSubscribersFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
