@@ -710,7 +710,7 @@ const config = convict({
   generalAdmissionAddress: {
     doc: 'General admission server adress',
     format: String,
-    defaultL: '',
+    default: '',
     env: 'generalAdmissionAddress'
   },
   sentryDSN: {
