@@ -31,7 +31,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
     marginVertical: spacing(2),
     paddingTop: spacing(2),
-    display: 'flex',
+    alignItems: 'center'
+  },
+  touchableRoot: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'
@@ -44,7 +46,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: 28
   },
   alignRowCenter: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center'
   },
@@ -115,26 +116,28 @@ export const TopSupporters = () => {
   useLoadingAnimation(() => topSupporters.length > 0, topSupporters)
 
   return topSupporters.length ? (
-    <TouchableOpacity style={styles.root} onPress={handlePress}>
-      <ProfilePictureList
-        users={topSupporters}
-        totalUserCount={supporter_count}
-        limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
-        style={styles.profilePictureList}
-        navigationType='push'
-        interactive={false}
-        imageStyles={styles.profilePicture}
-      />
-      <View style={styles.alignRowCenter}>
-        <IconTrophy style={styles.icon} fill={neutral} />
-        <Text style={styles.viewTopSupportersText}>
-          {messages.topSupporters}
-        </Text>
-        <Text style={styles.viewTopSupportersButtonText}>
-          {messages.buttonTitle}
-        </Text>
-        <IconCaretRight fill={secondary} width={14} height={14} />
-      </View>
-    </TouchableOpacity>
+    <View style={styles.root} pointerEvents='box-none'>
+      <TouchableOpacity style={styles.touchableRoot} onPress={handlePress}>
+        <ProfilePictureList
+          users={topSupporters}
+          totalUserCount={supporter_count}
+          limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
+          style={styles.profilePictureList}
+          navigationType='push'
+          interactive={false}
+          imageStyles={styles.profilePicture}
+        />
+        <View style={styles.alignRowCenter}>
+          <IconTrophy style={styles.icon} fill={neutral} />
+          <Text style={styles.viewTopSupportersText}>
+            {messages.topSupporters}
+          </Text>
+          <Text style={styles.viewTopSupportersButtonText}>
+            {messages.buttonTitle}
+          </Text>
+          <IconCaretRight fill={secondary} width={14} height={14} />
+        </View>
+      </TouchableOpacity>
+    </View>
   ) : null
 }
