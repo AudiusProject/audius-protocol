@@ -159,7 +159,7 @@ const HistoryPage = g((props) => {
   )
 
   const onClickSave = useCallback(
-    (record) => {
+    (record: any) => {
       if (!record.has_current_user_saved) {
         saveTrack(record.track_id)
       } else {
@@ -204,21 +204,21 @@ const HistoryPage = g((props) => {
   )
 
   const onClickTrackName = useCallback(
-    (record) => {
+    (record: any) => {
       goToRoute(record.permalink)
     },
     [goToRoute]
   )
 
   const onClickArtistName = useCallback(
-    (record) => {
+    (record: any) => {
       goToRoute(profilePage(record.handle))
     },
     [goToRoute]
   )
 
   const onClickRepost = useCallback(
-    (record) => {
+    (record: any) => {
       if (!record.has_current_user_reposted) {
         repostTrack(record.track_id)
       } else {

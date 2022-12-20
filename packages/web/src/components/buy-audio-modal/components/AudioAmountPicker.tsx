@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import {
   RadioPillButton,
@@ -65,7 +72,7 @@ export const AudioAmountPicker = ({
   const customAmountRef = useRef<HTMLInputElement>(null)
 
   const handleChange = useCallback(
-    (e) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setValue(value)
       if (value === 'custom') {

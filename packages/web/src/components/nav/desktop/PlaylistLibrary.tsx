@@ -151,7 +151,7 @@ const PlaylistLibrary = ({
   }, [audioCollectibles, library, dispatch])
 
   const handleClickEditFolder = useCallback(
-    (folderId) => {
+    (folderId: string) => {
       dispatch(setEditFolderModalFolderId(folderId))
       setIsEditFolderModalOpen(true)
       record(make(Name.FOLDER_OPEN_EDIT, {}))
@@ -160,7 +160,7 @@ const PlaylistLibrary = ({
   )
 
   const handleClickEditPlaylist = useCallback(
-    (playlistId) => {
+    (playlistId: number) => {
       dispatch(openEditPlaylistModal(playlistId))
       record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     },
