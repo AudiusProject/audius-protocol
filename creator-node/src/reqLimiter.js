@@ -4,7 +4,7 @@ const config = require('./config.js')
 const { logger } = require('./logging')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')
-const { verifyRequesterIsValidSP } = require('./apiSigning.js')
+const { verifyRequesterIsValidSP } = require('./apiSigning')
 
 let endpointRateLimits = {}
 try {
