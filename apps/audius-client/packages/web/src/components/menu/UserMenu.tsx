@@ -70,7 +70,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     followUser: (userId: ID) =>
       dispatch(socialActions.followUser(userId, FollowSource.OVERFLOW)),
     unFollowUser: (userId: ID) =>
-      dispatch(socialActions.followUser(userId, FollowSource.OVERFLOW))
+      dispatch(socialActions.unfollowUser(userId, FollowSource.OVERFLOW))
   }
 }
 
