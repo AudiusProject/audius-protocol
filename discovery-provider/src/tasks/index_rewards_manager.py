@@ -457,6 +457,9 @@ def get_transaction_signatures(
                 if is_initial_fetch
                 else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
+            logger.info(
+                f"index_rewards_manager.py | Requesting {fetch_size} transactions"
+            )
             transactions_history = solana_client_manager.get_signatures_for_address(
                 program, before=last_tx_signature, limit=fetch_size
             )

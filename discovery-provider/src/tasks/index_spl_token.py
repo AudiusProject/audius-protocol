@@ -488,9 +488,11 @@ def process_spl_token_tx(
 
     # Traverse recent records until an intersection is found with latest slot
     while not intersection_found:
-        solana_logger.add_log(f"Requesting transactions before {last_tx_signature}")
         fetch_size = (
             INITIAL_FETCH_SIZE if is_initial_fetch else FETCH_TX_SIGNATURES_BATCH_SIZE
+        )
+        solana_logger.add_log(
+            f"Requesting {fetch_size} transactions before {last_tx_signature}"
         )
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,

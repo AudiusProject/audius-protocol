@@ -581,11 +581,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
-        logger.info(
-            f"index_solana_plays.py | Requesting transactions before {last_tx_signature}"
-        )
         fetch_size = (
             INITIAL_FETCH_SIZE if is_initial_fetch else FETCH_TX_SIGNATURES_BATCH_SIZE
+        )
+        logger.info(
+            f"index_solana_plays.py | Requesting {fetch_size} transactions before {last_tx_signature}"
         )
         transactions_history = solana_client_manager.get_signatures_for_address(
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=fetch_size

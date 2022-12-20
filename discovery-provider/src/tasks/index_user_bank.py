@@ -433,6 +433,7 @@ def process_user_bank_txs():
                 if is_initial_fetch
                 else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
+            logger.info(f"index_user_bank.py | Requesting {fetch_size} transactions")
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS, before=last_tx_signature, limit=fetch_size
             )
