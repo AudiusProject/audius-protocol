@@ -50,11 +50,6 @@ class ClusterUtilsForPrimary {
     prometheusRegistry: any,
     logger: Logger
   ) {
-    logger.debug(
-      `Creating msgToRecordMetric to all workers from ${JSON.stringify(
-        metricToRecord
-      )}`
-    )
     const validatedMetricToRecord =
       promUtils().validateMetricToRecord(metricToRecord)
     // Non-cluster mode can just record the metric now
@@ -69,11 +64,6 @@ class ClusterUtilsForPrimary {
       cmd: 'recordMetric',
       val: validatedMetricToRecord
     }
-    logger.debug(
-      `Sending msgToRecordMetric to all workers: ${JSON.stringify(
-        msgToRecordMetric
-      )}`
-    )
     // Send out to all workers. Only the special worker will end up recording it
     for (const id in cluster.workers) {
       const worker = cluster.workers?.[id]
