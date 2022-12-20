@@ -420,7 +420,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -448,7 +448,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse>>;
     }
 
     /**
@@ -476,7 +476,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -504,7 +504,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -540,7 +540,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -580,7 +580,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -608,7 +608,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse>>;
     }
 
     /**
@@ -644,7 +644,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse>>;
     }
 
     /**
@@ -676,7 +676,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<RemixingResponse["data"]>>;
+        }) as Promise<NonNullable<RemixingResponse>>;
     }
 
     /**
@@ -708,7 +708,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<RemixesResponseFull["data"]>>;
+        }) as Promise<NonNullable<RemixesResponseFull>>;
     }
 
     /**
@@ -728,7 +728,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<StemsResponse["data"]>>;
+        }) as Promise<NonNullable<StemsResponse>>;
     }
 
     /**
@@ -748,7 +748,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
+        }) as Promise<NonNullable<TrendingIdsResponse>>;
     }
 
     /**
@@ -784,7 +784,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -808,7 +808,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
+        }) as Promise<NonNullable<TrendingIdsResponse>>;
     }
 
     /**
@@ -848,7 +848,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -888,7 +888,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -916,7 +916,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -948,7 +948,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse>>;
     }
 
     /**
@@ -980,7 +980,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrackFavoritesResponseFull["data"]>>;
+        }) as Promise<NonNullable<TrackFavoritesResponseFull>>;
     }
 
     /**
@@ -1012,7 +1012,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrackRepostsResponseFull["data"]>>;
+        }) as Promise<NonNullable<TrackRepostsResponseFull>>;
     }
 
 }

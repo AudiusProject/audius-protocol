@@ -487,7 +487,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullBulkSubscribersResponse["data"]>>;
+        }) as Promise<NonNullable<FullBulkSubscribersResponse>>;
     }
 
     /**
@@ -511,7 +511,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullBulkSubscribersResponse["data"]>>;
+        }) as Promise<NonNullable<FullBulkSubscribersResponse>>;
     }
 
     /**
@@ -555,7 +555,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FavoritesResponseFull["data"]>>;
+        }) as Promise<NonNullable<FavoritesResponseFull>>;
     }
 
     /**
@@ -587,7 +587,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullFollowersResponse["data"]>>;
+        }) as Promise<NonNullable<FullFollowersResponse>>;
     }
 
     /**
@@ -619,7 +619,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FollowingResponseFull["data"]>>;
+        }) as Promise<NonNullable<FollowingResponseFull>>;
     }
 
     /**
@@ -647,7 +647,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<RelatedArtistResponseFull["data"]>>;
+        }) as Promise<NonNullable<RelatedArtistResponseFull>>;
     }
 
     /**
@@ -679,7 +679,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullReposts["data"]>>;
+        }) as Promise<NonNullable<FullReposts>>;
     }
 
     /**
@@ -711,7 +711,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullReposts["data"]>>;
+        }) as Promise<NonNullable<FullReposts>>;
     }
 
     /**
@@ -743,7 +743,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullSubscribersResponse["data"]>>;
+        }) as Promise<NonNullable<FullSubscribersResponse>>;
     }
 
     /**
@@ -771,7 +771,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullGetSupporter["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporter>>;
     }
 
     /**
@@ -803,7 +803,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullGetSupporters["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporters>>;
     }
 
     /**
@@ -831,7 +831,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullGetSupporting["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporting>>;
     }
 
     /**
@@ -863,7 +863,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullGetSupporting["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporting>>;
     }
 
     /**
@@ -891,7 +891,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TopUsersResponseFull["data"]>>;
+        }) as Promise<NonNullable<TopUsersResponseFull>>;
     }
 
     /**
@@ -919,7 +919,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TopGenreUsersResponseFull["data"]>>;
+        }) as Promise<NonNullable<TopGenreUsersResponseFull>>;
     }
 
     /**
@@ -971,7 +971,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracks["data"]>>;
+        }) as Promise<NonNullable<FullTracks>>;
     }
 
     /**
@@ -1023,7 +1023,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullTracks["data"]>>;
+        }) as Promise<NonNullable<FullTracks>>;
     }
 
     /**
@@ -1047,7 +1047,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullUserResponse["data"]>>;
+        }) as Promise<NonNullable<FullUserResponse>>;
     }
 
     /**
@@ -1071,7 +1071,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<FullUserResponse["data"]>>;
+        }) as Promise<NonNullable<FullUserResponse>>;
     }
 
     /**
@@ -1095,7 +1095,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<UsersByContentNode["data"]>>;
+        }) as Promise<NonNullable<UsersByContentNode>>;
     }
 
     /**
@@ -1139,7 +1139,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<HistoryResponseFull["data"]>>;
+        }) as Promise<NonNullable<HistoryResponseFull>>;
     }
 
 }

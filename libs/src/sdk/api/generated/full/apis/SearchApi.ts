@@ -112,7 +112,7 @@ export class SearchApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<SearchFullResponse["data"]>>;
+        }) as Promise<NonNullable<SearchFullResponse>>;
     }
 
     /**
@@ -153,7 +153,7 @@ export class SearchApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<SearchAutocompleteResponse["data"]>>;
+        }) as Promise<NonNullable<SearchAutocompleteResponse>>;
     }
 
 }
