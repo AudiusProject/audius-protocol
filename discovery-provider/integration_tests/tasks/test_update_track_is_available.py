@@ -1,8 +1,6 @@
 import logging
 from unittest import mock
 
-from src.utils.helpers import load_eth_abi_values
-
 from integration_tests.utils import populate_mock_db
 from src.models.tracks.track import Track
 from src.tasks.update_track_is_available import (
@@ -12,7 +10,6 @@ from src.tasks.update_track_is_available import (
     fetch_unavailable_track_ids,
     fetch_unavailable_track_ids_in_network,
     get_unavailable_tracks_redis_key,
-    query_registered_content_node_info,
     query_replica_set_by_track_id,
     query_tracks_by_track_ids,
     update_tracks_is_available_status,
@@ -35,7 +32,6 @@ def _mock_response(json_data, status=200, raise_for_status=None):
         mock_resp.raise_for_status.side_effect = raise_for_status
 
     return mock_resp
-
 
 
 @mock.patch("src.tasks.update_track_is_available.query_registered_content_node_info")
