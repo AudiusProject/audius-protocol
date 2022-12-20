@@ -1,7 +1,6 @@
 import {
   BaseAPI,
   Configuration,
-  RequestOpts,
   RequiredError,
   WalletAPI
 } from '../generated/default'
