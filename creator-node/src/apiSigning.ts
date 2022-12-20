@@ -12,7 +12,7 @@ const { logger: genericLogger } = require('./logging')
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
-const generateSignature = (data: any, privateKey: string) => {
+export const generateSignature = (data: any, privateKey: string) => {
   // JSON stringify automatically removes white space given 1 param
   const toSignStr = JSON.stringify(sortKeys(data))
   const toSignHash = web3.utils.keccak256(toSignStr)
@@ -99,7 +99,7 @@ export const signatureHasExpired = (
 /**
  * Recursively sorts keys of object or object array
  */
-const sortKeys = (x: any): any => {
+export const sortKeys = (x: any): any => {
   if (typeof x !== 'object' || !x) {
     return x
   }
