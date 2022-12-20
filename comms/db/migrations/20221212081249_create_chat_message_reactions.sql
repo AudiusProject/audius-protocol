@@ -1,5 +1,5 @@
 -- migrate:up
-create table chat_message_reactions (
+create table if not exists chat_message_reactions (
 	user_id int not null,
 	message_id text not null references chat_message(message_id),
 	reaction text not null,
@@ -9,4 +9,4 @@ create table chat_message_reactions (
 )
 
 -- migrate:down
-drop table chat_message_reactions;
+drop table if exists chat_message_reactions cascade;

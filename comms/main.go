@@ -31,9 +31,9 @@ func main() {
 	}
 
 	// run migrations
-	out, err := exec.Command("dbmate", "--wait", "--no-dump-schema", "--url", os.Getenv("audius_db_url"), "up").Output()
+	out, err := exec.Command("dbmate", "--wait", "--no-dump-schema", "--url", os.Getenv("audius_db_url"), "up").CombinedOutput()
 	if err != nil {
-		log.Fatal("dbmate:", err)
+		log.Fatal("dbmate error: ", err, string(out))
 	}
 	fmt.Println("dbmate:", string(out))
 

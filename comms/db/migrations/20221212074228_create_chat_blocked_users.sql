@@ -1,5 +1,5 @@
 -- migrate:up
-create table chat_blocked_users (
+create table if not exists chat_blocked_users (
 	blocker_user_id int not null,
 	blockee_user_id int not null,
 	created_at timestamp not null default current_timestamp,
@@ -8,4 +8,4 @@ create table chat_blocked_users (
 );
 
 -- migrate:down
-drop table chat_blocked_users;
+drop table if exists chat_blocked_users cascade;

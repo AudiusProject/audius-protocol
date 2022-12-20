@@ -5,4 +5,4 @@ create table user_pubkey (
 )
 
 -- migrate:down
-drop table if exists user_pubkey;
+drop table if exists user_pubkey cascade;

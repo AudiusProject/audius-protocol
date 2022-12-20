@@ -9,4 +9,4 @@ create table if not exists rpc_log (
 );
 
 -- migrate:down
-drop table if exists rpc_log;
+drop table if exists rpc_log cascade;

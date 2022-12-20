@@ -1,14 +1,14 @@
 -- migrate:up
 
-create table chat (
+create table if not exists chat (
 	chat_id text primary key,
 	created_at timestamp not null,
 	last_message_at timestamp not null
 );
 
-create index chat_chat_id_idx on chat(chat_id);
+create index if not exists chat_chat_id_idx on chat(chat_id);
 
-create table chat_member (
+create table if not exists chat_member (
 	chat_id text not null references chat(chat_id),
 	user_id int not null,
 	cleared_history_at timestamp,
@@ -24,9 +24,9 @@ create table chat_member (
 	primary key (chat_id, user_id)
 );
 
-create index chat_member_user_idx on chat_member(user_id);
+create index if not exists chat_member_user_idx on chat_member(user_id);
 
-create table chat_message (
+create table if not exists chat_message (
 	message_id text primary key,
 	chat_id text not null,
 	user_id int not null,
@@ -39,8 +39,6 @@ create table chat_message (
 );
 
 -- migrate:down
-drop table chat;
-drop index chat_chat_id_idx;
-drop table chat_member;
-drop index chat_member_user_idx;
-drop table chat_message;
+drop table if exists chat cascade;
+drop table if exists chat_member cascade;
+drop table if exists chat_message cascade;
