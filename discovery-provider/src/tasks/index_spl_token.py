@@ -76,6 +76,7 @@ RECEIVER_ACCOUNT_INDEX = 2
 # Though we don't index transfers from the sender's side in this task, we must still
 # enqueue the sender's accounts for balance refreshes if they are Audius accounts.
 SENDER_ACCOUNT_INDEX = 0
+INITIAL_FETCH_SIZE = 10
 
 purchase_vendor_map = {
     "Link by Stripe": TransactionType.purchase_stripe,
@@ -483,15 +484,22 @@ def process_spl_token_tx(
 
     # Current batch
     page_count = 0
+    is_initial_fetch = True
 
     # Traverse recent records until an intersection is found with latest slot
     while not intersection_found:
-        solana_logger.add_log(f"Requesting transactions before {last_tx_signature}")
+        fetch_size = (
+            INITIAL_FETCH_SIZE if is_initial_fetch else FETCH_TX_SIGNATURES_BATCH_SIZE
+        )
+        solana_logger.add_log(
+            f"Requesting {fetch_size} transactions before {last_tx_signature}"
+        )
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
-            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            limit=fetch_size,
         )
+        is_initial_fetch = False
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]
         if not transactions_array:
