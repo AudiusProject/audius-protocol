@@ -115,7 +115,7 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
             className={styles.header}
             header={messages.challengeRewardHeader}
           >
-            <div>{challengeConfig.icon}</div>
+            <div className={styles.challengeIcon}>{challengeConfig.icon}</div>
             {challengeConfig.title}
           </Block>
           <Block header={messages.dateEarned}>{transactionDetails.date}</Block>
