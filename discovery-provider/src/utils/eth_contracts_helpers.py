@@ -36,6 +36,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
 def fetch_all_registered_content_nodes(
     eth_web3, shared_config, redis, eth_abi_values, include_spID=False
 ) -> set:
+    logger.info(f"asdf eth_web3 {eth_web3}")
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )

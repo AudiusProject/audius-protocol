@@ -1,6 +1,8 @@
 import logging
 from unittest import mock
 
+from src.utils.helpers import load_eth_abi_values
+
 from integration_tests.utils import populate_mock_db
 from src.models.tracks.track import Track
 from src.tasks.update_track_is_available import (
@@ -35,20 +37,6 @@ def _mock_response(json_data, status=200, raise_for_status=None):
     return mock_resp
 
 
-def test_query_registered_content_node_info(app):
-    with app.app_context():
-        db = get_db()
-
-    _seed_db_with_data(db)
-
-    with db.scoped_session() as session:
-        content_nodes = query_registered_content_node_info(session)
-        print(content_nodes)
-
-        for i, node in enumerate(content_nodes):
-            assert node["endpoint"] == f"www.content_node{i}.com"
-            assert node["spID"] == i + 1
-
 
 @mock.patch("src.tasks.update_track_is_available.query_registered_content_node_info")
 @mock.patch("src.tasks.update_track_is_available.fetch_unavailable_track_ids")
@@ -79,7 +67,7 @@ def test_fetch_unavailable_track_ids_in_network(
         db = get_db()
 
     with db.scoped_session() as session:
-        fetch_unavailable_track_ids_in_network(session, redis)
+        fetch_unavailable_track_ids_in_network(session, redis, None, None)
 
     # Check that redis adds track ids as expected
 
@@ -311,7 +299,7 @@ def test_update_track_is_available(
     _seed_db_with_data(db)
 
     with db.scoped_session() as session:
-        fetch_unavailable_track_ids_in_network(session, redis)
+        fetch_unavailable_track_ids_in_network(session, redis, None, None)
 
     update_tracks_is_available_status(db, redis)
 
