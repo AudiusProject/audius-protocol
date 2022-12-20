@@ -1,5 +1,6 @@
-import { FollowSource } from '@audius/common'
+import { accountSelectors, FollowSource } from '@audius/common'
 import { View, Text } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
@@ -9,6 +10,8 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { EditProfileButton } from './EditProfileButton'
 import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
+
+const { getUserHandle } = accountSelectors
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   username: {
@@ -78,7 +81,7 @@ type ProfileInfoProps = {
 export const ProfileInfo = (props: ProfileInfoProps) => {
   const { onFollow } = props
   const { params } = useRoute<'Profile'>()
-  const isOwner = params.handle === 'accountUser'
+  const accountHandle = useSelector(getUserHandle)
   const styles = useStyles()
 
   const profile = useSelectProfile([
@@ -93,19 +96,27 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { name, handle, does_current_user_follow, does_follow_current_user } =
     profile
 
-  const actionButtons = isOwner ? (
-    <EditProfileButton style={styles.followButton} />
-  ) : (
-    <>
-      {does_current_user_follow ? <SubscribeButton profile={profile} /> : null}
-      <FollowButton
-        style={styles.followButton}
-        profile={profile}
-        onPress={onFollow}
-        followSource={FollowSource.PROFILE_PAGE}
-      />
-    </>
-  )
+  const isOwner =
+    params.handle === 'accountUser' ||
+    params.handle?.toLowerCase() === accountHandle?.toLowerCase() ||
+    handle === accountHandle
+
+  const actionButtons =
+    isOwner && handle ? (
+      <EditProfileButton style={styles.followButton} />
+    ) : (
+      <>
+        {does_current_user_follow ? (
+          <SubscribeButton profile={profile} />
+        ) : null}
+        <FollowButton
+          style={styles.followButton}
+          profile={profile}
+          onPress={onFollow}
+          followSource={FollowSource.PROFILE_PAGE}
+        />
+      </>
+    )
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
