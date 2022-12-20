@@ -161,26 +161,39 @@ const initializeApis = ({
   walletApi?: WalletAPI
 }) => {
   const initializationPromise = discoveryProvider.init()
+  const makeFetchApi =
+    (useMakeRequestInternal: boolean = false) =>
+    async (url: string, context?: RequestInit) => {
+      // Ensure discovery node is initialized
+      await initializationPromise
 
-  const fetchApi = async (url: string, context?: RequestInit) => {
-    // Ensure discovery node is initialized
-    await initializationPromise
-
-    // Append the appName to the query params
-    const urlWithAppName =
-      url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
-    const requestParams: Record<string, unknown> = {
-      ...context,
-      endpoint: urlWithAppName
+      // Append the appName to the query params
+      const urlWithAppName =
+        url +
+        (url.includes('?') ? '&' : '?') +
+        querystring({ app_name: appName })
+      const requestParams: Record<string, unknown> = {
+        ...context,
+        endpoint: urlWithAppName
+      }
+      if (useMakeRequestInternal) {
+        return await discoveryProvider._makeRequestInternal(
+          requestParams,
+          undefined,
+          undefined,
+          // Throw errors instead of returning null
+          true
+        )
+      }
+      return await discoveryProvider._makeRequest(
+        requestParams,
+        undefined,
+        undefined,
+        // Throw errors instead of returning null
+        true
+      )
     }
-    return await discoveryProvider._makeRequest(
-      requestParams,
-      undefined,
-      undefined,
-      // Throw errors instead of returning null
-      true
-    )
-  }
+  const fetchApi = makeFetchApi(false)
 
   const generatedApiClientConfig = new Configuration({
     fetchApi
@@ -196,7 +209,7 @@ const initializeApis = ({
   if (walletApi !== undefined) {
     chats = new ChatsApi(
       new Configuration({
-        fetchApi,
+        fetchApi: makeFetchApi(true),
         walletApi
       })
     )
