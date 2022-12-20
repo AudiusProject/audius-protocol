@@ -44,7 +44,7 @@ def get_remixes_of(args):
                 track_ids=[track_id],
                 filter_deleted=False,
                 filter_unlisted=False,
-                exclude_premium=False,
+                exclude_premium=True,
             )
 
             if not parent_track_res or parent_track_res[0] is None:

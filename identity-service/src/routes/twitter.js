@@ -156,9 +156,16 @@ module.exports = function (app) {
         const twitterObj = await models.TwitterUser.findOne({
           where: { uuid: uuid }
         })
+        const user = await models.User.findOne({
+          where: { handle }
+        })
 
         // only set blockchainUserId if not already set
-        if (twitterObj && !twitterObj.blockchainUserId) {
+        const isUnassociated = twitterObj && !twitterObj.blockchainUserId
+        const handlesMatch =
+          twitterObj &&
+          twitterObj.twitterProfile.screen_name.toLowerCase() === user.handle
+        if (isUnassociated && handlesMatch) {
           twitterObj.blockchainUserId = userId
 
           // if the user is verified, write to chain, otherwise skip to next step
