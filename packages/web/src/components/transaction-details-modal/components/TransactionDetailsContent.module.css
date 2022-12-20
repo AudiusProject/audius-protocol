@@ -39,6 +39,7 @@ i {
 
 .name:hover {
   cursor: pointer;
+  color: var(--secondary);
 }
 
 .spinner {
@@ -48,6 +49,11 @@ i {
 .spinnerSmall {
   width: 16px;
   margin: 0 auto;
+}
+.spinnerContainer {
+  min-height: 580px;
+  display: flex;
+  align-items: center;
 }
 
 .link {
