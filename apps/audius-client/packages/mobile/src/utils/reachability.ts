@@ -23,7 +23,7 @@ export const checkNetInfoReachability = (netInfo: NetInfoState | null) => {
 const isResponseValid = (response: Response | undefined) =>
   response && response.ok
 
-const pingTest = async () => {
+export const pingTest = async () => {
   // If there's no reachability url available, consider ourselves reachable
   if (!REACHABILITY_URL) {
     console.warn('No reachability url provided')

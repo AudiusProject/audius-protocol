@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
@@ -12,6 +12,7 @@ import {
 import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 
 const { getUserId } = accountSelectors
+const { getIsReachable } = reachabilitySelectors
 
 export const OfflineDownloader = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -27,13 +28,15 @@ export const OfflineDownloader = () => {
 
   const [syncStarted, setSyncStarted] = useState(false)
   const currentUserId = useSelector(getUserId)
+  const isReachable = useSelector(getIsReachable)
   const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
+
   useEffect(() => {
-    if (!syncStarted && currentUserId && isDoneLoadingFromDisk) {
+    if (!syncStarted && currentUserId && isDoneLoadingFromDisk && isReachable) {
       setSyncStarted(true)
       startSyncWorker()
     }
-  }, [syncStarted, currentUserId, isDoneLoadingFromDisk])
+  }, [syncStarted, currentUserId, isDoneLoadingFromDisk, isReachable])
 
   return null
 }
