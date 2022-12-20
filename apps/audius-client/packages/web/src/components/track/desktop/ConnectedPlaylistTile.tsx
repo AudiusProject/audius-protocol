@@ -6,7 +6,8 @@ import {
   useEffect,
   useCallback,
   ReactChildren,
-  useRef
+  useRef,
+  MouseEventHandler
 } from 'react'
 
 import {
@@ -301,7 +302,7 @@ const ConnectedPlaylistTile = memo(
         </Menu>
       )
     }
-    const onClickArtistName = useCallback(
+    const onClickArtistName: MouseEventHandler = useCallback(
       (e) => {
         e.stopPropagation()
         if (goToRoute) goToRoute(profilePage(handle))

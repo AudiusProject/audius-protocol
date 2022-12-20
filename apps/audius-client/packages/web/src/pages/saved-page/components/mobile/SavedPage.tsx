@@ -72,7 +72,7 @@ const SCROLL_HEIGHT = 88
  */
 const useOffsetScroll = () => {
   // Set the child's height base on it's content vs window height
-  const contentRefCallback = useCallback((node) => {
+  const contentRefCallback = useCallback((node: HTMLDivElement) => {
     if (node !== null) {
       const contentHeight = (window as any).innerHeight - OFFSET_HEIGHT
       const useContentHeight = contentHeight > node.scrollHeight

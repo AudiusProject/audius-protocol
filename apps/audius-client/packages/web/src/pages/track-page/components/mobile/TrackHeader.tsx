@@ -182,7 +182,7 @@ const TrackHeader = ({
 
   const record = useRecord()
   const onExternalLinkClick = useCallback(
-    (event) => {
+    (event: { target: { href: string } }) => {
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { MouseEvent, useCallback, useEffect, useRef } from 'react'
 
 import { buyAudioActions, buyAudioSelectors } from '@audius/common'
 import cn from 'classnames'
@@ -19,7 +19,7 @@ export const StripeOnRampModal = () => {
   const el = useRef<HTMLDivElement>(null)
 
   const handleBackgroundClicked = useCallback(
-    (e) => {
+    (e: MouseEvent<HTMLDivElement>) => {
       if (sessionStatus !== 'fulfillment_processing') {
         setIsOpen(false)
         e.stopPropagation()

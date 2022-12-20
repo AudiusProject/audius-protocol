@@ -44,7 +44,7 @@ const Description = (props: DescriptionProps) => {
   }, [])
 
   const setStartAnimation = useCallback(
-    (node) => {
+    (node: HTMLHeadingElement) => {
       startAnimation.current = node
       refInView()
     },

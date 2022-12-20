@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import { formatCount, formatSeconds } from '@audius/common'
+import { formatCount, formatSeconds, UID, UserTrack } from '@audius/common'
 import cn from 'classnames'
 import moment from 'moment'
-import { ColumnInstance } from 'react-table'
+import { Cell, ColumnInstance, Row } from 'react-table'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import {
@@ -21,6 +21,21 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
+
+type RowInfo = UserTrack & {
+  name: string
+  artist: string
+  date: string
+  time: number
+  plays: number
+  dateSaved: string
+  handle: string
+  uid: UID
+}
+
+type TrackCell = Cell<RowInfo>
+
+type TrackRow = Row<RowInfo>
 
 export type TracksTableColumn =
   | 'addedDate'
@@ -125,7 +140,7 @@ export const TracksTable = ({
 }: TracksTableProps) => {
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const index = cellInfo.row.index
       const active = index === playingIndex
       return (
@@ -141,7 +156,7 @@ export const TracksTable = ({
   )
 
   const renderTrackNameCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const index = cellInfo.row.index
       const deleted = track.is_delete || track.user?.is_deactivated
@@ -169,7 +184,7 @@ export const TracksTable = ({
   )
 
   const renderArtistNameCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const index = cellInfo.row.index
       if (track.user?.is_deactivated) {
@@ -206,44 +221,44 @@ export const TracksTable = ({
     [onClickArtistName, playingIndex]
   )
 
-  const renderPlaysCell = useCallback((cellInfo) => {
+  const renderPlaysCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return formatCount(track.plays)
   }, [])
 
-  const renderRepostsCell = useCallback((cellInfo) => {
+  const renderRepostsCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return formatCount(track.repost_count)
   }, [])
 
-  const renderLengthCell = useCallback((cellInfo) => {
+  const renderLengthCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return formatSeconds(track.time)
   }, [])
 
-  const renderDateCell = useCallback((cellInfo) => {
+  const renderDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return moment(track.date).format('M/D/YY')
   }, [])
 
-  const renderAddedDateCell = useCallback((cellInfo) => {
+  const renderAddedDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return moment(track.dateSaved).format('M/D/YY')
   }, [])
 
-  const renderReleaseDateCell = useCallback((cellInfo) => {
+  const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return moment(track.created_at).format('M/D/YY')
   }, [])
 
-  const renderListenDateCell = useCallback((cellInfo) => {
+  const renderListenDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return moment(track.dateListened).format('M/D/YY')
   }, [])
 
   const favoriteButtonRef = useRef<HTMLDivElement>(null)
   const renderFavoriteButtonCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const deleted = track.is_delete || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
@@ -273,7 +288,7 @@ export const TracksTable = ({
 
   const repostButtonRef = useRef<HTMLDivElement>(null)
   const renderRepostButtonCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const deleted = track.is_delete || track.user?.is_deactivated
       const isOwner = track.owner_id === userId
@@ -306,7 +321,7 @@ export const TracksTable = ({
 
   const overflowMenuRef = useRef<HTMLDivElement>(null)
   const renderOverflowMenuCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const deleted = track.is_delete || !!track.user?.is_deactivated
       return (
@@ -338,7 +353,7 @@ export const TracksTable = ({
   )
 
   const renderTrackActions = useCallback(
-    (cellInfo) => {
+    (cellInfo: TrackCell) => {
       return (
         <div className={styles.trackActionsContainer}>
           {renderRepostButtonCell(cellInfo)}
@@ -508,7 +523,7 @@ export const TracksTable = ({
   )
 
   const handleClickRow = useCallback(
-    (e, rowInfo, index: number) => {
+    (e: MouseEvent<HTMLTableRowElement>, rowInfo: TrackRow, index: number) => {
       const track = rowInfo.original
       const deleted = track.is_delete || track.user?.is_deactivated
       const clickedActionButton = [
@@ -524,7 +539,7 @@ export const TracksTable = ({
   )
 
   const getRowClassName = useCallback(
-    (rowIndex) => {
+    (rowIndex: number) => {
       const track = data[rowIndex]
       const deleted = track?.is_delete || !!track?.user?.is_deactivated
       return cn(styles.tableRow, { [styles.disabled]: deleted })

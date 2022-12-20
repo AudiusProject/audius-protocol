@@ -1,12 +1,21 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, MouseEvent } from 'react'
 
 import { Chain, formatSeconds } from '@audius/common'
 import cn from 'classnames'
-import { ColumnInstance } from 'react-table'
+import { Cell, ColumnInstance, Row } from 'react-table'
 
 import { Table, TablePlayButton } from 'components/table'
 
 import styles from './CollectiblesPlaylistTable.module.css'
+
+type CollectibleInfo = {
+  name: string
+  duration: number
+  chain: Chain
+}
+
+type CollectibleCell = Cell<CollectibleInfo>
+type CollectibleRow = Row<CollectibleInfo>
 
 const chainLabelMap: Record<Chain, string> = {
   [Chain.Eth]: 'Ethereum',
@@ -55,7 +64,7 @@ export const CollectiblesPlaylistTable = ({
 }: CollectiblesPlaylistTableProps) => {
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: CollectibleCell) => {
       const index = cellInfo.row.index
       const active = index === playingIndex
       return (
@@ -71,7 +80,7 @@ export const CollectiblesPlaylistTable = ({
   )
 
   const renderCollectibleNameCell = useCallback(
-    (cellInfo) => {
+    (cellInfo: CollectibleCell) => {
       const collectible = cellInfo.row.original
       const index = cellInfo.row.index
       return (
@@ -95,12 +104,12 @@ export const CollectiblesPlaylistTable = ({
     [onClickCollectibleName, playingIndex]
   )
 
-  const renderLengthCell = useCallback((cellInfo) => {
+  const renderLengthCell = useCallback((cellInfo: CollectibleCell) => {
     const collectible = cellInfo.row.original
     return formatSeconds(collectible.duration)
   }, [])
 
-  const renderChainCell = useCallback((cellInfo) => {
+  const renderChainCell = useCallback((cellInfo: CollectibleCell) => {
     const collectible = cellInfo.row.original
     return chainLabelMap[collectible.chain as Chain]
   }, [])
@@ -169,7 +178,11 @@ export const CollectiblesPlaylistTable = ({
   )
 
   const handleClickRow = useCallback(
-    (e, rowInfo, index: number) => {
+    (
+      _e: MouseEvent<HTMLTableRowElement>,
+      rowInfo: CollectibleRow,
+      index: number
+    ) => {
       const collectible = rowInfo.original
       onClickRow?.(collectible, index)
     },

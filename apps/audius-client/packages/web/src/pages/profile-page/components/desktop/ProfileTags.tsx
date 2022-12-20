@@ -22,7 +22,7 @@ export const ProfileTags = (props: ProfileTagsProps) => {
   const { tags, goToRoute } = props
   const record = useRecord()
   const onClickTag = useCallback(
-    (tag) => {
+    (tag: string) => {
       goToRoute(searchResultsPage(`#${tag}`))
       record(make(Name.TAG_CLICKING, { tag, source: 'profile page' }))
     },

@@ -4,7 +4,8 @@ import React, {
   useEffect,
   useCallback,
   ReactNode,
-  useRef
+  useRef,
+  MouseEventHandler
 } from 'react'
 
 import {
@@ -161,7 +162,7 @@ const Card = ({
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
   const menuActionsRef = useRef<HTMLDivElement>(null)
-  const handleClick = useCallback(
+  const handleClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
     (e) => {
       e.preventDefault()
       if (isDescendantElementOf(e?.target, menuActionsRef.current)) return

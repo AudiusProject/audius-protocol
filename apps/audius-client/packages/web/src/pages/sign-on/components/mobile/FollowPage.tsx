@@ -63,7 +63,7 @@ const FollowPage = ({
   }, [])
 
   const onToggleSelect = useCallback(
-    (userId) => () => {
+    (userId: ID) => () => {
       if (followedArtists.includes(userId)) {
         onRemoveFollows([userId])
       } else {

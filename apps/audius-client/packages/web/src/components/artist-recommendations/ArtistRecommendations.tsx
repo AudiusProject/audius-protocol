@@ -175,7 +175,7 @@ export const ArtistRecommendations = forwardRef(
 
     // Navigate to profile pages on artist links
     const onArtistNameClicked = useCallback(
-      (handle) => {
+      (handle: string) => {
         dispatch(push(profilePage(handle)))
       },
       [dispatch]

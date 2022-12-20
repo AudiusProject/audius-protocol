@@ -93,7 +93,7 @@ export const ProfileBio = ({
   const record = useRecord()
 
   const onExternalLinkClick = useCallback(
-    (event) => {
+    (event: { target: { href: string } }) => {
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
@@ -137,7 +137,7 @@ export const ProfileBio = ({
     )
   }, [record, handle, website])
   const onClickDonation = useCallback(
-    (event) => {
+    (event: { target: { href: string } }) => {
       record(
         make(Name.PROFILE_PAGE_CLICK_DONATION, {
           handle: handle.replace('@', ''),

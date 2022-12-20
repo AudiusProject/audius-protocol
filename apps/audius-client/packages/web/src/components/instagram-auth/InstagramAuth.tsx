@@ -84,7 +84,7 @@ const InstagramAuth = ({
   }, [dialogWidth, dialogHeight])
 
   const getProfile = useCallback(
-    async (code) => {
+    async (code: string) => {
       try {
         // Fetch the profile from the graph API
         const profileResp = await window.fetch(getUserUrl, {

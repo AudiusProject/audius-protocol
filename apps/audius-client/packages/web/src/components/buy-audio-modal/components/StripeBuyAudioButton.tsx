@@ -49,7 +49,7 @@ export const StripeBuyAudioButton = () => {
     purchaseInfo?.isError === false && purchaseInfo.estimatedUSD.uiAmount < 1
 
   const handleSessionUpdate = useCallback(
-    (e) => {
+    (e: any) => {
       if (e?.payload?.session?.status) {
         dispatch(
           stripeSessionStatusChanged({ status: e.payload.session.status })

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { MouseEvent, useCallback, useMemo } from 'react'
 
 import {
   formatAudio,
@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 import moment from 'moment'
-import { ColumnInstance } from 'react-table'
+import { Cell, ColumnInstance, Row } from 'react-table'
 
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { Table } from 'components/table'
@@ -31,6 +31,9 @@ const transactionMethodLabelMap: Record<TransactionMethod, string | null> = {
   [TransactionMethod.RECEIVE]: 'Received',
   [TransactionMethod.SEND]: 'Sent'
 }
+
+type TransactionCell = Cell<TransactionDetails>
+type TransactionRow = Row<TransactionDetails>
 
 export type AudioTransactionsTableColumn =
   | 'balance'
@@ -86,7 +89,7 @@ export const AudioTransactionsTable = ({
   fetchBatchSize
 }: AudioTransactionsTableProps) => {
   // Cell Render Functions
-  const renderTransactionTypeCell = useCallback((cellInfo) => {
+  const renderTransactionTypeCell = useCallback((cellInfo: TransactionCell) => {
     const { transactionType, method } = cellInfo.row.original
     const typeText = transactionTypeLabelMap[transactionType as TransactionType]
     const methodText =
@@ -107,17 +110,17 @@ export const AudioTransactionsTable = ({
     )
   }, [])
 
-  const renderBalanceCell = useCallback((cellInfo) => {
+  const renderBalanceCell = useCallback((cellInfo: TransactionCell) => {
     const transaction = cellInfo.row.original
     return formatAudio(transaction.balance)
   }, [])
 
-  const renderDateCell = useCallback((cellInfo) => {
+  const renderDateCell = useCallback((cellInfo: TransactionCell) => {
     const transaction = cellInfo.row.original
     return moment(transaction.date).format('M/D/YY')
   }, [])
 
-  const renderChangeCell = useCallback((cellInfo) => {
+  const renderChangeCell = useCallback((cellInfo: TransactionCell) => {
     const tx = cellInfo.row.original
     const isPositive = isChangePositive(tx)
     const { change } = tx
@@ -210,7 +213,11 @@ export const AudioTransactionsTable = ({
   )
 
   const handleClickRow = useCallback(
-    (_: any, rowInfo, index: number) => {
+    (
+      _: MouseEvent<HTMLTableRowElement>,
+      rowInfo: TransactionRow,
+      index: number
+    ) => {
       onClickRow?.(rowInfo.original, index)
     },
     [onClickRow]

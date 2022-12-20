@@ -33,7 +33,7 @@ export const AmountInputPage = () => {
   const presetAmountsConfig = useRemoteVar(StringKeys.BUY_AUDIO_PRESET_AMOUNTS)
 
   const handleAmountChange = useCallback(
-    (amount) => {
+    (amount: string) => {
       const audioAmount = parseInt(amount)
       if (!isNaN(audioAmount)) {
         dispatch(

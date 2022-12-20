@@ -4,7 +4,8 @@ import {
   useCallback,
   useEffect,
   MouseEvent,
-  useRef
+  useRef,
+  MouseEventHandler
 } from 'react'
 
 import {
@@ -221,7 +222,7 @@ const ConnectedTrackTile = memo(
       )
     }
 
-    const onClickArtistName = useCallback(
+    const onClickArtistName: MouseEventHandler = useCallback(
       (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -230,7 +231,7 @@ const ConnectedTrackTile = memo(
       [handle, goToRoute]
     )
 
-    const onClickTitle = useCallback(
+    const onClickTitle: MouseEventHandler = useCallback(
       (e) => {
         e.preventDefault()
         e.stopPropagation()
