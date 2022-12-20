@@ -849,53 +849,91 @@ function _recordMigrationMetrics(
 }
 
 function _resetStoragePathMetrics(prometheusRegistry: any, logger: Logger) {
-  // Reset metric for legacy migrations
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'success' }
-    },
-    prometheusRegistry,
-    logger
-  )
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'failure' }
-    },
-    prometheusRegistry,
-    logger
-  )
+  try {
+    // Reset metric for legacy migrations
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
 
-  // Reset metric for custom migrations
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'success' }
-    },
-    prometheusRegistry,
-    logger
-  )
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'failure' }
-    },
-    prometheusRegistry,
-    logger
-  )
+    // Reset metric for custom migrations
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  } catch (e: any) {
+    logger.error(`Failed to reset counts of migrated storagePaths: ${e}`)
+  }
+}
+
+async function _recordTotalUnmigratedStoragePathsMetric(
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  try {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE,
+        metricValue: await DbManager.getNumLegacyStoragePathsRecords(),
+        metricLabels: { type: 'legacy' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE,
+        metricValue: await DbManager.getNumCustomStoragePathsRecords(),
+        metricLabels: { type: 'custom' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to record total count of unmigrated storagePaths: ${e}`
+    )
+  }
 }
 
 /**
@@ -923,8 +961,9 @@ export async function migrateFilesWithNonStandardStoragePaths(
 
   // infinite while loop with a delay between iterations
   while (true) {
-    // Reset gauges on each run so the metrics aren't infinitely increasing
+    // Reset gauges on each run so the metrics aren't infinitely increasing, and record total # of unmigrated paths
     _resetStoragePathMetrics(prometheusRegistry, logger)
+    await _recordTotalUnmigratedStoragePathsMetric(prometheusRegistry, logger)
 
     // Legacy storagePaths (/<storagePath env>/CID)
     if (config.get('migrateFilesWithLegacyStoragePath')) {
