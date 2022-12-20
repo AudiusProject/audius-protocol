@@ -161,9 +161,16 @@ module.exports = function (app) {
         const instagramObj = await models.InstagramUser.findOne({
           where: { uuid }
         })
+        const user = await models.User.findOne({
+          where: { handle }
+        })
 
+        const isUnassociated = instagramObj && !instagramObj.blockchainUserId
+        const handlesMatch =
+          instagramObj &&
+          instagramObj.profile.username.toLowerCase() === user.handle
         // only set blockchainUserId if not already set
-        if (instagramObj && !instagramObj.blockchainUserId) {
+        if (isUnassociated && handlesMatch) {
           instagramObj.blockchainUserId = userId
 
           // if the user is verified, write to chain, otherwise skip to next step
