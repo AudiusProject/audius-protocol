@@ -10,7 +10,8 @@ import {
   buyAudioActions,
   OnRampProvider,
   FeatureFlags,
-  StringKeys
+  StringKeys,
+  Client
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -32,7 +33,7 @@ import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation, Location } from 'services/Location'
-import { isMobile } from 'utils/clientUtil'
+import { isMobile, getClient } from 'utils/clientUtil'
 import {
   AUDIO_TRANSACTIONS_PAGE,
   pushUniqueRoute,
@@ -297,7 +298,7 @@ const useOnRampProviderInfo = () => {
       bannedState: isState && !isStripeAllowed ? value.region_code : false
     },
     [OnRampProvider.COINBASE]: {
-      isEnabled: isCoinbaseEnabled,
+      isEnabled: isCoinbaseEnabled && getClient() !== Client.ELECTRON,
       isAllowed: isCoinbaseAllowed,
       bannedState: isState && !isCoinbaseAllowed ? value.region_code : false
     }
