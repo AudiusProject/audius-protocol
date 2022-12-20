@@ -3,6 +3,11 @@ const LibsUtils = libs.Utils
 const Web3 = require('web3')
 const web3 = new Web3()
 
+const {
+  getContentNodeInfoFromSpId
+} = require('./services/ContentNodeInfoManager')
+const { logger: genericLogger } = require('./logging')
+
 /**
  * Max age of signature in milliseconds
  * Set to 5 minutes
@@ -119,7 +124,6 @@ const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
  * @param {string} data.reqSignature the signature from the request body
  */
 const verifyRequesterIsValidSP = async ({
-  audiusLibs,
   spID,
   reqTimestamp,
   reqSignature
@@ -132,17 +136,12 @@ const verifyRequesterIsValidSP = async ({
 
   spID = validateSPId(spID)
 
-  const spRecordFromSPFactory =
-    await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-      'content-node',
-      spID
-    )
-
   let {
     owner: ownerWalletFromSPFactory,
     delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
     endpoint: nodeEndpointFromSPFactory
-  } = spRecordFromSPFactory
+  } = await getContentNodeInfoFromSpId(spID, genericLogger)
+
   delegateOwnerWalletFromSPFactory =
     delegateOwnerWalletFromSPFactory.toLowerCase()
 

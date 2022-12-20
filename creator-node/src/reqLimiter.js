@@ -64,7 +64,6 @@ const userReqLimiter = rateLimit({
     ) {
       try {
         await verifyRequesterIsValidSP({
-          audiusLibs: libs,
           spID,
           reqTimestamp: timestamp,
           reqSignature: signature
@@ -159,7 +158,6 @@ const batchCidsExistReqLimiter = rateLimit({
     ) {
       try {
         await verifyRequesterIsValidSP({
-          audiusLibs: libs,
           spID,
           reqTimestamp: timestamp,
           reqSignature: signature

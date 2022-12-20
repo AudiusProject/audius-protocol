@@ -465,7 +465,6 @@ async function ensureValidSPMiddleware(req, res, next) {
     }
 
     await verifyRequesterIsValidSP({
-      audiusLibs: req.app.get('audiusLibs'),
       spID,
       reqTimestamp: timestamp,
       reqSignature: signature
