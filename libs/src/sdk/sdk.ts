@@ -173,7 +173,7 @@ const initializeApis = ({
       ...context,
       endpoint: urlWithAppName
     }
-    return await discoveryProvider._makeRequest(
+    return await discoveryProvider._makeRequestInternal(
       requestParams,
       undefined,
       undefined,
@@ -196,9 +196,8 @@ const initializeApis = ({
   if (walletApi !== undefined) {
     chats = new ChatsApi(
       new Configuration({
-        fetchApi: async (...args) => await fetch(...args),
-        walletApi,
-        basePath: 'http://localhost:8925'
+        fetchApi,
+        walletApi
       })
     )
   }

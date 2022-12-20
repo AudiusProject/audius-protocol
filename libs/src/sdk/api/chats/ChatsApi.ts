@@ -54,12 +54,11 @@ export class ChatsApi extends BaseAPI {
       'getChat'
     )
     const path = `/comms/chats/${requestParameters.chatId}`
-    const response = await this.request<TypedCommsResponse<UserChat>>({
+    return (await this.request({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path)
-    })
-    return await response.json()
+    })) as TypedCommsResponse<UserChat>
   }
 
   public async getAll(requestParameters?: ChatGetAllRequest) {
@@ -71,13 +70,12 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters?.cursor) {
       queryParameters.offset = requestParameters.cursor
     }
-    const response = await this.request<TypedCommsResponse<UserChat[]>>({
+    return (await this.request({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path),
       query: queryParameters
-    })
-    return await response.json()
+    })) as TypedCommsResponse<UserChat[]>
   }
 
   public async getMessages(
@@ -101,15 +99,14 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters.after) {
       queryParameters.after = requestParameters.after
     }
-    const response = await this.request<TypedCommsResponse<ChatMessage[]>>({
+    const response = (await this.request({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path),
       query: queryParameters
-    })
-    const json = await response.json()
+    })) as TypedCommsResponse<ChatMessage[]>
     const unencrypted = await Promise.all(
-      json.data.map(async (m) => ({
+      response.data.map(async (m) => ({
         ...m,
         message: await this.decryptString(
           sharedSecret,
@@ -118,7 +115,7 @@ export class ChatsApi extends BaseAPI {
       }))
     )
     return {
-      ...json,
+      ...response,
       data: unencrypted
     }
   }
@@ -435,16 +432,6 @@ export class ChatsApi extends BaseAPI {
       body: payload
     })
     return args
-  }
-
-  // #endregion
-
-  // #region OVERRIDES
-
-  protected override async request<T>(context: RequestOpts) {
-    return (await super.request(context)) as Omit<Response, 'json'> & {
-      json: () => Promise<T>
-    }
   }
 
   // #endregion
