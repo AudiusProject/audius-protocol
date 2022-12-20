@@ -39,6 +39,7 @@ REDIS_TX_CACHE_QUEUE_PREFIX = "plays-tx-cache-queue"
 # For example, in a batch of 1000 only 100 will be fetched and written in parallel
 # Intended to relieve RPC and DB pressure
 TX_SIGNATURES_PROCESSING_SIZE = 100
+INITIAL_FETCH_SIZE = 30
 
 logger = logging.getLogger(__name__)
 
@@ -570,6 +571,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 
     # The latest play slot to be processed
     latest_play_slot = None
+    is_initial_fetch = True
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
@@ -582,11 +584,14 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         logger.info(
             f"index_solana_plays.py | Requesting transactions before {last_tx_signature}"
         )
-        transactions_history = solana_client_manager.get_signatures_for_address(
-            TRACK_LISTEN_PROGRAM,
-            before=last_tx_signature,
-            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+        fetch_size = (
+            INITIAL_FETCH_SIZE if is_initial_fetch else FETCH_TX_SIGNATURES_BATCH_SIZE
         )
+        transactions_history = solana_client_manager.get_signatures_for_address(
+            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=fetch_size
+        )
+        is_initial_fetch = False
+
         logger.info(
             f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"
         )

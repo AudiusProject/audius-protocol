@@ -61,6 +61,7 @@ MIN_SLOT = int(shared_config["solana"]["rewards_manager_min_slot"])
 
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 4
+INITIAL_FETCH_SIZE = 10
 
 
 def check_valid_rewards_manager_program():
@@ -445,14 +446,21 @@ def get_transaction_signatures(
 
     # Loop exit condition
     intersection_found = False
+    is_initial_fetch = True
 
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
-            transactions_history = solana_client_manager.get_signatures_for_address(
-                program, before=last_tx_signature, limit=FETCH_TX_SIGNATURES_BATCH_SIZE
+            fetch_size = (
+                INITIAL_FETCH_SIZE
+                if is_initial_fetch
+                else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
+            transactions_history = solana_client_manager.get_signatures_for_address(
+                program, before=last_tx_signature, limit=fetch_size
+            )
+            is_initial_fetch = False
 
             transactions_array = transactions_history["result"]
             if not transactions_array:
