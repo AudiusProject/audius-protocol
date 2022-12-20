@@ -92,15 +92,25 @@ module.exports = function (app) {
 
         const { user: tikTokUser } = data
 
-        // Store the user id, and current profile for user in db
-        await models.TikTokUser.findOrCreate({
+        const existingTikTokUser = await models.TikTokUser.findOne({
           where: { uuid: tikTokUser.open_id },
-          defaults: {
+          blockchainUserId: {
+            [models.Sequelize.Op.not]: null
+          }
+        })
+
+        if (existingTikTokUser) {
+          return errorResponseBadRequest(
+            `Another Audius profile has already been authenticated with TikTok user @${tikTokUser.display_name}!`
+          )
+        } else {
+          // Store the user id, and current profile for user in db
+          await models.TikTokUser.upsert({
             uuid: tikTokUser.open_id,
             profile: tikTokUser,
             verified: tikTokUser.is_verified
-          }
-        })
+          })
+        }
 
         return successResponse(accessTokenResponse.data)
       } catch (err) {
