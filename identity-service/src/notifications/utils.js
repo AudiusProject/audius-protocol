@@ -334,7 +334,6 @@ const shouldSendEmail = (
 }
 
 const getSupporters = async (receiverUserId) => {
-  console.log('do not call')
   const encodedReceiverId = encodeHashId(receiverUserId)
   const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
   const url = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/${encodedReceiverId}/supporters`
