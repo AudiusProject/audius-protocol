@@ -86,25 +86,31 @@ const sendTransaction = async (
 }
 
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
-  const {
+  let {
     contractRegistryKey,
     contractAddress,
+    nethermindContractAddress,
     encodedABI,
+    nethermindEncodedABI,
     senderAddress,
     gasLimit
   } = txProps
   const redis = req.app.get('redis')
 
-  // SEND to either POA or Nethermind here...
-  let sendToNethermind = false
-  if (config.get('environment') === 'staging') {
-    sendToNethermind = true
-  } else {
-    const currentBlock = await web3.eth.getBlockNumber()
-    const finalPOABlock = config.get('finalPOABlock')
-    sendToNethermind = finalPOABlock ? currentBlock > finalPOABlock : false
-  }
+  // SEND to both nethermind and POA
+  // sendToNethermindOnly indicates relay should respond with that receipt
+  const currentBlock = await web3.eth.getBlockNumber()
+  const finalPOABlock = config.get('finalPOABlock')
+  let sendToNethermindOnly = finalPOABlock
+    ? currentBlock > finalPOABlock
+    : false
 
+  // force staging to use nethermind since it hasn't surpassed finalPOABlock
+  // prod will surpass
+
+  if (config.get('environment') === 'staging') {
+    sendToNethermindOnly = true
+  }
   const existingTx = await models.Transaction.findOne({
     where: {
       encodedABI: encodedABI // this should always be unique because of the nonce / sig
@@ -120,33 +126,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
-  // Rate limit replica set reconfiguration transactions
-  // A reconfiguration (as opposed to a first time selection) will have an
-  // _oldPrimaryId value of "0"
-  const isReplicaSetTransaction = decodedABI.name === 'updateReplicaSet'
-  if (isReplicaSetTransaction) {
-    const isFirstReplicaSetConfig = decodedABI.params.find(
-      (param) => param.name === '_oldPrimaryId' && param.value === '0'
-    )
-    if (!isFirstReplicaSetConfig) {
-      transactionRateLimiter.updateReplicaSetReconfiguration += 1
-      if (
-        transactionRateLimiter.updateReplicaSetReconfiguration >
-        UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
-      ) {
-        throw new Error('updateReplicaSet rate limit reached')
-      }
-
-      if (
-        UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
-        !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
-      ) {
-        throw new Error(
-          `Sender ${senderAddress} not allowed to make updateReplicaSet calls`
-        )
-      }
-    }
-  }
+  filterReplicaSetUpdates(decodedABI, senderAddress)
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
@@ -155,7 +135,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   let wallet = await selectWallet()
 
   // If all wallets are currently in use, keep iterating until a wallet is freed up
-  while (!sendToNethermind && !wallet) {
+  while (!wallet) {
     await delay(200)
     wallet = await selectWallet()
   }
@@ -165,23 +145,61 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
     )
 
-    if (sendToNethermind) {
-      const ok = await relayToNethermind(encodedABI)
-      txParams = ok.txParams
-      txReceipt = ok.receipt
-    } else {
-      // use POA receipt as main receipt
-      const ok = await createAndSendTransaction(
-        wallet,
-        contractAddress,
-        '0x00',
-        web3,
-        req.logger,
-        gasLimit,
-        encodedABI
+    // send to POA
+    // PROD doesn't have sendToNethermindOnly and should default to POA
+    // STAGE defaults to nethermind but can send to POA when it has both addresses
+    const relayPromises = []
+    if (
+      !sendToNethermindOnly ||
+      (sendToNethermindOnly && nethermindContractAddress)
+    ) {
+      relayPromises.push(
+        createAndSendTransaction(
+          wallet,
+          contractAddress,
+          '0x00',
+          web3,
+          req.logger,
+          gasLimit,
+          encodedABI
+        )
       )
-      txParams = ok.txParams
-      txReceipt = ok.receipt
+    }
+
+    // send to nethermind
+    // PROD doesn't have sendToNethermindOnly and only sends to nethermind when it has both addresses
+    // STAGE defaults to nethermind
+    if (
+      sendToNethermindOnly ||
+      (!sendToNethermindOnly && nethermindContractAddress)
+    ) {
+      if (!nethermindContractAddress) {
+        nethermindContractAddress = contractAddress
+        nethermindEncodedABI = encodedABI
+      }
+      relayPromises.push(
+        relayToNethermind(nethermindEncodedABI, nethermindContractAddress)
+      )
+    }
+    const relayTxs = await Promise.allSettled(relayPromises)
+
+    if (relayTxs.length === 1) {
+      txParams = relayTxs[0].value.txParams
+      txReceipt = relayTxs[0].value.receipt
+    } else if (relayTxs.length === 2) {
+      const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
+      console.log(
+        `txRelay - poaTx: ${JSON.stringify(
+          poaTx?.txParams
+        )} | nethermindTx: ${JSON.stringify(nethermindTx?.txParams)}`
+      )
+      if (sendToNethermindOnly) {
+        txParams = nethermindTx.txParams
+        txReceipt = nethermindTx.receipt
+      } else {
+        txParams = poaTx.txParams
+        txReceipt = poaTx.receipt
+      }
     }
 
     redisLogParams = {
@@ -240,6 +258,52 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   })
 
   return txReceipt
+}
+
+/**
+ * Rate limit replica set reconfiguration transactions
+ * the available wallets using mod
+ *
+ * A reconfiguration (as opposed to a first time selection) will have an
+ * _oldPrimaryId value of "0"
+ */
+
+const filterReplicaSetUpdates = (decodedABI, senderAddress) => {
+  let isReplicaSetTransaction = false
+  let isFirstReplicaSetConfig = false
+
+  if (decodedABI.name === 'updateReplicaSet') {
+    // TODO remove legacy replica set updates
+    isFirstReplicaSetConfig = decodedABI.params.find(
+      (param) => param.name === '_oldPrimaryId' && param.value === '0'
+    )
+  } else if (decodedABI.name === 'manageEntity') {
+    isReplicaSetTransaction = decodedABI.params.find(
+      (param) =>
+        param.name === '_entityType' && param.value === 'UserReplicaSet'
+    )
+    // isFirstReplicaSetConfig must be false
+    // EntityManager create user actions include the initial replica set
+  }
+
+  if (isReplicaSetTransaction && !isFirstReplicaSetConfig) {
+    transactionRateLimiter.updateReplicaSetReconfiguration += 1
+    if (
+      transactionRateLimiter.updateReplicaSetReconfiguration >
+      UPDATE_REPLICA_SET_RECONFIGURATION_LIMIT
+    ) {
+      throw new Error('updateReplicaSet rate limit reached')
+    }
+
+    if (
+      UPDATE_REPLICA_SET_WALLET_WHITELIST.length > 0 &&
+      !UPDATE_REPLICA_SET_WALLET_WHITELIST.includes(senderAddress)
+    ) {
+      throw new Error(
+        `Sender ${senderAddress} not allowed to make updateReplicaSet calls`
+      )
+    }
+  }
 }
 
 /**
@@ -380,7 +444,7 @@ const createAndSendTransaction = async (
 
 let inFlight = 0
 
-async function relayToNethermind(encodedABI) {
+async function relayToNethermind(encodedABI, contractAddress) {
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
 
@@ -390,7 +454,7 @@ async function relayToNethermind(encodedABI) {
 
   try {
     const transaction = {
-      to: config.get('entityManagerAddress'),
+      to: contractAddress,
       value: 0,
       gas: '100880',
       gasPrice: 0,
@@ -426,7 +490,6 @@ async function relayToNethermind(encodedABI) {
     }
   } catch (err) {
     console.log('relayToNethermind error:', err.toString())
-    throw err
   }
 }
 

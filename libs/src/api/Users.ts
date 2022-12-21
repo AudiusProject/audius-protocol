@@ -35,6 +35,8 @@ const USER_PROPS = [
 const USER_REQUIRED_PROPS = ['name', 'handle']
 // Constants for user metadata fields
 
+const { decodeHashId } = Utils
+
 export class Users extends Base {
   ServiceProvider: ServiceProvider
   preferHigherPatchForPrimary: boolean
@@ -494,7 +496,7 @@ export class Users extends Base {
       )
 
       // Create the user with entityMananer
-      const userId = Users.generateUserId()
+      const userId = await this._generateUserId()
       const manageEntityResponse =
         await this.contracts.EntityManagerClient!.manageEntity(
           userId,
@@ -668,7 +670,7 @@ export class Users extends Base {
   async updateCreator(
     userId: number,
     metadata: UserMetadata,
-    useEntityManager: boolean
+    useEntityManager?: boolean
   ) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
@@ -896,7 +898,7 @@ export class Users extends Base {
   }: {
     newMetadata: UserMetadata
     userId: number
-    useEntityManager: boolean
+    useEntityManager?: boolean
   }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
@@ -1453,13 +1455,11 @@ export class Users extends Base {
     return spID
   }
 
-  // Minimum user ID, intentionally higher than legacy user ID range
-  static MIN_USER_ID = 2000000
-
-  // Maximum user ID, reflects postgres max integer value
-  static MAX_USER_ID = 2147483647
-
-  static generateUserId(): number {
-    return Utils.getRandomInt(Users.MIN_USER_ID, Users.MAX_USER_ID)
+  async _generateUserId(): Promise<number> {
+    const encodedId = await this.discoveryProvider.getUnclaimedId('users')
+    if (!encodedId) {
+      throw new Error('No unclaimed user IDs')
+    }
+    return decodeHashId(encodedId)!
   }
 }

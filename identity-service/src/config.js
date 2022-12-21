@@ -111,12 +111,6 @@ const config = convict({
     env: 'instagramRedirectUrl',
     default: null
   },
-  instagramProfileUrl: {
-    doc: 'Instagram profile url',
-    format: String,
-    env: 'instagramProfileUrl',
-    default: 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
-  },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
@@ -713,6 +707,12 @@ const config = convict({
     default: '',
     env: 'aaoAddress'
   },
+  generalAdmissionAddress: {
+    doc: 'General admission server address',
+    format: String,
+    default: '',
+    env: 'generalAdmissionAddress'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -747,7 +747,7 @@ const config = convict({
     doc: 'The slot number to start indexing if no slots defined',
     format: Number,
     env: 'minSolanaNotificationSlot',
-    default: 105400000
+    default: 166928009
   },
   successAudioReporterSlackUrl: {
     doc: 'The slack url to post messages for success in audio / rewards events',
@@ -855,6 +855,12 @@ const config = convict({
     doc: '`senderAddress` values allowed to make updateReplicaSet calls. Will still adhere to updateReplicaSetReconfigurationLimit. Empty means no whitelist, all addresses allowed.',
     format: 'string-array',
     env: 'updateReplicaSetWalletWhitelist',
+    default: ''
+  },
+  ipApiKey: {
+    doc: 'Key for IPAPI',
+    format: String,
+    env: 'ipApiKey',
     default: ''
   }
 })

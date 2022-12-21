@@ -10,12 +10,10 @@ import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import { TQUEUE_NAMES, SYNC_MODES } from './stateMachineConstants'
 
 import { instrumentTracing, tracing } from '../../tracer'
+import { recordMetrics } from '../prometheusMonitoring/prometheusUsageUtils'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
-const {
-  METRIC_RECORD_TYPE
-} = require('../prometheusMonitoring/prometheus.constants')
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -205,30 +203,6 @@ const injectEnabledReconfigModes = (
   return jobs.map((job) => {
     return { ...job, enabledReconfigModes }
   })
-}
-
-const recordMetrics = (
-  prometheusRegistry: any,
-  logger: Logger,
-  metricsToRecord = []
-) => {
-  for (const metricInfo of metricsToRecord) {
-    try {
-      const { metricName, metricType, metricValue, metricLabels } = metricInfo
-      const metric = prometheusRegistry.getMetric(metricName)
-      if (metricType === METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE) {
-        metric.observe(metricLabels, metricValue)
-      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_INC) {
-        metric.inc(metricLabels, metricValue)
-      } else if (metricType === METRIC_RECORD_TYPE.GAUGE_SET) {
-        metric.set(metricLabels, metricValue)
-      } else {
-        logger.error(`Unexpected metric type: ${metricType}`)
-      }
-    } catch (error) {
-      logger.error(`Error recording metric ${metricInfo}: ${error}`)
-    }
-  }
 }
 
 module.exports = instrumentTracing({

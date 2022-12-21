@@ -34,6 +34,12 @@ type RequestParams = {
   data?: Record<string, unknown>
 }
 
+type UserReplicaSet = {
+  primarySpID: number
+  secondary1SpID: number
+  secondary2SpID: number
+}
+
 export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
@@ -425,7 +431,7 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]> = null,
     targetUserId: Nullable<number> = null,
     withUsers = false
-  ): Promise<unknown> {
+  ) {
     const req = Requests.getPlaylists(
       limit,
       offset,
@@ -985,16 +991,27 @@ export class DiscoveryProvider {
   }: {
     encodedUserId: string
     blockNumber?: number
-  }): Promise<Object | null | undefined> {
+  }) {
     const req = Requests.getUserReplicaSet(encodedUserId)
 
-    return await this._makeRequest<Object | null>(
+    return await this._makeRequest<Nullable<UserReplicaSet>>(
       req,
       true,
       0,
       false,
       blockNumber
     )
+  }
+
+  /**
+   * Retrieves an unclaimed ID
+   * @return encoded ID
+   */
+  async getUnclaimedId(
+    type: 'users' | 'playlists' | 'tracks'
+  ): Promise<null | undefined | string> {
+    const req = Requests.getUnclaimedId(type)
+    return await this._makeRequest(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
