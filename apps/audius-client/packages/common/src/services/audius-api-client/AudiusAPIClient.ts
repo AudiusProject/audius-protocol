@@ -491,6 +491,7 @@ export class AudiusAPIClient {
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
   env: Env
+  isReachable?: boolean = true
 
   constructor({
     audiusBackendInstance,
@@ -506,6 +507,10 @@ export class AudiusAPIClient {
     this.remoteConfigInstance = remoteConfigInstance
     this.localStorage = localStorage
     this.env = env
+  }
+
+  setIsReachable(isReachable: boolean) {
+    this.isReachable = isReachable
   }
 
   async getTrending({
@@ -1665,7 +1670,13 @@ export class AudiusAPIClient {
     splitArrayParams = false
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
-      throw new Error('_constructURL called uninitialized')
+      throw new Error('_getResponse called uninitialized')
+
+    // If not reachable, abort
+    if (!this.isReachable) {
+      console.debug(`APIClient: Not reachable, aborting request`)
+      return null
+    }
 
     // If a param has a null value, remove it
     const sanitizedParams = Object.keys(params).reduce((acc, cur) => {
