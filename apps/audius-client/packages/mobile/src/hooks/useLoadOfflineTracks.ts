@@ -78,6 +78,7 @@ export const useLoadOfflineTracks = () => {
           .then((track: Track & UserTrackMetadata) => {
             const lineupTrack = {
               uid: makeUid(Kind.TRACKS, track.track_id),
+              kind: Kind.TRACKS,
               ...track
             }
             cacheTracks.push({
