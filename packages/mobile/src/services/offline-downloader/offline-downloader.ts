@@ -34,7 +34,10 @@ import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
 
 import { apiClient } from '../audius-api-client'
 
-import { enqueueTrackDownload } from './offline-download-queue'
+import {
+  cancelQueuedDownloads,
+  enqueueTrackDownload
+} from './offline-download-queue'
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtDestination,
@@ -56,7 +59,7 @@ export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 /** Main entrypoint - perform all steps required to complete a download for each track */
 export const downloadCollectionById = (
-  collectionId?: number,
+  collectionId?: number | null,
   isFavoritesDownload?: boolean
 ) => {
   const state = store.getState()
@@ -185,12 +188,12 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
     if (verified) {
       store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
+      return
     } else {
       throw failJob(
         `DownloadQueueWorker - download verification failed ${trackIdStr}`
       )
     }
-    return verified
   } catch (e) {
     throw failJob(e.message)
   }
@@ -207,6 +210,7 @@ export const removeCollectionDownload = async (
 export const batchRemoveTrackDownload = async (
   tracksForDownload: TrackForDownload[]
 ) => {
+  cancelQueuedDownloads(tracksForDownload)
   tracksForDownload.forEach(async ({ trackId, downloadReason }) => {
     try {
       const trackIdStr = trackId.toString()

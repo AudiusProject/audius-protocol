@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import type { DownloadReason } from '@audius/common'
 import { View } from 'react-native'
@@ -28,7 +28,7 @@ export type TrackForDownload = {
 type DownloadToggleProps = {
   tracksForDownload: TrackForDownload[]
   labelText?: string
-  collectionId?: number
+  collectionId?: number | null
   isFavoritesDownload?: boolean
 }
 
@@ -96,6 +96,7 @@ export const DownloadToggle = ({
   const styleProps = useMemo(() => ({ labelText }), [labelText])
   const styles = useStyles(styleProps)
   const dispatch = useDispatch()
+  const [disabled, setDisabled] = useState(false)
   const collectionIdStr = isFavoritesDownload
     ? DOWNLOAD_REASON_FAVORITES
     : collectionId?.toString()
@@ -139,6 +140,8 @@ export const DownloadToggle = ({
           )
         }
       }
+      setDisabled(true)
+      setTimeout(() => setDisabled(false), 1000)
     },
     [
       collectionId,
@@ -180,7 +183,7 @@ export const DownloadToggle = ({
         <Switch
           value={isCollectionMarkedForDownload}
           onValueChange={handleToggleDownload}
-          disabled={isAnyDownloadInProgress}
+          disabled={!collectionId || disabled}
         />
       </View>
     </View>

@@ -214,15 +214,16 @@ export const CollectionScreenDetailsTile = ({
     [collectionId, entries]
   )
 
-  const renderHeader = useCallback(() => {
-    return collectionId ? (
+  const renderHeader = useCallback(
+    () => (
       <DownloadToggle
         collectionId={collectionId}
         tracksForDownload={tracksForDownload}
         labelText={headerText}
       />
-    ) : null
-  }, [collectionId, headerText, tracksForDownload])
+    ),
+    [collectionId, headerText, tracksForDownload]
+  )
 
   const renderTrackList = () => {
     if (tracksLoading)
