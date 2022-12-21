@@ -81,6 +81,7 @@ export const audiusBackendInstance = audiusBackend({
     }
   },
   identityServiceUrl: process.env.REACT_APP_IDENTITY_SERVICE,
+  generalAdmissionUrl: process.env.REACT_APP_GENERAL_ADMISSION,
   isElectron: isElectron(),
   isMobile: isMobile(),
   legacyUserNodeUrl: process.env.REACT_APP_LEGACY_USER_NODE,

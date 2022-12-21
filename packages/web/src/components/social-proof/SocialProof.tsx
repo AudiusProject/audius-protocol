@@ -91,7 +91,6 @@ const VerifyBody = ({
             onClick={onInstagramClick}
             onSuccess={onInstagramLogin}
             onFailure={(error: Error) => onFailure('instagram', error)}
-            requiresProfileMetadata={false}
           />
         )}
       </div>

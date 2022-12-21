@@ -12,7 +12,7 @@ import styles from './InstagramButton.module.css'
 
 type InstagramAuthButtonProps = Pick<
   InstagramAuthProps,
-  'onSuccess' | 'onFailure' | 'style' | 'disabled' | 'requiresProfileMetadata'
+  'onSuccess' | 'onFailure' | 'style' | 'disabled'
 > &
   InstagramButtonProps
 
@@ -52,8 +52,7 @@ const InstagramAuthButton = ({
   onSuccess,
   onFailure,
   disabled = false,
-  text,
-  requiresProfileMetadata = true
+  text
 }: InstagramAuthButtonProps) => {
   return (
     <InstagramAuth
@@ -62,8 +61,6 @@ const InstagramAuthButton = ({
       onFailure={onFailure || (() => {})}
       onSuccess={onSuccess || (() => {})}
       getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
-      setProfileUrl={`${audiusBackendInstance.identityServiceUrl}/instagram/profile`}
-      requiresProfileMetadata={requiresProfileMetadata}
     >
       <InstagramButton
         className={className}

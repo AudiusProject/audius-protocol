@@ -32,10 +32,12 @@ const messages = {
     characters: 'Only use A-Z, 0-9, and underscores',
     inUse: 'That handle has already been taken',
     twitterReserved: 'This verified Twitter handle is reserved.',
-    instagramReserved: 'This verified Instagram handle is reserved.'
+    instagramReserved: 'This verified Instagram handle is reserved.',
+    tikTokReserved: 'This verified TikTok handle is reserved.'
   },
   completeWithTwitter: 'Link to Twitter to claim',
-  completeWithInstagram: 'Link to Instagram to claim'
+  completeWithInstagram: 'Link to Instagram to claim',
+  completeWithTikTok: 'Link to TikTok to claim'
 }
 
 type Field = {
@@ -105,12 +107,14 @@ const ProfileForm = (props: ProfileFormProps) => {
   // TODO: Handle tiktok here
   const suggestTwitterLogin = handle.error === 'twitterReserved'
   const suggestInstagramLogin = handle.error === 'instagramReserved'
+  const suggestTikTokLogin = handle.error === 'tikTokReserved'
 
   return (
     <div
       className={cn(styles.profileFormContainer, {
         [styles.isMobile]: isMobile,
-        [styles.moveFormUp]: suggestTwitterLogin || suggestInstagramLogin
+        [styles.moveFormUp]:
+          suggestTwitterLogin || suggestInstagramLogin || suggestTikTokLogin
       })}
     >
       {isMobile ? <div className={styles.header}>{header}</div> : null}
@@ -234,11 +238,23 @@ const ProfileForm = (props: ProfileFormProps) => {
                   onFailure={console.log}
                   onSuccess={onInstagramLogin}
                   className={styles.hideTwitterButton}
-                  setProfileUrl={`${audiusBackendInstance.identityServiceUrl}/instagram/profile`}
                   getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
                 >
                   {messages.completeWithInstagram}
                 </InstagramAuth>
+              </div>
+            )}
+          </Spring>
+        ) : null}
+        {suggestTikTokLogin ? (
+          <Spring
+            from={{ opacity: 0 }}
+            to={{ opacity: 1 }}
+            config={{ duration: 200 }}
+          >
+            {(animProps) => (
+              <div style={animProps} className={styles.suggestTwitter}>
+                {/* TODO: Implement tiktok auth */}
               </div>
             )}
           </Spring>

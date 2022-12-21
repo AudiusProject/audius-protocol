@@ -231,6 +231,7 @@ type AudiusBackendParams = {
     createKey: HedgehogConfig['createKey']
   }
   identityServiceUrl: Maybe<string>
+  generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
   isMobile: Maybe<boolean>
   legacyUserNodeUrl: Maybe<string>
@@ -274,6 +275,7 @@ export const audiusBackend = ({
   getWeb3Config,
   hedgehogConfig,
   identityServiceUrl,
+  generalAdmissionUrl,
   isElectron,
   isMobile,
   legacyUserNodeUrl,
@@ -2053,6 +2055,30 @@ export const audiusBackend = ({
     }
   }
 
+  async function instagramHandle(handle: string) {
+    try {
+      const res = await fetch(
+        `${generalAdmissionUrl}/social/instagram/${handle}`
+      )
+      const json = await res.json()
+      return json
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
+  async function tiktokHandle(handle: string) {
+    try {
+      const res = await fetch(`${generalAdmissionUrl}/social/tiktok/${handle}`)
+      const json = await res.json()
+      return json
+    } catch (error) {
+      console.error(error)
+      return null
+    }
+  }
+
   async function associateTwitterAccount(
     twitterId: string,
     userId: ID,
@@ -3243,6 +3269,8 @@ export const audiusBackend = ({
     submitAndEvaluateAttestations,
     transferAudioToWAudio,
     twitterHandle,
+    instagramHandle,
+    tiktokHandle,
     undoRepostCollection,
     undoRepostTrack,
     unfollowUser,
