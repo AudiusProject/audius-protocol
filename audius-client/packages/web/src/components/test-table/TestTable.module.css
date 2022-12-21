@@ -59,8 +59,8 @@
   line-height: 41px;
   user-select: none;
 }
-.tableHeader.hasSorter {
-  padding-right: 20px;
+.tableHeader.hasSorter .textCell {
+  padding-right: 6px;
 }
 .titleHeader + .titleHeader::before {
   content: '';
