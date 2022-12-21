@@ -708,7 +708,7 @@ const config = convict({
     env: 'aaoAddress'
   },
   generalAdmissionAddress: {
-    doc: 'General admission server adress',
+    doc: 'General admission server address',
     format: String,
     default: '',
     env: 'generalAdmissionAddress'
