@@ -44,13 +44,13 @@ const config = convict({
     doc: 'True to copy files with a legacy storage path to the new storage path specified by the "storagePath" config option',
     format: Boolean,
     env: 'migrateFilesWithLegacyStoragePath',
-    default: false
+    default: true
   },
   migrateFilesWithCustomStoragePath: {
     doc: 'True to copy files with a non-standard storage path to the new storage path specified by the "storagePath" config option',
     format: Boolean,
     env: 'migrateFilesWithCustomStoragePath',
-    default: false
+    default: true
   },
   redisHost: {
     doc: 'Redis host name',
@@ -531,7 +531,7 @@ const config = convict({
     doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should run',
     format: Boolean,
     env: 'backgroundDiskCleanupCheckEnabled',
-    default: false
+    default: true
   },
   backgroundDiskCleanupDeleteEnabled: {
     doc: 'whether DiskManager.sweepSubdirectoriesInFiles() should actually delete from disk',
