@@ -772,6 +772,47 @@ router.get(
       )
     }
 
+    // attempt to fetch cached stream data for blockchainId
+    // if found, bypass the db and discovery queries and proceed to getCID
+    try {
+      const cachedData = await redisClient.get(
+        `trackStreamCache:::${blockchainId}`
+      )
+
+      if (cachedData) {
+        if (libs.identityService) {
+          req.logger.info(
+            `Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`
+          )
+          const signatureData = generateListenTimestampAndSignature(
+            config.get('delegatePrivateKey')
+          )
+          // Fire and forget listen recording
+          libs.identityService.logTrackListen(
+            blockchainId,
+            delegateOwnerWallet,
+            req.ip,
+            signatureData
+          )
+        }
+
+        req.params.CID = cachedData
+        req.params.streamable = true
+        res.set('Content-Type', 'audio/mpeg')
+        res.set('Copy320-CID', cachedData)
+        // early exit and call next() which continues to getCID
+        return next()
+      }
+    } catch (e) {
+      // do nothing if unable to fetch cached data from redis, continue with rest of the process
+      req.logger.debug(
+        `Could not fetch cached track stream data for track ${blockchainId}`
+      )
+    }
+
+    const debugTimings = {}
+
+    const findCopy320Start = Date.now()
     let fileRecord = await models.File.findOne({
       attributes: ['multihash'],
       where: {
@@ -780,31 +821,13 @@ router.get(
       },
       order: [['clock', 'DESC']]
     })
-
-    if (!fileRecord) {
-      try {
-        // see if there's a fileRecord in redis so we can short circuit all this logic
-        let redisFileRecord = await redisClient.get(
-          `streamFallback:::${blockchainId}`
-        )
-        if (redisFileRecord) {
-          redisFileRecord = JSON.parse(redisFileRecord)
-          if (redisFileRecord && redisFileRecord.multihash) {
-            fileRecord = redisFileRecord
-          }
-        }
-      } catch (e) {
-        req.logger.error(
-          { error: e },
-          'Error looking for stream fallback in redis'
-        )
-      }
-    }
+    debugTimings.findCopy320 = (Date.now() - findCopy320Start) / 1000
 
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
     // try to fall back to discovery to fetch the metadata multihash and see if you can deduce the copy320 file
     if (!fileRecord) {
       try {
+        const findTrackRecordInDiscoveryStart = Date.now()
         let trackRecord = await libs.Track.getTracks(1, 0, [blockchainId])
         if (
           !trackRecord ||
@@ -819,12 +842,15 @@ router.get(
             )
           )
         }
+        debugTimings.findTrackRecordInDiscovery =
+          (Date.now() - findTrackRecordInDiscoveryStart) / 1000
 
         trackRecord = trackRecord[0]
 
         // query the files table for a metadata multihash from discovery for a given track
         // no need to add CNodeUserUUID to the filter because the track is associated with a user and that contains the
         // user_id inside it which is unique to the user
+        const findMetadataMultihashForTrackStart = Date.now()
         const file = await models.File.findOne({
           where: {
             multihash: trackRecord.metadata_multihash,
@@ -840,12 +866,15 @@ router.get(
             )
           )
         }
+        debugTimings.findMetadataMultihashForTrack =
+          (Date.now() - findMetadataMultihashForTrackStart) / 1000
 
         // make sure all track segments have the same sourceFile
         const segments = trackRecord.track_segments.map(
           (segment) => segment.multihash
         )
 
+        const findSourceFileForSegmentsStart = Date.now()
         const fileSegmentRecords = await models.File.findAll({
           attributes: ['sourceFile'],
           where: {
@@ -854,6 +883,8 @@ router.get(
           },
           raw: true
         })
+        debugTimings.findSourceFileForSegments =
+          (Date.now() - findSourceFileForSegmentsStart) / 1000
 
         // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
         if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
@@ -874,6 +905,7 @@ router.get(
         }
 
         // search for the copy320 record based on the sourceFile
+        const findCopy320AfterFallbackStart = Date.now()
         fileRecord = await models.File.findOne({
           attributes: ['multihash'],
           where: {
@@ -882,16 +914,8 @@ router.get(
           },
           raw: true
         })
-
-        // cache the fileRecord in redis for an hour so we don't have to keep making requests to discovery
-        if (fileRecord) {
-          redisClient.set(
-            `streamFallback:::${blockchainId}`,
-            JSON.stringify(fileRecord),
-            'EX',
-            60 * 60
-          )
-        }
+        debugTimings.findCopy320AfterFallback =
+          (Date.now() - findCopy320AfterFallbackStart) / 1000
       } catch (e) {
         req.logger.error(
           { error: e },
@@ -899,6 +923,10 @@ router.get(
         )
       }
     }
+
+    req.logger.info(
+      `Track stream debug timings - ${JSON.stringify(debugTimings)}`
+    )
 
     if (!fileRecord || !fileRecord.multihash) {
       return sendResponse(
@@ -931,6 +959,12 @@ router.get(
     req.params.streamable = true
     res.set('Content-Type', 'audio/mpeg')
     res.set('Copy320-CID', fileRecord.multihash)
+    await redisClient.set(
+      `trackStreamCache:::${blockchainId}`,
+      fileRecord.multihash,
+      'EX',
+      60 * 60 /* one hour */
+    )
     next()
   },
   getCID
