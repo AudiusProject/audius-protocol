@@ -258,6 +258,7 @@ function _M.mark_request_processed ()
 end
 
 function _M.validate_nethermind_rpc_request ()
+    ngx.req.read_body()
     local body = cjson.decode(ngx.req.get_body_data())
     if not utils.starts_with(body.method, "eth_") then
         ngx.exit(405)
