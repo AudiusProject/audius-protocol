@@ -263,6 +263,7 @@ function _M.validate_nethermind_rpc_request ()
     if not utils.starts_with(body.method, "eth_") then
         ngx.exit(405)
     end
+    return true
 end
 
 return _M
