@@ -288,20 +288,23 @@ def _get_token_account_info(token_account):
     return token_account["account"]["data"]["parsed"]["info"]
 
 
-def decode_metadata_account(metadata_account):
+def _decode_metadata_account(metadata_account):
     return base64.b64decode(
         solana_client_manager.get_account_info(metadata_account)["value"]["data"][0]
     )
 
 
-async def wrap_decode_metadata_account(metadata_account):
+async def _wrap_decode_metadata_account(metadata_account):
     loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(None, decode_metadata_account, metadata_account)
-    return result
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as pool:
+        result = await loop.run_in_executor(
+            pool, _decode_metadata_account, metadata_account
+        )
+        return result
 
 
-async def decode_metadata_accounts_async(metadata_accounts):
-    datas = await asyncio.gather(*map(wrap_decode_metadata_account, metadata_accounts))
+async def _decode_metadata_accounts_async(metadata_accounts):
+    datas = await asyncio.gather(*map(_wrap_decode_metadata_account, metadata_accounts))
     return datas
 
 
@@ -337,7 +340,7 @@ def _does_user_own_sol_nft_collection(
                 )
             )
             metadata_accounts = list(map(_get_metadata_account, nft_mints))
-            datas = asyncio.run(decode_metadata_accounts_async(metadata_accounts))
+            datas = asyncio.run(_decode_metadata_accounts_async(metadata_accounts))
             metadatas = list(map(_unpack_metadata_account_for_metaplex_nft, datas))
             collections = list(map(lambda metadata: metadata["collection"], metadatas))
             has_collection_mint_address = list(
