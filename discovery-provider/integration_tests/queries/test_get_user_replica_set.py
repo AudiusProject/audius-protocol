@@ -12,17 +12,17 @@ def test_get_user_replica_set(app):
             "users": [
                 {
                     "user_id": 1,
-                    "wallet": "0x1",
+                    "wallet": "0x01",
                     "creator_node_endpoint": "https://cn1.io,https://cn2.io,https://cn3.io",
                     "primary_id": 1,
                     "secondary_ids": [2, 3],
                 },
                 {
                     "user_id": 2,
-                    "wallet": "0x2",
+                    "wallet": "0x02",
                     "creator_node_endpoint": "https://cn1.io,https://cn2.io,https://cn3.io",
                 },
-                {"user_id": 3, "wallet": "0x3"},
+                {"user_id": 3, "wallet": "0x03", "creator_node_endpoint": None},
             ],
         }
 
@@ -63,7 +63,7 @@ def test_get_user_replica_set(app):
         assert replica_set_3 == {
             "user_id": 3,
             "wallet": "0x03",
-            "primary": None,
+            "primary": "",
             "secondary1": None,
             "secondary2": None,
             "primarySpID": None,
