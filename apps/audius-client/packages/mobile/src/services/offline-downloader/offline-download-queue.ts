@@ -1,13 +1,16 @@
+import { isEqual, groupBy } from 'lodash'
+import type { CancellablePromise } from 'react-native-job-queue'
 import queue, { Worker } from 'react-native-job-queue'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
 import {
   batchStartDownload,
-  errorDownload
+  errorDownload,
+  removeDownload
 } from 'app/store/offline-downloads/slice'
 
-import { downloadTrack } from './offline-downloader'
+import { batchRemoveTrackDownload, downloadTrack } from './offline-downloader'
 
 export const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
 
@@ -38,12 +41,25 @@ export const startDownloadWorker = async () => {
   // Reset worker to improve devEx. Forces the worker to take code updates across reloads
   if (worker) queue.removeWorker(TRACK_DOWNLOAD_WORKER, true)
   queue.addWorker(
-    new Worker(TRACK_DOWNLOAD_WORKER, downloadTrack, {
-      onFailure: ({ payload }) => {
-        store.dispatch(errorDownload(payload.trackId.toString()))
+    new Worker(
+      TRACK_DOWNLOAD_WORKER,
+      (payload: TrackDownloadWorkerPayload) => {
+        const promise: CancellablePromise<void> = downloadTrack(payload)
+        promise.rn_job_queue_cancel = () => {
+          promise.finally(() => {
+            store.dispatch(removeDownload(payload.trackId.toString()))
+            batchRemoveTrackDownload([payload])
+          })
+        }
+        return promise
       },
-      concurrency: 10
-    })
+      {
+        onFailure: ({ payload }) => {
+          store.dispatch(errorDownload(payload.trackId.toString()))
+        },
+        concurrency: 10
+      }
+    )
   )
 
   // Sync leftover jobs from last session to redux state
@@ -69,5 +85,43 @@ export const startDownloadWorker = async () => {
 
   store.dispatch(batchStartDownload(trackIdsInQueue))
 
+  queue.start()
+}
+
+export const cancelQueuedDownloads = async (
+  payloadsToCancel: TrackDownloadWorkerPayload[]
+) => {
+  const payloadsToCancelById = groupBy(
+    payloadsToCancel,
+    (payload) => payload.trackId
+  )
+  const jobs = await queue.getJobs()
+  const jobsToCancel = jobs.filter(({ workerName, payload }) => {
+    try {
+      const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
+      return (
+        workerName === TRACK_DOWNLOAD_WORKER &&
+        (payloadsToCancelById[parsedPayload.trackId] ?? []).some(
+          (payloadToCancel) => isEqual(payloadToCancel, parsedPayload)
+        )
+      )
+    } catch (e) {
+      console.warn(e)
+      return false
+    }
+  })
+  queue.stop()
+  jobsToCancel.forEach(async (rawJob) => {
+    try {
+      const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(
+        rawJob.payload
+      )
+      rawJob.active ? queue.cancelJob(rawJob.id) : queue.removeJob(rawJob)
+
+      store.dispatch(removeDownload(parsedPayload.trackId.toString()))
+    } catch (e) {
+      console.warn(e)
+    }
+  })
   queue.start()
 }
