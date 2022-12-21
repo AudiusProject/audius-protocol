@@ -877,7 +877,7 @@ router.get(
         const findSourceFileForSegmentsStart = Date.now()
         // return unique sourceFile entries for the list of segments
         const fileSegmentRecords = await models.File.findAll({
-          attributes: [sequelize.fn('DISTINCT', sequelize.col('sourceFile'))],
+          attributes: [models.sequelize.fn('DISTINCT', models.sequelize.col('sourceFile'))],
           where: {
             multihash: segments,
             cnodeUserUUID: file.cnodeUserUUID
