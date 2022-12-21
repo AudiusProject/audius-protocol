@@ -115,6 +115,7 @@ def _get_eth_nft_gated_track_signatures(
     track_token_id_map: Dict[int, List[str]],
 ):
     track_signature_map = {}
+    track_cid_to_id_map = {}
 
     user_eth_wallets = list(
         map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
@@ -137,6 +138,7 @@ def _get_eth_nft_gated_track_signatures(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc721_collection_track_map[contract_address].append(track.track_cid)
+        track_cid_to_id_map[track.track_cid] = track.track_id
 
     erc1155_gated_tracks = list(
         filter(
@@ -163,6 +165,7 @@ def _get_eth_nft_gated_track_signatures(
         contract_address_token_id_map[contract_address] = contract_address_token_id_map[
             contract_address
         ].union(track_token_id_set)
+        track_cid_to_id_map[track.track_cid] = track.track_id
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Check ownership of nfts from erc721 collections from given contract addresses,
@@ -182,8 +185,9 @@ def _get_eth_nft_gated_track_signatures(
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in erc721_collection_track_map[contract_address]:
+                        track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
-                            track_cid
+                            track_id
                         ] = get_premium_content_signature_for_user(
                             {
                                 "id": track_cid,
@@ -217,8 +221,9 @@ def _get_eth_nft_gated_track_signatures(
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in erc1155_collection_track_map[contract_address]:
+                        track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
-                            track_cid
+                            track_id
                         ] = get_premium_content_signature_for_user(
                             {
                                 "id": track_cid,
@@ -366,6 +371,7 @@ def _get_sol_nft_gated_track_signatures(
     tracks: List[Track],
 ):
     track_signature_map = {}
+    track_cid_to_id_map = {}
 
     # Build a map of collection mint address -> track ids
     # so that only one chain call will be made for premium tracks
@@ -374,6 +380,7 @@ def _get_sol_nft_gated_track_signatures(
     for track in tracks:
         collection_mint_address = track.premium_conditions["nft_collection"]["address"]  # type: ignore
         collection_track_map[collection_mint_address].append(track.track_cid)
+        track_cid_to_id_map[track.track_cid] = track.track_id
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Check ownership of nfts from collections from given collection mint addresses,
@@ -395,8 +402,9 @@ def _get_sol_nft_gated_track_signatures(
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in collection_track_map[collection_mint_address]:
+                        track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
-                            track_cid
+                            track_id
                         ] = get_premium_content_signature_for_user(
                             {
                                 "id": track_cid,
