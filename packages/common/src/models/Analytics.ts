@@ -502,6 +502,7 @@ export enum FavoriteSource {
   OVERFLOW = 'overflow',
   TRACK_LIST = 'track list',
   SIGN_UP = 'sign up',
+  OFFLINE_DOWNLOAD = 'offline download',
   // Favorite triggered by some implicit action, e.g.
   // you had a smart collection and it was favorited so it
   // shows in your left-nav.
