@@ -875,8 +875,8 @@ router.get(
         )
 
         const findSourceFileForSegmentsStart = Date.now()
-        // return unique sourceFile entries for the list of segments
-        const fileSegmentRecords = await models.File.findAll({
+        // return a sourceFile which contains segments
+        const sourceFileRecord = await models.File.findOne({
           attributes: [
             models.sequelize.fn('DISTINCT', models.sequelize.col('sourceFile'))
           ],
@@ -895,7 +895,7 @@ router.get(
           attributes: ['multihash'],
           where: {
             type: 'copy320',
-            sourceFile: fileSegmentRecords[0].sourceFile
+            sourceFile: sourceFileRecord.sourceFile
           },
           raw: true
         })
