@@ -875,8 +875,11 @@ router.get(
         )
 
         const findSourceFileForSegmentsStart = Date.now()
-        const fileSegmentRecords = await models.File.findAll({
-          attributes: ['sourceFile'],
+        // return a sourceFile which contains segments
+        const sourceFileRecord = await models.File.findOne({
+          attributes: [
+            models.sequelize.fn('DISTINCT', models.sequelize.col('sourceFile'))
+          ],
           where: {
             multihash: segments,
             cnodeUserUUID: file.cnodeUserUUID
@@ -886,31 +889,13 @@ router.get(
         debugTimings.findSourceFileForSegments =
           (Date.now() - findSourceFileForSegmentsStart) / 1000
 
-        // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
-        if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
-          req.logger.warn(
-            `Track stream content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`
-          )
-        }
-
-        // check that there's a single sourceFile that all File records share by getting an array of uniques
-        const uniqSourceFiles = fileSegmentRecords
-          .map((record) => record.sourceFile)
-          .filter((v, i, a) => a.indexOf(v) === i)
-
-        if (uniqSourceFiles.length !== 1) {
-          req.logger.warn(
-            `Track stream content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`
-          )
-        }
-
         // search for the copy320 record based on the sourceFile
         const findCopy320AfterFallbackStart = Date.now()
         fileRecord = await models.File.findOne({
           attributes: ['multihash'],
           where: {
             type: 'copy320',
-            sourceFile: uniqSourceFiles[0]
+            sourceFile: sourceFileRecord.sourceFile
           },
           raw: true
         })
