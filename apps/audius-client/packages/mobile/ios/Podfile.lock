@@ -357,6 +357,8 @@ PODS:
     - React
   - react-native-image-picker (4.10.2):
     - React-Core
+  - react-native-in-app-review (4.2.1):
+    - React-Core
   - react-native-job-queue (0.5.0):
     - React
   - react-native-keep-awake (1.1.0):
@@ -546,6 +548,7 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../node_modules/react-native-google-cast/ios`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - react-native-job-queue (from `../node_modules/react-native-job-queue`)
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -680,6 +683,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-google-cast/ios"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-in-app-review:
+    :path: "../node_modules/react-native-in-app-review"
   react-native-job-queue:
     :path: "../node_modules/react-native-job-queue"
   react-native-keep-awake:
@@ -798,7 +803,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 60edbf7e11d91ae4c751d26c200dfd037099abe0
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
-  glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
+  glog: 5337263514dd6f09803962437687240c5dc39aa4
   google-cast-sdk-no-bluetooth: 5313156110d6e71fa336f6d742f1ee641e91fdca
   GoogleAppMeasurement: ae033c3aad67e68294369373056b4d74cc8ae0d6
   GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
@@ -809,7 +814,7 @@ SPEC CHECKSUMS:
   Permission-Notifications: 2662b6885535a98892b8e48da04b74fc898d70f8
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
   Protobuf: 235750e4696ff59fb07d949a9dbbc92b3c0700fe
-  RCT-Folly: 803a9cfd78114b2ec0f140cfa6fa2a6bafb2d685
+  RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: 405e24508a0feed1771d48caebb85c581db53122
   RCTTypeSafety: 0654998ea6afd3dccecbf6bb379d7c10d1361a72
   React: cce3ac45191e66a78c79234582cbfe322e4dfd00
@@ -828,6 +833,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-google-cast: 553c31d49840e2f357fde9a3dd0977fbe28d79ba
   react-native-image-picker: bd579f59ff1cd14c78d6a041dbe2dbec858a9141
+  react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-job-queue: b5ab7a599f4cdef5b20905172972f0a4bbd69770
   react-native-keep-awake: 16f22b2dc09f7ede9f46e3b187a824a1841f1ddf
   react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
@@ -882,4 +888,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 86c7e909196d7920299e68babc12fcaf4882d3e8
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.11.2

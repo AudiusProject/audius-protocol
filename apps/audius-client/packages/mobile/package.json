@@ -108,6 +108,7 @@
     "react-native-google-cast": "4.2.4",
     "react-native-haptic-feedback": "1.11.0",
     "react-native-image-picker": "4.10.2",
+    "react-native-in-app-review": "4.2.1",
     "react-native-job-queue": "0.5.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-linear-gradient": "github:react-native-linear-gradient/react-native-linear-gradient.git#9aece37cdf7d33ed52a1747b36e9e84f3c7a49ef",

@@ -18,6 +18,7 @@ import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifi
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
+import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
 import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
@@ -101,6 +102,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   ForgotPassword: ForgotPasswordDrawer,
   DeleteConfirmation: DeleteConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
+  RateCallToAction: RateCtaDrawer,
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer
