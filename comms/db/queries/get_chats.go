@@ -52,6 +52,7 @@ SELECT
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1 AND (chat_member.cleared_history_at IS NULL OR chat.last_message_at > chat_member.cleared_history_at)
+ORDER BY chat.last_message_at DESC, chat.chat_id
 `
 
 func UserChats(q db.Queryable, ctx context.Context, userID int32) ([]UserChatRow, error) {

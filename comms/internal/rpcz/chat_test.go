@@ -3,8 +3,6 @@ package rpcz
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
 	"testing"
 	"time"
 
@@ -13,26 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// this runs before all tests (not a per-test setup / teardown)
-func TestMain(m *testing.M) {
-	// setup
-	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
-	err := db.Dial()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// run tests
-	code := m.Run()
-
-	// teardown code here...
-	os.Exit(code)
-}
-
 func TestChat(t *testing.T) {
 	var err error
-	// ctx := context.Background()
-	// query := db.New(db.Conn)
 
 	chatId := "chat1"
 

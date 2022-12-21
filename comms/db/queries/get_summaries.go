@@ -8,8 +8,8 @@ import (
 )
 
 type SummaryRow struct {
-	TotalCount     int64 `json:"total_count"`
-	RemainingCount int64 `json:"remaining_count"`
+	TotalCount     int64 `db:"total_count" json:"total_count"`
+	RemainingCount int64 `db:"remaining_count" json:"remaining_count"`
 }
 
 const chatMessagesSummary = `

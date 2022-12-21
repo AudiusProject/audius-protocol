@@ -33,7 +33,7 @@ JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
 LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
 WHERE chat_member.user_id = $1 AND chat_message.chat_id = $2 AND chat_message.created_at < $4 AND (chat_member.cleared_history_at IS NULL OR chat_message.created_at > chat_member.cleared_history_at)
 GROUP BY chat_message.message_id
-ORDER BY chat_message.created_at DESC
+ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
 `
 
@@ -45,23 +45,51 @@ type ChatMessagesAndReactionsParams struct {
 }
 
 type ChatMessageAndReactionsRow struct {
-	MessageID  string         `db:"message_id" json:"message_id"`
-	ChatID     string         `db:"chat_id" json:"chat_id"`
-	UserID     int32          `db:"user_id" json:"user_id"`
-	CreatedAt  time.Time      `db:"created_at" json:"created_at"`
-	Ciphertext string         `db:"ciphertext" json:"ciphertext"`
-	Reactions  ReactionsSlice `json:"reactions"`
+	MessageID  string    `db:"message_id" json:"message_id"`
+	ChatID     string    `db:"chat_id" json:"chat_id"`
+	UserID     int32     `db:"user_id" json:"user_id"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
+	Ciphertext string    `db:"ciphertext" json:"ciphertext"`
+	Reactions  Reactions `json:"reactions"`
 }
 
-type ReactionsSlice []db.ChatMessageReaction
+type JSONTime struct {
+	time.Time
+}
 
-func (reactions *ReactionsSlice) Scan(value interface{}) error {
+type ChatMessageReactionRow struct {
+	UserID    int32    `db:"user_id" json:"user_id"`
+	MessageID string   `db:"message_id" json:"message_id"`
+	Reaction  string   `db:"reaction" json:"reaction"`
+	CreatedAt JSONTime `db:"created_at" json:"created_at"`
+	UpdatedAt JSONTime `db:"updated_at" json:"updated_at"`
+}
+
+type Reactions []ChatMessageReactionRow
+
+func (reactions *Reactions) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
 
 	return json.Unmarshal(bytes, reactions)
+}
+
+// Override JSONB timestamp unmarshaling since the postgres driver
+// does not convert timestamp strings in JSON -> time.Time
+func (t *JSONTime) UnmarshalJSON(b []byte) error {
+	timeformat := "2006-01-02T15:04:05.999999"
+	var timestamp string
+	err := json.Unmarshal(b, &timestamp)
+	if err != nil {
+		return err
+	}
+	t.Time, err = time.Parse(timeformat, timestamp)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessagesAndReactionsParams) ([]ChatMessageAndReactionsRow, error) {

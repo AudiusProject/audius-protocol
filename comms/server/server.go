@@ -27,7 +27,12 @@ var (
 	logger = config.Logger
 )
 
-func GetHealthStatus() schema.Health {
+func Start() {
+	e := createServer()
+	e.Logger.Fatal(e.Start(":8925"))
+}
+
+func getHealthStatus() schema.Health {
 	return schema.Health{
 		IsHealthy: true,
 	}
@@ -60,6 +65,124 @@ func readSignedRequest(c echo.Context) (payload []byte, wallet string, err error
 	}
 	wallet = crypto.PubkeyToAddress(*pubkey).Hex()
 	return
+}
+
+func getChats(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := readSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+	chats, err := queries.UserChats(db.Conn, ctx, userId)
+	if err != nil {
+		return err
+	}
+	responseData := make([]schema.UserChat, len(chats))
+	for i := range chats {
+		members, err := queries.ChatMembers(db.Conn, ctx, chats[i].ChatID)
+		if err != nil {
+			return err
+		}
+		responseData[i] = ToChatResponse(chats[i], members)
+	}
+	cursorPos := time.Now().UTC()
+	if len(chats) > 0 {
+		lastChat := chats[len(chats)-1]
+		cursorPos = lastChat.LastMessageAt
+	}
+	summary, err := queries.UserChatsSummary(db.Conn, ctx, queries.UserChatsSummaryParams{UserID: userId, Cursor: cursorPos})
+	if err != nil {
+		return err
+	}
+	responseSummary := ToSummaryResponse(cursorPos.Format(time.RFC3339Nano), summary)
+	response := schema.CommsResponse{
+		Health:  getHealthStatus(),
+		Data:    responseData,
+		Summary: &responseSummary,
+	}
+	return c.JSON(200, response)
+}
+
+func getChat(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := readSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+	chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
+	if err != nil {
+		return err
+	}
+	logger.Debug("chat", "userId", userId, "chatId", c.Param("id"), "chat.chatId", chat.ChatID)
+	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
+	if err != nil {
+		return err
+	}
+	response := schema.CommsResponse{
+		Health: getHealthStatus(),
+		Data:   ToChatResponse(chat, members),
+	}
+	return c.JSON(200, response)
+}
+
+func getMessages(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := readSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), Cursor: time.Now().UTC(), Limit: 50}
+	if c.QueryParam("cursor") != "" {
+		cursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("cursor"))
+		if err != nil {
+			return err
+		}
+		params.Cursor = cursor
+	}
+	if c.QueryParam("limit") != "" {
+		limit, err := strconv.Atoi(c.QueryParam("limit"))
+		if err != nil {
+			return err
+		}
+		params.Limit = int32(limit)
+	}
+
+	messages, err := queries.ChatMessagesAndReactions(db.Conn, ctx, params)
+	if err != nil {
+		return err
+	}
+
+	cursorPos := params.Cursor
+	if len(messages) > 0 {
+		cursorPos = messages[len(messages)-1].CreatedAt
+	}
+	summary, err := queries.ChatMessagesSummary(db.Conn, ctx, queries.ChatMessagesSummaryParams{UserID: userId, ChatID: c.Param("id"), Cursor: cursorPos})
+	if err != nil {
+		return err
+	}
+	responseSummary := ToSummaryResponse(cursorPos.Format(time.RFC3339Nano), summary)
+	response := schema.CommsResponse{
+		Health:  getHealthStatus(),
+		Data:    Map(messages, ToMessageResponse),
+		Summary: &responseSummary,
+	}
+	return c.JSON(200, response)
 }
 
 func createServer() *echo.Echo {
@@ -127,123 +250,11 @@ func createServer() *echo.Echo {
 		return c.String(200, "ok")
 	})
 
-	g.GET("/chats", func(c echo.Context) error {
-		ctx := c.Request().Context()
-		_, wallet, err := readSignedRequest(c)
-		if err != nil {
-			return c.String(400, "bad request: "+err.Error())
-		}
+	g.GET("/chats", getChats)
 
-		userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-		if err != nil {
-			return c.String(400, "wallet not found: "+err.Error())
-		}
-		chats, err := queries.UserChats(db.Conn, ctx, userId)
-		if err != nil {
-			return err
-		}
-		responseData := make([]schema.UserChat, len(chats))
-		for i := range chats {
-			members, err := queries.ChatMembers(db.Conn, ctx, chats[i].ChatID)
-			if err != nil {
-				return err
-			}
-			responseData[i] = ToChatResponse(chats[i], members)
-		}
-		cursorPos := time.Now()
-		if len(chats) > 0 {
-			lastChat := chats[len(chats)-1]
-			cursorPos = lastChat.LastMessageAt
-		}
-		summary, err := queries.UserChatsSummary(db.Conn, ctx, queries.UserChatsSummaryParams{UserID: userId, Cursor: cursorPos})
-		if err != nil {
-			return err
-		}
-		responseSummary := ToSummaryResponse(cursorPos.Format(time.RFC3339Nano), summary)
-		response := schema.CommsResponse{
-			Health:  GetHealthStatus(),
-			Data:    responseData,
-			Summary: &responseSummary,
-		}
-		return c.JSON(200, response)
-	})
+	g.GET("/chats/:id", getChat)
 
-	g.GET("/chats/:id", func(c echo.Context) error {
-		ctx := c.Request().Context()
-		_, wallet, err := readSignedRequest(c)
-		if err != nil {
-			return c.String(400, "bad request: "+err.Error())
-		}
-
-		userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-		if err != nil {
-			return c.String(400, "wallet not found: "+err.Error())
-		}
-		chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
-		if err != nil {
-			return err
-		}
-		logger.Debug("chat", "userId", userId, "chatId", c.Param("id"), "chat.chatId", chat.ChatID)
-		members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
-		if err != nil {
-			return err
-		}
-		response := schema.CommsResponse{
-			Health: GetHealthStatus(),
-			Data:   ToChatResponse(chat, members),
-		}
-		return c.JSON(200, response)
-	})
-
-	g.GET("/chats/:id/messages", func(c echo.Context) error {
-		ctx := c.Request().Context()
-		_, wallet, err := readSignedRequest(c)
-		if err != nil {
-			return c.String(400, "bad request: "+err.Error())
-		}
-
-		userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-		if err != nil {
-			return c.String(400, "wallet not found: "+err.Error())
-		}
-
-		params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), Cursor: time.Now(), Limit: 50}
-		if c.QueryParam("cursor") != "" {
-			cursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("cursor"))
-			if err != nil {
-				return err
-			}
-			params.Cursor = cursor
-		}
-		if c.QueryParam("limit") != "" {
-			limit, err := strconv.Atoi(c.QueryParam("limit"))
-			if err != nil {
-				return err
-			}
-			params.Limit = int32(limit)
-		}
-
-		messages, err := queries.ChatMessagesAndReactions(db.Conn, ctx, params)
-		if err != nil {
-			return err
-		}
-
-		cursorPos := params.Cursor
-		if len(messages) > 0 {
-			cursorPos = messages[len(messages)-1].CreatedAt
-		}
-		summary, err := queries.ChatMessagesSummary(db.Conn, ctx, queries.ChatMessagesSummaryParams{UserID: userId, ChatID: c.Param("id"), Cursor: cursorPos})
-		if err != nil {
-			return err
-		}
-		responseSummary := ToSummaryResponse(cursorPos.Format(time.RFC3339Nano), summary)
-		response := schema.CommsResponse{
-			Health:  GetHealthStatus(),
-			Data:    Map(messages, ToMessageResponse),
-			Summary: &responseSummary,
-		}
-		return c.JSON(200, response)
-	})
+	g.GET("/chats/:id/messages", getMessages)
 
 	// this is the "mutation" RPC encpoint
 	// it will forward RPC to NATS.
@@ -355,9 +366,4 @@ func createServer() *echo.Echo {
 	})
 
 	return e
-}
-
-func Start() {
-	e := createServer()
-	e.Logger.Fatal(e.Start(":8925"))
 }

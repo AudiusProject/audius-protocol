@@ -30,9 +30,11 @@ func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.Us
 		ChatID:             chat.ChatID,
 		LastMessageAt:      chat.LastMessageAt.Format(time.RFC3339Nano),
 		InviteCode:         chat.InviteCode,
-		LastReadAt:         chat.LastActiveAt.Time.Format(time.RFC3339Nano),
 		UnreadMessageCount: float64(chat.UnreadCount),
 		ChatMembers:        Map(members, ToChatMemberResponse),
+	}
+	if chat.LastActiveAt.Valid {
+		chatData.LastReadAt = chat.LastActiveAt.Time.Format(time.RFC3339Nano)
 	}
 	if chat.ClearedHistoryAt.Valid {
 		chatData.ClearedHistoryAt = chat.ClearedHistoryAt.Time.Format(time.RFC3339Nano)
@@ -49,7 +51,7 @@ func ToSummaryResponse(cursor string, summary queries.SummaryRow) schema.Summary
 	return responseSummary
 }
 
-func ToReactionsResponse(reactions queries.ReactionsSlice) []schema.Reaction {
+func ToReactionsResponse(reactions queries.Reactions) []schema.Reaction {
 	var reactionsData []schema.Reaction
 	for _, reaction := range reactions {
 		encodedSenderId, _ := misc.EncodeHashId(int(reaction.UserID))

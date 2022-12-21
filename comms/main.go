@@ -31,11 +31,11 @@ func main() {
 	}
 
 	// run migrations
-	out, err := exec.Command("dbmate", "--wait", "--no-dump-schema", "--url", os.Getenv("audius_db_url"), "up").CombinedOutput()
+	out, err := exec.Command("dbmate", "--no-dump-schema", "--url", os.Getenv("audius_db_url"), "up").CombinedOutput()
 	if err != nil {
-		log.Fatal("dbmate error: ", err, string(out))
+		log.Fatalf("dbmate: %s %s \n", err, out)
 	}
-	fmt.Println("dbmate:", string(out))
+	fmt.Println("dbmate: ", string(out))
 
 	// start solicit...
 	// TODO: re-enable nkeys
