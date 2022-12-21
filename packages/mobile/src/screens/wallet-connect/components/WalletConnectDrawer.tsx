@@ -17,6 +17,7 @@ import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import type { AppState } from 'app/store'
 import { getData } from 'app/store/drawers/selectors'
 import { makeStyles } from 'app/styles'
 
@@ -80,7 +81,9 @@ export const WalletConnectDrawer = () => {
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
   )
-  const data = useSelector(getData)
+  const { uri } = useSelector((state: AppState) =>
+    getData<'ConnectWallets'>(state)
+  )
 
   return (
     <NativeDrawer
@@ -109,7 +112,6 @@ export const WalletConnectDrawer = () => {
           ) : null}
           <PhantomWalletConnectOption />
           {supportedWalletServices?.map((walletService: WalletService) => {
-            const uri = data?.uri as string
             return (
               <EthWalletConnectOption
                 key={walletService.name}

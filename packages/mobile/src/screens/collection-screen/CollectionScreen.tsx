@@ -29,6 +29,8 @@ import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { setVisibility } from 'app/store/drawers/slice'
+import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import type { SearchPlaylist, SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 
@@ -106,7 +108,6 @@ type CollectionScreenComponentProps = {
   collection: Collection | SearchPlaylist
   user: User | SearchUser
 }
-
 const CollectionScreenComponent = ({
   collection,
   user
@@ -154,6 +155,10 @@ const CollectionScreenComponent = ({
     [updated_at]
   )
 
+  const isCollectionMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(playlist_id.toString())
+  )
+
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
       !is_album && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
@@ -175,11 +180,26 @@ const CollectionScreenComponent = ({
 
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {
-      dispatch(unsaveCollection(playlist_id, FavoriteSource.COLLECTION_PAGE))
+      if (isCollectionMarkedForDownload) {
+        dispatch(
+          setVisibility({
+            drawer: 'UnfavoriteDownloadedCollection',
+            visible: true,
+            data: { collectionId: playlist_id }
+          })
+        )
+      } else {
+        dispatch(unsaveCollection(playlist_id, FavoriteSource.COLLECTION_PAGE))
+      }
     } else {
       dispatch(saveCollection(playlist_id, FavoriteSource.COLLECTION_PAGE))
     }
-  }, [dispatch, playlist_id, has_current_user_saved])
+  }, [
+    dispatch,
+    playlist_id,
+    has_current_user_saved,
+    isCollectionMarkedForDownload
+  ])
 
   const handlePressShare = useCallback(() => {
     dispatch(

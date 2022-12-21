@@ -90,7 +90,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         setVisibility({
           drawer: 'DeleteConfirmation',
           visible: true,
-          data: { id }
+          data: { trackId: id }
         })
       )
     }
