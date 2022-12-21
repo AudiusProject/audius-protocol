@@ -1,19 +1,45 @@
 const assert = require('assert')
-
-const { getLibsMock } = require('./lib/libsMock')
-
-const apiSigning = require('../src/apiSigning')
+const proxyquire = require('proxyquire')
 
 describe('test apiSigning', function () {
-  let libsMock
-  beforeEach(async () => {
-    libsMock = getLibsMock()
+  const getContentNodeInfoFromSpId = async (spID, _genericLogger) => {
+    switch (spID) {
+      case 2:
+        return {
+          endpoint: 'http://mock-cn2.audius.co',
+          owner: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb',
+          delegateOwnerWallet: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb'
+        }
+      case 3:
+        return {
+          endpoint: 'http://mock-cn3.audius.co',
+          owner: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36',
+          delegateOwnerWallet: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36'
+        }
+
+      case 1:
+        return {
+          endpoint: 'http://mock-cn1.audius.co',
+          owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
+          delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+        }
+      default:
+        return {
+          owner: '0x0000000000000000000000000000000000000000',
+          endpoint: '',
+          delegateOwnerWallet: '0x0000000000000000000000000000000000000000'
+        }
+    }
+  }
+  const apiSigning = proxyquire('../src/apiSigning.ts', {
+    './services/ContentNodeInfoManager': {
+      getContentNodeInfoFromSpId
+    }
   })
 
   it('given incomplete timestamp, signature, throw error', async function () {
     try {
       await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: 1,
         reqTimestamp: undefined,
         reqSignature: undefined
@@ -31,7 +57,6 @@ describe('test apiSigning', function () {
   it('given bad spID, throw error', async function () {
     try {
       await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: undefined,
         reqTimestamp: '022-03-25T15:02:35.573Z',
         reqSignature:
@@ -48,7 +73,6 @@ describe('test apiSigning', function () {
 
     try {
       await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: -1,
         reqTimestamp: '022-03-25T15:02:35.573Z',
         reqSignature:
@@ -63,7 +87,6 @@ describe('test apiSigning', function () {
   it('if the wallets are zero addressed, throw error', async function () {
     try {
       await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: 100,
         reqTimestamp: '022-03-25T15:02:35.573Z',
         reqSignature:
@@ -80,7 +103,6 @@ describe('test apiSigning', function () {
   it('if the api signing is mismatched, throw error', async function () {
     try {
       await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: 1,
         reqTimestamp: '022-03-25T15:02:35.573Z',
         reqSignature:
@@ -101,7 +123,6 @@ describe('test apiSigning', function () {
   it('if inputs are valid, return proper return values', async function () {
     try {
       const resp = await apiSigning.verifyRequesterIsValidSP({
-        audiusLibs: libsMock,
         spID: 1,
         reqTimestamp: '2022-03-25T15:22:54.866Z',
         reqSignature:

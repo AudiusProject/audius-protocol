@@ -1,7 +1,10 @@
+import { getContentNodeInfoFromSpId } from './services/ContentNodeInfoManager'
+
 const { libs } = require('@audius/sdk')
 const LibsUtils = libs.Utils
 const Web3 = require('web3')
 const web3 = new Web3()
+const { logger: genericLogger } = require('./logging')
 
 /**
  * Max age of signature in milliseconds
@@ -9,7 +12,7 @@ const web3 = new Web3()
  */
 const MAX_SIGNATURE_AGE_MS = 300000
 
-const generateSignature = (data, privateKey) => {
+export const generateSignature = (data: any, privateKey: string) => {
   // JSON stringify automatically removes white space given 1 param
   const toSignStr = JSON.stringify(sortKeys(data))
   const toSignHash = web3.utils.keccak256(toSignStr)
@@ -23,7 +26,10 @@ const generateSignature = (data, privateKey) => {
  * @param {object} data
  * @param {string} privateKey
  */
-const generateTimestampAndSignature = (data, privateKey) => {
+export const generateTimestampAndSignature = (
+  data: any,
+  privateKey: string
+) => {
   const timestamp = new Date().toISOString()
   const toSignObj = { ...data, timestamp }
   const signature = generateSignature(toSignObj, privateKey)
@@ -33,7 +39,7 @@ const generateTimestampAndSignature = (data, privateKey) => {
 
 // Keeps track of a cached listen signature
 // Two field object: { timestamp, signature }
-let cachedListenSignature = null
+let cachedListenSignature: { timestamp: string; signature: any } | null = null
 
 /**
  * Generates a signature for `data` if only the previous signature
@@ -41,7 +47,7 @@ let cachedListenSignature = null
  * @param {string} privateKey
  * @returns {object} {signature, timestamp} signature data
  */
-const generateListenTimestampAndSignature = (privateKey) => {
+export const generateListenTimestampAndSignature = (privateKey: any) => {
   if (cachedListenSignature) {
     const signatureTimestamp = cachedListenSignature.timestamp
     if (signatureHasExpired(signatureTimestamp)) {
@@ -67,7 +73,7 @@ const generateListenTimestampAndSignature = (privateKey) => {
  * @param {*} signature signature generated with signed data
  */
 // eslint-disable-next-line no-unused-vars
-const recoverWallet = (data, signature) => {
+export const recoverWallet = (data: any, signature: any) => {
   const structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
@@ -79,13 +85,13 @@ const recoverWallet = (data, signature) => {
  * Returns boolean indicating if provided timestamp is older than maxTTL
  * @param {string | number} signatureTimestamp unix timestamp string when signature was generated
  */
-const signatureHasExpired = (
-  signatureTimestamp,
+export const signatureHasExpired = (
+  signatureTimestamp: string | number,
   maxTTL = MAX_SIGNATURE_AGE_MS
 ) => {
   const signatureTimestampDate = new Date(signatureTimestamp)
   const currentTimestampDate = new Date()
-  const signatureAge = currentTimestampDate - signatureTimestampDate
+  const signatureAge = +currentTimestampDate - +signatureTimestampDate
 
   return signatureAge >= maxTTL
 }
@@ -93,7 +99,7 @@ const signatureHasExpired = (
 /**
  * Recursively sorts keys of object or object array
  */
-const sortKeys = (x) => {
+export const sortKeys = (x: any): any => {
   if (typeof x !== 'object' || !x) {
     return x
   }
@@ -105,7 +111,10 @@ const sortKeys = (x) => {
     .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
-const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
+export const generateTimestampAndSignatureForSPVerification = (
+  spID: number,
+  privateKey: string
+) => {
   return generateTimestampAndSignature({ spID }, privateKey)
 }
 
@@ -118,11 +127,14 @@ const generateTimestampAndSignatureForSPVerification = (spID, privateKey) => {
  * @param {string} data.reqTimestamp the timestamp from the request body
  * @param {string} data.reqSignature the signature from the request body
  */
-const verifyRequesterIsValidSP = async ({
-  audiusLibs,
+export const verifyRequesterIsValidSP = async ({
   spID,
   reqTimestamp,
   reqSignature
+}: {
+  spID: number | string
+  reqTimestamp: string
+  reqSignature: string
 }) => {
   if (!reqTimestamp || !reqSignature) {
     throw new Error(
@@ -132,19 +144,14 @@ const verifyRequesterIsValidSP = async ({
 
   spID = validateSPId(spID)
 
-  const spRecordFromSPFactory =
-    await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-      'content-node',
-      spID
-    )
-
   let {
     owner: ownerWalletFromSPFactory,
     delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
     endpoint: nodeEndpointFromSPFactory
-  } = spRecordFromSPFactory
+  } = (await getContentNodeInfoFromSpId(spID, genericLogger)) || {}
+
   delegateOwnerWalletFromSPFactory =
-    delegateOwnerWalletFromSPFactory.toLowerCase()
+    delegateOwnerWalletFromSPFactory?.toLowerCase()
 
   if (!ownerWalletFromSPFactory || !delegateOwnerWalletFromSPFactory) {
     throw new Error(
@@ -192,18 +199,18 @@ const verifyRequesterIsValidSP = async ({
  * @param {string} spID
  * @returns a parsed spID
  */
-function validateSPId(spID) {
+export function validateSPId(spID: string | number): number {
   if (!spID) {
     throw new Error('Must provide all required query parameters: spID')
   }
 
-  spID = parseInt(spID)
+  const spIDNum = parseInt(spID + '', 10)
 
-  if (isNaN(spID) || spID < 0) {
+  if (isNaN(spIDNum) || spIDNum < 0) {
     throw new Error(`Provided spID is not a valid id. spID=${spID}`)
   }
 
-  return spID
+  return spIDNum
 }
 
 module.exports = {
