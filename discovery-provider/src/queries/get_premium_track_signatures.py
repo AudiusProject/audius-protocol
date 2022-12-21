@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import concurrent.futures
 import json
@@ -287,6 +288,23 @@ def _get_token_account_info(token_account):
     return token_account["account"]["data"]["parsed"]["info"]
 
 
+def decode_metadata_account(metadata_account):
+    return base64.b64decode(
+        solana_client_manager.get_account_info(metadata_account)["value"]["data"][0]
+    )
+
+
+async def wrap_decode_metadata_account(metadata_account):
+    loop = asyncio.get_running_loop()
+    result = await loop.run_in_executor(None, decode_metadata_account, metadata_account)
+    return result
+
+
+async def decode_metadata_accounts_async(metadata_accounts):
+    datas = await asyncio.gather(*map(wrap_decode_metadata_account, metadata_accounts))
+    return datas
+
+
 # - Fet and parse token accounts from given wallets to get the mint addresses
 # - Filter out token accounts with positive amounts and whose decimal places are not 0
 # - Find the metadata PDAs for the mint addresses
@@ -304,35 +322,33 @@ def _does_user_own_sol_nft_collection(
         try:
             result = solana_client_manager.get_token_accounts_by_owner(wallet)
             token_accounts = result["value"]
-            nft_token_accounts = filter(
-                lambda item: _get_token_account_info(item)["tokenAmount"]["amount"]
-                != "0"
-                and _get_token_account_info(item)["tokenAmount"]["decimals"] == 0,
-                token_accounts,
+            nft_token_accounts = list(
+                filter(
+                    lambda item: _get_token_account_info(item)["tokenAmount"]["amount"]
+                    != "0"
+                    and _get_token_account_info(item)["tokenAmount"]["decimals"] == 0,
+                    token_accounts,
+                )
             )
-            nft_mints = map(
-                lambda item: _get_token_account_info(item)["mint"],
-                nft_token_accounts,
+            nft_mints = list(
+                map(
+                    lambda item: _get_token_account_info(item)["mint"],
+                    nft_token_accounts,
+                )
             )
-            metadata_accounts = map(_get_metadata_account, nft_mints)
-            datas = map(
-                lambda metadata_account: base64.b64decode(
-                    solana_client_manager.get_account_info(metadata_account)["value"][
-                        "data"
-                    ][0]
-                ),
-                metadata_accounts,
-            )
-            metadatas = map(_unpack_metadata_account_for_metaplex_nft, datas)
-            collections = list(
+            metadata_accounts = list(map(_get_metadata_account, nft_mints))
+            datas = asyncio.run(decode_metadata_accounts_async(metadata_accounts))
+            metadatas = list(map(_unpack_metadata_account_for_metaplex_nft, datas))
+            collections = list(map(lambda metadata: metadata["collection"], metadatas))
+            has_collection_mint_address = list(
                 filter(
                     lambda collection: collection
                     and collection["verified"]
                     and collection["key"].decode() == collection_mint_address,
-                    list(map(lambda metadata: metadata["collection"], metadatas)),
+                    collections,
                 )
             )
-            if collections:
+            if has_collection_mint_address:
                 return True
         except Exception as e:
             logger.error(
