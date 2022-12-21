@@ -28,6 +28,7 @@ import {
   getOfflineCollections,
   getTrackJson,
   listTracks,
+  purgeDownloadedCollection,
   verifyTrack
 } from '../services/offline-downloader/offline-storage'
 
@@ -49,20 +50,25 @@ export const useLoadOfflineTracks = () => {
       metadata: CollectionMetadata
     }[] = []
     for (const collectionId of offlineCollections) {
-      dispatch(addCollection(collectionId))
-      if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
-      const collection = await getCollectionJson(collectionId)
-      cacheCollections.push({
-        id: collectionId,
-        uid: makeUid(Kind.COLLECTIONS, collectionId),
-        metadata: collection
-      })
-      if (collection.user) {
-        cacheUsers.push({
-          id: collection.user.user_id,
-          uid: makeUid(Kind.USERS, collection.user.user_id),
-          metadata: collection.user
+      try {
+        if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
+        const collection = await getCollectionJson(collectionId)
+        dispatch(addCollection(collectionId))
+        cacheCollections.push({
+          id: collectionId,
+          uid: makeUid(Kind.COLLECTIONS, collectionId),
+          metadata: collection
         })
+        if (collection.user) {
+          cacheUsers.push({
+            id: collection.user.user_id,
+            uid: makeUid(Kind.USERS, collection.user.user_id),
+            metadata: collection.user
+          })
+        }
+      } catch (e) {
+        console.warn('Failed to load offline collection', collectionId)
+        purgeDownloadedCollection(collectionId)
       }
     }
     dispatch(cacheActions.add(Kind.COLLECTIONS, cacheCollections, false, true))
