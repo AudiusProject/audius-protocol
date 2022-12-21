@@ -25,14 +25,19 @@ def get_user_replica_set(args):
             return {}
 
         user = users[0]
-        endpoints = user.creator_node_endpoint.split(",")
+        cnode_endpoints = (
+            user.creator_node_endpoint if user.creator_node_endpoint is not None else ""
+        )
+        endpoints = cnode_endpoints.split(",")
+        secondary_ids = user.secondary_ids if user.secondary_ids is not None else ""
+
         return {
             "user_id": user.user_id,
             "wallet": user.wallet,
-            "primary": endpoints[0],
-            "secondary1": endpoints[1],
-            "secondary2": endpoints[2],
+            "primary": endpoints[0] if len(endpoints) >= 1 else None,
+            "secondary1": endpoints[1] if len(endpoints) >= 2 else None,
+            "secondary2": endpoints[2] if len(endpoints) >= 3 else None,
             "primarySpID": user.primary_id,
-            "secondary1SpID": user.secondary_ids[0],
-            "secondary2SpID": user.secondary_ids[1],
+            "secondary1SpID": secondary_ids[0] if len(secondary_ids) >= 1 else None,
+            "secondary2SpID": secondary_ids[1] if len(secondary_ids) >= 2 else None,
         }
