@@ -29,7 +29,8 @@ export enum FeatureFlags {
   COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok',
   VERIFY_HANDLE_WITH_TIKTOK = 'verify_handle_with_tiktok',
   SOLANA_PHONE_WALLET_CONNECT = 'solana_phone_wallet_connect',
-  AUDIO_TRANSACTIONS_HISTORY = 'audio_transactions_history'
+  AUDIO_TRANSACTIONS_HISTORY = 'audio_transactions_history',
+  RATE_CTA_ENABLED = 'rate_cta_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -74,5 +75,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK]: false,
   [FeatureFlags.SOLANA_PHONE_WALLET_CONNECT]: false,
-  [FeatureFlags.AUDIO_TRANSACTIONS_HISTORY]: false
+  [FeatureFlags.AUDIO_TRANSACTIONS_HISTORY]: false,
+  [FeatureFlags.RATE_CTA_ENABLED]: false
 }

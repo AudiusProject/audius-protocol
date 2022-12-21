@@ -31,6 +31,7 @@ import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { NotificationReminder } from './components/notification-reminder/NotificationReminder'
 import { OfflineDownloader } from './components/offline-downloads/OfflineDownloader'
+import { RateCtaReminder } from './components/rate-cta-drawer/RateCtaReminder'
 import { useEnterForeground } from './hooks/useAppState'
 import { WalletConnectProvider } from './screens/wallet-connect'
 import { setLibs } from './services/libs'
@@ -100,6 +101,7 @@ const App = () => {
                   <Audio />
                   <OAuth />
                   <NotificationReminder />
+                  <RateCtaReminder />
                   <OfflineDownloader />
                 </NavigationContainer>
               </ErrorBoundary>

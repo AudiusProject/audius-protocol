@@ -24,7 +24,7 @@ export const useAsyncStorage = (
   const wasLoading = usePrevious(loading)
 
   const [, setValue] = useAsyncFn(async (value: any) => {
-    if (value) {
+    if (value !== undefined) {
       await setItem(serializer(value))
       await getValue()
     }

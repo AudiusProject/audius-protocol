@@ -20,6 +20,7 @@ export type Drawer =
   | 'RemoveDownloadedCollection'
   | 'RemoveDownloadedFavorites'
   | 'UnfavoriteDownloadedCollection'
+  | 'RateCallToAction'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -28,6 +29,7 @@ export type DrawerData = {
   ForgotPassword: undefined
   NowPlaying: undefined
   CancelEditTrack: undefined
+  RateCallToAction: undefined
   DeleteConfirmation: {
     trackId: number
   }
@@ -63,6 +65,7 @@ const initialState: DrawersState = {
   RemoveDownloadedCollection: false,
   RemoveDownloadedFavorites: false,
   UnfavoriteDownloadedCollection: false,
+  RateCallToAction: false,
   data: null
 }
 
