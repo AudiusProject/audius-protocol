@@ -216,7 +216,9 @@ func createServer() *echo.Echo {
 			return err
 		}
 
-		return c.String(200, pubkey)
+		return c.JSON(200, map[string]interface{}{
+			"data": pubkey,
+		})
 	})
 
 	// this is a WIP endpoint that matches identity relay
