@@ -164,7 +164,8 @@ module.exports = function (app) {
         const isUnassociated = twitterObj && !twitterObj.blockchainUserId
         const handlesMatch =
           twitterObj &&
-          twitterObj.twitterProfile.screen_name.toLowerCase() === user.handle
+          twitterObj.twitterProfile.screen_name.toLowerCase() ===
+            user.handle.toLowerCase()
         if (isUnassociated && handlesMatch) {
           twitterObj.blockchainUserId = userId
 
