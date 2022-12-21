@@ -2,8 +2,6 @@ import {
   FavoriteSource,
   Name,
   FeatureFlags,
-  IntKeys,
-  StringKeys,
   ELECTRONIC_SUBGENRES,
   Genre,
   accountSelectors,
@@ -44,7 +42,6 @@ import { getCityAndRegion } from 'services/Location'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
-import { withTimeout } from 'utils/network'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
@@ -65,12 +62,6 @@ const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
 const IS_STAGING = process.env.REACT_APP_ENVIRONMENT === 'staging'
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
-
-// Route to fetch instagram user data w/ the username
-export const getIGUserUrl = (endpoint, username) => {
-  const url = endpoint.replace('$USERNAME$', username)
-  return url
-}
 
 const messages = {
   incompleteAccount:
@@ -186,32 +177,6 @@ const isRestrictedHandle = (handle) =>
   restrictedHandles.has(handle.toLowerCase())
 const isHandleCharacterCompliant = (handle) => /^[a-zA-Z0-9_]*$/.test(handle)
 
-async function getInstagramUser(handle, remoteConfigInstance) {
-  try {
-    const profileEndpoint =
-      remoteConfigInstance.getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
-      'https://instagram.com/$USERNAME$/?__a=1'
-    const timeout =
-      remoteConfigInstance.getRemoteVar(
-        IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT
-      ) || 4000
-    const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle)
-    const igProfile = await withTimeout(fetch(fetchIGUserUrl), timeout)
-    if (!igProfile.ok) return null
-    const igProfileJson = await igProfile.json()
-    if (!igProfileJson.graphql || !igProfileJson.graphql.user) {
-      return null
-    }
-    const fields = ['username', 'is_verified']
-    return fields.reduce((profile, field) => {
-      profile[field] = igProfileJson.graphql.user[field]
-      return profile
-    }, {})
-  } catch (err) {
-    return null
-  }
-}
-
 function* validateHandle(action) {
   const { handle, isOauthVerified, onValidate } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -231,7 +196,7 @@ function* validateHandle(action) {
       if (onValidate) onValidate(true)
       return
     }
-    yield delay(300) // Wait 300 ms to debounce user input
+    yield delay(1000) // Wait 1000ms to debounce user input
 
     // Call fetch user by handle and do not retry if the user is not created, it will
     // return 404 and force discovery reselection
@@ -247,15 +212,21 @@ function* validateHandle(action) {
     const handleInUse = !isEmpty(user)
 
     if (IS_PRODUCTION_BUILD || IS_PRODUCTION) {
-      // TODO: add tiktok here
-      const [twitterUserQuery, instagramUser] = yield all([
+      const [twitterUserQuery, instagramUser, tikTokUser] = yield all([
         call(audiusBackendInstance.twitterHandle, handle),
-        call(getInstagramUser, handle, remoteConfigInstance)
+        call(audiusBackendInstance.instagramHandle, handle),
+        remoteConfigInstance.getFeatureEnabled(
+          FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK
+        )
+          ? call(audiusBackendInstance.tiktokHandle, handle)
+          : null
       ])
+
       const handleCheckStatus = checkHandle(
         isOauthVerified,
         twitterUserQuery?.user?.profile?.[0] ?? null,
-        instagramUser || null
+        instagramUser || null,
+        tikTokUser || null
       )
 
       if (handleCheckStatus !== 'notReserved') {

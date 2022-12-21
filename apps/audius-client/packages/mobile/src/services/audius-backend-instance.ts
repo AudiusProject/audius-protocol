@@ -88,6 +88,7 @@ export const audiusBackendInstance = audiusBackend({
     createKey
   },
   identityServiceUrl: Config.IDENTITY_SERVICE,
+  generalAdmissionUrl: Config.GENERAL_ADMISSION,
   isElectron: false,
   isMobile: true,
   legacyUserNodeUrl: Config.LEGACY_USER_NODE,

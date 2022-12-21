@@ -8,12 +8,21 @@ type InstagramUser = {
   is_verified: boolean
 }
 
-type HandleCheckStatus = 'twitterReserved' | 'instagramReserved' | 'notReserved'
+type TikTokUser = {
+  verified: boolean
+}
+
+type HandleCheckStatus =
+  | 'twitterReserved'
+  | 'instagramReserved'
+  | 'tikTokReserved'
+  | 'notReserved'
 
 export const checkHandle = (
   isOauthVerified: boolean,
   lookedUpTwitterUser: Nullable<TwitterUser>,
-  lookedUpInstagramUser: Nullable<InstagramUser>
+  lookedUpInstagramUser: Nullable<InstagramUser>,
+  lookedUpTikTokUser: Nullable<TikTokUser>
 ): HandleCheckStatus => {
   const isEquivalentTwitterHandleVerified =
     lookedUpTwitterUser && lookedUpTwitterUser.verified
@@ -21,12 +30,18 @@ export const checkHandle = (
   const isEquivalentInstagramHandleVerified =
     lookedUpInstagramUser && lookedUpInstagramUser.is_verified
 
+  const isEquivalentTikTokHandleVerified =
+    lookedUpTikTokUser && lookedUpTikTokUser.verified
+
   if (!isOauthVerified) {
     if (isEquivalentTwitterHandleVerified) {
       return 'twitterReserved'
     }
     if (isEquivalentInstagramHandleVerified) {
       return 'instagramReserved'
+    }
+    if (isEquivalentTikTokHandleVerified) {
+      return 'tikTokReserved'
     }
   }
   return 'notReserved'
