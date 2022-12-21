@@ -120,10 +120,12 @@ describe('Delay calculator tests', () => {
     const solSlot = {
       last: 100
     }
-    // new slots every 250ms
+    // new slots every ~250ms for 4 slots/sec
+    // give it a little padding to make sure we produce
+    // a slot before the pollingInterval runs
     const i = setInterval(() => {
       solSlot.last += 1
-    }, 250)
+    }, 230)
 
     const libs = new MockLibs(
       () => solSlot.last,
@@ -138,13 +140,15 @@ describe('Delay calculator tests', () => {
     })
     calc.start()
     const slotThreshold1 = await calc.getSolanaSlotThreshold()
-    // Initially this should be 0.5sec/slot
+    // Initially this rate should be 0.5sec/slot
+    // 100 starting - 1s * 2slot/sec
     assert.strictEqual(slotThreshold1, 90)
 
-    // Wait for staleness interval
+    // Wait for staleness interval of 1s
     await new Promise((res) => setTimeout(res, 1100))
     const slotThreshold2 = await calc.getSolanaSlotThreshold()
-    // Current slot should be 104, and there should be 4 slots/sec,
+    // Current slot should be 104
+    // it should calculate 4 slot/sec
     // so 5 sec lag behind = 104 - 5 * 4 = 84
     assert.strictEqual(slotThreshold2, 84)
 
