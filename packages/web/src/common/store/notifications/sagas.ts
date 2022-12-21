@@ -516,16 +516,15 @@ export function* getNotifications(isFirstFetch: boolean) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
   try {
-    const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield* select(
-      getNotificationPanelIsOpen
-    )
-    const status: ReturnType<typeof getNotificationStatus> = yield* select(
-      getNotificationStatus
-    )
+    const isOpen = yield* select(getNotificationPanelIsOpen)
+    const status = yield* select(getNotificationStatus)
+    const isReachable = yield* select(getIsReachable)
     if (
       (!isOpen || isFirstFetch) &&
-      (status !== Status.LOADING || isFirstFetch)
+      (status !== Status.LOADING || isFirstFetch) &&
+      isReachable
     ) {
       isFirstFetch = false
       const limit = NOTIFICATION_LIMIT_DEFAULT
@@ -553,18 +552,13 @@ export function* getNotifications(isFirstFetch: boolean) {
         ('error' in notificationsResponse &&
           'isRequestError' in notificationsResponse)
       ) {
-        const isReachable: ReturnType<typeof getIsReachable> = yield* select(
-          getIsReachable
-        )
-        if (isReachable) {
-          yield* put(
-            notificationActions.fetchNotificationsFailed(
-              `Error in notification polling daemon, server returned error: ${
-                notificationsResponse?.error?.message ?? 'no error defined'
-              }`
-            )
+        yield* put(
+          notificationActions.fetchNotificationsFailed(
+            `Error in notification polling daemon, server returned error: ${
+              notificationsResponse?.error?.message ?? 'no error defined'
+            }`
           )
-        }
+        )
         yield* delay(getPollingIntervalMs(remoteConfigInstance))
         return
       }
