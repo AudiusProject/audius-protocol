@@ -1000,6 +1000,7 @@ export async function migrateFilesWithNonStandardStoragePaths(
 
     queryDelayMs = 5000
 
-    await timeout(queryDelayMs)
+    // Wait 10 minutes since the first queries for metrics can be heavy
+    await timeout(10 * 60 * 1000)
   }
 }
