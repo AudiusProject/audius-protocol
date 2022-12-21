@@ -810,6 +810,9 @@ router.get(
       )
     }
 
+    const debugTimings = {}
+
+    const findCopy320Start = Date.now()
     let fileRecord = await models.File.findOne({
       attributes: ['multihash'],
       where: {
@@ -818,11 +821,13 @@ router.get(
       },
       order: [['clock', 'DESC']]
     })
+    debugTimings.findCopy320 = (Date.now() - findCopy320Start) / 1000
 
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
     // try to fall back to discovery to fetch the metadata multihash and see if you can deduce the copy320 file
     if (!fileRecord) {
       try {
+        const findTrackRecordInDiscoveryStart = Date.now()
         let trackRecord = await libs.Track.getTracks(1, 0, [blockchainId])
         if (
           !trackRecord ||
@@ -837,12 +842,15 @@ router.get(
             )
           )
         }
+        debugTimings.findTrackRecordInDiscovery =
+          (Date.now() - findTrackRecordInDiscoveryStart) / 1000
 
         trackRecord = trackRecord[0]
 
         // query the files table for a metadata multihash from discovery for a given track
         // no need to add CNodeUserUUID to the filter because the track is associated with a user and that contains the
         // user_id inside it which is unique to the user
+        const findMetadataMultihashForTrackStart = Date.now()
         const file = await models.File.findOne({
           where: {
             multihash: trackRecord.metadata_multihash,
@@ -858,12 +866,15 @@ router.get(
             )
           )
         }
+        debugTimings.findMetadataMultihashForTrack =
+          (Date.now() - findMetadataMultihashForTrackStart) / 1000
 
         // make sure all track segments have the same sourceFile
         const segments = trackRecord.track_segments.map(
           (segment) => segment.multihash
         )
 
+        const findSourceFileForSegmentsStart = Date.now()
         const fileSegmentRecords = await models.File.findAll({
           attributes: ['sourceFile'],
           where: {
@@ -872,6 +883,8 @@ router.get(
           },
           raw: true
         })
+        debugTimings.findSourceFileForSegments =
+          (Date.now() - findSourceFileForSegmentsStart) / 1000
 
         // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
         if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
@@ -892,6 +905,7 @@ router.get(
         }
 
         // search for the copy320 record based on the sourceFile
+        const findCopy320AfterFallbackStart = Date.now()
         fileRecord = await models.File.findOne({
           attributes: ['multihash'],
           where: {
@@ -900,6 +914,8 @@ router.get(
           },
           raw: true
         })
+        debugTimings.findCopy320AfterFallback =
+          (Date.now() - findCopy320AfterFallbackStart) / 1000
       } catch (e) {
         req.logger.error(
           { error: e },
@@ -907,6 +923,10 @@ router.get(
         )
       }
     }
+
+    req.logger.info(
+      `Track stream debug timings - ${JSON.stringify(debugTimings)}`
+    )
 
     if (!fileRecord || !fileRecord.multihash) {
       return sendResponse(
