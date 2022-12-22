@@ -176,14 +176,14 @@ export class ContractClient {
    */
   async getMethod(methodName: string, ...args: any[]) {
     await this.init()
-    if (!(methodName in this._contract?.methods)) {
+    if (!this._contract || !(methodName in this._contract.methods)) {
       throw new Error(
         `Contract method ${methodName} not found in ${Object.keys(
           this._contract?.methods
         )}`
       )
     }
-    const method = await this._contract?.methods[methodName](...args)
+    const method = await this._contract.methods[methodName](...args)
 
     // Override method.call (chain reads) with built in retry logic
     const call = method.call

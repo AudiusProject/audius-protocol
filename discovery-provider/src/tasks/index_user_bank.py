@@ -69,6 +69,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
+INITIAL_FETCH_SIZE = 10
 
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
@@ -414,6 +415,7 @@ def process_user_bank_txs():
 
     # Loop exit condition
     intersection_found = False
+    is_initial_fetch = True
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
@@ -426,11 +428,16 @@ def process_user_bank_txs():
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
-            transactions_history = solana_client_manager.get_signatures_for_address(
-                USER_BANK_ADDRESS,
-                before=last_tx_signature,
-                limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            fetch_size = (
+                INITIAL_FETCH_SIZE
+                if is_initial_fetch
+                else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
+            logger.info(f"index_user_bank.py | Requesting {fetch_size} transactions")
+            transactions_history = solana_client_manager.get_signatures_for_address(
+                USER_BANK_ADDRESS, before=last_tx_signature, limit=fetch_size
+            )
+            is_initial_fetch = False
             transactions_array = transactions_history["result"]
             if not transactions_array:
                 intersection_found = True

@@ -334,99 +334,104 @@ export async function listNestedCIDsInFilePath(
 export async function sweepSubdirectoriesInFiles(
   redoJob = true
 ): Promise<void> {
-  const subdirectories = await listSubdirectoriesInFiles()
-  if (!subdirectories) return
+  // infinite while loop with terminal conditions and a delay between iterations
+  while (true) {
+    const subdirectories = await listSubdirectoriesInFiles()
+    if (!subdirectories) return
 
-  for (let i = 0; i < subdirectories.length; i += 1) {
-    try {
-      const subdirectory = subdirectories[i]
+    for (let i = 0; i < subdirectories.length; i += 1) {
+      try {
+        const subdirectory = subdirectories[i]
 
-      const cidsToFilePathMap = await listNestedCIDsInFilePath(subdirectory)
-      const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
+        const cidsToFilePathMap = await listNestedCIDsInFilePath(subdirectory)
+        const cidsInSubdirectory = Object.keys(cidsToFilePathMap)
 
-      if (cidsInSubdirectory.length === 0) {
-        continue
-      }
+        if (cidsInSubdirectory.length === 0) {
+          continue
+        }
 
-      const queryResults =
-        // add a `query_success` row to the result so we know the query ran successfully
-        // shouldn't need this because sequelize should throw an error, but when deleting
-        // from disk paranoia is probably justified
-        (
-          await models.sequelize.query(
-            `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
-            UNION
-            (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
-            { replacements: { cidsInSubdirectory } }
-          )
-        )[0]
+        const queryResults =
+          // add a `query_success` row to the result so we know the query ran successfully
+          // shouldn't need this because sequelize should throw an error, but when deleting
+          // from disk paranoia is probably justified
+          (
+            await models.sequelize.query(
+              `(SELECT "multihash" FROM "Files" WHERE "multihash" IN (:cidsInSubdirectory)) 
+              UNION
+              (SELECT '${DB_QUERY_SUCCESS_CHECK_STR}');`,
+              { replacements: { cidsInSubdirectory } }
+            )
+          )[0]
 
-      genericLogger.debug(
-        `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
-          subdirectories.length
-        }. subdirectory: ${subdirectory}. got ${
-          Object.keys(cidsToFilePathMap).length
-        } files in folder and ${
-          queryResults.length
-        } results from db. files: ${Object.keys(
-          cidsToFilePathMap
-        ).toString()}. db records: ${JSON.stringify(queryResults)}`
-      )
-
-      const cidsInDB = new Set()
-      let foundSuccessRow = false
-      for (const file of queryResults) {
-        if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
-          foundSuccessRow = true
-        else cidsInDB.add(file.multihash)
-      }
-
-      if (!foundSuccessRow)
-        throw new Error(`DB did not return expected success row`)
-
-      const cidsToDelete = []
-      const cidsNotToDelete = []
-      // iterate through all files on disk and check if db contains it
-      for (const cid of cidsInSubdirectory) {
-        // if db doesn't contain file, log as okay to delete
-        if (!cidsInDB.has(cid)) {
-          cidsToDelete.push(cid)
-        } else cidsNotToDelete.push(cid)
-      }
-
-      if (cidsNotToDelete.length > 0) {
         genericLogger.debug(
-          `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
+            subdirectories.length
+          }. subdirectory: ${subdirectory}. got ${
+            Object.keys(cidsToFilePathMap).length
+          } files in folder and ${
+            queryResults.length
+          } results from db. files: ${Object.keys(
+            cidsToFilePathMap
+          ).toString()}. db records: ${JSON.stringify(queryResults)}`
         )
-      }
 
-      if (cidsToDelete.length > 0) {
-        genericLogger.info(
-          `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
-        )
+        const cidsInDB = new Set()
+        let foundSuccessRow = false
+        for (const file of queryResults) {
+          if (file.multihash === `${DB_QUERY_SUCCESS_CHECK_STR}`)
+            foundSuccessRow = true
+          else cidsInDB.add(file.multihash)
+        }
 
-        // gate deleting files on disk with the same env var
-        if (config.get('backgroundDiskCleanupDeleteEnabled')) {
-          await execShellCommand(
-            `rm ${cidsToDelete.map((cid) => cidsToFilePathMap[cid]).join(' ')}`
+        if (!foundSuccessRow)
+          throw new Error(`DB did not return expected success row`)
+
+        const cidsToDelete = []
+        const cidsNotToDelete = []
+        // iterate through all files on disk and check if db contains it
+        for (const cid of cidsInSubdirectory) {
+          // if db doesn't contain file, log as okay to delete
+          if (!cidsInDB.has(cid)) {
+            cidsToDelete.push(cid)
+          } else cidsNotToDelete.push(cid)
+        }
+
+        if (cidsNotToDelete.length > 0) {
+          genericLogger.debug(
+            `diskmanager.js - not safe to delete ${cidsNotToDelete.toString()}`
           )
         }
+
+        if (cidsToDelete.length > 0) {
+          genericLogger.info(
+            `diskmanager.js - safe to delete ${cidsToDelete.toString()}`
+          )
+
+          // gate deleting files on disk with the same env var
+          if (config.get('backgroundDiskCleanupDeleteEnabled')) {
+            await execShellCommand(
+              `rm ${cidsToDelete
+                .map((cid) => cidsToFilePathMap[cid])
+                .join(' ')}`
+            )
+          }
+        }
+      } catch (e: any) {
+        tracing.recordException(e)
+        genericLogger.error(
+          `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
+        )
       }
-    } catch (e: any) {
-      tracing.recordException(e)
-      genericLogger.error(
-        `diskManager#sweepSubdirectoriesInFiles - error: ${e}`
-      )
+
+      // Wait 10sec between batches to reduce server load
+      await timeout(10000)
     }
 
-    // Wait 10sec between batches to reduce server load
-    await timeout(10000)
+    // keep calling this function recursively without an await so the original function scope can close
+    // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
+    if (!redoJob || !config.get('backgroundDiskCleanupDeleteEnabled')) return
+    await timeout(1000)
   }
-
-  // keep calling this function recursively without an await so the original function scope can close
-  // Only call again if backgroundDiskCleanupDeleteEnabled = true, to prevent re-processing infinitely
-  if (redoJob && config.get('backgroundDiskCleanupDeleteEnabled'))
-    return sweepSubdirectoriesInFiles()
 }
 
 /**
@@ -844,53 +849,91 @@ function _recordMigrationMetrics(
 }
 
 function _resetStoragePathMetrics(prometheusRegistry: any, logger: Logger) {
-  // Reset metric for legacy migrations
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'success' }
-    },
-    prometheusRegistry,
-    logger
-  )
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'failure' }
-    },
-    prometheusRegistry,
-    logger
-  )
+  try {
+    // Reset metric for legacy migrations
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
 
-  // Reset metric for custom migrations
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'success' }
-    },
-    prometheusRegistry,
-    logger
-  )
-  clusterUtilsForPrimary.sendMetricToWorker(
-    {
-      metricType: 'GAUGE_SET',
-      metricName:
-        prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
-      metricValue: 0,
-      metricLabels: { result: 'failure' }
-    },
-    prometheusRegistry,
-    logger
-  )
+    // Reset metric for custom migrations
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'success' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
+        metricValue: 0,
+        metricLabels: { result: 'failure' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  } catch (e: any) {
+    logger.error(`Failed to reset counts of migrated storagePaths: ${e}`)
+  }
+}
+
+async function _recordTotalUnmigratedStoragePathsMetric(
+  prometheusRegistry: any,
+  logger: Logger
+) {
+  try {
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE,
+        metricValue: await DbManager.getNumLegacyStoragePathsRecords(),
+        metricLabels: { type: 'legacy' }
+      },
+      prometheusRegistry,
+      logger
+    )
+    clusterUtilsForPrimary.sendMetricToWorker(
+      {
+        metricType: 'GAUGE_SET',
+        metricName:
+          prometheusRegistry.metricNames.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE,
+        metricValue: await DbManager.getNumCustomStoragePathsRecords(),
+        metricLabels: { type: 'custom' }
+      },
+      prometheusRegistry,
+      logger
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to record total count of unmigrated storagePaths: ${e}`
+    )
+  }
 }
 
 /**
@@ -914,43 +957,50 @@ export async function migrateFilesWithNonStandardStoragePaths(
   prometheusRegistry: any,
   logger: Logger
 ): Promise<void> {
-  // Reset gauges on each run so the metrics aren't infinitely increasing
-  _resetStoragePathMetrics(prometheusRegistry, logger)
-
   const BATCH_SIZE = 5_000
-  // Legacy storagePaths
-  if (config.get('migrateFilesWithLegacyStoragePath')) {
-    try {
-      await _migrateNonDirFilesWithLegacyStoragePaths(
-        queryDelayMs,
-        BATCH_SIZE,
-        prometheusRegistry,
-        logger
-      )
-      await _migrateDirsWithLegacyStoragePaths(queryDelayMs, BATCH_SIZE, logger)
-    } catch (e: any) {
-      logger.error(`Error migrating legacy storagePaths: ${e}`)
-    }
-  }
 
-  // Custom storagePaths (not matching 'storagePath' env var)
-  if (config.get('migrateFilesWithCustomStoragePath')) {
-    try {
-      await _migrateFilesWithCustomStoragePaths(
-        queryDelayMs,
-        BATCH_SIZE,
-        prometheusRegistry,
-        logger
-      )
-    } catch (e: any) {
-      logger.error(`Error migrating custom storagePaths: ${e}`)
-    }
-  }
+  // infinite while loop with a delay between iterations
+  while (true) {
+    // Reset gauges on each run so the metrics aren't infinitely increasing, and record total # of unmigrated paths
+    _resetStoragePathMetrics(prometheusRegistry, logger)
+    await _recordTotalUnmigratedStoragePathsMetric(prometheusRegistry, logger)
 
-  // Keep calling this function recursively without an await so the original function scope can close
-  return migrateFilesWithNonStandardStoragePaths(
-    5000,
-    prometheusRegistry,
-    logger
-  )
+    // Legacy storagePaths (/<storagePath env>/CID)
+    if (config.get('migrateFilesWithLegacyStoragePath')) {
+      try {
+        await _migrateNonDirFilesWithLegacyStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          prometheusRegistry,
+          logger
+        )
+        await _migrateDirsWithLegacyStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          logger
+        )
+      } catch (e: any) {
+        logger.error(`Error migrating legacy storagePaths: ${e}`)
+      }
+    }
+
+    // Custom storagePaths (not matching 'storagePath' env var)
+    if (config.get('migrateFilesWithCustomStoragePath')) {
+      try {
+        await _migrateFilesWithCustomStoragePaths(
+          queryDelayMs,
+          BATCH_SIZE,
+          prometheusRegistry,
+          logger
+        )
+      } catch (e: any) {
+        logger.error(`Error migrating custom storagePaths: ${e}`)
+      }
+    }
+
+    queryDelayMs = 5000
+
+    // Wait 10 minutes since the first queries for metrics can be heavy
+    await timeout(10 * 60 * 1000)
+  }
 }
