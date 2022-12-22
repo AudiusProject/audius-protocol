@@ -64,7 +64,7 @@ const getHealth = async ({
   let healthCheckData = null
   try {
     // Don't use context.fetch to bypass middleware
-    const response = (await fetch(healthCheckURL)) as Response
+    const response = await fetch(healthCheckURL)
     if (response.status !== 200) {
       throw new Error()
     }

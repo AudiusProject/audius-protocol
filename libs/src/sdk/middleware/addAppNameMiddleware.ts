@@ -16,13 +16,12 @@ export const addAppNameMiddleware = ({
   appName: string
 }): Middleware => {
   return {
-    pre: (context: RequestContext) =>
-      Promise.resolve<FetchParams>({
-        url:
-          context.url +
-          (context.url.includes('?') ? '&' : '?') +
-          querystring({ app_name: appName }),
-        init: context.init ?? {}
-      })
+    pre: async (context: RequestContext): Promise<FetchParams> => ({
+      url:
+        context.url +
+        (context.url.includes('?') ? '&' : '?') +
+        querystring({ app_name: appName }),
+      init: context.init ?? {}
+    })
   }
 }
