@@ -13,7 +13,7 @@ import { call, takeLatest, put } from 'typed-redux-saga'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { audiusSdk } from 'services/audius-sdk/audiusSdk'
+import { audiusSdk } from 'services/audius-sdk'
 
 const {
   fetchAudioTransactions,
@@ -23,8 +23,6 @@ const {
   setAudioTransactionsCount
 } = audioTransactionsPageActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
-
-const { transactions } = audiusSdk.full
 
 const transactionTypeMap: Record<string, TransactionType> = {
   purchase_stripe: TransactionType.PURCHASE,
@@ -109,8 +107,12 @@ function* fetchAudioTransactionsAsync() {
         audiusBackendInstance,
         audiusBackendInstance.signDiscoveryNodeRequest
       ])
+      const sdk = yield* call(audiusSdk)
       const response = yield* call(
-        [transactions, transactions.getAudioTransactionHistory],
+        [
+          sdk.full.transactions,
+          sdk.full.transactions.getAudioTransactionHistory
+        ],
         {
           encodedDataMessage: data,
           encodedDataSignature: signature,
@@ -176,8 +178,12 @@ function* fetchTransactionsCount() {
       audiusBackendInstance,
       audiusBackendInstance.signDiscoveryNodeRequest
     ])
+    const sdk = yield* call(audiusSdk)
     const response = yield* call(
-      [transactions, transactions.getAudioTransactionHistoryCount],
+      [
+        sdk.full.transactions,
+        sdk.full.transactions.getAudioTransactionHistoryCount
+      ],
       {
         encodedDataMessage: data,
         encodedDataSignature: signature
