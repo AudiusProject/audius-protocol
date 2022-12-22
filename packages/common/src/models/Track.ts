@@ -141,6 +141,7 @@ export type OfflineTrackMetadata = {
   reasons_for_download: DownloadReason[]
   download_completed_time: EpochTimeStamp
   last_verified_time: EpochTimeStamp
+  favorite_created_at?: string
 }
 
 export type Stem = {

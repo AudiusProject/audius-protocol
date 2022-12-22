@@ -11,7 +11,8 @@ import {
   formatSecondsAsText,
   lineupSelectors,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors
+  collectionPageSelectors,
+  reachabilitySelectors
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
@@ -42,6 +43,7 @@ const {
 const { resetCollection } = collectionPageActions
 const { makeGetTableMetadatas } = lineupSelectors
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   album: 'Album',
@@ -101,23 +103,28 @@ export const CollectionScreenDetailsTile = ({
   const dispatch = useDispatch()
 
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isReachable = useSelector(getIsReachable)
 
   const collection = useSelector(getCollection)
   const collectionUid = useSelector(getCollectionUid)
   const collectionId = useSelector(getCollectionId)
   const userUid = useSelector(getUserUid)
-  const { entries, status } = useProxySelector(getTracksLineup, [])
+  const { entries, status } = useProxySelector(getTracksLineup, [isReachable])
   const tracksLoading = status === Status.LOADING
   const numTracks = entries.length
 
-  const resetCollectionLineup = useCallback(() => {
-    dispatch(resetCollection(collectionUid, userUid))
+  const handleFetchLineup = useCallback(() => {
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
-  useFocusEffect(resetCollectionLineup)
-  useOfflineCollectionLineup(collectionId?.toString())
+  const handleFetchCollectionLineup = useCallback(() => {
+    dispatch(resetCollection(collectionUid, userUid))
+    handleFetchLineup()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, handleFetchLineup])
+
+  useFocusEffect(handleFetchCollectionLineup)
+  useOfflineCollectionLineup(collectionId, handleFetchLineup, tracksActions)
 
   const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,
