@@ -93,12 +93,12 @@ type SdkConfig = {
  * Default wallet API which is used to surface errors when the walletApi is not configured
  */
 const defaultWalletAPI: WalletAPI = {
-  getSharedSecret: function (_: string | Uint8Array): Promise<Uint8Array> {
+  getSharedSecret: async (_: string | Uint8Array): Promise<Uint8Array> => {
     throw new RequiredError(
       'Wallet API configuration missing. This method requires using the walletApi config for write access.'
     )
   },
-  sign: function (_: string): Promise<[Uint8Array, number]> {
+  sign: async (_: string): Promise<[Uint8Array, number]> => {
     throw new RequiredError(
       'Wallet API configuration missing. This method requires using the walletApi config for write access.'
     )
