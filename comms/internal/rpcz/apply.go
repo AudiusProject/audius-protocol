@@ -12,7 +12,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// Validates + Applys a NATS message
+// Validates + Applies a NATS message
 
 func Apply(msg *nats.Msg) {
 	var err error
@@ -70,6 +70,16 @@ func Apply(msg *nats.Msg) {
 			continue
 		}
 
+		var count int
+		err = tx.Get(&count, "select count(*) from rpc_log where jetstream_sequence = $1", meta.Sequence.Stream)
+		if err != nil {
+			continue
+		}
+		if count > 0 {
+			// Do not process redelivered messages that have already been processed
+			logger.Info("rpc already in log, skipping duplicate seq number", meta.Sequence.Stream)
+			return
+		}
 		_, err = tx.Exec("insert into rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) values($1, $2, $3, $4, $5)", meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
 			continue
