@@ -6,7 +6,7 @@ import logging
 import pathlib
 import struct
 from collections import defaultdict
-from typing import Any, Dict, List, Set
+from typing import Dict, List, Set
 
 import base58
 from eth_typing import ChecksumAddress
@@ -243,7 +243,7 @@ def _get_eth_nft_gated_track_signatures(
 # Extended and simplified based on the reference links below
 # https://docs.metaplex.com/programs/token-metadata/accounts#metadata
 # https://github.com/metaplex-foundation/python-api/blob/441c2ba9be76962d234d7700405358c72ee1b35b/metaplex/metadata.py#L123
-def _unpack_metadata_account_for_metaplex_nft(data: Any):
+def _unpack_metadata_account_for_metaplex_nft(data):
     assert data[0] == 4
     i = 1  # key
     i += 32  # update authority
