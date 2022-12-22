@@ -197,7 +197,8 @@ const initializeApis = ({
     middleware: [
       ...defaultMiddleware,
       jsonResponseMiddleware({ extractData: true })
-    ]
+    ],
+    walletApi
   })
 
   const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
@@ -222,7 +223,8 @@ const initializeApis = ({
     middleware: [
       ...defaultMiddleware,
       jsonResponseMiddleware({ extractData: true })
-    ]
+    ],
+    walletApi
   })
 
   const full = {

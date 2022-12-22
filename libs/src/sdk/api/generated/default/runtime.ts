@@ -170,7 +170,7 @@ export interface ConfigurationParameters {
     accessToken?: string | Promise<string> | ((name?: string, scopes?: string[]) => string | Promise<string>); // parameter for oauth2 security
     headers?: HTTPHeaders; //header params we want to use on every request
     credentials?: RequestCredentials; //value for the credentials param we want to use on each request
-    walletApi?: WalletAPI
+    walletApi: WalletAPI
 }
 
 export class Configuration {
@@ -224,7 +224,7 @@ export class Configuration {
         return this.configuration.credentials;
     }
 
-    get walletApi(): WalletAPI | undefined {
+    get walletApi(): WalletAPI {
         return this.configuration.walletApi;
     }
 }
