@@ -15,7 +15,8 @@ import {
   PlaylistsApi,
   UsersApi,
   TipsApi,
-  WalletAPI
+  WalletAPI,
+  RequiredError
 } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -89,6 +90,22 @@ type SdkConfig = {
 }
 
 /**
+ * Default wallet API which is used to surface errors when the walletApi is not configured
+ */
+const defaultWalletAPI: WalletAPI = {
+  getSharedSecret: function (_: string | Uint8Array): Promise<Uint8Array> {
+    throw new RequiredError(
+      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
+    )
+  },
+  sign: function (_: string): Promise<[Uint8Array, number]> {
+    throw new RequiredError(
+      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
+    )
+  }
+}
+
+/**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
@@ -98,7 +115,11 @@ export const sdk = (config: SdkConfig) => {
   const { discoveryProvider } = initializeServices(config)
 
   // Initialize APIs
-  const apis = initializeApis({ appName, discoveryProvider, walletApi })
+  const apis = initializeApis({
+    appName,
+    discoveryProvider,
+    walletApi: walletApi ?? defaultWalletAPI
+  })
 
   // Initialize OAuth
   const oauth =
@@ -163,7 +184,7 @@ const initializeApis = ({
 }: {
   appName: string
   discoveryProvider: DiscoveryProvider
-  walletApi?: WalletAPI
+  walletApi: WalletAPI
 }) => {
   const defaultMiddleware = [
     addAppNameMiddleware({ appName }),
@@ -184,21 +205,17 @@ const initializeApis = ({
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
-  let chats
-  // Only init chats if config has walletApi
-  if (walletApi !== undefined) {
-    chats = new ChatsApi(
-      new Configuration({
-        fetchApi: fetch,
-        walletApi,
-        basePath: '',
-        middleware: [
-          ...defaultMiddleware,
-          jsonResponseMiddleware({ extractData: false })
-        ]
-      })
-    )
-  }
+  const chats = new ChatsApi(
+    new Configuration({
+      fetchApi: fetch,
+      walletApi,
+      basePath: '',
+      middleware: [
+        ...defaultMiddleware,
+        jsonResponseMiddleware({ extractData: false })
+      ]
+    })
+  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
