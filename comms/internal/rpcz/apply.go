@@ -57,7 +57,6 @@ func Apply(msg *nats.Msg) {
 	}
 
 	for attempt := 1; attempt < 5; attempt++ {
-
 		logger = logger.New("attempt", attempt)
 
 		if err != nil {
@@ -66,18 +65,15 @@ func Apply(msg *nats.Msg) {
 
 		// write to db
 		tx := db.Conn.MustBegin()
+
+		query := `
+		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
+		`
+		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
 			continue
 		}
-
-		var count int
-		query := `
-		WITH attempted_insert AS (
-			INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING jetstream_sequence
-		)
-		SELECT COUNT(*) FROM attempted_insert
-		`
-		err = tx.Get(&count, query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
+		count, err := result.RowsAffected()
 		if err != nil {
 			continue
 		}
