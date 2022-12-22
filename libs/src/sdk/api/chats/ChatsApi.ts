@@ -404,8 +404,7 @@ export class ChatsApi extends BaseAPI {
       method: 'GET',
       headers: {}
     })
-    const base64key = await response.text()
-    return base64.decode(base64key)
+    return base64.decode(response.data)
   }
 
   private async getSignatureHeader(payload: string) {

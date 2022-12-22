@@ -15,7 +15,6 @@ import {
   PlaylistsApi,
   UsersApi,
   TipsApi,
-  querystring,
   WalletAPI
 } from './api/generated/default'
 import {
@@ -28,6 +27,7 @@ import {
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
+import fetch from 'cross-fetch'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -40,6 +40,11 @@ import {
 } from './constants'
 import { getPlatformLocalStorage, LocalStorage } from '../utils/localStorage'
 import type { SetOptional } from 'type-fest'
+import {
+  addAppNameMiddleware,
+  jsonResponseMiddleware,
+  selectDiscoveryProviderMiddleware
+} from './middleware'
 
 type Web3Config = {
   providers: string[]
@@ -160,43 +165,18 @@ const initializeApis = ({
   discoveryProvider: DiscoveryProvider
   walletApi?: WalletAPI
 }) => {
-  const initializationPromise = discoveryProvider.init()
-  const makeFetchApi =
-    (useMakeRequestInternal: boolean = false) =>
-    async (url: string, context?: RequestInit) => {
-      // Ensure discovery node is initialized
-      await initializationPromise
-
-      // Append the appName to the query params
-      const urlWithAppName =
-        url +
-        (url.includes('?') ? '&' : '?') +
-        querystring({ app_name: appName })
-      const requestParams: Record<string, unknown> = {
-        ...context,
-        endpoint: urlWithAppName
-      }
-      if (useMakeRequestInternal) {
-        return await discoveryProvider._makeRequestInternal(
-          requestParams,
-          undefined,
-          undefined,
-          // Throw errors instead of returning null
-          true
-        )
-      }
-      return await discoveryProvider._makeRequest(
-        requestParams,
-        undefined,
-        undefined,
-        // Throw errors instead of returning null
-        true
-      )
-    }
-  const fetchApi = makeFetchApi(false)
-
+  const defaultMiddleware = [
+    addAppNameMiddleware({ appName }),
+    selectDiscoveryProviderMiddleware({
+      discoveryProviderSelector: discoveryProvider.serviceSelector
+    })
+  ]
   const generatedApiClientConfig = new Configuration({
-    fetchApi
+    fetchApi: fetch,
+    middleware: [
+      ...defaultMiddleware,
+      jsonResponseMiddleware({ extractData: true })
+    ]
   })
 
   const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
@@ -209,14 +189,23 @@ const initializeApis = ({
   if (walletApi !== undefined) {
     chats = new ChatsApi(
       new Configuration({
-        fetchApi: makeFetchApi(true),
-        walletApi
+        fetchApi: fetch,
+        walletApi,
+        basePath: '',
+        middleware: [
+          ...defaultMiddleware,
+          jsonResponseMiddleware({ extractData: false })
+        ]
       })
     )
   }
 
   const generatedApiClientConfigFull = new ConfigurationFull({
-    fetchApi
+    fetchApi: fetch,
+    middleware: [
+      ...defaultMiddleware,
+      jsonResponseMiddleware({ extractData: true })
+    ]
   })
 
   const full = {
