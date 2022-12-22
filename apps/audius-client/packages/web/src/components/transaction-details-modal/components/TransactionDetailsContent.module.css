@@ -1,6 +1,9 @@
 .stripeLogo path {
   fill: #00aaf5;
 }
+.coinbaseLogo path {
+  fill: #0052ff;
+}
 
 .header {
   gap: 8px;
