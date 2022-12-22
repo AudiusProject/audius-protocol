@@ -7,61 +7,95 @@ import { DISCOVERY_SERVICE_NAME } from '../../services/discoveryProvider/constan
 import type { DiscoveryProviderSelection } from '../../services/discoveryProvider/DiscoveryProviderSelection'
 import fetch from 'cross-fetch'
 import semver from 'semver'
+import type { HealthCheckResponseData } from '../api/HealthCheckResponseData'
 
-type HealthCheckParams = {
-  healthCheckData: any
-  discoveryProviderSelector: DiscoveryProviderSelection
-}
-
-const isHealthyVersion = ({
-  healthCheckData,
-  discoveryProviderSelector
-}: HealthCheckParams) => {
-  return semver.gte(
-    healthCheckData.version,
-    discoveryProviderSelector.currentVersion
-  )
-}
-
-const isHealthyIndexerPOA = ({
-  healthCheckData,
-  discoveryProviderSelector
-}: HealthCheckParams) => {
+const isSolanaIndexerHealthy = ({
+  data,
+  unhealthySlotDiffPlays
+}: {
+  data: HealthCheckResponseData
+  unhealthySlotDiffPlays: number | null
+}) => {
   return (
-    healthCheckData.block_difference <
-    discoveryProviderSelector.unhealthyBlockDiff
+    !data.plays?.is_unhealthy &&
+    !data.rewards_manager?.is_unhealthy &&
+    !data.spl_audio_info?.is_unhealthy &&
+    !data.user_bank?.is_unhealthy &&
+    (!data.plays?.tx_info?.slot_diff ||
+      unhealthySlotDiffPlays === null ||
+      data.plays?.tx_info?.slot_diff < unhealthySlotDiffPlays)
   )
 }
 
-const isHealthyIndexerSolana = ({
-  healthCheckData,
-  discoveryProviderSelector
-}: HealthCheckParams) => {
-  return (
-    !healthCheckData.plays?.is_unhealthy &&
-    !healthCheckData.rewards_manager?.is_unhealthy &&
-    !healthCheckData.spl_audio_info.is_unhealthy &&
-    !healthCheckData.user_bank.is_unhealthy &&
-    (!healthCheckData.plays?.tx_info?.slot_diff ||
-      !discoveryProviderSelector.unhealthySlotDiffPlays ||
-      healthCheckData.plays?.tx_info?.slot_diff <
-        discoveryProviderSelector.unhealthySlotDiffPlays)
-  )
-}
-
-const isHealthyIndexerJetstream = (_: HealthCheckParams) => {
+const isApiResponseHealthy = ({
+  data,
+  endpoint,
+  currentVersion,
+  unhealthyBlockDiff,
+  unhealthySlotDiffPlays
+}: {
+  data: any
+  endpoint: string
+  currentVersion: string
+  unhealthyBlockDiff: number
+  unhealthySlotDiffPlays: number | null
+}) => {
+  if (
+    data.version?.service &&
+    data.version.service !== DISCOVERY_SERVICE_NAME
+  ) {
+    console.warn('Audius SDK discovery provider service name unhealthy', {
+      endpoint
+    })
+    return false
+  }
+  if (
+    data.version?.version &&
+    semver.lt(data.version.version, currentVersion)
+  ) {
+    console.warn('Audius SDK discovery provider version unhealthy', {
+      endpoint
+    })
+    return false
+  }
+  if (
+    data.latest_chain_block &&
+    data.latest_indexed_block &&
+    data.latest_chain_block - data.latest_indexed_block > unhealthyBlockDiff
+  ) {
+    console.warn('Audius SDK discovery provider POA indexing unhealthy', {
+      endpoint
+    })
+    return false
+  }
+  if (
+    unhealthySlotDiffPlays &&
+    data.latest_chain_slot_plays &&
+    data.latest_indexed_slot_plays &&
+    data.latest_chain_slot_plays - data.latest_indexed_slot_plays >
+      unhealthySlotDiffPlays
+  ) {
+    console.warn('Audius SDK discovery provider Solana indexing unhealthy', {
+      endpoint
+    })
+    return false
+  }
   return true
 }
 
-const getHealth = async ({
+const isDiscoveryNodeHealthy = async ({
   endpoint,
-  discoveryProviderSelector
+  currentVersion,
+  unhealthyBlockDiff,
+  unhealthySlotDiffPlays
 }: {
   endpoint: string
-  discoveryProviderSelector: DiscoveryProviderSelection
+  currentVersion: string
+  unhealthyBlockDiff: number
+  unhealthySlotDiffPlays: number | null
 }) => {
   const healthCheckURL = `${endpoint}/health_check`
-  let healthCheckData = null
+  let data = null
   try {
     // Don't use context.fetch to bypass middleware
     const response = await fetch(healthCheckURL)
@@ -69,8 +103,8 @@ const getHealth = async ({
       throw new Error()
     }
     const json = await response.json()
-    healthCheckData = json.data
-    if (!healthCheckData) {
+    data = json.data as HealthCheckResponseData
+    if (!data) {
       throw new Error()
     }
   } catch {
@@ -79,40 +113,58 @@ const getHealth = async ({
     })
     return false
   }
-  if (healthCheckData.service !== DISCOVERY_SERVICE_NAME) {
+  if (data.service !== DISCOVERY_SERVICE_NAME) {
     console.warn('Audius SDK discovery provider service name unhealthy', {
       endpoint
     })
     return false
   }
-  if (!isHealthyVersion({ healthCheckData, discoveryProviderSelector })) {
+  if (!data.version || semver.lt(data.version, currentVersion)) {
     console.warn('Audius SDK discovery provider version unhealthy', {
       endpoint
     })
     return false
   }
-  if (!isHealthyIndexerPOA({ healthCheckData, discoveryProviderSelector })) {
+  if (!data.block_difference || data.block_difference > unhealthyBlockDiff) {
     console.warn('Audius SDK discovery provider POA indexing unhealthy', {
       endpoint
     })
     return false
   }
-  if (!isHealthyIndexerSolana({ healthCheckData, discoveryProviderSelector })) {
+  if (!isSolanaIndexerHealthy({ data, unhealthySlotDiffPlays })) {
     console.warn('Audius SDK discovery provider Solana indexing unhealthy', {
-      endpoint
-    })
-    return false
-  }
-  if (
-    !isHealthyIndexerJetstream({ healthCheckData, discoveryProviderSelector })
-  ) {
-    console.warn('Audius SDK discovery provider Jetstream indexing unhealthy', {
       endpoint
     })
     return false
   }
 
   return true
+}
+
+const reselectAndRetry = async ({
+  endpoint,
+  discoveryProviderSelector,
+  context
+}: {
+  endpoint: string
+  discoveryProviderSelector: DiscoveryProviderSelection
+  context: ResponseContext
+}) => {
+  const path = context.url.substring(endpoint.length)
+  discoveryProviderSelector.addUnhealthy(endpoint)
+  discoveryProviderSelector.clearCached()
+  const newSelectionPromise = discoveryProviderSelector.select()
+  const newEndpoint = await newSelectionPromise
+  console.warn(
+    'Audius SDK discovery provider endpoint unhealthy, reselected discovery provider and retrying:',
+    {
+      endpoint,
+      newEndpoint
+    }
+  )
+  // Don't use context.fetch to bypass middleware
+  const response = await fetch(`${newEndpoint}${path}`, context.init)
+  return { newSelectionPromise, response }
 }
 
 /**
@@ -147,38 +199,53 @@ export const selectDiscoveryProviderMiddleware = ({
     },
     post: async (context: ResponseContext) => {
       const response = context.response as Response
-      // Check health and reselect if unhealthy on request failure
-      if (!response?.ok) {
-        const endpoint = await selectionPromise
-        if (!endpoint) {
-          throw new Error(
-            'All Discovery Providers are unhealthy and unavailable.'
-          )
+      const { currentVersion, unhealthyBlockDiff, unhealthySlotDiffPlays } =
+        discoveryProviderSelector
+      const endpoint = await selectionPromise
+      if (!endpoint) {
+        throw new Error(
+          'All Discovery Providers are unhealthy and unavailable.'
+        )
+      }
+      if (response.ok) {
+        // Even when successful, copy response to read JSON body and check for signs the DN is unhealthy
+        // Prevents stale data
+        const responseClone = response.clone()
+        const json = await responseClone.json()
+        if (
+          !isApiResponseHealthy({
+            data: json,
+            endpoint,
+            currentVersion,
+            unhealthyBlockDiff,
+            unhealthySlotDiffPlays
+          })
+        ) {
+          const { newSelectionPromise, response } = await reselectAndRetry({
+            endpoint,
+            discoveryProviderSelector,
+            context
+          })
+          selectionPromise = newSelectionPromise
+          return response
         }
-        const path = context.url.substring(endpoint.length)
-        console.warn('Audius SDK request failed:', {
+      } else {
+        // Check health_check and reselect if unhealthy
+        console.warn('Audius SDK request failed:', context)
+        const isHealthy = await isDiscoveryNodeHealthy({
           endpoint,
-          path,
-          init: context.init
-        })
-        const isHealthy = await getHealth({
-          endpoint,
-          discoveryProviderSelector
+          currentVersion,
+          unhealthyBlockDiff,
+          unhealthySlotDiffPlays
         })
         if (!isHealthy) {
-          discoveryProviderSelector.addUnhealthy(endpoint)
-          discoveryProviderSelector.clearCached()
-          selectionPromise = discoveryProviderSelector.select()
-          const newEndpoint = await selectionPromise
-          console.warn(
-            'Audius SDK discovery provider endpoint unhealthy, reselecting discovery provider and retrying:',
-            {
-              endpoint,
-              newEndpoint
-            }
-          )
-          // Don't use context.fetch to bypass middleware
-          return await fetch(`${newEndpoint}${path}`, context.init)
+          const { newSelectionPromise, response } = await reselectAndRetry({
+            endpoint,
+            discoveryProviderSelector,
+            context
+          })
+          selectionPromise = newSelectionPromise
+          return response
         }
       }
       return response
