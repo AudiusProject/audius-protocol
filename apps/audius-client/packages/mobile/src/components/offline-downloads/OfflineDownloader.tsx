@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react'
 import { accountSelectors, reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import {
+  useIsOfflineModeEnabled,
+  useReadOfflineOverride
+} from 'app/hooks/useIsOfflineModeEnabled'
 import { useLoadOfflineTracks } from 'app/hooks/useLoadOfflineTracks'
 import {
   startDownloadWorker,
@@ -15,6 +18,7 @@ const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 
 export const OfflineDownloader = () => {
+  useReadOfflineOverride()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const [initialized, setInitialized] = useState(false)
   useEffect(() => {

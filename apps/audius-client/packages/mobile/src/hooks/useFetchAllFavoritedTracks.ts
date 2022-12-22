@@ -47,5 +47,5 @@ export const useFetchAllFavoritedTracks = () => {
   return useAsync(async () => {
     if (!isOfflineModeEnabled || !currentUserId) return
     return fetchAllFavoritedTracks(currentUserId)
-  }, [currentUserId])
+  }, [currentUserId, isOfflineModeEnabled, fetchAllFavoritedTracks])
 }
