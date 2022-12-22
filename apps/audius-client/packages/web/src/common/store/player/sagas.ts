@@ -75,7 +75,7 @@ export function* watchPlay() {
   const isOfflineModeEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.OFFLINE_MODE_ENABLED
-  ) ?? false
+  ) ?? true
 
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload ?? {}

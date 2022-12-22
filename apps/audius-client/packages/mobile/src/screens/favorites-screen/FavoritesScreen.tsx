@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import type { CommonState } from '@audius/common'
 import { accountActions } from '@audius/common'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -15,7 +16,11 @@ import { DownloadToggle } from 'app/components/offline-downloads'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import {
+  toggleLocalOfflineModeOverride,
+  useIsOfflineModeEnabled,
+  useReadOfflineOverride
+} from 'app/hooks/useIsOfflineModeEnabled'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
 import { AlbumsTab } from './AlbumsTab'
@@ -49,9 +54,19 @@ const favoritesScreens = [
 export const FavoritesScreen = () => {
   useAppTabScreen()
   const dispatch = useDispatch()
+  const [clickCount, setClickCount] = useState(0)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const { value: allFavoritedTrackIds } = useFetchAllFavoritedTracks()
+
+  useReadOfflineOverride()
+  const handleHeaderClick = useCallback(() => {
+    if (clickCount >= 10) {
+      toggleLocalOfflineModeOverride()
+    } else {
+      setClickCount(clickCount + 1)
+    }
+  }, [clickCount])
 
   useEffectOnce(() => {
     dispatch(fetchSavedPlaylists())
@@ -90,18 +105,20 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader
-        text={messages.header}
-        icon={IconFavorite}
-        styles={{ icon: { marginLeft: 3 } }}
-      >
-        {isOfflineModeEnabled && (
-          <DownloadToggle
-            tracksForDownload={tracksForDownload}
-            isFavoritesDownload
-          />
-        )}
-      </ScreenHeader>
+      <View onTouchStart={clickCount < 10 ? handleHeaderClick : undefined}>
+        <ScreenHeader
+          text={messages.header}
+          icon={IconFavorite}
+          styles={{ icon: { marginLeft: 3 } }}
+        >
+          {isOfflineModeEnabled && (
+            <DownloadToggle
+              tracksForDownload={tracksForDownload}
+              isFavoritesDownload
+            />
+          )}
+        </ScreenHeader>
+      </View>
       {
         // ScreenContent handles the offline indicator.
         // Show favorites screen anyway when offline so users can see their downloads
