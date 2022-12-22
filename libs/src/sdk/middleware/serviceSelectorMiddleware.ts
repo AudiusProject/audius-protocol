@@ -185,13 +185,14 @@ export const selectDiscoveryProviderMiddleware = ({
   >
   return {
     pre: async (context: RequestContext) => {
-      // Select discovery using legacy method
+      // Select discovery using service selection method
       const endpoint = await selectionPromise
       if (!endpoint) {
         throw new Error(
           'All Discovery Providers are unhealthy and unavailable.'
         )
       }
+      // Prepend discovery endpoint to url
       return {
         url: `${endpoint}${context.url}`,
         init: context.init ?? {}
@@ -230,7 +231,7 @@ export const selectDiscoveryProviderMiddleware = ({
           return response
         }
       } else {
-        // Check health_check and reselect if unhealthy
+        // On request failure, check health_check and reselect if unhealthy
         console.warn('Audius SDK request failed:', context)
         const isHealthy = await isDiscoveryNodeHealthy({
           endpoint,
