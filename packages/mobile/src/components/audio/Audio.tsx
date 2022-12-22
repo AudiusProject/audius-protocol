@@ -337,12 +337,10 @@ export const Audio = () => {
     setListenLoggedForTrack(false)
   }, [track, setListenLoggedForTrack])
 
-  const { value: offlineTrackUri } = useOfflineTrackUri(
-    track?.track_id.toString()
-  )
-  const { value: nextOfflineTrackUri } = useOfflineTrackUri(
-    nextTrack?.track_id.toString()
-  )
+  const { loading: loadingOfflineTrack, value: offlineTrackUri } =
+    useOfflineTrackUri(track?.track_id.toString())
+  const { loading: loadingNextOfflineTrack, value: nextOfflineTrackUri } =
+    useOfflineTrackUri(nextTrack?.track_id.toString())
 
   const streamingUri = useMemo(() => {
     return track && isReachable
@@ -375,90 +373,117 @@ export const Audio = () => {
     gateways: nextGateways
   })
 
-  let source
-  if (offlineTrackUri) {
-    source = {
-      type: TrackType.Default,
-      uri: offlineTrackUri
-    }
-    // TODO: remove feature flag - https://github.com/AudiusProject/audius-client/pull/2147
-  } else if (isStreamMp3Enabled && streamingUri) {
-    source = {
-      type: TrackType.Default,
-      uri: streamingUri
-    }
-  } else if (m3u8) {
-    source = {
+  const offlineSource = useMemo(
+    () =>
+      offlineTrackUri
+        ? {
+            type: TrackType.Default,
+            uri: offlineTrackUri
+          }
+        : null,
+    [offlineTrackUri]
+  )
+  const streamingSource = useMemo(
+    () =>
+      isStreamMp3Enabled && streamingUri
+        ? {
+            type: TrackType.Default,
+            uri: streamingUri
+          }
+        : null,
+    [isStreamMp3Enabled, streamingUri]
+  )
+  const hlsSource = useMemo(
+    () => ({
       type: TrackType.HLS,
       uri: m3u8
-    }
-  }
+    }),
+    [m3u8]
+  )
+  const source = offlineSource ?? streamingSource ?? hlsSource
 
-  let nextSource
-  if (nextOfflineTrackUri) {
-    nextSource = {
-      type: TrackType.Default,
-      uri: nextOfflineTrackUri
-    }
-    // TODO: remove feature flag - https://github.com/AudiusProject/audius-client/pull/2147
-  } else if (isStreamMp3Enabled && nextStreamingUri) {
-    nextSource = {
-      type: TrackType.Default,
-      uri: nextStreamingUri
-    }
-  } else if (nextM3u8) {
-    nextSource = {
+  const nextOfflineSource = useMemo(
+    () =>
+      nextOfflineTrackUri
+        ? {
+            type: TrackType.Default,
+            uri: nextOfflineTrackUri
+          }
+        : null,
+    [nextOfflineTrackUri]
+  )
+  const nextStreamingSource = useMemo(
+    () =>
+      isStreamMp3Enabled && nextStreamingUri
+        ? {
+            type: TrackType.Default,
+            uri: nextStreamingUri
+          }
+        : null,
+    [isStreamMp3Enabled, nextStreamingUri]
+  )
+  const nextHlsSource = useMemo(
+    () => ({
       type: TrackType.HLS,
       uri: nextM3u8
-    }
-  }
+    }),
+    [nextM3u8]
+  )
+  const nextSource = nextOfflineSource ?? nextStreamingSource ?? nextHlsSource
 
   const currentUriRef = useRef<string | null>(null)
   const isPodcastRef = useRef<boolean>(false)
 
   const handleSourceChange = useCallback(async () => {
     const newUri = source.uri
-    if (currentUriRef.current !== newUri) {
-      currentUriRef.current = newUri
-      const imageUrl = trackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
-      const nextImageUrl =
-        nextTrackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
+    if (
+      loadingOfflineTrack ||
+      loadingNextOfflineTrack ||
+      currentUriRef.current === newUri
+    )
+      return
 
-      await TrackPlayer.reset()
-      // NOTE: Adding two tracks into the queue to make sure that android has a next button on the lock screen and notification controls
-      // This should be removed when the track player queue is used properly
-      await TrackPlayer.add([
-        {
-          url: newUri,
-          type: source.type ?? TrackType.Default,
-          title: track?.title,
-          artist: trackOwner?.name,
-          genre: track?.genre,
-          date: track?.created_at,
-          artwork: imageUrl,
-          duration: track?.duration
-        },
-        {
-          url: nextSource.uri,
-          type: nextSource.type ?? TrackType.Default,
-          title: nextTrack?.title,
-          artist: nextTrackOwner?.name,
-          genre: nextTrack?.genre,
-          date: nextTrack?.created_at,
-          artwork: nextImageUrl,
-          duration: nextTrack?.duration
-        }
-      ])
+    currentUriRef.current = newUri
+    const imageUrl = trackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
+    const nextImageUrl =
+      nextTrackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
 
-      if (playing) await TrackPlayer.play()
-
-      const isPodcast = track?.genre === Genre.PODCASTS
-      if (isPodcast !== isPodcastRef.current) {
-        isPodcastRef.current = isPodcast
-        await updatePlayerOptions(isPodcast)
+    await TrackPlayer.reset()
+    // NOTE: Adding two tracks into the queue to make sure that android has a next button on the lock screen and notification controls
+    // This should be removed when the track player queue is used properly
+    await TrackPlayer.add([
+      {
+        url: newUri,
+        type: source.type ?? TrackType.Default,
+        title: track?.title,
+        artist: trackOwner?.name,
+        genre: track?.genre,
+        date: track?.created_at,
+        artwork: imageUrl,
+        duration: track?.duration
+      },
+      {
+        url: nextSource.uri,
+        type: nextSource.type ?? TrackType.Default,
+        title: nextTrack?.title,
+        artist: nextTrackOwner?.name,
+        genre: nextTrack?.genre,
+        date: nextTrack?.created_at,
+        artwork: nextImageUrl,
+        duration: nextTrack?.duration
       }
+    ])
+
+    if (playing) await TrackPlayer.play()
+
+    const isPodcast = track?.genre === Genre.PODCASTS
+    if (isPodcast !== isPodcastRef.current) {
+      isPodcastRef.current = isPodcast
+      await updatePlayerOptions(isPodcast)
     }
   }, [
+    loadingNextOfflineTrack,
+    loadingOfflineTrack,
     nextSource,
     nextTrack,
     nextTrackImageSource?.source,
