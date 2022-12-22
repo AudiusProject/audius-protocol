@@ -82,8 +82,20 @@ const slice = createSlice({
       delete state.tracks[trackId]
       delete state.downloadStatus[trackId]
     },
+    unloadTracks: (state, { payload: trackIds }: PayloadAction<string[]>) => {
+      trackIds.forEach((trackId) => {
+        delete state.tracks[trackId]
+        delete state.downloadStatus[trackId]
+      })
+    },
     doneLoadingFromDisk: (state) => {
       state.isDoneLoadingFromDisk = true
+    },
+    clearOfflineDownloads: (state) => {
+      state.collections = initialState.collections
+      state.tracks = initialState.tracks
+      state.downloadStatus = initialState.downloadStatus
+      state.isDoneLoadingFromDisk = initialState.isDoneLoadingFromDisk
     }
   }
 })
@@ -99,7 +111,9 @@ export const {
   loadTracks,
   loadTrack,
   unloadTrack,
-  doneLoadingFromDisk
+  unloadTracks,
+  doneLoadingFromDisk,
+  clearOfflineDownloads
 } = slice.actions
 
 export default slice.reducer
