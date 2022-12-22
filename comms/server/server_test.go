@@ -214,20 +214,10 @@ func TestGetChats(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := schema.UserChat{
-			ChatID:             chatId1,
-			LastMessageAt:      chat1CreatedAt.Format(time.RFC3339Nano),
-			InviteCode:         chatId1,
-			UnreadMessageCount: float64(0),
-			ChatMembers: []schema.ChatMember{
-				expectedMember1,
-				expectedMember2,
-			},
-		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
-				Data:   expectedData,
+				Data:   expectedChat1Data,
 			},
 		)
 		assert.NoError(t, err)

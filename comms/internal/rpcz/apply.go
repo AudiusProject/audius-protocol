@@ -12,7 +12,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// Validates + Applys a NATS message
+// Validates + Applies a NATS message
 
 func Apply(msg *nats.Msg) {
 	var err error
@@ -57,7 +57,6 @@ func Apply(msg *nats.Msg) {
 	}
 
 	for attempt := 1; attempt < 5; attempt++ {
-
 		logger = logger.New("attempt", attempt)
 
 		if err != nil {
@@ -66,13 +65,23 @@ func Apply(msg *nats.Msg) {
 
 		// write to db
 		tx := db.Conn.MustBegin()
+
+		query := `
+		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
+		`
+		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
 			continue
 		}
-
-		_, err = tx.Exec("insert into rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) values($1, $2, $3, $4, $5)", meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
+		count, err := result.RowsAffected()
 		if err != nil {
 			continue
+		}
+		if count == 0 {
+			// No rows were inserted because the jetstream seq number is already in rpc_log.
+			// Do not process redelivered messages that have already been processed.
+			logger.Info("rpc already in log, skipping duplicate seq number", meta.Sequence.Stream)
+			return
 		}
 
 		switch schema.RPCMethod(rawRpc.Method) {
