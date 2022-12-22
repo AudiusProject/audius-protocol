@@ -71,18 +71,21 @@ func Apply(msg *nats.Msg) {
 		}
 
 		var count int
-		err = tx.Get(&count, "select count(*) from rpc_log where jetstream_sequence = $1", meta.Sequence.Stream)
+		query := `
+		WITH attempted_insert AS (
+			INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING jetstream_sequence
+		)
+		SELECT COUNT(*) FROM attempted_insert
+		`
+		err = tx.Get(&count, query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
 			continue
 		}
-		if count > 0 {
-			// Do not process redelivered messages that have already been processed
+		if count == 0 {
+			// No rows were inserted because the jetstream seq number is already in rpc_log.
+			// Do not process redelivered messages that have already been processed.
 			logger.Info("rpc already in log, skipping duplicate seq number", meta.Sequence.Stream)
 			return
-		}
-		_, err = tx.Exec("insert into rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) values($1, $2, $3, $4, $5)", meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
-		if err != nil {
-			continue
 		}
 
 		switch schema.RPCMethod(rawRpc.Method) {
