@@ -651,10 +651,6 @@ function* confirmRemoveTrackFromPlaylist(
         // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to delete track from playlist
         let { blockHash, blockNumber, error } = yield call(
           audiusBackendInstance.deletePlaylistTrack,
-          playlistId,
-          trackId,
-          timestamp,
-          0,
           playlist
         )
         if (error) {

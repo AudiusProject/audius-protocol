@@ -48,7 +48,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const removeMenuItem = {
     text: removeText,
     onClick: () => {
-      if (trackId && index && uid) {
+      if (trackId && index !== undefined && uid) {
         onRemove?.(trackId, index, uid, date?.unix())
       }
     }
