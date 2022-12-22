@@ -118,7 +118,7 @@ export const useLoadOfflineTracks = () => {
     dispatch(cacheActions.add(Kind.USERS, cacheUsers, false, true))
     dispatch(loadTracks(lineupTracks))
     dispatch(doneLoadingFromDisk())
-  })
+  }, [isOfflineModeEnabled])
 }
 
 /**
