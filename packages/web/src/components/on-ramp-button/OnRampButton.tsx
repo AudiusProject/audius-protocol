@@ -45,7 +45,7 @@ export const OnRampButton = (
           ) : (
             <CoinbaseLogo
               className={styles.logo}
-              width={'4em'}
+              width={'5.75em'}
               height={'0.75em'}
             />
           )}

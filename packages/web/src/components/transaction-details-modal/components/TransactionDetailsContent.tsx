@@ -12,8 +12,8 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { ReactComponent as LogoCoinbase } from 'assets/img/LogoCoinbase.svg'
 import { ReactComponent as LogoStripeLink } from 'assets/img/LogoStripeLink.svg'
+import { ReactComponent as LogoCoinbase } from 'assets/img/coinbase-pay/LogoCoinbase.svg'
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
@@ -217,7 +217,11 @@ export const TransactionDetailsContent = ({
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
               {transactionDetails.method === TransactionMethod.COINBASE ? (
-                <LogoCoinbase />
+                <LogoCoinbase
+                  className={styles.coinbaseLogo}
+                  width={155}
+                  height={20}
+                />
               ) : transactionDetails.method === TransactionMethod.STRIPE ? (
                 <LogoStripeLink
                   width={145}
