@@ -168,10 +168,12 @@ const reselectAndRetry = async ({
 }
 
 /**
- * Uses a discovery provider selector to select a discovery node,
+ * Uses a discovery provider selector to select a discovery node
  * and prepends the request URL with the discovery provider endpoint.
- * On failed requests, checks to make sure the currently selected endpoint is still healthy,
- * and if not, selects a new discovery provider.
+ * - On successful requests, checks the _response body_ to make sure the currently selected endpoint is still healthy,
+ * and if not, selects a new discovery provider and retries once.
+ * - On failed requests, checks the _health check endpoint_ to make sure the currently selected endpoint is still healthy,
+ * and if not, selects a new discovery provider and retries once.
  * @param options the middleware options
  * @param {DiscoveryProviderSelection} options.discoveryProviderSelector - the DiscoveryProviderSelection instance to use to select a discovery provider
  */
