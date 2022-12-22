@@ -4,16 +4,18 @@ import {
   collectionsSocialActions,
   accountSelectors
 } from '@audius/common'
-import { call, select, takeEvery } from 'typed-redux-saga'
+import { takeLatest, call, select, takeEvery } from 'typed-redux-saga'
 
 import { apiClient } from 'app/services/audius-api-client'
 import {
+  purgeAllDownloads,
   batchDownloadTrack,
   downloadCollectionById,
   DOWNLOAD_REASON_FAVORITES
 } from 'app/services/offline-downloader'
 
 import { getOfflineCollections } from './selectors'
+import { clearOfflineDownloads } from './slice'
 const { getUserId } = accountSelectors
 
 export function* downloadSavedTrack(
@@ -70,8 +72,16 @@ export function* watchSaveCollection() {
   )
 }
 
+function* clearOffineDownloadsAsync() {
+  yield* call(purgeAllDownloads)
+}
+
+function* watchClearOfflineDownloads() {
+  yield* takeLatest(clearOfflineDownloads, clearOffineDownloadsAsync)
+}
+
 const sagas = () => {
-  return [watchSaveTrack, watchSaveCollection]
+  return [watchSaveTrack, watchSaveCollection, watchClearOfflineDownloads]
 }
 
 export default sagas
