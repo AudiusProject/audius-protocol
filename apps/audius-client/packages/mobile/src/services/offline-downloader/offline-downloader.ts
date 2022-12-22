@@ -3,7 +3,6 @@ import path from 'path'
 import type {
   Collection,
   CommonState,
-  DownloadReason,
   Track,
   UserMetadata,
   UserTrackMetadata
@@ -43,7 +42,6 @@ import {
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtDestination,
-  getLocalTrackJsonPath,
   purgeDownloadedTrack,
   getTrackJson,
   verifyTrack,
@@ -128,7 +126,7 @@ export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
 }
 
 export const downloadTrack = async (trackForDownload: TrackForDownload) => {
-  const { trackId, downloadReason } = trackForDownload
+  const { trackId, downloadReason, favoriteCreatedAt } = trackForDownload
   const trackIdStr = trackId.toString()
 
   // Throw this
@@ -159,10 +157,6 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   }
 
   track = await populateCoverArtSizes(track)
-  const lineupTrack = {
-    uid: makeUid(Kind.TRACKS, track.track_id),
-    ...track
-  }
 
   try {
     store.dispatch(startDownload(trackIdStr))
@@ -170,7 +164,7 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
       // Track is already downloaded, so rewrite the json
       // to include this collection in the reasons_for_download list
       const trackJson = await getTrackJson(trackIdStr)
-      const trackToWrite: UserTrackMetadata = {
+      const trackToWrite: Track & UserTrackMetadata = {
         ...trackJson,
         offline: {
           download_completed_time:
@@ -179,10 +173,15 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
             trackJson.offline?.last_verified_time ?? Date.now(),
           reasons_for_download: trackJson.offline?.reasons_for_download?.concat(
             downloadReason
-          ) ?? [downloadReason]
+          ) ?? [downloadReason],
+          favorite_created_at: trackJson.offline?.favorite_created_at
         }
       }
       await writeTrackJson(trackIdStr, trackToWrite)
+      const lineupTrack = {
+        uid: makeUid(Kind.TRACKS, track.track_id),
+        ...trackToWrite
+      }
       store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
       return
@@ -190,9 +189,25 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
 
     await downloadTrackCoverArt(track)
     await tryDownloadTrackFromEachCreatorNode(track)
-    await writeUserTrackJson(track, downloadReason)
+    const trackToWrite: Track & UserTrackMetadata = {
+      ...track,
+      offline: {
+        reasons_for_download: uniq([
+          downloadReason,
+          ...(track?.offline?.reasons_for_download ?? [])
+        ]),
+        download_completed_time: Date.now(),
+        last_verified_time: Date.now(),
+        favorite_created_at: favoriteCreatedAt
+      }
+    }
+    await writeTrackJson(trackIdStr, trackToWrite)
     const verified = await verifyTrack(trackIdStr, true)
     if (verified) {
+      const lineupTrack = {
+        uid: makeUid(Kind.TRACKS, track.track_id),
+        ...trackToWrite
+      }
       store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
       return
@@ -236,7 +251,8 @@ export const batchRemoveTrackDownload = async (
               diskTrack.offline?.download_completed_time ?? Date.now(),
             last_verified_time:
               diskTrack.offline?.last_verified_time ?? Date.now(),
-            reasons_for_download: remainingReasons
+            reasons_for_download: remainingReasons,
+            favorite_created_at: diskTrack.offline?.favorite_created_at
           }
         }
         await writeTrackJson(trackIdStr, trackToWrite)
@@ -247,30 +263,6 @@ export const batchRemoveTrackDownload = async (
       )
     }
   })
-}
-
-/** Unlike mp3 and album art, here we overwrite even if the file exists to ensure we have the latest */
-export const writeUserTrackJson = async (
-  track: UserTrackMetadata,
-  downloadReason: DownloadReason
-) => {
-  const trackToWrite: UserTrackMetadata = {
-    ...track,
-    offline: {
-      reasons_for_download: uniq([
-        downloadReason,
-        ...(track?.offline?.reasons_for_download ?? [])
-      ]),
-      download_completed_time: Date.now(),
-      last_verified_time: Date.now()
-    }
-  }
-
-  const pathToWrite = getLocalTrackJsonPath(track.track_id.toString())
-  if (await exists(pathToWrite)) {
-    await RNFS.unlink(pathToWrite)
-  }
-  await RNFS.write(pathToWrite, JSON.stringify(trackToWrite))
 }
 
 export const downloadTrackCoverArt = async (track: Track) => {

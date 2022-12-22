@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import {
@@ -27,7 +27,6 @@ import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineCollectionLineup } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
 import { FilterInput } from './FilterInput'
@@ -74,14 +73,17 @@ export const TracksTab = () => {
   }, [dispatch])
 
   useFocusEffect(handleFetchSaves)
-  useOfflineCollectionLineup(DOWNLOAD_REASON_FAVORITES)
+  useOfflineCollectionLineup(
+    DOWNLOAD_REASON_FAVORITES,
+    handleFetchSaves,
+    tracksActions
+  )
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getUid)
   const savedTracksStatus = useSelector(getSavedTracksStatus)
   const savedTracks = useProxySelector(getTracks, [])
-  const offlineTracks = useSelector(getOfflineTracks)
 
   const filterTrack = (track: TrackMetadata) => {
     const matchValue = filterValue?.toLowerCase()
@@ -129,17 +131,7 @@ export const TracksTab = () => {
   )
 
   const isLoading = savedTracksStatus !== Status.SUCCESS
-  const tracks = useMemo(
-    () =>
-      !isReachable && isOfflineModeEnabled
-        ? Object.values(offlineTracks).filter((track) =>
-            track.offline?.reasons_for_download.some(
-              (reason) => reason.collection_id === DOWNLOAD_REASON_FAVORITES
-            )
-          )
-        : savedTracks.entries,
-    [isOfflineModeEnabled, isReachable, offlineTracks, savedTracks.entries]
-  )
+  const tracks = savedTracks.entries
   const hasNoFavorites = tracks.length === 0
 
   return (

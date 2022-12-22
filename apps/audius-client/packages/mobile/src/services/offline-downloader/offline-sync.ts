@@ -14,7 +14,7 @@ import moment from 'moment'
 import queue from 'react-native-job-queue'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
-import { fetchAllFavoritedTrackIds } from 'app/hooks/useFetchAllFavoritedTrackIds'
+import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { store } from 'app/store'
 import { getOfflineCollections } from 'app/store/offline-downloads/selectors'
 import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
@@ -80,7 +80,7 @@ const syncFavorites = async () => {
   const currentUserId = getUserId(state as unknown as CommonState)
   if (!currentUserId) return
 
-  const favoritedTrackIds = await fetchAllFavoritedTrackIds(currentUserId)
+  const favoritedTracks = await fetchAllFavoritedTracks(currentUserId)
   const cacheTracks = getTracks(state, {})
 
   const isTrackFavoriteReason = (downloadReason: DownloadReason) =>
@@ -99,21 +99,22 @@ const syncFavorites = async () => {
     .map(([id, track]) => track.track_id)
 
   const oldTrackIds = new Set([...queuedTracks, ...cachedFavoritedTrackIds])
-  const newTrackIds = new Set(favoritedTrackIds)
-  const addedTrackIds = [...newTrackIds].filter(
-    (trackId) => !oldTrackIds.has(trackId)
+  const newTrackIds = new Set(favoritedTracks.map(({ trackId }) => trackId))
+  const addedTracks = [...favoritedTracks].filter(
+    ({ trackId }) => !oldTrackIds.has(trackId)
   )
   const removedTrackIds = [...oldTrackIds].filter(
     (trackId) => !newTrackIds.has(trackId)
   )
 
-  const tracksForDownload: TrackForDownload[] = addedTrackIds.map(
+  const tracksForDownload: TrackForDownload[] = addedTracks.map(
     (addedTrack) => ({
-      trackId: addedTrack,
+      trackId: addedTrack.trackId,
       downloadReason: {
         is_from_favorites: true,
         collection_id: DOWNLOAD_REASON_FAVORITES
-      }
+      },
+      favoriteCreatedAt: addedTrack.favoriteCreatedAt
     })
   )
   batchDownloadTrack(tracksForDownload)
@@ -242,14 +243,16 @@ const syncStaleTracks = () => {
     }
 
     // TODO: re-download the mp3 if it's changed
-    writeTrackJson(updatedTrack.track_id.toString(), {
+    const trackToWrite = {
       ...updatedTrack,
       offline: {
         download_completed_time:
           staleTrack.offline?.download_completed_time ?? Date.now(),
         reasons_for_download: staleTrack.offline?.reasons_for_download ?? [],
-        last_verified_time: Date.now()
+        last_verified_time: Date.now(),
+        favorite_created_at: staleTrack.offline?.favorite_created_at
       }
-    })
+    }
+    writeTrackJson(updatedTrack.track_id.toString(), trackToWrite)
   })
 }

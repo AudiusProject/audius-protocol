@@ -82,6 +82,7 @@ export type APIFavorite = {
   favorite_item_id: string
   favorite_type: FavoriteType
   user_id: string
+  created_at: string
 }
 
 export type APIRemix = {

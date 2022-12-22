@@ -14,7 +14,7 @@ import type { TrackForDownload } from 'app/components/offline-downloads'
 import { DownloadToggle } from 'app/components/offline-downloads'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import { useFetchAllFavoritedTrackIds } from 'app/hooks/useFetchAllFavoritedTrackIds'
+import { useFetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
@@ -51,7 +51,7 @@ export const FavoritesScreen = () => {
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
-  const { value: allFavoritedTrackIds } = useFetchAllFavoritedTrackIds()
+  const { value: allFavoritedTrackIds } = useFetchAllFavoritedTracks()
 
   useEffectOnce(() => {
     dispatch(fetchSavedPlaylists())
@@ -65,11 +65,12 @@ export const FavoritesScreen = () => {
   const tracksForDownload: TrackForDownload[] = useMemo(() => {
     const trackFavoritesToDownload: TrackForDownload[] = (
       allFavoritedTrackIds ?? []
-    ).map((trackId) => ({
+    ).map(({ trackId, favoriteCreatedAt }) => ({
       trackId,
       downloadReason: {
         is_from_favorites: true,
-        collection_id: DOWNLOAD_REASON_FAVORITES
+        collection_id: DOWNLOAD_REASON_FAVORITES,
+        favorite_created_at: favoriteCreatedAt
       }
     }))
     const collectionFavoritesToDownload: TrackForDownload[] =
@@ -80,6 +81,7 @@ export const FavoritesScreen = () => {
             is_from_favorites: true,
             collection_id: collection.playlist_id.toString()
           }
+          // TODO: include a favorite_created_at timestamp for sorting offline collections
         }))
       )
 

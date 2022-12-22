@@ -2,6 +2,7 @@ import path from 'path'
 
 import type {
   Collection,
+  Track,
   User,
   UserMetadata,
   UserTrackMetadata
@@ -171,7 +172,7 @@ export const listTracks = async (): Promise<string[]> => {
 
 export const getTrackJson = async (
   trackId: string
-): Promise<UserTrackMetadata> => {
+): Promise<Track & UserTrackMetadata> => {
   try {
     const trackJson = await readFile(getLocalTrackJsonPath(trackId))
     return JSON.parse(trackJson)
