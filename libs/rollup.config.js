@@ -105,11 +105,11 @@ const browserLegacyConfig = {
   external
 }
 
-export default [
+export const outputConfigs = {
   /**
    * SDK
    */
-  {
+  sdkConfig: {
     input: 'src/index.ts',
     output: [
       { file: pkg.main, format: 'cjs', sourcemap: true },
@@ -122,21 +122,22 @@ export default [
    * SDK bundled for a browser environment (includes polyfills for node libraries)
    * Does not include libs but does include polyfills
    */
-  {
+  browserSdkConfig: {
     input: 'src/sdk/index.ts',
     output: [
       { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true },
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     ...browserConfig,
-    watch: process.env.WATCH_BROWSER != "false",
+    // eslint-disable-next-line eqeqeq
+    watch: process.env.WATCH_BROWSER != 'false'
   },
 
   /**
    * SDK bundled for prebuilt package file to be used in browser
    * Does not include libs but does include polyfills and all deps/dev deps
    */
-  {
+  browserSdkConfigPolyfill: {
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
@@ -151,37 +152,41 @@ export default [
       }
     ],
     ...browserDistFileConfig,
-    watch: process.env.WATCH_BROWSER != "false",
+    // eslint-disable-next-line eqeqeq
+    watch: process.env.WATCH_BROWSER != 'false'
   },
 
   /**
    * Legacy bundle for a browser environment
    * Includes libs but does not include polyfills
    */
-  {
+  legacyConfig: {
     input: 'src/legacy.ts',
     output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
     ...browserLegacyConfig,
-    watch: process.env.WATCH_BROWSER != "false",
+    // eslint-disable-next-line eqeqeq
+    watch: process.env.WATCH_BROWSER != 'false'
   },
 
   /**
    * ReactNative bundle used for our mobile app
    * Includes a modified version of AudiusLibs with solana dependencies removed
    */
-  {
+  reactNativeConfig: {
     input: 'src/native-libs.ts',
     output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
     ...browserLegacyConfig,
-    watch: process.env.WATCH_BROWSER != "false",
+    // eslint-disable-next-line eqeqeq
+    watch: process.env.WATCH_BROWSER != 'false'
   },
-
   /**
    * core (used for eager requests)
    */
-  {
+  coreConfig: {
     input: 'src/core.ts',
     output: [{ file: 'dist/core.js', format: 'es', sourcemap: true }],
-    ...commonConfig,
+    ...commonConfig
   }
-]
+}
+
+export default Object.values(outputConfigs)
