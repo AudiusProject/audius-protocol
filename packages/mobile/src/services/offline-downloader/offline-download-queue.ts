@@ -1,6 +1,5 @@
 import { isEqual, groupBy } from 'lodash'
-import type { CancellablePromise } from 'react-native-job-queue'
-import queue, { Worker } from 'react-native-job-queue'
+import queue from 'react-native-job-queue'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
@@ -10,11 +9,15 @@ import {
   removeDownload
 } from 'app/store/offline-downloads/slice'
 
-import { batchRemoveTrackDownload, downloadTrack } from './offline-downloader'
-
-export const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
-
-export type TrackDownloadWorkerPayload = TrackForDownload
+import {
+  playCounterWorker,
+  PLAY_COUNTER_WORKER
+} from './workers/playCounterWorker'
+import type { TrackDownloadWorkerPayload } from './workers/trackDownloadWorker'
+import {
+  trackDownloadWorker,
+  TRACK_DOWNLOAD_WORKER
+} from './workers/trackDownloadWorker'
 
 export const enqueueTrackDownload = async (
   trackForDownload: TrackForDownload
@@ -30,6 +33,14 @@ export const enqueueTrackDownload = async (
   )
 }
 
+const removeExistingWorkers = () => {
+  const workerTypes = [TRACK_DOWNLOAD_WORKER, PLAY_COUNTER_WORKER]
+  workerTypes.forEach((workerType) => {
+    const existingWorker = queue.registeredWorkers[workerType]
+    if (existingWorker) queue.removeWorker(workerType, true)
+  })
+}
+
 export const startDownloadWorker = async () => {
   queue.stop()
   queue.configure({
@@ -37,30 +48,10 @@ export const startDownloadWorker = async () => {
     updateInterval: 10
   })
 
-  const worker = queue.registeredWorkers[TRACK_DOWNLOAD_WORKER]
   // Reset worker to improve devEx. Forces the worker to take code updates across reloads
-  if (worker) queue.removeWorker(TRACK_DOWNLOAD_WORKER, true)
-  queue.addWorker(
-    new Worker(
-      TRACK_DOWNLOAD_WORKER,
-      (payload: TrackDownloadWorkerPayload) => {
-        const promise: CancellablePromise<void> = downloadTrack(payload)
-        promise.rn_job_queue_cancel = () => {
-          promise.finally(() => {
-            store.dispatch(removeDownload(payload.trackId.toString()))
-            batchRemoveTrackDownload([payload])
-          })
-        }
-        return promise
-      },
-      {
-        onFailure: ({ payload }) => {
-          store.dispatch(errorDownload(payload.trackId.toString()))
-        },
-        concurrency: 10
-      }
-    )
-  )
+  removeExistingWorkers()
+  queue.addWorker(trackDownloadWorker)
+  queue.addWorker(playCounterWorker)
 
   // Sync leftover jobs from last session to redux state
   const jobs = await queue.getJobs()

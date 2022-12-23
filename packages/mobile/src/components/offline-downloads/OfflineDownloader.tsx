@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { accountSelectors, reachabilitySelectors } from '@audius/common'
+import queue from 'react-native-job-queue'
 import { useSelector } from 'react-redux'
 
 import {
@@ -21,6 +22,7 @@ export const OfflineDownloader = () => {
   useReadOfflineOverride()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const [initialized, setInitialized] = useState(false)
+
   useEffect(() => {
     if (!initialized && isOfflineModeEnabled) {
       setInitialized(true)
@@ -41,6 +43,17 @@ export const OfflineDownloader = () => {
       startSyncWorker()
     }
   }, [syncStarted, currentUserId, isDoneLoadingFromDisk, isReachable])
+
+  useEffect(() => {
+    if (!initialized) return
+    const isQueueRunning = queue.isRunning
+
+    if (isReachable && !isQueueRunning) {
+      queue.start()
+    } else if (!isReachable && isQueueRunning) {
+      queue.stop()
+    }
+  }, [initialized, isReachable])
 
   return null
 }

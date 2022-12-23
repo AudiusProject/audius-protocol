@@ -23,8 +23,6 @@ import { isAvailableForPlay } from 'app/utils/trackUtils'
 
 import { apiClient } from '../audius-api-client'
 
-import type { TrackDownloadWorkerPayload } from './offline-download-queue'
-import { TRACK_DOWNLOAD_WORKER } from './offline-download-queue'
 import {
   batchDownloadTrack,
   batchRemoveTrackDownload,
@@ -35,6 +33,8 @@ import {
   removeCollectionDownload
 } from './offline-downloader'
 import { purgeDownloadedTrack, writeTrackJson } from './offline-storage'
+import type { TrackDownloadWorkerPayload } from './workers/trackDownloadWorker'
+import { TRACK_DOWNLOAD_WORKER } from './workers/trackDownloadWorker'
 
 const { getCollections } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
