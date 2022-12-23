@@ -58,7 +58,7 @@ export const TrackScreen = () => {
 
   const cachedTrack = useSelector((state) => getTrack(state, params))
 
-  const track = cachedTrack ?? searchTrack
+  const track = cachedTrack?.track_id ? cachedTrack : searchTrack
 
   const cachedUser = useSelector((state) =>
     getUser(state, { id: track?.owner_id })
