@@ -253,10 +253,6 @@ def get_tip_ids(args: GetTipsArgs) -> List[TipIDResult]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
         tips_results: List[Tuple[UserTip, List[int]]] = _get_tips(session, args)
-
-        # Collect user IDs and fetch users
-
-        # Not using model_to_dictionary() here because TypedDict complains about dynamic keys
         tips: List[TipIDResult] = [
             {
                 "amount": result[0].amount,
