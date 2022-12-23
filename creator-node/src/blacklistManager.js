@@ -41,6 +41,20 @@ class BlacklistManager {
           userIdsToBlacklist,
           segmentsToBlacklist
         })
+
+        // add items to redis periodically in case redis restarts
+        setInterval(async function () {
+          const {
+            trackIdsToBlacklist,
+            userIdsToBlacklist,
+            segmentsToBlacklist
+          } = await this._getDataToBlacklist()
+          await this._fetchCIDsAndAddToRedis({
+            trackIdsToBlacklist,
+            userIdsToBlacklist,
+            segmentsToBlacklist
+          })
+        }, 1000 * 60 * 60 * 6 /* six hours */)
       }
 
       this.initialized = true
