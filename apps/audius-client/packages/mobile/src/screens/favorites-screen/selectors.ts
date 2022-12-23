@@ -26,8 +26,9 @@ export const getAccountCollections = (
   state: CommonState,
   filterValue: string
 ) => {
-  const collectionEntries = state.collections.entries
+  const collectionEntries = state.collections?.entries
   const { collections } = state.account
+  if (!collectionEntries) return []
   return Object.values(collections)
     .map((collection) => collectionEntries[collection.id]?.metadata)
     ?.filter(

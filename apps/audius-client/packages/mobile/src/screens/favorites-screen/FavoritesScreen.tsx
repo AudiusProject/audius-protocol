@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import type { CommonState } from '@audius/common'
 import { accountActions } from '@audius/common'
-import { View } from 'react-native'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -63,6 +63,7 @@ export const FavoritesScreen = () => {
   const handleHeaderClick = useCallback(() => {
     if (clickCount >= 10) {
       toggleLocalOfflineModeOverride()
+      setClickCount(0)
     } else {
       setClickCount(clickCount + 1)
     }
@@ -105,7 +106,7 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <View onTouchStart={clickCount < 10 ? handleHeaderClick : undefined}>
+      <TouchableWithoutFeedback onPress={handleHeaderClick}>
         <ScreenHeader
           text={messages.header}
           icon={IconFavorite}
@@ -118,7 +119,7 @@ export const FavoritesScreen = () => {
             />
           )}
         </ScreenHeader>
-      </View>
+      </TouchableWithoutFeedback>
       {
         // ScreenContent handles the offline indicator.
         // Show favorites screen anyway when offline so users can see their downloads

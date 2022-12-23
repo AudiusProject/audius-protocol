@@ -22,9 +22,9 @@ export const toggleLocalOfflineModeOverride = () => {
 export const useReadOfflineOverride = () =>
   useAsync(async () => {
     try {
-      asyncOverride = Boolean(
-        await AsyncStorage.getItem(OFFLINE_OVERRIDE_ASYNC_STORAGE_KEY)
-      )
+      asyncOverride =
+        (await AsyncStorage.getItem(OFFLINE_OVERRIDE_ASYNC_STORAGE_KEY)) ===
+        'true'
     } catch (e) {
       console.log('error reading local offline mode override')
     }
