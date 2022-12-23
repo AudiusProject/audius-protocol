@@ -82,4 +82,10 @@ const Skeleton = ({ width, height, style }: SkeletonProps) => {
   )
 }
 
+type StaticSkeletonProps = SkeletonProps
+
+export const StaticSkeleton = (props: StaticSkeletonProps) => {
+  return <Skeleton noShimmer {...props} />
+}
+
 export default Skeleton
