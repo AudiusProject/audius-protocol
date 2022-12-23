@@ -44,7 +44,7 @@ import type { SetOptional } from 'type-fest'
 import {
   addAppNameMiddleware,
   jsonResponseMiddleware,
-  selectDiscoveryProviderMiddleware
+  discoveryNodeSelectorMiddleware
 } from './middleware'
 
 type Web3Config = {
@@ -188,7 +188,7 @@ const initializeApis = ({
 }) => {
   const defaultMiddleware = [
     addAppNameMiddleware({ appName }),
-    selectDiscoveryProviderMiddleware({
+    discoveryNodeSelectorMiddleware({
       discoveryProviderSelector: discoveryProvider.serviceSelector
     })
   ]

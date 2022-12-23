@@ -177,7 +177,7 @@ const reselectAndRetry = async ({
  * @param options the middleware options
  * @param {DiscoveryProviderSelection} options.discoveryProviderSelector - the DiscoveryProviderSelection instance to use to select a discovery provider
  */
-export const selectDiscoveryProviderMiddleware = ({
+export const discoveryNodeSelectorMiddleware = ({
   discoveryProviderSelector
 }: {
   discoveryProviderSelector: DiscoveryProviderSelection
