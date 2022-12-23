@@ -55,9 +55,9 @@ export const useLoadOfflineTracks = () => {
     }[] = []
     for (const collectionId of offlineCollections) {
       try {
+        dispatch(addCollection(collectionId))
         if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
         const collection = await getCollectionJson(collectionId)
-        dispatch(addCollection(collectionId))
         cacheCollections.push({
           id: collectionId,
           uid: makeUid(Kind.COLLECTIONS, collectionId),
