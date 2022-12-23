@@ -47,7 +47,7 @@ module.exports = function (app) {
       }
 
       try {
-        const res = await doRequest(reqObj)
+        const res = await doRequest(reqObj, req.logger)
         const authAccessToken = JSON.parse(res)
         const { access_token: accessToken } = authAccessToken
 
