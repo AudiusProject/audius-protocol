@@ -30,3 +30,18 @@ tip_model_full = ns.clone(
         "tx_signature": fields.String(required=True),
     },
 )
+
+tip_id_model_full = ns.model(
+    "full_tip",
+    {
+        "amount": fields.String(required=True),
+        "sender_id": fields.String(required=True),
+        "receiver_id": fields.String(qrequired=True),
+        "created_at": fields.String(required=True),
+        "slot": fields.Integer(required=True),
+        "followee_supporters": fields.List(
+            fields.Nested(supporter_reference), required=True
+        ),
+        "tx_signature": fields.String(required=True),
+    },
+)

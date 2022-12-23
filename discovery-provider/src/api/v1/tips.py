@@ -3,13 +3,14 @@ from src.api.v1.helpers import (
     abort_bad_request_param,
     decode_with_abort,
     extend_tip,
+    extend_tip_id,
     make_full_response,
     make_response,
     pagination_with_current_user_parser,
     success_response,
 )
-from src.api.v1.models.tips import tip_model, tip_model_full
-from src.queries.get_tips import get_tips
+from src.api.v1.models.tips import tip_id_model_full, tip_model, tip_model_full
+from src.queries.get_tips import get_tip_ids, get_tips
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -129,4 +130,44 @@ class FullTips(Resource):
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))
+        return success_response(tips)
+
+
+full_tip_ids_parser = pagination_with_current_user_parser.copy()
+full_tip_ids_parser.add_argument(
+    "min_slot",
+    type=int,
+    required=False,
+    default=0,
+    description="The minimum Solana slot to pull tips from",
+)
+
+full_get_tip_ids_response = make_full_response(
+    "get_tip_ids_response", full_ns, fields.List(fields.Nested(tip_id_model_full))
+)
+
+
+@full_ns.route("/ids")
+class FullTipIDs(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="Get Tips ids", description="""Gets the user IDs of most recent tips"""
+    )
+    @full_ns.expect(full_tip_ids_parser)
+    @full_ns.marshal_with(full_get_tip_ids_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = full_tip_ids_parser.parse_args()
+
+        # Always require user_id
+        if not args.get("user_id"):
+            abort_bad_request_param(
+                "Missing user_id",
+                full_ns,
+            )
+
+        args["user_id"] = decode_with_abort(args["user_id"], full_ns)
+
+        tips = get_tip_ids(args)
+        tips = list(map(extend_tip_id, tips))
         return success_response(tips)

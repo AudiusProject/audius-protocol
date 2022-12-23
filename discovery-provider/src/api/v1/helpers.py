@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime
-from typing import Dict, cast
+from typing import Dict, List, TypedDict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
+from src.models.users.user import User
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
+from src.queries.get_tips import TipIDResult, TipResult
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
@@ -341,15 +343,52 @@ def extend_reaction(reaction: ReactionResponse):
     return new_reaction
 
 
-def extend_tip(tip):
-    new_tip = tip.copy()
-    new_tip["amount"] = to_wei_string(tip["amount"])
-    new_tip["sender"] = extend_user(tip["sender"])
-    new_tip["receiver"] = extend_user(tip["receiver"])
-    new_tip["followee_supporters"] = [
-        {"user_id": encode_int_id(id)} for id in new_tip["followee_supporters"]
-    ]
-    return new_tip
+class ExtendedTipResult(TypedDict):
+    amount: int
+    sender: User
+    receiver: User
+    slot: int
+    created_at: datetime
+    followee_supporters: List[Dict[str, int]]
+    tx_signature: str
+
+
+def extend_tip(tip: TipResult) -> ExtendedTipResult:
+    return {
+        "amount": to_wei_string(tip["amount"]),
+        "sender": extend_user(tip["sender"]),
+        "receiver": extend_user(tip["receiver"]),
+        "followee_supporters": [
+            {"user_id": encode_int_id(id)} for id in tip["followee_supporters"]
+        ],
+        "slot": tip["slot"],
+        "created_at": tip["created_at"],
+        "tx_signature": tip["tx_signature"],
+    }
+
+
+class ExtendedTipIDResult(TypedDict):
+    amount: int
+    sender_id: str
+    receiver_id: str
+    slot: int
+    created_at: datetime
+    followee_supporters: List[Dict[str, str]]
+    tx_signature: str
+
+
+def extend_tip_id(tip: TipIDResult) -> ExtendedTipIDResult:
+    return {
+        "amount": to_wei_string(tip["amount"]),
+        "sender_id": encode_int_id(tip["sender_id"]),
+        "receiver_id": encode_int_id(tip["receiver_id"]),
+        "followee_supporters": [
+            {"user_id": encode_int_id(id)} for id in tip["followee_supporters"]
+        ],
+        "slot": tip["slot"],
+        "created_at": tip["created_at"],
+        "tx_signature": tip["tx_signature"],
+    }
 
 
 def extend_transaction_details(transaction_details):
