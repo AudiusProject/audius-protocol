@@ -72,15 +72,12 @@ export function* watchPlay() {
     getFeatureEnabled,
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   ) ?? false
-  const isOfflineModeEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.OFFLINE_MODE_ENABLED
-  ) ?? true
 
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
+    const isNativeMobile = yield getContext('isNativeMobile')
 
     if (trackId) {
       // Load and set end action.
@@ -97,7 +94,7 @@ export function* watchPlay() {
         id: track.owner_id
       })
 
-      if (!isReachable && isOfflineModeEnabled) {
+      if (!isReachable && isNativeMobile) {
         // Play offline.
         audioPlayer.play()
         yield* put(playSucceeded({ uid, trackId }))
