@@ -54,6 +54,7 @@ class BlacklistManager {
             userIdsToBlacklist,
             segmentsToBlacklist
           })
+          this._log(`Re-added to redis`)
         }, 1000 * 60 * 60 * 6 /* six hours */)
       }
 
