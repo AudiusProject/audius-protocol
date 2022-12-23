@@ -51,14 +51,17 @@ module.exports = function (app) {
         const authAccessToken = JSON.parse(res)
         const { access_token: accessToken } = authAccessToken
 
-        const instagramAPIUser = await doRequest({
-          method: 'get',
-          url: 'https://graph.instagram.com/me',
-          qs: {
-            fields: 'id,username,account_type',
-            access_token: accessToken
-          }
-        })
+        const instagramAPIUser = await doRequest(
+          {
+            method: 'get',
+            url: 'https://graph.instagram.com/me',
+            qs: {
+              fields: 'id,username,account_type',
+              access_token: accessToken
+            }
+          },
+          req.logger
+        )
         const igUser = JSON.parse(instagramAPIUser)
         if (igUser.error) {
           return errorResponseBadRequest(new Error(igUser.error.message))
@@ -205,11 +208,17 @@ module.exports = function (app) {
  * Since request is a callback based API, we need to wrap it in a promise to make it async/await compliant
  * @param {Object} reqObj construct request object compatible with `request` module
  */
-function doRequest(reqObj) {
+function doRequest(reqObj, logger) {
   return new Promise(function (resolve, reject) {
     request(reqObj, function (err, r, body) {
-      if (err) reject(err)
-      else resolve(body)
+      if (err) {
+        if (logger) {
+          logger.error(r, body)
+        }
+        reject(err)
+      } else {
+        resolve(body)
+      }
     })
   })
 }
