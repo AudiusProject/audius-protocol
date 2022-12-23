@@ -217,6 +217,9 @@ function doRequest(reqObj, logger) {
         }
         reject(err)
       } else {
+        if (logger) {
+          logger.info(r, body)
+        }
         resolve(body)
       }
     })
