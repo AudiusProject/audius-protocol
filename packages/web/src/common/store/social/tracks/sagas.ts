@@ -10,7 +10,6 @@ import {
   cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
-  audioRewardsPageActions,
   getContext,
   tracksSocialActions as socialActions,
   waitForValue
@@ -27,7 +26,7 @@ import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
-const { updateOptimisticListenStreak } = audioRewardsPageActions
+import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 
@@ -611,36 +610,6 @@ export function* watchUnsetArtistPick() {
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)
   })
-}
-
-/* RECORD LISTEN */
-
-export function* watchRecordListen() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* takeEvery(
-    socialActions.RECORD_LISTEN,
-    function* (action: ReturnType<typeof socialActions.recordListen>) {
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (isNativeMobile) return
-      console.debug('Listen recorded for track', action.trackId)
-
-      yield* waitForWrite()
-      const userId = yield* select(getUserId)
-      const track = yield* select(getTrack, { id: action.trackId })
-      if (!userId || !track) return
-
-      if (userId !== track.owner_id || track.play_count < 10) {
-        yield* call(audiusBackendInstance.recordTrackListen, action.trackId)
-      }
-
-      // Record track listen analytics event
-      const event = make(Name.LISTEN, { trackId: action.trackId })
-      yield* put(event)
-
-      // Optimistically update the listen streak if applicable
-      yield* put(updateOptimisticListenStreak())
-    }
-  )
 }
 
 /* DOWNLOAD TRACK */

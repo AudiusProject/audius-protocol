@@ -13,7 +13,8 @@ import {
   RepeatMode,
   FeatureFlags,
   encodeHashId,
-  Genre
+  Genre,
+  tracksSocialActions
 } from '@audius/common'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -32,18 +33,17 @@ import {
   DEFAULT_IMAGE_URL,
   useTrackImage
 } from 'app/components/image/TrackImage'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
 import { useChromecast } from './GoogleCast'
-import { logListen } from './listens'
 
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
+const { recordListen } = tracksSocialActions
 const {
   getIndex,
   getOrder,
@@ -139,7 +139,6 @@ export const Audio = () => {
   const trackImageSource = useTrackImage(track, trackOwner ?? undefined)
   const currentUserId = useSelector(getUserId)
   const isReachable = useSelector(getIsReachable)
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   // Queue things
   const queueIndex = useSelector(getIndex)
@@ -257,8 +256,10 @@ export const Audio = () => {
     }
   })
 
+  const trackId = track?.track_id
+
   const onProgress = useCallback(async () => {
-    if (!track || !currentUserId) return
+    if (!trackId || !currentUserId) return
     if (progressInvalidator.current) {
       progressInvalidator.current = false
       return
@@ -267,21 +268,15 @@ export const Audio = () => {
     const duration = await TrackPlayer.getDuration()
     const position = await TrackPlayer.getPosition()
 
-    // Replicates logic in dapp.
-    // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
     if (
       position > RECORD_LISTEN_SECONDS &&
-      (track.owner_id !== currentUserId || track.play_count < 10) &&
       !listenLoggedForTrack &&
-      // TODO: log listens for offline plays when reconnected
-      (!isOfflineModeEnabled || isReachable)
+      isReachable
     ) {
-      // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
       setListenLoggedForTrack(true)
-      logListen(track.track_id, currentUserId, () =>
-        setListenLoggedForTrack(false)
-      )
+      dispatch(recordListen(trackId))
     }
+
     if (!isCasting) {
       // If we aren't casting, update the progress
       global.progress = { duration, currentTime: position }
@@ -293,10 +288,10 @@ export const Audio = () => {
   }, [
     currentUserId,
     isCasting,
-    isOfflineModeEnabled,
     isReachable,
     listenLoggedForTrack,
-    track
+    trackId,
+    dispatch
   ])
 
   useEffect(() => {
@@ -331,11 +326,8 @@ export const Audio = () => {
   // Restart (counter) handler
   useEffect(() => {
     setSeekPosition(0)
-  }, [counter, setSeekPosition])
-
-  useEffect(() => {
     setListenLoggedForTrack(false)
-  }, [track, setListenLoggedForTrack])
+  }, [counter, setSeekPosition])
 
   const { loading: loadingOfflineTrack, value: offlineTrackUri } =
     useOfflineTrackUri(track?.track_id.toString())
