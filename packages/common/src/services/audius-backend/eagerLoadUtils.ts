@@ -48,7 +48,7 @@ export const makeEagerRequest = async (
 
   const headers: { [key: string]: string } = {}
   if (user && user.user_id) {
-    headers['X-User-ID'] = user.user_id
+    headers['X-User-ID'] = `${user.user_id}`
   }
 
   let baseUrl = `${discprovEndpoint}/${req.endpoint}`

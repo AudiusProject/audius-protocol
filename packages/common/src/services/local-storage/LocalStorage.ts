@@ -1,6 +1,7 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk/dist/core'
 
 import { User } from 'models/User'
+import { Nullable } from 'utils'
 
 // TODO: the following should come from @audius/libs/dist/core when
 // discoveryProvider/constants is migrated to typescript.
@@ -34,7 +35,7 @@ export class LocalStorage {
     return await this.localStorage.getItem(key)
   }
 
-  async getJSONValue(key: string) {
+  async getJSONValue<T>(key: string): Promise<T | null> {
     const val = await this.getValue(key)
     if (val) {
       try {
@@ -45,6 +46,23 @@ export class LocalStorage {
       }
     }
     return null
+  }
+
+  async getExpiringJSONValue<T>(key: string): Promise<T | null> {
+    const res: Nullable<{ value: T; expiry: number }> = await this.getJSONValue(
+      key
+    )
+    if (!res) {
+      return null
+    }
+
+    const isExpired = res.expiry < Date.now()
+    if (isExpired) {
+      this.localStorage.removeItem(key)
+      return null
+    }
+
+    return res.value
   }
 
   setItem = async (key: string, value: string) => {
@@ -60,6 +78,14 @@ export class LocalStorage {
     await this.setValue(key, string)
   }
 
+  setExpiringJSONValue(key: string, value: any, ttlSeconds: number) {
+    const expiring = {
+      value,
+      expiry: Date.now() + ttlSeconds * 1000
+    }
+    this.localStorage.setItem(key, JSON.stringify(expiring))
+  }
+
   async removeItem(key: string) {
     await this.localStorage.removeItem(key)
   }
@@ -71,7 +97,9 @@ export class LocalStorage {
 
   clearAudiusAccount = async () => this.removeItem(AUDIUS_ACCOUNT_KEY)
 
-  getAudiusAccountUser = async () => this.getJSONValue(AUDIUS_ACCOUNT_USER_KEY)
+  getAudiusAccountUser = async (): Promise<User | null> =>
+    this.getJSONValue(AUDIUS_ACCOUNT_USER_KEY)
+
   setAudiusAccountUser = async (value: User) =>
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)
 

@@ -1,11 +1,28 @@
+import { Nullable } from '@audius/common'
+
 import { getLocation } from 'services/Location'
+import { localStorage } from 'services/local-storage'
 
 const DISMISSED_COOKIE_BANNER_KEY = 'dismissCookieBanner'
+const IS_EU_KEY = 'isEU'
+const IS_EU_CACHE_TTL_MS = 7 * 24 * 3600 * 1000
 
 export const getIsInEU = async () => {
+  const cachedIsEU: Nullable<boolean> = await localStorage.getExpiringJSONValue(
+    IS_EU_KEY
+  )
+
+  if (cachedIsEU !== null) {
+    return cachedIsEU
+  }
+
   const location = await getLocation()
-  if (!location) return false
-  return location.in_eu
+  if (!location) {
+    return false
+  }
+  const isEU = location.in_eu
+  localStorage.setExpiringJSONValue(IS_EU_KEY, isEU, IS_EU_CACHE_TTL_MS)
+  return isEU
 }
 
 export const shouldShowCookieBanner = async (): Promise<boolean> => {
@@ -13,7 +30,7 @@ export const shouldShowCookieBanner = async (): Promise<boolean> => {
     process.env.NODE_ENV === 'production' &&
     process.env.REACT_APP_ENVIRONMENT === 'production'
   ) {
-    const isDimissed = localStorage.getItem(DISMISSED_COOKIE_BANNER_KEY)
+    const isDimissed = await localStorage.getItem(DISMISSED_COOKIE_BANNER_KEY)
     if (isDimissed) return false
     const isInEU = await getIsInEU()
     return isInEU

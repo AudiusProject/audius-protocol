@@ -137,6 +137,17 @@ const defaultBuyAudioLocalStorageState: BuyAudioLocalStorageState = {
   provider: OnRampProvider.UNKNOWN
 }
 
+function* getLocalStorageStateWithFallback() {
+  const localStorage = yield* getContext('localStorage')
+  const state =
+    (yield* call(
+      (val: string) =>
+        localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? defaultBuyAudioLocalStorageState
+  return state
+}
+
 /**
  * Checks if the associated accounts necessary for a quoted `route` exist on `rootAccount`,
  * and for those that don't, estimates the needed lamports to pay for rent exemption as they are created.
@@ -448,12 +459,7 @@ Total: ${estimatedLamports.toNumber() / LAMPORTS_PER_SOL} SOL ($${
 
 function* populateAndSaveTransactionDetails() {
   // Get transaction details from local storage
-  const localStorage = yield* getContext('localStorage')
-  const localStorageState: BuyAudioLocalStorageState =
-    (yield* call(
-      [localStorage, localStorage.getJSONValue],
-      BUY_AUDIO_LOCAL_STORAGE_KEY
-    )) ?? defaultBuyAudioLocalStorageState
+  const localStorageState = yield* getLocalStorageStateWithFallback()
   const {
     purchaseTransactionId,
     setupTransactionId,
@@ -606,12 +612,7 @@ function* purchaseStep({
     )
   }
 
-  const localStorage = yield* getContext('localStorage')
-  const localStorageState: BuyAudioLocalStorageState =
-    (yield* call(
-      [localStorage, localStorage.getJSONValue],
-      BUY_AUDIO_LOCAL_STORAGE_KEY
-    )) ?? defaultBuyAudioLocalStorageState
+  const localStorageState = yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.purchaseTransactionId =
     purchaseTransactionId
   localStorageState.transactionDetailsArgs.purchasedLamports =
@@ -698,12 +699,7 @@ function* swapStep({
     })
 
   // Write transaction details to local storage
-  const localStorage = yield* getContext('localStorage')
-  const localStorageState: BuyAudioLocalStorageState =
-    (yield* call(
-      [localStorage, localStorage.getJSONValue],
-      BUY_AUDIO_LOCAL_STORAGE_KEY
-    )) ?? defaultBuyAudioLocalStorageState
+  const localStorageState = yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.setupTransactionId =
     setupTransactionId ?? undefined
   localStorageState.transactionDetailsArgs.swapTransactionId =
@@ -777,12 +773,7 @@ function* transferStep({
   const audioTransferredWei = convertWAudioToWei(transferAmount)
 
   // Write transaction details to local storage
-  const localStorage = yield* getContext('localStorage')
-  const localStorageState: BuyAudioLocalStorageState =
-    (yield* call(
-      [localStorage, localStorage.getJSONValue],
-      BUY_AUDIO_LOCAL_STORAGE_KEY
-    )) ?? defaultBuyAudioLocalStorageState
+  const localStorageState = yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.transferTransactionId =
     transferTransactionId ?? undefined
   localStorageState.transactionDetailsArgs.purchasedAudioWei =
@@ -986,17 +977,16 @@ function* recoverPurchaseIfNecessary() {
 
     // Restore local storage state, lightly sanitizing
     const localStorage = yield* getContext('localStorage')
-    const savedLocalStorageState: BuyAudioLocalStorageState =
-      (yield* call(
-        [localStorage, localStorage.getJSONValue],
-        BUY_AUDIO_LOCAL_STORAGE_KEY
-      )) ?? {}
+    const savedLocalStorageState = (yield* call(
+      (val) => localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
+      BUY_AUDIO_LOCAL_STORAGE_KEY
+    )) ?? { transactionDetailsArgs: {} }
     const localStorageState: BuyAudioLocalStorageState = {
       ...defaultBuyAudioLocalStorageState,
       ...savedLocalStorageState,
       transactionDetailsArgs: {
         ...defaultBuyAudioLocalStorageState.transactionDetailsArgs,
-        ...savedLocalStorageState.transactionDetailsArgs
+        ...savedLocalStorageState?.transactionDetailsArgs
       }
     }
     yield* call(
@@ -1216,8 +1206,8 @@ function* watchRecovery() {
  */
 function* recoverOnPageLoad() {
   const localStorage = yield* getContext('localStorage')
-  const savedLocalStorageState: BuyAudioLocalStorageState | null = yield* call(
-    [localStorage, localStorage.getJSONValue],
+  const savedLocalStorageState = yield* call(
+    (val) => localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
     BUY_AUDIO_LOCAL_STORAGE_KEY
   )
   if (savedLocalStorageState !== null && !isMobileWeb()) {
