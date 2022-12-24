@@ -88,7 +88,7 @@ module.exports = function (app) {
           }
 
           try {
-            const instagramProfileRes = await doRequest(reqObj)
+            const instagramProfileRes = await doRequest(igProfileReqObj)
             const instagramProfile = JSON.parse(instagramProfileRes)
             req.logger.info('instagramprofile')
             req.logger.info(JSON.stringify(instagramProfile))
