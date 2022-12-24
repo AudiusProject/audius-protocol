@@ -64,7 +64,7 @@ module.exports = function (app) {
         )
         const igUser = JSON.parse(instagramAPIUser)
         req.logger.info('iguser')
-        req.logger.info(igUser)
+        req.logger.info(JSON.stringify(igUser))
         if (igUser.error) {
           return errorResponseBadRequest(new Error(igUser.error.message))
         }
@@ -91,7 +91,7 @@ module.exports = function (app) {
             const instagramProfileRes = await doRequest(reqObj)
             const instagramProfile = JSON.parse(instagramProfileRes)
             req.logger.info('instagramprofile')
-            req.logger.info(instagramProfile)
+            req.logger.info(JSON.stringify(instagramProfile))
 
             // Store the access token, user id, and current profile for user in db
             await models.InstagramUser.upsert({
