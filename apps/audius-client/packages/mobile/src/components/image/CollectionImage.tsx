@@ -1,3 +1,8 @@
+/**
+ * TODO: with usLocalCollectionImage, useTrackImage becomes an async-like hook where contentNodeSource is null until
+ * localSource returns. This ended up degrading background track-player tasks where new tracks would not
+ * display their artwork.
+ **/
 import type { Collection, Nullable, User } from '@audius/common'
 import { cacheUsersSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
@@ -6,7 +11,7 @@ import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import type { DynamicImageProps } from 'app/components/core'
 import { DynamicImage } from 'app/components/core'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
-import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
+// import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
 
 const { getUser } = cacheUsersSelectors
 
@@ -27,18 +32,19 @@ export const useCollectionImage = (
     getUser(state, { id: collection?.playlist_owner_id })
   )
 
-  const { value: localSource, loading } = useLocalCollectionImage(
-    collection?.playlist_id.toString()
-  )
+  // const { value: localSource, loading } = useLocalCollectionImage(
+  //   collection?.playlist_id.toString()
+  // )
 
   const contentNodeSource = useContentNodeImage({
     cid,
     user: selectedUser ?? user ?? null,
-    fallbackImageSource: imageEmpty,
-    localSource
+    fallbackImageSource: imageEmpty
+    // localSource
   })
 
-  return loading ? null : contentNodeSource
+  return contentNodeSource
+  // return loading ? null : contentNodeSource
 }
 
 type CollectionImageProps = {
