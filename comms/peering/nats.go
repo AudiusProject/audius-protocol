@@ -106,6 +106,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 
 	manager.setupJetstream()
 
+	rpcz.SetupRateLimitRules()
 }
 
 func (manager *NatsManager) setupNatsClient() {
@@ -229,11 +230,12 @@ func (manager *NatsManager) setupJetstream() {
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err)
+		log.Fatal("CreateKeyValue failed", err, "bucket", config.PubkeystoreBucketName)
 	}
 
 	// finally "expose" this as public var
 	// the server checks if this is non-nil to know if it's ready
 	// todo: THIS IS NOT SAFE... should be something like peering.GetJetstream with a mutex
 	JetstreamClient = jsc
+	rpcz.JetstreamClient = jsc
 }

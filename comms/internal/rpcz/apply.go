@@ -12,8 +12,11 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// Validates + Applies a NATS message
+var (
+	JetstreamClient nats.JetStreamContext
+)
 
+// Validates + applies a NATS message
 func Apply(msg *nats.Msg) {
 	var err error
 	logger := config.Logger.New()

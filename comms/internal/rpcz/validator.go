@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/db"
@@ -67,15 +70,9 @@ var Validators = map[string]validatorFunc{
 			if err != nil {
 				return err
 			}
-			blockedCount, err := queries.CountChatBlocks(q, context.Background(), queries.CountChatBlocksParams{
-				User1: int32(user1),
-				User2: int32(user2),
-			})
+			err = validateNotBlocked(q, int32(user1), int32(user2))
 			if err != nil {
 				return err
-			}
-			if blockedCount > 0 {
-				return errors.New("Cannot create a chat with a user you have blocked or user who has blocked you")
 			}
 		}
 
@@ -130,16 +127,15 @@ var Validators = map[string]validatorFunc{
 		// for 1-1 DMs: validate chat members are not a <blocker, blockee> pair
 		chatMembers, err := queries.ChatMembers(q, context.Background(), params.ChatID)
 		if len(chatMembers) == 2 {
-			blockedCount, err := queries.CountChatBlocks(q, context.Background(), queries.CountChatBlocksParams{
-				User1: chatMembers[0].UserID,
-				User2: chatMembers[1].UserID,
-			})
+			err = validateNotBlocked(q, chatMembers[0].UserID, chatMembers[1].UserID)
 			if err != nil {
 				return err
 			}
-			if blockedCount > 0 {
-				return errors.New("Cannot sent messages to users you have blocked or users who have blocked you")
-			}
+		}
+
+		err = validateNewMessageRateLimitNotExceeded(q, userId, params.ChatID)
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -255,4 +251,87 @@ func validateChatMembership(q db.Queryable, userId int32, chatId string) (db.Cha
 		ChatID: chatId,
 	})
 	return member, err
+}
+
+func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
+	blockedCount, err := queries.CountChatBlocks(q, context.Background(), queries.CountChatBlocksParams{
+		User1: user1,
+		User2: user2,
+	})
+	if err != nil {
+		return err
+	}
+	if blockedCount > 0 {
+		return errors.New("Cannot chat with a user you have blocked or user who has blocked you")
+	}
+
+	return nil
+}
+
+func validateNewMessageRateLimitNotExceeded(q db.Queryable, userId int32, chatId string) error {
+	// Retrieve rate limit rules KV
+	kv, err := JetstreamClient.KeyValue(config.RateLimitRulesBucketName)
+	if err != nil {
+		return err
+	}
+	// Calculate cursor from rate limit timeframe
+	got, err := kv.Get(config.RateLimitTimeframeHours)
+	if err != nil {
+		return err
+	}
+	timeframe, err := strconv.Atoi(string(got.Value()))
+	if err != nil {
+		return err
+	}
+	cursor := time.Now().UTC().Add(-time.Hour * time.Duration(timeframe))
+
+	// Max number of new messages permitted per timeframe
+	got, err = kv.Get(config.RateLimitMaxNumMessages)
+	if err != nil {
+		return err
+	}
+	maxNumMessages, err := strconv.Atoi(string(got.Value()))
+	if err != nil {
+		return err
+	}
+	numMessages, err := queries.NumChatMessagesSince(q, context.Background(), queries.NumChatMessagesSinceParams{
+		UserID: userId,
+		Cursor: cursor,
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println("user:", userId)
+	fmt.Println("cursor:", cursor)
+	fmt.Println("time now:", time.Now().UTC())
+	fmt.Println("numMessages:", numMessages)
+	fmt.Println("maxNumMessages:", maxNumMessages)
+	if numMessages == maxNumMessages {
+		return errors.New("User has exceeded the maximum number of new messages")
+	}
+
+	// Max number of new messages permitted per recipient (chat) per timeframe
+	got, err = kv.Get(config.RateLimitMaxNumMessagesPerRecipient)
+	if err != nil {
+		return err
+	}
+	maxNumMessagesPerRecipient, err := strconv.Atoi(string(got.Value()))
+	if err != nil {
+		return err
+	}
+	numMessagesPerRecipient, err := queries.NumChatMessagesPerRecipientSince(q, context.Background(), queries.NumChatMessagesPerRecipientSinceParams{
+		UserID: userId,
+		ChatID: chatId,
+		Cursor: cursor,
+	})
+	if err != nil {
+		return err
+	}
+	fmt.Println("numMessagesPerRecipient:", numMessagesPerRecipient)
+	fmt.Println("maxNumMessagesPerRecipient:", maxNumMessagesPerRecipient)
+	if numMessagesPerRecipient == maxNumMessagesPerRecipient {
+		return errors.New("User has exceeded the maximum number of new messages per recipient")
+	}
+
+	return nil
 }

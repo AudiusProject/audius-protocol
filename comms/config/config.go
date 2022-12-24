@@ -17,8 +17,8 @@ var (
 
 	Env = os.Getenv("audius_discprov_env")
 
-	PrivateKey     *ecdsa.PrivateKey
-	WalletAddress  string
+	PrivateKey    *ecdsa.PrivateKey
+	WalletAddress string
 
 	NkeyPair   nkeys.KeyPair
 	NkeyPublic string
@@ -37,15 +37,20 @@ func init() {
 	Logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 }
 
-func Init() {
-	var err error
-
+func InitEnv() {
+	Env = os.Getenv("audius_discprov_env")
 	switch Env {
 	case "standalone":
 		envStandalone()
 	default:
 		Logger.Info("no env defaults for: " + Env)
 	}
+}
+
+func Init() {
+	var err error
+
+	InitEnv()
 
 	privateKeyHex := os.Getenv("audius_delegate_private_key")
 	if privateKeyHex == "" {

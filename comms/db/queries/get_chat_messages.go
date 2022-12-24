@@ -102,3 +102,38 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 	)
 	return rows, err
 }
+
+const numChatMessagesSince = `
+SELECT COUNT(*)
+FROM chat_message
+WHERE user_id = $1 AND CREATED_AT > $2
+`
+
+type NumChatMessagesSinceParams struct {
+	UserID int32     `db:"user_id" json:"user_id"`
+	Cursor time.Time `json:"cursor"`
+}
+
+func NumChatMessagesSince(q db.Queryable, ctx context.Context, arg NumChatMessagesSinceParams) (int, error) {
+	var count int
+	err := q.GetContext(ctx, &count, numChatMessagesSince, arg.UserID, arg.Cursor)
+	return count, err
+}
+
+const numChatMessagesPerRecipientSince = `
+SELECT COUNT(*)
+FROM chat_message
+WHERE user_id = $1 AND chat_id = $2 AND created_at > $3
+`
+
+type NumChatMessagesPerRecipientSinceParams struct {
+	UserID int32     `db:"user_id" json:"user_id"`
+	ChatID string    `db:"chat_id" json:"chat_id"`
+	Cursor time.Time `json:"cursor"`
+}
+
+func NumChatMessagesPerRecipientSince(q db.Queryable, ctx context.Context, arg NumChatMessagesPerRecipientSinceParams) (int, error) {
+	var count int
+	err := q.GetContext(ctx, &count, numChatMessagesPerRecipientSince, arg.UserID, arg.ChatID, arg.Cursor)
+	return count, err
+}

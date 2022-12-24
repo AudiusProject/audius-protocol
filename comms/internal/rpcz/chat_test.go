@@ -8,6 +8,9 @@ import (
 
 	"comms.audius.co/db"
 	"comms.audius.co/schema"
+	"github.com/nats-io/nats-server/v2/server"
+	"github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +25,24 @@ func TestChat(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	SetUpChatWithMembers(t, tx, chatId, 91, 92)
+	SetupChatWithMembers(t, tx, chatId, 91, 92)
+
+	// Connect to NATS, create JetStream Context, and create a rate limit KV bucket
+	// for rate limit validations
+	opts := server.Options{
+		Host:      "127.0.0.1",
+		Port:      4222,
+		JetStream: true,
+	}
+	natsServer := test.RunServer(&opts)
+	defer natsServer.Shutdown()
+	nc, err := nats.Connect(nats.DefaultURL)
+	assert.NoError(t, err)
+	defer nc.Close()
+	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	assert.NoError(t, err)
+	JetstreamClient = js
+	SetupRateLimitRules()
 
 	// validate 91 and 92 can both send messages in this chat
 	{
@@ -30,12 +50,12 @@ func TestChat(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "test123"}`, chatId)),
 		}
 
-		chatSay := string(schema.RPCMethodChatMessage)
+		chatMessage := string(schema.RPCMethodChatMessage)
 
-		err = Validators[chatSay](tx, 91, exampleRpc)
+		err = Validators[chatMessage](tx, 91, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatSay](tx, 93, exampleRpc)
+		err = Validators[chatMessage](tx, 93, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
