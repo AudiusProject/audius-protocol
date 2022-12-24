@@ -1,5 +1,5 @@
 diff --git a/node_modules/micro-aes-gcm/index.ts b/node_modules/micro-aes-gcm/index.ts
-index 07c24fe..46656f6 100644
+index 07c24fe..d6ca0f0 100644
 --- a/node_modules/micro-aes-gcm/index.ts
 +++ b/node_modules/micro-aes-gcm/index.ts
 @@ -4,7 +4,7 @@ import * as nodeCrypto from 'crypto';
@@ -11,7 +11,7 @@ index 07c24fe..46656f6 100644
  };
  
  // Caching slows it down 2-3x
-@@ -29,13 +29,13 @@ function hexToBytes(hex: string): Uint8Array {
+@@ -29,11 +29,11 @@ function hexToBytes(hex: string): Uint8Array {
  function concatBytes(...arrays: Uint8Array[]): Uint8Array {
    if (!arrays.every((arr) => arr instanceof Uint8Array))
      throw new Error('Uint8Array list expected');
@@ -20,11 +20,8 @@ index 07c24fe..46656f6 100644
    const length = arrays.reduce((a, arr) => a + arr.length, 0);
    const result = new Uint8Array(length);
    for (let i = 0, pad = 0; i < arrays.length; i++) {
-     const arr = arrays[i];
--    result.set(arr, pad);
--    pad += arr.length;
-+    result.set(arr!, pad);
-+    pad += arr!.length;
+-    const arr = arrays[i];
++    const arr = arrays[i]!;
+     result.set(arr, pad);
+     pad += arr.length;
    }
-   return result;
- }
