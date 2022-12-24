@@ -52,6 +52,9 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     width: 18,
     marginRight: spacing(2)
   },
+  buttonText: {
+    fontSize: typography.fontSize.large
+  },
   text: {
     textAlign: 'center',
     fontSize: typography.fontSize.large
@@ -117,7 +120,11 @@ export const RateCtaDrawer = () => {
               icon={IconThumbsUp}
               iconPosition='left'
               fullWidth
-              styles={{ root: styles.buttonRoot, icon: styles.buttonIcon }}
+              styles={{
+                root: styles.buttonRoot,
+                icon: styles.buttonIcon,
+                text: styles.buttonText
+              }}
               variant='common'
               onPress={handleReviewConfirm}
             />
@@ -126,7 +133,11 @@ export const RateCtaDrawer = () => {
               icon={IconThumbsDown}
               iconPosition='left'
               fullWidth
-              styles={{ root: styles.buttonRoot, icon: styles.buttonIcon }}
+              styles={{
+                root: styles.buttonRoot,
+                icon: styles.buttonIcon,
+                text: styles.buttonText
+              }}
               variant='common'
               onPress={handleReviewDeny}
             />
