@@ -1,3 +1,7 @@
+import { localStorage } from 'services/local-storage'
+
+import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
+
 export type Location = {
   asn: string
   city: string
@@ -21,18 +25,27 @@ export type Location = {
   utc_offset: string
 }
 
-let cachedLocation: Location | null = null
+const LOCATION_CACHE_KEY = 'LAST_LOCATION'
+const LOCATION_CACHE_DURATION = 2 * 24 * 3600 // 2 days
+const identityServiceUrl = audiusBackendInstance.identityServiceUrl
 export const getLocation = async (): Promise<Location | null> => {
   try {
+    const cachedLocation: Location | null =
+      await localStorage.getExpiringJSONValue(LOCATION_CACHE_KEY)
     if (cachedLocation) {
       return cachedLocation
     }
-    const res = await fetch('https://ipapi.co/json/')
-    const json = await res.json()
-    if (json.error) {
+
+    const res = await fetch(`${identityServiceUrl}/location`)
+    const json: Location | { error: boolean; reason: string } = await res.json()
+    if ('error' in json) {
       throw new Error(json.reason)
     }
-    cachedLocation = json
+    localStorage.setExpiringJSONValue(
+      LOCATION_CACHE_KEY,
+      json,
+      LOCATION_CACHE_DURATION
+    )
     return json
   } catch (e) {
     console.error(
