@@ -9,14 +9,12 @@ import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './api/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
-import { ChatsApi } from './api/chats/ChatsApi'
 import {
   Configuration,
   PlaylistsApi,
   UsersApi,
   TipsApi,
-  WalletAPI,
-  RequiredError
+  querystring
 } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -28,7 +26,6 @@ import {
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
-import fetch from 'cross-fetch'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -41,11 +38,6 @@ import {
 } from './constants'
 import { getPlatformLocalStorage, LocalStorage } from '../utils/localStorage'
 import type { SetOptional } from 'type-fest'
-import {
-  addAppNameMiddleware,
-  jsonResponseMiddleware,
-  discoveryNodeSelectorMiddleware
-} from './middleware'
 
 type Web3Config = {
   providers: string[]
@@ -83,43 +75,19 @@ type SdkConfig = {
    * Configuration for Web3
    */
   web3Config?: Web3Config
-  /**
-   * Helpers to faciliate requests that require signatures or encryption
-   */
-  walletApi?: WalletAPI
-}
-
-/**
- * Default wallet API which is used to surface errors when the walletApi is not configured
- */
-const defaultWalletAPI: WalletAPI = {
-  getSharedSecret: async (_: string | Uint8Array): Promise<Uint8Array> => {
-    throw new RequiredError(
-      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
-    )
-  },
-  sign: async (_: string): Promise<[Uint8Array, number]> => {
-    throw new RequiredError(
-      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
-    )
-  }
 }
 
 /**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
-  const { appName, walletApi } = config
+  const { appName } = config
 
   // Initialize services
   const { discoveryProvider } = initializeServices(config)
 
   // Initialize APIs
-  const apis = initializeApis({
-    appName,
-    discoveryProvider,
-    walletApi: walletApi ?? defaultWalletAPI
-  })
+  const apis = initializeApis({ appName, discoveryProvider })
 
   // Initialize OAuth
   const oauth =
@@ -179,26 +147,35 @@ const initializeServices = (config: SdkConfig) => {
 
 const initializeApis = ({
   appName,
-  discoveryProvider,
-  walletApi
+  discoveryProvider
 }: {
   appName: string
   discoveryProvider: DiscoveryProvider
-  walletApi: WalletAPI
 }) => {
-  const defaultMiddleware = [
-    addAppNameMiddleware({ appName }),
-    discoveryNodeSelectorMiddleware({
-      discoveryProviderSelector: discoveryProvider.serviceSelector
-    })
-  ]
+  const initializationPromise = discoveryProvider.init()
+
+  const fetchApi = async (url: string, context?: RequestInit) => {
+    // Ensure discovery node is initialized
+    await initializationPromise
+
+    // Append the appName to the query params
+    const urlWithAppName =
+      url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
+    const requestParams: Record<string, unknown> = {
+      ...context,
+      endpoint: urlWithAppName
+    }
+    return await discoveryProvider._makeRequest(
+      requestParams,
+      undefined,
+      undefined,
+      // Throw errors instead of returning null
+      true
+    )
+  }
+
   const generatedApiClientConfig = new Configuration({
-    fetchApi: fetch,
-    middleware: [
-      ...defaultMiddleware,
-      jsonResponseMiddleware({ extractData: true })
-    ],
-    walletApi
+    fetchApi
   })
 
   const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
@@ -206,25 +183,9 @@ const initializeApis = ({
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
-  const chats = new ChatsApi(
-    new Configuration({
-      fetchApi: fetch,
-      walletApi,
-      basePath: '',
-      middleware: [
-        ...defaultMiddleware,
-        jsonResponseMiddleware({ extractData: false })
-      ]
-    })
-  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
-    fetchApi: fetch,
-    middleware: [
-      ...defaultMiddleware,
-      jsonResponseMiddleware({ extractData: true })
-    ],
-    walletApi
+    fetchApi
   })
 
   const full = {
@@ -243,8 +204,7 @@ const initializeApis = ({
     playlists,
     tips,
     resolve,
-    full,
-    chats
+    full
   }
 }
 
