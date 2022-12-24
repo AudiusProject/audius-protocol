@@ -83,7 +83,7 @@ module.exports = function (app) {
           }
 
           try {
-            const instagramProfileRes = await doRequest(reqObj)
+            const instagramProfileRes = await doRequest(igProfileReqObj)
             const instagramProfile = JSON.parse(instagramProfileRes)
 
             // Store the access token, user id, and current profile for user in db
