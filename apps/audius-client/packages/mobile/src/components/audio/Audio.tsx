@@ -256,8 +256,12 @@ export const Audio = () => {
 
     // TODO: Hacky solution to playing next. This should be changed when we update to use track player's queue properly
     if (event.type === Event.PlaybackTrackChanged) {
+      const queue = await TrackPlayer.getQueue()
       const currentTrackIndex = await TrackPlayer.getCurrentTrack()
-      if (currentTrackIndex && currentTrackIndex > 0) await autoPlayNext()
+      // If we are at the last track in the queue, we should auto play the next track
+      if (currentTrackIndex && currentTrackIndex === queue.length - 1) {
+        await autoPlayNext()
+      }
     }
   })
 
@@ -438,15 +442,15 @@ export const Audio = () => {
       loadingOfflineTrack ||
       loadingNextOfflineTrack ||
       currentUriRef.current === newUri
-    )
+    ) {
       return
+    }
 
     currentUriRef.current = newUri
     const imageUrl = trackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
     const nextImageUrl =
       nextTrackImageSource?.source?.[2]?.uri ?? DEFAULT_IMAGE_URL
 
-    await TrackPlayer.reset()
     // NOTE: Adding two tracks into the queue to make sure that android has a next button on the lock screen and notification controls
     // This should be removed when the track player queue is used properly
     await TrackPlayer.add([
@@ -471,6 +475,13 @@ export const Audio = () => {
         duration: nextTrack?.duration
       }
     ])
+
+    // NOTE: Skipping to the proper track index within the queue
+    // Should be the second to last track in the queue
+    // This is a hacky solution to fix background reset calls breaking the app.
+    // Plz remove when we update track player to use the queue properly
+    const queue = await TrackPlayer.getQueue()
+    await TrackPlayer.skip(queue.length - 2)
 
     if (playing) await TrackPlayer.play()
 
