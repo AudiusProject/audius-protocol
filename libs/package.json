@@ -123,6 +123,7 @@
     "mocha": "9.2.2",
     "nock": "13.1.2",
     "nyc": "15.1.0",
+    "patch-package": "6.5.0",
     "prettier": "^2.6.1",
     "prettier-config-standard": "^5.0.0",
     "rollup": "2.70.1",
