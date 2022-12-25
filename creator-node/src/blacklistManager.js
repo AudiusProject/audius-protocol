@@ -43,7 +43,7 @@ class BlacklistManager {
         })
 
         // add items to redis periodically in case redis restarts
-        setInterval(async function () {
+        setInterval(async () => {
           const {
             trackIdsToBlacklist,
             userIdsToBlacklist,
