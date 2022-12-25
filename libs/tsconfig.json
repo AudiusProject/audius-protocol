@@ -5,7 +5,7 @@
     "checkJs": false,
     "allowJs": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "node",
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
