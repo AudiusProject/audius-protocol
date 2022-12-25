@@ -39,17 +39,51 @@ const browserInternal = [
   'xmlhttprequest'
 ]
 
+/**
+ * ES-only dependencies need inlining when outputting a Common JS bundle,
+ * as requiring ES modules from Common JS isn't supported.
+ * Alternatively, these modules could be imported using dynamic imports,
+ * but that would have other side effects and affect each bundle output
+ * vs only affecting Common JS outputs, and requires Rollup 3.0.
+ *
+ * TODO: Make a test to ensure we don't add external ES-only modules to Common JS output
+ *
+ * See:
+ * - https://nodejs.org/api/esm.html#interoperability-with-commonjs
+ * - https://github.com/rollup/plugins/issues/481#issuecomment-661622792
+ * - https://github.com/rollup/rollup/pull/4647 (3.0 supports keeping dynamic imports)
+ */
+const commonJsInternal = ['micro-aes-gcm']
+
 export const outputConfigs = {
   /**
-   * SDK Node Package
-   * Includes libs without any polyfills or deps
+   * SDK (and Libs) Node Package (Common JS)
+   * Used by the Audius Content Node Service and Identity Service
+   * - Includes libs
+   * - Makes external ES modules internal to prevent issues w/ using require()
    */
-  sdkConfig: {
+  sdkConfigCjs: {
     input: 'src/index.ts',
-    output: [
-      { file: pkg.main, format: 'cjs', sourcemap: true },
-      { file: pkg.module, format: 'es', sourcemap: true }
+    output: [{ file: pkg.main, format: 'cjs', sourcemap: true }],
+    plugins: [
+      resolve({ extensions, preferBuiltins: true }),
+      commonjs({ extensions }),
+      babel({ babelHelpers: 'bundled', extensions }),
+      json(),
+      pluginTypescript
     ],
+    external: external.filter((id) => !commonJsInternal.includes(id))
+  },
+
+  /**
+   * SDK (and Libs) Node Package (ES Module)
+   * Potentially used by third parties?
+   * Could be used by Audius Content Node and Identity Service after moving those services to ES module
+   * - Includes libs
+   */
+  sdkConfigEs: {
+    input: 'src/index.ts',
+    output: [{ file: pkg.module, format: 'es', sourcemap: true }],
     plugins: [
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
@@ -62,13 +96,12 @@ export const outputConfigs = {
 
   /**
    * SDK React Native Package
-   * Includes some modules inline for polyfills
+   * Used by the Audius React Native client
    */
   sdkConfigReactNative: {
     input: 'src/sdk/index.ts',
     output: [{ file: 'dist/index.native.js', format: 'es', sourcemap: true }],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
       babel({ babelHelpers: 'bundled', extensions, plugins: [] }),
@@ -79,13 +112,46 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK Browser Package
-   * Includes polyfills for node libraries
+   * SDK Browser Package (Common JS)
+   * Don't think this is used by anyone?
+   * - Includes polyfills for node libraries
+   * - Includes deps that are ignored or polyfilled for browser
+   * - Makes external ES modules internal to prevent issues w/ using require()
    */
-  sdkBrowserConfig: {
+  sdkBrowserConfigCjs: {
     input: 'src/sdk/index.ts',
     output: [
-      { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true },
+      { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true }
+    ],
+    plugins: [
+      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      resolve({ extensions, preferBuiltins: false }),
+      commonjs({
+        extensions,
+        transformMixedEsModules: true
+      }),
+      alias({
+        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+      }),
+      nodePolyfills(),
+      babel({ babelHelpers: 'bundled', extensions }),
+      json(),
+      pluginTypescript
+    ],
+    external: external.filter(
+      (dep) => !browserInternal.includes(dep) && !commonJsInternal.includes(dep)
+    )
+  },
+
+  /**
+   * SDK Browser Package (ES Module)
+   * Used by the Audius Web Client by extension the Desktop Client
+   * - Includes polyfills for node libraries
+   * - Includes deps that are ignored or polyfilled for browser
+   */
+  sdkBrowserConfigEs: {
+    input: 'src/sdk/index.ts',
+    output: [
       { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
     ],
     plugins: [
@@ -109,7 +175,8 @@ export const outputConfigs = {
   /**
    * SDK Browser Distributable
    * Meant to be used directly in the browser without any module resolver
-   * Includes polyfills and all deps/dev deps
+   * - Includes polyfills for node libraries
+   * - Includes all deps/dev deps except web3
    */
   sdkBrowserDistConfig: {
     input: 'src/sdk/sdkBrowserDist.ts',
@@ -149,7 +216,7 @@ export const outputConfigs = {
 
   /**
    * Libs Legacy Browser Package
-   * Includes libs but does not include polyfills
+   * Used by the Audius Web Client and by extension the Desktop Client
    */
   legacyBrowserConfig: {
     input: 'src/legacy.ts',
@@ -170,7 +237,8 @@ export const outputConfigs = {
 
   /**
    * Libs Legacy React Native Package
-   * Includes a modified version of AudiusLibs with solana dependencies removed
+   * Used by the Audius React Native Client
+   * - Includes a modified version of AudiusLibs with solana dependencies removed
    */
   legacyReactNativeConfig: {
     input: 'src/native-libs.ts',
@@ -191,7 +259,7 @@ export const outputConfigs = {
 
   /**
    * Core Package
-   * Used for eager requests and other libs items that we don't want to load all the deps for
+   * Exports a small bundle that can be loaded quickly, useful for eager requests
    */
   coreConfig: {
     input: 'src/core.ts',

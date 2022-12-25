@@ -1,3 +1,6 @@
 import { outputConfigs } from './rollup.config'
 
-export default [outputConfigs.sdkBrowserConfig]
+export default [
+  outputConfigs.sdkBrowserConfigEs,
+  outputConfigs.sdkBrowserConfigCjs
+]
