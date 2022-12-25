@@ -5,6 +5,7 @@
     "checkJs": false,
     "allowJs": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node16",
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
@@ -12,5 +13,5 @@
     "declarationDir": "./"
   },
   "exclude": ["dist"],
-  "include": ["src/**/*",]
+  "include": ["src/**/*"]
 }
