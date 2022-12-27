@@ -11,7 +11,8 @@ import {
   OnRampProvider,
   FeatureFlags,
   StringKeys,
-  Client
+  Client,
+  Location
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -32,7 +33,7 @@ import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer
 import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
-import { getLocation, Location } from 'services/Location'
+import { getLocation } from 'services/Location'
 import { isMobile, getClient } from 'utils/clientUtil'
 import {
   AUDIO_TRANSACTIONS_PAGE,
