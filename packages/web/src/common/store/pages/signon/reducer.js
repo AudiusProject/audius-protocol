@@ -239,7 +239,7 @@ const actionsMap = {
       },
       handle: {
         ...state.handle,
-        value: action.profile.display_name
+        value: action.profile.username
       },
       tikTokScreenName: action.profile.display_name,
       profileImage: action.profileImage || null,

@@ -7,8 +7,11 @@ import {
 import * as Sentry from '@sentry/react-native'
 import { takeEvery, put, takeLatest, call } from 'redux-saga/effects'
 
-import type { SetCredentialsAction } from './actions'
 import * as oauthActions from './actions'
+import type {
+  RequestNativeOpenPopupAction,
+  SetCredentialsAction
+} from './actions'
 import { Provider } from './reducer'
 import type { TwitterCredentials, InstagramCredentials } from './types'
 
@@ -283,8 +286,36 @@ function* watchInstagramAuth() {
   })
 }
 
+/**
+ * Used in conjunction with the useTikTokAuth hook
+ */
+function* watchRequestNativeOpenPopup() {
+  yield takeLatest(
+    oauthActions.REQUEST_NATIVE_OPEN_POPUP,
+    function* ({
+      resolve,
+      reject,
+      url,
+      provider
+    }: RequestNativeOpenPopupAction) {
+      yield put(oauthActions.nativeOpenPopup(url, provider))
+
+      yield takeLatest(
+        oauthActions.SET_CREDENTIALS,
+        function* ({ credentials }: SetCredentialsAction) {
+          if (!credentials.error) {
+            resolve(credentials)
+          } else {
+            reject(new Error(credentials.error))
+          }
+        }
+      )
+    }
+  )
+}
+
 const sagas = () => {
-  return [watchTwitterAuth, watchInstagramAuth]
+  return [watchTwitterAuth, watchInstagramAuth, watchRequestNativeOpenPopup]
 }
 
 export default sagas

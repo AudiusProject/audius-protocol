@@ -1,5 +1,9 @@
+import type { TikTokProfile } from '@audius/common'
+
 import type { OAuthActions } from './actions'
 import {
+  SET_TIKTOK_ERROR,
+  SET_TIKTOK_INFO,
   NATIVE_OPEN_POPUP,
   CLOSE_POPUP,
   SET_TWITTER_INFO,
@@ -27,6 +31,13 @@ type InstagramInfo = {
   instagramId?: any
 }
 
+type TikTokInfo = {
+  uuid: string
+  profile: TikTokProfile
+  profileImage: { url: string; file: File } | undefined
+  requiresUserReview: boolean
+}
+
 export type OAuthState = {
   isOpen: boolean
   // Incoming message id to reply back to with OAuth results
@@ -38,6 +49,8 @@ export type OAuthState = {
   twitterError: any
   instagramInfo: InstagramInfo | null
   instagramError: any
+  tikTokInfo: TikTokInfo | null
+  tikTokError: any
   // Whether the user canceled out of the oauth flow
   abandoned: boolean
 }
@@ -58,6 +71,8 @@ const initialState: OAuthState = {
   twitterError: null,
   instagramInfo: null,
   instagramError: null,
+  tikTokInfo: null,
+  tikTokError: null,
   abandoned: false
 }
 
@@ -103,6 +118,16 @@ const reducer = (
       return {
         ...state,
         instagramError: action.error
+      }
+    case SET_TIKTOK_INFO:
+      return {
+        ...state,
+        tikTokInfo: { ...action }
+      }
+    case SET_TIKTOK_ERROR:
+      return {
+        ...state,
+        tikTokError: action.error
       }
     case RESET_OAUTH_STATE:
       return { ...initialState }

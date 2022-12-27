@@ -30,6 +30,10 @@ export enum Name {
   CREATE_ACCOUNT_START_INSTAGRAM = 'Create Account: Start Instagram',
   // When the user continues past the "instagram connection page"
   CREATE_ACCOUNT_COMPLETE_INSTAGRAM = 'Create Account: Complete Instagram',
+  // When the user starts integrating with tiktok
+  CREATE_ACCOUNT_START_TIKTOK = 'Create Account: Start TikTok',
+  // When the user continues past the "tiktok connection page"
+  CREATE_ACCOUNT_COMPLETE_TIKTOK = 'Create Account: Complete TikTok',
   // When the user continues past the "profile info page"
   CREATE_ACCOUNT_COMPLETE_PROFILE = 'Create Account: Complete Profile',
   // When the user continues past the follow page

@@ -134,16 +134,20 @@ export const formatTikTokProfile = async (
   ) => Promise<File>
 ) => {
   const getProfilePicture = async () => {
-    if (tikTokProfile.avatar_large_url) {
-      const imageBlob = await fetch(tikTokProfile.avatar_large_url).then((r) =>
-        r.blob()
-      )
-      const artworkFile = new File([imageBlob], 'Artwork', {
-        type: 'image/jpeg'
-      })
-      const file = await resizeImage(artworkFile)
-      const url = URL.createObjectURL(file)
-      return { url, file }
+    try {
+      if (tikTokProfile.avatar_large_url) {
+        const imageBlob = await fetch(tikTokProfile.avatar_large_url).then(
+          (r) => r.blob()
+        )
+        const artworkFile = new File([imageBlob], 'Artwork', {
+          type: 'image/jpeg'
+        })
+        const file = await resizeImage(artworkFile)
+        const url = URL.createObjectURL(file)
+        return { url, file }
+      }
+    } catch (e) {
+      console.error('Failed to fetch avatar_large_url', e)
     }
 
     return undefined
@@ -155,10 +159,10 @@ export const formatTikTokProfile = async (
   // If the user is verifed, they won't be able to claim the status if
   // the handle doesn't match, so just pass through.
   let requiresUserReview = false
-  if (tikTokProfile.display_name.length > MAX_HANDLE_LENGTH) {
+  if (tikTokProfile.username.length > MAX_HANDLE_LENGTH) {
     requiresUserReview = true
     if (!tikTokProfile.is_verified) {
-      tikTokProfile.display_name = tikTokProfile.display_name.slice(
+      tikTokProfile.username = tikTokProfile.username.slice(
         0,
         MAX_HANDLE_LENGTH
       )

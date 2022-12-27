@@ -129,7 +129,9 @@ const TIKTOK_POLLER = `
 
     const {
       data: {
-        data: { access_token, open_id, expires_in }
+        access_token,
+        open_id,
+        expires_in
       }
     } = await response.json()
 
