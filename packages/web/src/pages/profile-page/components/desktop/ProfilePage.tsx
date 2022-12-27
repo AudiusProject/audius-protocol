@@ -350,7 +350,7 @@ const ProfilePage = ({
           type='playlist'
           variant='card'
           onClick={onClickUploadPlaylist}
-          isArtist
+          isArtist={isArtist}
           isFirst={playlistCards.length === 0}
         />
       )
