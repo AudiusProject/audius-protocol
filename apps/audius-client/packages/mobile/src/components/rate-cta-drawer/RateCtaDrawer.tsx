@@ -1,3 +1,4 @@
+import { Name } from '@audius/common'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
@@ -7,6 +8,7 @@ import IconThumbsUp from 'app/assets/images/iconThumbsUp.svg'
 import { Button, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useAsyncStorage } from 'app/hooks/useAsyncStorage'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -76,6 +78,7 @@ export const RateCtaDrawer = () => {
       InAppReview.RequestInAppReview()
         .then((hasFlowFinishedSuccessfully) => {
           setUserRateResponse('YES')
+          track(make({ eventName: Name.RATE_CTA_RESPONSE_YES }))
         })
         .catch((error) => {
           console.log(error)
@@ -84,6 +87,7 @@ export const RateCtaDrawer = () => {
   }
 
   const handleReviewDeny = () => {
+    track(make({ eventName: Name.RATE_CTA_RESPONSE_NO }))
     setUserRateResponse('NO')
   }
 
