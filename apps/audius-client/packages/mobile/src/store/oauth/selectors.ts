@@ -16,4 +16,7 @@ export const getInstagramInfo = (state: AppState) =>
   getBaseState(state).instagramInfo
 export const getInstagramError = (state: AppState) =>
   getBaseState(state).instagramError
+export const getTikTokInfo = (state: AppState) => getBaseState(state).tikTokInfo
+export const getTikTokError = (state: AppState) =>
+  getBaseState(state).tikTokError
 export const getAbandoned = (state: AppState) => getBaseState(state).abandoned

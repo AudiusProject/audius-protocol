@@ -96,6 +96,7 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
             body: JSON.stringify({
               fields: [
                 'open_id',
+                'username',
                 'display_name',
                 'avatar_url',
                 'avatar_large_url',

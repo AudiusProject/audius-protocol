@@ -9,7 +9,6 @@ export type TwitterCredentials = {
   oauthToken: string
 }
 
-// Expand this type as more types of oauth are done on the native side
 export type Credentials = (
   | TikTokCredentials
   | InstagramCredentials

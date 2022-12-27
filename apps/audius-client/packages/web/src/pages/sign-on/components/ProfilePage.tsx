@@ -184,7 +184,7 @@ const ProfilePage = (props: ProfilePageProps) => {
       const { profile, profileImage, requiresUserReview } =
         await formatTikTokProfile(tikTokProfile, resizeImage)
       validateHandle(
-        profile.display_name,
+        profile.username,
         profile.is_verified,
         (error: boolean) => {
           setTikTokProfile(

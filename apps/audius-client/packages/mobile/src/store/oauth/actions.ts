@@ -1,7 +1,8 @@
 import type {
   AccountImage,
-  TwitterAccountPayload,
-  TwitterProfile
+  InstagramAccountPayload,
+  TwitterProfile,
+  TikTokProfile
 } from '@audius/common'
 
 import type { Provider } from './reducer'
@@ -9,6 +10,7 @@ import type { Credentials } from './types'
 
 export const REQUEST_TWITTER_AUTH = 'OAUTH/REQUEST_TWITTER_AUTH'
 export const REQUEST_INSTAGRAM_AUTH = 'OAUTH/REQUEST_INSTAGRAM_AUTH'
+export const REQUEST_TIKTOK_AUTH = 'OAUTH/REQUEST_TIKTOK_AUTH'
 export const OPEN_POPUP = 'OAUTH/OPEN_POPUP'
 export const REQUEST_NATIVE_OPEN_POPUP = 'OAUTH/REQUEST_NATIVE_OPEN_POPUP'
 export const SET_CREDENTIALS = 'OAUTH/SET_CREDENTIALS'
@@ -18,6 +20,8 @@ export const SET_TWITTER_INFO = 'OAUTH/SET_TWITTER_INFO'
 export const SET_TWITTER_ERROR = 'OAUTH/SET_TWITTER_ERROR'
 export const SET_INSTAGRAM_INFO = 'OAUTH/SET_INSTAGRAM_INFO'
 export const SET_INSTAGRAM_ERROR = 'OAUTH/SET_INSTAGRAM_ERROR'
+export const SET_TIKTOK_INFO = 'OAUTH/SET_TIKTOK_INFO'
+export const SET_TIKTOK_ERROR = 'OAUTH/SET_TIKTOK_ERROR'
 export const RESET_OAUTH_STATE = 'OAUTH/RESET_OAUTH_STATE'
 
 type RequestTwitterAuthAction = {
@@ -26,6 +30,10 @@ type RequestTwitterAuthAction = {
 
 type RequestInstagramAuthAction = {
   type: typeof REQUEST_INSTAGRAM_AUTH
+}
+
+type RequestTikTokAuthAction = {
+  type: typeof REQUEST_TIKTOK_AUTH
 }
 
 export type RequestNativeOpenPopupAction = {
@@ -65,12 +73,24 @@ type SetTwitterErrorAction = {
 type SetInstagramInfoAction = {
   type: typeof SET_INSTAGRAM_INFO
   uuid: any
-  profile: TwitterAccountPayload
+  profile: InstagramAccountPayload
   profileImage: AccountImage
   requiresUserReview: any
 }
 type SetInstagramErrorAction = {
   type: typeof SET_INSTAGRAM_ERROR
+  error: any
+}
+
+type SetTikTokInfoAction = {
+  type: typeof SET_TIKTOK_INFO
+  uuid: any
+  profile: TikTokProfile
+  profileImage: AccountImage
+  requiresUserReview: any
+}
+type SetTikTokErrorAction = {
+  type: typeof SET_TIKTOK_ERROR
   error: any
 }
 
@@ -81,6 +101,7 @@ type ResetOAuthStateAction = {
 export type OAuthActions =
   | RequestTwitterAuthAction
   | RequestInstagramAuthAction
+  | RequestTikTokAuthAction
   | RequestNativeOpenPopupAction
   | SetCredentialsAction
   | NativeOpenPopupAction
@@ -89,6 +110,8 @@ export type OAuthActions =
   | SetTwitterErrorAction
   | SetInstagramInfoAction
   | SetInstagramErrorAction
+  | SetTikTokInfoAction
+  | SetTikTokErrorAction
   | ResetOAuthStateAction
 
 export function twitterAuth() {
@@ -96,6 +119,10 @@ export function twitterAuth() {
 }
 
 export function instagramAuth() {
+  return { type: REQUEST_INSTAGRAM_AUTH }
+}
+
+export function tikTokAuth() {
   return { type: REQUEST_INSTAGRAM_AUTH }
 }
 
@@ -154,7 +181,7 @@ export const setTwitterError = (error: any): SetTwitterErrorAction => ({
 
 export const setInstagramInfo = (
   uuid: string,
-  profile: TwitterAccountPayload,
+  profile: InstagramAccountPayload,
   profileImage: AccountImage,
   requiresUserReview: boolean
 ): SetInstagramInfoAction => ({
@@ -165,6 +192,23 @@ export const setInstagramInfo = (
   requiresUserReview
 })
 export const setInstagramError = (error: any): SetInstagramErrorAction => ({
+  type: SET_INSTAGRAM_ERROR,
+  error
+})
+
+export const setTikTokInfo = (
+  uuid: string,
+  profile: TikTokProfile,
+  profileImage: AccountImage,
+  requiresUserReview: boolean
+): SetTikTokInfoAction => ({
+  type: SET_TIKTOK_INFO,
+  uuid,
+  profile,
+  profileImage,
+  requiresUserReview
+})
+export const setTikTokError = (error: any): SetInstagramErrorAction => ({
   type: SET_INSTAGRAM_ERROR,
   error
 })

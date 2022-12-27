@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import Color from 'color'
 import { merge } from 'lodash'
 import type {
   ButtonProps as RNButtonProps,
@@ -223,6 +224,8 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     variant?: 'primary' | 'secondary' | 'common' | 'commonAlt' | 'destructive'
     haptics?: boolean | 'light' | 'medium'
     url?: string
+    // Custom color that will override the variant
+    color?: string
     corners?: 'rounded' | 'pill'
     title: ReactNode
     pressScale?: number
@@ -231,24 +234,25 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
 export const Button = (props: ButtonProps) => {
   const {
     accessibilityLabel,
+    color: customColor,
+    corners = 'rounded',
+    disabled,
+    fullWidth,
+    haptics,
     icon: Icon,
     iconPosition = 'right',
     IconProps,
-    fullWidth,
     noText,
     onPress,
     onPressIn,
     onPressOut,
+    pressScale = 0.97,
     size = 'medium',
     style,
     styles: stylesProp,
     title,
-    variant = 'primary',
-    haptics,
     url,
-    corners = 'rounded',
-    disabled,
-    pressScale = 0.97,
+    variant = 'primary',
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
@@ -267,21 +271,32 @@ export const Button = (props: ButtonProps) => {
   const { primaryDark1, neutralLight10, neutralLight7, accentRedDark1 } =
     useThemeColors()
 
-  const pressColor = {
-    primary: primaryDark1,
-    secondary: primaryDark1,
-    common: primaryDark1,
-    commonAlt: neutralLight10,
-    destructive: accentRedDark1
-  }
+  const pressColor = useMemo(() => {
+    // If a custom color is specified
+    // darken the color by 10% for the press state
+    if (customColor) {
+      const c = new Color(customColor)
+      return c.darken(0.1).hex()
+    }
+
+    // If no custom color is specified
+    // derive the press state color for the variant
+    return {
+      primary: primaryDark1,
+      secondary: primaryDark1,
+      common: primaryDark1,
+      commonAlt: neutralLight10,
+      destructive: accentRedDark1
+    }[variant]
+  }, [customColor, variant, primaryDark1, neutralLight10, accentRedDark1])
 
   const {
     color,
     handlePressIn: handlePressInColor,
     handlePressOut: handlePressOutColor
   } = useColorAnimation(
-    styles.root.backgroundColor as string,
-    pressColor[variant]
+    customColor ?? (styles.root.backgroundColor as string),
+    pressColor
   )
 
   const handlePressIn = useCallback(
