@@ -55,7 +55,7 @@ class BlacklistManager {
             segmentsToBlacklist
           })
           this._log(`Re-added to redis`)
-        }, 1000 * 60 * 60 * 1 /* one hour */) // TODO - confirm timing
+        }, 1000 * 60 * 60 * 2 /* two hours */)
       }
 
       this.initialized = true
