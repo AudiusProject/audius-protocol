@@ -77,6 +77,7 @@ module.exports = function (app) {
           {
             fields: [
               'open_id',
+              'username',
               'display_name',
               'profile_deep_link',
               'is_verified'
@@ -101,7 +102,7 @@ module.exports = function (app) {
 
         if (existingTikTokUser) {
           return errorResponseBadRequest(
-            `Another Audius profile has already been authenticated with TikTok user @${tikTokUser.display_name}!`
+            `Another Audius profile has already been authenticated with TikTok user @${tikTokUser.username}!`
           )
         } else {
           // Store the user id, and current profile for user in db
@@ -141,8 +142,7 @@ module.exports = function (app) {
         const isUnassociated = tikTokObj && !tikTokObj.blockchainUserId
         const handlesMatch =
           tikTokObj &&
-          tikTokObj.profile.display_name.toLowerCase() ===
-            user.handle.toLowerCase()
+          tikTokObj.profile.username.toLowerCase() === user.handle.toLowerCase()
 
         // only set blockchainUserId if not already set
         if (isUnassociated && handlesMatch) {
@@ -187,12 +187,12 @@ module.exports = function (app) {
             where: { handle }
           })
           if (socialHandle) {
-            socialHandle.tikTokHandle = tikTokObj.profile.display_name
+            socialHandle.tikTokHandle = tikTokObj.profile.username
             await socialHandle.save()
-          } else if (tikTokObj.profile && tikTokObj.profile.display_name) {
+          } else if (tikTokObj.profile && tikTokObj.profile.username) {
             await models.SocialHandles.create({
               handle,
-              tikTokHandle: tikTokObj.profile.display_name
+              tikTokHandle: tikTokObj.profile.username
             })
           }
 
