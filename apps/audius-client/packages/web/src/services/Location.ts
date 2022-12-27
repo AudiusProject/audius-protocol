@@ -1,71 +1,9 @@
+import { getLocation as getLocationCommon } from '@audius/common'
+
 import { localStorage } from 'services/local-storage'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 
-export type Location = {
-  asn: string
-  city: string
-  continent_code: string
-  country: string
-  country_calling_code: string
-  country_code: string
-  country_code_iso3: string
-  country_name: string
-  currency: string
-  in_eu: boolean
-  ip: string
-  languages: string
-  latitude: number
-  longitude: number
-  org: string
-  postal: string
-  region: string
-  region_code: string
-  timezone: string
-  utc_offset: string
-}
-
-const LOCATION_CACHE_KEY = 'LAST_LOCATION'
-const LOCATION_CACHE_DURATION = 2 * 24 * 3600 // 2 days
-const identityServiceUrl = audiusBackendInstance.identityServiceUrl
-export const getLocation = async (): Promise<Location | null> => {
-  try {
-    const cachedLocation: Location | null =
-      await localStorage.getExpiringJSONValue(LOCATION_CACHE_KEY)
-    if (cachedLocation) {
-      return cachedLocation
-    }
-
-    const res = await fetch(`${identityServiceUrl}/location`)
-    const json: Location | { error: boolean; reason: string } = await res.json()
-    if ('error' in json) {
-      throw new Error(json.reason)
-    }
-    localStorage.setExpiringJSONValue(
-      LOCATION_CACHE_KEY,
-      json,
-      LOCATION_CACHE_DURATION
-    )
-    return json
-  } catch (e) {
-    console.error(
-      `Got error during getLocation call: ${e} | Error message is: ${
-        (e as any)?.message ?? null
-      }`
-    )
-    return null
-  }
-}
-
-export const getCityAndRegion = async () => {
-  const location = await getLocation()
-  if (!location) return null
-
-  if (location.city && location.region_code) {
-    return `${location.city}, ${location.region_code}`
-  }
-  if (location.city) {
-    return `${location.city}`
-  }
-  return null
+export const getLocation = async () => {
+  return await getLocationCommon(localStorage, audiusBackendInstance)
 }
