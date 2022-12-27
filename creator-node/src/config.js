@@ -510,7 +510,7 @@ const config = convict({
     doc: 'whether or not to use entity manager to update the replica set',
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
-    default: false
+    default: true
   },
 
   /** sync / snapback configs */
