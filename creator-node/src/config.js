@@ -833,7 +833,7 @@ const config = convict({
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: '1,4,5,9,10,21,27,33,39,43,52,58,62'
+    default: '1,4,5,7,9,10,12,13,14,15,16,19,21,28,33,35,39,43,52,58,62'
   },
   overridePassword: {
     doc: 'Used to allow manual actions to be issued on foundation nodes only',
