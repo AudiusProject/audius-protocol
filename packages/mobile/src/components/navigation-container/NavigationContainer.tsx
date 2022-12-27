@@ -191,13 +191,17 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           }
         }
 
-        // If the path is a playlist or album
-        if (path.match(/^\/[^/]+\/(playlist|album)\/[^/]+$/)) {
+        if (path.match(/^\/[^/]+\/playlist\/[^/]+$/)) {
           // set the path as `collection`
           path = path.replace(
-            /(^\/[^/]+\/)(playlist|album)(\/[^/]+$)/,
+            /(^\/[^/]+\/)(playlist)(\/[^/]+$)/,
             '$1collection$3'
           )
+          path = `${path}?collectionType=playlist`
+        } else if (path.match(/^\/[^/]+\/album\/[^/]+$/)) {
+          // set the path as `collection`
+          path = path.replace(/(^\/[^/]+\/)(album)(\/[^/]+$)/, '$1collection$3')
+          path = `${path}?collectionType=album`
         }
       }
 

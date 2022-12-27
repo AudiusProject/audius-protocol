@@ -62,6 +62,7 @@ export type AppTabScreenParamList = {
     id?: ID
     collectionName?: string
     searchCollection?: SearchPlaylist
+    collectionType?: 'playlist' | 'album'
   }
   EditPlaylist: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }

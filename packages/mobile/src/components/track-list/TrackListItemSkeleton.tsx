@@ -11,7 +11,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingVertical: spacing(3),
     paddingHorizontal: spacing(6),
     justifyContent: 'center'
-  }
+  },
+  trackTitle: { height: spacing(4), marginBottom: 2 },
+  trackArtist: { height: spacing(4) }
 }))
 
 export const TrackListItemSkeleton = () => {
@@ -19,8 +21,8 @@ export const TrackListItemSkeleton = () => {
 
   return (
     <View style={styles.trackContainer}>
-      <Skeleton style={{ height: 16, marginBottom: 2 }} width='54%' />
-      <Skeleton style={{ height: 16 }} width='30%' />
+      <Skeleton style={styles.trackTitle} width='54%' />
+      <Skeleton style={styles.trackArtist} width='30%' />
     </View>
   )
 }
