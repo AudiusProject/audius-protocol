@@ -1,9 +1,15 @@
-import { Name, signOutActions, accountActions } from '@audius/common'
+import {
+  Name,
+  signOutActions,
+  accountActions,
+  feedPageLineupActions
+} from '@audius/common'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { getIsSetup } from 'audius-client/src/common/store/backend/selectors'
 import { make } from 'common/store/analytics/actions'
 import { takeLatest, put, call, select, take } from 'typed-redux-saga'
 
+import { ENTROPY_KEY, THEME_STORAGE_KEY } from 'app/constants/storage-keys'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
 
@@ -14,6 +20,8 @@ import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
 const { signOut: signOutAction } = signOutActions
+
+const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY]
 
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))
@@ -27,6 +35,7 @@ function* signOut() {
   }
 
   yield* put(resetAccount())
+  yield* put(feedPageLineupActions.reset())
 
   yield* put(clearHistory())
   yield* put(resetOAuthState())
@@ -36,8 +45,9 @@ function* signOut() {
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
   yield* call([audiusBackendInstance, 'signOut'])
-  yield* call([localStorage, 'removeItem'], 'theme')
-
+  for (const storageKey of storageKeysToRemove) {
+    yield* call([localStorage, 'removeItem'], storageKey)
+  }
   // On web we reload the page to get the app into a state
   // where it is acting like first-load. On mobile, in order to
   // get the same behavior, call to set up the backend again,

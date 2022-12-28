@@ -2,11 +2,11 @@ import { accountActions, getContext } from '@audius/common'
 import accountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { takeEvery, call } from 'typed-redux-saga'
+
+import { IS_MOBILE_USER } from 'app/constants/storage-keys'
 const { signedIn } = accountActions
 
-export const RESET_REQUIRED_KEY = 'password-reset-required'
-export const ENTROPY_KEY = 'hedgehog-entropy-key'
-export const IS_MOBILE_USER_KEY = 'is-mobile-user'
+// const RESET_REQUIRED_KEY = 'password-reset-required'
 
 // TODO
 // Account recovery coming in following pr
@@ -46,7 +46,7 @@ function* onSignedIn({
 }: ReturnType<typeof signedIn>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
-  const isMobileUser = yield* call(localStorage.getItem, IS_MOBILE_USER_KEY)
+  const isMobileUser = yield* call(localStorage.getItem, IS_MOBILE_USER)
   if (!isMobileUser || isMobileUser !== 'true') {
     try {
       // Legacy method to update whether a user has signed in on
@@ -60,7 +60,7 @@ function* onSignedIn({
         metadata: { ...account, events: { is_mobile_user: true } }
       })
 
-      yield call(localStorage.setItem, IS_MOBILE_USER_KEY, 'true')
+      yield call(localStorage.setItem, IS_MOBILE_USER, 'true')
     } catch (e) {
       console.error(e)
       // Do nothing. A retry on the next session will suffice.

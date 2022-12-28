@@ -9,7 +9,7 @@ import { WebView } from 'react-native-webview'
 import type { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
 import { useAsync } from 'react-use'
 
-import { ENTROPY_KEY } from 'app/store/account/sagas'
+import { ENTROPY_KEY } from 'app/constants/storage-keys'
 
 const injected = `
 (function() {

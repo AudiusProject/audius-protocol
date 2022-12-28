@@ -221,16 +221,18 @@ export const verifyTrack = async (
 }
 
 export const purgeAllDownloads = async (withLogs?: boolean) => {
-  if (withLogs) {
-    console.log(`Before purge:`)
+  if (await exists(downloadsRoot)) {
+    if (withLogs) {
+      console.log(`Before purge:`)
+    }
+    await readDirRec(downloadsRoot)
+    await RNFS.unlink(downloadsRoot)
+    await RNFS.mkdir(downloadsRoot)
+    if (withLogs) {
+      console.log(`After purge:`)
+    }
+    await readDirRec(downloadsRoot)
   }
-  await readDirRec(downloadsRoot)
-  await RNFS.unlink(downloadsRoot)
-  await RNFS.mkdir(downloadsRoot)
-  if (withLogs) {
-    console.log(`After purge:`)
-  }
-  await readDirRec(downloadsRoot)
 }
 
 export const purgeDownloadedTrack = async (trackId: string) => {

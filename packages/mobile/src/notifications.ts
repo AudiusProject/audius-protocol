@@ -8,6 +8,8 @@ import PushNotification from 'react-native-push-notification'
 import { track, make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
+import { DEVICE_TOKEN } from './constants/storage-keys'
+
 type Token = {
   token: string
   os: string
@@ -95,12 +97,12 @@ class PushNotifications {
 
   async onRegister(token: Token) {
     this.token = token
-    await AsyncStorage.setItem('@device_token', JSON.stringify(token))
+    await AsyncStorage.setItem(DEVICE_TOKEN, JSON.stringify(token))
     isRegistering = false
   }
 
   deregister() {
-    AsyncStorage.removeItem('@device_token')
+    AsyncStorage.removeItem(DEVICE_TOKEN)
   }
 
   async configure() {
@@ -113,7 +115,7 @@ class PushNotifications {
     })
 
     try {
-      const token = await AsyncStorage.getItem('@device_token')
+      const token = await AsyncStorage.getItem(DEVICE_TOKEN)
       if (token) {
         this.token = JSON.parse(token)
       } else {
@@ -154,7 +156,7 @@ class PushNotifications {
     while (isRegistering) {
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
-    const token = await AsyncStorage.getItem('@device_token')
+    const token = await AsyncStorage.getItem(DEVICE_TOKEN)
     if (token) {
       return JSON.parse(token)
     }

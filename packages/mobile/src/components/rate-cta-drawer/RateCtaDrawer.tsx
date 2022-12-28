@@ -7,12 +7,11 @@ import IconThumbsDown from 'app/assets/images/iconThumbsDown.svg'
 import IconThumbsUp from 'app/assets/images/iconThumbsUp.svg'
 import { Button, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
+import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
 import { useAsyncStorage } from 'app/hooks/useAsyncStorage'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
-
-import { RATE_CTA_STORAGE_KEY } from './constants'
 
 const DRAWER_NAME = 'RateCallToAction'
 
