@@ -127,15 +127,6 @@
   text-align: center;
 }
 
-.toast {
-  top: 16px !important;
-  left: 240px !important;
-  right: 0px !important;
-  display: flex;
-  justify-content: center;
-  padding: 0px;
-}
-
 .buttonContainer {
   display: flex;
   flex-wrap: wrap;
