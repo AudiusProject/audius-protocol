@@ -853,7 +853,7 @@ const config = convict({
   },
   updateReplicaSetWalletWhitelist: {
     doc: '`senderAddress` values allowed to make updateReplicaSet calls. Will still adhere to updateReplicaSetReconfigurationLimit. Empty means no whitelist, all addresses allowed.',
-    format: 'string-array',
+    format: String,
     env: 'updateReplicaSetWalletWhitelist',
     default: ''
   },
