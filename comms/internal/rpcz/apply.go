@@ -166,7 +166,7 @@ func Apply(msg *nats.Msg) {
 			logger.Warn("no handler for ", rawRpc.Method)
 		}
 
-		err = tx.Rollback()
+		err = tx.Commit()
 		if err != nil {
 			continue
 		} else {
