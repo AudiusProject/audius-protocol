@@ -403,10 +403,12 @@ export const SuggestedFollows = ({ onPress, title }: SuggestedFollowsProps) => {
 
   const toggleFollowedArtist = useCallback(
     (userId: number) => {
-      const newFollowedArtists = followedArtistIds.includes(userId)
-        ? followedArtistIds.filter((id) => id !== userId)
-        : followedArtistIds.concat([userId])
-      dispatch(signOnActions.addFollowArtists(newFollowedArtists))
+      const isSelected = followedArtistIds.includes(userId)
+      if (isSelected) {
+        dispatch(signOnActions.removeFollowArtists([userId]))
+      } else {
+        dispatch(signOnActions.addFollowArtists([userId]))
+      }
     },
     [followedArtistIds, dispatch]
   )
@@ -416,9 +418,7 @@ export const SuggestedFollows = ({ onPress, title }: SuggestedFollowsProps) => {
       const newUserIds = userIds.filter(
         (userId) => !followedArtistIds.includes(userId)
       )
-      dispatch(
-        signOnActions.addFollowArtists(followedArtistIds.concat(newUserIds))
-      )
+      dispatch(signOnActions.addFollowArtists(newUserIds))
     },
     [followedArtistIds, dispatch]
   )
