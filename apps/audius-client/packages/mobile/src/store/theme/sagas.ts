@@ -4,6 +4,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import { eventEmitter, initialMode } from 'react-native-dark-mode'
 import { put, call, spawn, takeEvery, select } from 'typed-redux-saga'
 
+import { THEME_STORAGE_KEY } from 'app/constants/storage-keys'
 import { localStorage } from 'app/services/local-storage'
 import { updateStatusBarTheme, setStatusBarTheme } from 'app/utils/theme'
 const { setTheme, setSystemAppearance } = themeActions
@@ -49,7 +50,7 @@ function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {
   const { theme } = action.payload
   updateStatusBarTheme(theme, systemAppearance)
 
-  yield* call([localStorage, 'setItem'], 'theme', theme)
+  yield* call([localStorage, 'setItem'], THEME_STORAGE_KEY, theme)
 }
 
 function* watchSetTheme() {
@@ -57,7 +58,7 @@ function* watchSetTheme() {
 }
 
 function* setupTheme() {
-  const savedTheme = yield* call([localStorage, 'getItem'], 'theme')
+  const savedTheme = yield* call([localStorage, 'getItem'], THEME_STORAGE_KEY)
 
   if (!savedTheme) {
     yield* put(setTheme({ theme: Theme.DEFAULT }))

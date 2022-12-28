@@ -21,7 +21,6 @@ import { WebAppAccountSync } from 'app/components/web-app-account-sync'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { store } from 'app/store'
-import { ENTROPY_KEY } from 'app/store/account/sagas'
 import {
   forceRefreshConnectivity,
   subscribeToNetworkStatusUpdates
@@ -32,6 +31,7 @@ import ErrorBoundary from './ErrorBoundary'
 import { NotificationReminder } from './components/notification-reminder/NotificationReminder'
 import { OfflineDownloader } from './components/offline-downloads/OfflineDownloader'
 import { RateCtaReminder } from './components/rate-cta-drawer/RateCtaReminder'
+import { ENTROPY_KEY } from './constants/storage-keys'
 import { useEnterForeground } from './hooks/useAppState'
 import { WalletConnectProvider } from './screens/wallet-connect'
 import { setLibs } from './services/libs'

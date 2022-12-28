@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const SESSION_COUNT_KEY = '@session-count'
+import { SESSION_COUNT_KEY } from 'app/constants/storage-keys'
 
 const getSessionCount = async () => {
   const sessionCount = await AsyncStorage.getItem(SESSION_COUNT_KEY)

@@ -3,12 +3,11 @@ import { useCallback } from 'react'
 import { accountSelectors, FeatureFlags } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
 import { useAsyncStorage } from 'app/hooks/useAsyncStorage'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import useSessionCount from 'app/hooks/useSessionCount'
 import { requestReview } from 'app/store/rate-cta/slice'
-
-import { RATE_CTA_STORAGE_KEY } from './constants'
 
 const getHasAccount = accountSelectors.getHasAccount
 
