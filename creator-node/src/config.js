@@ -555,7 +555,7 @@ const config = convict({
     doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
-    default: 3
+    default: 1
   },
   recoverOrphanedDataQueueRateLimitInterval: {
     doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
@@ -633,7 +633,7 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 2000
+    default: 500
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
