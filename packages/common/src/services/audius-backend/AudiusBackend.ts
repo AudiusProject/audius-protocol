@@ -702,8 +702,10 @@ export const audiusBackend = ({
             IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES
           ),
           unhealthySlotDiffPlays: getRemoteVar(
-            IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
-          ),
+            BooleanKeys.ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
+          )
+            ? getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS)
+            : null,
           unhealthyBlockDiff: getRemoteVar(
             IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF
           )

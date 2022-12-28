@@ -41,6 +41,7 @@ function* getTracks({
 }): Generator<any, FeedItem[], any> {
   yield* waitForRead()
   const currentUser = yield select(getAccountUser)
+  if (!currentUser) return []
   const filterEnum: FeedFilter = yield select(getFeedFilter)
   const apiClient = yield* getContext('apiClient')
   const filter = filterMap[filterEnum]

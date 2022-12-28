@@ -139,24 +139,22 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   const state = store.getState() as CommonState
   const currentUserId = getUserId(state)
 
-  let track: (UserTrackMetadata & Track) | undefined = await apiClient.getTrack(
-    {
-      id: trackId,
-      currentUserId
-    }
-  )
+  const trackFromApi = await apiClient.getTrack({
+    id: trackId,
+    currentUserId
+  })
 
-  if (!track) {
+  if (!trackFromApi) {
     throw failJob(`track to download not found on discovery - ${trackIdStr}`)
   }
   if (
-    track?.is_delete ||
-    (track?.is_unlisted && currentUserId !== track.user.user_id)
+    trackFromApi?.is_delete ||
+    (trackFromApi?.is_unlisted && currentUserId !== trackFromApi.user.user_id)
   ) {
     throw failJob(`track to download is not available - ${trackIdStr}`)
   }
 
-  track = await populateCoverArtSizes(track)
+  const track = await populateCoverArtSizes(trackFromApi)
 
   try {
     store.dispatch(startDownload(trackIdStr))

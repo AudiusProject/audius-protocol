@@ -2,7 +2,6 @@ import type {
   Collection,
   CommonState,
   DownloadReason,
-  UserTrackMetadata,
   UserCollectionMetadata
 } from '@audius/common'
 import {
@@ -223,10 +222,12 @@ const syncStaleTracks = () => {
     .map(([id, track]) => track)
 
   staleCachedTracks.forEach(async (staleTrack) => {
-    const updatedTrack: UserTrackMetadata = await apiClient.getTrack({
+    const updatedTrack = await apiClient.getTrack({
       id: staleTrack.track_id,
       currentUserId
     })
+
+    if (!updatedTrack) return
 
     // If track should not be available
     if (!isAvailableForPlay(updatedTrack, currentUserId)) {
