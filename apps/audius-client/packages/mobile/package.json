@@ -72,6 +72,7 @@
     "array.prototype.flat": "1.2.5",
     "audius-client": "1.5.3",
     "babel-plugin-transform-remove-console": "6.9.4",
+    "big-integer": "1.6.51",
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
     "color": "3.2.1",
