@@ -1,4 +1,5 @@
-import { useCallback, useRef } from 'react'
+import type { ComponentType } from 'react'
+import { useMemo, useCallback, useRef } from 'react'
 
 import type {
   FlatList as RNFlatList,
@@ -8,20 +9,52 @@ import type {
 import { View } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
+import { makeStyles } from 'app/styles'
 
-import { EmptyTile } from './EmptyTile'
 import { FlatList } from './FlatList'
 
 export type CardListProps<ItemT> = FlatListProps<ItemT> & {
-  emptyListText?: string
+  isLoading?: boolean
+  LoadingCardComponent?: ComponentType
   disableTopTabScroll?: boolean
 }
 
-export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
-  const { renderItem, emptyListText, disableTopTabScroll, data, ...other } =
-    props
+type LoadingCard = { _loading: true }
+const skeletonData: LoadingCard[] = Array(5).fill({ _loading: true })
 
+const DefaultLoadingCard = () => null
+
+const useStyles = makeStyles(({ spacing }) => ({
+  card: {
+    paddingTop: spacing(3),
+    paddingHorizontal: spacing(3) / 2,
+    width: '50%'
+  },
+  bottomCard: {
+    paddingBottom: spacing(3)
+  },
+  leftCard: {
+    paddingLeft: spacing(3)
+  },
+  rightCard: {
+    paddingRight: spacing(3)
+  }
+}))
+
+export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
+  const {
+    renderItem,
+    disableTopTabScroll,
+    data: dataProp,
+    isLoading: isLoadingProp,
+    LoadingCardComponent = DefaultLoadingCard,
+    ...other
+  } = props
+
+  const styles = useStyles()
   const ref = useRef<RNFlatList>(null)
+  const isLoading = isLoadingProp ?? !dataProp
+
   useScrollToTop(() => {
     ref.current?.scrollToOffset({
       offset: 0,
@@ -29,21 +62,35 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
     })
   }, disableTopTabScroll)
 
+  const data = useMemo(
+    () => [...(dataProp ?? []), ...(isLoading ? skeletonData : [])],
+    [dataProp, isLoading]
+  )
+
+  const dataLength = data?.length ?? 0
+
   const handleRenderItem: ListRenderItem<ItemT> = useCallback(
     (info) => {
-      const { index } = info
+      const { item, index } = info
       const isInLeftColumn = !(index % 2)
-      const isLastRow = index + 2 > (data?.length ?? 0)
-      const style = {
-        paddingTop: 12,
-        paddingBottom: isLastRow ? 12 : 0,
-        paddingHorizontal: 6,
-        [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 12,
-        width: '50%'
-      }
-      return <View style={style}>{renderItem?.(info)}</View>
+      const isLastRow = index + 2 > dataLength
+
+      const style = [
+        styles.card,
+        isLastRow && styles.bottomCard,
+        isInLeftColumn ? styles.leftCard : styles.rightCard
+      ]
+
+      const itemElement =
+        '_loading' in (item as LoadingCard) ? (
+          <LoadingCardComponent />
+        ) : (
+          renderItem?.(info) ?? null
+        )
+
+      return <View style={style}>{itemElement}</View>
     },
-    [renderItem, data]
+    [renderItem, dataLength, LoadingCardComponent, styles]
   )
 
   return (
@@ -52,9 +99,6 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       data={data}
       renderItem={handleRenderItem}
       numColumns={2}
-      ListEmptyComponent={
-        emptyListText ? <EmptyTile message={emptyListText} /> : undefined
-      }
       {...other}
     />
   )

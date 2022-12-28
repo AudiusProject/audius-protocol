@@ -51,28 +51,28 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   }
 }))
 
-export type CardProps = {
+type BaseCardProps = {
   id?: string
   onPress: () => void
   primaryText: string
   renderImage: () => ReactNode
   secondaryText?: string
   style?: StyleProp<ViewStyle>
-  type?: CardType
+}
+
+type ProfileCardProps = {
+  type: 'user'
   user: User
 }
 
+type CollectionCardProps = {
+  type: 'collection'
+}
+
+export type CardProps = BaseCardProps & (ProfileCardProps | CollectionCardProps)
+
 export const Card = (props: CardProps) => {
-  const {
-    id,
-    onPress,
-    primaryText,
-    renderImage,
-    secondaryText,
-    style,
-    type = 'user',
-    user
-  } = props
+  const { id, onPress, primaryText, renderImage, secondaryText, style } = props
 
   const styles = useStyles()
 
@@ -82,22 +82,22 @@ export const Card = (props: CardProps) => {
       styles={{ root: style, content: styles.cardContent }}
     >
       <View style={styles.imgContainer}>
-        <View style={[styles.cardImg, type === 'user' && styles.userImg]}>
+        <View style={[styles.cardImg, props.type === 'user' && styles.userImg]}>
           {renderImage()}
         </View>
       </View>
       <View style={styles.textContainer}>
         <Text numberOfLines={1} style={styles.primaryText}>
           {primaryText}
-          {type === 'user' ? (
-            <UserBadges user={user} badgeSize={12} hideName />
+          {props.type === 'user' ? (
+            <UserBadges user={props.user} badgeSize={12} hideName />
           ) : null}
         </Text>
         <View style={styles.secondaryTextContainer}>
           <Text numberOfLines={1} style={styles.secondaryText}>
             {secondaryText}
           </Text>
-          {type === 'collection' ? (
+          {props.type === 'collection' ? (
             <DownloadStatusIndicator size={18} collectionId={id} />
           ) : null}
         </View>

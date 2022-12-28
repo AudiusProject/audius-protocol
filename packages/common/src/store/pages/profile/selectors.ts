@@ -76,9 +76,9 @@ export const getProfileCollections = createDeepEqualSelector(
     getCollections
   ],
   (userId, users, collections) => {
-    if (!userId) return []
+    if (!userId) return undefined
     const user: User = users[userId]
-    if (!user) return []
+    if (!user) return undefined
     const { handle, _collectionIds } = user
     const userCollections = _collectionIds
       ?.map((collectionId) => collections[collectionId as unknown as number])
@@ -92,7 +92,7 @@ export const getProfileCollections = createDeepEqualSelector(
       .map(
         (collection) => ({ ...collection, user: { handle } } as UserCollection)
       )
-    return userCollections ?? []
+    return userCollections
   }
 )
 

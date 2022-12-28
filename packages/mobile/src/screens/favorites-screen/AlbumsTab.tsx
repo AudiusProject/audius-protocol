@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import type { CommonState, UserCollection } from '@audius/common'
+import type { CommonState } from '@audius/common'
 import { useProxySelector } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -40,7 +40,7 @@ export const AlbumsTab = () => {
           <CollectionList
             listKey='favorites-albums'
             scrollEnabled={false}
-            collection={(userAlbums as UserCollection[]) ?? []}
+            collection={userAlbums}
             style={{ marginVertical: 12 }}
           />
         </>

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 
-import { useEmptyProfileText } from './EmptyProfileTile'
+import { EmptyProfileTile } from './EmptyProfileTile'
 import { useSelectProfile } from './selectors'
 const { getProfilePlaylists } = profilePageSelectors
 
@@ -11,13 +11,11 @@ export const PlaylistsTab = () => {
   const { handle } = useSelectProfile(['handle'])
   const playlists = useSelector((state) => getProfilePlaylists(state, handle))
 
-  const emptyListText = useEmptyProfileText('playlists')
-
   return (
     <CollectionList
       listKey='profile-playlists'
       collection={playlists}
-      emptyListText={emptyListText}
+      ListEmptyComponent={<EmptyProfileTile tab='playlists' />}
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
     />
