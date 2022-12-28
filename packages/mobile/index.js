@@ -12,6 +12,11 @@ require('node-libs-react-native/globals')
 require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
 
+// Polyfill BigInt
+if (typeof BigInt === 'undefined') {
+  global.BigInt = require('big-integer')
+}
+
 const App = require('./src/App').default
 
 // Ignore LogBox logs for preferred log messages in external
