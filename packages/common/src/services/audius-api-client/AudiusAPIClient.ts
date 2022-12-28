@@ -1,20 +1,15 @@
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
-import { ID, TimeRange, StemTrackMetadata, Chain } from 'models'
-import { AuthHeaders } from 'services/audius-backend'
-import {
-  IntKeys,
-  StringKeys,
-  RemoteConfigInstance
-} from 'services/remote-config'
-import { SearchKind } from 'store/pages/search-results/types'
-import { decodeHashId, encodeHashId } from 'utils/hashIds'
-import { Nullable, removeNullable } from 'utils/typeUtils'
-
+import { ID, TimeRange, StemTrackMetadata } from '../../models'
+import { SearchKind } from '../../store/pages/search-results/types'
+import { decodeHashId, encodeHashId } from '../../utils/hashIds'
+import { Nullable, removeNullable } from '../../utils/typeUtils'
+import { AuthHeaders } from '../audius-backend'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
+import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -297,7 +292,7 @@ type GetRemixingArgs = {
 }
 
 type GetSearchArgs = {
-  currentUserId: ID
+  currentUserId: Nullable<ID>
   query: string
   kind?: SearchKind
   limit?: number
@@ -430,10 +425,7 @@ export type GetTipsArgs = {
 export type GetPremiumContentSignaturesArgs = {
   userId: ID
   trackMap: {
-    [id: ID]: {
-      chain: Chain
-      tokenIds?: string[]
-    }
+    [id: ID]: string[]
   }
 }
 

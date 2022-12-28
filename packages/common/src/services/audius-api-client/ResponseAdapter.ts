@@ -10,8 +10,8 @@ import {
   UserTrackMetadata,
   UserMetadata,
   StringWei
-} from 'models'
-import { removeNullable, decodeHashId } from 'utils'
+} from '../../models'
+import { removeNullable, decodeHashId } from '../../utils'
 
 import {
   APIActivity,
