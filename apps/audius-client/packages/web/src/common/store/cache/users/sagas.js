@@ -173,7 +173,16 @@ export function* fetchUserCollections(userId) {
   const playlists = yield call(audiusBackendInstance.getPlaylists, userId)
   const playlistIds = playlists.map((p) => p.playlist_id)
 
-  if (!playlistIds.length) return
+  if (!playlistIds.length) {
+    yield put(
+      cacheActions.update(Kind.USERS, [
+        {
+          id: userId,
+          metadata: { _collectionIds: [] }
+        }
+      ])
+    )
+  }
   const { collections } = yield call(retrieveCollections, userId, playlistIds)
   const cachedCollectionIds = Object.values(collections).map(
     (c) => c.playlist_id

@@ -23,6 +23,8 @@ export const getExploreArtists = createSelector(
     artists.map((id) => users[id].metadata).filter(removeNullable)
 )
 
+export const getExploreStatus = (state: CommonState) => getExplore(state).status
+
 export type GetExplore = {
   playlists: UserCollection[]
   profiles: User[]

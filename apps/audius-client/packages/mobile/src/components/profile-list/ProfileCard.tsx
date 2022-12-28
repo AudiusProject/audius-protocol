@@ -13,29 +13,29 @@ const formatProfileCardSecondaryText = (followers: number) => {
   return `${formatCount(followers)} ${followersText}`
 }
 
-type ArtistCardProps = {
-  artist: User
+type ProfileCardProps = {
+  profile: User
   style?: StyleProp<ViewStyle>
 }
 
-export const ArtistCard = ({ artist, style }: ArtistCardProps) => {
-  const { handle } = artist
+export const ProfileCard = ({ profile, style }: ProfileCardProps) => {
+  const { handle } = profile
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
     navigation.push('Profile', { handle })
   }, [navigation, handle])
 
-  const renderImage = useCallback(() => <UserImage user={artist} />, [artist])
+  const renderImage = useCallback(() => <UserImage user={profile} />, [profile])
 
   return (
     <Card
       style={style}
       renderImage={renderImage}
-      primaryText={artist.name}
-      secondaryText={formatProfileCardSecondaryText(artist.follower_count)}
+      primaryText={profile.name}
+      secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
       onPress={handlePress}
       type='user'
-      user={artist}
+      user={profile}
     />
   )
 }

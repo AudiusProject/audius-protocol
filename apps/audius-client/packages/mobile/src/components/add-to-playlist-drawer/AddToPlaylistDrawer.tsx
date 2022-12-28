@@ -1,6 +1,5 @@
 import { useCallback, useContext } from 'react'
 
-import type { User } from '@audius/common'
 import {
   CreatePlaylistSource,
   accountSelectors,
@@ -109,7 +108,6 @@ export const AddToPlaylistDrawer = () => {
                 onClose()
               }}
               renderImage={renderImage(item)}
-              user={user as unknown as User}
             />
           )}
         />

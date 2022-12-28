@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { UserCollection } from '@audius/common'
+import type { Collection } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
@@ -15,7 +15,7 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 }
 
 type CollectionCardProps = {
-  collection: UserCollection
+  collection: Collection
   style?: StyleProp<ViewStyle>
 }
 
@@ -42,7 +42,6 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
         collection.playlist_contents.track_ids.length
       )}
       onPress={handlePress}
-      user={collection.user}
     />
   )
 }
