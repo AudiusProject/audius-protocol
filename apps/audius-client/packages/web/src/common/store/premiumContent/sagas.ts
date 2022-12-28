@@ -239,6 +239,7 @@ function* updateNFTGatedTrackAccess(
   // request premium content signatures for the relevant nft-gated tracks
   // which the client believes the user should have access to
   const apiClient = yield* getContext('apiClient')
+
   const premiumContentSignatureMap = yield* call(
     [apiClient, apiClient.getPremiumContentSignatures],
     {

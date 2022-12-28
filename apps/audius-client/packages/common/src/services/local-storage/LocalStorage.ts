@@ -1,7 +1,7 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk/dist/core'
 
-import { User } from 'models/User'
-import { Nullable } from 'utils'
+import { User } from '../../models'
+import { Nullable } from '../../utils'
 
 // TODO: the following should come from @audius/libs/dist/core when
 // discoveryProvider/constants is migrated to typescript.
