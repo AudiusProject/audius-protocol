@@ -179,7 +179,18 @@ export enum BooleanKeys {
   /**
    * Boolean to use amplitude as the metrics tracking.
    */
-  USE_AMPLITUDE = 'USE_AMPLITUDE'
+  USE_AMPLITUDE = 'USE_AMPLITUDE',
+
+  /**
+   * Boolean to enable "Transactions" button on Audio page.
+   */
+  AUDIO_TRANSACTIONS_ENABLED = 'AUDIO_TRANSACTIONS_ENABLED',
+
+  /**
+   * Whether to enable discovery_max_slot feature. This is to prevent optimizely
+   * errors, since slot_diff_plays number key can't be set to null on optimizely side
+   */
+  ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS = 'ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS'
 }
 
 export enum DoubleKeys {
