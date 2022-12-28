@@ -20,7 +20,7 @@ func TestChat(t *testing.T) {
 	chatId := "chat1"
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -129,5 +129,5 @@ func TestChat(t *testing.T) {
 	err = chatReactMessage(tx, 91, replyMessageId, newReaction, changedReactTs)
 	assertReaction(91, replyMessageId, newReaction)
 
-	tx.Commit()
+	tx.Rollback()
 }

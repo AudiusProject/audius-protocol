@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"comms.audius.co/db"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserChatRow struct {
@@ -59,4 +60,39 @@ func UserChats(q db.Queryable, ctx context.Context, userID int32) ([]UserChatRow
 	var items []UserChatRow
 	err := q.SelectContext(ctx, &items, userChats, userID)
 	return items, err
+}
+
+const numChatsSince = `
+WITH counts AS (
+	SELECT COUNT(*) AS count
+	FROM chat
+	JOIN chat_member on chat.chat_id = chat_member.chat_id
+	WHERE chat_member.user_id IN (:Users) AND chat.created_at > :Cursor
+	GROUP BY chat_member.user_id
+)
+SELECT COALESCE(MAX(count), 0) FROM counts;
+`
+
+type NumChatsSinceParams struct {
+	Users  []int32   `json:"user_id"`
+	Cursor time.Time `json:"cursor"`
+}
+
+func NumChatsSince(q db.Queryable, ctx context.Context, arg NumChatsSinceParams) (int, error) {
+	var count int
+	argMap := map[string]interface{}{
+		"Users":  arg.Users,
+		"Cursor": arg.Cursor,
+	}
+	query, args, err := sqlx.Named(numChatsSince, argMap)
+	if err != nil {
+		return count, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return count, err
+	}
+	query = q.Rebind(query)
+	err = q.GetContext(ctx, &count, query, args...)
+	return count, err
 }

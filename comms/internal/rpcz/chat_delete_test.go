@@ -15,7 +15,7 @@ func TestChatDeletion(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -61,5 +61,5 @@ func TestChatDeletion(t *testing.T) {
 	// chat is not deleted for 92
 	assertDeleted(chatId, 92, false)
 
-	tx.Commit()
+	tx.Rollback()
 }

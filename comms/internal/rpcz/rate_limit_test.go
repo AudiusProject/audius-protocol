@@ -19,7 +19,7 @@ func TestRateLimit(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	// Connect to NATS and create JetStream Context
@@ -64,6 +64,8 @@ func TestRateLimit(t *testing.T) {
 	user93Encoded, err := misc.EncodeHashId(93)
 	assert.NoError(t, err)
 	user94Encoded, err := misc.EncodeHashId(94)
+	assert.NoError(t, err)
+	user95Encoded, err := misc.EncodeHashId(95)
 	assert.NoError(t, err)
 
 	// 91 created a new chat with 92 48 hours ago
@@ -133,4 +135,12 @@ func TestRateLimit(t *testing.T) {
 	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages")
 
 	// 91 creates a new chat with 95. Blocked by rate limiter (hit max # new chats)
+	chatId4 := "chat4"
+	createRpc = schema.RawRPC{
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId4, user91Encoded, chatId2, user95Encoded, chatId4)),
+	}
+	err = Validators[chatCreate](tx, 91, createRpc)
+	assert.ErrorContains(t, err, "An invited user has exceeded the maximum number of new chats")
+
+	tx.Rollback()
 }

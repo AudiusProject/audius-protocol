@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"comms.audius.co/misc"
 	"comms.audius.co/schema"
 	"github.com/jmoiron/sqlx"
+	"github.com/nats-io/nats.go"
 )
 
 type validatorFunc func(tx *sqlx.Tx, userId int32, rpc schema.RawRPC) error
@@ -78,6 +78,19 @@ var Validators = map[string]validatorFunc{
 
 		// TODO check receiving invitee's permission settings
 
+		var users []int32
+		for _, invite := range params.Invites {
+			userId, err := misc.DecodeHashId(invite.UserID)
+			if err != nil {
+				return err
+			}
+			users = append(users, int32(userId))
+		}
+		err = validateNewChatRateLimit(q, users)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	},
 	string(schema.RPCMethodChatDelete): func(tx *sqlx.Tx, userId int32, rpc schema.RawRPC) error {
@@ -133,7 +146,7 @@ var Validators = map[string]validatorFunc{
 			}
 		}
 
-		err = validateNewMessageRateLimitNotExceeded(q, userId, params.ChatID)
+		err = validateNewMessageRateLimit(q, userId, params.ChatID)
 		if err != nil {
 			return err
 		}
@@ -268,25 +281,67 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 	return nil
 }
 
-func validateNewMessageRateLimitNotExceeded(q db.Queryable, userId int32, chatId string) error {
+func calculateRateLimitCursor(kv nats.KeyValue) (time.Time, error) {
+	var cursor time.Time
+	// Calculate cursor from rate limit timeframe
+	got, err := kv.Get(config.RateLimitTimeframeHours)
+	if err != nil {
+		return cursor, err
+	}
+	timeframe, err := strconv.Atoi(string(got.Value()))
+	if err != nil {
+		return cursor, err
+	}
+	cursor = time.Now().UTC().Add(-time.Hour * time.Duration(timeframe))
+	return cursor, nil
+}
+
+func validateNewChatRateLimit(q db.Queryable, users []int32) error {
 	// Retrieve rate limit rules KV
 	kv, err := JetstreamClient.KeyValue(config.RateLimitRulesBucketName)
 	if err != nil {
 		return err
 	}
-	// Calculate cursor from rate limit timeframe
-	got, err := kv.Get(config.RateLimitTimeframeHours)
+
+	// Cursor for rate limit timeframe
+	cursor, err := calculateRateLimitCursor(kv)
+
+	// Max number of new chats permitted per timeframe
+	got, err := kv.Get(config.RateLimitMaxNumNewChats)
 	if err != nil {
 		return err
 	}
-	timeframe, err := strconv.Atoi(string(got.Value()))
+	maxNumChats, err := strconv.Atoi(string(got.Value()))
 	if err != nil {
 		return err
 	}
-	cursor := time.Now().UTC().Add(-time.Hour * time.Duration(timeframe))
+	numChats, err := queries.NumChatsSince(q, context.Background(), queries.NumChatsSinceParams{
+		Users:  users,
+		Cursor: cursor,
+	})
+	if err != nil {
+		return err
+	}
+
+	if numChats >= maxNumChats {
+		return errors.New("An invited user has exceeded the maximum number of new chats")
+	}
+
+	return nil
+}
+
+func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) error {
+	// Retrieve rate limit rules KV
+	kv, err := JetstreamClient.KeyValue(config.RateLimitRulesBucketName)
+	if err != nil {
+		return err
+	}
+
+	// Cursor for rate limit timeframe
+	cursor, err := calculateRateLimitCursor(kv)
 
 	// Max number of new messages permitted per timeframe
-	got, err = kv.Get(config.RateLimitMaxNumMessages)
+	got, err := kv.Get(config.RateLimitMaxNumMessages)
 	if err != nil {
 		return err
 	}
@@ -301,12 +356,7 @@ func validateNewMessageRateLimitNotExceeded(q db.Queryable, userId int32, chatId
 	if err != nil {
 		return err
 	}
-	fmt.Println("user:", userId)
-	fmt.Println("cursor:", cursor)
-	fmt.Println("time now:", time.Now().UTC())
-	fmt.Println("numMessages:", numMessages)
-	fmt.Println("maxNumMessages:", maxNumMessages)
-	if numMessages == maxNumMessages {
+	if numMessages >= maxNumMessages {
 		return errors.New("User has exceeded the maximum number of new messages")
 	}
 
@@ -327,9 +377,7 @@ func validateNewMessageRateLimitNotExceeded(q db.Queryable, userId int32, chatId
 	if err != nil {
 		return err
 	}
-	fmt.Println("numMessagesPerRecipient:", numMessagesPerRecipient)
-	fmt.Println("maxNumMessagesPerRecipient:", maxNumMessagesPerRecipient)
-	if numMessagesPerRecipient == maxNumMessagesPerRecipient {
+	if numMessagesPerRecipient >= maxNumMessagesPerRecipient {
 		return errors.New("User has exceeded the maximum number of new messages per recipient")
 	}
 

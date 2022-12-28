@@ -13,7 +13,7 @@ func TestChatPermissions(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat_permissions cascade")
+	_, err = db.Conn.Exec("truncate chat_permissions cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -50,5 +50,5 @@ func TestChatPermissions(t *testing.T) {
 	assertPermissions(userId, schema.Followees, 0)
 	assertPermissions(userId, schema.None, 1)
 
-	tx.Commit()
+	tx.Rollback()
 }

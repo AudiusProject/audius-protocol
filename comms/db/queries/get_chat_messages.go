@@ -106,7 +106,7 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 const numChatMessagesSince = `
 SELECT COUNT(*)
 FROM chat_message
-WHERE user_id = $1 AND CREATED_AT > $2
+WHERE user_id = $1 AND created_at > $2
 `
 
 type NumChatMessagesSinceParams struct {

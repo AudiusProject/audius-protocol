@@ -15,9 +15,9 @@ func TestChatBlocking(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat_blocked_users cascade")
+	_, err = db.Conn.Exec("truncate chat_blocked_users cascade;")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -98,5 +98,5 @@ func TestChatBlocking(t *testing.T) {
 	assert.NoError(t, err)
 	assertBlocked(91, 92, messageTs, 0)
 
-	tx.Commit()
+	tx.Rollback()
 }

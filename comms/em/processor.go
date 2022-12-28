@@ -23,7 +23,7 @@ func processEntityManagerAction(action *EntityManagerAction) {
 		logger.Info("no handler for: " + fqmethod)
 	}
 
-	err = tx.Commit()
+	err = tx.Rollback()
 	if err != nil {
 		panic(err)
 	}
