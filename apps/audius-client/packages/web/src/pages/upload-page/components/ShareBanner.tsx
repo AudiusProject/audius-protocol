@@ -233,10 +233,8 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
       </div>
       <div className={styles.copyLinkWrapper} onClick={onCopy}>
         <Toast
-          useCaret={false}
-          mount={MountPlacement.BODY}
+          mount={MountPlacement.PARENT}
           placement={ComponentPlacement.TOP}
-          overlayClassName={styles.toast}
           delay={TOAST_DELAY}
           text={messages.copiedToClipboard}
         >
