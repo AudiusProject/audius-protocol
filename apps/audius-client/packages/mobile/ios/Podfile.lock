@@ -505,8 +505,6 @@ PODS:
     - React-Core
   - RNSVG (12.3.0):
     - React-Core
-  - RNThread (0.0.19):
-    - React
   - Sentry (7.5.4):
     - Sentry/Core (= 7.5.4)
   - Sentry/Core (7.5.4)
@@ -595,7 +593,6 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNThread (from `../node_modules/react-native-threads/ios`)
   - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -777,8 +774,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNThread:
-    :path: "../node_modules/react-native-threads/ios"
   SRSRadialGradient:
     :path: "../node_modules/react-native-radial-gradient/ios"
   Yoga:
@@ -880,7 +875,6 @@ SPEC CHECKSUMS:
   RNSentry: fe878ca3982d7871e502ccbb90072fe764c8d07d
   RNShare: 36aa3e6958373a0ad1c95a1c960adef589da3794
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
-  RNThread: bb5ef8bc1ec52f1d1a9c8dc1ce78f6b1bcdf892a
   Sentry: 5c5dd4005f3b7b9765d5a8871232cddbd0d888b7
   SRSRadialGradient: 71378a83e52b616c40367c37ee7cb6865f9f7c6e
   SwiftAudioEx: 83eabba2940924fc1c0d5cb0896049921365229c
