@@ -8,13 +8,13 @@ export type ThemeState = {
   systemAppearance: Nullable<SystemAppearance>
 }
 
-export type SetThemeAction = {
+export type SetThemeAction = PayloadAction<{
   theme: Theme
-}
+}>
 
-export type SystemAppearanceAction = {
+export type SetSystemAppearanceAction = PayloadAction<{
   systemAppearance: SystemAppearance
-}
+}>
 
 const initialState: ThemeState = {
   theme: null,
@@ -25,13 +25,10 @@ const themeSlice = createSlice({
   name: 'application/ui/theme',
   initialState,
   reducers: {
-    setTheme: (state, action: PayloadAction<SetThemeAction>) => {
+    setTheme: (state, action: SetThemeAction) => {
       state.theme = action.payload.theme
     },
-    setSystemAppearance: (
-      state,
-      action: PayloadAction<SystemAppearanceAction>
-    ) => {
+    setSystemAppearance: (state, action: SetSystemAppearanceAction) => {
       state.systemAppearance = action.payload.systemAppearance
     }
   }

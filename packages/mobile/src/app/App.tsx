@@ -15,11 +15,18 @@ import { useAsync, useEffectOnce } from 'react-use'
 import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
+import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
 import OAuth from 'app/components/oauth/OAuth'
+import { OfflineDownloader } from 'app/components/offline-downloads/OfflineDownloader'
+import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { ToastContextProvider } from 'app/components/toast/ToastContext'
 import { WebAppAccountSync } from 'app/components/web-app-account-sync'
+import { ENTROPY_KEY } from 'app/constants/storage-keys'
+import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
+import { WalletConnectProvider } from 'app/screens/wallet-connect'
+import { setLibs } from 'app/services/libs'
 import { store } from 'app/store'
 import {
   forceRefreshConnectivity,
@@ -28,20 +35,14 @@ import {
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
-import { NotificationReminder } from './components/notification-reminder/NotificationReminder'
-import { OfflineDownloader } from './components/offline-downloads/OfflineDownloader'
-import { RateCtaReminder } from './components/rate-cta-drawer/RateCtaReminder'
-import { ENTROPY_KEY } from './constants/storage-keys'
-import { useEnterForeground } from './hooks/useAppState'
-import { WalletConnectProvider } from './screens/wallet-connect'
-import { setLibs } from './services/libs'
+import { ThemeProvider } from './ThemeProvider'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
 })
 
 const Airplay = Platform.select({
-  ios: () => require('./components/audio/Airplay').default,
+  ios: () => require('../components/audio/Airplay').default,
   android: () => () => null
 })?.()
 
@@ -84,33 +85,37 @@ const App = () => {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <Provider store={store}>
-        <WalletConnectProvider>
-          <PortalProvider>
-            <ToastContextProvider>
-              <ErrorBoundary>
-                <NavigationContainer>
-                  {!isReadyToSetupBackend ? (
-                    <WebAppAccountSync
-                      setIsReadyToSetupBackend={setIsReadyToSetupBackend}
-                    />
-                  ) : null}
-                  <Airplay />
-                  <RootScreen isReadyToSetupBackend={isReadyToSetupBackend} />
-                  <Drawers />
-                  <Modals />
-                  <Audio />
-                  <OAuth />
-                  <NotificationReminder />
-                  <RateCtaReminder />
-                  <OfflineDownloader />
-                </NavigationContainer>
-              </ErrorBoundary>
-            </ToastContextProvider>
-          </PortalProvider>
-        </WalletConnectProvider>
+        <ThemeProvider>
+          <WalletConnectProvider>
+            <PortalProvider>
+              <ToastContextProvider>
+                <ErrorBoundary>
+                  <NavigationContainer>
+                    {!isReadyToSetupBackend ? (
+                      <WebAppAccountSync
+                        setIsReadyToSetupBackend={setIsReadyToSetupBackend}
+                      />
+                    ) : null}
+                    <Airplay />
+                    <RootScreen isReadyToSetupBackend={isReadyToSetupBackend} />
+                    <Drawers />
+                    <Modals />
+                    <Audio />
+                    <OAuth />
+                    <NotificationReminder />
+                    <RateCtaReminder />
+                    <OfflineDownloader />
+                  </NavigationContainer>
+                </ErrorBoundary>
+              </ToastContextProvider>
+            </PortalProvider>
+          </WalletConnectProvider>
+        </ThemeProvider>
       </Provider>
     </SafeAreaProvider>
   )
 }
 
-export default Sentry.wrap(App)
+const AppWithSentry = Sentry.wrap(App)
+
+export { AppWithSentry as App }

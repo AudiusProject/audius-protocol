@@ -3,9 +3,9 @@ import { PureComponent, useContext, useEffect } from 'react'
 import type { Nullable } from '@audius/common'
 import * as Sentry from '@sentry/react-native'
 
-import { ToastContext } from './components/toast/ToastContext'
-import { make, track } from './services/analytics'
-import { EventNames } from './types/analytics'
+import { ToastContext } from 'app/components/toast/ToastContext'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 
 const ErrorToast = ({ error }: { error: Nullable<string> }) => {
   // Do nothing other than trigger a toast when error changes
