@@ -3,12 +3,29 @@ const models = require('../../models')
 
 const types = models.ContentBlacklist.Types
 
-const getAllTrackIds = async () => {
-  const resp = await BlacklistManager.getAllTrackIds()
-  return resp.map((trackId) => parseInt(trackId))
+interface IBlacklistedContent {
+  trackIds: Promise<any>;
+  userIds: Promise<any>;
+  individualSegments: string[];
+  numberOfSegments: number;
+  allSegments: string[];
 }
 
-const getAllContentBlacklist = async () => {
+interface ICBLSegments {
+  id: number;
+  type: "USER" | "TRACK" | "CID";
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+const getAllTrackIds = async (): Promise<number[]> => {
+  const resp = await BlacklistManager.getAllTrackIds()
+  return resp.map((trackId: string) => parseInt(trackId))
+}
+
+const getAllContentBlacklist = async (): Promise<IBlacklistedContent> => {
   // Segments stored in the ContentBlacklist may not be associated with a track
   const segmentsFromCBL = await models.ContentBlacklist.findAll({
     attributes: ['value'],
@@ -17,8 +34,8 @@ const getAllContentBlacklist = async () => {
     },
     raw: true
   })
-  const individuallyBlacklistedSegments = segmentsFromCBL.map(
-    (entry) => entry.value
+  const individuallyBlacklistedSegments  = segmentsFromCBL.map(
+    (entry: ICBLSegments): string => entry.value
   )
   const allSegments = await BlacklistManager.getAllCIDs()
   const blacklistedContent = {
@@ -32,11 +49,11 @@ const getAllContentBlacklist = async () => {
   return blacklistedContent
 }
 
-const addToContentBlacklist = async ({ type, values }) => {
+const addToContentBlacklist = async ({ type, values }: { type: ICBLSegments['type'], values: ICBLSegments['value'] }): Promise<void> => {
   await BlacklistManager.add({ type, values })
 }
 
-const removeFromContentBlacklist = async ({ type, values }) => {
+const removeFromContentBlacklist = async ({ type, values }: { type: ICBLSegments['type'], values: ICBLSegments['value'] }): Promise<void> => {
   await BlacklistManager.remove({ type, values })
 }
 
