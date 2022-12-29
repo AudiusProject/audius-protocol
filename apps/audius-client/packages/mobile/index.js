@@ -14,7 +14,8 @@ require('react-native-url-polyfill/auto')
 
 // Polyfill BigInt
 if (typeof BigInt === 'undefined') {
-  global.BigInt = require('big-integer')
+  // eslint-disable-next-line
+  BigInt = require('big-integer')
 }
 
 const App = require('./src/App').default
