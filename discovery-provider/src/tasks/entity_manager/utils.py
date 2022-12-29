@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import Notification, NotificationSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -51,6 +51,7 @@ class EntityType(str, Enum):
     SAVE = "Save"
     REPOST = "Repost"
     SUBSCRIPTION = "Subscription"
+    NOTIFICATION_SEEN = "NotificationSeen"
     NOTIFICATION = "Notification"
 
     def __str__(self) -> str:
@@ -65,7 +66,8 @@ class RecordDict(TypedDict):
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
     Subscription: Dict[Tuple, List[Subscription]]
-    Notification: Dict[Tuple, List[NotificationSeen]]
+    NotificationSeen: Dict[Tuple, List[NotificationSeen]]
+    Notification: Dict[Tuple, List[Notification]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -159,6 +161,15 @@ class ManageEntityParameters:
     def add_notification_seen_record(
         self,
         key: Tuple[int, datetime],
+        record: NotificationSeen,
+    ):
+        if key not in self.new_records[EntityType.NOTIFICATION_SEEN]:  # type: ignore
+            self.new_records[EntityType.NOTIFICATION_SEEN][key].append(record)  # type: ignore
+        # If key exists, do nothing
+
+    def add_notification_record(
+        self,
+        key: datetime,
         record: NotificationSeen,
     ):
         if key not in self.new_records[EntityType.NOTIFICATION]:  # type: ignore
