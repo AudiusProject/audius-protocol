@@ -35,13 +35,13 @@ import {
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 import { convertRGBToHex } from 'app/utils/convertRGBtoHex'
-import { reportToSentry } from 'app/utils/reportToSentry'
-import { useThemeColors } from 'app/utils/theme'
-
 import {
   getDominantRgb,
   pickTwoMostDominantAndVibrant
-} from '../../../threads/dominantColors.thread'
+} from 'app/utils/dominantColors'
+import { reportToSentry } from 'app/utils/reportToSentry'
+import { useThemeColors } from 'app/utils/theme'
+
 import { NativeDrawer } from '../drawer'
 import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
 import { ToastContext } from '../toast/ToastContext'

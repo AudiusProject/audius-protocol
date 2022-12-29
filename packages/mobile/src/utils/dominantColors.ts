@@ -1,6 +1,5 @@
-import { self } from 'react-native-threads'
-
-const Jimp = require('./jimp.min.js')
+import type { Color } from '@audius/common'
+import Jimp from 'jimp'
 
 const DEFAULT_RGB = '#7e1bcc'
 const SAMPLE_RATE = 20
@@ -10,7 +9,7 @@ const NUM_DOMINANT_COLORS = 3
 // #CDC8C8, which works out to a luminance of 201.
 const LUMINANCE_THRESHOLD = 201
 
-const clampedRGBColor = (rgbString /* string of 'r,g,b' */) => {
+const clampedRGBColor = (rgbString: string /* string of 'r,g,b' */) => {
   const rgb = rgbString.split(',').map((x) => parseInt(x, 10))
   const r = rgb[0]
   const g = rgb[1]
@@ -28,7 +27,7 @@ const clampedRGBColor = (rgbString /* string of 'r,g,b' */) => {
   return [r, g, b].map((x) => x * scaleFactor)
 }
 
-const calculateEuclideanDistance = (c1, c2) => {
+const calculateEuclideanDistance = (c1: Color, c2: Color) => {
   return Math.sqrt(
     Math.pow(c1.r - c2.r, 2) +
       Math.pow(c1.g - c2.g, 2) +
@@ -36,7 +35,10 @@ const calculateEuclideanDistance = (c1, c2) => {
   )
 }
 
-const findIndexOfMaxEuclideanDistance = (existing, selectFrom) => {
+const findIndexOfMaxEuclideanDistance = (
+  existing: Color[],
+  selectFrom: Color[]
+) => {
   if (existing.length === 0 || selectFrom.length === 0) {
     throw new Error('Invalid number of colors to pick from')
   }
@@ -56,7 +58,7 @@ const findIndexOfMaxEuclideanDistance = (existing, selectFrom) => {
   return indexOfMaxDistance
 }
 
-const calculateVibrancy = (color) => {
+const calculateVibrancy = (color: Color) => {
   // Reference: https://stackoverflow.com/questions/61705774/mathematically-calculate-vibrancy-of-a-color
   const max = Math.max(color.r, color.g, color.b)
   const min = Math.min(color.r, color.g, color.b)
@@ -78,8 +80,8 @@ export const pickTwoMostDominantAndVibrant = (colors) => {
   return vibrantColors
 }
 
-const findDominantColors = (selectFrom) => {
-  const domColors = [selectFrom.shift()]
+const findDominantColors = (selectFrom: Color[]) => {
+  const domColors = [selectFrom.shift() as Color]
 
   while (domColors.length < NUM_DOMINANT_COLORS && selectFrom.length > 0) {
     const indexOfNextDomColor = findIndexOfMaxEuclideanDistance(
@@ -94,63 +96,51 @@ const findDominantColors = (selectFrom) => {
 
 /**
  * Returns the 3 dominant RGB colors of an image.
- * @param {string} imageUrl url of the image to use
+ * @param imageUrl url of the image to use
  */
-export const getDominantRgb = (imageUrl) => {
-  return Jimp.read(imageUrl)
-    .then((img) => {
-      img.posterize(15)
-      const imageData = img.bitmap
-      const pixels = imageData.data
-      const pixelCount = imageData.width * imageData.height
+export const getDominantRgb = async (imageUrl: string) => {
+  try {
+    const img = await Jimp.read(imageUrl)
+    img.posterize(15)
+    const imageData = img.bitmap
+    const pixels = imageData.data
+    const pixelCount = imageData.width * imageData.height
 
-      const counts = {}
+    const counts = {}
 
-      for (let i = 0; i < pixelCount; i += SAMPLE_RATE) {
-        const offset = i * 4
+    for (let i = 0; i < pixelCount; i += SAMPLE_RATE) {
+      const offset = i * 4
 
-        const r = pixels[offset]
-        const g = pixels[offset + 1]
-        const b = pixels[offset + 2]
-        const rgb = `${r},${g},${b}`
-        if (rgb in counts) {
-          counts[rgb] += 1
-        } else {
-          counts[rgb] = 1
-        }
-      }
-
-      const sortedResult = Object.keys(counts)
-        .sort((a, b) => {
-          return counts[b] - counts[a]
-        })
-        .map((c) => ({
-          r: clampedRGBColor(c)[0],
-          g: clampedRGBColor(c)[1],
-          b: clampedRGBColor(c)[2]
-        }))
-
-      let result
-      if (sortedResult.length <= NUM_DOMINANT_COLORS) {
-        result = sortedResult
+      const r = pixels[offset]
+      const g = pixels[offset + 1]
+      const b = pixels[offset + 2]
+      const rgb = `${r},${g},${b}`
+      if (rgb in counts) {
+        counts[rgb] += 1
       } else {
-        result = findDominantColors(sortedResult)
+        counts[rgb] = 1
       }
-      return result
-    })
-    .catch((err) => {
-      console.error(imageUrl, err)
-      return DEFAULT_RGB
-    })
-}
+    }
 
-export const dominantRgb = (imageUrl) => {
-  getDominantRgb(imageUrl).then((result) => {
-    self.postMessage(JSON.stringify(result))
-  })
-}
+    const sortedResult = Object.keys(counts)
+      .sort((a, b_1) => {
+        return counts[b_1] - counts[a]
+      })
+      .map((c) => ({
+        r: clampedRGBColor(c)[0],
+        g: clampedRGBColor(c)[1],
+        b: clampedRGBColor(c)[2]
+      }))
 
-// listen for messages
-self.onmessage = (imageUrl) => {
-  dominantRgb(imageUrl)
+    let result: Color[]
+    if (sortedResult.length <= NUM_DOMINANT_COLORS) {
+      result = sortedResult
+    } else {
+      result = findDominantColors(sortedResult)
+    }
+    return result
+  } catch (err) {
+    console.error(imageUrl, err)
+    return DEFAULT_RGB
+  }
 }
