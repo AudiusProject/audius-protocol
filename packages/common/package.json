@@ -20,7 +20,7 @@
     "build": "rollup -c",
     "lint": "eslint --cache src",
     "lint:fix": "npm run lint -- --fix",
-    "postinstall": "rm -rf node_modules/react",
+    "postinstall": "rm -rf node_modules/react && patch-package",
     "start": "rollup -c -w",
     "typecheck": "tsc --noEmit"
   },
@@ -55,6 +55,7 @@
     "@types/redux-saga": "0.10.5",
     "eslint": "8.19.0",
     "eslint-config-audius": "1.5.2",
+    "patch-package": "6.4.7",
     "react": "17.0.2",
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
