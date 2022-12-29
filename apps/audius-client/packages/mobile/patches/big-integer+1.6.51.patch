@@ -1,0 +1,13 @@
+diff --git a/node_modules/big-integer/BigInteger.js b/node_modules/big-integer/BigInteger.js
+index c4263d5..e13d387 100644
+--- a/node_modules/big-integer/BigInteger.js
++++ b/node_modules/big-integer/BigInteger.js
+@@ -7,7 +7,7 @@ var bigInt = (function (undefined) {
+         MAX_INT_ARR = smallToArray(MAX_INT),
+         DEFAULT_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+ 
+-    var supportsNativeBigInt = typeof BigInt === "function";
++    var supportsNativeBigInt = false;
+ 
+     function Integer(v, radix, alphabet, caseSensitive) {
+         if (typeof v === "undefined") return Integer[0];

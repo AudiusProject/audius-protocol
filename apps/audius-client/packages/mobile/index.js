@@ -13,10 +13,8 @@ require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
 
 // Polyfill BigInt
-if (typeof BigInt === 'undefined') {
-  // eslint-disable-next-line
-  BigInt = require('big-integer')
-}
+// eslint-disable-next-line
+BigInt = require('big-integer')
 
 const { App } = require('./src/app')
 
