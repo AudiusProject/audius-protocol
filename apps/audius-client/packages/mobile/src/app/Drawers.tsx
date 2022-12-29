@@ -26,17 +26,17 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
-import { useDrawerState } from './components/drawer'
+import { useDrawerState } from '../components/drawer'
 import {
   RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollectionDrawer,
   DeleteConfirmationDrawer
-} from './components/drawers'
-import { ShareToStoryProgressDrawer } from './components/share-drawer/useShareToStory'
-import { VipDiscordDrawer } from './components/vip-discord-drawer'
-import { useDrawer } from './hooks/useDrawer'
-import type { Drawer } from './store/drawers/slice'
+} from '../components/drawers'
+import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareToStory'
+import { VipDiscordDrawer } from '../components/vip-discord-drawer'
+import { useDrawer } from '../hooks/useDrawer'
+import type { Drawer } from '../store/drawers/slice'
 
 type CommonDrawerProps = {
   modal: ComponentType

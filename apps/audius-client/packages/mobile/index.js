@@ -18,7 +18,7 @@ if (typeof BigInt === 'undefined') {
   BigInt = require('big-integer')
 }
 
-const App = require('./src/App').default
+const { App } = require('./src/app')
 
 // Ignore LogBox logs for preferred log messages in external
 // React Native debug tools
