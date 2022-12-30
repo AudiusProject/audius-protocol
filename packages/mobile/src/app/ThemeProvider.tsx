@@ -31,12 +31,9 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
     dispatch(setTheme({ theme: savedTheme ?? Theme.DEFAULT }))
   }, [dispatch])
 
-  console.log({ isDarkMode })
-
   useEffect(() => {
     // react-native-dynamic incorrectly sets dark-mode when in background
     if (appState === 'active') {
-      console.log('setting system appearance!')
       dispatch(
         setSystemAppearance({
           systemAppearance: isDarkMode

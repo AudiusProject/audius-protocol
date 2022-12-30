@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { signOutActions } from '@audius/common'
 import { View } from 'react-native'
@@ -8,7 +8,6 @@ import { Button, Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { makeStyles } from 'app/styles'
 
-import { WebAppAccountClear } from '../web-app-account-sync'
 const { signOut } = signOutActions
 
 const MODAL_NAME = 'SignOutConfirmation'
@@ -39,15 +38,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const SignOutConfirmationDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const [clearWebApp, setClearWebApp] = useState(false)
 
   const { onClose } = useDrawerState(MODAL_NAME)
 
   const handleSignOut = useCallback(() => {
-    setClearWebApp(true)
     dispatch(signOut())
     onClose()
-  }, [dispatch, onClose, setClearWebApp])
+  }, [dispatch, onClose])
 
   return (
     <AppDrawer modalName={MODAL_NAME} title={messages.drawerTitle}>
@@ -78,7 +75,6 @@ export const SignOutConfirmationDrawer = () => {
           onPress={handleSignOut}
         />
       </View>
-      <WebAppAccountClear shouldClear={clearWebApp} />
     </AppDrawer>
   )
 }
