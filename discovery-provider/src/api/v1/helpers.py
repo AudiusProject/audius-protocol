@@ -123,6 +123,8 @@ def extend_search(resp):
 
 
 def extend_user(user, current_user_id=None):
+    if not user.get("user_id"):
+        return user
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
     user = add_user_artwork(user)
