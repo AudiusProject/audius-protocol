@@ -1276,7 +1276,10 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
 
     Returns: Tracks with users attached
     """
-    users = [t.get("user")[0] for t in tracks]
+    users = []
+    for t in tracks:
+        if t.get("user"):
+            users.append(t.get("user")[0])
     user_ids = [u.get("user_id") for u in users]
 
     # bundle peripheral info into user results
@@ -1286,8 +1289,10 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
         user_map[user["user_id"]] = user
 
     for track in tracks:
-        user = user_map[track["owner_id"]]
+        user = user_map.get(track["owner_id"])
         if user:
             track["user"] = user
+        else:
+            track["user"] = {}
 
     return tracks
