@@ -87,6 +87,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const handleNavigation = useCallback(() => {
     if (config.buttonInfo?.navigation) {
       const { screen, params } = config.buttonInfo.navigation
+      // @ts-expect-error not smart enough
       navigate(screen, params)
       handleClose()
     }
