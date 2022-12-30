@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
-import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
+import type { CardProps } from 'app/components/card'
 import { UserImage } from 'app/components/image/UserImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
@@ -13,14 +13,15 @@ const formatProfileCardSecondaryText = (followers: number) => {
   return `${formatCount(followers)} ${followersText}`
 }
 
-type ProfileCardProps = {
+type ProfileCardProps = Partial<CardProps> & {
   profile: User
-  style?: StyleProp<ViewStyle>
 }
 
-export const ProfileCard = ({ profile, style }: ProfileCardProps) => {
+export const ProfileCard = (props: ProfileCardProps) => {
+  const { profile, onPress, ...other } = props
   const { handle } = profile
   const navigation = useNavigation()
+
   const handlePress = useCallback(() => {
     navigation.push('Profile', { handle })
   }, [navigation, handle])
@@ -29,13 +30,13 @@ export const ProfileCard = ({ profile, style }: ProfileCardProps) => {
 
   return (
     <Card
-      style={style}
       renderImage={renderImage}
       primaryText={profile.name}
       secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
-      onPress={handlePress}
+      onPress={onPress ?? handlePress}
       type='user'
       user={profile}
+      {...other}
     />
   )
 }

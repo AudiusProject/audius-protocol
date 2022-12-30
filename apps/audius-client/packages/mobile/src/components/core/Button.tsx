@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+import type { Nullable } from '@audius/common'
 import Color from 'color'
 import { merge } from 'lodash'
 import type {
@@ -32,6 +33,20 @@ const useStyles = makeStyles<
     { palette, spacing, typography },
     { isPressing, size, variant, corners }
   ) => {
+    const commonVariantStyles = {
+      root: {
+        borderColor: palette.neutralLight6,
+        borderWidth: 1,
+        backgroundColor: palette.white
+      },
+      text: {
+        color: palette.neutral
+      },
+      icon: {
+        color: palette.neutral
+      }
+    }
+
     const variantStyles = {
       primary: {
         root: {
@@ -45,7 +60,7 @@ const useStyles = makeStyles<
           color: palette.staticWhite
         }
       },
-      secondary: {
+      primaryAlt: {
         root: {
           borderColor: palette.primaryDark1,
           borderWidth: 1,
@@ -58,32 +73,21 @@ const useStyles = makeStyles<
           color: palette.primary
         }
       },
-      common: {
+      secondary: {
         root: {
-          borderColor: palette.neutralLight6,
-          borderWidth: 1,
-          backgroundColor: palette.white
+          backgroundColor: palette.secondary,
+          borderWidth: 0
         },
         text: {
-          color: palette.neutral
+          color: palette.staticWhite
         },
         icon: {
-          color: palette.neutral
+          color: palette.staticWhite
         }
       },
-      commonAlt: {
-        root: {
-          borderColor: palette.neutralLight6,
-          borderWidth: 1,
-          backgroundColor: palette.white
-        },
-        text: {
-          color: palette.neutral
-        },
-        icon: {
-          color: palette.neutral
-        }
-      },
+      common: commonVariantStyles,
+      commonAlt: commonVariantStyles,
+      commonSecondary: commonVariantStyles,
       destructive: {
         root: {
           backgroundColor: palette.accentRed
@@ -98,13 +102,24 @@ const useStyles = makeStyles<
     }
 
     const variantPressingStyles = {
-      secondary: variantStyles.primary,
+      primaryAlt: variantStyles.primary,
       common: variantStyles.primary,
       commonAlt: variantStyles.commonAlt,
+      commonSecondary: variantStyles.secondary,
       destructive: variantStyles.destructive
     }
 
     const sizeStyles = {
+      xs: {
+        button: {
+          height: spacing(6),
+          paddingHorizontal: spacing(3)
+        },
+        text: {
+          fontSize: typography.fontSize.small,
+          fontFamily: typography.fontByWeight.bold
+        }
+      },
       small: {
         button: {
           height: spacing(8),
@@ -213,7 +228,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     IconProps?: SvgProps
     fullWidth?: boolean
     noText?: boolean
-    size?: 'small' | 'medium' | 'large'
+    size?: 'xs' | 'small' | 'medium' | 'large'
     style?: ViewStyle
     styles?: StylesProp<{
       root: ViewStyle
@@ -221,7 +236,14 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
       icon: ViewStyle
       text: TextStyle
     }>
-    variant?: 'primary' | 'secondary' | 'common' | 'commonAlt' | 'destructive'
+    variant?:
+      | 'primary'
+      | 'primaryAlt'
+      | 'secondary'
+      | 'common'
+      | 'commonAlt'
+      | 'commonSecondary'
+      | 'destructive'
     haptics?: boolean | 'light' | 'medium'
     url?: string
     // Custom color that will override the variant
@@ -261,15 +283,21 @@ export const Button = (props: ButtonProps) => {
     [isPressing, size, variant, corners]
   )
   const styles = useStyles(stylesConfig)
-  const rootHeightRef = useRef(0)
+  const rootLayoutRef =
+    useRef<Nullable<{ height: number; width: number }>>(null)
   const {
     scale,
     handlePressIn: handlePressInScale,
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation(pressScale, false)
 
-  const { primaryDark1, neutralLight10, neutralLight7, accentRedDark1 } =
-    useThemeColors()
+  const {
+    primaryDark1,
+    secondaryDark1,
+    neutralLight10,
+    neutralLight7,
+    accentRedDark1
+  } = useThemeColors()
 
   const pressColor = useMemo(() => {
     // If a custom color is specified
@@ -283,12 +311,21 @@ export const Button = (props: ButtonProps) => {
     // derive the press state color for the variant
     return {
       primary: primaryDark1,
-      secondary: primaryDark1,
+      primaryAlt: primaryDark1,
+      secondary: secondaryDark1,
       common: primaryDark1,
       commonAlt: neutralLight10,
+      commonSecondary: secondaryDark1,
       destructive: accentRedDark1
     }[variant]
-  }, [customColor, variant, primaryDark1, neutralLight10, accentRedDark1])
+  }, [
+    customColor,
+    variant,
+    primaryDark1,
+    secondaryDark1,
+    neutralLight10,
+    accentRedDark1
+  ])
 
   const {
     color,
@@ -336,9 +373,10 @@ export const Button = (props: ButtonProps) => {
   // Ensures button takes up a static height even when scaling
   const handleRootLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      rootHeightRef.current = event.nativeEvent.layout.height
+      const { height, width } = event.nativeEvent.layout
+      rootLayoutRef.current = { height, width }
     },
-    [rootHeightRef]
+    [rootLayoutRef]
   )
 
   // @ts-ignore type issue with flattened style. iconColor prop is optional
@@ -364,10 +402,7 @@ export const Button = (props: ButtonProps) => {
   const PressableComponent = url ? Link : Pressable
 
   return (
-    <View
-      style={rootHeightRef.current ? { height: rootHeightRef.current } : null}
-      onLayout={handleRootLayout}
-    >
+    <View style={rootLayoutRef.current} onLayout={handleRootLayout}>
       <Animated.View
         style={[
           styles.root,

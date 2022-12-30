@@ -5,7 +5,6 @@ import { Portal } from '@gorhom/portal'
 import type {
   DefaultSectionT,
   SectionList as RNSectionList,
-  SectionListData,
   SectionListProps as RNSectionListProps
 } from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
@@ -146,10 +145,6 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
   }
 )
 
-const areSectionsEmpty = (
-  sections: readonly SectionListData<any, DefaultSectionT>[]
-) => sections.every((section) => section.data.length === 0)
-
 /**
  * Provides either a SectionList or a CollapsibleSectionList
  * depending on whether or not the list is found in a "collapsible" header tab
@@ -168,9 +163,15 @@ export const SectionList = forwardRef<RNSectionList, SectionListProps>(
       PlayBarChin
     )
 
+    const areSectionsEmpty = sections.every(
+      (section) => section.data.length === 0
+    )
+
     const flatListProps = {
       ...other,
-      sections: areSectionsEmpty(sections) ? [] : sections,
+      // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
+      onRefresh: areSectionsEmpty ? undefined : other.onRefresh,
+      sections: areSectionsEmpty ? [] : sections,
       ListFooterComponent: FooterComponent
     }
 

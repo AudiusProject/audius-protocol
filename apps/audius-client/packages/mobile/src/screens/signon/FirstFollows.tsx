@@ -9,9 +9,9 @@ import type {
   FollowArtists,
   EditableField
 } from 'common/store/pages/signon/types'
-import { SafeAreaView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { SafeAreaScreen } from 'app/components/core'
 import { SuggestedFollows } from 'app/components/suggested-follows'
 import { track, make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
@@ -26,7 +26,9 @@ export type FirstFollowsProps = NativeStackScreenProps<
   SignOnStackParamList,
   'FirstFollows'
 >
-const FirstFollows = ({ navigation }: FirstFollowsProps) => {
+
+const FirstFollows = (props: FirstFollowsProps) => {
+  const { navigation } = props
   const dispatch = useDispatch()
 
   const emailField: EditableField = useSelector(getEmailField)
@@ -34,7 +36,7 @@ const FirstFollows = ({ navigation }: FirstFollowsProps) => {
   const followArtists: FollowArtists = useSelector(getFollowArtists)
   const { selectedUserIds: followedArtistIds } = followArtists
 
-  const onPressContinue = () => {
+  const handleArtistsSelected = () => {
     dispatch(signOnActions.followArtists(followArtists.selectedUserIds))
 
     track(
@@ -51,9 +53,13 @@ const FirstFollows = ({ navigation }: FirstFollowsProps) => {
   }
 
   return (
-    <SafeAreaView style={{ backgroundColor: 'white' }}>
-      <SuggestedFollows title={messages.title} onPress={onPressContinue} />
-    </SafeAreaView>
+    <SafeAreaScreen>
+      <SuggestedFollows
+        title={messages.title}
+        onArtistsSelected={handleArtistsSelected}
+        screen='sign-on'
+      />
+    </SafeAreaScreen>
   )
 }
 

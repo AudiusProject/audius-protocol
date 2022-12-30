@@ -6,30 +6,32 @@ export const usePressScaleAnimation = (
   scaleTo = 0.97,
   useNativeDriver = true
 ) => {
-  const scale = useRef(new Animated.Value(1)).current
+  const scaleAnim = useRef(new Animated.Value(1))
 
   const startPress = useCallback(() => {
-    Animated.spring(scale, {
+    if (scaleTo === null) return
+    Animated.spring(scaleAnim.current, {
       toValue: scaleTo,
       stiffness: 500,
       damping: 1,
       overshootClamping: true,
       useNativeDriver
     }).start()
-  }, [scale, scaleTo, useNativeDriver])
+  }, [scaleTo, useNativeDriver])
 
   const releasePress = useCallback(() => {
-    Animated.spring(scale, {
+    if (scaleTo === null) return
+    Animated.spring(scaleAnim.current, {
       toValue: 1,
       stiffness: 200,
       damping: 10,
       overshootClamping: true,
       useNativeDriver
     }).start()
-  }, [scale, useNativeDriver])
+  }, [scaleTo, useNativeDriver])
 
   return {
-    scale,
+    scale: scaleAnim.current,
     handlePressIn: startPress,
     handlePressOut: releasePress
   }

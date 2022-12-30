@@ -6,11 +6,11 @@ import { CardList } from 'app/components/core'
 import { ProfileCard } from './ProfileCard'
 import { ProfileCardSkeleton } from './ProfileCardSkeleton'
 
-type ListProps = Omit<CardListProps<User>, 'data' | 'renderItem'>
+type ListProps = Omit<CardListProps<User>, 'data'>
 
-type ProfileListProps = {
+export type ProfileListProps = {
   profiles: User[] | undefined
-} & ListProps
+} & Partial<ListProps>
 
 export const ProfileList = (props: ProfileListProps) => {
   const { profiles, ...other } = props

@@ -8,6 +8,10 @@ import type { BackendState } from 'audius-client/src/common/store/backend/types'
 import confirmer from 'audius-client/src/common/store/confirmer/reducer'
 import type { ConfirmerState } from 'audius-client/src/common/store/confirmer/types'
 import signOnReducer from 'audius-client/src/common/store/pages/signon/reducer'
+import type {
+  SignOnPageState,
+  SignOnPageReducer
+} from 'audius-client/src/common/store/pages/signon/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
 import type SearchBarState from 'audius-client/src/common/store/search-bar/types'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
@@ -37,7 +41,7 @@ import walletConnect from './wallet-connect/slice'
 
 export type AppState = {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
-  signOn: ReturnType<typeof signOnReducer>
+  signOn: SignOnPageState
   backend: BackendState
   confirmer: ConfirmerState
   searchBar: SearchBarState
@@ -62,7 +66,7 @@ const createRootReducer = () =>
     // These also belong in common store reducers but are here until we move them to the @audius/common package:
     backend,
     confirmer,
-    signOn: signOnReducer,
+    signOn: signOnReducer as SignOnPageReducer,
     searchBar,
 
     drawers,

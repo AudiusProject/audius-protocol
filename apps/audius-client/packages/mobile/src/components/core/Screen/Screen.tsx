@@ -4,7 +4,7 @@ import { useMemo, useEffect, useLayoutEffect } from 'react'
 import type { Nullable } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
 import { pickBy, negate, isUndefined } from 'lodash'
-import type { Animated, StyleProp, ViewStyle } from 'react-native'
+import type { Animated, StyleProp, ViewProps, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
@@ -46,6 +46,7 @@ export type ScreenProps = {
   // url used for screen view analytics
   url?: string
   variant?: 'primary' | 'secondary' | 'secondaryAlt' | 'white'
+  as?: ComponentType<ViewProps>
 }
 
 export const Screen = (props: ScreenProps) => {
@@ -61,7 +62,8 @@ export const Screen = (props: ScreenProps) => {
     topbarLeftStyle,
     url,
     variant = 'primary',
-    style
+    style,
+    as: RootComponent = View
   } = props
   const stylesConfig = useMemo(() => ({ variant }), [variant])
   const styles = useStyles(stylesConfig)
@@ -109,5 +111,5 @@ export const Screen = (props: ScreenProps) => {
     IconProps
   ])
 
-  return <View style={[styles.root, style]}>{children}</View>
+  return <RootComponent style={[styles.root, style]}>{children}</RootComponent>
 }

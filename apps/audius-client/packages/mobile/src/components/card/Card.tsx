@@ -1,11 +1,14 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import type { User } from '@audius/common'
-import type { StyleProp, ViewStyle } from 'react-native'
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 import { Text, View } from 'react-native'
+import type { LinearGradientProps } from 'react-native-linear-gradient'
 
+import type { TileProps } from 'app/components/core'
 import { Tile } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
+import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { DownloadStatusIndicator } from '../offline-downloads'
@@ -57,7 +60,12 @@ type BaseCardProps = {
   primaryText: string
   renderImage: () => ReactNode
   secondaryText?: string
+  TileProps?: Omit<TileProps<ComponentType<LinearGradientProps>>, 'children'>
   style?: StyleProp<ViewStyle>
+  styles?: StylesProp<{
+    primaryText: TextStyle
+    secondaryText: TextStyle
+  }>
 }
 
 type ProfileCardProps = {
@@ -72,7 +80,16 @@ type CollectionCardProps = {
 export type CardProps = BaseCardProps & (ProfileCardProps | CollectionCardProps)
 
 export const Card = (props: CardProps) => {
-  const { id, onPress, primaryText, renderImage, secondaryText, style } = props
+  const {
+    id,
+    onPress,
+    primaryText,
+    renderImage,
+    secondaryText,
+    style,
+    styles: stylesProp,
+    TileProps = {}
+  } = props
 
   const styles = useStyles()
 
@@ -80,6 +97,7 @@ export const Card = (props: CardProps) => {
     <Tile
       onPress={onPress}
       styles={{ root: style, content: styles.cardContent }}
+      {...TileProps}
     >
       <View style={styles.imgContainer}>
         <View style={[styles.cardImg, props.type === 'user' && styles.userImg]}>
@@ -87,14 +105,20 @@ export const Card = (props: CardProps) => {
         </View>
       </View>
       <View style={styles.textContainer}>
-        <Text numberOfLines={1} style={styles.primaryText}>
+        <Text
+          numberOfLines={1}
+          style={[styles.primaryText, stylesProp?.primaryText]}
+        >
           {primaryText}
           {props.type === 'user' ? (
             <UserBadges user={props.user} badgeSize={12} hideName />
           ) : null}
         </Text>
         <View style={styles.secondaryTextContainer}>
-          <Text numberOfLines={1} style={styles.secondaryText}>
+          <Text
+            numberOfLines={1}
+            style={[styles.secondaryText, stylesProp?.secondaryText]}
+          >
             {secondaryText}
           </Text>
           {props.type === 'collection' ? (

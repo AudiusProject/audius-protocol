@@ -25,6 +25,7 @@ export const getReferrer = (state) => state.signOn.referrer
 export const getFollowArtists = (state) => state.signOn.followArtists
 export const getFollowIds = (state) =>
   state.signOn.followArtists.selectedUserIds
+
 export const getSuggestedFollowIds = (state) => {
   const { selectedCategory, categories } = state.signOn.followArtists
   return categories[selectedCategory] || []
