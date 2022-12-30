@@ -58,6 +58,8 @@ export enum Name {
   SETTINGS_COMPLETE_TWITTER_OAUTH = 'Settings: Complete Twitter OAuth',
   SETTINGS_START_INSTAGRAM_OAUTH = 'Settings: Start Instagram OAuth',
   SETTINGS_COMPLETE_INSTAGRAM_OAUTH = 'Settings: Complete Instagram OAuth',
+  SETTINGS_START_TIKTOK_OAUTH = 'Settings: Start TikTok OAuth',
+  SETTINGS_COMPLETE_TIKTOK_OAUTH = 'Settings: Complete TikTok OAuth',
   SETTINGS_RESEND_ACCOUNT_RECOVERY = 'Settings: Resend Account Recovery',
   SETTINGS_START_CHANGE_PASSWORD = 'Settings: Start Change Password',
   SETTINGS_COMPLETE_CHANGE_PASSWORD = 'Settings: Complete Change Password',

@@ -123,7 +123,7 @@ export function instagramAuth() {
 }
 
 export function tikTokAuth() {
-  return { type: REQUEST_INSTAGRAM_AUTH }
+  return { type: REQUEST_TIKTOK_AUTH }
 }
 
 export const requestNativeOpenPopup = (
