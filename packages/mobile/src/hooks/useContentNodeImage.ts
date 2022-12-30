@@ -58,6 +58,65 @@ const createImageSourcesForEndpoints = ({
     return [...result, source]
   }, [])
 
+/**
+ * Create all the sources for an image.
+ * Includes legacy endpoints and optionally local sources
+ */
+const createAllImageSources = ({
+  cid,
+  user,
+  sizes = SquareSizes,
+  localSource
+}: {
+  cid: Nullable<CID>
+  user: Nullable<{ creator_node_endpoint: string }>
+  sizes?: typeof SquareSizes | typeof WidthSizes
+  localSource?: ImageURISource[] | null
+}) => {
+  if (!cid || !user) {
+    return []
+  }
+
+  const endpoints = user.creator_node_endpoint
+    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+        user.creator_node_endpoint
+      )
+    : []
+
+  const newImageSources = createImageSourcesForEndpoints({
+    endpoints,
+    sizes,
+    createUri: (endpoint) => (size) => `${endpoint}${cid}/${size}.jpg`
+  })
+
+  // These can be removed when all the data on Content Node has
+  // been migrated to the new path
+  const legacyImageSources = createImageSourcesForEndpoints({
+    endpoints,
+    sizes,
+    createUri: (endpoint) => () => `${endpoint}${cid}`
+  })
+
+  const sourceList = [
+    ...(localSource && localSource.length > 0 ? [localSource] : []),
+    ...newImageSources,
+    ...legacyImageSources
+  ]
+  return sourceList
+}
+
+/**
+ * Return the first image source, usually the user's primary
+ * or a local source. This is useful for cases where there is no error
+ * callback if the image fails to load - like the MusicControls on the lockscreen
+ */
+export const getImageSourceOptimistic = (
+  options: Parameters<typeof createAllImageSources>[0]
+) => {
+  const allImageSources = createAllImageSources(options)
+  return allImageSources[0]
+}
+
 type UseContentNodeImageOptions = {
   cid: Nullable<CID>
   user: Nullable<Pick<User, 'creator_node_endpoint'>>
@@ -87,44 +146,16 @@ export const useContentNodeImage = ({
   const [imageSourceIndex, setImageSourceIndex] = useState(0)
   const [failedToLoad, setFailedToLoad] = useState(false)
 
-  const endpoints = useMemo(
-    () =>
-      user?.creator_node_endpoint
-        ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-            user.creator_node_endpoint
-          )
-        : [],
-    [user?.creator_node_endpoint]
-  )
-
   // Create an array of ImageSources
   // based on the content node endpoints
   const imageSources = useMemo(() => {
-    if (!cid) {
-      return []
-    }
-
-    const newImageSources = createImageSourcesForEndpoints({
-      endpoints,
-      sizes,
-      createUri: (endpoint) => (size) => `${endpoint}${cid}/${size}.jpg`
+    return createAllImageSources({
+      cid,
+      user,
+      localSource,
+      sizes
     })
-
-    // These can be removed when all the data on Content Node has
-    // been migrated to the new path
-    const legacyImageSources = createImageSourcesForEndpoints({
-      endpoints,
-      sizes,
-      createUri: (endpoint) => () => `${endpoint}${cid}`
-    })
-
-    const sourceList = [
-      ...(localSource && localSource.length > 0 ? [localSource] : []),
-      ...newImageSources,
-      ...legacyImageSources
-    ]
-    return sourceList
-  }, [cid, endpoints, localSource, sizes])
+  }, [cid, user, localSource, sizes])
 
   const handleError = useCallback(() => {
     if (imageSourceIndex < imageSources.length - 1) {
