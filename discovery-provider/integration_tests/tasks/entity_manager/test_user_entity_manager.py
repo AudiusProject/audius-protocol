@@ -169,7 +169,10 @@ def test_index_valid_user(app, mocker):
             "events": None,
             "user_id": USER_ID_OFFSET + 1,
         },
-        "QmUpdateArtistPickTrack": {"track_id": TRACK_ID_OFFSET, "title": "track 1 update"},
+        "QmUpdateArtistPickTrack": {
+            "track_id": TRACK_ID_OFFSET,
+            "title": "track 1 update",
+        },
         "QmUpdateUser1": {
             "is_verified": False,
             "is_deactivated": False,
@@ -558,7 +561,7 @@ def test_index_invalid_users(app, mocker):
         },
         "QmInvalidArtistPick": {
             "artist_pick_track_id": TRACK_ID_OFFSET + 1,
-        }
+        },
     }
 
     entity_manager_txs = [
@@ -609,9 +612,11 @@ def test_index_invalid_users(app, mocker):
         all_users: List[User] = session.query(User).filter(User.is_current).all()
         assert len(all_users) == 2  # no new users indexed
 
-        existing_user_after_index: List[User] = session.query(User).filter(User.user_id == 1).first()
+        existing_user_after_index: List[User] = (
+            session.query(User).filter(User.user_id == 1).first()
+        )
 
-        assert existing_user == existing_user_after_index 
+        assert existing_user == existing_user_after_index
 
 
 def test_index_verify_users(app, mocker):
