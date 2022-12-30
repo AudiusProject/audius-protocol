@@ -178,7 +178,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         nethermindEncodedABI = encodedABI
       }
       relayPromises.push(
-        relayToNethermind(nethermindEncodedABI, nethermindContractAddress)
+        relayToNethermind(nethermindEncodedABI, nethermindContractAddress, gasLimit)
       )
     }
     const relayTxs = await Promise.allSettled(relayPromises)
@@ -444,7 +444,7 @@ const createAndSendTransaction = async (
 
 let inFlight = 0
 
-async function relayToNethermind(encodedABI, contractAddress) {
+async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
 
@@ -456,7 +456,7 @@ async function relayToNethermind(encodedABI, contractAddress) {
     const transaction = {
       to: contractAddress,
       value: 0,
-      gas: '100880',
+      gas: gasLimit,
       gasPrice: 0,
       data: encodedABI
     }
