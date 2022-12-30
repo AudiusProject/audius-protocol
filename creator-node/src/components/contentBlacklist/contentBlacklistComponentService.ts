@@ -3,29 +3,28 @@ const models = require('../../models')
 
 const types = models.ContentBlacklist.Types
 
-interface IBlacklistedContent {
-  trackIds: Promise<any>;
-  userIds: Promise<any>;
-  individualSegments: string[];
-  numberOfSegments: number;
-  allSegments: string[];
+type BlacklistedContent = {
+  trackIds: Promise<string[]>
+  userIds: Promise<string[]>
+  individualSegments: string[]
+  numberOfSegments: number
+  allSegments: string[]
 }
 
-interface ICBLSegments {
-  id: number;
-  type: "USER" | "TRACK" | "CID";
-  value: string;
-  createdAt: Date;
-  updatedAt: Date;
+type ICBLSegments = {
+  id: number
+  type: 'USER' | 'TRACK' | 'CID'
+  value: string
+  createdAt: Date
+  updatedAt: Date
 }
-
 
 const getAllTrackIds = async (): Promise<number[]> => {
   const resp = await BlacklistManager.getAllTrackIds()
   return resp.map((trackId: string) => parseInt(trackId))
 }
 
-const getAllContentBlacklist = async (): Promise<IBlacklistedContent> => {
+const getAllContentBlacklist = async (): Promise<BlacklistedContent> => {
   // Segments stored in the ContentBlacklist may not be associated with a track
   const segmentsFromCBL = await models.ContentBlacklist.findAll({
     attributes: ['value'],
@@ -34,7 +33,7 @@ const getAllContentBlacklist = async (): Promise<IBlacklistedContent> => {
     },
     raw: true
   })
-  const individuallyBlacklistedSegments  = segmentsFromCBL.map(
+  const individuallyBlacklistedSegments = segmentsFromCBL.map(
     (entry: ICBLSegments): string => entry.value
   )
   const allSegments = await BlacklistManager.getAllCIDs()
@@ -49,11 +48,23 @@ const getAllContentBlacklist = async (): Promise<IBlacklistedContent> => {
   return blacklistedContent
 }
 
-const addToContentBlacklist = async ({ type, values }: { type: ICBLSegments['type'], values: ICBLSegments['value'] }): Promise<void> => {
+const addToContentBlacklist = async ({
+  type,
+  values
+}: {
+  type: ICBLSegments['type']
+  values: ICBLSegments['value']
+}): Promise<void> => {
   await BlacklistManager.add({ type, values })
 }
 
-const removeFromContentBlacklist = async ({ type, values }: { type: ICBLSegments['type'], values: ICBLSegments['value'] }): Promise<void> => {
+const removeFromContentBlacklist = async ({
+  type,
+  values
+}: {
+  type: ICBLSegments['type']
+  values: ICBLSegments['value']
+}): Promise<void> => {
   await BlacklistManager.remove({ type, values })
 }
 
