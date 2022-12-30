@@ -10,7 +10,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderRadius: 1000,
     borderWidth: 2,
     borderStyle: 'solid',
-    borderColor: palette.white,
+    borderColor: palette.neutralLight9,
     overflow: 'hidden',
     backgroundColor: palette.neutralLight6
   }
@@ -30,9 +30,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       user={profile}
       styles={{
         ...stylesProp,
-        root: {
-          ...styles.profilePhoto
-        }
+        root: [styles.profilePhoto, stylesProp?.root]
       }}
       {...other}
     />

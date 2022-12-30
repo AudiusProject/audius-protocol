@@ -60,6 +60,13 @@ export default interface SignOnPageState {
   followArtists: FollowArtists
 }
 
+export type { SignOnPageState }
+
+export type SignOnPageReducer = (
+  state: SignOnPageState,
+  action: unknown
+) => SignOnPageState
+
 export enum Pages {
   SIGNIN = 'SIGNIN',
   EMAIL = 'EMAIL',

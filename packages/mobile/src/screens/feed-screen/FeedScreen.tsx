@@ -10,7 +10,7 @@ import {
 import type { FollowArtists } from 'audius-client/src/common/store/pages/signon/types'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getFollowArtists } from 'common/store/pages/signon/selectors'
-import { Dimensions, View } from 'react-native'
+import { Dimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconFeed from 'app/assets/images/iconFeed.svg'
@@ -27,7 +27,7 @@ const { makeGetLineupMetadatas } = lineupSelectors
 
 const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
-const dimensions = Dimensions.get('window')
+const { height } = Dimensions.get('window')
 
 const messages = {
   header: 'Your Feed',
@@ -48,7 +48,7 @@ export const FeedScreen = () => {
   )
 
   const followArtists: FollowArtists = useSelector(getFollowArtists)
-  const onPressFollow = () => {
+  const handleArtistsSelected = () => {
     // Set eager users and refetch lineup
     dispatch(signOnActions.followArtists(followArtists.selectedUserIds))
     dispatch(feedActions.fetchLineupMetadatas())
@@ -74,12 +74,12 @@ export const FeedScreen = () => {
           delineate
           selfLoad
           LineupEmptyComponent={
-            <View style={{ height: dimensions.height - 200 }}>
-              <SuggestedFollows
-                title={messages.emptyFeed}
-                onPress={onPressFollow}
-              />
-            </View>
+            <SuggestedFollows
+              style={{ height: height - 220 }}
+              title={messages.emptyFeed}
+              onArtistsSelected={handleArtistsSelected}
+              screen='feed'
+            />
           }
           actions={feedActions}
           lineupSelector={getFeedLineup}

@@ -17,6 +17,7 @@ export type CardListProps<ItemT> = FlatListProps<ItemT> & {
   isLoading?: boolean
   LoadingCardComponent?: ComponentType
   disableTopTabScroll?: boolean
+  FlatListComponent?: ComponentType<FlatListProps<ItemT | LoadingCard>>
 }
 
 type LoadingCard = { _loading: true }
@@ -48,6 +49,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
     data: dataProp,
     isLoading: isLoadingProp,
     LoadingCardComponent = DefaultLoadingCard,
+    FlatListComponent = FlatList,
     ...other
   } = props
 
@@ -94,7 +96,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
   )
 
   return (
-    <FlatList
+    <FlatListComponent
       ref={ref}
       data={data}
       renderItem={handleRenderItem}

@@ -2,7 +2,9 @@ import {
   Name,
   signOutActions,
   accountActions,
-  feedPageLineupActions
+  feedPageLineupActions,
+  themeActions,
+  Theme
 } from '@audius/common'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { getIsSetup } from 'audius-client/src/common/store/backend/selectors'
@@ -20,6 +22,7 @@ import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
 const { signOut: signOutAction } = signOutActions
+const { setTheme } = themeActions
 
 const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY]
 
@@ -48,6 +51,7 @@ function* signOut() {
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)
   }
+  yield* put(setTheme({ theme: Theme.DEFAULT }))
   // On web we reload the page to get the app into a state
   // where it is acting like first-load. On mobile, in order to
   // get the same behavior, call to set up the backend again,

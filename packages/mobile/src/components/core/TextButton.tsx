@@ -1,8 +1,10 @@
 import type { ComponentType } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
 import { merge } from 'lodash'
 import type {
   ButtonProps,
+  GestureResponderEvent,
   TextStyle,
   TouchableOpacityProps,
   ViewStyle
@@ -30,6 +32,11 @@ const useStyles = makeStyles<Pick<TextButtonProps, 'variant'>>(
           fill: palette.secondary
         }
       },
+      neutral: {
+        icon: {
+          fill: palette.neutral
+        }
+      },
       neutralLight4: {
         icon: {
           fill: palette.neutralLight4
@@ -41,7 +48,8 @@ const useStyles = makeStyles<Pick<TextButtonProps, 'variant'>>(
       root: { flexDirection: 'row' as const, alignItems: 'center' as const },
       iconLeft: { marginRight: spacing(1) },
       iconRight: { marginLeft: spacing(1) },
-      disabled: { color: palette.neutralLight7 }
+      disabled: { color: palette.neutralLight7 },
+      activeUnderline: { textDecorationLine: 'underline' }
     }
 
     return merge(baseStyles, variantStyles[variant])
@@ -50,7 +58,8 @@ const useStyles = makeStyles<Pick<TextButtonProps, 'variant'>>(
 
 export type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
-    variant: 'primary' | 'secondary' | 'neutralLight4'
+    activeUnderline?: boolean
+    variant: 'primary' | 'secondary' | 'neutral' | 'neutralLight4'
     icon?: ComponentType<SvgProps>
     iconPosition?: 'left' | 'right'
     TextProps?: Partial<TextProps>
@@ -62,6 +71,7 @@ export type TextButtonProps = TouchableOpacityProps &
 
 export const TextButton = (props: TextButtonProps) => {
   const {
+    activeUnderline,
     title,
     variant,
     icon: Icon,
@@ -72,9 +82,14 @@ export const TextButton = (props: TextButtonProps) => {
     TextProps,
     IconProps,
     styles: stylesProp,
+    onPressIn,
+    onPressOut,
     ...other
   } = props
-  const styles = useStyles({ variant })
+
+  const styleConfig = useMemo(() => ({ variant }), [variant])
+  const styles = useStyles(styleConfig)
+  const [isPressing, setIsPressing] = useState(false)
 
   const showDisabledColor = disabled && showDisabled
 
@@ -92,16 +107,38 @@ export const TextButton = (props: TextButtonProps) => {
     />
   ) : null
 
+  const handlePressIn = useCallback(
+    (event: GestureResponderEvent) => {
+      setIsPressing(true)
+      onPressIn?.(event)
+    },
+    [onPressIn]
+  )
+
+  const handlePressOut = useCallback(
+    (event: GestureResponderEvent) => {
+      setIsPressing(false)
+      onPressOut?.(event)
+    },
+    [onPressOut]
+  )
+
   return (
     <TouchableOpacity
       style={[styles.root, stylesProp?.root, style]}
       disabled={disabled}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       {...other}
     >
       {iconPosition === 'left' ? icon : null}
       <Text
         color={variant}
-        style={[stylesProp?.text, showDisabledColor && styles.disabled]}
+        style={[
+          stylesProp?.text,
+          showDisabledColor && styles.disabled,
+          activeUnderline && isPressing && styles.activeUnderline
+        ]}
         {...TextProps}
       >
         {title}
