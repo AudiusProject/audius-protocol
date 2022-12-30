@@ -77,14 +77,14 @@ def add_playlist_added_timestamps(playlist):
 
 def add_user_artwork(user):
     # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user["cover_photo"]
-    user["profile_picture_legacy"] = user["profile_picture"]
+    user["cover_photo_legacy"] = user.get("cover_photo")
+    user["profile_picture_legacy"] = user.get("profile_picture")
 
     endpoint = get_primary_endpoint(user)
     if not endpoint:
         return user
-    cover_cid = user["cover_photo_sizes"]
-    profile_cid = user["profile_picture_sizes"]
+    cover_cid = user.get("cover_photo_sizes")
+    profile_cid = user.get("profile_picture_sizes")
     if profile_cid:
         profile = {
             "150x150": make_image(endpoint, profile_cid, 150, 150),
