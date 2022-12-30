@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -31,27 +30,16 @@ export type RootScreenParamList = {
 
 const Stack = createNativeStackNavigator()
 
-type RootScreenProps = {
-  isReadyToSetupBackend: boolean
-}
-
 /**
  * The top level navigator. Switches between sign on screens and main tab navigator
  * based on if the user is authed
  */
-export const RootScreen = ({ isReadyToSetupBackend }: RootScreenProps) => {
+export const RootScreen = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
   const hasAccount = useSelector(getHasAccount)
   const { updateRequired } = useUpdateRequired()
   const [isLoaded, setIsLoaded] = useState(false)
-
-  useEffect(() => {
-    // Setup the backend when ready
-    if (isReadyToSetupBackend) {
-      dispatch(setupBackend())
-    }
-  }, [dispatch, isReadyToSetupBackend])
 
   useAppState(
     () => dispatch(enterForeground()),

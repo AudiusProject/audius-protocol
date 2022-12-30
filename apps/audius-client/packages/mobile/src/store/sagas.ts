@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
-import backendSagas from 'common/store/backend/sagas'
+import backendSagas, { setupBackend } from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
@@ -68,6 +68,7 @@ import themeSagas from './theme/sagas'
 import walletsSagas from './wallet-connect/sagas'
 
 export default function* rootSaga() {
+  yield* fork(setupBackend)
   const sagas = [
     // Config
     ...backendSagas(),
