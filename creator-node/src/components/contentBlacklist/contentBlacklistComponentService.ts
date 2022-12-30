@@ -5,7 +5,7 @@ const types = models.ContentBlacklist.Types
 
 type BlacklistedContent = {
   trackIds: Promise<string[]>
-  userIds: Promise<string[]>
+  userIds: Promise<number[]>
   individualSegments: string[]
   numberOfSegments: number
   allSegments: string[]
