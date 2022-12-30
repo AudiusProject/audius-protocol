@@ -212,7 +212,7 @@ def extend_track(track):
         track["favorite_count"] = track["save_count"]
 
     track["is_streamable"] = (
-        not track["is_delete"] and not track["user"]["is_deactivated"]
+        not track["is_delete"] and not track["user"].get("is_deactivated")
     )
 
     duration = 0.0
