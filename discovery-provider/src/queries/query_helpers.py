@@ -1288,7 +1288,7 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
         user_map[user["user_id"]] = user
 
     for track in tracks:
-        user = user_map[track["owner_id"]]
+        user = user_map.get(track["owner_id"])
         if user:
             track["user"] = user
 
