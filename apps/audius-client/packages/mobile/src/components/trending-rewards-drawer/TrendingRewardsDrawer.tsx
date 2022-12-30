@@ -52,12 +52,6 @@ const messages = {
   buttonTextUnderground: 'Underground Trending Tracks'
 }
 
-const TRENDING_PAGES = {
-  tracks: ['trending'] as const,
-  playlists: ['explore', { screen: 'TrendingPlaylists' as const }] as const,
-  underground: ['explore', { screen: 'TrendingUnderground' as const }] as const
-}
-
 const textMap = {
   playlists: {
     modalTitle: messages.playlistsModalTitle,
@@ -190,8 +184,20 @@ export const TrendingRewardsDrawer = () => {
   ]
 
   const handleGoToTrending = useCallback(() => {
-    const [screen, params] = TRENDING_PAGES[modalType]
-    navigation.navigate(screen, params!)
+    switch (modalType) {
+      case 'tracks': {
+        navigation.navigate('trending', { screen: 'Trending' })
+        break
+      }
+      case 'playlists': {
+        navigation.navigate('explore', { screen: 'TrendingPlaylists' })
+        break
+      }
+      case 'underground': {
+        navigation.navigate('explore', { screen: 'TrendingUnderground' })
+        break
+      }
+    }
     onClose()
   }, [modalType, navigation, onClose])
 

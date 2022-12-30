@@ -40,10 +40,13 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
 
   const handlePress = useCallback(() => {
     if (profile) {
-      navigation[navigationType]('Profile', {
+      const screen = 'Profile'
+      const params = {
         handle: profile.handle,
         fromNotifications: true
-      })
+      }
+      if (navigationType === 'push') navigation.push(screen, params)
+      if (navigationType === 'navigate') navigation.navigate(screen, params)
     }
   }, [navigation, navigationType, profile])
 

@@ -64,10 +64,8 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
   const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handlePress = useCallback(() => {
-    navigation.navigate(to, {
-      fromAppDrawer: true,
-      ...(params as AppTabScreenParamList[Screen])
-    })
+    // @ts-expect-error navigation not smart enough here
+    navigation.navigate(to, { fromAppDrawer: true, ...params })
     drawerHelpers.closeDrawer()
   }, [navigation, to, params, drawerHelpers])
 

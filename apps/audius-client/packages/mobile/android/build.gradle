@@ -32,7 +32,11 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenCentral()
+        mavenCentral { 
+          content {
+            excludeGroup "com.facebook.react"
+          }
+        }
         mavenLocal()
         jcenter()
         maven {
