@@ -22,7 +22,7 @@ def make_image(endpoint, cid, width="", height=""):
 
 
 def get_primary_endpoint(user):
-    raw_endpoint = user["creator_node_endpoint"]
+    raw_endpoint = user.get("creator_node_endpoint")
     if not raw_endpoint:
         return ""
     return raw_endpoint.split(",")[0]
