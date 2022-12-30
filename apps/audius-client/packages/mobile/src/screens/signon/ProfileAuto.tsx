@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { FeatureFlags, formatTikTokProfile } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
@@ -14,14 +14,14 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconImage from 'app/assets/images/iconImage.svg'
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
-import { Button, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { SocialButton } from 'app/components/social-button'
+import { TikTokAuthButton } from 'app/components/tiktok-auth'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
@@ -58,13 +58,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   socialButtonContainer: {
     marginBottom: spacing(2)
-  },
-  socialButton: {
-    padding: spacing(3),
-    height: 64
-  },
-  buttonText: {
-    fontSize: 20
   },
   tile: {
     width: '100%',
@@ -169,12 +162,6 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
   const { isEnabled: isTikTokEnabled } = useFeatureFlag(
     FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
   )
-  const withTikTokAuth = useTikTokAuth({
-    onError: (error) => {
-      dispatch(oauthActions.setTikTokError(error))
-    }
-  })
-
   const [isLoading, setIsLoading] = useState(false)
   const [hasNavigatedAway, setHasNavigatedAway] = useState(false)
   const [didValidateHandle, setDidValidateHandle] = useState(false)
@@ -379,45 +366,6 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
 
   const handleTikTokPress = () => {
     setIsLoading(true)
-
-    withTikTokAuth(async (accessToken: string) => {
-      try {
-        // Using TikTok v1 api because v2 does not have CORS headers set
-        const result = await fetch(
-          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              fields: [
-                'open_id',
-                'username',
-                'display_name',
-                'avatar_large_url',
-                'is_verified'
-              ]
-            })
-          }
-        )
-
-        const resultJson = await result.json()
-        const tikTokProfile = resultJson.data.user
-
-        const { profile, profileImage, requiresUserReview } =
-          await formatTikTokProfile(tikTokProfile, async (image: File) => image)
-
-        dispatch(
-          oauthActions.setTikTokInfo(
-            tikTokProfile.open_id,
-            profile,
-            profileImage,
-            requiresUserReview
-          )
-        )
-      } catch (e) {
-        console.log(e)
-      }
-    })
-
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_TIKTOK,
@@ -431,16 +379,6 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
       setIsLoading(false)
     }
   }, [abandoned])
-
-  const socialButtonStyles = useMemo(
-    () => ({
-      icon: { height: 20, width: 20, marginRight: 12 },
-      button: [styles.socialButton],
-      root: styles.socialButtonContainer,
-      text: styles.buttonText
-    }),
-    [styles]
-  )
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -476,31 +414,25 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
               </View>
             </View>
 
-            <Button
+            <SocialButton
               color={'#1BA1F1'}
               fullWidth
               icon={IconTwitter}
-              iconPosition={'left'}
               onPress={handleTwitterPress}
-              styles={socialButtonStyles}
+              styles={{ root: styles.socialButtonContainer }}
               title={messages.twitterButton}
             />
-            <Button
+            <SocialButton
               fullWidth
               icon={IconInstagram}
-              iconPosition={'left'}
               onPress={handleInstagramPress}
-              styles={socialButtonStyles}
+              styles={{ root: styles.socialButtonContainer }}
               title={messages.instagramButton}
             />
             {isTikTokEnabled ? (
-              <Button
-                color={'#FE2C55'}
-                fullWidth
-                icon={IconTikTok}
-                iconPosition={'left'}
+              <TikTokAuthButton
                 onPress={handleTikTokPress}
-                styles={socialButtonStyles}
+                styles={{ root: styles.socialButtonContainer }}
                 title={messages.tiktokButton}
               />
             ) : null}
