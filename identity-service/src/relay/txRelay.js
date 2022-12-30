@@ -178,7 +178,11 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         nethermindEncodedABI = encodedABI
       }
       relayPromises.push(
-        relayToNethermind(nethermindEncodedABI, nethermindContractAddress, gasLimit)
+        relayToNethermind(
+          nethermindEncodedABI,
+          nethermindContractAddress,
+          gasLimit
+        )
       )
     }
     const relayTxs = await Promise.allSettled(relayPromises)
