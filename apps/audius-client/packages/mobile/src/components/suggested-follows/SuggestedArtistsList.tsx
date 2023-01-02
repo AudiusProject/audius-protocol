@@ -35,7 +35,7 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
     const users = state.users.entries
 
     return suggestedFollowsForCategory
-      ?.map((suggestedUserId) => users[suggestedUserId].metadata)
+      ?.map((suggestedUserId) => users[suggestedUserId]?.metadata)
       .filter(removeNullable)
   }, [])
 
