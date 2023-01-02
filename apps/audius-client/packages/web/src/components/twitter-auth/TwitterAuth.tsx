@@ -2,6 +2,12 @@ import { CSSProperties, MouseEventHandler, ReactNode } from 'react'
 
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
+import { TwitterProfile } from '@audius/common'
+
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+
+const REQUEST_TOKEN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter`
+const LOGIN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter/callback`
 
 export type TwitterAuthProps = {
   children?: ReactNode
@@ -11,11 +17,9 @@ export type TwitterAuthProps = {
   dialogHeight?: number
   dialogWidth?: number
   forceLogin?: boolean
-  loginUrl: string
-  onClick: () => void
+  onClick?: () => void
   onFailure: (error: any) => void
-  onSuccess: (response: Body) => void
-  requestTokenUrl: string
+  onSuccess: (uuid: string, profile: TwitterProfile) => void
   screenName?: string
   style?: CSSProperties
   text?: string
@@ -34,11 +38,9 @@ const TwitterAuth = (props: TwitterAuthProps) => {
     dialogHeight = 400,
     dialogWidth = 600,
     forceLogin = false,
-    loginUrl,
     onClick,
     onFailure,
     onSuccess,
-    requestTokenUrl,
     screenName,
     style,
     text = messages.signIn
@@ -58,7 +60,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
     const popup = openPopup()
 
     return window
-      .fetch(requestTokenUrl, {
+      .fetch(REQUEST_TOKEN_URL, {
         method: 'POST',
         credentials,
         headers: getHeaders()
@@ -141,7 +143,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
   const getOauthToken = (oAuthVerifier: string, oauthToken: string) => {
     return window
       .fetch(
-        `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
+        `${LOGIN_URL}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
         {
           method: 'POST',
           credentials,
@@ -152,7 +154,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
         if (!response.ok) {
           response.json().then((json) => onFailure(json.error))
         }
-        onSuccess(response)
+        response.json().then(({ uuid, profile }) => onSuccess(uuid, profile))
       })
       .catch((error) => {
         return onFailure(error)

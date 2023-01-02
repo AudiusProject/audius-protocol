@@ -7,15 +7,14 @@ export type AccountCollection = {
   user: { id: ID; handle: string }
 }
 
-export type TwitterAccountPayload = {
+type AccountPayload<Profile> = {
   uuid: string
-  profile: TwitterProfile
+  profile: Profile
 }
 
-export type InstagramAccountPayload = {
-  uuid: string
-  profile: InstagramProfile
-}
+export type TwitterAccountPayload = AccountPayload<TwitterProfile>
+export type InstagramAccountPayload = AccountPayload<InstagramProfile>
+export type TikTokAccountPayload = AccountPayload<TikTokProfile>
 
 export type InstagramProfile = {
   id: string

@@ -4,18 +4,18 @@ import {
   BooleanKeys,
   FeatureFlags,
   InstagramProfile,
-  TikTokProfile
+  TikTokProfile,
+  TwitterProfile
 } from '@audius/common'
 import { IconImage, IconUser, IconVerified } from '@audius/stems'
 import cn from 'classnames'
 import { Transition } from 'react-spring/renderprops'
 
-import InstagramButton from 'components/instagram-button/InstagramButton'
+import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { TikTokButton } from 'components/tiktok-button/TikTokButton'
-import TwitterAuthButton from 'components/twitter-auth/TwitterAuthButton'
+import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
+import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
-import { useTikTokAuth } from 'hooks/useTikTokAuth'
 
 import styles from './CompleteProfileWithSocial.module.css'
 
@@ -43,8 +43,9 @@ export type CompleteProfileWithSocialProps = {
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => Promise<void>
   onInstagramStart: () => void
   onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
+  onTikTokStart: () => void
   onToggleVisible: () => void
-  onTwitterLogin: (res: Body) => Promise<void>
+  onTwitterLogin: (uuid: string, profile: TwitterProfile) => Promise<void>
   onTwitterStart: () => void
   showCompleteProfileWithSocial: boolean
 }
@@ -60,6 +61,7 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
     onInstagramLogin,
     onInstagramStart,
     onTikTokLogin,
+    onTikTokStart,
     onToggleVisible,
     onTwitterLogin,
     onTwitterStart,
@@ -70,50 +72,20 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
   )
   const displayInstagram = useRemoteVar(displayInstagramRemoteVarKey)
 
-  const withTikTokAuth = useTikTokAuth({
-    onError: onFailure
-  })
-
-  const onClickTwitter = () => {
+  const handleClickTwitter = useCallback(() => {
     onTwitterStart()
     onClick()
-  }
+  }, [onTwitterStart, onClick])
 
-  const onClickInstagram = () => {
+  const handleClickInstagram = useCallback(() => {
     onInstagramStart()
     onClick()
-  }
+  }, [onInstagramStart, onClick])
 
   const handleClickTikTok = useCallback(() => {
+    onTikTokStart()
     onClick()
-    withTikTokAuth(async (accessToken: string) => {
-      try {
-        // Using TikTok v1 api because v2 does not have CORS headers set
-        const result = await fetch(
-          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              fields: [
-                'open_id',
-                'username',
-                'display_name',
-                'avatar_url',
-                'avatar_large_url',
-                'profile_deep_link',
-                'is_verified'
-              ]
-            })
-          }
-        )
-        const resultJson = await result.json()
-        const tikTokProfile = resultJson.data.user
-        onTikTokLogin(tikTokProfile.open_id, tikTokProfile)
-      } catch (e) {
-        console.log(e)
-      }
-    })
-  }, [withTikTokAuth, onTikTokLogin, onClick])
+  }, [onTikTokStart, onClick])
 
   return (
     <Transition
@@ -176,32 +148,25 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
                 </div>
                 <div className={styles.buttonContainer}>
                   <TwitterAuthButton
-                    className={styles.socialButton}
-                    textLabel={messages.twitterButton}
-                    textClassName={styles.btnText}
-                    iconClassName={styles.btnIcon}
-                    onClick={onClickTwitter}
-                    onSuccess={onTwitterLogin}
+                    onClick={handleClickTwitter}
                     onFailure={onFailure}
+                    onSuccess={onTwitterLogin}
+                    text={messages.twitterButton}
                   />
                   {displayInstagram && (
-                    <InstagramButton
-                      className={styles.socialButton}
-                      textClassName={styles.btnText}
-                      iconClassName={styles.btnIcon}
-                      onClick={onClickInstagram}
+                    <InstagramAuthButton
+                      onClick={handleClickInstagram}
+                      onFailure={onFailure}
                       onSuccess={onInstagramLogin}
                       text={messages.instagramButton}
-                      onFailure={onFailure}
                     />
                   )}
                   {isTikTokEnabled ? (
-                    <TikTokButton
-                      className={styles.socialButton}
-                      textClassName={styles.btnText}
-                      iconClassName={styles.btnIcon}
-                      text={messages.tiktokButton}
+                    <TikTokAuthButton
                       onClick={handleClickTikTok}
+                      onFailure={onFailure}
+                      onSuccess={onTikTokLogin}
+                      text={messages.tiktokButton}
                     />
                   ) : null}
                 </div>

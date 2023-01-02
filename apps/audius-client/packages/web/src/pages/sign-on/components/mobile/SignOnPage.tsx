@@ -70,6 +70,7 @@ export type SignOnProps = {
   ) => void
   recordInstagramStart: () => void
   recordTwitterStart: () => void
+  recordTikTokStart: () => void
   validateHandle: (
     handle: string,
     isOauthVerified: boolean,
@@ -116,6 +117,7 @@ const SignOnPage = ({
   setInstagramProfile,
   setTikTokProfile,
   recordTwitterStart,
+  recordTikTokStart,
   recordInstagramStart,
   validateHandle,
   onAddFollows,
@@ -221,6 +223,7 @@ const SignOnPage = ({
           profileImage={profileImage}
           recordInstagramStart={recordInstagramStart}
           recordTwitterStart={recordTwitterStart}
+          recordTikTokStart={recordTikTokStart}
           setInstagramProfile={setInstagramProfile}
           setProfileImage={onSetProfileImage}
           setTikTokProfile={setTikTokProfile}

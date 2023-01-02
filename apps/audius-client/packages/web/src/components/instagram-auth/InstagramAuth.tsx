@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = process.env.REACT_APP_INSTAGRAM_APP_ID
@@ -12,6 +13,7 @@ const INSTAGRAM_REDIRECT_URL =
 const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
   INSTAGRAM_REDIRECT_URL
 )}&scope=user_profile,user_media&response_type=code`
+const GET_USER_URL = `${audiusBackendInstance.identityServiceUrl}/instagram`
 
 // Instagram User profile fields to capture
 const igUserFields = [
@@ -33,7 +35,6 @@ const igUserFields = [
 export type InstagramAuthProps = {
   dialogWidth?: number
   dialogHeight?: number
-  getUserUrl: string
   onClick?: () => void
   onSuccess: (uuid: string, profile: any) => void
   onFailure: (error: any) => void
@@ -47,7 +48,6 @@ export type InstagramAuthProps = {
 const InstagramAuth = ({
   dialogWidth = 400,
   dialogHeight = 740,
-  getUserUrl,
   onClick = () => {},
   onSuccess = (uuid: string, profile: any) => {},
   onFailure = () => {},
@@ -70,7 +70,7 @@ const InstagramAuth = ({
     async (code: string) => {
       try {
         // Fetch the profile from the graph API
-        const profileResp = await window.fetch(getUserUrl, {
+        const profileResp = await window.fetch(GET_USER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code })
@@ -92,7 +92,7 @@ const InstagramAuth = ({
         Sentry.captureException(`Instagram getProfile failed with ${err}`)
       }
     },
-    [getUserUrl, onSuccess, onFailure]
+    [onSuccess, onFailure]
   )
 
   const polling = useCallback(

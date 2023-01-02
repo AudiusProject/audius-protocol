@@ -238,7 +238,6 @@ const ProfileForm = (props: ProfileFormProps) => {
                   onFailure={console.log}
                   onSuccess={onInstagramLogin}
                   className={styles.hideTwitterButton}
-                  getUserUrl={`${audiusBackendInstance.identityServiceUrl}/instagram`}
                 >
                   {messages.completeWithInstagram}
                 </InstagramAuth>
