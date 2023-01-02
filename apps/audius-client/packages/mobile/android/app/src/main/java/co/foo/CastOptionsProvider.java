@@ -1,4 +1,4 @@
-package com.foo;
+package co.foo;
 
 import android.content.Context;
 import com.google.android.gms.cast.framework.CastOptions;
