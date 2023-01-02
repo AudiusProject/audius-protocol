@@ -138,7 +138,7 @@ class PushNotifications {
   }
 
   cancelNotif() {
-    PushNotification.cancelLocalNotifications({ id: '' + this.lastId })
+    PushNotification.cancelLocalNotification('' + this.lastId)
   }
 
   cancelAll() {

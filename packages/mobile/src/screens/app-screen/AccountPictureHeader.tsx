@@ -3,9 +3,10 @@ import {
   useAccountHasClaimableRewards,
   StringKeys
 } from '@audius/common'
+import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import type { Node } from 'react-native-reanimated'
+import type { Adaptable } from 'react-native-reanimated'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
@@ -40,20 +41,23 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type AccountPictureHeaderProps = {
   onPress: () => void
-  drawerProgress: Node<number>
 }
 
 export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
-  const { onPress, drawerProgress } = props
+  const { onPress } = props
+  const drawerProgress = useDrawerProgress()
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
 
-  const opacity = Animated.interpolate(drawerProgress, {
-    inputRange: [0, 1],
-    outputRange: [1, 0]
-  })
+  const opacity = Animated.interpolateNode(
+    drawerProgress as Adaptable<number>,
+    {
+      inputRange: [0, 1],
+      outputRange: [1, 0]
+    }
+  )
 
   return (
     <Animated.View style={{ opacity }}>

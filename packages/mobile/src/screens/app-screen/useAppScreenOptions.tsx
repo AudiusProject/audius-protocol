@@ -2,7 +2,6 @@ import { useCallback, useContext } from 'react'
 
 import { FeatureFlags, notificationsActions } from '@audius/common'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
-import { useDrawerProgress } from '@react-navigation/drawer'
 import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
@@ -97,7 +96,6 @@ export const useAppScreenOptions = (
   }, [navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
-  const drawerProgress = useDrawerProgress()
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
@@ -133,10 +131,7 @@ export const useAppScreenOptions = (
             }
             return (
               <View style={[styles.headerLeft, { marginLeft: 0 }]}>
-                <AccountPictureHeader
-                  drawerProgress={drawerProgress}
-                  onPress={handlePressNotification}
-                />
+                <AccountPictureHeader onPress={handlePressNotification} />
               </View>
             )
           },
@@ -187,8 +182,7 @@ export const useAppScreenOptions = (
         styles,
         neutralLight4,
         overrides,
-        isEarlyAccess,
-        drawerProgress
+        isEarlyAccess
       ]
     )
 
