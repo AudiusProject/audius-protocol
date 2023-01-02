@@ -17,7 +17,8 @@ import {
   accountActions,
   TwitterProfile,
   signOutActions,
-  musicConfettiActions
+  musicConfettiActions,
+  TikTokProfile
 } from '@audius/common'
 import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -167,6 +168,7 @@ class SettingsPage extends PureComponent<
       getPushNotificationSettings,
       onTwitterLogin,
       onInstagramLogin,
+      onTikTokLogin,
       toggleNotificationSetting,
       togglePushNotificationSetting,
       updateEmailFrequency,
@@ -201,6 +203,7 @@ class SettingsPage extends PureComponent<
       getNotificationSettings,
       getPushNotificationSettings,
       onTwitterLogin,
+      onTikTokLogin,
       toggleNotificationSetting,
       toggleBrowserPushNotificationPermissions:
         this.toggleBrowserPushNotificationPermissions,
@@ -251,6 +254,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(accountActions.twitterLogin({ uuid, profile })),
     onInstagramLogin: (uuid: string, profile: InstagramProfile) =>
       dispatch(accountActions.instagramLogin({ uuid, profile })),
+    onTikTokLogin: (uuid: string, profile: TikTokProfile) =>
+      dispatch(accountActions.tikTokLogin({ uuid, profile })),
     subscribeBrowserPushNotifications: () =>
       dispatch(accountActions.subscribeBrowserPushNotifications()),
     setBrowserNotificationSettingsOn: () =>

@@ -87,25 +87,6 @@
   margin-bottom: 16px;
 }
 
-/* Twitter Button */
-.socialButton {
-  width: 100%;
-  margin-bottom: 8px;
-  height: 64px !important;
-}
-
-.socialButton svg {
-  height: 20px !important;
-  width: 20px !important;
-}
-
-.socialButton .btnText {
-  color: var(--white);
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.15px;
-}
-
 .verified {
   height: 14px;
   width: 14px;

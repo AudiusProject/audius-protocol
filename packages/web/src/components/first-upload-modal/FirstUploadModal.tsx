@@ -13,7 +13,7 @@ import { Dispatch } from 'redux'
 import { useRecord, make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
-import TwitterButton from 'components/twitter-button/TwitterButton'
+import { TwitterButton } from 'components/social-button'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
@@ -111,10 +111,9 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
             <div className={styles.text}>{messages.deal}</div>
             <div className={styles.text}>{messages.share}</div>
             <TwitterButton
-              size='large'
               onClick={onShare}
               className={styles.tweetButton}
-              textLabel={messages.shareButton}
+              text={messages.shareButton}
             />
           </div>
         </div>

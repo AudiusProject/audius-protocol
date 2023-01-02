@@ -112,6 +112,7 @@ export type SignOnProps = {
   onConfigureWithMetaMask: () => void
   recordTwitterStart: () => void
   recordInstagramStart: () => void
+  recordTikTokStart: () => void
   suggestedFollows: User[]
   onSelectArtistCategory: (category: FollowArtistsCategory) => void
   onEmailSubmitted: (email: string) => void
@@ -179,6 +180,7 @@ const SignOnPage = ({
   suggestedFollows: suggestedFollowEntries,
   recordTwitterStart,
   recordInstagramStart,
+  recordTikTokStart,
   onSelectArtistCategory,
   onEmailSubmitted
 }: SignOnProps) => {
@@ -288,6 +290,7 @@ const SignOnPage = ({
           profileImage={profileImage}
           recordInstagramStart={recordInstagramStart}
           recordTwitterStart={recordTwitterStart}
+          recordTikTokStart={recordTikTokStart}
           setInstagramProfile={setInstagramProfile}
           setProfileImage={onSetProfileImage}
           setTikTokProfile={setTikTokProfile}

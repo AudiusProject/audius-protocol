@@ -1,3 +1,8 @@
+.modalBodyStyle {
+  width: 400px;
+  max-width: 400px;
+}
+
 .container {
   border-top: 1px solid var(--neutral-light-8);
   padding: 24px 20px;
@@ -14,11 +19,8 @@
 .btnContainer {
   margin-top: 16px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-}
-
-.twitterClassName {
-  margin-right: 24px;
 }
 
 .error {

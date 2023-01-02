@@ -10,6 +10,7 @@ import { Status } from '../../models/Status'
 import {
   AccountCollection,
   InstagramAccountPayload,
+  TikTokAccountPayload,
   TwitterAccountPayload
 } from './types'
 type FailureReason = 'ACCOUNT_DEACTIVATED' | 'ACCOUNT_NOT_FOUND' | 'LIBS_ERROR'
@@ -130,6 +131,7 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<InstagramAccountPayload>
     ) => {},
+    tikTokLogin: (_state, _action: PayloadAction<TikTokAccountPayload>) => {},
     showPushNotificationConfirmation: () => {},
     resetAccount: () => {
       return initialState
@@ -142,30 +144,31 @@ const slice = createSlice({
 })
 
 export const {
+  addAccountPlaylist,
   fetchAccount,
-  fetchLocalAccount,
-  fetchAccountRequested,
-  fetchAccountSucceeded,
   fetchAccountFailed,
   fetchAccountNoInternet,
-  setReachable,
-  addAccountPlaylist,
-  removeAccountPlaylist,
-  renameAccountPlaylist,
+  fetchAccountRequested,
+  fetchAccountSucceeded,
+  fetchBrowserPushNotifications,
+  fetchLocalAccount,
   fetchSavedAlbums,
   fetchSavedAlbumsSucceeded,
   fetchSavedPlaylists,
   fetchSavedPlaylistsSucceeded,
+  instagramLogin,
+  removeAccountPlaylist,
+  renameAccountPlaylist,
+  resetAccount,
   setNeedsAccountRecovery,
   setPlaylistOrder,
-  fetchBrowserPushNotifications,
-  subscribeBrowserPushNotifications,
-  unsubscribeBrowserPushNotifications,
-  instagramLogin,
-  twitterLogin,
+  setReachable,
   showPushNotificationConfirmation,
-  resetAccount,
-  signedIn
+  signedIn,
+  subscribeBrowserPushNotifications,
+  tikTokLogin,
+  twitterLogin,
+  unsubscribeBrowserPushNotifications
 } = slice.actions
 
 export const reducer = slice.reducer

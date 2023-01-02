@@ -11,7 +11,8 @@ import {
   EmailFrequency,
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications
+  PushNotifications,
+  TikTokProfile
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -76,6 +77,7 @@ type OwnProps = {
   isVerified: boolean
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
+  onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
   notificationSettings: Notifications
   emailFrequency: EmailFrequency
   pushNotificationSettings: PushNotifications

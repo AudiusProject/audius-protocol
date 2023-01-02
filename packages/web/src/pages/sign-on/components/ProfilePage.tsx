@@ -57,6 +57,7 @@ type ProfilePageProps = {
   ) => void
   recordTwitterStart: () => void
   recordInstagramStart: () => void
+  recordTikTokStart: () => void
   validateHandle: (
     handle: string,
     isOauthVerified: boolean,
@@ -80,6 +81,7 @@ const ProfilePage = (props: ProfilePageProps) => {
     profileImage,
     recordInstagramStart,
     recordTwitterStart,
+    recordTikTokStart,
     setInstagramProfile,
     setProfileImage,
     setTikTokProfile,
@@ -115,8 +117,10 @@ const ProfilePage = (props: ProfilePageProps) => {
     if (getProfileValid()) onNextPage()
   }, [getProfileValid, onNextPage])
 
-  const onTwitterLogin = async (twitterProfileRes: Body) => {
-    const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
+  const onTwitterLogin = async (
+    uuid: string,
+    twitterProfile: TwitterProfile
+  ) => {
     try {
       const { profile, profileImage, profileBanner, requiresUserReview } =
         await formatTwitterProfile(twitterProfile, resizeImage)
@@ -234,6 +238,7 @@ const ProfilePage = (props: ProfilePageProps) => {
           onInstagramLogin={onInstagramLogin}
           onInstagramStart={recordInstagramStart}
           onTikTokLogin={onTikTokLogin}
+          onTikTokStart={recordTikTokStart}
           onToggleVisible={onToggleCompleteProfileWithSocial}
           onTwitterLogin={onTwitterLogin}
           onTwitterStart={recordTwitterStart}

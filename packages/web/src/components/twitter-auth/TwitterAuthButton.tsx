@@ -1,28 +1,25 @@
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-import TwitterButton, {
+import {
+  TwitterButton,
   TwitterButtonProps
-} from '../twitter-button/TwitterButton'
+} from 'components/social-button/twitter-button/TwitterButton'
 
 import TwitterAuth, { TwitterAuthProps } from './TwitterAuth'
 
 type TwitterAuthButtonProps = TwitterButtonProps &
-  Omit<TwitterAuthProps, 'requestTokenUrl' | 'loginUrl'>
+  Omit<TwitterAuthProps, 'requestTokenUrl' | 'loginUrl'> & {
+    containerClassName?: string
+  }
 
-const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
-  const { onClick, onFailure, onSuccess } = props
+export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
+  const { containerClassName, onFailure, onSuccess, ...buttonProps } = props
   return (
     <TwitterAuth
+      className={containerClassName}
       forceLogin
-      onClick={onClick}
       onFailure={onFailure}
       onSuccess={onSuccess}
-      requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
-      loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
     >
-      <TwitterButton {...props} />
+      <TwitterButton {...buttonProps} />
     </TwitterAuth>
   )
 }
-
-export default TwitterAuthButton

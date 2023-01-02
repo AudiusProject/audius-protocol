@@ -4,8 +4,8 @@
 }
 
 .modalBodyStyle {
-  width: 736px;
-  max-width: 736px;
+  width: 400px;
+  max-width: 400px;
 }
 
 .container {
@@ -36,9 +36,11 @@
 }
 
 .btnContainer {
+  width: 100%;
   margin-top: 24px;
-  display: inline-flex;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .btn {
@@ -65,10 +67,6 @@
 
 .btn .btnText {
   font-size: var(--font-l);
-}
-
-.twitterClassName {
-  margin-right: 24px;
 }
 
 .error {
@@ -163,4 +161,9 @@
 .disabledBtn .disabledBtnText {
   color: var(--neutral);
   font-weight: var(--font-demi-bold);
+}
+
+.socialButton {
+  width: 100%;
+  margin-bottom: 4px;
 }

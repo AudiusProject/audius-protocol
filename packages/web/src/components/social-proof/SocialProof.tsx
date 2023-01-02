@@ -7,24 +7,28 @@ import {
   accountSelectors,
   TwitterProfile,
   InstagramProfile,
-  accountActions
+  accountActions,
+  TikTokProfile,
+  FeatureFlags
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
+import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useRemoteVar } from 'hooks/useRemoteConfig'
+import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
+import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
+import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import InstagramAccountVerification from 'pages/settings-page/components/InstagramAccountVerified'
-import TwitterAccountVerification from 'pages/settings-page/components/TwitterAccountVerified'
 
 import styles from './SocialProof.module.css'
 
 const {
   instagramLogin: instagramLoginAction,
-  twitterLogin: twitterLoginAction
+  twitterLogin: twitterLoginAction,
+  tikTokLogin: tikTokLoginAction
 } = accountActions
 const getUserHandle = accountSelectors.getUserHandle
 
@@ -33,16 +37,20 @@ const messages = {
   description: 'Please confirm your identity before you can continue',
   failure:
     'Sorry, unable to retrieve information or the account is already used',
-  errorTwitter: 'Unable to verify your Twitter account',
-  errorInstagram: 'Unable to verify your Instagram account'
+  errorTwitter: 'Unable to confirm your Twitter account',
+  errorInstagram: 'Unable to confirm your Instagram account',
+  twitterConfirm: 'Confirm with Twitter',
+  instagramConfirm: 'Confirm with Instagram',
+  tiktokConfirm: 'Confirm with TikTok'
 }
 
 type VerifyBodyProps = {
   handle: string
   onClick: () => void
-  onFailure: (kind: 'instagram' | 'twitter', error: Error) => void
-  onTwitterLogin: (uuid: string, profile: any) => void
-  onInstagramLogin: (uuid: string, profile: any) => void
+  onFailure: (kind: 'instagram' | 'twitter' | 'tiktok', error: Error) => void
+  onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
+  onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
+  onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
   error?: string
 }
 
@@ -52,13 +60,19 @@ const VerifyBody = ({
   onClick,
   onTwitterLogin,
   onInstagramLogin,
+  onTikTokLogin,
   onFailure
 }: VerifyBodyProps) => {
   const displayInstagram = useRemoteVar(
     BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP
   )
+
+  const { isEnabled: isTikTokEnabled } = useFlag(
+    FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
+  )
+
   const record = useRecord()
-  const onTwitterClick = useCallback(() => {
+  const handleClickTwitter = useCallback(() => {
     onClick()
     const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_OPEN, {
       handle,
@@ -67,7 +81,7 @@ const VerifyBody = ({
     record(trackEvent)
   }, [record, handle, onClick])
 
-  const onInstagramClick = useCallback(() => {
+  const handleClickInstagram = useCallback(() => {
     onClick()
     const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_OPEN, {
       handle,
@@ -76,23 +90,41 @@ const VerifyBody = ({
     record(trackEvent)
   }, [record, handle, onClick])
 
+  const handleClickTikTok = useCallback(() => {
+    onClick()
+    const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_OPEN, {
+      handle,
+      kind: 'tiktok'
+    })
+    record(trackEvent)
+  }, [record, handle, onClick])
+
   return (
     <div className={styles.container}>
       <p>{messages.description}</p>
       <div className={styles.btnContainer}>
-        <TwitterAccountVerification
+        <TwitterAuthButton
           onSuccess={onTwitterLogin}
           onFailure={(error: Error) => onFailure('twitter', error)}
-          className={styles.twitterClassName}
-          onClick={onTwitterClick}
+          onClick={handleClickTwitter}
+          text={messages.twitterConfirm}
         />
         {displayInstagram && (
-          <InstagramAccountVerification
-            onClick={onInstagramClick}
+          <InstagramAuthButton
+            onClick={handleClickInstagram}
             onSuccess={onInstagramLogin}
             onFailure={(error: Error) => onFailure('instagram', error)}
+            text={messages.instagramConfirm}
           />
         )}
+        {isTikTokEnabled ? (
+          <TikTokAuthButton
+            onClick={handleClickTikTok}
+            onFailure={(error: Error) => onFailure('tiktok', error)}
+            onSuccess={onTikTokLogin}
+            text={messages.tiktokConfirm}
+          />
+        ) : null}
       </div>
       {error && (
         <div className={styles.error}>
@@ -135,6 +167,12 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
     },
     [dispatch]
   )
+  const onTikTokLogin = useCallback(
+    (uuid: string, profile: TikTokProfile) => {
+      dispatch(tikTokLoginAction({ uuid, profile }))
+    },
+    [dispatch]
+  )
 
   const [error, setError] = useState<string | undefined>()
   const [status, setStatus] = useState(Status.IDLE)
@@ -144,7 +182,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
   const onClick = useCallback(() => setStatus(Status.LOADING), [setStatus])
   const record = useRecord()
   const onFailure = useCallback(
-    (kind: 'instagram' | 'twitter', error: Error) => {
+    (kind: 'instagram' | 'twitter' | 'tiktok', error: Error) => {
       // We should have an account handle by this point
       if (!handle) return
 
@@ -199,6 +237,25 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
     [record, handle, onTwitterLogin, setIsOpen]
   )
 
+  const handleTikTokLogin = useCallback(
+    (uuid: string, profile: TikTokProfile) => {
+      // We should have an account handle by this point
+      if (!handle) return
+
+      setStatus(Status.SUCCESS)
+      onTikTokLogin(uuid, profile)
+      setIsOpen(false)
+
+      const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_SUCCESS, {
+        handle,
+        kind: 'tiktok',
+        screenName: profile.username
+      })
+      record(trackEvent)
+    },
+    [record, handle, onTikTokLogin, setIsOpen]
+  )
+
   useEffect(() => {
     if (status === Status.SUCCESS) {
       onSuccess()
@@ -216,6 +273,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
         onFailure={onFailure}
         onInstagramLogin={handleInstagramLogin}
         onTwitterLogin={handleTwitterLogin}
+        onTikTokLogin={handleTikTokLogin}
         error={error}
       />
     )
@@ -223,12 +281,12 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
 
   return (
     <ModalDrawer
-      bodyClassName={styles.modalBody}
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
       title={messages.modalTitle}
       showTitleHeader
       useGradientTitle={false}
+      bodyClassName={styles.modalBodyStyle}
     >
       {body}
     </ModalDrawer>

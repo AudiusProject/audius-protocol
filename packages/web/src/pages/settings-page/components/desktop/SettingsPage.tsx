@@ -9,7 +9,8 @@ import {
   TwitterProfile,
   Notifications,
   BrowserNotificationSetting,
-  EmailFrequency
+  EmailFrequency,
+  TikTokProfile
 } from '@audius/common'
 import {
   Modal,
@@ -82,6 +83,7 @@ type OwnProps = {
   getNotificationSettings: () => void
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
+  onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
   toggleBrowserPushNotificationPermissions: (
     notificationType: BrowserNotificationSetting,
     isOn: boolean
@@ -217,6 +219,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
       onInstagramLogin,
       goToRoute,
       onTwitterLogin,
+      onTikTokLogin,
       notificationSettings,
       emailFrequency,
       toggleBrowserPushNotificationPermissions,
@@ -249,6 +252,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               isVerified={isVerified}
               onInstagramLogin={onInstagramLogin}
               onTwitterLogin={onTwitterLogin}
+              onTikTokLogin={onTikTokLogin}
             />
           </SettingsCard>
           <SettingsCard
