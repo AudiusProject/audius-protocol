@@ -5,12 +5,15 @@ const nock = require('nock')
 const _ = require('lodash')
 const uuid = require('uuid')
 const axios = require('axios')
+const rewire = require('rewire')
 
 const { getLibsMock } = require('./lib/libsMock')
 
 const { logger: genericLogger } = require('../src/logging')
 const Utils = require('../src/utils')
-const TrackTranscodeHandoffManager = require('../src/components/tracks/TrackTranscodeHandoffManager')
+const TrackTranscodeHandoffManager = rewire(
+  '../src/components/tracks/TrackTranscodeHandoffManager'
+)
 
 describe('test TrackTranscodeHandoffManager', function () {
   let libsMock, reqMock
@@ -33,9 +36,12 @@ describe('test TrackTranscodeHandoffManager', function () {
   // handOff()
 
   it('If selecting random sps fails, return empty response', async function () {
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'selectRandomSPs')
-      .rejects(new Error('i have failed'))
+    const revert = TrackTranscodeHandoffManager.__set__(
+      'selectRandomSPs',
+      async () => {
+        throw new Error('i have failed')
+      }
+    )
 
     const resp = await TrackTranscodeHandoffManager.handOff(
       { logContext: reqMock.logContext },
@@ -43,21 +49,31 @@ describe('test TrackTranscodeHandoffManager', function () {
     )
 
     assert.ok(_.isEqual({}, resp))
+    revert()
   })
 
   it('When polling for transcode, if polling fails, return empty response', async function () {
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'selectRandomSPs')
-      .resolves(['http://cn1.com', 'http://cn2.com', 'http://cn3.com'])
+    const revertSelectRandomSPs = TrackTranscodeHandoffManager.__set__(
+      'selectRandomSPs',
+      async () => {
+        return ['http://cn1.com', 'http://cn2.com', 'http://cn3.com']
+      }
+    )
 
     const expectedUuid = uuid.v4()
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'sendTrackToSp')
-      .resolves(expectedUuid)
+    const revertSendTrackToSp = TrackTranscodeHandoffManager.__set__(
+      'sendTrackToSp',
+      async () => {
+        return expectedUuid
+      }
+    )
 
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'pollForTranscode')
-      .rejects(new Error('polling failed'))
+    const revertPollForTranscode = TrackTranscodeHandoffManager.__set__(
+      'pollForTranscode',
+      async () => {
+        throw new Error('polling failed')
+      }
+    )
 
     try {
       const resp = await TrackTranscodeHandoffManager.handOff(
@@ -68,6 +84,10 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.fail(`If polling failed, handOff should not have thrown`)
     }
+
+    revertSelectRandomSPs()
+    revertSendTrackToSp()
+    revertPollForTranscode()
   })
 
   // selectRandomSPs()
@@ -127,9 +147,12 @@ describe('test TrackTranscodeHandoffManager', function () {
   // sendTrackToSp()
 
   it('When handing off transcode request to an sp, if the health check fails, throw error', async function () {
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchHealthCheck')
-      .rejects(new Error('failed to fetch health check response'))
+    const revert = TrackTranscodeHandoffManager.__set__(
+      'fetchHealthCheck',
+      async () => {
+        throw new Error('failed to fetch health check response')
+      }
+    )
 
     let resp
     try {
@@ -141,14 +164,23 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.ok(e.message === 'failed to fetch health check response')
     }
+
+    revert()
   })
 
   it('When handing off transcode request to an sp, if the health check passes but transcode req does not, throw error', async function () {
     sinon.stub(TrackTranscodeHandoffManager, 'fetchHealthCheck').resolves()
+    const revertFetchHealthCheck = TrackTranscodeHandoffManager.__set__(
+      'fetchHealthCheck',
+      async () => {}
+    )
 
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'sendTranscodeAndSegmentRequest')
-      .rejects(new Error('failed to send transcode and segment request'))
+    const revertSendTranscode = TrackTranscodeHandoffManager.__set__(
+      'sendTranscodeAndSegmentRequest',
+      async () => {
+        throw new Error('failed to send transcode and segment request')
+      }
+    )
 
     let resp
     try {
@@ -160,15 +192,22 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.ok(e.message === 'failed to send transcode and segment request')
     }
+
+    revertFetchHealthCheck()
+    revertSendTranscode()
   })
 
   it('When handing off transcode request to an sp, if both the health check and transcode passes, return uuid', async function () {
-    sinon.stub(TrackTranscodeHandoffManager, 'fetchHealthCheck').resolves()
+    const revertFetchHealthCheck = TrackTranscodeHandoffManager.__set__(
+      'fetchHealthCheck',
+      async () => {}
+    )
 
     const expectedUuid = uuid.v4()
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'sendTranscodeAndSegmentRequest')
-      .resolves(expectedUuid)
+    const revertSendTranscode = TrackTranscodeHandoffManager.__set__(
+      'sendTranscodeAndSegmentRequest',
+      async () => expectedUuid
+    )
 
     try {
       const actualUuid = await TrackTranscodeHandoffManager.sendTrackToSp({
@@ -181,12 +220,22 @@ describe('test TrackTranscodeHandoffManager', function () {
         `Transcode handoff failed and UUID was not returned: ${e.message}`
       )
     }
+
+    revertFetchHealthCheck()
+    revertSendTranscode()
   })
 
   it('When fetching segment and writing to fs, if fetching fails, throw error and no files from this call are written to tmp dir', async function () {
     sinon
       .stub(TrackTranscodeHandoffManager, 'fetchSegment')
       .rejects(new Error('fetching segment failed'))
+
+    const revert = TrackTranscodeHandoffManager.__set__(
+      'fetchSegment',
+      async () => {
+        throw new Error('fetching segment failed')
+      }
+    )
 
     try {
       await TrackTranscodeHandoffManager.fetchFilesAndWriteToFs({
@@ -203,16 +252,24 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.ok(e.message === 'fetching segment failed')
     }
+
+    revert()
   })
 
   it('When fetching transcode and writing to fs, if fetching fails, throw error and no files from this call are written to tmp dir', async function () {
     sinon.stub(Utils, 'writeStreamToFileSystem').resolves()
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchSegment')
-      .resolves({ data: 'some stream' })
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchTranscode')
-      .rejects(new Error('fetching transcode failed'))
+    const revertFetchSegment = TrackTranscodeHandoffManager.__set__(
+      'fetchSegment',
+      async () => {
+        return { data: 'some stream' }
+      }
+    )
+    const revertFetchTranscode = TrackTranscodeHandoffManager.__set__(
+      'fetchTranscode',
+      async () => {
+        throw new Error('fetching transcode failed')
+      }
+    )
 
     try {
       await TrackTranscodeHandoffManager.fetchFilesAndWriteToFs({
@@ -229,19 +286,31 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.ok(e.message === 'fetching transcode failed')
     }
+
+    revertFetchSegment()
+    revertFetchTranscode()
   })
 
   it('When fetching m3u8 and writing to fs, if fetching fails, throw error and no files from this call are written to tmp dir', async function () {
     sinon.stub(Utils, 'writeStreamToFileSystem').resolves()
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchSegment')
-      .resolves({ data: 'some stream' })
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchTranscode')
-      .resolves({ data: 'some more stream' })
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchM3U8File')
-      .rejects(new Error('fetching m3u8 failed'))
+    const revertFetchSegment = TrackTranscodeHandoffManager.__set__(
+      'fetchSegment',
+      async () => {
+        return { data: 'some stream' }
+      }
+    )
+    const revertFetchTranscode = TrackTranscodeHandoffManager.__set__(
+      'fetchTranscode',
+      async () => {
+        return { data: 'some more stream' }
+      }
+    )
+    const revertFetchM3U8File = TrackTranscodeHandoffManager.__set__(
+      'fetchM3U8File',
+      async () => {
+        throw new Error('fetching m3u8 failed')
+      }
+    )
 
     try {
       await TrackTranscodeHandoffManager.fetchFilesAndWriteToFs({
@@ -258,19 +327,32 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.ok(e.message === 'fetching m3u8 failed')
     }
+
+    revertFetchSegment()
+    revertFetchTranscode()
+    revertFetchM3U8File()
   })
 
   it('When fetching files and writing to fs, if fetching succeeds, return the file paths', async function () {
     sinon.stub(Utils, 'writeStreamToFileSystem').resolves()
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchSegment')
-      .resolves({ data: 'some stream' })
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchTranscode')
-      .resolves({ data: 'some more stream' })
-    sinon
-      .stub(TrackTranscodeHandoffManager, 'fetchM3U8File')
-      .resolves({ data: 'some more more stream' })
+    const revertFetchSegment = TrackTranscodeHandoffManager.__set__(
+      'fetchSegment',
+      async () => {
+        return { data: 'some stream' }
+      }
+    )
+    const revertFetchTranscode = TrackTranscodeHandoffManager.__set__(
+      'fetchTranscode',
+      async () => {
+        return { data: 'some more stream' }
+      }
+    )
+    const revertFetchM3U8File = TrackTranscodeHandoffManager.__set__(
+      'fetchM3U8File',
+      async () => {
+        return { data: 'some more more stream' }
+      }
+    )
 
     try {
       const resp = await TrackTranscodeHandoffManager.fetchFilesAndWriteToFs({
@@ -296,6 +378,10 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.fail('if fetching files succeed, should not err')
     }
+
+    revertFetchSegment()
+    revertFetchTranscode()
+    revertFetchM3U8File()
   })
 
   it('Do not retry if request responds with 404', async function () {

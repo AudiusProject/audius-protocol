@@ -10,7 +10,7 @@ from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
-    copy_user_record,
+    copy_record,
 )
 from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.tasks.users import (
@@ -67,14 +67,15 @@ def validate_user_tx(params: ManageEntityParameters):
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
+        handle_lower = user_metadata["handle"].lower()
         user_handle_exists = session.query(
-            session.query(User).filter(User.handle == user_metadata["handle"]).exists()
+            session.query(User).filter(User.handle_lc == handle_lower).exists()
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
             raise Exception(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
-        user_record.handle_lc = user_metadata["handle"].lower()
+        user_record.handle_lc = handle_lower
 
     # If an artist pick track id is specified, validate that it is a valid track id
     if (
@@ -136,14 +137,13 @@ def update_user(params: ManageEntityParameters):
     user_metadata = params.metadata[params.metadata_cid]
     user_id = params.entity_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    existing_user.is_current = False  # invalidate
     if (
         user_id in params.new_records[EntityType.USER]
         and params.new_records[EntityType.USER][user_id]
     ):  # override with last updated user is in this block
         existing_user = params.new_records[EntityType.USER][user_id][-1]
 
-    user_record = copy_user_record(
+    user_record = copy_record(
         existing_user,
         params.block_number,
         params.event_blockhash,
@@ -183,7 +183,7 @@ def verify_user(params: ManageEntityParameters):
 
     user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    user_record = copy_user_record(
+    user_record = copy_record(
         existing_user,
         params.block_number,
         params.event_blockhash,

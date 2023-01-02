@@ -53,6 +53,11 @@ const defaultJobOptions = {
   removeOnFail: true
 }
 
+const bullSettings = {
+  lockDuration: 60 /** min */ * 60 /** sec */ * 1000 /** ms */,
+  maxStalledCount: 0
+}
+
 class NotificationProcessor {
   constructor({ errorHandler }) {
     this.notifQueue = new Bull(`notification-queue-${Date.now()}`, {
@@ -60,7 +65,8 @@ class NotificationProcessor {
         port: config.get('redisPort'),
         host: config.get('redisHost')
       },
-      defaultJobOptions
+      defaultJobOptions,
+      bullSettings
     })
     this.solanaNotifQueue = new Bull(
       `solana-notification-queue-${Date.now()}`,
@@ -123,7 +129,7 @@ class NotificationProcessor {
 
     // Notification processing job
     // Indexes network notifications
-    this.notifQueue.process(async (job, done) => {
+    this.notifQueue.process(async (job) => {
       let error = null
       const minBlock = job.data.minBlock
 
@@ -191,13 +197,11 @@ class NotificationProcessor {
       await new Promise((resolve) =>
         setTimeout(resolve, NOTIFICATION_INTERVAL_SEC)
       )
-
-      done(error)
     })
 
     // Solana notification processing job
     // Indexes solana notifications
-    this.solanaNotifQueue.process(async (job, done) => {
+    this.solanaNotifQueue.process(async (job) => {
       let error = null
       const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
       const minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
@@ -210,7 +214,7 @@ class NotificationProcessor {
 
         // Index notifications
         if (minSlot < oldMaxSlot) {
-          logger.debug(
+          logger.error(
             'solana notification queue processing error - tried to process a minSlot < oldMaxSlot',
             minSlot,
             oldMaxSlot
@@ -224,6 +228,16 @@ class NotificationProcessor {
             minSlot,
             oldMaxSlot
           )
+
+          // If we got an unexpectedly low maxSlot, use min as max
+          if (maxSlot < minSlot) {
+            logger.error(
+              'solana notification queue processing error - unexpectedly got maxSlot < minSlot from Discovery, using old minSlot as max',
+              minSlot,
+              oldMaxSlot
+            )
+            maxSlot = minSlot
+          }
         }
 
         // Update cached max slot number
@@ -266,12 +280,10 @@ class NotificationProcessor {
       await new Promise((resolve) =>
         setTimeout(resolve, NOTIFICATION_SOLANA_INTERVAL_SEC)
       )
-
-      done(error)
     })
 
     // Email notification queue
-    this.emailQueue.process(async (job, done) => {
+    this.emailQueue.process(async (job) => {
       logger.info('processEmailNotifications')
       let error = null
       try {
@@ -291,11 +303,10 @@ class NotificationProcessor {
         { type: unreadEmailJobType },
         { jobId: `${unreadEmailJobType}:${Date.now()}` }
       )
-      done(error)
     })
 
     // Download Email notification queue
-    this.downloadEmailQueue.process(async (job, done) => {
+    this.downloadEmailQueue.process(async (job) => {
       logger.debug('processDownloadEmails')
       let error = null
       try {
@@ -315,11 +326,10 @@ class NotificationProcessor {
         { type: downloadEmailJobType },
         { jobId: `${downloadEmailJobType}:${Date.now()}` }
       )
-      done(error)
     })
 
     // Announcement push notifications queue
-    this.announcementQueue.process(async (job, done) => {
+    this.announcementQueue.process(async (job) => {
       logger.info('pushAnnouncementNotifications')
       let error = null
       try {
@@ -343,7 +353,6 @@ class NotificationProcessor {
         { type: announcementJobType },
         { jobId: `${announcementJobType}:${Date.now()}` }
       )
-      done(error)
     })
 
     // Add initial jobs to the queue
@@ -424,9 +433,15 @@ class NotificationProcessor {
       timeout
     )
     const { info: metadata, owners, milestones } = notificationsFromDN
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestBlock = await models.Notification.max('blocknumber')
+    notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
+
     logger.info(
       `notifications main indexAll job - query notifications from discovery node complete in ${
         Date.now() - time
@@ -545,9 +560,15 @@ class NotificationProcessor {
       timeout
     )
     const metadata = notificationsFromDN.info
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestSlot = await models.SolanaNotification.max('slot')
+    notifications = notifications.filter((n) => n.slot >= latestSlot)
+
     logger.info(
       `${logLabel} - query solana notifications from discovery node complete in ${
         Date.now() - time

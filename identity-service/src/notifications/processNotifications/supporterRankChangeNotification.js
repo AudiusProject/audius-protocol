@@ -1,10 +1,10 @@
-const { default: Axios } = require('axios')
-const audiusLibsWrapper = require('../../audiusLibsInstance')
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
-const { decodeHashId, encodeHashId } = require('../utils')
+const { decodeHashId } = require('../utils')
+const notificationUtils = require('../utils')
 
 async function processSupporterRankChangeNotification(notifications, tx) {
+  const notificationsToAdd = []
   for (const notification of notifications) {
     const {
       slot,
@@ -12,38 +12,9 @@ async function processSupporterRankChangeNotification(notifications, tx) {
       metadata: { entity_id: senderUserId, rank }
     } = notification
 
-    const promises = [
-      // SupportingRankUp sent to the user who is supporting
-      models.SolanaNotification.findOrCreate({
-        where: {
-          slot,
-          type: notificationTypes.SupportingRankUp,
-          userId: senderUserId,
-          entityId: rank,
-          metadata: {
-            supportedUserId: receiverUserId
-          }
-        },
-        transaction: tx
-      }),
-      // SupporterRankUp sent to the user being supported
-      models.SolanaNotification.findOrCreate({
-        where: {
-          slot,
-          type: notificationTypes.SupporterRankUp,
-          userId: receiverUserId,
-          entityId: rank,
-          metadata: {
-            supportingUserId: senderUserId
-          }
-        },
-        transaction: tx
-      })
-    ]
-
     // If this is a new top supporter, see who just became dethroned
     if (rank === 1) {
-      const supporters = await getSupporters(receiverUserId)
+      const supporters = await notificationUtils.getSupporters(receiverUserId)
 
       const isSingleSupporter = supporters.length < 2
       if (!isSingleSupporter) {
@@ -56,27 +27,46 @@ async function processSupporterRankChangeNotification(notifications, tx) {
         const isTie = topSupporterId === dethronedUserId
 
         if (isDiscoveryUpToDate && !isTie) {
-          const dethronedNotif = models.SolanaNotification.findOrCreate({
-            where: {
-              slot,
-              type: notificationTypes.SupporterDethroned,
-              userId: dethronedUserId, // Notif goes to the dethroned user
-              entityId: 2, // Rank 2
-              metadata: {
-                supportedUserId: receiverUserId, // The user originally tipped
-                newTopSupporterUserId: topSupporterId, // The usurping user
-                oldAmount: supporters[1].amount,
-                newAmount: supporters[0].amount
-              }
-            },
-            transaction: tx
-          })
-
           // Create the notif model for the DB
-          promises.push(dethronedNotif)
+          const dethronedNotification = await models.SolanaNotification.findOne(
+            {
+              where: {
+                slot,
+                type: notificationTypes.SupporterDethroned,
+                userId: dethronedUserId, // Notif goes to the dethroned user
+                entityId: 2, // Rank 2
+                metadata: {
+                  supportedUserId: receiverUserId, // The user originally tipped
+                  newTopSupporterUserId: topSupporterId, // The usurping user
+                  oldAmount: supporters[1].amount,
+                  newAmount: supporters[0].amount
+                }
+              },
+              transaction: tx
+            }
+          )
+          if (dethronedNotification == null) {
+            await models.SolanaNotification.create(
+              {
+                slot,
+                type: notificationTypes.SupporterDethroned,
+                userId: dethronedUserId, // Notif goes to the dethroned user
+                entityId: 2, // Rank 2
+                metadata: {
+                  supportedUserId: receiverUserId, // The user originally tipped
+                  newTopSupporterUserId: topSupporterId, // The usurping user
+                  oldAmount: supporters[1].amount,
+                  newAmount: supporters[0].amount
+                }
+              },
+              {
+                transaction: tx
+              }
+            )
+          }
 
           // Create a fake notif from discovery for further processing down the pipeline
-          notifications.push({
+          notificationsToAdd.push({
             slot,
             type: notificationTypes.SupporterDethroned,
             initiator: dethronedUserId, // Notif goes to the dethroned user
@@ -91,26 +81,67 @@ async function processSupporterRankChangeNotification(notifications, tx) {
       }
     }
 
-    await Promise.all(promises)
-  }
-  return notifications
-}
-
-const getSupporters = async (receiverUserId) => {
-  const encodedReceiverId = encodeHashId(receiverUserId)
-  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-  const url = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/users/${encodedReceiverId}/supporters`
-
-  try {
-    const response = await Axios({
-      method: 'get',
-      url
+    // SupportingRankUp sent to the user who is supporting
+    const senderNotification = await models.SolanaNotification.findOne({
+      where: {
+        slot,
+        type: notificationTypes.SupportingRankUp,
+        userId: senderUserId,
+        entityId: rank,
+        metadata: {
+          supportedUserId: receiverUserId
+        }
+      },
+      transaction: tx
     })
-    return response.data.data
-  } catch (e) {
-    console.error(`Error fetching supporters for user: ${receiverUserId}: ${e}`)
-    return []
+    if (senderNotification == null) {
+      await models.SolanaNotification.create(
+        {
+          slot,
+          type: notificationTypes.SupportingRankUp,
+          userId: senderUserId,
+          entityId: rank,
+          metadata: {
+            supportedUserId: receiverUserId
+          }
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
+
+    // SupporterRankUp sent to the user being supported
+    const receiverNotification = await models.SolanaNotification.findOrCreate({
+      where: {
+        slot,
+        type: notificationTypes.SupporterRankUp,
+        userId: receiverUserId,
+        entityId: rank,
+        metadata: {
+          supportingUserId: senderUserId
+        }
+      },
+      transaction: tx
+    })
+    if (receiverNotification == null) {
+      await models.SolanaNotification.create(
+        {
+          slot,
+          type: notificationTypes.SupporterRankUp,
+          userId: receiverUserId,
+          entityId: rank,
+          metadata: {
+            supportingUserId: senderUserId
+          }
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
   }
+  return notifications.concat(notificationsToAdd)
 }
 
 module.exports = processSupporterRankChangeNotification

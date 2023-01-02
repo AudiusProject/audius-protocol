@@ -69,6 +69,7 @@ class Track(Base, RepresentableMixin):
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
     is_premium = Column(Boolean, nullable=False, server_default=text("false"))
     premium_conditions = Column(JSONB())
+    is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="Track.blockhash == Block.blockhash"
@@ -114,3 +115,6 @@ class Track(Base, RepresentableMixin):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "Track", getattr(Track, field).type)
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

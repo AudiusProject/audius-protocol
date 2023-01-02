@@ -366,6 +366,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         },
     }
 
+    if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
+        health_results["audius-docker-compose"] = os.getenv(
+            "AUDIUS_DOCKER_COMPOSE_GIT_SHA"
+        )
+
     if latest_block_num is not None and latest_indexed_block_num is not None:
         if final_poa_block and latest_block_num < final_poa_block:
             latest_block_num += final_poa_block

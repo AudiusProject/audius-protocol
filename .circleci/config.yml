@@ -342,7 +342,7 @@ jobs:
               --storage-location=us
       - slack-fail:
           branch_pattern: main
-          slack_mentions_user: "@dheeraj"
+          slack_mentions_user: "@ray"
 
   publish-sdk:
     docker:
@@ -596,7 +596,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_creator_node_test
-      - image: redis:5.0.4
+      - image: redis:6.2.7
     steps:
       - checkout
       - diff-if-necessary:
@@ -1273,6 +1273,7 @@ jobs:
         type: string
         default: ""
     steps:
+      - checkout
       - add_ssh_keys:
           fingerprints:
             # github.com
@@ -1282,13 +1283,11 @@ jobs:
           docker_layer_caching: true
       - run: |
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:AudiusProject/audius-tooling.git
-          cd audius-tooling
           mkdir -p ssh_keys
           cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
           SLASH_ADDRESS=<< parameters.slash_address >> \
           SLASH_AMOUNT=<< parameters.slash_amount >> \
-          release-scripts/<< parameters.target >>.sh
+          .circleci/release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
           condition:

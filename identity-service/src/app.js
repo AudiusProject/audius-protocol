@@ -303,7 +303,7 @@ class App {
     // Create a rate limiter for listens  based on IP
     const listenCountIPRequestLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
-      expiry: interval,
+      expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
       keyGenerator: function (req) {
         const { ip } = getIP(req)

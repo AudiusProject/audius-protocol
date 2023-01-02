@@ -43,7 +43,6 @@ def test_repost_notification(app):
         assert notifications[2].specifier == "4"
         assert notifications[3].group_id == "follow:4"
         assert notifications[3].specifier == "5"
-        assert notifications[0].notification_group_id == None
         assert notifications[0].type == "follow"
         assert notifications[0].slot == None
         assert notifications[0].blocknumber == 0
@@ -63,7 +62,6 @@ def test_repost_notification(app):
             == "milestone:FOLLOWER_COUNT:id:1:threshold:25"
         )
         assert milstone_notifications[0].specifier == "1"
-        assert milstone_notifications[0].notification_group_id == None
         assert milstone_notifications[0].type == "milestone_follower_count"
         assert milstone_notifications[0].data == {
             "type": "FOLLOWER_COUNT",

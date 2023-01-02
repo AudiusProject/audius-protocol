@@ -32,6 +32,7 @@ export class Account extends Base {
     this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
+    this.associateTikTokUser = this.associateTikTokUser.bind(this)
     this.handleIsValid = this.handleIsValid.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
     this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
@@ -322,6 +323,15 @@ export class Account extends Base {
       userId,
       handle
     )
+  }
+
+  /**
+   * Associates a user with an tiktok uuid
+   * @param uuid from the TikTok API
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return await this.identityService.associateTikTokUser(uuid, userId, handle)
   }
 
   /**
@@ -723,7 +733,7 @@ export class Account extends Base {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = await this.ethWeb3Manager.sign(
-      Buffer.from(message, 'utf-8')
+      Buffer.from(message, 'utf-8') as unknown as string
     )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(

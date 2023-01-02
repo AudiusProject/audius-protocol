@@ -41,9 +41,15 @@ const config = convict({
     default: '/file_storage'
   },
   migrateFilesWithLegacyStoragePath: {
-    doc: 'True to copy files with a legacy storage to the new storage path',
+    doc: 'True to copy files with a legacy storage path to the new storage path specified by the "storagePath" config option',
     format: Boolean,
     env: 'migrateFilesWithLegacyStoragePath',
+    default: true
+  },
+  migrateFilesWithCustomStoragePath: {
+    doc: 'True to copy files with a non-standard storage path to the new storage path specified by the "storagePath" config option',
+    format: Boolean,
+    env: 'migrateFilesWithCustomStoragePath',
     default: true
   },
   redisHost: {
@@ -504,7 +510,7 @@ const config = convict({
     doc: 'whether or not to use entity manager to update the replica set',
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
-    default: false
+    default: true
   },
 
   /** sync / snapback configs */
@@ -827,12 +833,12 @@ const config = convict({
     doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
     format: String,
     env: 'reconfigSPIdBlacklistString',
-    default: '1,4,33,37,39,40,41,42,43,52,56,58,59,60,61,64,65'
+    default: '1,4,5,7,9,10,12,13,14,15,16,19,21,28,33,35,39,43,52,58,62'
   },
-  syncOverridePassword: {
-    doc: 'Used to allow manual syncs to be issued on foundation nodes only, and still requires password',
+  overridePassword: {
+    doc: 'Used to allow manual actions to be issued on foundation nodes only',
     format: String,
-    env: 'syncOverridePassword',
+    env: 'overridePassword',
     default: '',
     sensitive: true
   },

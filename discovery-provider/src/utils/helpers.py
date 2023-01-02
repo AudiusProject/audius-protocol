@@ -16,6 +16,11 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
+from src.solana.solana_transaction_types import (
+    ResultMeta,
+    TransactionMessage,
+    TransactionMessageInstruction,
+)
 from src.utils import redis_connection
 from src.utils.redis_constants import final_poa_block_redis_key
 
@@ -50,12 +55,12 @@ def redis_restore(redis, key):
             logger.debug(f"successfully restored redis value for key: {key}")
             return redis.get(key)
     except FileNotFoundError as not_found:
-        logger.error(f"could not read redis dump file: {filename}")
-        logger.error(not_found)
+        logger.error(
+            f"could not read redis dump file: {filename} with error {not_found}"
+        )
         return None
     except Exception as e:
-        logger.error(f"could not perform redis restore for key: {key}")
-        logger.error(e)
+        logger.error(f"could not perform redis restore for key: {key} with error {e}")
         return None
 
 
@@ -92,8 +97,7 @@ def redis_dump(redis, key):
             f.write(dumped)
             logger.debug(f"successfully performed redis dump for key: {key}")
     except Exception as e:
-        logger.error(f"could not perform redis dump for key: {key}")
-        logger.error(e)
+        logger.error(f"could not perform redis dump for key: {key} with error {e}")
 
 
 def redis_set_json_and_dump(redis, key, value):
@@ -126,7 +130,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9]:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 
@@ -524,6 +528,73 @@ def get_solana_tx_owner(meta, idx) -> str:
         ),
         "",
     )
+
+
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta, program_address: str
+) -> Optional[TransactionMessageInstruction]:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for claimable token program
+    """
+    account_keys = tx_message["accountKeys"]
+    instructions = tx_message["instructions"]
+    program_index = account_keys.index(program_address)
+    for instruction in instructions:
+        if instruction["programIdIndex"] == program_index:
+            return instruction
+
+    return None
+
+
+def has_log(meta: ResultMeta, instruction: str):
+    return any(log == instruction for log in meta["logMessages"])
+
+
+# The transaction might list sender/receiver in a different order in the pubKeys.
+# The "accounts" field of the instruction has the mapping of accounts to pubKey index
+# Example of transaction JSON returned from solana getTransaction():
+# Eg: accounts[0] = 1, so to look up pre and post balances for
+# 3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt, look for accountIndex: 1
+# "transaction": {
+#     "message": {
+#         "header": {
+#             "numReadonlySignedAccounts": 0,
+#             "numReadonlyUnsignedAccounts": 3,
+#             "numRequiredSignatures": 1
+#         },
+#         "accountKeys": [
+#             "FFQB4iQRXWqQHDRbpixXyGoufw8qdVt8SDLuFzZSZZka",
+#             "3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt",
+#             "E2LCbKdo2L3ikt1gK6pwp1pDLuhAfHBNf6fEQXpAqrf9",
+#             "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+#             "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+#             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+#         ],
+#         "recentBlockhash": "22F56uRSayJV1AKMN5jiim5xyGCxvShamW4VrZyfgM9U",
+#         "instructions": [
+#             {
+#             "accounts": [
+#                 0
+#             ],
+#             "data": "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz",
+#             "programIdIndex": 4
+#             },
+#             {
+#             "accounts": [
+#                 1,
+#                 3,
+#                 2,
+#                 0
+#             ],
+#             "data": "ixUKHa1t4JYGF",
+#             "programIdIndex": 5
+#             }
+#       ],
+#       "indexToProgramIds": {}
+#     },
+def get_account_index(instruction: TransactionMessageInstruction, index: int):
+    return instruction["accounts"][index]
 
 
 def get_final_poa_block(shared_config) -> Optional[int]:

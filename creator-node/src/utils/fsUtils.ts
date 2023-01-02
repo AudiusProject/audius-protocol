@@ -276,7 +276,8 @@ export async function computeFilePathInDirAndEnsureItExists(
 ) {
   _validateFileAndDir(dirName, fileName)
 
-  const parentDirPath = await computeFilePathAndEnsureItExists(dirName)
+  const parentDirPath = computeFilePath(dirName)
+  await ensureDirPathExists(parentDirPath)
   const absolutePath = path.join(parentDirPath, fileName)
   genericLogger.debug(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath

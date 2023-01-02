@@ -1,4 +1,5 @@
 import json
+import logging
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -63,6 +64,7 @@ from src.queries.get_tracks_including_unlisted import get_tracks_including_unlis
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
@@ -75,6 +77,8 @@ from src.utils.redis_metrics import record_metrics
 
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
+
+logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
 
@@ -458,6 +462,11 @@ class TrackStream(Resource):
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
         if CID_STREAM_ENABLED:
+            if not track_cid:
+                logger.info(
+                    f"We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
+                )
+                abort_not_found(track_id, ns)
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
         else:
             path = f"tracks/stream/{track_id}"
@@ -1306,7 +1315,8 @@ class LatestTrack(Resource):
         description="""Gets the most recent track on Audius""",
     )
     def get(self):
-        latest = get_latest_entities("track")
+        args = {"limit": 1, "offset": 0}
+        latest = get_latest_entities("track", args)
         return success_response(latest)
 
 
@@ -1328,3 +1338,14 @@ class SubsequentTrack(Resource):
 
         subsequent_tracks = get_subsequent_tracks(decoded_track_id, limit)
         return success_response(subsequent_tracks)
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedTrackId(Resource):
+    @ns.doc(
+        id="""Get unclaimed track ID""",
+        description="""Gets an unclaimed blockchain track ID""",
+    )
+    def get(self):
+        unclaimed_id = get_unclaimed_id("track")
+        return success_response(unclaimed_id)

@@ -2,6 +2,7 @@ create or replace function handle_playlist() returns trigger as $$
 declare
   track_owner_id int := 0;
   track_item json;
+  subscriber_user_ids integer[];
 begin
 
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
@@ -32,6 +33,38 @@ begin
     )
     where user_id = new.playlist_owner_id;
   end if;
+
+  -- Create playlist notification
+  begin
+    if new.created_at = new.updated_at AND 
+    new.is_private = FALSE AND 
+    new.is_delete = FALSE then
+      select array(
+        select subscriber_id 
+          from subscriptions 
+          where is_current and 
+          not is_delete and 
+          user_id=new.playlist_owner_id
+      ) into subscriber_user_ids;
+      if array_length(subscriber_user_ids, 1)	> 0 then
+        insert into notification
+        (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+        values
+        (
+          new.blocknumber,
+          subscriber_user_ids,
+          new.updated_at,
+          'create',
+          new.playlist_owner_id,
+          'create:playlist_id:' || new.playlist_id,
+          json_build_object('playlist_id', new.playlist_id, 'is_album', new.is_album)
+        )
+        on conflict do nothing;
+      end if;
+    end if;
+	exception
+		when others then null;
+	end;
 
   begin
     if new.is_delete IS FALSE and new.is_private IS FALSE then

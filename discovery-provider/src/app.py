@@ -397,6 +397,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_rewards_manager_backfill",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.backfill_cid_data",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
@@ -541,6 +542,10 @@ def configure_celery(celery, test_config=None):
         broker_url=redis_url,
     )
 
+    # backfill cid data if url is provided
+    if "backfill_cid_data_url" in shared_config["discprov"]:
+        celery.send_task("backfill_cid_data")
+
     # Initialize DB object for celery task context
     db = SessionManager(
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
@@ -601,8 +606,11 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete("spl_token_lock")
     redis_inst.delete("spl_token_backfill_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
+    redis_inst.delete("backfill_cid_data_lock")
+    redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 

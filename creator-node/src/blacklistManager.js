@@ -2,7 +2,9 @@ const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
-const { clusterUtilsForWorker } = require('./utils')
+const {
+  clusterUtilsForWorker
+} = require('./utils/cluster/clusterUtilsForWorker')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
@@ -39,6 +41,21 @@ class BlacklistManager {
           userIdsToBlacklist,
           segmentsToBlacklist
         })
+
+        // add items to redis periodically in case redis restarts
+        setInterval(async () => {
+          const {
+            trackIdsToBlacklist,
+            userIdsToBlacklist,
+            segmentsToBlacklist
+          } = await this._getDataToBlacklist()
+          await this._fetchCIDsAndAddToRedis({
+            trackIdsToBlacklist,
+            userIdsToBlacklist,
+            segmentsToBlacklist
+          })
+          this._log(`Re-added to redis`)
+        }, 1000 * 60 * 60 * 2 /* two hours */)
       }
 
       this.initialized = true
