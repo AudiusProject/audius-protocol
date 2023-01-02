@@ -228,6 +228,7 @@ export const Lineup = ({
   includeLineupStatus,
   limit = Infinity,
   extraFetchOptions,
+  ListFooterComponent,
   ...listProps
 }: LineupProps) => {
   const showTip = useSelector(getShowTip)
@@ -522,7 +523,9 @@ export const Lineup = ({
         ref={ref}
         onScroll={handleScroll}
         ListHeaderComponent={header}
-        ListFooterComponent={<View style={{ height: 16 }} />}
+        ListFooterComponent={
+          lineup.hasMore ? <View style={{ height: 16 }} /> : ListFooterComponent
+        }
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}

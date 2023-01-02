@@ -164,7 +164,7 @@ export type LineupProps = {
   pullToRefresh?: boolean
 } & Pick<
   SectionListProps<unknown>,
-  'showsVerticalScrollIndicator' | 'ListEmptyComponent'
+  'showsVerticalScrollIndicator' | 'ListEmptyComponent' | 'ListFooterComponent'
 >
 
 export type TogglePlayConfig = {
