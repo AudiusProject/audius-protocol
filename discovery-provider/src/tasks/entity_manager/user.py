@@ -13,14 +13,16 @@ from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.entity_manager.user_replica_set import parse_sp_ids
+from src.tasks.entity_manager.user_replica_set import (
+    get_endpoint_string_from_sp_ids,
+    parse_sp_ids,
+)
 from src.tasks.entity_manager.utils import (
     USER_ID_OFFSET,
     Action,
     EntityType,
     ManageEntityParameters,
     copy_record,
-    get_endpoint_string_from_sp_ids,
 )
 from src.utils.config import shared_config
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
