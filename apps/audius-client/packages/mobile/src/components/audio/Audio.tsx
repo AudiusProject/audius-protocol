@@ -326,11 +326,26 @@ export const Audio = () => {
     }
   }, [seek, setSeekPosition])
 
+  // Keep track of the track index the last time counter was updated
+  const counterTrackIndex = useRef<number | null>(null)
+
+  const resetPositionForSameTrack = useCallback(() => {
+    // NOTE: Make sure that we only set seek position to 0 when we are restarting a track
+    const trackIndex = queueShuffle ? queueShuffleIndex : queueIndex
+    if (trackIndex === counterTrackIndex.current) setSeekPosition(0)
+    counterTrackIndex.current = trackIndex
+  }, [queueIndex, queueShuffle, queueShuffleIndex, setSeekPosition])
+
+  const counterRef = useRef<number | null>(null)
+
   // Restart (counter) handler
   useEffect(() => {
-    setSeekPosition(0)
+    if (counter !== counterRef.current) {
+      counterRef.current = counter
+      resetPositionForSameTrack()
+    }
     setListenLoggedForTrack(false)
-  }, [counter, setSeekPosition])
+  }, [counter, resetPositionForSameTrack])
 
   const { loading: loadingOfflineTrack, value: offlineTrackUri } =
     useOfflineTrackUri(track?.track_id.toString())
