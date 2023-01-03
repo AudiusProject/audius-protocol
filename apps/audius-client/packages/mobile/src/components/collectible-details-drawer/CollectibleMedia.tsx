@@ -3,53 +3,56 @@ import { useCallback, useState } from 'react'
 import type { Collectible } from '@audius/common'
 import { CollectibleMediaType } from '@audius/common'
 import type { ImageStyle } from 'react-native'
-import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native'
+import { TouchableWithoutFeedback, View } from 'react-native'
 
 import IconVolume from 'app/assets/images/iconVolume.svg'
 import IconMute from 'app/assets/images/iconVolume0.svg'
 import AutoSizeImage from 'app/components/image/AutoSizeImage'
 import AutoSizeVideo from 'app/components/video/AutoSizeVideo'
-import type { ThemeColors } from 'app/hooks/useThemedStyles'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    container: {
-      borderRadius: 8
-    },
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  container: {
+    borderRadius: 8
+  },
 
-    volumeIconContainer: {
-      position: 'absolute',
-      height: 42,
-      width: 42,
-      bottom: 8,
-      right: 8,
-      borderWidth: 2,
-      borderColor: themeColors.neutralLight5,
-      borderRadius: 21
-    },
+  volumeIconContainer: {
+    position: 'absolute',
+    height: spacing(10),
+    width: spacing(10),
+    bottom: spacing(2),
+    right: spacing(2),
+    borderWidth: 2,
+    borderColor: palette.neutralLight5,
+    borderRadius: spacing(10) / 2,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 
-    volumeIcon: {
-      marginTop: 10,
-      marginLeft: 10
-    }
-  })
+  volumeIcon: {}
+}))
 
-export const CollectibleMedia: React.FC<{
+type CollectibleMediaProps = {
   collectible: Collectible
-}> = ({ collectible }) => {
+}
+
+export const CollectibleMedia = (props: CollectibleMediaProps) => {
+  const { collectible } = props
   const { mediaType, imageUrl, videoUrl, gifUrl } = collectible
 
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const neutralLight5 = useColor('neutralLight5')
 
   const [isMuted, setIsMuted] = useState<boolean>(true)
+
   const toggleMute = useCallback(() => {
     setIsMuted(!isMuted)
   }, [isMuted, setIsMuted])
 
   const VolumeIcon = isMuted ? IconMute : IconVolume
+
+  console.log(mediaType, imageUrl)
 
   const renderByMediaType = {
     // TODO: Implement 3D model viewing on mobile

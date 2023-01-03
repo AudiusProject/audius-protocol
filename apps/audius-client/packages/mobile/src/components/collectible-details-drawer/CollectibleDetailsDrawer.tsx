@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  Chain,
   cacheUsersSelectors,
   collectibleDetailsUISelectors
 } from '@audius/common'
@@ -9,17 +8,12 @@ import { ScrollView, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconShare from 'app/assets/images/iconShare.svg'
-import LogoEth from 'app/assets/images/logoEth.svg'
-import LogoSol from 'app/assets/images/logoSol.svg'
-import Button from 'app/components/button'
+import { Button, ChainLogo, Text } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
-import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { getCollectiblesRoute } from 'app/utils/routes'
 import share from 'app/utils/share'
-import { useColor } from 'app/utils/theme'
-
-import { ButtonType } from '../button/Button'
 
 import { CollectibleDate } from './CollectibleDate'
 import { CollectibleLink } from './CollectibleLink'
@@ -33,7 +27,9 @@ export const messages = {
   owned: 'OWNED',
   created: 'CREATED',
   share: 'SHARE',
-  linkToCollectible: 'Link To Collectible'
+  linkToCollectible: 'Link To Collectible',
+  dateCreated: 'Date Created:',
+  lastTransferred: 'Last Transferred:'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -49,17 +45,15 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   detailsTitle: {
     textAlign: 'center',
-    fontSize: 16,
     marginBottom: spacing(6)
   },
   detailsStamp: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing(5),
-    fontSize: 12
+    marginBottom: spacing(5)
   },
   badge: {
-    color: palette.white,
+    color: palette.staticWhite,
     textAlign: 'center',
     paddingVertical: spacing(1),
     paddingHorizontal: spacing(2),
@@ -70,16 +64,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   created: { backgroundColor: palette.primary },
   owned: { backgroundColor: palette.secondary },
-  chainIcon: {
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: 14,
-    padding: 2,
+  chainLogo: {
     marginLeft: spacing(2)
   },
-  shareButtonContainer: { marginVertical: spacing(4) },
-  shareButton: { width: '100%' },
-  shareButtonIcon: { marginRight: 10 }
+  shareButton: {
+    marginVertical: spacing(4)
+  }
 }))
 
 const getHostname = (url: string) => {
@@ -109,16 +99,13 @@ export const CollectibleDetailsDrawer = () => {
     }
   }, [owner, collectible])
 
-  const ChainLogo = collectible?.chain === Chain.Eth ? LogoEth : LogoSol
-  const buttonIconColor = useColor('neutralLight4')
-
   return (
     <AppDrawer modalName={MODAL_NAME} isGestureSupported={false} isFullscreen>
-      {collectible && (
+      {collectible ? (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.root}>
           <CollectibleMedia collectible={collectible} />
           <View style={styles.details}>
-            <Text style={styles.detailsTitle} weight='bold'>
+            <Text style={styles.detailsTitle} variant='h2'>
               {collectible.name}
             </Text>
             <View style={styles.detailsStamp}>
@@ -127,24 +114,23 @@ export const CollectibleDetailsDrawer = () => {
                   styles.badge,
                   collectible.isOwned ? styles.owned : styles.created
                 ]}
+                fontSize='xs'
                 weight='bold'
               >
                 {collectible.isOwned ? messages.owned : messages.created}
               </Text>
-              <View style={styles.chainIcon}>
-                <ChainLogo height={20} width={20} />
-              </View>
+              <ChainLogo chain={collectible.chain} style={styles.chainLogo} />
             </View>
             {!!collectible.dateCreated && (
               <CollectibleDate
                 date={collectible.dateCreated}
-                label='Date Created:'
+                label={messages.dateCreated}
               />
             )}
             {!!collectible.dateLastTransferred && (
               <CollectibleDate
                 date={collectible.dateLastTransferred}
-                label='Last Transferred:'
+                label={messages.lastTransferred}
               />
             )}
             <Text style={styles.detailsDescription}>
@@ -162,25 +148,23 @@ export const CollectibleDetailsDrawer = () => {
                 text={messages.linkToCollectible}
               />
             )}
-            <View style={styles.shareButtonContainer}>
-              <Button
-                type={ButtonType.COMMON}
-                title={messages.share}
-                onPress={handleShare}
-                containerStyle={styles.shareButton}
-                iconPosition={'left'}
-                style={{ padding: 8 }}
-                icon={
-                  <IconShare
-                    style={styles.shareButtonIcon}
-                    fill={buttonIconColor}
-                  />
-                }
-              />
-            </View>
+            <Button
+              style={styles.shareButton}
+              variant='commonAlt'
+              title={messages.share}
+              size='large'
+              fullWidth
+              onPress={handleShare}
+              iconPosition='left'
+              icon={IconShare}
+              IconProps={{
+                height: spacing(6),
+                width: spacing(6)
+              }}
+            />
           </View>
         </ScrollView>
-      )}
+      ) : null}
     </AppDrawer>
   )
 }

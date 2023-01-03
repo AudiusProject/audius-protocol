@@ -1,45 +1,37 @@
 import { formatDateWithTimezoneOffset } from '@audius/common'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
-import Text from 'app/components/text'
-import type { ThemeColors } from 'app/hooks/useThemedStyles'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { Text } from 'app/components/core'
+import { makeStyles } from 'app/styles'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    dateWrapper: {
-      display: 'flex',
-      flexDirection: 'row',
-      marginTop: 8,
-      marginBottom: 20
-    },
+const useStyles = makeStyles(({ spacing }) => ({
+  dateWrapper: {
+    flexDirection: 'row',
+    marginTop: spacing(2),
+    marginBottom: spacing(5)
+  },
+  date: {
+    marginHorizontal: spacing(2)
+  }
+}))
 
-    dateTitle: {
-      color: themeColors.neutralLight4
-    },
-
-    date: {
-      color: themeColors.neutralLight2,
-      marginRight: 8,
-      marginLeft: 8
-    }
-  })
-
-export const CollectibleDate = ({
-  date,
-  label
-}: {
+type CollectibleDateProps = {
   date: string
   label: string
-}) => {
-  const styles = useThemedStyles(createStyles)
+}
+
+export const CollectibleDate = (props: CollectibleDateProps) => {
+  const { date, label } = props
+  const styles = useStyles()
 
   return (
     <View style={styles.dateWrapper}>
-      <Text style={styles.dateTitle} weight='bold'>
+      <Text color='neutralLight4' weight='bold'>
         {label}
       </Text>
-      <Text style={styles.date}>{formatDateWithTimezoneOffset(date)}</Text>
+      <Text color='neutralLight2' style={styles.date}>
+        {formatDateWithTimezoneOffset(date)}
+      </Text>
     </View>
   )
 }

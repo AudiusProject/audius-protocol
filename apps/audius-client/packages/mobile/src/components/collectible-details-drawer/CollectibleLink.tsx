@@ -1,64 +1,50 @@
-import { useCallback } from 'react'
-
-import {
-  Linking,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View
-} from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 
 import IconLink from 'app/assets/images/iconLink.svg'
-import Text from 'app/components/text'
-import type { ThemeColors } from 'app/hooks/useThemedStyles'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { Text, useLink } from 'app/components/core'
+import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    link: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 20
-    },
+const useStyles = makeStyles(({ spacing }) => ({
+  link: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing(5)
+  },
+  linkText: {
+    textDecorationLine: 'underline'
+  },
+  linkIcon: {
+    marginRight: spacing(1)
+  }
+}))
 
-    linkText: {
-      color: themeColors.secondary,
-      textDecorationLine: 'underline'
-    },
-
-    linkIcon: {
-      marginRight: 6
-    }
-  })
-
-export const CollectibleLink = ({
-  url,
-  text
-}: {
+type CollectiblLinkProps = {
   url: string
   text: string
-}) => {
-  const styles = useThemedStyles(createStyles)
-  const handleLinkPress = useCallback(() => {
-    Linking.openURL(url)
-  }, [url])
+}
+
+export const CollectibleLink = (props: CollectiblLinkProps) => {
+  const { url, text } = props
+  const styles = useStyles()
+  const { onPress } = useLink(url)
 
   const { secondary } = useThemeColors()
 
   return (
-    <TouchableWithoutFeedback onPress={handleLinkPress}>
+    <TouchableOpacity onPress={onPress}>
       <View style={styles.link}>
         <IconLink
           fill={secondary}
           style={styles.linkIcon}
-          height={16}
-          width={16}
+          height={spacing(4)}
+          width={spacing(4)}
         />
-        <Text style={styles.linkText} weight='demiBold'>
+        <Text style={styles.linkText} color='secondary' weight='demiBold'>
           {text}
         </Text>
       </View>
-    </TouchableWithoutFeedback>
+    </TouchableOpacity>
   )
 }

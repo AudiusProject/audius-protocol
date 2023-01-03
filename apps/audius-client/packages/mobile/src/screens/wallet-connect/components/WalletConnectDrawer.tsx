@@ -81,9 +81,11 @@ export const WalletConnectDrawer = () => {
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
   )
-  const { uri } = useSelector((state: AppState) =>
+  const data = useSelector((state: AppState) =>
     getData<'ConnectWallets'>(state)
   )
+
+  const uri = data?.uri
 
   return (
     <NativeDrawer

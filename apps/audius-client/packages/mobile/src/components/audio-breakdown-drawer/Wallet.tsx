@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import type { BNWei } from '@audius/common'
 import {
@@ -7,47 +7,34 @@ import {
   shortenSPLAddress,
   Chain
 } from '@audius/common'
+import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
-import LogoEth from 'app/assets/images/logoEth.svg'
-import LogoSol from 'app/assets/images/logoSol.svg'
-import { Text } from 'app/components/core'
+import { ChainLogo, Text } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { makeStyles } from 'app/styles'
-import share from 'app/utils/share'
 
-const useSyles = makeStyles(({ palette }) => ({
-  chainIconContainer: {
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: 20,
-    padding: 8,
-    shadowColor: palette.neutralDark1,
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    shadowOffset: {
-      height: 1,
-      width: 1
-    },
-    elevation: 5
-  },
+import { ToastContext } from '../toast/ToastContext'
+
+const messages = {
+  copied: 'Copied To Clipboard!'
+}
+
+const useSyles = makeStyles(({ palette, spacing }) => ({
   walletRow: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 12,
-    paddingBottom: 8,
     alignItems: 'center',
-    fontSize: 16
+    paddingTop: spacing(3),
+    paddingBottom: spacing(2)
   },
   linkedWallet: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center'
   },
   walletAddress: {
-    marginLeft: 16,
+    marginLeft: spacing(4),
     fontSize: 14
   },
   linkedAmount: {
@@ -66,6 +53,7 @@ type WalletProps = { chain: Chain; address: string; balance: BNWei }
 export const Wallet = (props: WalletProps) => {
   const { chain, address, balance } = props
   const styles = useSyles()
+  const { toast } = useContext(ToastContext)
 
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.98)
 
@@ -73,8 +61,9 @@ export const Wallet = (props: WalletProps) => {
     chain === Chain.Eth ? shortenEthAddress : shortenSPLAddress
 
   const handleCopy = useCallback(() => {
-    share({ url: address })
-  }, [address])
+    Clipboard.setString(address)
+    toast({ content: messages.copied, type: 'info' })
+  }, [address, toast])
 
   return (
     <View style={styles.walletRow}>
@@ -85,13 +74,7 @@ export const Wallet = (props: WalletProps) => {
           onPressOut={handlePressOut}
         >
           <View style={styles.linkedWallet}>
-            <View style={styles.chainIconContainer}>
-              {chain === Chain.Eth ? (
-                <LogoEth height={16} width={16} />
-              ) : (
-                <LogoSol height={16} width={16} />
-              )}
-            </View>
+            <ChainLogo chain={chain} />
             <Text style={styles.walletAddress} weight='demiBold'>
               {displayAddress(address)}
             </Text>
