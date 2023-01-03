@@ -26,7 +26,7 @@ const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   title: 'Settings',
-  audioRewards: 'Audio & Rewards',
+  audioRewards: '$AUDIO & Rewards',
   listeningHistory: 'Listening History',
   notifications: 'Notifications',
   about: 'About'
