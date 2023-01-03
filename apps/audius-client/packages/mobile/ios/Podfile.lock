@@ -615,6 +615,8 @@ PODS:
     - Sentry/Core (= 7.5.4)
   - Sentry/Core (7.5.4)
   - SocketRocket (0.6.0)
+  - SRSRadialGradient (1.1.2):
+    - React
   - SwiftAudioEx (0.15.3)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -725,6 +727,7 @@ DEPENDENCIES:
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - SRSRadialGradient (from `../node_modules/react-native-radial-gradient/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -921,6 +924,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  SRSRadialGradient:
+    :path: "../node_modules/react-native-radial-gradient/ios"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1034,10 +1039,11 @@ SPEC CHECKSUMS:
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   Sentry: 5c5dd4005f3b7b9765d5a8871232cddbd0d888b7
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
+  SRSRadialGradient: f88dfa41215854bfb721dfe926bd9bf09338a602
   SwiftAudioEx: 83eabba2940924fc1c0d5cb0896049921365229c
   Yoga: 0b84a956f7393ef1f37f3bb213c516184e4a689d
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 488d0f21f21213312346965ab2e7565528c941c7
+PODFILE CHECKSUM: a48e62d3161ddfa01af44382b4a87aacfbad38be
 
 COCOAPODS: 1.11.3
