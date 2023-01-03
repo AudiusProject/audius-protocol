@@ -31,9 +31,10 @@ def _get_current_utc_timestamp_ms():
 
 
 def get_premium_track_signature(
-    cid: str, is_premium: bool, user_wallet: Optional[str]
+    track_id: int, cid: str, is_premium: bool, user_wallet: Optional[str]
 ) -> PremiumContentSignature:
     data = {
+        "trackId": track_id,
         "cid": cid,
         "timestamp": _get_current_utc_timestamp_ms(),
     }
@@ -50,7 +51,10 @@ def get_premium_content_signature(
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
         return get_premium_track_signature(
-            cid=args["track_cid"], is_premium=args["is_premium"], user_wallet=None
+            track_id=args["track_id"],
+            cid=args["track_cid"],
+            is_premium=args["is_premium"],
+            user_wallet=None,
         )
     return None
 
@@ -60,6 +64,7 @@ def get_premium_content_signature_for_user(
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
         return get_premium_track_signature(
+            track_id=args["track_id"],
             cid=args["track_cid"],
             is_premium=args["is_premium"],
             user_wallet=args["user_wallet"],

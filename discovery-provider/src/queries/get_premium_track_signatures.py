@@ -190,6 +190,7 @@ def _get_eth_nft_gated_track_signatures(
                             track_id
                         ] = get_premium_content_signature_for_user(
                             {
+                                "track_id": track_id,
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
@@ -226,6 +227,7 @@ def _get_eth_nft_gated_track_signatures(
                             track_id
                         ] = get_premium_content_signature_for_user(
                             {
+                                "track_id": track_id,
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
@@ -407,6 +409,7 @@ def _get_sol_nft_gated_track_signatures(
                             track_id
                         ] = get_premium_content_signature_for_user(
                             {
+                                "track_id": track_id,
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
@@ -522,6 +525,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
         for track_id in track_ids_with_access:
             track_signature_map[track_id] = get_premium_content_signature_for_user(
                 {
+                    "track_id": tracks_map[track_id].track_id,
                     "track_cid": tracks_map[track_id].track_cid,
                     "type": "track",
                     "user_wallet": user_wallet,

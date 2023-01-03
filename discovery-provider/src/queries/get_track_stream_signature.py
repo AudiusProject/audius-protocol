@@ -25,6 +25,7 @@ def get_track_stream_signature(args: Dict):
     if not track["is_premium"]:
         return get_premium_content_signature(
             {
+                "track_id": track["track_id"],
                 "track_cid": track["track_cid"],
                 "type": "track",
                 "is_premium": False,
@@ -74,6 +75,7 @@ def get_track_stream_signature(args: Dict):
 
     return get_premium_content_signature(
         {
+            "track_id": track["track_id"],
             "track_cid": track["track_cid"],
             "type": "track",
             "is_premium": True,

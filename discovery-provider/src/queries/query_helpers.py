@@ -551,6 +551,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
                 response_name_constants.premium_content_signature
             ] = get_premium_content_signature_for_user(
                 {
+                    "track_id": track_id,
                     "track_cid": track_cid,
                     "type": "track",
                     "user_wallet": current_user_wallet[0],

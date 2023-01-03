@@ -10,13 +10,19 @@ from src.utils.config import shared_config
 
 
 def test_signature():
+    track_id = 1
     track_cid = "some-track-cid"
     premium_content_type = "track"
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
     # for a non-premium track
     result = get_premium_content_signature(
-        {"track_cid": track_cid, "type": premium_content_type, "is_premium": False}
+        {
+            "track_id": track_id,
+            "track_cid": track_cid,
+            "type": premium_content_type,
+            "is_premium": False,
+        }
     )
     signature = result["signature"]
     signature_data = result["data"]
@@ -38,7 +44,12 @@ def test_signature():
 
     # make sure that "shouldCache" is not included in the signature for a premium track
     result = get_premium_content_signature(
-        {"track_cid": track_cid, "type": premium_content_type, "is_premium": True}
+        {
+            "track_id": track_id,
+            "track_cid": track_cid,
+            "type": premium_content_type,
+            "is_premium": True,
+        }
     )
     signature_data = result["data"]
     signature_data_obj = json.loads(signature_data)
@@ -47,6 +58,7 @@ def test_signature():
 
 
 def test_signature_for_user():
+    track_id = 1
     track_cid = "some-track-cid"
     premium_content_type = "track"
     user_wallet = (
@@ -57,6 +69,7 @@ def test_signature_for_user():
     # for a non-premium track
     result = get_premium_content_signature_for_user(
         {
+            "track_id": track_id,
             "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
@@ -85,6 +98,7 @@ def test_signature_for_user():
     # make sure that "shouldCache" is not included in the signature for a premium track
     result = get_premium_content_signature_for_user(
         {
+            "track_id": track_id,
             "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
