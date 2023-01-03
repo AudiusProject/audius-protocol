@@ -19,7 +19,7 @@ describe('Test content access', function () {
     '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
-  const trackId = '12345'
+  const trackId = 12345
   const data = {
     cid,
     shouldCache: true,
