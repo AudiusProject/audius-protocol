@@ -95,7 +95,9 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
             content_node_service_type, sp_id
         ).call()
-        logger.info(f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}")
+        logger.info(
+            f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}"
+        )
         set_json_cached_key(redis, cache_key, cn_endpoint_info, cnode_info_redis_ttl_s)
         endpoint = cn_endpoint_info[1]
 
