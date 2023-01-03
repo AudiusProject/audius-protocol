@@ -26,9 +26,6 @@ mobile-build-ios:
           curl -sL https://sentry.io/get-cli/ | bash
           echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
     - run:
-        name: enable Hermes
-        command: cd packages/mobile && node enableHermesiOS.js
-    - run:
         name: install pods
         command: cd packages/mobile/ios && pod install
     - run:
