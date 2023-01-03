@@ -11,7 +11,7 @@ type BlacklistedContent = {
   allSegments: string[]
 }
 
-type ICBLSegments = {
+type Segment = {
   id: number
   type: 'USER' | 'TRACK' | 'CID'
   value: string
