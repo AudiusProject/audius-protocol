@@ -4,17 +4,13 @@ from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.indexing.block import Block
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.tasks.celery_app import celery
-from src.tasks.social_features import (
-    dispatch_challenge_follow,
-    dispatch_challenge_repost,
-)
-from src.tasks.user_library import dispatch_favorite
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import (
@@ -28,6 +24,18 @@ index_profile_challenge_backfill_tablename = "index_profile_challenge_backfill"
 
 # Number of blocks to scan through at a time
 BLOCK_INTERVAL = 1000
+
+
+def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
+    bus.dispatch(ChallengeEvent.repost, block_number, repost.user_id)
+
+
+def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
+    bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
+
+
+def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
+    bus.dispatch(ChallengeEvent.favorite, block_number, save.user_id)
 
 
 def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):

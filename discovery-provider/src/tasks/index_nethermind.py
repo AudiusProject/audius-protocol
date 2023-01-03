@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import os
 import time
@@ -8,6 +9,7 @@ from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -33,7 +35,6 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
-from src.tasks.index import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
@@ -430,6 +431,27 @@ def process_state_changes(
             f"index_nethermind.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
+
+
+UPSERT_CID_METADATA_QUERY = """
+    INSERT INTO cid_data (cid, type, data)
+    VALUES (:cid, :type, :data)
+    ON CONFLICT DO NOTHING;
+"""
+
+
+def save_cid_metadata(
+    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
+):
+
+    if not cid_metadata:
+        return
+
+    vals = []
+    for cid, val in cid_metadata.items():
+        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+
+    session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def create_and_raise_indexing_error(err, redis):

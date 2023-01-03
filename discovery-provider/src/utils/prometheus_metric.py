@@ -108,7 +108,6 @@ class PrometheusMetricNames:
         "update_track_is_available_duration_seconds"
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
-    USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
     ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
     ENTITY_MANAGER_UPDATE_DURATION_SECONDS = "entity_manager_update_duration_seconds"
     ENTITY_MANAGER_UPDATE_ERRORS = "entity_manager_update_errors"
@@ -212,11 +211,6 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
         "Runtimes for src.task.index_trending:update_view()",
         ("mat_view_name",),
-    ),
-    PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
     ),
     PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST}",
