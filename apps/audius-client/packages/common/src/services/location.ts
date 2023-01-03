@@ -64,7 +64,7 @@ export const getLocation = async (
   }
 }
 
-export async function* getCityAndRegion() {
+export function* getCityAndRegion() {
   const localStorage = yield* getContext('localStorage')
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const location = yield* call(getLocation, localStorage, audiusBackend)
