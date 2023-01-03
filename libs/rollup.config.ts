@@ -77,7 +77,7 @@ export const outputConfigs = {
 
   /**
    * SDK (and Libs) Node Package (ES Module)
-   * Potentially used by third parties?
+   * Used by third parties using ES Modules
    * Could be used by Audius Content Node and Identity Service after moving those services to ES module
    * - Includes libs
    */
@@ -100,10 +100,14 @@ export const outputConfigs = {
    */
   sdkConfigReactNative: {
     input: 'src/sdk/index.ts',
-    output: [{ file: 'dist/index.native.js', format: 'es', sourcemap: true }],
+    output: [{ file: pkg['react-native'], format: 'es', sourcemap: true }],
     plugins: [
+      ignore(['web3', 'graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
+      alias({
+        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+      }),
       babel({ babelHelpers: 'bundled', extensions, plugins: [] }),
       json(),
       pluginTypescript
@@ -113,7 +117,7 @@ export const outputConfigs = {
 
   /**
    * SDK Browser Package (Common JS)
-   * Don't think this is used by anyone?
+   * Possibly used by third parties
    * - Includes polyfills for node libraries
    * - Includes deps that are ignored or polyfilled for browser
    * - Makes external ES modules internal to prevent issues w/ using require()
@@ -238,7 +242,7 @@ export const outputConfigs = {
   /**
    * Libs Legacy React Native Package
    * Used by the Audius React Native Client
-   * - Includes a modified version of AudiusLibs with solana dependencies removed
+   * - Includes a modified version of AudiusLibs with Solana dependencies removed
    */
   legacyReactNativeConfig: {
     input: 'src/native-libs.ts',
