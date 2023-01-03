@@ -12,45 +12,43 @@ index 9aa4992..64dfe9a 100644
  }
  
 diff --git a/node_modules/react-native/index.js b/node_modules/react-native/index.js
-index e594bbe..660bac4 100644
+index d59ba34..349b4dd 100644
 --- a/node_modules/react-native/index.js
 +++ b/node_modules/react-native/index.js
-@@ -446,31 +446,15 @@ module.exports = {
+@@ -435,32 +435,16 @@ module.exports = {
    },
    // Deprecated Prop Types
    get ColorPropType(): $FlowFixMe {
--    console.warn(
--      'ColorPropType will be removed from React Native. Migrate to ' +
+-    invariant(
+-      false,
+-      'ColorPropType has been removed from React Native. Migrate to ' +
 -        "ColorPropType exported from 'deprecated-react-native-prop-types'.",
 -    );
-     return require('deprecated-react-native-prop-types').ColorPropType;
++    return require('deprecated-react-native-prop-types').ColorPropType
    },
    get EdgeInsetsPropType(): $FlowFixMe {
--    console.warn(
--      'EdgeInsetsPropType will be removed from React Native. Migrate to ' +
+-    invariant(
+-      false,
+-      'EdgeInsetsPropType has been removed from React Native. Migrate to ' +
 -        "EdgeInsetsPropType exported from 'deprecated-react-native-prop-types'.",
 -    );
-     return require('deprecated-react-native-prop-types').EdgeInsetsPropType;
++    return require('deprecated-react-native-prop-types').EdgeInsetsPropType
    },
    get PointPropType(): $FlowFixMe {
--    console.warn(
--      'PointPropType will be removed from React Native. Migrate to ' +
+-    invariant(
+-      false,
+-      'PointPropType has been removed from React Native. Migrate to ' +
 -        "PointPropType exported from 'deprecated-react-native-prop-types'.",
 -    );
-     return require('deprecated-react-native-prop-types').PointPropType;
++    return require('deprecated-react-native-prop-types').PointPropType
    },
    get ViewPropTypes(): $FlowFixMe {
--    console.warn(
--      'ViewPropTypes will be removed from React Native. Migrate to ' +
+-    invariant(
+-      false,
+-      'ViewPropTypes has been removed from React Native. Migrate to ' +
 -        "ViewPropTypes exported from 'deprecated-react-native-prop-types'.",
 -    );
-     return require('deprecated-react-native-prop-types').ViewPropTypes;
++    return require('deprecated-react-native-prop-types').ViewPropTypes
    },
  };
-diff --git a/node_modules/react-native/scripts/.packager.env b/node_modules/react-native/scripts/.packager.env
-new file mode 100644
-index 0000000..361f5fb
---- /dev/null
-+++ b/node_modules/react-native/scripts/.packager.env
-@@ -0,0 +1 @@
-+export RCT_METRO_PORT=8081
+ 

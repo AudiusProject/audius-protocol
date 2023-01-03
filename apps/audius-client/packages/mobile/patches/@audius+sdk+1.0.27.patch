@@ -1,0 +1,21 @@
+diff --git a/node_modules/@audius/sdk/dist/native-libs.js b/node_modules/@audius/sdk/dist/native-libs.js
+index 6020271..7a672d6 100644
+--- a/node_modules/@audius/sdk/dist/native-libs.js
++++ b/node_modules/@audius/sdk/dist/native-libs.js
+@@ -24,7 +24,6 @@ import EthereumWallet from 'ethereumjs-wallet';
+ import { Transaction } from 'ethereumjs-tx';
+ import splToken, { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+ import anchor, { BN as BN$1 } from '@project-serum/anchor';
+-import { idl } from '@audius/anchor-audius-data';
+ import { serialize, deserialize } from 'borsh';
+ import BN from 'bn.js';
+ import keccak256 from 'keccak256';
+@@ -34591,7 +34590,7 @@ var SolanaWeb3Manager = /*#__PURE__*/function () {
+                 this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA);
+                 this.audiusDataProgramId = audiusDataProgramId;
+                 this.audiusDataAdminStorageKeypairPublicKey = audiusDataAdminStorageKeypairPublicKey;
+-                this.audiusDataIdl = audiusDataIdl || idl;
++                this.audiusDataIdl = audiusDataIdl;
+ 
+                 if (this.audiusDataProgramId && this.audiusDataAdminStorageKeypairPublicKey && this.audiusDataIdl) {
+                   connection = new Connection(this.solanaClusterEndpoint, anchor.AnchorProvider.defaultOptions());
