@@ -131,6 +131,9 @@
               },
               {
                 "$ref": "#/definitions/PremiumConditionsFollowUserId"
+              },
+              {
+                "$ref": "#/definitions/PremiumConditionsTipUserId"
               }
             ]
           }
@@ -339,6 +342,17 @@
       },
       "required": ["follow_user_id"],
       "title": "PremiumConditionsFollowUserId"
+    },
+    "PremiumConditionsTipUserId": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tip_user_id": {
+          "type": "number"
+        }
+      },
+      "required": ["tip_user_id"],
+      "title": "PremiumConditionsTipUserId"
     }
   }
 }
