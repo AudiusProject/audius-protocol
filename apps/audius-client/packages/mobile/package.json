@@ -31,7 +31,6 @@
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
     "typecheck:trace": "tsc --generateTrace tsc_trace",
-    "enable-hermes:ios": "node enableHermesiOS.js",
     "disable-hermes:ios": "node disableHermesiOS.js",
     "preinstall": "npm-force-resolutions",
     "postinstall": "patch-package"

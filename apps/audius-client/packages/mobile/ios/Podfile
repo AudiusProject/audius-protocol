@@ -24,12 +24,10 @@ target 'AudiusReactNative' do
 
   # Flags change depending on the env values.
   flags = get_default_flags()
-  flipper_enabled = ENV['USE_FLIPPER']
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # Do NOT commit local changes (including corresponding Podfile.lock changes) to this value!:
-    :hermes_enabled => false,
+    :hermes_enabled => true,
     :fabric_enabled => flags[:fabric_enabled],
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
@@ -39,9 +37,7 @@ target 'AudiusReactNative' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
-  if flipper_enabled
-    use_flipper!({'Flipper' => '0.125.0'})
-  end
+  use_flipper!({'Flipper' => '0.125.0'})
 
   post_install do |installer|
     react_native_post_install(installer)
