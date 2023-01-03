@@ -312,6 +312,12 @@
         },
         "standard": {
           "enum": ["ERC721", "ERC1155"]
+        },
+        "name": {
+            "type": "string"
+        },
+        "slug": {
+            "type": "string"
         }
       },
       "required": ["chain", "address", "standard"],
@@ -327,6 +333,9 @@
         },
         "address": {
           "type": "string"
+        },
+        "name": {
+            "type": "string"
         }
       },
       "required": ["chain", "address"],

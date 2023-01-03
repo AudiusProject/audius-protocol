@@ -395,6 +395,12 @@
                         "ERC721",
                         "ERC1155"
                     ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -413,6 +419,9 @@
                     "const": "sol"
                 },
                 "address": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             },
