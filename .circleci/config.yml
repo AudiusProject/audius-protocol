@@ -30,8 +30,18 @@ commands:
             gcloud config set project "$GOOGLE_PROJECT_ID"
             gcloud config set compute/zone "$GOOGLE_COMPUTE_ZONE"
 
+            # Create firewall for instance
+            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+            gcloud compute firewall-rules create "<< parameters.instance-name >>" \
+              --source-ranges "$CIRCLECI_IP" \
+              --action allow --rules tcp:22 \
+              --target-tags "<< parameters.instance-name >>"
+
             # Create GCP instance
-            gcloud compute instances create "<< parameters.instance-name >>" << parameters.create-instance-args >>
+            gcloud compute instances create \
+              "<< parameters.instance-name >>" \
+              << parameters.create-instance-args >> \
+              --tags "<< parameters.instance-name >>"
 
             # SSH into machine to generate a ssh key
             gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command=exit
@@ -42,6 +52,7 @@ commands:
             gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
             if [[ "$?" != "0" ]]; then
               gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+              gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
               exit 1
             fi'
             chmod +x /bin/bash
@@ -49,7 +60,9 @@ commands:
       - run:
           name: Delete GCP instance
           shell: /usr/bin/bash
-          command: gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+          command: |
+            gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+            gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
   gcp-audius-checkout:
     description: Checkout
     steps:
