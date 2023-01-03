@@ -215,6 +215,9 @@ export const verifyTrack = async (
     !audioExists && console.warn(`Missing audio for ${trackId}`)
     !jsonExists && console.warn(`Missing json for ${trackId}`)
     !artExists?.length && console.warn(`Missing art for ${trackId}`)
+    !audioExists && alert(`Missing audio for ${trackId}`)
+    !jsonExists && alert(`Missing json for ${trackId}`)
+    !artExists?.length && alert(`Missing art for ${trackId}`)
   }
 
   return booleanResults.every((result) => result)

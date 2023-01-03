@@ -27,6 +27,7 @@ export const useReadOfflineOverride = () =>
         'true'
     } catch (e) {
       console.log('error reading local offline mode override')
+      alert('error reading local offline mode override')
     }
   })
 
