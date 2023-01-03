@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Optional, TypedDict, Union, cast
+from typing import Optional, TypedDict
 
 from src.api_helpers import generate_signature
 from src.premium_content.premium_content_types import PremiumContentType
