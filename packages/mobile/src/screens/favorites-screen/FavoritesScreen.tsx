@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import type { CommonState } from '@audius/common'
 import { accountActions } from '@audius/common'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -17,7 +16,6 @@ import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import {
-  toggleLocalOfflineModeOverride,
   useIsOfflineModeEnabled,
   useReadOfflineOverride
 } from 'app/hooks/useIsOfflineModeEnabled'
@@ -54,20 +52,11 @@ const favoritesScreens = [
 export const FavoritesScreen = () => {
   useAppTabScreen()
   const dispatch = useDispatch()
-  const [clickCount, setClickCount] = useState(0)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const { value: allFavoritedTrackIds } = useFetchAllFavoritedTracks()
 
   useReadOfflineOverride()
-  const handleHeaderClick = useCallback(() => {
-    if (clickCount >= 10) {
-      toggleLocalOfflineModeOverride()
-      setClickCount(0)
-    } else {
-      setClickCount(clickCount + 1)
-    }
-  }, [clickCount])
 
   useEffectOnce(() => {
     dispatch(fetchSavedPlaylists())
@@ -106,20 +95,18 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <TouchableWithoutFeedback onPress={handleHeaderClick}>
-        <ScreenHeader
-          text={messages.header}
-          icon={IconFavorite}
-          styles={{ icon: { marginLeft: 3 } }}
-        >
-          {isOfflineModeEnabled && (
-            <DownloadToggle
-              tracksForDownload={tracksForDownload}
-              isFavoritesDownload
-            />
-          )}
-        </ScreenHeader>
-      </TouchableWithoutFeedback>
+      <ScreenHeader
+        text={messages.header}
+        icon={IconFavorite}
+        styles={{ icon: { marginLeft: 3 } }}
+      >
+        {isOfflineModeEnabled && (
+          <DownloadToggle
+            tracksForDownload={tracksForDownload}
+            isFavoritesDownload
+          />
+        )}
+      </ScreenHeader>
       {
         // ScreenContent handles the offline indicator.
         // Show favorites screen anyway when offline so users can see their downloads
