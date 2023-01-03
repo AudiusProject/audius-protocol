@@ -11,7 +11,6 @@ from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.tasks.celery_app import celery
-from src.tasks.user_library import dispatch_favorite
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import (
@@ -34,6 +33,8 @@ def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
 def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
     bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
 
+def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
+    bus.dispatch(ChallengeEvent.favorite, block_number, save.user_id)
 
 def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):
     with db.scoped_session() as session:
