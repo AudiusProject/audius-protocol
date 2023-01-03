@@ -34,7 +34,7 @@ const getAllContentBlacklist = async (): Promise<BlacklistedContent> => {
     raw: true
   })
   const individuallyBlacklistedSegments = segmentsFromCBL.map(
-    (entry: ICBLSegments): string => entry.value
+    (entry: Segment): string => entry.value
   )
   const allSegments = await BlacklistManager.getAllCIDs()
   const blacklistedContent = {
@@ -52,8 +52,8 @@ const addToContentBlacklist = async ({
   type,
   values
 }: {
-  type: ICBLSegments['type']
-  values: ICBLSegments['value']
+  type: Segment['type']
+  values: Segment['value']
 }): Promise<void> => {
   await BlacklistManager.add({ type, values })
 }
@@ -62,8 +62,8 @@ const removeFromContentBlacklist = async ({
   type,
   values
 }: {
-  type: ICBLSegments['type']
-  values: ICBLSegments['value']
+  type: Segment['type']
+  values: Segment['value']
 }): Promise<void> => {
   await BlacklistManager.remove({ type, values })
 }
