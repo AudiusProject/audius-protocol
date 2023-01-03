@@ -66,11 +66,13 @@ export const startDownloadWorker = async () => {
         if (failed) {
           store.dispatch(errorDownload(trackId.toString()))
           queue.removeJob(job)
+          alert(`Job failed: ${parsedPayload.trackId}`)
         } else {
           trackIdsInQueue.push(trackId.toString())
         }
       } catch (e) {
         console.warn(e)
+        alert(`Error during job: ${e}`)
       }
     })
 
@@ -112,6 +114,7 @@ export const cancelQueuedDownloads = async (
       store.dispatch(removeDownload(parsedPayload.trackId.toString()))
     } catch (e) {
       console.warn(e)
+      alert(`Failed during cancel job: ${e}`)
     }
   })
   queue.start()

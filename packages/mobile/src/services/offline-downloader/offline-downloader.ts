@@ -132,6 +132,7 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   // Throw this
   const failJob = (message?: string) => {
     store.dispatch(errorDownload(trackIdStr))
+    alert(`DownloadTrack - FailJob: ${trackIdStr} - ${message}`)
     return new Error(message)
   }
 
@@ -264,16 +265,20 @@ export const batchRemoveTrackDownload = async (
 }
 
 export const downloadTrackCoverArt = async (track: Track) => {
-  const coverArtUris = Object.values(track._cover_art_sizes)
-  await Promise.all(
-    coverArtUris.map(async (coverArtUri) => {
-      const destination = getLocalTrackCoverArtDestination(
-        track.track_id.toString(),
-        coverArtUri
-      )
-      await downloadIfNotExists(coverArtUri, destination)
-    })
-  )
+  try {
+    const coverArtUris = Object.values(track._cover_art_sizes)
+    await Promise.all(
+      coverArtUris.map(async (coverArtUri) => {
+        const destination = getLocalTrackCoverArtDestination(
+          track.track_id.toString(),
+          coverArtUri
+        )
+        await downloadIfNotExists(coverArtUri, destination)
+      })
+    )
+  } catch (e) {
+    alert(`Error downloadTrackCoverArt: ${track.track_id} - ${e}`)
+  }
 }
 
 export const downloadCollectionCoverArt = async (collection: Collection) => {
@@ -290,24 +295,28 @@ export const downloadCollectionCoverArt = async (collection: Collection) => {
 }
 
 export const tryDownloadTrackFromEachCreatorNode = async (track: Track) => {
-  const state = store.getState()
-  const user = (
-    await apiClient.getUser({
-      userId: track?.owner_id,
-      // @ts-ignore mismatch in an irrelevant part of state
-      currentUserId: getUserId(state)
-    })
-  )[0] as UserMetadata
-  const encodedTrackId = encodeHashId(track.track_id)
-  const creatorNodeEndpoints = user.creator_node_endpoint.split(',')
-  const destination = getLocalAudioPath(track.track_id.toString())
+  try {
+    const state = store.getState()
+    const user = (
+      await apiClient.getUser({
+        userId: track?.owner_id,
+        // @ts-ignore mismatch in an irrelevant part of state
+        currentUserId: getUserId(state)
+      })
+    )[0] as UserMetadata
+    const encodedTrackId = encodeHashId(track.track_id)
+    const creatorNodeEndpoints = user.creator_node_endpoint.split(',')
+    const destination = getLocalAudioPath(track.track_id.toString())
 
-  for (const creatorNodeEndpoint of creatorNodeEndpoints) {
-    const uri = `${creatorNodeEndpoint}/tracks/stream/${encodedTrackId}`
-    const statusCode = await downloadIfNotExists(uri, destination)
-    if (statusCode) {
-      return statusCode
+    for (const creatorNodeEndpoint of creatorNodeEndpoints) {
+      const uri = `${creatorNodeEndpoint}/tracks/stream/${encodedTrackId}`
+      const statusCode = await downloadIfNotExists(uri, destination)
+      if (statusCode) {
+        return statusCode
+      }
     }
+  } catch (e) {
+    alert(`Error tryDownloadTrackFromEachCreatorNode: ${track.track_id} - ${e}`)
   }
 }
 
@@ -317,18 +326,22 @@ const downloadIfNotExists = async (
   destination: string,
   overwrite?: boolean
 ) => {
-  if (!uri || !destination) return null
-  if (!overwrite && (await exists(destination))) {
-    return null
+  try {
+    if (!uri || !destination) return null
+    if (!overwrite && (await exists(destination))) {
+      return null
+    }
+
+    const destinationDirectory = path.dirname(destination)
+    await RNFS.mkdir(destinationDirectory)
+
+    const result = await RNFS.downloadFile({
+      fromUrl: uri,
+      toFile: destination
+    })?.promise
+
+    return result?.statusCode ?? null
+  } catch (e) {
+    alert(`Error downloadIfNotExists: ${uri} - ${e}`)
   }
-
-  const destinationDirectory = path.dirname(destination)
-  await RNFS.mkdir(destinationDirectory)
-
-  const result = await RNFS.downloadFile({
-    fromUrl: uri,
-    toFile: destination
-  })?.promise
-
-  return result?.statusCode ?? null
 }
