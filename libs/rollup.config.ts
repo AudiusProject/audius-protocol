@@ -145,7 +145,7 @@ export const outputConfigs = {
 
   /**
    * SDK Browser Package (ES Module)
-   * Used by the Audius Web Client by extension the Desktop Client
+   * Used by the Audius Web Client and by extension the Desktop Client
    * - Includes polyfills for node libraries
    * - Includes deps that are ignored or polyfilled for browser
    */
