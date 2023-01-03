@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import type { BNWei } from '@audius/common'
-import { formatWei, tokenDashboardPageActions, Chain } from '@audius/common'
+import type { BNWei, Chain } from '@audius/common'
+import { formatWei, tokenDashboardPageActions } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -9,14 +9,11 @@ import { useDispatch } from 'react-redux'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
-import LogoEth from 'app/assets/images/logoEth.svg'
-import LogoSol from 'app/assets/images/logoSol.svg'
-import { IconButton, Text } from 'app/components/core'
+import { ChainLogo, IconButton, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
@@ -56,10 +53,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2)
   },
   chainIcon: {
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: 14,
-    padding: 2,
     marginRight: spacing(2)
   },
   address: {
@@ -122,13 +115,7 @@ export const LinkedWallet = ({
     <View style={styles.linkedWallet}>
       <View style={styles.linkedWalletData}>
         <View style={styles.linkedWalletKey}>
-          <View style={styles.chainIcon}>
-            {chain === Chain.Eth ? (
-              <LogoEth height={spacing(5)} width={spacing(5)} />
-            ) : (
-              <LogoSol height={spacing(5)} width={spacing(5)} />
-            )}
-          </View>
+          <ChainLogo chain={chain} style={styles.chainIcon} />
           <TouchableOpacity style={styles.address} onPress={handlePressAddress}>
             <Text
               fontSize='medium'

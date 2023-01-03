@@ -35,7 +35,7 @@ export const encodeUrlName = (name: string) => {
   return encodeURIComponent(formatUrlName(name))
 }
 
-const AUDIUS_URL = Config.AUDIUS_URL
+const { AUDIUS_URL } = Config
 
 export const getTrackRoute = (
   track: { permalink: string },
@@ -94,7 +94,11 @@ export const getHash = (str: string) =>
     }, 0)
   ).toString(36)
 
-export const getCollectiblesRoute = (handle: string, collectibleId?: string) =>
-  `${AUDIUS_URL}/${encodeUrlName(handle)}/collectibles${
+export const getCollectiblesRoute = (
+  handle: string,
+  collectibleId?: string,
+  fullUrl?: boolean
+) =>
+  `${fullUrl ? AUDIUS_URL : ''}${encodeUrlName(handle)}/collectibles${
     collectibleId ? `/${getHash(collectibleId)}` : ''
   }`

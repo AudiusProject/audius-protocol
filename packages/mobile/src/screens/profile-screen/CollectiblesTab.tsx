@@ -97,7 +97,7 @@ export const CollectiblesTab = () => {
   const handlePressShare = useCallback(() => {
     if (profile) {
       const { handle, name } = profile
-      Clipboard.setString(getCollectiblesRoute(handle))
+      Clipboard.setString(getCollectiblesRoute(handle, undefined, true))
       toast({ content: messages.copyToast(name), type: 'info' })
     }
   }, [profile, toast])

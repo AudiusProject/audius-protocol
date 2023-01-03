@@ -285,7 +285,7 @@ export const useThemeColors = () => {
   return themeColorsByThemeVariant[themeVariant]
 }
 
-export const useColor = (color: string) => {
+export const useColor = (color: string): string => {
   const theme = useThemeColors()
   return (theme as any)[color]
 }
