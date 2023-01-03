@@ -1,0 +1,35 @@
+"""playlist seen notification
+
+Revision ID: 4efaecad96fc
+Revises: 7b843f2d3a0d
+Create Date: 2022-12-30 19:29:24.733677
+
+"""
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision = '4efaecad96fc'
+down_revision = '7b843f2d3a0d'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table(
+        "playlist_seen",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("playlist_id", sa.Integer(), nullable=False),
+        sa.Column("seen_at", sa.DateTime(), nullable=False),
+        sa.Column("is_current", sa.Boolean(), nullable=False),
+        sa.Column("blocknumber", sa.Integer(), nullable=True),
+        sa.Column("blockhash", sa.String(), nullable=True),
+        sa.Column("txhash", sa.String(), nullable=True),
+        sa.PrimaryKeyConstraint("is_current", "user_id", "playlist_id", "seen_at"),
+        info={"if_not_exists": True},
+    )
+
+
+def downgrade():
+    op.drop_table("playlist_seen")

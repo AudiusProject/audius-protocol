@@ -7,6 +7,7 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.models.notifications.notification import PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -16,7 +17,11 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.notification import create_notification, view_notification
+from src.tasks.entity_manager.notification import (
+    create_notification,
+    view_notification,
+    view_playlist,
+)
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -209,6 +214,12 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_notification(params)
+                    elif (
+                        params.action == Action.VIEW_PLAYLIST
+                        and params.entity_type == EntityType.NOTIFICATION
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        view_playlist(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -286,9 +297,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
             entity_type = helpers.get_tx_arg(event, "_entityType")
+            action = helpers.get_tx_arg(event, "_action")
             user_id = helpers.get_tx_arg(event, "_userId")
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
+            if (
+                entity_type == EntityType.NOTIFICATION
+                and action == Action.VIEW_PLAYLIST
+            ):
+                entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
+                entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
+                logger.info("fetching plaulsist id")
             entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
 
@@ -448,6 +467,29 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 subscription.subscriber_id, EntityType.USER, subscription.user_id
             ): subscription
             for subscription in subscriptions
+        }
+
+    # PLAYLIST SEEN
+    if entities_to_fetch[EntityType.PLAYLIST_SEEN]:
+        playlist_seen_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.PLAYLIST_SEEN]
+        and_queries = []
+        for playlist_seen in playlist_seen_to_fetch:
+            user_id = playlist_seen[0]
+            playlist_id = playlist_seen[1]
+            and_queries.append(
+                and_(
+                    PlaylistSeen.user_id == user_id,
+                    PlaylistSeen.playlist_id == playlist_id,
+                    PlaylistSeen.is_current == True,
+                )
+            )
+
+        playlist_seens: List[PlaylistSeen] = (
+            session.query(PlaylistSeen).filter(or_(*and_queries)).all()
+        )
+        existing_entities[EntityType.PLAYLIST_SEEN] = {
+            (playlist_seen.user_id, playlist_seen.playlist_id): playlist_seen
+            for playlist_seen in playlist_seens
         }
 
     return existing_entities
