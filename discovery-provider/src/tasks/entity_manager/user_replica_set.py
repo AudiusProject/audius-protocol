@@ -53,17 +53,17 @@ def get_endpoint_string_from_sp_ids(
             # Conditionally log if endpoint is None after fetching
             if not secondary_endpoint:
                 logger.info(
-                    f"index.py | utils.py | Failed to find secondary info for {secondary_id}"
+                    f"index.py | user_replica_set.py | Failed to find secondary info for {secondary_id}"
                 )
             # Append to endpoint string regardless of status
             endpoint_string = f"{endpoint_string},{secondary_endpoint}"
     except Exception as exc:
         logger.error(
-            f"index.py | utils.py | ERROR in get_endpoint_string_from_sp_ids {exc}"
+            f"index.py | user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}"
         )
         raise exc
     logger.info(
-        f"index.py | utils.py | constructed:"
+        f"index.py | user_replica_set.py | constructed:"
         f"{endpoint_string} from {primary},{secondaries}",
         exc_info=True,
     )
@@ -81,13 +81,13 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
     if sp_info_cached:
         endpoint = sp_info_cached[1]
         logger.info(
-            f"index.py | utils.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}"
+            f"index.py | user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}"
         )
         return sp_factory_inst, endpoint
 
     if not endpoint:
         logger.info(
-            f"index.py | utils.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}"
+            f"index.py | user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}"
         )
         if sp_factory_inst is None:
             sp_factory_inst = get_sp_factory_inst()
@@ -95,7 +95,7 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
             content_node_service_type, sp_id
         ).call()
-        logger.info(f"index.py | utils.py | spID={sp_id} fetched {cn_endpoint_info}")
+        logger.info(f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}")
         set_json_cached_key(redis, cache_key, cn_endpoint_info, cnode_info_redis_ttl_s)
         endpoint = cn_endpoint_info[1]
 

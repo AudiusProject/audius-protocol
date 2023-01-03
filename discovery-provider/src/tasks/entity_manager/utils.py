@@ -23,8 +23,6 @@ PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
 USER_ID_OFFSET = 3_000_000
 
-logger = logging.getLogger(__name__)
-
 
 class Action(str, Enum):
     CREATE = "Create"
