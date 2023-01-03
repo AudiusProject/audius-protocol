@@ -33,8 +33,10 @@ def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
 def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
     bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
 
+
 def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
     bus.dispatch(ChallengeEvent.favorite, block_number, save.user_id)
+
 
 def enqueue_social_rewards_check(db: SessionManager, challenge_bus: ChallengeEventBus):
     with db.scoped_session() as session:
