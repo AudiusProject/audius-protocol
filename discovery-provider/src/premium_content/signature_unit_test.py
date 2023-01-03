@@ -16,7 +16,7 @@ def test_signature():
 
     # for a non-premium track
     result = get_premium_content_signature(
-        {"id": track_cid, "type": premium_content_type, "is_premium": False}
+        {"track_cid": track_cid, "type": premium_content_type, "is_premium": False}
     )
     signature = result["signature"]
     signature_data = result["data"]
@@ -36,9 +36,9 @@ def test_signature():
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
-    # make sure that "shouldCache" is included in the signature for a premium track
+    # make sure that "shouldCache" is not included in the signature for a premium track
     result = get_premium_content_signature(
-        {"id": track_cid, "type": premium_content_type, "is_premium": True}
+        {"track_cid": track_cid, "type": premium_content_type, "is_premium": True}
     )
     signature_data = result["data"]
     signature_data_obj = json.loads(signature_data)
@@ -57,7 +57,7 @@ def test_signature_for_user():
     # for a non-premium track
     result = get_premium_content_signature_for_user(
         {
-            "id": track_cid,
+            "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "is_premium": False,
@@ -82,10 +82,10 @@ def test_signature_for_user():
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
-    # make sure that "shouldCache" is included in the signature for a premium track
+    # make sure that "shouldCache" is not included in the signature for a premium track
     result = get_premium_content_signature_for_user(
         {
-            "id": track_cid,
+            "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "is_premium": True,

@@ -7,14 +7,16 @@ from src.premium_content.premium_content_types import PremiumContentType
 
 
 class PremiumContentSignatureArgs(TypedDict):
-    id: Union[int, str]
+    track_id: int
+    track_cid: str
     type: PremiumContentType
     is_premium: bool
 
 
 class PremiumContentSignatureForUserArgs(TypedDict):
     user_wallet: str
-    id: Union[int, str]
+    track_id: int
+    track_cid: str
     type: PremiumContentType
     is_premium: bool
 
@@ -48,7 +50,7 @@ def get_premium_content_signature(
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
         return get_premium_track_signature(
-            cid=cast(str, args["id"]), is_premium=args["is_premium"], user_wallet=None
+            cid=args["track_cid"], is_premium=args["is_premium"], user_wallet=None
         )
     return None
 
@@ -58,7 +60,7 @@ def get_premium_content_signature_for_user(
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
         return get_premium_track_signature(
-            cid=cast(str, args["id"]),
+            cid=args["track_cid"],
             is_premium=args["is_premium"],
             user_wallet=args["user_wallet"],
         )
