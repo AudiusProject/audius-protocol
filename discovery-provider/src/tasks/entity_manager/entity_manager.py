@@ -16,10 +16,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.notification_seen import (
-    create_notification,
-    view_notification,
-)
+from src.tasks.entity_manager.notification import create_notification, view_notification
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
