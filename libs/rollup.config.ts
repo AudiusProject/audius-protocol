@@ -7,6 +7,7 @@ import { terser } from 'rollup-plugin-terser'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
 import ignore from 'rollup-plugin-ignore'
+import path from 'path'
 
 import pkg from './package.json'
 
@@ -249,16 +250,24 @@ export const outputConfigs = {
     output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      alias({
+        entries: [
+          { find: 'stream', replacement: 'stream-browserify' },
+          {
+            // Need to exclude @audius/anchor-audius-data,
+            // but it has a named import so the default ignore plugin won't work
+            find: '@audius/anchor-audius-data',
+            replacement: path.resolve(__dirname, 'src/NativeAudiusAnchorData')
+          }
+        ]
+      }),
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
-      alias({
-        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
-      }),
       babel({ babelHelpers: 'bundled', extensions }),
       json(),
       pluginTypescript
     ],
-    external
+    external: external.filter((dep) => dep !== '@audius/anchor-audius-data')
   },
 
   /**
