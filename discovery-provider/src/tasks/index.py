@@ -114,7 +114,7 @@ def initialize_blocks_table_if_necessary(db: SessionManager):
 
             session.add(block_model)
             logger.info(
-                f"index_nethermind.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
+                f"index.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
             )
         else:
             assert (
@@ -162,7 +162,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
 
         logger.info(
-            f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
@@ -215,13 +215,11 @@ def fetch_tx_receipts(self, block):
                 tx_hash = tx_receipt_info["tx_hash"]
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
-                logger.error(
-                    f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}"
-                )
+                logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
     logger.info(
-        f"index_nethermind.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
+        f"index.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
     )
     if num_processed_txs != num_submitted_txs:
         raise IndexingError(
@@ -229,7 +227,7 @@ def fetch_tx_receipts(self, block):
             blocknumber=block_number,
             blockhash=block_hash,
             txhash=None,
-            message=f"index_nethermind.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}",
+            message=f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}",
         )
     return block_tx_with_receipts
 
@@ -318,7 +316,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
         raise Exception(missing_cids_msg)
 
     logger.info(
-        f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
+        f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
     return cid_metadata, cid_type
 
@@ -347,7 +345,7 @@ def save_skipped_tx(session, redis):
         )
     except Exception:
         logger.warning(
-            f"index_nethermind.py | save_skipped_tx: Failed to add_network_level_skipped_transaction for {indexing_error}"
+            f"index.py | save_skipped_tx: Failed to add_network_level_skipped_transaction for {indexing_error}"
         )
 
 
@@ -362,13 +360,13 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
         if tx_is_type:
             contract_type = tx_type
             logger.info(
-                f"index_nethermind.py | {tx_type} contract addr: {tx_target_contract_address}"
+                f"index.py | {tx_type} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
 
     logger.info(
-        f"index_nethermind.py | checking returned {contract_type} vs {tx_target_contract_address}"
+        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
     )
     return contract_type
 
@@ -428,7 +426,7 @@ def process_state_changes(
         ) = bulk_processor(*tx_processing_args)
 
         logger.info(
-            f"index_nethermind.py | {bulk_processor.__name__} completed"
+            f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
 
@@ -456,7 +454,7 @@ def save_cid_metadata(
 
 def create_and_raise_indexing_error(err, redis):
     logger.info(
-        f"index_nethermind.py | Error in the indexing task at"
+        f"index.py | Error in the indexing task at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
     set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
@@ -489,7 +487,7 @@ def index_blocks(self, db, blocks_list):
             "number", "hash", "timestamp"
         )(block)
         logger.info(
-            f"index_nethermind.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
+            f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
@@ -498,7 +496,7 @@ def index_blocks(self, db, blocks_list):
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
                 logger.info(
-                    f"index_nethermind.py | Skipping all txs in block {block.hash} {block.number}"
+                    f"index.py | Skipping all txs in block {block.hash} {block.number}"
                 )
                 save_skipped_tx(session, redis)
                 add_indexed_block_to_db(session, block)
@@ -511,14 +509,14 @@ def index_blocks(self, db, blocks_list):
                     Fetch transaction receipts
                     """
                     fetch_tx_receipts_start_time = time.time()
-                    logger.info(f"index_nethermind.py fetching block {block}")
+                    logger.info(f"index.py fetching block {block}")
                     tx_receipt_dict = fetch_tx_receipts(self, block)
                     metric.save_time(
                         {"scope": "fetch_tx_receipts"},
                         start_time=fetch_tx_receipts_start_time,
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
+                        f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                     )
 
                     """
@@ -543,7 +541,7 @@ def index_blocks(self, db, blocks_list):
 
                         if should_skip_tx:
                             logger.info(
-                                f"index_nethermind.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                                f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                             )
                             save_skipped_tx(session, redis)
                             continue
@@ -558,7 +556,7 @@ def index_blocks(self, db, blocks_list):
                         start_time=parse_tx_receipts_start_time,
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
+                        f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
                     )
 
                     """
@@ -571,7 +569,7 @@ def index_blocks(self, db, blocks_list):
                         txs_grouped_by_type[ENTITY_MANAGER],
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
+                        f"index.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(
@@ -583,7 +581,7 @@ def index_blocks(self, db, blocks_list):
                         start_time=fetch_metadata_start_time,
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - fetch_metadata in {duration_ms}ms"
+                        f"index.py | index_blocks - fetch_metadata in {duration_ms}ms"
                     )
 
                     """
@@ -601,7 +599,7 @@ def index_blocks(self, db, blocks_list):
                         start_time=add_indexed_block_to_db_start_time,
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
+                        f"index.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                     )
 
                     """
@@ -623,7 +621,7 @@ def index_blocks(self, db, blocks_list):
                         start_time=process_state_changes_start_time,
                     )
                     logger.info(
-                        f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
+                        f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
                     is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
                     if is_save_cid_enabled:
@@ -656,7 +654,7 @@ def index_blocks(self, db, blocks_list):
                 session.commit()
                 metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
                 logger.info(
-                    f"index_nethermind.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
+                    f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
                 # Use 'commit' as the tx hash here.
@@ -679,7 +677,7 @@ def index_blocks(self, db, blocks_list):
             except Exception as e:
                 # Do not throw error, as this should not stop indexing
                 logger.error(
-                    f"index_nethermind.py | Error in calling update trending challenge {e}",
+                    f"index.py | Error in calling update trending challenge {e}",
                     exc_info=True,
                 )
             if skip_tx_hash:
@@ -687,7 +685,7 @@ def index_blocks(self, db, blocks_list):
 
         add_indexed_block_to_redis(block, redis)
         logger.info(
-            f"index_nethermind.py | update most recently processed block complete for block=${block_number}"
+            f"index.py | update most recently processed block complete for block=${block_number}"
         )
 
         # Record the time this took in redis
@@ -702,7 +700,7 @@ def index_blocks(self, db, blocks_list):
             sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
-        logger.info(f"index_nethermind.py | index_blocks | Indexed {num_blocks} blocks")
+        logger.info(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
@@ -712,26 +710,20 @@ def revert_blocks(self, db, revert_blocks_list):
     if num_revert_blocks == 0:
         return
 
-    logger.info(
-        f"index_nethermind.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}"
-    )
+    logger.info(f"index.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
 
     if num_revert_blocks > 100:
         raise Exception("Unexpected revert, >100 blocks")
 
     if num_revert_blocks > 50:
-        logger.error(
-            f"index_nethermind.py | {self.request.id} | Revert blocks list > 50"
-        )
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 50")
         logger.error(revert_blocks_list)
         revert_blocks_list = revert_blocks_list[:50]
         logger.error(
-            f"index_nethermind.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
+            f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
 
-    logger.info(
-        f"index_nethermind.py | {self.request.id} | Reverting {num_revert_blocks} blocks"
-    )
+    logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
@@ -1053,7 +1045,7 @@ def update_task(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info(
-                f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock"
+                f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
             )
             initialize_blocks_table_if_necessary(db)
 
@@ -1100,7 +1092,7 @@ def update_task(self):
                     num_blocks = len(index_blocks_list)
                     if num_blocks % 50 == 0:
                         logger.info(
-                            f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
+                            f"index.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
                     # Special case for initial block hash value of 0x0 and 0x0000....
@@ -1131,13 +1123,13 @@ def update_task(self):
 
                 if undo_operations_required:
                     logger.info(
-                        f"index_nethermind.py | update_task | Undo required - {undo_operations_required}. \
+                        f"index.py | update_task | Undo required - {undo_operations_required}. \
                                 Intersect_blockhash : {intersect_block_hash}.\
                                 DB current blockhash {db_current_block.blockhash}"
                     )
                 else:
                     logger.info(
-                        f"index_nethermind.py | update_task | Intersect_blockhash : {intersect_block_hash}"
+                        f"index.py | update_task | Intersect_blockhash : {intersect_block_hash}"
                     )
 
                 # Assign traverse block to current database block
@@ -1153,7 +1145,7 @@ def update_task(self):
 
                     if parent_query.count() == 0:
                         logger.info(
-                            f"index_nethermind.py | update_task | Special case exit traverse block parenthash - "
+                            f"index.py | update_task | Special case exit traverse block parenthash - "
                             f"{traverse_block.parenthash}"
                         )
                         break
@@ -1169,11 +1161,11 @@ def update_task(self):
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
             logger.info(
-                f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
+                f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
             logger.info(
-                f"index_nethermind.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
+                f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)

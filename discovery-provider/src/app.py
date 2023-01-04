@@ -303,7 +303,6 @@ def configure_celery(celery, test_config=None):
     celery.conf.update(
         imports=[
             "src.tasks.index",
-            "src.tasks.index_nethermind",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
