@@ -12,7 +12,7 @@ import dotenv
 import eth_account
 import solana.keypair
 
-ARM64 = "arm64" in platform.platform()
+ARM64 = 'arm64' in platform.platform()
 
 
 def generate_env(

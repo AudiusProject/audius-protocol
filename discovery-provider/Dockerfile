@@ -68,7 +68,7 @@ COPY requirements.txt requirements.txt
 RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
-RUN cd es-indexer && npm install && npm run build
+RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
