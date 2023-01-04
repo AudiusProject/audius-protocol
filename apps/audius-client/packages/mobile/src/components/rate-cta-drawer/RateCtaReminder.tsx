@@ -11,6 +11,9 @@ import { requestReview } from 'app/store/rate-cta/slice'
 
 const getHasAccount = accountSelectors.getHasAccount
 
+const FIRST_REMINDER_SESSION = 3
+const REMINDER_FREQUENCY = 5
+
 export const RateCtaReminder = () => {
   const hasAccount = useSelector(getHasAccount)
   const { isEnabled: isRateCtaEnabled } = useFeatureFlag(
@@ -30,7 +33,11 @@ const RateCtaReminderInternal = () => {
     dispatch(requestReview())
   }, [dispatch])
 
-  useSessionCount(displayReviewCtaDrawer, 5, 3)
+  useSessionCount(
+    displayReviewCtaDrawer,
+    REMINDER_FREQUENCY,
+    FIRST_REMINDER_SESSION
+  )
 
   return null
 }

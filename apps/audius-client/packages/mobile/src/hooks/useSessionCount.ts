@@ -35,7 +35,7 @@ const useSessionCount = (
       if (
         count &&
         count >= startAt &&
-        count % frequency === 0 &&
+        (count - startAt) % frequency === 0 &&
         count !== calledAtCount
       ) {
         callback()

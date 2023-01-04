@@ -9,7 +9,8 @@ import useSessionCount from 'app/hooks/useSessionCount'
 import { setVisibility } from 'app/store/drawers/slice'
 const getHasAccount = accountSelectors.getHasAccount
 
-const REMINDER_EVERY_N_SESSIONS = 10
+const FIRST_REMINDER_SESSION = 10
+const REMINDER_FREQUENCY = 10
 
 export const NotificationReminder = () => {
   const hasAccount = useSelector(getHasAccount)
@@ -27,7 +28,7 @@ const NotificationReminderInternal = () => {
     remindUserToTurnOnNotifications(dispatch)
   }, [dispatch])
 
-  useSessionCount(reminder, REMINDER_EVERY_N_SESSIONS)
+  useSessionCount(reminder, REMINDER_FREQUENCY, FIRST_REMINDER_SESSION)
 
   // No UI component
   return null
