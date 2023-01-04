@@ -35,6 +35,7 @@ build/
 local.properties
 *.iml
 *.hprof
+.cxx/
 
 # Visual Studio Code
 #

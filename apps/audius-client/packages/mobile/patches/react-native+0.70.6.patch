@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
-index 9aa4992..64dfe9a 100644
+index af1d660..ac7f8dc 100644
 --- a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
 +++ b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
-@@ -251,7 +251,7 @@ class AnimatedEvent {
+@@ -254,7 +254,7 @@ class AnimatedEvent {
    }
  
    _callListeners = (...args: any) => {
