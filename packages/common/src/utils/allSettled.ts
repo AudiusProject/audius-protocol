@@ -1,4 +1,5 @@
 export const allSettled =
+  // eslint-disable-next-line no-restricted-properties
   Promise.allSettled ||
   ((promises: any[]) =>
     Promise.all(

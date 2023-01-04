@@ -4,7 +4,7 @@ import type {
   Track,
   UserMetadata
 } from '@audius/common'
-import { DefaultSizes, SquareSizes } from '@audius/common'
+import { DefaultSizes, SquareSizes, allSettled } from '@audius/common'
 
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 
@@ -26,7 +26,7 @@ export const populateCoverArtSizes = async <T extends EntityWithArt>(
   )
   const multihash = entity.cover_art_sizes || entity.cover_art
   if (!multihash) return newEntity
-  await Promise.allSettled(
+  await allSettled(
     Object.values(SquareSizes).map(async (size) => {
       const coverArtSize = multihash === entity.cover_art_sizes ? size : null
       const url = await audiusBackendInstance.getImageUrl(

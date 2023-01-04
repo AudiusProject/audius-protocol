@@ -1,3 +1,4 @@
+export * from './allSettled'
 export * from './browserNotifications'
 export * from './error'
 export * from './fillString'
