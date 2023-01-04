@@ -12,6 +12,7 @@ export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
   twitter: 'Share to Twitter',
   instagramStory: 'Share to Instagram Story',
+  snapchat: 'Share to Snapchat',
   tikTok: 'Share Sound to TikTok',
   copyLink: (asset: ShareType) => `Copy Link to ${shareTypeMap[asset]}`,
   shareToStoryError: 'Sorry, something went wrong.',
@@ -27,6 +28,7 @@ export const messages = {
     `Check out ${playlistName} by ${handle} @AudiusProject #Audius`,
   loadingStoryModalTitle: 'Generating Story',
   loadingInstagramStorySubtitle: 'Preparing to open Instagram',
+  loadingSnapchatSubtitle: 'Preparing to open Snapchat',
   cancel: 'Cancel',
   nftPlaylistShareText: ''
 }

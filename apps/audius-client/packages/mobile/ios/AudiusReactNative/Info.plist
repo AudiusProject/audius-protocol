@@ -42,7 +42,13 @@
 			<string>instagram-stories</string>
 			<string>instagram</string>
 			<string>itms-apps</string>
+      <string>snapchat</string>
 		</array>
+    <key>SCSDKClientId</key>
+    <string>87c93c66-5a79-4ee0-be45-44f27e823474</string>
+    <key>SCSDKRedirectUrl</key>
+	  <string>audius://snap-kit/oauth2</string>
+    
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>LSSupportsOpeningDocumentsInPlace</key>

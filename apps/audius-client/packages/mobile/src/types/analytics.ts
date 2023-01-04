@@ -7,7 +7,11 @@ enum MobileEventNames {
   SHARE_TO_IG_STORY = 'Share to Instagram story - start',
   SHARE_TO_IG_STORY_CANCELLED = 'Share to Instagram story - cancelled',
   SHARE_TO_IG_STORY_ERROR = 'Share to Instagram story - error',
-  SHARE_TO_IG_STORY_SUCCESS = 'Share to Instagram story - success'
+  SHARE_TO_IG_STORY_SUCCESS = 'Share to Instagram story - success',
+  SHARE_TO_SNAPCHAT = 'Share to Snapchat - start',
+  SHARE_TO_SNAPCHAT_CANCELLED = 'Share to Snapchat - cancelled',
+  SHARE_TO_SNAPCHAT_ERROR = 'Share to Snapchat - error',
+  SHARE_TO_SNAPCHAT_SUCCESS = 'Share to Snapchat - success'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -27,8 +31,24 @@ type ShareToIGStory = {
   artist?: string
 }
 
+type ShareToSnapchat = {
+  eventName:
+    | MobileEventNames.SHARE_TO_SNAPCHAT
+    | MobileEventNames.SHARE_TO_SNAPCHAT_CANCELLED
+    | MobileEventNames.SHARE_TO_IG_STORY_SUCCESS
+  title?: string
+  artist?: string
+}
+
 type ShareToIGStoryError = {
   eventName: MobileEventNames.SHARE_TO_IG_STORY_ERROR
+  title?: string
+  artist?: string
+  error: string
+}
+
+type ShareToSnapchatError = {
+  eventName: MobileEventNames.SHARE_TO_SNAPCHAT_ERROR
   title?: string
   artist?: string
   error: string
@@ -44,6 +64,8 @@ type MobileTrackingEvents =
   | AppError
   | ShareToIGStory
   | ShareToIGStoryError
+  | ShareToSnapchat
+  | ShareToSnapchatError
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 
