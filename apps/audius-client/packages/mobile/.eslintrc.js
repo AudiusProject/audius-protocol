@@ -37,6 +37,15 @@ module.exports = {
       {
         disallowTypeAnnotations: false
       }
+    ],
+    'no-restricted-properties': [
+      'error',
+      {
+        object: 'Promise',
+        property: 'allSettled',
+        message:
+          'Do NOT use `Promise.allSettled` as it will be undefined. Use `allSettled` from `@audius/common` instead.'
+      }
     ]
   }
 }
