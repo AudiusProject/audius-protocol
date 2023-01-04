@@ -333,7 +333,7 @@ KV_RETRIEVE_ERR:
 		return err
 	}
 
-	numChats, err := queries.NumChatsSince(q, context.Background(), queries.NumChatsSinceParams{
+	numChats, err := queries.MaxNumNewChatsSince(q, context.Background(), queries.MaxNumNewChatsSinceParams{
 		Users:  users,
 		Cursor: cursor,
 	})

@@ -62,7 +62,7 @@ func UserChats(q db.Queryable, ctx context.Context, userID int32) ([]UserChatRow
 	return items, err
 }
 
-const numChatsSince = `
+const maxNumNewChatsSince = `
 WITH counts AS (
 	SELECT COUNT(*) AS count
 	FROM chat
@@ -73,18 +73,19 @@ WITH counts AS (
 SELECT COALESCE(MAX(count), 0) FROM counts;
 `
 
-type NumChatsSinceParams struct {
+type MaxNumNewChatsSinceParams struct {
 	Users  []int32   `json:"user_id"`
 	Cursor time.Time `json:"cursor"`
 }
 
-func NumChatsSince(q db.Queryable, ctx context.Context, arg NumChatsSinceParams) (int, error) {
+// Return the max number of new chats since CURSOR out of the given USERS
+func MaxNumNewChatsSince(q db.Queryable, ctx context.Context, arg MaxNumNewChatsSinceParams) (int, error) {
 	var count int
 	argMap := map[string]interface{}{
 		"Users":  arg.Users,
 		"Cursor": arg.Cursor,
 	}
-	query, args, err := sqlx.Named(numChatsSince, argMap)
+	query, args, err := sqlx.Named(maxNumNewChatsSince, argMap)
 	if err != nil {
 		return count, err
 	}
