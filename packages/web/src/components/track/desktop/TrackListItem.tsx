@@ -172,20 +172,21 @@ const TrackListItem = ({
         <div className={styles.duration}>
           {track.duration && formatSeconds(track.duration)}
         </div>
-        {deleted ? <div className={styles.more} style={{ width: 16 }} /> : null}
-        {!disableActions && !deleted ? (
-          <Menu menu={menu}>
-            {(ref, triggerPopup) => (
-              <div className={cn(styles.menuContainer)} ref={menuRef}>
+        <Menu menu={menu}>
+          {(ref, triggerPopup) => (
+            <div className={cn(styles.menuContainer)} ref={menuRef}>
+              {!disableActions && !deleted ? (
                 <IconKebabHorizontal
                   className={styles.iconKebabHorizontal}
                   ref={ref}
                   onClick={onMoreClick(triggerPopup)}
                 />
-              </div>
-            )}
-          </Menu>
-        ) : null}
+              ) : (
+                <div className={styles.iconKebabHorizontal} />
+              )}
+            </div>
+          )}
+        </Menu>
       </div>
     </div>
   )
