@@ -12,7 +12,8 @@ import dotenv
 import eth_account
 import solana.keypair
 
-ARM64 = 'arm64' in platform.platform()
+ARM64 = "arm64" in platform.platform()
+
 
 def generate_env(
     protocol_dir,
@@ -158,7 +159,7 @@ def build(
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
+            f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             "build",
         ],
     )
@@ -227,7 +228,7 @@ def up(
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
+            f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             *(
                 [f"--file={AAO_DIR / 'audius-compose.yml'}"]
                 if anti_abuse_oracle
@@ -249,7 +250,7 @@ def down(protocol_dir):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
+            f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             "down",
             "--remove-orphans",
             "--volumes",
@@ -392,7 +393,7 @@ def ps(protocol_dir):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
+            f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
             "ps",
             "--format=json",
@@ -469,7 +470,7 @@ def logs(protocol_dir, service):
             "docker",
             "compose",
             f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.m1.yml' if ARM64 else 'docker-compose.yml'}",
+            f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             "logs",
             service,
         ],
