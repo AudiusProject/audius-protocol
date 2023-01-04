@@ -61,12 +61,6 @@ eth_abi_values = None
 
 solana_client_manager = None
 registry = None
-user_factory = None
-track_factory = None
-social_feature_factory = None
-playlist_factory = None
-user_library_factory = None
-user_replica_set_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
