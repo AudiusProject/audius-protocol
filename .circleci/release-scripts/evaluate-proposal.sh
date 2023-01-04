@@ -5,7 +5,7 @@ set -e
 script=evaluate-proposal
 docker build \
     -t ${script} \
-    release-scripts/dockerfiles/${script}
+    .circleci/release-scripts/dockerfiles/${script}
 
 docker run \
     -ti \
