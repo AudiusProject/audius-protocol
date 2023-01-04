@@ -15,15 +15,12 @@ export type TrackDownloadWorkerPayload = TrackForDownload
 
 const onFailure = ({ payload }: { payload: TrackForDownload }) => {
   store.dispatch(errorDownload(payload.trackId.toString()))
-  alert(`OnFailure fired: ${payload.trackId}`)
 }
 
 const executor = (payload: TrackDownloadWorkerPayload) => {
   const promise: CancellablePromise<void> = downloadTrack(payload)
   promise.rn_job_queue_cancel = () => {
-    alert(`Called rn_job_queue_cancel ${payload.trackId}`)
     promise.finally(() => {
-      alert(`Called rn_job_queue_cancel finally ${payload.trackId}`)
       store.dispatch(removeDownload(payload.trackId.toString()))
       batchRemoveTrackDownload([payload])
     })
