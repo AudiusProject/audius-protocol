@@ -15,7 +15,6 @@ from src.app import create_app, create_celery
 from src.models.base import Base
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
-from web3 import HTTPProvider, Web3
 
 DB_URL = os.getenv(
     "audius_db_url",
