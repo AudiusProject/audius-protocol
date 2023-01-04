@@ -40,7 +40,6 @@ func init() {
 func Init() {
 	var err error
 
-	Env = os.Getenv("audius_discprov_env")
 	switch Env {
 	case "standalone":
 		envStandalone()

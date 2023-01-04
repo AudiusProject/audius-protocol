@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -46,14 +47,14 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Replce rules with test rules
-	testRules := map[string]string{
-		config.RateLimitTimeframeHours:             "24",
-		config.RateLimitMaxNumMessages:             "2",
-		config.RateLimitMaxNumMessagesPerRecipient: "1",
-		config.RateLimitMaxNumNewChats:             "2",
+	testRules := map[string]int{
+		config.RateLimitTimeframeHours:             24,
+		config.RateLimitMaxNumMessages:             2,
+		config.RateLimitMaxNumMessagesPerRecipient: 1,
+		config.RateLimitMaxNumNewChats:             2,
 	}
 	for rule, limit := range testRules {
-		_, err := kv.PutString(rule, limit)
+		_, err := kv.PutString(rule, strconv.Itoa(limit))
 		assert.NoError(t, err)
 	}
 
