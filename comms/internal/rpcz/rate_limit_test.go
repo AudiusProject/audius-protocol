@@ -39,11 +39,13 @@ func TestRateLimit(t *testing.T) {
 	jetstream.SetJetstreamContext(js)
 
 	// Create rate limit KV
-	SetupRateLimitRules()
+	kv, err := js.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:   config.RateLimitRulesBucketName,
+		Replicas: 1,
+	})
+	assert.NoError(t, err)
 
 	// Replce rules with test rules
-	kv, err := js.KeyValue(config.RateLimitRulesBucketName)
-	assert.NoError(t, err)
 	testRules := map[string]string{
 		config.RateLimitTimeframeHours:             "24",
 		config.RateLimitMaxNumMessages:             "2",

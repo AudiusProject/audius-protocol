@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"comms.audius.co/config"
 	"comms.audius.co/db"
 )
 
@@ -13,8 +12,6 @@ import (
 func TestMain(m *testing.M) {
 	// setup
 	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
-	os.Setenv("audius_discprov_env", "standalone")
-	config.InitEnv()
 	err := db.Dial()
 	if err != nil {
 		log.Fatal(err)

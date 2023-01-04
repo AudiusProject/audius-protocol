@@ -102,8 +102,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 	manager.setupNatsClient()
 
 	manager.setupJetstream()
-
-	rpcz.SetupRateLimitRules()
 }
 
 func (manager *NatsManager) setupNatsClient() {
@@ -228,6 +226,13 @@ func (manager *NatsManager) setupJetstream() {
 	})
 	if err != nil {
 		log.Fatal("CreateKeyValue failed", err, "bucket", config.PubkeystoreBucketName)
+	}
+	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:   config.RateLimitRulesBucketName,
+		Replicas: config.NatsReplicaCount,
+	})
+	if err != nil {
+		log.Fatal("CreateKeyValue failed", err, "bucket", config.RateLimitRulesBucketName)
 	}
 
 	// finally "expose" this via the jetstream package

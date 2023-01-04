@@ -28,8 +28,7 @@ func TestChat(t *testing.T) {
 
 	SetupChatWithMembers(t, tx, chatId, 91, 92)
 
-	// Connect to NATS, create JetStream Context, and create a rate limit KV bucket
-	// for rate limit validations
+	// Connect to NATS and create JetStream Context
 	opts := server.Options{
 		Host:      "127.0.0.1",
 		Port:      4222,
@@ -43,7 +42,6 @@ func TestChat(t *testing.T) {
 	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
 	assert.NoError(t, err)
 	jetstream.SetJetstreamContext(js)
-	SetupRateLimitRules()
 
 	// validate 91 and 92 can both send messages in this chat
 	{

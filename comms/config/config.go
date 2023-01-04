@@ -37,7 +37,9 @@ func init() {
 	Logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 }
 
-func InitEnv() {
+func Init() {
+	var err error
+
 	Env = os.Getenv("audius_discprov_env")
 	switch Env {
 	case "standalone":
@@ -45,12 +47,6 @@ func InitEnv() {
 	default:
 		Logger.Info("no env defaults for: " + Env)
 	}
-}
-
-func Init() {
-	var err error
-
-	InitEnv()
 
 	privateKeyHex := os.Getenv("audius_delegate_private_key")
 	if privateKeyHex == "" {
