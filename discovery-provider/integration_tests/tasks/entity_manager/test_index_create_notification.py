@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def set_patches(mocker):
 
     mocker.patch(
-        "src.tasks.entity_manager.notification_seen.get_notification_creator",
+        "src.tasks.entity_manager.notification.get_notification_creator",
         return_value="0x",
         autospec=True,
     )
