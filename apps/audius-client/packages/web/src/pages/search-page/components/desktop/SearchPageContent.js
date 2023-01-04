@@ -274,6 +274,7 @@ class SearchPageContent extends Component {
           <Card
             size={'small'}
             id={album.playlist_id}
+            userId={userId}
             imageSize={album._cover_art_sizes}
             primaryText={album.playlist_name}
             secondaryText={album.user.name}
