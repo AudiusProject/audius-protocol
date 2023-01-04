@@ -9,6 +9,7 @@ import {
   activateKeepAwake,
   deactivateKeepAwake
 } from '@sayem314/react-native-keep-awake'
+import { CreativeKit } from '@snapchat/snap-kit-react-native'
 import type { FFmpegSession } from 'ffmpeg-kit-react-native'
 import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native'
 import { View } from 'react-native'
@@ -25,12 +26,14 @@ import { apiClient } from 'app/services/audius-api-client'
 import { setVisibility } from 'app/store/drawers/slice'
 import {
   getCancel,
+  getPlatform,
   getProgressPercentage
 } from 'app/store/share-to-story-progress/selectors'
 import {
   reset,
   setCancel,
-  setProgress
+  setProgress,
+  setPlatform
 } from 'app/store/share-to-story-progress/slice'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -109,7 +112,10 @@ export const useShareToStory = ({
   }, [viewShotRef])
 
   const toggleProgressDrawer = useCallback(
-    (open: boolean) => {
+    (open: boolean, platform?: 'instagram' | 'snapchat') => {
+      if (open && platform) {
+        dispatch(setPlatform(platform))
+      }
       dispatch(setVisibility({ drawer: 'ShareToStoryProgress', visible: open }))
       if (!open) {
         dispatch(modalsActions.setVisibility({ modal: 'Share', visible: true }))
@@ -126,7 +132,7 @@ export const useShareToStory = ({
   }, [dispatch, toggleProgressDrawer])
 
   const handleError = useCallback(
-    (error: Error, name?: string) => {
+    (platform: 'instagram' | 'snapchat', error: Error, name?: string) => {
       reportToSentry({
         level: ErrorLevel.Error,
         error,
@@ -135,7 +141,10 @@ export const useShareToStory = ({
       toast({ content: messages.shareToStoryError, type: 'error' })
       track(
         make({
-          eventName: EventNames.SHARE_TO_IG_STORY_ERROR,
+          eventName:
+            platform === 'instagram'
+              ? EventNames.SHARE_TO_IG_STORY_ERROR
+              : EventNames.SHARE_TO_SNAPCHAT_ERROR,
           title: trackTitle,
           artist: artistHandle,
           error: `${name ? `${name} - ` : ''}${error.message}`
@@ -146,201 +155,269 @@ export const useShareToStory = ({
     [artistHandle, cleanup, toast, trackTitle]
   )
 
-  const cancelStory = useCallback(async () => {
-    cancelRef.current = true
-    cancelRequestedEventEmitter.emit(CANCEL_REQUESTED_EVENT)
-    await FFmpegKit.cancel()
-    track(
-      make({
-        eventName: EventNames.SHARE_TO_IG_STORY_CANCELLED,
-        title: trackTitle,
-        artist: artistHandle
-      })
-    )
-    cleanup()
-  }, [artistHandle, cleanup, trackTitle])
-
-  const generateStory = useCallback(async () => {
-    if (content?.type === 'track') {
+  const cancelStory = useCallback(
+    async (platform: 'instagram' | 'snapchat') => {
+      cancelRef.current = true
+      cancelRequestedEventEmitter.emit(CANCEL_REQUESTED_EVENT)
+      await FFmpegKit.cancel()
       track(
         make({
-          eventName: EventNames.SHARE_TO_IG_STORY,
-          title: content.track.title,
-          artist: content.artist.handle
+          eventName:
+            platform === 'instagram'
+              ? EventNames.SHARE_TO_IG_STORY_CANCELLED
+              : EventNames.SHARE_TO_SNAPCHAT_CANCELLED,
+          title: trackTitle,
+          artist: artistHandle
         })
       )
+      cleanup()
+    },
+    [artistHandle, cleanup, trackTitle]
+  )
 
-      // Reset any stale values:
-      dispatch(reset())
-      cancelRef.current = false
-
-      activateKeepAwake()
-      dispatch(setCancel(cancelStory))
-      toggleProgressDrawer(true)
-
-      // Step 1: Render and take a screenshot of the sticker:
-      // Note: We have to capture the sticker image first because it doesn't work if you get the dominant colors first (mysterious).
-      if (!shouldRenderShareToStorySticker) {
-        setShouldRenderShareToStorySticker(true)
-      }
-      const encodedTrackId = encodeHashId(content.track.track_id)
-      const streamMp3Url = apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
-      const storyVideoPath = path.join(
-        RNFS.TemporaryDirectoryPath,
-        `storyVideo-${uuid()}.mp4`
-      )
-      const audioStartOffsetConfig =
-        content.track.duration && content.track.duration >= 20 ? '-ss 10 ' : ''
-
-      let stickerUri: string | undefined
-
-      try {
-        stickerUri = await captureStickerImage()
-      } catch (e) {
-        handleError(e, 'Share to IG Story error - generate sticker step')
-        return
-      }
-      if (!stickerUri) {
-        handleError(
-          new Error('Sticker screenshot unsuccessful'),
-          'Share to IG Story error - generate sticker step (sticker undefined)'
-        )
-        return
-      }
-      dispatch(setProgress(10))
-      // Step 2: Calculate the dominant colors of the cover art
-      let rawDominantColorsResult: Color[] | string // `getDominantRgb` returns a string containing a single default color if it couldn't find dominant colors
-      let dominantColorHex1: string
-      let dominantColorHex2: string
-      if (trackImageUri) {
-        try {
-          rawDominantColorsResult = await getDominantRgb(trackImageUri)
-        } catch (e) {
-          handleError(
-            e,
-            'Share to IG Story error - calculate dominant colors step'
-          )
-          return
-        }
-        const finalDominantColorsResult =
-          Array.isArray(rawDominantColorsResult) &&
-          rawDominantColorsResult.length > 0
-            ? pickTwoMostDominantAndVibrant(rawDominantColorsResult).map(
-                (c: Color) => convertRGBToHex(c)
-              )
-            : DEFAULT_DOMINANT_COLORS
-        dominantColorHex1 = finalDominantColorsResult[0]
-        dominantColorHex2 = finalDominantColorsResult[1]
-      } else {
-        ;[dominantColorHex1, dominantColorHex2] = DEFAULT_DOMINANT_COLORS
-      }
-      if (cancelRef.current) {
-        cleanup()
-        return
-      }
-
-      let backgroundSegment: string
-      if (dominantColorHex2) {
-        backgroundSegment = `gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30`
-      } else {
-        // Sometimes there is only one dominant color (if the cover art is literally just a solid color). In that case, just use that one color as the background.
-        backgroundSegment = `color=c=${dominantColorHex1}:s=540x960`
-      }
-      // For simplicity, assume that calculating dominant colors and generating the sticker takes 20% of the total loading time:
-      dispatch(setProgress(20))
-
-      // Step 3: Generate the background video using FFmpeg
-      FFmpegKitConfig.enableStatisticsCallback((statistics) => {
-        if (statistics.getTime() < 0) {
-          return
-        }
-        const totalVideoDuration = 10000
-        const loadedSoFar = statistics.getTime()
-        const percentageLoaded = (loadedSoFar * 80) / totalVideoDuration
-        // Pad the result by 10% so the progress bar gets full before we get to IG
-        dispatch(setProgress(Math.min(20 + percentageLoaded + 10, 100)))
-      })
-      let session: FFmpegSession
-      const SHOWFREQS_SEGMENT =
-        'aformat=channel_layouts=mono:sample_rates=16000,adynamicsmooth,showfreqs=s=900x40:fscale=log:colors=#ffffff70'
-      try {
-        session = await FFmpegKit.execute(
-          `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "${backgroundSegment}[bg];[0:a]${SHOWFREQS_SEGMENT}[fg];[0:a]${SHOWFREQS_SEGMENT},vflip[fgflip];[bg][fg]overlay=format=auto:x=-100:y=H-h-100[fo];[fo][fgflip]overlay=format=auto:x=-100:y=H-h-60;[0:a]anull" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
-        )
-      } catch (e) {
-        handleError(e, 'Share to IG Story error')
-        return
-      }
-      if (cancelRef.current) {
-        // The job was cancelled.
-        cleanup()
-        return
-      }
-
-      const returnCode = await session.getReturnCode()
-
-      if (!ReturnCode.isSuccess(returnCode)) {
-        const output = await session.getOutput()
-        handleError(
-          new Error(output),
-          'Share to IG Story error - generate video background step'
-        )
-        return
-      }
-
-      // Step 4: Put everything together and push to IG
+  const pasteToInstagramApp = useCallback(
+    async (videoUri: string, stickerUri: string) => {
       const shareOptions = {
-        backgroundVideo: `file://${storyVideoPath}`,
+        backgroundVideo: videoUri,
         stickerImage: stickerUri,
         attributionURL: Config.AUDIUS_URL,
         social: Share.Social.INSTAGRAM_STORIES,
         appId: Config.INSTAGRAM_APP_ID
       }
+      await Share.shareSingle(shareOptions)
+    },
+    []
+  )
 
-      if (cancelRef.current) {
-        cleanup()
-        return
+  const pasteToSnapchatApp = useCallback(
+    async (videoUri: string, stickerUri: string, trackPermalink: string) => {
+      const videoContent = {
+        content: {
+          uri: videoUri
+        },
+        sticker: {
+          uri: stickerUri,
+          width: 264,
+          height: 365,
+          posX: 0.5,
+          posY: 0.6,
+          rotationDegreesInClockwise: 0,
+          isAnimated: false
+        },
+        attachmentUrl: `${Config.AUDIUS_URL}${trackPermalink}`
       }
-      try {
-        await Share.shareSingle(shareOptions)
-      } catch (error) {
-        handleError(error, 'Share to IG Story error - share to IG step')
-      } finally {
-        cleanup()
-      }
+      await CreativeKit.shareVideo(videoContent)
+    },
+    []
+  )
 
-      track(
-        make({
-          eventName: EventNames.SHARE_TO_IG_STORY_SUCCESS,
-          title: content.track.title,
-          artist: content.artist.handle
+  const generateStory = useCallback(
+    async (platform: 'instagram' | 'snapchat') => {
+      if (content?.type === 'track') {
+        track(
+          make({
+            eventName:
+              platform === 'instagram'
+                ? EventNames.SHARE_TO_IG_STORY
+                : EventNames.SHARE_TO_SNAPCHAT,
+            title: content.track.title,
+            artist: content.artist.handle
+          })
+        )
+
+        // Reset any stale values:
+        dispatch(reset())
+        cancelRef.current = false
+
+        activateKeepAwake()
+        dispatch(setCancel(() => cancelStory(platform)))
+        toggleProgressDrawer(true, platform)
+
+        // Step 1: Render and take a screenshot of the sticker:
+        // Note: We have to capture the sticker image first because it doesn't work if you get the dominant colors first (mysterious).
+        if (!shouldRenderShareToStorySticker) {
+          setShouldRenderShareToStorySticker(true)
+        }
+        const encodedTrackId = encodeHashId(content.track.track_id)
+        const streamMp3Url = apiClient.makeUrl(
+          `/tracks/${encodedTrackId}/stream`
+        )
+        const storyVideoPath = path.join(
+          RNFS.TemporaryDirectoryPath,
+          `storyVideo-${uuid()}.mp4`
+        )
+        const audioStartOffsetConfig =
+          content.track.duration && content.track.duration >= 20
+            ? '-ss 10 '
+            : ''
+
+        let stickerUri: string | undefined
+
+        try {
+          stickerUri = await captureStickerImage()
+        } catch (e) {
+          handleError(platform, e, 'Error at generate sticker step')
+          return
+        }
+        if (!stickerUri) {
+          handleError(
+            platform,
+            new Error('Sticker screenshot unsuccessful'),
+            'Error at generate sticker step (sticker undefined)'
+          )
+          return
+        }
+        dispatch(setProgress(10))
+        // Step 2: Calculate the dominant colors of the cover art
+        let rawDominantColorsResult: Color[] | string // `getDominantRgb` returns a string containing a single default color if it couldn't find dominant colors
+        let dominantColorHex1: string
+        let dominantColorHex2: string
+        if (trackImageUri) {
+          try {
+            rawDominantColorsResult = await getDominantRgb(trackImageUri)
+          } catch (e) {
+            handleError(platform, e, 'Error at calculate dominant colors step')
+            return
+          }
+          const finalDominantColorsResult =
+            Array.isArray(rawDominantColorsResult) &&
+            rawDominantColorsResult.length > 0
+              ? pickTwoMostDominantAndVibrant(rawDominantColorsResult).map(
+                  (c: Color) => convertRGBToHex(c)
+                )
+              : DEFAULT_DOMINANT_COLORS
+          dominantColorHex1 = finalDominantColorsResult[0]
+          dominantColorHex2 = finalDominantColorsResult[1]
+        } else {
+          ;[dominantColorHex1, dominantColorHex2] = DEFAULT_DOMINANT_COLORS
+        }
+        if (cancelRef.current) {
+          cleanup()
+          return
+        }
+
+        let backgroundSegment: string
+        if (dominantColorHex2) {
+          backgroundSegment = `gradients=s=540x960:x0=270:y0=2:x1=270:y1=958:c0=${dominantColorHex1}:c1=${dominantColorHex2}:duration=10:speed=0.042:rate=30`
+        } else {
+          // Sometimes there is only one dominant color (if the cover art is literally just a solid color). In that case, just use that one color as the background.
+          backgroundSegment = `color=c=${dominantColorHex1}:s=540x960`
+        }
+        // For simplicity, assume that calculating dominant colors and generating the sticker takes 20% of the total loading time:
+        dispatch(setProgress(20))
+
+        // Step 3: Generate the background video using FFmpeg
+        FFmpegKitConfig.enableStatisticsCallback((statistics) => {
+          if (statistics.getTime() < 0) {
+            return
+          }
+          const totalVideoDuration = 10000
+          const loadedSoFar = statistics.getTime()
+          const percentageLoaded = (loadedSoFar * 80) / totalVideoDuration
+          // Pad the result by 10% so the progress bar gets full before we get to IG
+          dispatch(setProgress(Math.min(20 + percentageLoaded + 10, 100)))
         })
-      )
-    }
-  }, [
-    trackImageUri,
-    content,
-    toggleProgressDrawer,
-    captureStickerImage,
-    shouldRenderShareToStorySticker,
-    handleError,
-    cleanup,
-    dispatch,
-    cancelStory
-  ])
+        let session: FFmpegSession
+        const SHOWFREQS_SEGMENT =
+          'aformat=channel_layouts=mono:sample_rates=16000,adynamicsmooth,showfreqs=s=900x40:fscale=log:colors=#ffffff70'
+        try {
+          session = await FFmpegKit.execute(
+            `${audioStartOffsetConfig}-i ${streamMp3Url} -filter_complex "${backgroundSegment}[bg];[0:a]${SHOWFREQS_SEGMENT}[fg];[0:a]${SHOWFREQS_SEGMENT},vflip[fgflip];[bg][fg]overlay=format=auto:x=-100:y=H-h-100[fo];[fo][fgflip]overlay=format=auto:x=-100:y=H-h-60;[0:a]anull" -pix_fmt yuv420p -c:v libx264 -preset ultrafast -c:a aac -t 10 ${storyVideoPath}`
+          )
+        } catch (e) {
+          handleError(platform, e, 'Error at FFmpeg step')
+          return
+        }
+        if (cancelRef.current) {
+          // The job was cancelled.
+          cleanup()
+          return
+        }
+
+        const returnCode = await session.getReturnCode()
+
+        if (!ReturnCode.isSuccess(returnCode)) {
+          const output = await session.getOutput()
+          handleError(
+            platform,
+            new Error(output),
+            'Error at generate video background step'
+          )
+          return
+        }
+
+        if (cancelRef.current) {
+          cleanup()
+        }
+        // Step 4: Put everything together and push to platform
+        const videoUri = `file://${storyVideoPath}`
+        try {
+          if (platform === 'instagram') {
+            await pasteToInstagramApp(videoUri, stickerUri)
+          } else {
+            await pasteToSnapchatApp(
+              videoUri,
+              `file://${stickerUri}`,
+              content.track.permalink
+            )
+          }
+        } catch (error) {
+          handleError(platform, error, 'Error at share to app step')
+          return
+        } finally {
+          cleanup()
+        }
+        track(
+          make({
+            eventName:
+              platform === 'instagram'
+                ? EventNames.SHARE_TO_IG_STORY_SUCCESS
+                : EventNames.SHARE_TO_SNAPCHAT_SUCCESS,
+            title: content.track.title,
+            artist: content.artist.handle
+          })
+        )
+      }
+    },
+    [
+      trackImageUri,
+      content,
+      toggleProgressDrawer,
+      captureStickerImage,
+      shouldRenderShareToStorySticker,
+      pasteToInstagramApp,
+      pasteToSnapchatApp,
+      handleError,
+      cleanup,
+      dispatch,
+      cancelStory
+    ]
+  )
+
+  const handleShare = useCallback(
+    async (platform: 'instagram' | 'snapchat') => {
+      await Promise.race([
+        generateStory(platform),
+        new Promise<false>((resolve) =>
+          cancelRequestedEventEmitter.once(CANCEL_REQUESTED_EVENT, () =>
+            resolve(false)
+          )
+        )
+      ])
+    },
+    [generateStory]
+  )
 
   const handleShareToInstagramStory = useCallback(async () => {
-    await Promise.race([
-      generateStory(),
-      new Promise<false>((resolve) =>
-        cancelRequestedEventEmitter.once(CANCEL_REQUESTED_EVENT, () =>
-          resolve(false)
-        )
-      )
-    ])
-  }, [generateStory])
+    await handleShare('instagram')
+  }, [handleShare])
+
+  const handleShareToSnapchat = useCallback(async () => {
+    await handleShare('snapchat')
+  }, [handleShare])
 
   return {
+    handleShareToSnapchat,
     handleShareToStoryStickerLoad,
     handleShareToInstagramStory,
     shouldRenderShareToStorySticker,
@@ -404,6 +481,7 @@ export const ShareToStoryProgressDrawer = () => {
   const { neutralLight2 } = useThemeColors()
   const progress = useSelector(getProgressPercentage)
   const cancel = useSelector(getCancel)
+  const platform = useSelector(getPlatform)
   const handleCancel = useCallback(() => {
     cancel?.()
   }, [cancel])
@@ -432,7 +510,9 @@ export const ShareToStoryProgressDrawer = () => {
           <LinearProgress value={progress} styles={progressBarStyles} />
         </View>
         <Text weight='medium' fontSize={'large'} style={styles.subtitleText}>
-          {messages.loadingInstagramStorySubtitle}
+          {platform === 'instagram'
+            ? messages.loadingInstagramStorySubtitle
+            : messages.loadingSnapchatSubtitle}
         </Text>
         <Button
           title={messages.cancel}
