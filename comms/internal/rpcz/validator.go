@@ -79,6 +79,7 @@ var Validators = map[string]validatorFunc{
 
 		// TODO check receiving invitee's permission settings
 
+		// validate does not exceed new chat rate limit for any invited users
 		var users []int32
 		for _, invite := range params.Invites {
 			userId, err := misc.DecodeHashId(invite.UserID)
@@ -147,6 +148,7 @@ var Validators = map[string]validatorFunc{
 			}
 		}
 
+		// validate does not exceed new message rate limit
 		err = validateNewMessageRateLimit(q, userId, params.ChatID)
 		if err != nil {
 			return err
