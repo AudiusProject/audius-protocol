@@ -55,7 +55,7 @@ const cardSizeStyles = {
 type CardProps = {
   className?: string
   id: ID
-  userId: ID
+  userId?: ID
   imageSize: ProfilePictureSizes | CoverArtSizes | null
   primaryText: ReactNode
   secondaryText: ReactNode
@@ -251,11 +251,13 @@ const Card = ({
         <div className={styles.primaryText}>{primaryText}</div>
         <div className={styles.secondaryText}>
           <div className={styles.secondaryTextContent}>{secondaryText}</div>
-          <UserBadges
-            userId={userId}
-            badgeSize={12}
-            className={styles.iconVerified}
-          />
+          {userId ? (
+            <UserBadges
+              userId={userId}
+              badgeSize={12}
+              className={styles.iconVerified}
+            />
+          ) : null}
         </div>
         {showRepostFavoriteStats ? (
           <div className={styles.stats}>
