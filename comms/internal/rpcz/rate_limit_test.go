@@ -7,6 +7,7 @@ import (
 
 	"comms.audius.co/config"
 	"comms.audius.co/db"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/misc"
 	"comms.audius.co/schema"
 	"github.com/nats-io/nats-server/v2/server"
@@ -35,7 +36,7 @@ func TestRateLimit(t *testing.T) {
 	defer nc.Close()
 	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
 	assert.NoError(t, err)
-	JetstreamClient = js
+	jetstream.SetJetstreamContext(js)
 
 	// Create rate limit KV
 	SetupRateLimitRules()

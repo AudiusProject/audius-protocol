@@ -12,7 +12,7 @@ var (
 	RateLimitMaxNumMessagesPerRecipient = "maxNumMessagesPerRecipient"
 	RateLimitMaxNumNewChats             = "maxNumNewChats"
 
-	RateLimitRules = map[string]string{
+	DefaultRateLimitRules = map[string]string{
 		RateLimitTimeframeHours:             "24",
 		RateLimitMaxNumMessages:             "2000",
 		RateLimitMaxNumMessagesPerRecipient: "1000",

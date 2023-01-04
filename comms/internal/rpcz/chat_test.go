@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"comms.audius.co/db"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/schema"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats-server/v2/test"
@@ -41,7 +42,7 @@ func TestChat(t *testing.T) {
 	defer nc.Close()
 	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
 	assert.NoError(t, err)
-	JetstreamClient = js
+	jetstream.SetJetstreamContext(js)
 	SetupRateLimitRules()
 
 	// validate 91 and 92 can both send messages in this chat

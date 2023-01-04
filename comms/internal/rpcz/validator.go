@@ -10,6 +10,7 @@ import (
 	"comms.audius.co/config"
 	"comms.audius.co/db"
 	"comms.audius.co/db/queries"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/misc"
 	"comms.audius.co/schema"
 	"github.com/jmoiron/sqlx"
@@ -281,14 +282,10 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 	return nil
 }
 
-func calculateRateLimitCursor(kv nats.KeyValue) (time.Time, error) {
+func calculateRateLimitCursor(timeframeVal string) (time.Time, error) {
 	var cursor time.Time
 	// Calculate cursor from rate limit timeframe
-	got, err := kv.Get(config.RateLimitTimeframeHours)
-	if err != nil {
-		return cursor, err
-	}
-	timeframe, err := strconv.Atoi(string(got.Value()))
+	timeframe, err := strconv.Atoi(timeframeVal)
 	if err != nil {
 		return cursor, err
 	}
@@ -297,24 +294,45 @@ func calculateRateLimitCursor(kv nats.KeyValue) (time.Time, error) {
 }
 
 func validateNewChatRateLimit(q db.Queryable, users []int32) error {
+	var err error
+
+	logger := config.Logger
+	timeframeVal := config.DefaultRateLimitRules[config.RateLimitTimeframeHours]
+	maxNumChatsVal := config.DefaultRateLimitRules[config.RateLimitMaxNumNewChats]
+
 	// Retrieve rate limit rules KV
-	kv, err := JetstreamClient.KeyValue(config.RateLimitRulesBucketName)
+	var got nats.KeyValueEntry
+	jsc := jetstream.GetJetstreamContext()
+	kv, err := jsc.KeyValue(config.RateLimitRulesBucketName)
 	if err != nil {
-		return err
+		goto KV_RETRIEVE_ERR
 	}
 
 	// Cursor for rate limit timeframe
-	cursor, err := calculateRateLimitCursor(kv)
+	got, err = kv.Get(config.RateLimitTimeframeHours)
+	if err != nil {
+		goto KV_RETRIEVE_ERR
+	}
+	timeframeVal = string(got.Value())
 
-	// Max number of new chats permitted per timeframe
-	got, err := kv.Get(config.RateLimitMaxNumNewChats)
+	// Max num of new chats permitted per timeframe
+	got, err = kv.Get(config.RateLimitMaxNumNewChats)
+	if err != nil {
+		goto KV_RETRIEVE_ERR
+	}
+	maxNumChatsVal = string(got.Value())
+
+KV_RETRIEVE_ERR:
+	if err != nil {
+		logger.Warn("unable to retrive rate limit KV rules, using default values", "error", err)
+	}
+
+	cursor, err := calculateRateLimitCursor(timeframeVal)
+	maxNumChats, err := strconv.Atoi(maxNumChatsVal)
 	if err != nil {
 		return err
 	}
-	maxNumChats, err := strconv.Atoi(string(got.Value()))
-	if err != nil {
-		return err
-	}
+
 	numChats, err := queries.NumChatsSince(q, context.Background(), queries.NumChatsSinceParams{
 		Users:  users,
 		Cursor: cursor,
@@ -322,7 +340,6 @@ func validateNewChatRateLimit(q db.Queryable, users []int32) error {
 	if err != nil {
 		return err
 	}
-
 	if numChats >= maxNumChats {
 		return errors.New("An invited user has exceeded the maximum number of new chats")
 	}
@@ -331,24 +348,60 @@ func validateNewChatRateLimit(q db.Queryable, users []int32) error {
 }
 
 func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) error {
+	var err error
+
+	logger := config.Logger
+	timeframeVal := config.DefaultRateLimitRules[config.RateLimitTimeframeHours]
+	maxNumMessagesVal := config.DefaultRateLimitRules[config.RateLimitMaxNumMessages]
+	maxNumMessagesPerRecipientVal := config.DefaultRateLimitRules[config.RateLimitMaxNumMessagesPerRecipient]
+
 	// Retrieve rate limit rules KV
-	kv, err := JetstreamClient.KeyValue(config.RateLimitRulesBucketName)
+	var got nats.KeyValueEntry
+	jsc := jetstream.GetJetstreamContext()
+	kv, err := jsc.KeyValue(config.RateLimitRulesBucketName)
 	if err != nil {
-		return err
+		goto KV_RETRIEVE_ERR
 	}
 
 	// Cursor for rate limit timeframe
-	cursor, err := calculateRateLimitCursor(kv)
+	got, err = kv.Get(config.RateLimitTimeframeHours)
+	if err != nil {
+		goto KV_RETRIEVE_ERR
+	}
+	timeframeVal = string(got.Value())
 
 	// Max number of new messages permitted per timeframe
-	got, err := kv.Get(config.RateLimitMaxNumMessages)
+	got, err = kv.Get(config.RateLimitMaxNumMessages)
+	if err != nil {
+		goto KV_RETRIEVE_ERR
+	}
+	maxNumMessagesVal = string(got.Value())
+
+	// Max number of new messages permitted per recipient (chat) per timeframe
+	got, err = kv.Get(config.RateLimitMaxNumMessagesPerRecipient)
+	if err != nil {
+		goto KV_RETRIEVE_ERR
+	}
+	maxNumMessagesPerRecipientVal = string(got.Value())
+
+KV_RETRIEVE_ERR:
+	if err != nil {
+		logger.Warn("unable to retrive rate limit KV rules, using default values", "error", err)
+	}
+
+	cursor, err := calculateRateLimitCursor(timeframeVal)
 	if err != nil {
 		return err
 	}
-	maxNumMessages, err := strconv.Atoi(string(got.Value()))
+	maxNumMessages, err := strconv.Atoi(maxNumMessagesVal)
 	if err != nil {
 		return err
 	}
+	maxNumMessagesPerRecipient, err := strconv.Atoi(maxNumMessagesPerRecipientVal)
+	if err != nil {
+		return err
+	}
+
 	numMessages, err := queries.NumChatMessagesSince(q, context.Background(), queries.NumChatMessagesSinceParams{
 		UserID: userId,
 		Cursor: cursor,
@@ -360,15 +413,6 @@ func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) er
 		return errors.New("User has exceeded the maximum number of new messages")
 	}
 
-	// Max number of new messages permitted per recipient (chat) per timeframe
-	got, err = kv.Get(config.RateLimitMaxNumMessagesPerRecipient)
-	if err != nil {
-		return err
-	}
-	maxNumMessagesPerRecipient, err := strconv.Atoi(string(got.Value()))
-	if err != nil {
-		return err
-	}
 	numMessagesPerRecipient, err := queries.NumChatMessagesPerRecipientSince(q, context.Background(), queries.NumChatMessagesPerRecipientSinceParams{
 		UserID: userId,
 		ChatID: chatId,
