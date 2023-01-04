@@ -94,12 +94,16 @@ export type PremiumConditionsEthNFTCollection = {
   address: string
   name: string
   slug: string
+  externalLink: Nullable<string>
+  permaLink: Nullable<string>
 }
 
 export type PremiumConditionsSolNFTCollection = {
   chain: 'sol'
   address: string
   name: string
+  externalLink: Nullable<string>
+  permaLink: Nullable<string>
 }
 
 export type PremiumConditions = {

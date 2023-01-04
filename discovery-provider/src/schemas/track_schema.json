@@ -401,12 +401,28 @@
                 },
                 "slug": {
                     "type": "string"
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "permaLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
                 "address",
-                "standard"
+                "standard",
+                "name",
+                "slug"
             ],
             "title": "PremiumConditionsEthNFTCollection"
         },
@@ -423,11 +439,26 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "permaLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
-                "address"
+                "address",
+                "name"
             ],
             "title": "PremiumConditionsSolNFTCollection"
         },
