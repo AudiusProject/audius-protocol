@@ -80,7 +80,13 @@ function* getTokenIdMap({
     // https://docs.metaplex.com/programs/token-metadata/certified-collections#linking-regular-nfts-to-collection-nfts
     const { collection } = c.solanaChainMetadata
     if (collection?.verified) {
-      solCollectionMintSet.add(collection.key.toBase58())
+      // Weirdly enough, sometimes the key is a string, and other times it's a PublicKey
+      // even though the @metaplex-foundation collection type defines it as a web3.PublicKey
+      const mintKey =
+        typeof collection.key === 'string'
+          ? collection.key
+          : collection.key.toBase58()
+      solCollectionMintSet.add(mintKey)
     }
   })
 
