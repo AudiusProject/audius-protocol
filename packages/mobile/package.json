@@ -182,8 +182,9 @@
     "jetifier": "1.6.8",
     "metro-react-native-babel-preset": "0.72.3",
     "patch-package": "6.4.7",
+    "react-native-flipper": "0.176.1",
     "react-test-renderer": "16.9.0",
-    "redux-devtools-extension": "2.13.9",
+    "redux-flipper": "2.0.2",
     "replace-in-file": "6.3.5",
     "typescript": "4.8.4"
   },

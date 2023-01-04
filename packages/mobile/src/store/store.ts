@@ -15,7 +15,6 @@ import type {
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
 import type SearchBarState from 'audius-client/src/common/store/search-bar/types'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
-import { composeWithDevTools } from 'redux-devtools-extension'
 import createSagaMiddleware from 'redux-saga'
 
 import type { DownloadState } from './download/slice'
@@ -82,11 +81,17 @@ const createRootReducer = () =>
   })
 
 const sagaMiddleware = createSagaMiddleware({ context: storeContext })
-const middlewares = applyMiddleware(sagaMiddleware)
-const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 250 })
+
+const middlewares = [sagaMiddleware]
+
+if (__DEV__) {
+  const createDebugger = require('redux-flipper').default
+  middlewares.push(createDebugger())
+}
+
 export const store = createStore(
   createRootReducer(),
-  composeEnhancers(middlewares)
+  applyMiddleware(...middlewares)
 )
 sagaMiddleware.run(rootSaga)
 

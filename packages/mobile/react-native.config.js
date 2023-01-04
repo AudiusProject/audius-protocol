@@ -11,6 +11,11 @@ module.exports = {
           cmakeListsPath: null
         }
       }
+    },
+    'react-native-flipper': {
+      platforms: {
+        ios: null
+      }
     }
   }
 }
