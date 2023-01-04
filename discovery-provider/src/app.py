@@ -60,7 +60,6 @@ eth_web3 = None
 eth_abi_values = None
 
 solana_client_manager = None
-registry = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
@@ -76,11 +75,6 @@ def get_eth_abi_values():
 
 
 def init_contracts():
-    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
-    registry_instance = web3.eth.contract(
-        address=registry_address, abi=abi_values["Registry"]["abi"]
-    )
-
     entity_manager_address = None
     entity_manager_inst = None
     if shared_config["contracts"]["entity_manager_address"]:
@@ -92,12 +86,10 @@ def init_contracts():
         )
 
     contract_address_dict = {
-        "registry": registry_address,
         "entity_manager": entity_manager_address,
     }
 
     return (
-        registry_instance,
         entity_manager_inst,
         contract_address_dict,
     )
@@ -124,14 +116,12 @@ def create_celery(test_config=None):
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
 
-    global registry
     global entity_manager
     global contract_addresses
     # pylint: enable=W0603
 
     try:
         (
-            registry,
             entity_manager,
             contract_addresses,
         ) = init_contracts()
