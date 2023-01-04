@@ -51,6 +51,16 @@ logger = logging.getLogger(__name__)
 ENABLE_DEVELOPMENT_FEATURES = True
 
 
+def get_record_columns(record) -> List[str]:
+    logger.info(record.__table__.columns)
+    for col in record.__table__.columns:
+        logger.info(col)
+        logger.info(col.key)
+    columns = [str(m.key) for m in record.__table__.columns]
+    logger.info(columns)
+    return columns
+
+
 def entity_manager_update(
     _,  # main indexing task
     update_task: DatabaseTask,
@@ -213,15 +223,14 @@ def entity_manager_update(
             for entity_id, records in record_dict.items():
                 if not records:
                     continue
-
                 # invalidate all new records except the last
                 for record in records:
-                    if "is_current" in record.__dict__:
+                    if "is_current" in get_record_columns(record):
                         record.is_current = False
 
-                    if "updated_at" in record.__dict__:
+                    if "updated_at" in get_record_columns(record):
                         record.updated_at = params.block_datetime
-                if "is_current" in records[-1].__dict__:
+                if "is_current" in get_record_columns(records[-1]):
                     records[-1].is_current = True
                 records_to_save.extend(records)
 
@@ -230,7 +239,7 @@ def entity_manager_update(
                     record_type in original_records
                     and entity_id in original_records[record_type]
                     and "is_current"
-                    in original_records[record_type][entity_id].__dict__
+                    in get_record_columns(original_records[record_type][entity_id])
                 ):
                     original_records[record_type][entity_id].is_current = False
 
