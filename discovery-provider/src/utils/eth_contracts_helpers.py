@@ -78,6 +78,6 @@ def fetch_all_registered_content_nodes(
                         eth_cn_endpoints_set.add(eth_sp_endpoint)
             except Exception as exc:
                 logger.error(
-                    f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
+                    f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {cn_spID} generated {exc}"
                 )
     return eth_cn_endpoints_set
