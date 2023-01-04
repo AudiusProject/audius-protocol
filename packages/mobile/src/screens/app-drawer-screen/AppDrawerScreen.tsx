@@ -62,7 +62,7 @@ export const AppDrawerScreen = () => {
   return (
     <Drawer.Navigator
       // legacy implementation uses reanimated-v1
-      useLegacyImplementation={true}
+      useLegacyImplementation
       screenOptions={drawerScreenOptions}
       drawerContent={(props) => <LeftNavDrawer {...gestureProps} {...props} />}
     >
