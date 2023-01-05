@@ -20,6 +20,8 @@ func TestMain(m *testing.M) {
 	// run tests
 	code := m.Run()
 
-	// teardown code here...
+	// teardown
+	defer db.Conn.Close()
+
 	os.Exit(code)
 }
