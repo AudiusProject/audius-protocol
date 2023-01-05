@@ -1551,7 +1551,30 @@ export class AudiusAPIClient {
 
     const response: Nullable<APIResponse<GetTipsResponse[]>> =
       await this._getResponse(FULL_ENDPOINT_MAP.getTips, params)
-    return response ? response.data : null
+    if (response && response.data) {
+      return response.data
+        .map((u) => {
+          const sender = adapter.makeUser(u.sender)
+          const receiver = adapter.makeUser(u.receiver)
+          // Should never happen
+          if (!sender && receiver) return null
+
+          return {
+            ...u,
+            sender: adapter.makeUser(u.sender)!,
+            receiver: adapter.makeUser(u.receiver)!,
+            // Hack alert:
+            // Don't show followee supporters yet, because they take too
+            // long to load in (requires a subsequent call to DN)
+            // followee_supporter_ids: u.followee_supporters.map(({ user_id }) =>
+            //   decodeHashId(user_id)
+            // )
+            followee_supporter_ids: []
+          }
+        })
+        .filter(removeNullable)
+    }
+    return null
   }
 
   async getPremiumContentSignatures({

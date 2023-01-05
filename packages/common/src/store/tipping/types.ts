@@ -1,11 +1,6 @@
 import { TipSource } from '../../models/Analytics'
 import { ID } from '../../models/Identifiers'
-import {
-  RecentTipsStorage,
-  Supporter,
-  Supporting,
-  UserTip
-} from '../../models/Tipping'
+import { Supporter, Supporting, UserTip } from '../../models/Tipping'
 import { User } from '../../models/User'
 import { StringAudio } from '../../models/Wallet'
 import { Nullable } from '../../utils/typeUtils'
@@ -54,8 +49,6 @@ export type TippingState = {
     error: Nullable<string>
     source: TipSource
   }
-  recentTips: UserTip[]
-  storage: Nullable<RecentTipsStorage> // what is cached in the web or mobile local storage
   tipToDisplay: Nullable<UserTip>
   showTip: boolean
 }

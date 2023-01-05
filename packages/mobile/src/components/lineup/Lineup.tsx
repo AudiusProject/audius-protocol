@@ -418,7 +418,7 @@ export const Lineup = ({
     const prependFeedTipTileIfNeeded = (
       data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
     ) => {
-      if (isFeed && showTip) {
+      if (isFeed) {
         const newData = { _feedTip: true } as FeedTipLineupItem
         return [newData, ...data]
       }

@@ -78,7 +78,7 @@ export class LocalStorage {
     await this.setValue(key, string)
   }
 
-  setExpiringJSONValue(key: string, value: any, ttlSeconds: number) {
+  setExpiringJSONValue<T>(key: string, value: T, ttlSeconds: number) {
     const expiring = {
       value,
       expiry: Date.now() + ttlSeconds * 1000

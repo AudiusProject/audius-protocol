@@ -253,7 +253,7 @@ type UserTipOmitIds = 'sender_id' | 'receiver_id' | 'followee_supporter_ids'
 export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
   sender: APIUser
   receiver: APIUser
-  followee_supporters: APIUser[]
+  followee_supporters: { user_id: string }[]
 }
 
 export type GetPremiumContentSignaturesResponse = {

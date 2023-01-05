@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import {
   Name,
@@ -12,16 +12,12 @@ import { IconButton, PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 import useMeasure from 'react-use-measure'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
-import {
-  dismissRecentTip,
-  getRecentTipsStorage
-} from 'common/store/tipping/storageUtils'
+import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -39,7 +35,7 @@ import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
 import styles from './FeedTipTile.module.css'
-const { beginTip, fetchRecentTips, hideTip } = tippingActions
+const { beginTip, fetchRecentTips, setShowTip } = tippingActions
 const { getUsers } = cacheUsersSelectors
 const { getShowTip, getTipToDisplay } = tippingSelectors
 const getAccountUser = accountSelectors.getAccountUser
@@ -163,8 +159,8 @@ const DismissTipButton = () => {
   const tipToDisplay = useSelector(getTipToDisplay)
 
   const handleClick = useCallback(async () => {
-    await dismissRecentTip(localStorage)
-    dispatch(hideTip())
+    dispatch(setShowTip({ show: false }))
+    storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id)
     if (account && tipToDisplay) {
       record(
         make(Name.TIP_FEED_TILE_DISMISS, {
@@ -213,9 +209,9 @@ export const FeedTipTile = () => {
   const maxTipButtonWidth = useRef(0)
   const useShortButtonFormat = useRef(false)
 
-  useAsync(async () => {
-    const storage = await getRecentTipsStorage(localStorage)
-    dispatch(fetchRecentTips({ storage }))
+  // Kickoff process to display new tips
+  useEffect(() => {
+    dispatch(fetchRecentTips())
   }, [dispatch])
 
   const handleClick = useCallback(() => {

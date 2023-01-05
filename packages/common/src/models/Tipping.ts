@@ -1,5 +1,4 @@
 import { ID } from 'models/Identifiers'
-import { Nullable } from 'utils/typeUtils'
 
 import { StringWei } from './Wallet'
 
@@ -25,8 +24,6 @@ export type UserTip = {
   tx_signature: string
 }
 
-export type RecentTipsStorage = {
-  dismissed: boolean
-  minSlot: number
-  lastDismissalTimestamp: Nullable<number>
+export type LastDismissedTip = {
+  receiver_id: ID
 }

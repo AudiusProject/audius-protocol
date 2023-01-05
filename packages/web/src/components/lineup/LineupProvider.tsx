@@ -479,7 +479,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       numPlaylistSkeletonRows,
       isTrending = false,
       isFeed = false,
-      showTip,
       rankIconCount = 0
     } = this.props
     const status = lineup.status
@@ -774,7 +773,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               threshold={loadMoreThreshold}
               element='ol'
             >
-              {isFeed && showTip ? <FeedTipTile /> : null}
+              {isFeed ? <FeedTipTile /> : null}
               {tiles.map((tile, index) => (
                 <li key={index}>{tile}</li>
               ))}
