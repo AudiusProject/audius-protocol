@@ -1,5 +1,6 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 
+import type { ImageSourcePropType } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
@@ -41,7 +42,7 @@ export type ExploreCollection = {
 }
 
 export type ExploreMoodCollection = ExploreCollection & {
-  emoji: ReactNode
+  emoji: ImageSourcePropType
   moods: string[]
 }
 

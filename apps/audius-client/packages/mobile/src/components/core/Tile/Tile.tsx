@@ -19,23 +19,21 @@ import { Pressable } from '../Pressable'
 const borderRadius = 8
 const shadowStyles = shadow()
 
-const useStyles = makeStyles(({ palette }) => {
-  return {
-    tile: {
-      flexDirection: 'row',
-      borderColor: palette.neutralLight8,
-      backgroundColor: palette.white,
-      borderWidth: 1,
-      borderRadius,
-      // Not using react-native-shadow-2 because it causes performance issues when rendering
-      // multiple lineups (in tabs)
-      ...shadowStyles
-    },
-    content: {
-      flex: 1
-    }
+const useStyles = makeStyles(({ palette }) => ({
+  tile: {
+    flexDirection: 'row',
+    borderColor: palette.neutralLight8,
+    backgroundColor: palette.white,
+    borderWidth: 1,
+    borderRadius,
+    // Not using react-native-shadow-2 because it causes performance issues when rendering
+    // multiple lineups (in tabs)
+    ...shadowStyles
+  },
+  content: {
+    flex: 1
   }
-})
+}))
 
 const defaultElement = View
 

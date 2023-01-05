@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react'
 
 import { View } from 'react-native'
-import { Shadow } from 'react-native-shadow-2'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { GradientText, Text } from 'app/components/core'
+import { GradientText, Shadow, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -126,12 +125,10 @@ export const Tier = ({
         />
       </View>
       <Shadow
-        offset={[0, 0]}
-        radius={spacing(4)}
-        viewStyle={{ width: '100%' }}
-        getChildRadius={true}
-        distance={10}
-        startColor='rgba(162,47,235,0.2)'
+        offset={{ height: 0, width: 0 }}
+        radius={spacing(2)}
+        color='rgb(162,47,235)'
+        opacity={0.4}
       >
         {renderTierBody()}
       </Shadow>

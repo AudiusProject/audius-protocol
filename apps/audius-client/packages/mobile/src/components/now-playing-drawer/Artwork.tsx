@@ -1,9 +1,9 @@
 import type { CommonState, Nullable, Track } from '@audius/common'
 import { averageColorSelectors } from '@audius/common'
 import { Dimensions, View } from 'react-native'
-import { Shadow } from 'react-native-shadow-2'
 import { useSelector } from 'react-redux'
 
+import { Shadow } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -17,9 +17,6 @@ const useStyles = makeStyles(({ palette }) => ({
     marginRight: spacing,
     maxHeight: dimensions.width - spacing * 2,
     alignSelf: 'center'
-  },
-  shadow: {
-    alignSelf: 'flex-start'
   },
   image: {
     alignSelf: 'center',
@@ -46,26 +43,18 @@ export const Artwork = ({ track }: ArtworkProps) => {
     })
   )
 
-  let shadowColor = 'rgba(0,0,0,0.05)'
+  let shadowColor = 'rgb(0,0,0)'
   const dominantColor = dominantColors ? dominantColors[0] : null
   if (dominantColor) {
     const { r, g, b } = dominantColor
-    shadowColor = `rgba(${r.toFixed()},${g.toFixed()},${b.toFixed()},0.1)`
+    shadowColor = `rgb(${r.toFixed()},${g.toFixed()},${b.toFixed()})`
   }
 
   return (
-    <View style={styles.root}>
-      <Shadow
-        viewStyle={styles.shadow}
-        offset={[0, 1]}
-        radius={15}
-        distance={10}
-        startColor={shadowColor}
-      >
-        <View style={styles.image}>
-          <TrackImage track={track} />
-        </View>
-      </Shadow>
-    </View>
+    <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
+      <View style={[styles.image, { shadowColor: 'red' }]}>
+        <TrackImage track={track} />
+      </View>
+    </Shadow>
   )
 }

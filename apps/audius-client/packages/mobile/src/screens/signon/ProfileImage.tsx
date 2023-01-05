@@ -85,21 +85,11 @@ const ProfileImage = ({
               setPhotoBtnIsHidden(!photoBtnIsHidden)
             }}
           >
-            <Image
-              source={profileImage}
-              height={206}
-              width={206}
-              style={[styles.profilePic]}
-            />
+            <Image source={profileImage} style={styles.profilePic} />
           </TouchableOpacity>
         </Animated.View>
       ) : (
-        <Image
-          height={226}
-          width={226}
-          source={NoPicture}
-          style={styles.profilePicEmpty}
-        />
+        <Image source={NoPicture} style={styles.profilePicEmpty} />
       )}
     </View>
   )

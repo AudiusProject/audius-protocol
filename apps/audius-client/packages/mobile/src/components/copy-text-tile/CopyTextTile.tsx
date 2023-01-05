@@ -1,13 +1,11 @@
 import { useCallback, useContext } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Animated, View } from 'react-native'
+import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import { Shadow } from 'react-native-shadow-2'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import { Tile, Text } from 'app/components/core'
-import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -48,8 +46,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.bold
   },
   icon: {
-    height: 24,
-    width: 24,
     marginLeft: spacing(3)
   }
 }))
@@ -65,48 +61,35 @@ type CopyTextTileProps = {
   text: string
 }
 
-export const CopyTextTile = ({ hint, text }: CopyTextTileProps) => {
+export const CopyTextTile = (props: CopyTextTileProps) => {
+  const { hint, text } = props
   const styles = useStyles()
   const { pageHeaderGradientColor1, pageHeaderGradientColor2, staticWhite } =
     useThemeColors()
-  const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation()
 
   const { toast } = useContext(ToastContext)
-  const onCopyClicked = useCallback(() => {
+
+  const handleCopy = useCallback(() => {
     Clipboard.setString(text)
     toast({ content: messages.copyNotice, type: 'info' })
   }, [text, toast])
 
   return (
-    <Shadow
-      offset={[0, 0]}
-      viewStyle={{ alignSelf: 'stretch' }}
-      getChildRadius={true}
-      distance={10}
-      startColor='rgba(100,17,166,0.05)'
+    <Tile
+      styles={{ tile: styles.tile }}
+      as={LinearGradient}
+      colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+      start={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 0 }}
+      onPress={handleCopy}
     >
-      <Animated.View style={[{ transform: [{ scale }] }]}>
-        <Tile
-          styles={{
-            tile: styles.tile
-          }}
-          as={LinearGradient}
-          colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
-          start={{ x: 1, y: 1 }}
-          end={{ x: 0, y: 0 }}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={onCopyClicked}
-        >
-          <Text style={styles.hint}>{hint}</Text>
-          <View style={styles.copy}>
-            <Text style={styles.text}>{text}</Text>
-            <View style={styles.icon}>
-              <IconCopy fill={staticWhite} height={24} width={24} />
-            </View>
-          </View>
-        </Tile>
-      </Animated.View>
-    </Shadow>
+      <Text style={styles.hint}>{hint}</Text>
+      <View style={styles.copy}>
+        <Text style={styles.text}>{text}</Text>
+        <View style={styles.icon}>
+          <IconCopy fill={staticWhite} height={24} width={24} />
+        </View>
+      </View>
+    </Tile>
   )
 }

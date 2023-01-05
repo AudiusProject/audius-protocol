@@ -36,6 +36,11 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingHorizontal: spacing(3),
     borderRadius: 8
   },
+  trackImage: {
+    height: 240,
+    width: 240,
+    borderRadius: spacing(1)
+  },
   infoContainer: {
     marginBottom: spacing(2),
     flexDirection: 'row',
@@ -77,12 +82,10 @@ export const ShareToStorySticker = ({
       <View>
         {trackImage ? (
           <Image
+            style={styles.trackImage}
             onLoad={onLoad}
-            height={240}
-            width={240}
             source={trackImage.source}
             onError={trackImage.handleError}
-            borderRadius={4}
           />
         ) : null}
         <Text

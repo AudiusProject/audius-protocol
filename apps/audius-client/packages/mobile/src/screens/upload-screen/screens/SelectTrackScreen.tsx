@@ -119,7 +119,7 @@ export const SelectTrackScreen = () => {
           variant='primary'
           size='large'
           icon={isLoading ? LoadingSpinner : undefined}
-          disabled={isLoading}
+          disabled={Boolean(isLoading)}
           onPress={handleSelectTrack}
         />
         {error && !loading ? (

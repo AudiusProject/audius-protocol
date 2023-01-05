@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
 import type {
@@ -34,7 +34,7 @@ type ColorTileProps = {
   shadowColor?: string
   shadowOpacity?: number
   icon?: ComponentType<SvgProps>
-  emoji?: ReactNode
+  emoji?: ImageSourcePropType
   isIncentivized?: boolean
 }
 
