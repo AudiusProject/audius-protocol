@@ -1,7 +1,7 @@
 """playlist seen notification
 
 Revision ID: 4efaecad96fc
-Revises: 7b843f2d3a0d
+Revises: 1b6e405ef358
 Create Date: 2022-12-30 19:29:24.733677
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '4efaecad96fc'
-down_revision = '7b843f2d3a0d'
+down_revision = '1b6e405ef358'
 branch_labels = None
 depends_on = None
 
