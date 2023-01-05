@@ -16,7 +16,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.notification_seen import view_notification
+from src.tasks.entity_manager.notification import create_notification, view_notification
 from src.tasks.entity_manager.playlist import (
     create_playlist,
     delete_playlist,
@@ -49,6 +49,16 @@ logger = logging.getLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
+
+
+def get_record_columns(record) -> List[str]:
+    logger.info(record.__table__.columns)
+    for col in record.__table__.columns:
+        logger.info(col)
+        logger.info(col.key)
+    columns = [str(m.key) for m in record.__table__.columns]
+    logger.info(columns)
+    return columns
 
 
 def entity_manager_update(
@@ -193,6 +203,12 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         view_notification(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.NOTIFICATION
+                        and ENABLE_DEVELOPMENT_FEATURES
+                    ):
+                        create_notification(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -207,20 +223,23 @@ def entity_manager_update(
             for entity_id, records in record_dict.items():
                 if not records:
                     continue
-
                 # invalidate all new records except the last
                 for record in records:
-                    record.is_current = False
+                    if "is_current" in get_record_columns(record):
+                        record.is_current = False
 
-                    if "updated_at" in record.__dict__:
+                    if "updated_at" in get_record_columns(record):
                         record.updated_at = params.block_datetime
-                records[-1].is_current = True
+                if "is_current" in get_record_columns(records[-1]):
+                    records[-1].is_current = True
                 records_to_save.extend(records)
 
                 # invalidate original record if it already existed in the DB
                 if (
                     record_type in original_records
                     and entity_id in original_records[record_type]
+                    and "is_current"
+                    in get_record_columns(original_records[record_type][entity_id])
                 ):
                     original_records[record_type][entity_id].is_current = False
 

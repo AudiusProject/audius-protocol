@@ -5,7 +5,7 @@ set -e
 script=cut-release
 docker build \
     -t ${script} \
-    release-scripts/dockerfiles/${script}
+    .circleci/release-scripts/dockerfiles/${script}
 
 SSH_KEY=$(cat ssh_keys/id_rsa_d00ba019ac4658e46cac3499f61b31bb)
 docker run \
