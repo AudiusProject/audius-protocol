@@ -9,13 +9,13 @@ let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
 const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
 const AmplitudeProxy = Config.AMPLITUDE_PROXY
-const ampInstance = Amplitude.getInstance()
+const amplitudeInstance = Amplitude.getInstance()
 
 export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
-      await ampInstance.setServerUrl(AmplitudeProxy)
-      await ampInstance.init(AmplitudeWriteKey)
+      await amplitudeInstance.setServerUrl(AmplitudeProxy)
+      await amplitudeInstance.init(AmplitudeWriteKey)
       analyticsSetupStatus = 'ready'
     } else {
       analyticsSetupStatus = 'error'
@@ -62,8 +62,8 @@ export const identify = async (
 ) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  ampInstance.setUserId(handle)
-  ampInstance.setUserProperties(traits)
+  amplitudeInstance.setUserId(handle)
+  amplitudeInstance.setUserProperties(traits)
 }
 
 // Track Event
@@ -76,7 +76,7 @@ export const track = async ({ eventName, properties }: Track) => {
     ...properties,
     mobileClientVersion: version
   }
-  ampInstance.logEvent(eventName, propertiesWithContext)
+  amplitudeInstance.logEvent(eventName, propertiesWithContext)
 }
 
 // Screen Event
@@ -84,5 +84,5 @@ export const track = async ({ eventName, properties }: Track) => {
 export const screen = async ({ route, properties = {} }: Screen) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  ampInstance.logEvent(EventNames.PAGE_VIEW, { route, ...properties })
+  amplitudeInstance.logEvent(EventNames.PAGE_VIEW, { route, ...properties })
 }
