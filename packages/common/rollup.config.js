@@ -20,7 +20,23 @@ export default [
         sourcemap: true
       }
     ],
-    plugins: [rollupTypescript(), image()],
+    plugins: [
+      rollupTypescript({
+        typescript: require('ttypescript'),
+        tsconfigDefaults: {
+          compilerOptions: {
+            plugins: [
+              { transform: 'typescript-transform-paths' },
+              {
+                transform: 'typescript-transform-paths',
+                afterDeclarations: true
+              }
+            ]
+          }
+        }
+      }),
+      image()
+    ],
 
     external: [
       ...Object.keys(pkg.dependencies),

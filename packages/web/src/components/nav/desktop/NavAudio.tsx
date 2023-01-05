@@ -37,13 +37,10 @@ const NavAudio = () => {
   const navigate = useNavigateToPage()
   const account = useSelector(getAccountUser)
   let totalBalance = useSelector(getAccountTotalBalance)
-  if (totalBalance === null && account?.total_balance) {
+  if (totalBalance.eq(new BN(0)) && account?.total_balance) {
     totalBalance = new BN(account?.total_balance) as BNWei
   }
-  const nonNullTotalBalance = totalBalance !== null
-
-  const positiveTotalBalance =
-    nonNullTotalBalance && totalBalance!.gt(new BN(0))
+  const positiveTotalBalance = totalBalance.gt(new BN(0))
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
   const { tier } = useSelectTierInfo(account?.user_id ?? 0)
@@ -61,23 +58,15 @@ const NavAudio = () => {
   useEffect(() => {
     if (hasClaimableRewards) {
       setBubbleType('claim')
-    } else if (nonNullTotalBalance && !positiveTotalBalance) {
+    } else if (!positiveTotalBalance) {
       setBubbleType('earn')
     } else {
       setBubbleType('none')
     }
-  }, [
-    setBubbleType,
-    hasClaimableRewards,
-    nonNullTotalBalance,
-    positiveTotalBalance
-  ])
+  }, [setBubbleType, hasClaimableRewards, positiveTotalBalance])
 
   if (!account) {
     return null
-  }
-  if (!nonNullTotalBalance) {
-    return <div className={styles.audio} />
   }
 
   return (

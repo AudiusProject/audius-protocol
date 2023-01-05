@@ -17,6 +17,7 @@ import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
 import notifications from './notifications/reducer'
+import { HistoryPageState, SavedPageState } from './pages'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import audioTransactionsSlice from './pages/audio-transactions/slice'
 import collection from './pages/collection/reducer'
@@ -293,10 +294,10 @@ export type CommonState = {
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
     smartCollection: ReturnType<typeof smartCollection>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
-    historyPage: ReturnType<typeof historyPageReducer>
+    historyPage: HistoryPageState
     track: TrackPageState
     profile: ProfilePageState
-    savedPage: ReturnType<typeof savedPageReducer>
+    savedPage: SavedPageState
     searchResults: SearchPageState
     settings: SettingsPageState
     trending: TrendingPageState

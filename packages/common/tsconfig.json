@@ -1,7 +1,18 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "baseUrl": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "assets/*": ["src/assets/*"],
+      "hooks/*": ["src/hooks/*"],
+      "models/*": ["src/models/*"],
+      "models": ["src/models"],
+      "schemas/*": ["src/schemas/*"],
+      "services/*": ["src/services/*"],
+      "store/*": ["src/store/*"],
+      "utils/*": ["src/utils/*"],
+      "utils": ["src/utils"],
+    },
     "module": "esnext",
     "target": "es5",
     "moduleResolution": "node",

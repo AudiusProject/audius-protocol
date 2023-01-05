@@ -27,7 +27,8 @@ import {
   queueSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
-  uploadActions
+  uploadActions,
+  CreateAccountOpen
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -159,7 +160,7 @@ const NavColumn = ({
   )
 
   const goToSignUp = useCallback(
-    (source: string) => {
+    (source: CreateAccountOpen['source']) => {
       routeToSignup()
       record(make(Name.CREATE_ACCOUNT_OPEN, { source }))
     },

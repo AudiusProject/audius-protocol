@@ -1,5 +1,5 @@
 import { getTrack as getCachedTrack } from '../cache/tracks/selectors'
-import { getUserFromTrack } from '../cache/users/selectors'
+import { getUserFromTrack } from '../cache/users/combinedSelectors'
 import { CommonState } from '../commonStore'
 
 const getBaseState = (state: CommonState) => state.ui.remixSettings

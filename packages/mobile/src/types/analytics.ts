@@ -11,7 +11,7 @@ enum MobileEventNames {
   SHARE_TO_SNAPCHAT = 'Share to Snapchat - start',
   SHARE_TO_SNAPCHAT_CANCELLED = 'Share to Snapchat - cancelled',
   SHARE_TO_SNAPCHAT_ERROR = 'Share to Snapchat - error',
-  SHARE_TO_SNAPCHAT_SUCCESS = 'Share to Snapchat - success'
+  SHARE_TO_SNAPCHAT_STORY_SUCCESS = 'Share to Snapchat - success'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -35,7 +35,7 @@ type ShareToSnapchat = {
   eventName:
     | MobileEventNames.SHARE_TO_SNAPCHAT
     | MobileEventNames.SHARE_TO_SNAPCHAT_CANCELLED
-    | MobileEventNames.SHARE_TO_IG_STORY_SUCCESS
+    | MobileEventNames.SHARE_TO_SNAPCHAT_STORY_SUCCESS
   title?: string
   artist?: string
 }

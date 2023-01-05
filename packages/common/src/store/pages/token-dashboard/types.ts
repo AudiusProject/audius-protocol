@@ -1,8 +1,7 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import BN from 'bn.js'
 
 import { Chain } from '../../../models/Chain'
-import { StringWei, WalletAddress } from '../../../models/Wallet'
+import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
 import { Nullable } from '../../../utils/typeUtils'
 // TODO(nkang) Figure out how to import BNWei from here without invalidating slice.ts
 // import { BNWei } from '../../../models/Wallet'
@@ -52,7 +51,7 @@ export type CanReceiveWAudio = 'false' | 'loading' | 'true'
 
 export type AssociatedWallet = {
   address: string
-  balance: BN
+  balance: BNWei
   collectibleCount: number
 }
 

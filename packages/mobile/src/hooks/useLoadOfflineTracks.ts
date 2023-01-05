@@ -60,7 +60,7 @@ export const useLoadOfflineTracks = () => {
         const collection = await getCollectionJson(collectionId)
         cacheCollections.push({
           id: collectionId,
-          uid: makeUid(Kind.COLLECTIONS, collectionId),
+          uid: makeUid(Kind.COLLECTIONS, parseInt(collectionId, 10)),
           metadata: collection
         })
         if (collection.user) {

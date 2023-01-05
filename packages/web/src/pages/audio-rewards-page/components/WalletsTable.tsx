@@ -210,36 +210,34 @@ const WalletsTable = ({
           {messages.audio}
         </h6>
       </div>
-      {ethWallets &&
-        ethWallets.map((wallet) => (
-          <Wallet
-            chain={Chain.Eth}
-            key={wallet.address}
-            address={wallet.address}
-            collectibleCount={wallet.collectibleCount}
-            audioBalance={wallet.balance}
-            isDisabled={isDisabled}
-            isConfirmAdding={false}
-            hasActions={hasActions}
-            hideCollectibles={hideCollectibles}
-            isConfirmRemoving={removeWallets.wallet === wallet.address}
-          />
-        ))}
-      {solWallets &&
-        solWallets.map((wallet) => (
-          <Wallet
-            chain={Chain.Sol}
-            key={wallet.address}
-            address={wallet.address}
-            collectibleCount={wallet.collectibleCount}
-            audioBalance={wallet.balance}
-            isDisabled={isDisabled}
-            hasActions={hasActions}
-            hideCollectibles={hideCollectibles}
-            isConfirmAdding={false}
-            isConfirmRemoving={removeWallets.wallet === wallet.address}
-          />
-        ))}
+      {ethWallets?.map((wallet) => (
+        <Wallet
+          chain={Chain.Eth}
+          key={wallet.address}
+          address={wallet.address}
+          collectibleCount={wallet.collectibleCount}
+          audioBalance={wallet.balance}
+          isDisabled={isDisabled}
+          isConfirmAdding={false}
+          hasActions={hasActions}
+          hideCollectibles={hideCollectibles}
+          isConfirmRemoving={removeWallets.wallet === wallet.address}
+        />
+      ))}
+      {solWallets?.map((wallet) => (
+        <Wallet
+          chain={Chain.Sol}
+          key={wallet.address}
+          address={wallet.address}
+          collectibleCount={wallet.collectibleCount}
+          audioBalance={wallet.balance}
+          isDisabled={isDisabled}
+          hasActions={hasActions}
+          hideCollectibles={hideCollectibles}
+          isConfirmAdding={false}
+          isConfirmRemoving={removeWallets.wallet === wallet.address}
+        />
+      ))}
       {showConfirmingWallet && (
         <Wallet
           chain={confirmingWallet.chain!}

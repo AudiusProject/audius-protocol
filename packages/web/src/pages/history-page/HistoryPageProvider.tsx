@@ -21,7 +21,8 @@ import {
   historyPageSelectors,
   tracksSocialActions as socialActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  LineupTrack
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEqual } from 'lodash'
@@ -273,7 +274,7 @@ const HistoryPage = g((props) => {
     title: messages.title,
     description: messages.description,
     loading,
-    entries,
+    entries: entries as unknown as LineupTrack[],
     queuedAndPlaying,
     playingIndex,
     dataSource,
@@ -318,11 +319,11 @@ const HistoryPage = g((props) => {
   )
 })
 
-type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
+const getLineupMetadatas = makeGetTableMetadatas(getHistoryTracksLineup)
+type LineupData = ReturnType<typeof getLineupMetadatas>
 let tracksRef: LineupData
 
 const makeMapStateToProps = () => {
-  const getLineupMetadatas = makeGetTableMetadatas(getHistoryTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
     const tracks = getLineupMetadatas(state)

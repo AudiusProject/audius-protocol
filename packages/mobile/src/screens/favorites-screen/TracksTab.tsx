@@ -131,7 +131,7 @@ export const TracksTab = () => {
   )
 
   const isLoading = savedTracksStatus !== Status.SUCCESS
-  const tracks = savedTracks.entries
+  const tracks = savedTracks.entries as TrackMetadata[]
   const hasNoFavorites = tracks.length === 0
 
   return (

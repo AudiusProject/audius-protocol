@@ -18,7 +18,6 @@ import {
   TransactionMethod,
   TransactionDetails,
   walletSelectors,
-  StringWei,
   BNWei,
   createUserBankIfNeeded,
   deriveUserBank,
@@ -475,14 +474,12 @@ function* populateAndSaveTransactionDetails() {
     throw new Error('Missing transactionDetailsArgs[transferTransactionId]')
   }
 
-  const postAUDIOBalanceWei: StringWei = yield* select(
+  const postAUDIOBalanceWei = yield* select(
     walletSelectors.getAccountTotalBalance
   )
-  const postAUDIOBalance = formatWei(
-    new BN(postAUDIOBalanceWei) as BNWei
-  ).replaceAll(',', '')
+  const postAUDIOBalance = formatWei(postAUDIOBalanceWei).replaceAll(',', '')
   const purchasedAUDIO = purchasedAudioWei
-    ? formatWei(new BN(purchasedAudioWei)).replaceAll(',', '')
+    ? formatWei(new BN(purchasedAudioWei ?? '0') as BNWei).replaceAll(',', '')
     : ''
   const divisor = new BN(LAMPORTS_PER_SOL)
   const purchasedLamportsBN = purchasedLamports

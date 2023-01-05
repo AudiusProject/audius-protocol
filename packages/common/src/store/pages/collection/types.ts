@@ -8,22 +8,22 @@ import {
   SmartCollectionVariant,
   Status,
   LineupTrack
-} from '../../../models'
+} from 'models'
+
+export type CollectionTrack = LineupTrack & { dateAdded: Moment } & {
+  collectible?: Collectible
+}
 
 export type CollectionsPageState = {
   collectionId: ID | null
   collectionUid: UID | null
   status: Status | null
-  tracks: LineupState<{ dateAdded: Moment }>
+  tracks: LineupState<CollectionTrack>
   userUid: UID | null
   smartCollectionVariant: SmartCollectionVariant
 }
 
 export type CollectionsPageType = 'playlist' | 'album'
-
-export type CollectionTrack = LineupTrack & { dateAdded: Moment } & {
-  collectible?: Collectible
-}
 
 export type CollectionPageTrackRecord = CollectionTrack & {
   key: string

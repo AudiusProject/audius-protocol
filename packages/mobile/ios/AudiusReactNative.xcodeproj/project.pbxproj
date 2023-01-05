@@ -469,7 +469,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic;
 				PRODUCT_NAME = "Audius Music";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic";
-				SCSDK_CLIENT_ID = e4716145-55b7-4a90-9d90-e977733713ed;
+				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -505,8 +505,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic;
 				PRODUCT_NAME = "Audius Music";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic";
-
-				SCSDK_CLIENT_ID = e4716145-55b7-4a90-9d90-e977733713ed;
+				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -700,7 +699,7 @@
 				PRODUCT_NAME = "Audius Music Release Candidate";
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.releasecandidate";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.releasecandidate";
-				SCSDK_CLIENT_ID = e4716145-55b7-4a90-9d90-e977733713ed;
+				SCSDK_CLIENT_ID = "e4716145-55b7-4a90-9d90-e977733713ed";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -788,7 +787,7 @@
 				PRODUCT_NAME = "Audius Music Release Candidate Staging";
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore co.audius.audiusmusic.staging.releasecandidate";
-				SCSDK_CLIENT_ID = 6f90a744-e5d0-4115-ad14-fb1a356085cd;
+				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -880,7 +879,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.staging;
 				PRODUCT_NAME = "Audius Music Staging";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
-				SCSDK_CLIENT_ID = 6f90a744-e5d0-4115-ad14-fb1a356085cd;
+				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -966,7 +965,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = co.audius.audiusmusic.staging;
 				PRODUCT_NAME = "Audius Music Staging";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development co.audius.audiusmusic.staging";
-				SCSDK_CLIENT_ID = 6f90a744-e5d0-4115-ad14-fb1a356085cd;
+				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

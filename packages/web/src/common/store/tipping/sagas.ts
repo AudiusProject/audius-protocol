@@ -229,8 +229,8 @@ function* sendTipAsync() {
 
   const weiBNAmount = parseAudioInputToWei(amount) ?? (new BN('0') as BNWei)
   const recipientWallet = recipient.spl_wallet
-  const weiBNBalance: BNWei = yield* select(getAccountBalance) ??
-    (new BN('0') as BNWei)
+  const weiBNBalance =
+    (yield* select(getAccountBalance)) ?? (new BN('0') as BNWei)
   const waudioWeiAmount = yield* call([walletClient, 'getCurrentWAudioBalance'])
 
   if (weiBNAmount.gt(weiBNBalance)) {

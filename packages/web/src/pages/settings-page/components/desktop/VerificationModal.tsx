@@ -308,7 +308,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       const trackEvent: TrackEvent = make(Name.SETTINGS_COMPLETE_TIKTOK_OAUTH, {
         is_verified: profile.is_verified,
         handle,
-        usernam: profile.username
+        username: profile.username
       })
       record(trackEvent)
     },

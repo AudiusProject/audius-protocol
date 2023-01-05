@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import type { CommonState } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -24,8 +23,7 @@ export const RemoveDownloadedCollectionDrawer = () => {
   const { collectionId, tracksForDownload } = data
 
   const isAlbum = useSelector(
-    (state: CommonState) =>
-      state.collections.entries[collectionId]?.metadata.is_album
+    (state) => state.collections.entries[collectionId]?.metadata.is_album
   )
 
   const handleConfirm = useCallback(() => {

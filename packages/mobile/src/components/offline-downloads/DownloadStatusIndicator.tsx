@@ -19,7 +19,7 @@ import { makeStyles } from 'app/styles'
 const { getCollection } = cacheCollectionsSelectors
 
 type TrackDownloadIndicatorProps = {
-  trackId?: string
+  trackId?: number
   collectionId?: string
   statusOverride?: OfflineTrackDownloadStatus | null
   showNotDownloaded?: boolean

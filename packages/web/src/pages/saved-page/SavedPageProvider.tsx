@@ -23,7 +23,8 @@ import {
   tracksSocialActions as socialActions,
   playerSelectors,
   queueSelectors,
-  Kind
+  Kind,
+  LineupTrack
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -400,10 +401,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const dataSource = this.formatMetadata(entries)
     let updatedOrder
     if (!column) {
-      const trackIdMap = this.props.tracks.entries.reduce((acc, track) => {
-        acc[track.id] = track
-        return acc
-      }, {})
+      const trackIdMap: Record<string, LineupTrack> =
+        this.props.tracks.entries.reduce(
+          (acc, track) => ({
+            ...acc,
+            [track.id]: track
+          }),
+          {}
+        )
       updatedOrder = this.state.initialOrder?.map((id) => {
         return trackIdMap[id]?.uid
       })

@@ -9,10 +9,12 @@ import {
   LineupTrack
 } from '../../../models'
 
-export default interface SavesPageState {
+export interface SavedPageState {
   localSaves: { [id: number]: UID }
-  tracks: LineupState<{ id: ID; dateSaved: string }>
+  tracks: LineupState<LineupTrack & { id: ID; dateSaved: string }>
   saves: Favorite[]
+  hasReachedEnd: boolean
+  initialFetch: boolean
 }
 
 export enum SavedPageTabs {

@@ -372,7 +372,7 @@ export const useShareToStory = ({
             eventName:
               platform === 'instagram'
                 ? EventNames.SHARE_TO_IG_STORY_SUCCESS
-                : EventNames.SHARE_TO_SNAPCHAT_SUCCESS,
+                : EventNames.SHARE_TO_SNAPCHAT_STORY_SUCCESS,
             title: content.track.title,
             artist: content.artist.handle
           })

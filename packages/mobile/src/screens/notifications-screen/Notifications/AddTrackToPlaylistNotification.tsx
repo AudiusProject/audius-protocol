@@ -45,6 +45,8 @@ export const AddTrackToPlaylistNotification = (
     }
   }, [playlist, navigation, notification])
 
+  if (!playlistOwner) return null
+
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconPlaylists}>

@@ -160,15 +160,17 @@ const DismissTipButton = () => {
 
   const handleClick = useCallback(async () => {
     dispatch(setShowTip({ show: false }))
-    storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id)
-    if (account && tipToDisplay) {
-      record(
-        make(Name.TIP_FEED_TILE_DISMISS, {
-          accountId: `${account.user_id}`,
-          receiverId: `${tipToDisplay.receiver_id}`,
-          device: 'web'
-        })
-      )
+    if (tipToDisplay) {
+      storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id)
+      if (account) {
+        record(
+          make(Name.TIP_FEED_TILE_DISMISS, {
+            accountId: `${account.user_id}`,
+            receiverId: `${tipToDisplay.receiver_id}`,
+            device: 'web'
+          })
+        )
+      }
     }
   }, [dispatch, account, tipToDisplay, record])
 

@@ -299,14 +299,16 @@ export const tryDownloadTrackFromEachCreatorNode = async (track: Track) => {
     })
   )[0] as UserMetadata
   const encodedTrackId = encodeHashId(track.track_id)
-  const creatorNodeEndpoints = user.creator_node_endpoint.split(',')
+  const creatorNodeEndpoints = user.creator_node_endpoint?.split(',')
   const destination = getLocalAudioPath(track.track_id.toString())
 
-  for (const creatorNodeEndpoint of creatorNodeEndpoints) {
-    const uri = `${creatorNodeEndpoint}/tracks/stream/${encodedTrackId}`
-    const statusCode = await downloadIfNotExists(uri, destination)
-    if (statusCode) {
-      return statusCode
+  if (creatorNodeEndpoints) {
+    for (const creatorNodeEndpoint of creatorNodeEndpoints) {
+      const uri = `${creatorNodeEndpoint}/tracks/stream/${encodedTrackId}`
+      const statusCode = await downloadIfNotExists(uri, destination)
+      if (statusCode) {
+        return statusCode
+      }
     }
   }
 }
