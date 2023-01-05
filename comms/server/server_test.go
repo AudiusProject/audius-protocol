@@ -83,9 +83,9 @@ func TestGetChats(t *testing.T) {
 	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
 
 	// Set up db
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate users cascade")
+	_, err = db.Conn.Exec("truncate users cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -104,7 +104,8 @@ func TestGetChats(t *testing.T) {
 	// Insert members into chats (1 and 2, 1 and 3)
 	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3), ($4, $2, $4, $2), ($4, $2, $4, $5)", chatId1, 1, 2, chatId2, 3)
 	assert.NoError(t, err)
-	tx.Commit()
+	err = tx.Commit()
+	assert.NoError(t, err)
 
 	// Common expected responses
 	expectedHealth := schema.Health{
@@ -244,9 +245,9 @@ func TestGetMessages(t *testing.T) {
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
 
 	// Set up db
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate users cascade")
+	_, err = db.Conn.Exec("truncate users cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -282,7 +283,8 @@ func TestGetMessages(t *testing.T) {
 	_, err = tx.Exec("insert into chat_message_reactions (user_id, message_id, reaction, created_at) values ($1, $2, $3, $4), ($5, $2, $6, $7)", 1, messageId1, reaction1, reaction1CreatedAt, 2, reaction2, reaction2CreatedAt)
 	assert.NoError(t, err)
 
-	tx.Commit()
+	err = tx.Commit()
+	assert.NoError(t, err)
 
 	// Test GET /comms/chats/:id/messages
 	e := createServer()

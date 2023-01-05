@@ -15,15 +15,13 @@ func TestChatDeletion(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
 
-	// TODO test queries
-
 	chatId := "chat1"
-	SetUpChatWithMembers(t, tx, chatId, 91, 92)
+	SetupChatWithMembers(t, tx, chatId, 91, 92)
 
 	assertDeleted := func(chatId string, userId int, expectDeleted bool) {
 		row := tx.QueryRow("select cleared_history_at from chat_member where chat_id = $1 and user_id = $2", chatId, userId)
@@ -61,5 +59,5 @@ func TestChatDeletion(t *testing.T) {
 	// chat is not deleted for 92
 	assertDeleted(chatId, 92, false)
 
-	tx.Commit()
+	tx.Rollback()
 }

@@ -17,8 +17,8 @@ var (
 
 	Env = os.Getenv("audius_discprov_env")
 
-	PrivateKey     *ecdsa.PrivateKey
-	WalletAddress  string
+	PrivateKey    *ecdsa.PrivateKey
+	WalletAddress string
 
 	NkeyPair   nkeys.KeyPair
 	NkeyPublic string

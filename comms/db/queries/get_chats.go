@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"comms.audius.co/db"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserChatRow struct {
@@ -59,4 +60,40 @@ func UserChats(q db.Queryable, ctx context.Context, userID int32) ([]UserChatRow
 	var items []UserChatRow
 	err := q.SelectContext(ctx, &items, userChats, userID)
 	return items, err
+}
+
+const maxNumNewChatsSince = `
+WITH counts AS (
+	SELECT COUNT(*) AS count
+	FROM chat
+	JOIN chat_member on chat.chat_id = chat_member.chat_id
+	WHERE chat_member.user_id IN (:Users) AND chat.created_at > :Cursor
+	GROUP BY chat_member.user_id
+)
+SELECT COALESCE(MAX(count), 0) FROM counts;
+`
+
+type MaxNumNewChatsSinceParams struct {
+	Users  []int32   `json:"user_id"`
+	Cursor time.Time `json:"cursor"`
+}
+
+// Return the max number of new chats since CURSOR out of the given USERS
+func MaxNumNewChatsSince(q db.Queryable, ctx context.Context, arg MaxNumNewChatsSinceParams) (int, error) {
+	var count int
+	argMap := map[string]interface{}{
+		"Users":  arg.Users,
+		"Cursor": arg.Cursor,
+	}
+	query, args, err := sqlx.Named(maxNumNewChatsSince, argMap)
+	if err != nil {
+		return count, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return count, err
+	}
+	query = q.Rebind(query)
+	err = q.GetContext(ctx, &count, query, args...)
+	return count, err
 }

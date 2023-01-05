@@ -12,8 +12,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// Validates + Applies a NATS message
-
+// Validates + applies a NATS message
 func Apply(msg *nats.Msg) {
 	var err error
 	logger := config.Logger.New()

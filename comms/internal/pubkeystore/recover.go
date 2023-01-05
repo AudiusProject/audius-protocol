@@ -9,7 +9,7 @@ import (
 
 	"comms.audius.co/config"
 	"comms.audius.co/db"
-	"comms.audius.co/peering"
+	"comms.audius.co/jetstream"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
@@ -54,7 +54,8 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 	conn := db.Conn
 
-	kv, err := peering.JetstreamClient.KeyValue(config.PubkeystoreBucketName)
+	jsc := jetstream.GetJetstreamContext()
+	kv, err := jsc.KeyValue(config.PubkeystoreBucketName)
 	if err != nil {
 		return "", err
 	}

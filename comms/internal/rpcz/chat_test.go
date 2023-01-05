@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"comms.audius.co/db"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/schema"
+	"github.com/nats-io/nats-server/v2/server"
+	"github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,12 +21,27 @@ func TestChat(t *testing.T) {
 	chatId := "chat1"
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
 
-	SetUpChatWithMembers(t, tx, chatId, 91, 92)
+	SetupChatWithMembers(t, tx, chatId, 91, 92)
+
+	// Connect to NATS and create JetStream Context
+	opts := server.Options{
+		Host:      "127.0.0.1",
+		Port:      4222,
+		JetStream: true,
+	}
+	natsServer := test.RunServer(&opts)
+	defer natsServer.Shutdown()
+	nc, err := nats.Connect(nats.DefaultURL)
+	assert.NoError(t, err)
+	defer nc.Close()
+	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	assert.NoError(t, err)
+	jetstream.SetJetstreamContext(js)
 
 	// validate 91 and 92 can both send messages in this chat
 	{
@@ -30,12 +49,12 @@ func TestChat(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "test123"}`, chatId)),
 		}
 
-		chatSay := string(schema.RPCMethodChatMessage)
+		chatMessage := string(schema.RPCMethodChatMessage)
 
-		err = Validators[chatSay](tx, 91, exampleRpc)
+		err = Validators[chatMessage](tx, 91, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatSay](tx, 93, exampleRpc)
+		err = Validators[chatMessage](tx, 93, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
@@ -109,5 +128,5 @@ func TestChat(t *testing.T) {
 	err = chatReactMessage(tx, 91, replyMessageId, newReaction, changedReactTs)
 	assertReaction(91, replyMessageId, newReaction)
 
-	tx.Commit()
+	tx.Rollback()
 }

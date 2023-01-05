@@ -102,3 +102,29 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 	)
 	return rows, err
 }
+
+const numChatMessagesSince = `
+WITH counts_per_chat AS (
+  SELECT COUNT(*)
+	FROM chat_message
+	WHERE user_id = $1 and created_at > $2
+	GROUP BY chat_id
+)
+SELECT COALESCE(SUM(count), 0) AS total_count, COALESCE(MAX(count), 0) as max_count_per_chat FROM counts_per_chat;
+`
+
+type NumChatMessagesSinceParams struct {
+	UserID int32     `db:"user_id" json:"user_id"`
+	Cursor time.Time `json:"cursor"`
+}
+
+type NumChatMessagesSinceRow struct {
+	TotalCount      int `db:"total_count" json:"total_count"`
+	MaxCountPerChat int `db:"max_count_per_chat" json:"max_count_per_chat"`
+}
+
+func NumChatMessagesSince(q db.Queryable, ctx context.Context, arg NumChatMessagesSinceParams) (NumChatMessagesSinceRow, error) {
+	var counts NumChatMessagesSinceRow
+	err := q.GetContext(ctx, &counts, numChatMessagesSince, arg.UserID, arg.Cursor)
+	return counts, err
+}

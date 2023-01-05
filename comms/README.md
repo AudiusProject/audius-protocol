@@ -12,6 +12,19 @@ First time:
 * Run `make tools`
 * verify `dbmate -h` works
 
+### Migrations
+
+Use [dbmate](https://github.com/amacneil/dbmate):
+
+* `dbmate new create_cool_table`
+
+### Typings
+
+* Update `schema/schema.ts` to add or modify type definitions
+* Update `example/deno_client.ts` to use types
+* Run `make quicktype`
+* Update go code to use types
+
 ### running single instance
 
 ```
@@ -22,22 +35,6 @@ make
 * if you edit go code, restart `make`
 * `make psql` to psql
 
-
-### Migrations
-
-Use [dbmate](https://github.com/amacneil/dbmate):
-
-* `dbmate new create_cool_table`
-* `make db.jet`
-
-
-### Typings
-
-* Update `schema/schema.ts` to add or modify type definitions
-* Update `example/deno_client.ts` to use types
-* Run `make quicktype`
-* Update go code to use types
-
 ### running cluster
 
 ```
@@ -45,12 +42,6 @@ make cluster.up
 ```
 
 start example client
-
-```
-go run example/go_client.go
-```
-
-or
 
 ```
 deno run -A example/deno_client.ts

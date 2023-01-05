@@ -15,9 +15,9 @@ func TestChatBlocking(t *testing.T) {
 	var err error
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat_blocked_users cascade")
+	_, err = db.Conn.Exec("truncate chat_blocked_users cascade;")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate chat cascade")
+	_, err = db.Conn.Exec("truncate chat cascade;")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -74,14 +74,14 @@ func TestChatBlocking(t *testing.T) {
 		chatCreate := string(schema.RPCMethodChatCreate)
 
 		err = Validators[chatCreate](tx, 91, exampleRpc)
-		assert.ErrorContains(t, err, "Cannot create a chat with a user you have blocked or user who has blocked you")
+		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
 	// validate 91 and 92 cannot message each other
 	{
 		// Assume chat was already created before blocking
 		chatId := "chat1"
-		SetUpChatWithMembers(t, tx, chatId, 91, 92)
+		SetupChatWithMembers(t, tx, chatId, 91, 92)
 
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message_id": "1", "message": "test"}`, chatId)),
@@ -90,7 +90,7 @@ func TestChatBlocking(t *testing.T) {
 		chatMessage := string(schema.RPCMethodChatMessage)
 
 		err = Validators[chatMessage](tx, 91, exampleRpc)
-		assert.ErrorContains(t, err, "Cannot sent messages to users you have blocked or users who have blocked you")
+		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
 	// user 91 unblocks 92
@@ -98,5 +98,5 @@ func TestChatBlocking(t *testing.T) {
 	assert.NoError(t, err)
 	assertBlocked(91, 92, messageTs, 0)
 
-	tx.Commit()
+	tx.Rollback()
 }

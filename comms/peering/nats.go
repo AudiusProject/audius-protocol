@@ -10,15 +10,12 @@ import (
 
 	"comms.audius.co/config"
 	"comms.audius.co/internal/rpcz"
+	"comms.audius.co/jetstream"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 )
 
-// NATS CLIENTS
-var (
-	NatsClient      *nats.Conn
-	JetstreamClient nats.JetStreamContext
-)
+var NatsClient *nats.Conn
 
 type NatsManager struct {
 	natsServer *server.Server
@@ -105,7 +102,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 	manager.setupNatsClient()
 
 	manager.setupJetstream()
-
 }
 
 func (manager *NatsManager) setupNatsClient() {
@@ -229,11 +225,17 @@ func (manager *NatsManager) setupJetstream() {
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err)
+		log.Fatal("CreateKeyValue failed", err, "bucket", config.PubkeystoreBucketName)
+	}
+	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:   config.RateLimitRulesBucketName,
+		Replicas: config.NatsReplicaCount,
+	})
+	if err != nil {
+		log.Fatal("CreateKeyValue failed", err, "bucket", config.RateLimitRulesBucketName)
 	}
 
-	// finally "expose" this as public var
+	// finally "expose" this via the jetstream package
 	// the server checks if this is non-nil to know if it's ready
-	// todo: THIS IS NOT SAFE... should be something like peering.GetJetstream with a mutex
-	JetstreamClient = jsc
+	jetstream.SetJetstreamContext(jsc)
 }

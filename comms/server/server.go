@@ -14,6 +14,7 @@ import (
 	"comms.audius.co/db/queries"
 	"comms.audius.co/internal/pubkeystore"
 	"comms.audius.co/internal/rpcz"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/misc"
 	"comms.audius.co/peering"
 	"comms.audius.co/schema"
@@ -234,7 +235,8 @@ func createServer() *echo.Echo {
 		// subject := "audius.comms.demo"
 		subject := "audius.staging.relay"
 
-		if peering.JetstreamClient == nil {
+		jsc := jetstream.GetJetstreamContext()
+		if jsc == nil {
 			return c.String(500, "jetstream not ready")
 		}
 
@@ -242,7 +244,7 @@ func createServer() *echo.Echo {
 		msg := nats.NewMsg(subject)
 		msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
 		msg.Data = payload
-		ok, err := peering.JetstreamClient.PublishMsg(msg)
+		ok, err := jsc.PublishMsg(msg)
 		if err != nil {
 			logger.Warn(string(payload), "err", err)
 			return c.String(500, err.Error())
@@ -282,7 +284,8 @@ func createServer() *echo.Echo {
 		rpcz.Validate(userId, rawRpc)
 
 		subject := "audius.dms.demo"
-		if peering.JetstreamClient == nil {
+		jsc := jetstream.GetJetstreamContext()
+		if jsc == nil {
 			return c.JSON(500, "jetstream not ready")
 		}
 
@@ -290,7 +293,7 @@ func createServer() *echo.Echo {
 		msg := nats.NewMsg(subject)
 		msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
 		msg.Data = payload
-		ok, err := peering.JetstreamClient.PublishMsg(msg)
+		ok, err := jsc.PublishMsg(msg)
 		if err != nil {
 			logger.Warn(string(payload), "wallet", wallet, "err", err)
 			return c.JSON(500, err.Error())
