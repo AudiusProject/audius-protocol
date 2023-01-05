@@ -2,9 +2,18 @@ import json
 import logging
 from typing import List
 
-from src.models.notifications.notification import Notification, NotificationSeen
+from src.models.notifications.notification import (
+    Notification,
+    NotificationSeen,
+    PlaylistSeen,
+)
 from src.models.users.user import User
-from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
+from src.tasks.entity_manager.utils import (
+    Action,
+    EntityType,
+    ManageEntityParameters,
+    validate_user_signer,
+)
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -20,13 +29,7 @@ def validate_notification_tx(params: ManageEntityParameters):
         raise Exception(f"Entity type {params.entity_type} is not a notification")
 
     if params.action == Action.VIEW:
-        user_id = params.user_id
-        if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(f"User {user_id} does not exists")
-
-        wallet = params.existing_records[EntityType.USER][user_id].wallet
-        if wallet and wallet.lower() != params.signer.lower():
-            raise Exception(f"User {user_id} does not match signer")
+        validate_user_signer(params)
         return
 
     elif params.action == Action.CREATE:
@@ -98,3 +101,27 @@ def create_notification(params: ManageEntityParameters):
     )
     key = params.block_datetime
     params.add_notification_record(key, notification)
+
+
+def validate_view_playlist_tx(params: ManageEntityParameters):
+    validate_user_signer(params)
+    playlist_id = params.entity_id
+    if not playlist_id in params.existing_records[EntityType.PLAYLIST]:
+        # Playlist does not exist, throw error
+        raise Exception("Playlist does not exist, cannot record playlist view")
+
+
+def view_playlist(params: ManageEntityParameters):
+    validate_view_playlist_tx(params)
+    playlist_seen = PlaylistSeen(
+        is_current=True,
+        user_id=params.user_id,
+        playlist_id=params.entity_id,
+        seen_at=params.block_datetime,
+        txhash=params.txhash,
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+    )
+    key = (params.user_id, params.entity_id)
+
+    params.add_playlist_seen_record(key, playlist_seen)
