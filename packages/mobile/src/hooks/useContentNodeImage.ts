@@ -65,23 +65,27 @@ const createImageSourcesForEndpoints = ({
 const createAllImageSources = ({
   cid,
   user,
+  endpoints: providedEndpoints,
   sizes = SquareSizes,
   localSource
 }: {
   cid: Nullable<CID>
-  user: Nullable<{ creator_node_endpoint: Nullable<string> }>
+  user?: Nullable<{ creator_node_endpoint: Nullable<string> }>
+  endpoints?: string[]
   sizes?: typeof SquareSizes | typeof WidthSizes
   localSource?: ImageURISource[] | null
 }) => {
-  if (!cid || !user) {
+  if (!cid || (!user && !providedEndpoints)) {
     return []
   }
 
-  const endpoints = user.creator_node_endpoint
-    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-        user.creator_node_endpoint
-      )
-    : []
+  const endpoints =
+    providedEndpoints ??
+    (user?.creator_node_endpoint
+      ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+          user.creator_node_endpoint
+        )
+      : [])
 
   const newImageSources = createImageSourcesForEndpoints({
     endpoints,
@@ -146,16 +150,26 @@ export const useContentNodeImage = ({
   const [imageSourceIndex, setImageSourceIndex] = useState(0)
   const [failedToLoad, setFailedToLoad] = useState(false)
 
+  const endpoints = useMemo(
+    () =>
+      user?.creator_node_endpoint
+        ? audiusBackendInstance.getCreatorNodeIPFSGateways(
+            user.creator_node_endpoint
+          )
+        : [],
+    [user?.creator_node_endpoint]
+  )
+
   // Create an array of ImageSources
   // based on the content node endpoints
   const imageSources = useMemo(() => {
     return createAllImageSources({
       cid,
-      user,
+      endpoints,
       localSource,
       sizes
     })
-  }, [cid, user, localSource, sizes])
+  }, [cid, endpoints, localSource, sizes])
 
   const handleError = useCallback(() => {
     if (imageSourceIndex < imageSources.length - 1) {
