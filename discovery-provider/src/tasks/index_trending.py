@@ -228,7 +228,7 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
     with db.scoped_session() as session:
         trending_tracks = _get_trending_tracks_with_session(
             session,
-            {time: "week"},
+            {"time": "week", "exclude_premium": True},
             trending_strategy_factory.get_strategy(TrendingType.TRACKS),
         )
         top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]
