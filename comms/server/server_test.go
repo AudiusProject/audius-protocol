@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"encoding/base64"
 	"encoding/json"
@@ -186,10 +185,7 @@ func TestGetChats(t *testing.T) {
 		assert.NoError(t, err)
 		if assert.NoError(t, getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			// Remove insignificant space characters
-			compactResp := new(bytes.Buffer)
-			err = json.Compact(compactResp, rec.Body.Bytes())
-			assert.Equal(t, string(expectedResponse), compactResp.String())
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
@@ -224,10 +220,7 @@ func TestGetChats(t *testing.T) {
 		assert.NoError(t, err)
 		if assert.NoError(t, getChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			// Remove insignificant space characters
-			compactResp := new(bytes.Buffer)
-			err = json.Compact(compactResp, rec.Body.Bytes())
-			assert.Equal(t, string(expectedResponse), compactResp.String())
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 }
@@ -358,10 +351,7 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 	if assert.NoError(t, getMessages(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		// Remove insignificant space characters
-		compactResp := new(bytes.Buffer)
-		err = json.Compact(compactResp, rec.Body.Bytes())
-		assert.Equal(t, string(expectedResponse), compactResp.String())
+		assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 	}
 }
 

@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// teardown
-	defer db.Conn.Close()
+	db.Conn.Close()
 
 	os.Exit(code)
 }

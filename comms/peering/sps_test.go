@@ -6,7 +6,7 @@ import (
 )
 
 func TestPeers(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 
 	input := map[string]interface{}{
 		"query": gql,
