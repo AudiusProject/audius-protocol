@@ -43,8 +43,7 @@ fmt::
 
 test::
 	docker compose up -d comdb
-	# go test ./database -v -count=1
-	go test ./...
+	go test ./... -count=1 -p=1
 
 
 # this is a "fast build and push"
