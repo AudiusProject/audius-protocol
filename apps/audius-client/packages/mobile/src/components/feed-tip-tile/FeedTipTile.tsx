@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { User } from '@audius/common'
 import {
@@ -8,13 +8,9 @@ import {
   tippingActions,
   useProxySelector
 } from '@audius/common'
-import {
-  dismissRecentTip,
-  getRecentTipsStorage
-} from 'audius-client/src/common/store/tipping/storageUtils'
+import { storeDismissedTipInfo } from 'common/store/tipping/sagas'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { Tile } from 'app/components/core'
@@ -28,7 +24,7 @@ import { ReceiverDetails } from './ReceiverDetails'
 import { SendTipButton } from './SendTipButton'
 import { SenderDetails } from './SenderDetails'
 
-const { hideTip, fetchRecentTips } = tippingActions
+const { setShowTip, fetchRecentTips } = tippingActions
 const { getShowTip, getTipToDisplay } = tippingSelectors
 const { getUsers } = cacheUsersSelectors
 const { getAccountUser } = accountSelectors
@@ -75,14 +71,13 @@ export const FeedTipTile = () => {
     return { tipToDisplay, usersMap, tipperIds }
   }, [])
 
-  useAsync(async () => {
-    const storage = await getRecentTipsStorage(localStorage)
-    dispatch(fetchRecentTips({ storage }))
+  useEffect(() => {
+    dispatch(fetchRecentTips())
   }, [dispatch])
 
   const handlePressClose = useCallback(async () => {
-    await dismissRecentTip(localStorage)
-    dispatch(hideTip())
+    await storeDismissedTipInfo(localStorage, tipToDisplay?.receiver_id || -1)
+    dispatch(setShowTip({ show: false }))
     if (account && tipToDisplay) {
       track(
         make({
