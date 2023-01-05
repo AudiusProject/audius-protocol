@@ -77,4 +77,4 @@ ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
 echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
 
-[[ "$AUDIUS_DEV" != "false" ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh"
+[[ "$AUDIUS_DEV" != "false" ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh" || true

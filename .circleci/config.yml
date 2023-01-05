@@ -50,13 +50,18 @@ commands:
             echo >/bin/bash '#!/tmp/bash.real
             gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
             if [[ "$?" != "0" ]]; then
-              /tmp/cleanup
+              /tmp/cleanup failure
               exit 1
             fi'
             chmod +x /bin/bash
 
             echo >/tmp/cleanup '#!/tmp/bash.real
-            gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+            if [[ "$1" == "success" ]]; then
+              gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+            else
+              gcloud compute instances delete --quiet --delete-disks=all "<< parameters.instance-name >>"
+            fi
+
             gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
             mv /bin/bash /tmp/bash.deleted
             mv /tmp/bash.real /bin/bash'
@@ -65,7 +70,7 @@ commands:
       - run:
           name: Delete GCP instance
           shell: /tmp/bash.real
-          command: /tmp/cleanup
+          command: /tmp/cleanup success
   gcp-checkout:
     steps:
       - run:
@@ -107,7 +112,7 @@ jobs:
           steps:
             - gcp-checkout
             - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-            - run: cd audius-protocol; dev-tools/audius-compose build; docker compose pull
+            - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull
       - run: |
           set +e
           gcloud compute images create --family=audius-protocol "audius-protocol-<< pipeline.git.revision >>"
