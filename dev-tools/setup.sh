@@ -78,3 +78,4 @@ echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
 
 [[ "$ID" =~ ^(debian|ubuntu)$ ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh"
+echo "done"
