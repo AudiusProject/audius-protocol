@@ -17,6 +17,6 @@ func SetupChatWithMembers(t *testing.T, tx *sqlx.Tx, chatId string, user1 int, u
 	assert.NoError(t, err)
 
 	// insert two members
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId, 91, 92)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId, user1, user2)
 	assert.NoError(t, err)
 }

@@ -104,9 +104,13 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 }
 
 const numChatMessagesSince = `
-SELECT COUNT(*)
-FROM chat_message
-WHERE user_id = $1 AND created_at > $2
+WITH counts_per_chat AS (
+  SELECT COUNT(*)
+	FROM chat_message
+	WHERE user_id = $1 and created_at > $2
+	GROUP BY chat_id
+)
+SELECT COALESCE(SUM(count), 0) AS total_count, COALESCE(MAX(count), 0) as max_count_per_chat FROM counts_per_chat;
 `
 
 type NumChatMessagesSinceParams struct {
@@ -114,26 +118,13 @@ type NumChatMessagesSinceParams struct {
 	Cursor time.Time `json:"cursor"`
 }
 
-func NumChatMessagesSince(q db.Queryable, ctx context.Context, arg NumChatMessagesSinceParams) (int, error) {
-	var count int
-	err := q.GetContext(ctx, &count, numChatMessagesSince, arg.UserID, arg.Cursor)
-	return count, err
+type NumChatMessagesSinceRow struct {
+	TotalCount      int `db:"total_count" json:"total_count"`
+	MaxCountPerChat int `db:"max_count_per_chat" json:"max_count_per_chat"`
 }
 
-const numChatMessagesPerRecipientSince = `
-SELECT COUNT(*)
-FROM chat_message
-WHERE user_id = $1 AND chat_id = $2 AND created_at > $3
-`
-
-type NumChatMessagesPerRecipientSinceParams struct {
-	UserID int32     `db:"user_id" json:"user_id"`
-	ChatID string    `db:"chat_id" json:"chat_id"`
-	Cursor time.Time `json:"cursor"`
-}
-
-func NumChatMessagesPerRecipientSince(q db.Queryable, ctx context.Context, arg NumChatMessagesPerRecipientSinceParams) (int, error) {
-	var count int
-	err := q.GetContext(ctx, &count, numChatMessagesPerRecipientSince, arg.UserID, arg.ChatID, arg.Cursor)
-	return count, err
+func NumChatMessagesSince(q db.Queryable, ctx context.Context, arg NumChatMessagesSinceParams) (NumChatMessagesSinceRow, error) {
+	var counts NumChatMessagesSinceRow
+	err := q.GetContext(ctx, &counts, numChatMessagesSince, arg.UserID, arg.Cursor)
+	return counts, err
 }

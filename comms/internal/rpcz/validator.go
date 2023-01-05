@@ -357,27 +357,15 @@ func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) er
 	// Cursor for rate limit timeframe
 	cursor := calculateRateLimitCursor(timeframe)
 
-	numMessages, err := queries.NumChatMessagesSince(q, context.Background(), queries.NumChatMessagesSinceParams{
+	counts, err := queries.NumChatMessagesSince(q, context.Background(), queries.NumChatMessagesSinceParams{
 		UserID: userId,
 		Cursor: cursor,
 	})
 	if err != nil {
 		return err
 	}
-	if numMessages >= maxNumMessages {
+	if counts.TotalCount >= maxNumMessages || counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
 		return errors.New("User has exceeded the maximum number of new messages")
-	}
-
-	numMessagesPerRecipient, err := queries.NumChatMessagesPerRecipientSince(q, context.Background(), queries.NumChatMessagesPerRecipientSinceParams{
-		UserID: userId,
-		ChatID: chatId,
-		Cursor: cursor,
-	})
-	if err != nil {
-		return err
-	}
-	if numMessagesPerRecipient >= maxNumMessagesPerRecipient {
-		return errors.New("User has exceeded the maximum number of new messages per recipient")
 	}
 
 	return nil

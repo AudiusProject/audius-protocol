@@ -20,8 +20,6 @@ func TestChatDeletion(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	// TODO test queries
-
 	chatId := "chat1"
 	SetupChatWithMembers(t, tx, chatId, 91, 92)
 

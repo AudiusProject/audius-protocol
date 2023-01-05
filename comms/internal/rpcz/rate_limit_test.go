@@ -46,11 +46,11 @@ func TestRateLimit(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	// Replce rules with test rules
+	// Add test rules
 	testRules := map[string]int{
 		config.RateLimitTimeframeHours:             24,
-		config.RateLimitMaxNumMessages:             2,
-		config.RateLimitMaxNumMessagesPerRecipient: 1,
+		config.RateLimitMaxNumMessages:             3,
+		config.RateLimitMaxNumMessagesPerRecipient: 2,
 		config.RateLimitMaxNumNewChats:             2,
 	}
 	for rule, limit := range testRules {
@@ -81,11 +81,11 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 
 	// 91 messaged 92 48 hours ago
-	err = chatSendMessage(tx, 91, chatId1, "1", chatTs, "Hello.")
+	err = chatSendMessage(tx, 91, chatId1, "1", chatTs, "Hello")
 	assert.NoError(t, err)
 
-	// 91 messages 92 now
-	message := "Hello again."
+	// 91 messages 92 twice now
+	message := "Hello today 1"
 	messageRpc := schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId1, message)),
 	}
@@ -93,16 +93,25 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 	err = chatSendMessage(tx, 91, chatId1, "2", time.Now().UTC(), message)
 	assert.NoError(t, err)
+	message = "Hello today 2"
+	messageRpc = schema.RawRPC{
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId1, message)),
+	}
+	err = Validators[chatMessage](tx, 91, messageRpc)
+	assert.NoError(t, err)
+	err = chatSendMessage(tx, 91, chatId1, "3", time.Now().UTC(), message)
+	assert.NoError(t, err)
 
-	// 91 messages 92 again. Blocked by rate limiter (hit max # messages per recipient in the past 24 hours)
+	// 91 messages 92 a 3rd time
+	// Blocked by rate limiter (hit max # messages per recipient in the past 24 hours)
 	message = "Hello again again."
 	messageRpc = schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId1, message)),
 	}
 	err = Validators[chatMessage](tx, 91, messageRpc)
-	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages per recipient")
+	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages")
 
-	// 91 creates a new chat with 93
+	// 91 creates a new chat with 93 (1 chat created in 24h)
 	chatId2 := "chat2"
 	createRpc := schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId2, user91Encoded, chatId2, user93Encoded, chatId2)),
@@ -112,16 +121,25 @@ func TestRateLimit(t *testing.T) {
 	SetupChatWithMembers(t, tx, chatId2, 91, 93)
 
 	// 91 messages 93
+	// Still blocked by rate limiter (hit max # messages with 92 in the past 24h)
 	message = "Hi 93"
 	messageRpc = schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId2, message)),
 	}
 	err = Validators[chatMessage](tx, 91, messageRpc)
+	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages")
+
+	// Remove message 3 from db so can test other rate limits
+	_, err = tx.Exec("delete from chat_message where message_id = '3'")
+	assert.NoError(t, err)
+
+	// 91 should be able to message 93 now
+	err = Validators[chatMessage](tx, 91, messageRpc)
 	assert.NoError(t, err)
 	err = chatSendMessage(tx, 91, chatId2, "3", time.Now().UTC(), message)
 	assert.NoError(t, err)
 
-	// 91 creates a new chat with 94
+	// 91 creates a new chat with 94 (2 chats created in 24h)
 	chatId3 := "chat3"
 	createRpc = schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId3, user91Encoded, chatId3, user94Encoded, chatId3)),
@@ -130,15 +148,27 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 	SetupChatWithMembers(t, tx, chatId3, 91, 94)
 
-	// 91 messages 94. Blocked by rate limiter (hit max # messages in the past 24 hours)
-	message = "Hi 94"
+	// 91 messages 94
+	message = "Hi 94 again"
+	messageRpc = schema.RawRPC{
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId3, message)),
+	}
+	err = Validators[chatMessage](tx, 91, messageRpc)
+	assert.NoError(t, err)
+	err = chatSendMessage(tx, 91, chatId3, "4", time.Now().UTC(), message)
+	assert.NoError(t, err)
+
+	// 91 messages 94 again (4th message to anyone in 24h)
+	// Blocked by rate limiter (hit max # messages in the past 24 hours)
+	message = "Hi 94 again"
 	messageRpc = schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId3, message)),
 	}
 	err = Validators[chatMessage](tx, 91, messageRpc)
 	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages")
 
-	// 91 creates a new chat with 95. Blocked by rate limiter (hit max # new chats)
+	// 91 creates a new chat with 95 (3 chats created in 24h)
+	// Blocked by rate limiter (hit max # new chats)
 	chatId4 := "chat4"
 	createRpc = schema.RawRPC{
 		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId4, user91Encoded, chatId2, user95Encoded, chatId4)),
