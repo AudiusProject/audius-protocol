@@ -221,13 +221,3 @@ def copy_record(
         else:
             setattr(record_copy, key, value)
     return record_copy
-
-
-def validate_user_signer(params: ManageEntityParameters):
-    user_id = params.user_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exists")
-
-    wallet = params.existing_records[EntityType.USER][user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {user_id} does not match signer")

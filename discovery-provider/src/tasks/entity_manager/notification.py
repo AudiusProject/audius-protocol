@@ -8,12 +8,7 @@ from src.models.notifications.notification import (
     PlaylistSeen,
 )
 from src.models.users.user import User
-from src.tasks.entity_manager.utils import (
-    Action,
-    EntityType,
-    ManageEntityParameters,
-    validate_user_signer,
-)
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -29,7 +24,13 @@ def validate_notification_tx(params: ManageEntityParameters):
         raise Exception(f"Entity type {params.entity_type} is not a notification")
 
     if params.action == Action.VIEW:
-        validate_user_signer(params)
+        user_id = params.user_id
+        if user_id not in params.existing_records[EntityType.USER]:
+            raise Exception(f"User {user_id} does not exists")
+
+        wallet = params.existing_records[EntityType.USER][user_id].wallet
+        if wallet and wallet.lower() != params.signer.lower():
+            raise Exception(f"User {user_id} does not match signer")
         return
 
     elif params.action == Action.CREATE:
@@ -104,7 +105,14 @@ def create_notification(params: ManageEntityParameters):
 
 
 def validate_view_playlist_tx(params: ManageEntityParameters):
-    validate_user_signer(params)
+    user_id = params.user_id
+    if user_id not in params.existing_records[EntityType.USER]:
+        raise Exception(f"User {user_id} does not exists")
+
+    wallet = params.existing_records[EntityType.USER][user_id].wallet
+    if wallet and wallet.lower() != params.signer.lower():
+        raise Exception(f"User {user_id} does not match signer")
+
     playlist_id = params.entity_id
     if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
         # Playlist does not exist, throw error
