@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_user_playlist_update import get_user_playlist_update

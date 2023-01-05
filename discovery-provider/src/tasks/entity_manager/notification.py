@@ -106,7 +106,7 @@ def create_notification(params: ManageEntityParameters):
 def validate_view_playlist_tx(params: ManageEntityParameters):
     validate_user_signer(params)
     playlist_id = params.entity_id
-    if not playlist_id in params.existing_records[EntityType.PLAYLIST]:
+    if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
         # Playlist does not exist, throw error
         raise Exception("Playlist does not exist, cannot record playlist view")
 
