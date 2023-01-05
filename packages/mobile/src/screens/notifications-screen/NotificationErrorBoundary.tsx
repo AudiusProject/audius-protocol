@@ -1,8 +1,13 @@
+import type { ReactNode } from 'react'
 import { PureComponent } from 'react'
 
 import * as Sentry from '@sentry/react-native'
 
-export class NotificationErrorBoundary extends PureComponent {
+type NotificationErrorBoundaryProps = {
+  children: ReactNode
+}
+
+export class NotificationErrorBoundary extends PureComponent<NotificationErrorBoundaryProps> {
   state = {
     error: null
   }

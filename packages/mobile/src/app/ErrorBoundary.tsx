@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { PureComponent, useContext, useEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
@@ -7,7 +8,12 @@ import { ToastContext } from 'app/components/toast/ToastContext'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
-const ErrorToast = ({ error }: { error: Nullable<string> }) => {
+type ErrorToastProps = {
+  error: Nullable<string>
+}
+
+const ErrorToast = (props: ErrorToastProps) => {
+  const { error } = props
   // Do nothing other than trigger a toast when error changes
   const { toast } = useContext(ToastContext)
   useEffect(() => {
@@ -19,7 +25,11 @@ const ErrorToast = ({ error }: { error: Nullable<string> }) => {
   return null
 }
 
-class ErrorBoundary extends PureComponent {
+type ErrorBoundaryProps = {
+  children: ReactNode
+}
+
+class ErrorBoundary extends PureComponent<ErrorBoundaryProps> {
   state = {
     error: null
   }

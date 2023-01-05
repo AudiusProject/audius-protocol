@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import { StyleSheet, View, Text, TouchableHighlight } from 'react-native'
@@ -53,7 +54,12 @@ const styles = StyleSheet.create({
   }
 })
 
-type ItemContainerProps = { isLast: boolean; onPress: () => void }
+type ItemContainerProps = {
+  isLast: boolean
+  onPress: () => void
+  children?: ReactNode
+}
+
 const ItemContainer: React.FunctionComponent<ItemContainerProps> = ({
   isLast,
   onPress,
