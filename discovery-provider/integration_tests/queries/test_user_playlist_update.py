@@ -13,6 +13,7 @@ t2 = datetime.fromtimestamp(10000001)
 t3 = datetime.fromtimestamp(10000002)
 t4 = datetime.fromtimestamp(10000003)
 
+
 def test_user_playlist_update(app):
     """Tests that fetching updated playlists for users works"""
     with app.app_context():

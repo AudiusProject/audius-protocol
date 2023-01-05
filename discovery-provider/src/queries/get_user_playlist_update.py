@@ -51,7 +51,5 @@ def get_user_playlist_update(user_id: int) -> List[int]:
             sql,
             {"user_id": user_id},
         )
-        playlists_with_updates = [
-            row[0] for row in rows
-        ]
+        playlists_with_updates = [row[0] for row in rows]
         return playlists_with_updates
