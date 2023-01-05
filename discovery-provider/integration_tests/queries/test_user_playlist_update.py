@@ -26,10 +26,30 @@ def test_user_playlist_update(app):
             ],
             "users": [{"user_id": user_id} for user_id in range(1, 20)],
             "saves": [
-                {"user_id": 1, "save_item_id": 1, "save_type": "playlist", 'created_at': t1},
-                {"user_id": 1, "save_item_id": 2, "save_type": "playlist", 'created_at': t1},
-                {"user_id": 1, "save_item_id": 3, "save_type": "playlist", 'created_at': t1},
-                {"user_id": 1, "save_item_id": 4, "save_type": "playlist", 'created_at': t1},
+                {
+                    "user_id": 1,
+                    "save_item_id": 1,
+                    "save_type": "playlist",
+                    "created_at": t1,
+                },
+                {
+                    "user_id": 1,
+                    "save_item_id": 2,
+                    "save_type": "playlist",
+                    "created_at": t1,
+                },
+                {
+                    "user_id": 1,
+                    "save_item_id": 3,
+                    "save_type": "playlist",
+                    "created_at": t1,
+                },
+                {
+                    "user_id": 1,
+                    "save_item_id": 4,
+                    "save_type": "playlist",
+                    "created_at": t1,
+                },
                 {
                     "user_id": 2,
                     "save_item_id": 2,
