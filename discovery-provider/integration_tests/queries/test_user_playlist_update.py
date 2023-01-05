@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 t1 = datetime.fromtimestamp(10000000)
 t2 = datetime.fromtimestamp(10000001)
 t3 = datetime.fromtimestamp(10000002)
-
+t4 = datetime.fromtimestamp(10000003)
 
 def test_user_playlist_update(app):
     """Tests that fetching updated playlists for users works"""
@@ -25,10 +25,10 @@ def test_user_playlist_update(app):
             ],
             "users": [{"user_id": user_id} for user_id in range(1, 20)],
             "saves": [
-                {"user_id": 1, "save_item_id": 1, "save_type": "playlist"},
-                {"user_id": 1, "save_item_id": 2, "save_type": "playlist"},
-                {"user_id": 1, "save_item_id": 3, "save_type": "playlist"},
-                {"user_id": 1, "save_item_id": 4, "save_type": "playlist"},
+                {"user_id": 1, "save_item_id": 1, "save_type": "playlist", 'created_at': t1},
+                {"user_id": 1, "save_item_id": 2, "save_type": "playlist", 'created_at': t1},
+                {"user_id": 1, "save_item_id": 3, "save_type": "playlist", 'created_at': t1},
+                {"user_id": 1, "save_item_id": 4, "save_type": "playlist", 'created_at': t1},
                 {
                     "user_id": 2,
                     "save_item_id": 2,
@@ -59,8 +59,8 @@ def test_user_playlist_update(app):
 
         user_id = 2
         playlist_updates = get_user_playlist_update(user_id)
-        assert playlist_updates == []
+        assert playlist_updates == [2]
 
         user_id = 3
         playlist_updates = get_user_playlist_update(user_id)
-        assert playlist_updates == [2]
+        assert playlist_updates == []

@@ -10,10 +10,7 @@ logger = logging.getLogger(__name__)
 sql = text(
     """
 SELECT
-    p.playlist_id,
-    p.updated_at,
-    ps.seen_at,
-    s.created_at
+    p.playlist_id
 from
     playlists p
 INNER JOIN
@@ -31,7 +28,8 @@ LEFT JOIN
 where
     p.is_current = true AND
     p.is_delete = false AND
-    s.created_at > p.updated_at
+    s.created_at < p.updated_at AND 
+    (ps.seen_at is NULL OR p.updated_at > ps.seen_at)
 """
 )
 
@@ -53,11 +51,7 @@ def get_user_playlist_update(user_id: int) -> List[int]:
             sql,
             {"user_id": user_id},
         )
-        playlists_with_updates = []
-        for row in rows:
-            playlist_id = row[0]
-            playlist_updated_at = row[1]
-            user_seen_at = row[2]
-            if not user_seen_at or playlist_updated_at > user_seen_at:
-                playlists_with_updates.append(playlist_id)
+        playlists_with_updates = [
+            row[0] for row in rows
+        ]
         return playlists_with_updates
