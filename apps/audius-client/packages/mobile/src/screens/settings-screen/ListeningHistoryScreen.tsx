@@ -18,6 +18,7 @@ import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
+import type { TracksMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -103,7 +104,7 @@ export const ListeningHistoryScreen = () => {
               }}
             >
               <TrackList
-                tracks={entries}
+                tracks={entries as TracksMetadata}
                 showDivider
                 togglePlay={togglePlay}
                 trackItemAction='overflow'

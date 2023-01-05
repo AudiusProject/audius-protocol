@@ -1,7 +1,5 @@
-import { Moment } from 'moment'
-
-import { ID, LineupState } from '../../../models'
+import { LineupState, LineupTrack } from '../../../models'
 
 export interface HistoryPageState {
-  tracks: LineupState<{ id: ID; dateListened: Moment }>
+  tracks: LineupState<LineupTrack>
 }

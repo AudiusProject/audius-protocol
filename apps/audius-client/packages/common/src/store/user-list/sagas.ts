@@ -1,5 +1,6 @@
 import { call, put, takeLatest, select, all } from 'redux-saga/effects'
 
+import { CommonState } from 'store/commonStore'
 import { toErrorWithMessage } from 'utils/error'
 
 import * as userListActions from './actions'
@@ -16,7 +17,7 @@ const UserListSagaFactory = {
   }: {
     tag: string
     fetchUsers: FetchUserIdsSaga
-    stateSelector: (state: unknown) => UserListStoreState
+    stateSelector: (state: CommonState) => UserListStoreState
     errorDispatcher: (error: Error) => Generator<any, any, any>
   }) => {
     const loadMore = function* (

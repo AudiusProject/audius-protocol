@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
 import {
-  Nullable,
   BNWei,
   tokenDashboardPageActions,
   walletSelectors,
@@ -307,8 +306,7 @@ const useOnRampProviderInfo = () => {
 }
 
 export const WalletManagementTile = () => {
-  const totalBalance: Nullable<BNWei> =
-    useSelector(getAccountTotalBalance) ?? null
+  const totalBalance = useSelector(getAccountTotalBalance)
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   const [, setOpen] = useModalState('AudioBreakdown')
 
@@ -333,20 +331,12 @@ export const WalletManagementTile = () => {
   return (
     <div className={styles.walletManagementTile}>
       <div className={styles.balanceContainer}>
-        <TokenHoverTooltip balance={totalBalance || (new BN(0) as BNWei)}>
-          <div
-            className={cn(styles.balanceAmount, {
-              [styles.hidden]: !totalBalance
-            })}
-          >
-            {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}
+        <TokenHoverTooltip balance={totalBalance}>
+          <div className={styles.balanceAmount}>
+            {formatWei(totalBalance, true, 0)}
           </div>
         </TokenHoverTooltip>
-        <div
-          className={cn(styles.balance, {
-            [styles.hidden]: !totalBalance
-          })}
-        >
+        <div className={styles.balance}>
           {hasMultipleWallets ? (
             <div onClick={onClickOpen}>
               {messages.totalAudio}

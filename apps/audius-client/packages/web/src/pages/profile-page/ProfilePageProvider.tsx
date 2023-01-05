@@ -33,7 +33,8 @@ import {
   createPlaylistModalUIActions as createPlaylistModalActions,
   newUserMetadata,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  Nullable
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -258,7 +259,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const params = parseUserRoute(pathname)
     if (params) {
       this.props.fetchProfile(
-        params?.handle?.toLowerCase(),
+        params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
         shouldSetLoading,
@@ -961,7 +962,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 
   return {
     fetchProfile: (
-      handle: string | undefined,
+      handle: Nullable<string>,
       userId: ID | null,
       forceUpdate: boolean,
       shouldSetLoading: boolean,

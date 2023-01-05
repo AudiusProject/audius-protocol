@@ -189,7 +189,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
       setError(messages.failure)
       setStatus(Status.ERROR)
 
-      const trackEvent: TrackEvent = make(Name.SOCIAL_PROOF_ERROR, {
+      const trackEvent = make(Name.SOCIAL_PROOF_ERROR, {
         handle,
         kind,
         error: error.message

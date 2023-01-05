@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { BNWei, StringWei, Nullable, CommonState } from '@audius/common'
+import type { StringWei, CommonState } from '@audius/common'
 import {
   vipDiscordModalActions,
   formatWei,
@@ -12,7 +12,6 @@ import {
   FeatureFlags
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
-import BN from 'bn.js'
 import { Image, Linking, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
@@ -170,8 +169,7 @@ export const AudioScreen = () => {
     FeatureFlags.MOBILE_WALLET_CONNECT
   )
 
-  const totalBalance: Nullable<BNWei> =
-    useSelector(getAccountTotalBalance) ?? null
+  const totalBalance = useSelector(getAccountTotalBalance)
 
   const totalBalanceWei =
     useSelector((state: CommonState) => state.wallet.totalBalance) ??
@@ -206,7 +204,7 @@ export const AudioScreen = () => {
         onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
       >
         <Text style={styles.audioAmount}>
-          {formatWei((totalBalance || new BN(0)) as BNWei, true, 0)}{' '}
+          {formatWei(totalBalance, true, 0)}{' '}
         </Text>
         <View style={styles.audioInfo}>
           {hasMultipleWallets ? (

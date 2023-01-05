@@ -303,7 +303,7 @@ type PageView = {
 }
 
 // Create Account
-type CreateAccountOpen = {
+export type CreateAccountOpen = {
   eventName: Name.CREATE_ACCOUNT_OPEN
   source:
     | 'nav profile'
@@ -312,7 +312,7 @@ type CreateAccountOpen = {
     | 'account icon'
     | 'social action'
     | 'sign in page'
-  // todo: are we missing 'restricted page' in this list?
+    | 'restricted page'
 }
 type CreateAccountCompleteEmail = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_EMAIL
@@ -341,6 +341,14 @@ type CreateAccountCompleteInstagram = {
   isVerified: boolean
   emailAddress: string
   handle: string
+}
+type CreateAccountStartTikTok = {
+  eventName: Name.CREATE_ACCOUNT_START_TIKTOK
+  emailAddress: string
+}
+type CreateAccountCompleteTikTok = {
+  eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
+  emailAddress: string
 }
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
@@ -401,6 +409,16 @@ type SettingsStartInstagramOauth = {
 }
 type SettingsCompleteInstagramOauth = {
   eventName: Name.SETTINGS_COMPLETE_INSTAGRAM_OAUTH
+  handle: string
+  username: string
+  is_verified: boolean
+}
+type SettingsStartTikTokOauth = {
+  eventName: Name.SETTINGS_START_TIKTOK_OAUTH
+  handle: string
+}
+type SettingsCompleteTikTokOauth = {
+  eventName: Name.SETTINGS_COMPLETE_TIKTOK_OAUTH
   handle: string
   username: string
   is_verified: boolean
@@ -1261,20 +1279,20 @@ type TipFeedTileDismiss = {
 
 type SocialProofOpen = {
   eventName: Name.SOCIAL_PROOF_OPEN
-  kind: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter' | 'tiktok'
   handle: string
 }
 
 type SocialProofSuccess = {
   eventName: Name.SOCIAL_PROOF_SUCCESS
-  kind: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter' | 'tiktok'
   handle: string
   screenName: string
 }
 
 type SocialProofError = {
   eventName: Name.SOCIAL_PROOF_ERROR
-  kind: 'instagram' | 'twitter'
+  kind: 'instagram' | 'twitter' | 'tiktok'
   handle: string
   error: string
 }
@@ -1387,6 +1405,8 @@ export type AllTrackingEvents =
   | CreateAccountCompleteTwitter
   | CreateAccountStartInstagram
   | CreateAccountCompleteInstagram
+  | CreateAccountStartTikTok
+  | CreateAccountCompleteTikTok
   | CreateAccountCompleteProfile
   | CreateAccountCompleteFollow
   | CreateAccountCompleteCreating
@@ -1399,6 +1419,8 @@ export type AllTrackingEvents =
   | SettingsCompleteTwitterOauth
   | SettingsStartInstagramOauth
   | SettingsCompleteInstagramOauth
+  | SettingsStartTikTokOauth
+  | SettingsCompleteTikTokOauth
   | SettingsResetAccountRecovery
   | SettingsStartChangePassword
   | SettingsCompleteChangePassword

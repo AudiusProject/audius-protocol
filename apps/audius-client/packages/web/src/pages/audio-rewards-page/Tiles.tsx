@@ -1,15 +1,12 @@
 import { useCallback, ReactNode } from 'react'
 
 import {
-  BNWei,
-  Nullable,
   formatWei,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
-import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -54,8 +51,7 @@ export const Tile = ({ className, children }: TileProps) => {
 }
 
 export const BalanceTile = ({ className }: { className?: string }) => {
-  const totalBalance: Nullable<BNWei> =
-    useSelector(getAccountTotalBalance) ?? null
+  const totalBalance = useSelector(getAccountTotalBalance)
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
   const [, setOpen] = useModalState('AudioBreakdown')
@@ -68,20 +64,12 @@ export const BalanceTile = ({ className }: { className?: string }) => {
   return (
     <Tile className={wm(styles.balanceTile, className)}>
       <>
-        <TokenHoverTooltip balance={totalBalance || (new BN(0) as BNWei)}>
-          <div
-            className={cn(styles.balanceAmount, {
-              [styles.hidden]: !totalBalance
-            })}
-          >
-            {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}
+        <TokenHoverTooltip balance={totalBalance}>
+          <div className={cn(styles.balanceAmount)}>
+            {formatWei(totalBalance, true, 0)}
           </div>
         </TokenHoverTooltip>
-        <div
-          className={cn(styles.balance, {
-            [styles.hidden]: !totalBalance
-          })}
-        >
+        <div className={styles.balance}>
           {hasMultipleWallets ? (
             <div onClick={onClickOpen}>
               {messages.totalAudio}
@@ -97,7 +85,7 @@ export const BalanceTile = ({ className }: { className?: string }) => {
 }
 
 export const WalletTile = ({ className }: { className?: string }) => {
-  const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
+  const balance = useSelector(getAccountBalance)
   const hasBalance = balance && !balance.isZero()
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')

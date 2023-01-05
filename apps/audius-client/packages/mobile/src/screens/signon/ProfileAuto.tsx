@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import type { Name } from '@audius/common'
 import { FeatureFlags } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
@@ -181,7 +182,14 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
   )
 
   const trackOAuthComplete = useCallback(
-    (eventName: string, handle: string, isVerified: boolean) => {
+    (
+      eventName:
+        | Name.CREATE_ACCOUNT_COMPLETE_TWITTER
+        | Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
+        | Name.CREATE_ACCOUNT_COMPLETE_TIKTOK,
+      handle: string,
+      isVerified: boolean
+    ) => {
       track(
         make({
           eventName,
@@ -262,7 +270,10 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
       verified,
       requiresUserReview
     }: {
-      completeEvent: string
+      completeEvent:
+        | Name.CREATE_ACCOUNT_COMPLETE_TWITTER
+        | Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM
+        | Name.CREATE_ACCOUNT_COMPLETE_TIKTOK
       handle: string
       verified: boolean
       requiresUserReview: boolean

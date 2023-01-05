@@ -15,6 +15,8 @@ import { Nullable } from 'utils/typeUtils'
 const WEI_DECIMALS = 18 // 18 decimals on ETH AUDIO
 const SPL_DECIMALS = 8 // 8 decimals on SPL AUDIO
 
+export const zeroBNWei = new BN(0) as BNWei
+
 export const weiToAudioString = (bnWei: BNWei): StringAudio => {
   const stringAudio = formatWeiToAudioString(bnWei) as StringAudio
   return stringAudio

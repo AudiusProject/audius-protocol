@@ -58,7 +58,8 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
         track(
           make({
             eventName: EventNames.SEARCH_TAG_SEARCH,
-            tag: query
+            tag: query,
+            source: 'search results page'
           })
         )
       } else {
@@ -75,7 +76,8 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
         track(
           make({
             eventName: EventNames.SEARCH_SEARCH,
-            term: query
+            term: query,
+            source: 'search results page'
           })
         )
       }

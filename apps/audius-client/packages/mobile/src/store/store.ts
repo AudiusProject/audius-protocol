@@ -1,4 +1,4 @@
-import type { RemoteConfigState } from '@audius/common'
+import type { CommonState, RemoteConfigState } from '@audius/common'
 import {
   remoteConfigReducer as remoteConfig,
   reducers as commonReducers
@@ -14,6 +14,7 @@ import type {
 } from 'audius-client/src/common/store/pages/signon/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
 import type SearchBarState from 'audius-client/src/common/store/search-bar/types'
+import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 
@@ -38,7 +39,7 @@ import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
 
-export type AppState = {
+export type AppState = CommonState & {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
   signOn: SignOnPageState
   backend: BackendState
@@ -92,7 +93,8 @@ if (__DEV__) {
 export const store = createStore(
   createRootReducer(),
   applyMiddleware(...middlewares)
-)
+) as unknown as Store<AppState> // need to explicitly type the store for offline-mode store reference
+
 sagaMiddleware.run(rootSaga)
 
 const { dispatch } = store

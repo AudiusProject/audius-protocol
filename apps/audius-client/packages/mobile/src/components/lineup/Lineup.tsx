@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ID, UID, PlaybackSource } from '@audius/common'
-import { Kind, Status, tippingSelectors } from '@audius/common'
+import { Kind, Status } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { range } from 'lodash'
 import type { SectionList as RNSectionList } from 'react-native'
@@ -29,7 +29,6 @@ import type {
   LineupTileViewProps
 } from './types'
 import { LineupVariant } from './types'
-const { getShowTip } = tippingSelectors
 
 type TogglePlayConfig = {
   uid: UID
@@ -231,7 +230,6 @@ export const Lineup = ({
   ListFooterComponent,
   ...listProps
 }: LineupProps) => {
-  const showTip = useSelector(getShowTip)
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
@@ -473,8 +471,7 @@ export const Lineup = ({
     showLeadingElementArtistPick,
     start,
     limit,
-    isFeed,
-    showTip
+    isFeed
   ])
 
   const areSectionsEmpty = sections.every(

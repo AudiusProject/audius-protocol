@@ -71,19 +71,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   tokenBadge: {
     marginRight: spacing(1)
   },
-  accountListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: spacing(6),
-    paddingVertical: spacing(4)
-  },
-  accountListItemIconRoot: {
-    width: spacing(10)
-  },
-  accountListItemIcon: {
-    marginRight: spacing(2),
-    paddingVertical: spacing(1)
-  },
   notificationBubble: {
     height: spacing(3),
     width: spacing(3),
@@ -154,7 +141,7 @@ const WrappedLeftNavDrawer = () => {
             width={spacing(7)}
           />
           <Text fontSize='large' weight='heavy'>
-            {totalBalance ? formatWei(totalBalance, true, 0) : 0}
+            {formatWei(totalBalance, true, 0)}
           </Text>
         </TouchableOpacity>
       </View>
