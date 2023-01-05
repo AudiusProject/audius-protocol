@@ -22,35 +22,6 @@ func TestMain(m *testing.M) {
 
 	// teardown
 	defer db.Conn.Close()
-	// _, err = db.Conn.Exec(`
-	// CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
-	// DECLARE
-	// statements CURSOR FOR
-	// SELECT tablename FROM pg_tables
-	// WHERE tableowner = username AND schemaname = 'public';
-	// BEGIN
-	// FOR stmt IN statements LOOP
-	// EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
-	// END LOOP;
-	// END;
-	// $$ LANGUAGE plpgsql;
-	// SELECT truncate_tables('postgres')
-	// `)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// _, err = db.Conn.Exec("truncate table chat cascade")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// _, err = db.Conn.Exec("truncate table chat_permissions cascade")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// _, err = db.Conn.Exec("truncate table chat_blocked_users cascade")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	os.Exit(code)
 }
