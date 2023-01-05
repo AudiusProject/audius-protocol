@@ -97,7 +97,7 @@ jobs:
     steps:
       - run-on-gcp:
           instance-name: circleci-<< pipeline.git.revision >>
-          create-instance-args: |
+          create-instance-args: >-
             --preemptible
             --tags=circleci
             --machine-type=n2-custom-6-24576
@@ -125,7 +125,7 @@ jobs:
     steps:
       - run-on-gcp:
           instance-name: circleci-<< pipeline.id >>-dp
-          create-instance-args: |
+          create-instance-args: >-
             --preemptible
             --tags=circleci
             --machine-type=n2-custom-6-24576
@@ -144,7 +144,7 @@ jobs:
     steps:
       - run-on-gcp:
           instance-name: circleci-<< pipeline.id >>-dp
-          create-instance-args: |
+          create-instance-args: >-
             --preemptible
             --tags=circleci
             --machine-type=n2-custom-6-24576
