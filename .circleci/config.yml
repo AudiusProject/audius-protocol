@@ -106,7 +106,7 @@ jobs:
             --no-boot-disk-auto-delete
           steps:
             - gcp-checkout
-            - run: ~/audius-protocol/dev-tools/setup.sh
+            - run: bash ~/audius-protocol/dev-tools/setup.sh
             - run: cd audius-protocol; audius-compose build; docker compose pull
       - run: |
           set +e
