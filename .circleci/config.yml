@@ -4,7 +4,6 @@ version: 2.1
 # See: https://circleci.com/docs/configuration-reference/#commands
 commands:
   run-on-gcp:
-    description: Setup GCP instance
     parameters:
       instance-name:
         description: Name of instance
@@ -19,7 +18,7 @@ commands:
         default: []
     steps:
       - run:
-          name: Setup GCP instance
+          name: Create GCP instance
           command: |
             gcloud config set disable_usage_reporting false
 
@@ -47,29 +46,47 @@ commands:
             gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command=exit
 
             # Replace bash with executable that forwards commands to the instance
-            mv /bin/bash /usr/bin/bash
-            echo >/bin/bash '#!/usr/bin/bash
+            mv /bin/bash /tmp/bash.real
+            echo >/bin/bash '#!/tmp/bash.real
             gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
             if [[ "$?" != "0" ]]; then
-              gcloud compute instances delete --quiet "<< parameters.instance-name >>"
-              gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
+              /tmp/cleanup
               exit 1
             fi'
             chmod +x /bin/bash
+
+            echo >/tmp/cleanup '#!/tmp/bash.real
+            gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+            gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
+            mv /bin/bash /tmp/bash.deleted
+            mv /tmp/bash.real /bin/bash'
+            chmod +x /tmp/cleanup
       - steps: << parameters.steps >>
       - run:
           name: Delete GCP instance
-          shell: /usr/bin/bash
-          command: |
-            gcloud compute instances delete --quiet "<< parameters.instance-name >>"
-            gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
-  gcp-audius-checkout:
-    description: Checkout
+          shell: /tmp/bash.real
+          command: /tmp/cleanup
+  gcp-checkout:
     steps:
       - run:
           name: Checkout
-          command: echo "testing"
-          # command: git fetch; git checkout "<< pipeline.git.revision >>"
+          command: |
+            if ! command -v git &>/dev/null; then
+              sudo apt update
+              sudo apt install -y git
+            fi
+
+            if [[ -d "~/audius-protocol" ]]; then
+              cd ~/audius-protocol
+              git remote set-url origin "<< pipeline.project.git_url >>" || true
+              git fetch --force --tags origin
+            else
+              mkdir -p ~/audius-protocol
+              cd ~/audius-protocol
+              git clone --no-checkout "<< pipeline.project.git_url >>" .
+            fi
+
+            git checkout --force "<< pipeline.git.revision >>"
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
@@ -78,7 +95,28 @@ jobs:
     docker:
       - image: google/cloud-sdk:412.0.0-slim
     steps:
-      - run: echo "dependency"
+      - run-on-gcp:
+          instance-name: circleci-<< pipeline.git.revision >>
+          create-instance-args: |
+            --preemptible
+            --tags=circleci
+            --machine-type=n2-custom-6-24576
+            --boot-disk-size=64G
+            --boot-disk-type=pd-ssd
+            --no-boot-disk-auto-delete
+          steps:
+            - gcp-checkout
+            - run: ~/audius-protocol/dev-tools/setup.sh
+            - run: cd audius-protocol; audius-compose build; docker compose pull
+      - run: |
+          set +e
+          gcloud compute images create --family=audius-protocol "audius-protocol-<< pipeline.git.revision >>"
+          image_create_exit_code=$?
+          gcloud compute disks delete --quiet "circleci-<< pipeline.git.revision >>"
+          disk_delete_exit_code=$?
+          if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
+            exit 1
+          fi
 
   test-creator-node:
     resource_class: small
@@ -86,11 +124,18 @@ jobs:
       - image: google/cloud-sdk:412.0.0-slim
     steps:
       - run-on-gcp:
-          instance-name: circleci-<< pipeline.id >>-cn
+          instance-name: circleci-<< pipeline.id >>-dp
+          create-instance-args: |
+            --preemptible
+            --tags=circleci
+            --machine-type=n2-custom-6-24576
+            --boot-disk-size=64G
+            --boot-disk-type=pd-ssd
+            --no-boot-disk-auto-delete
+            --image=audius-protocol-<< pipeline.git.revision >>
           steps:
-            - gcp-audius-checkout
-            - run: echo "creator"
-            # - run: audius-compose test run creator-node
+            - gcp-checkout
+            - run: audius-compose test creator-node
 
   test-discovery-provider:
     resource_class: small
@@ -99,10 +144,17 @@ jobs:
     steps:
       - run-on-gcp:
           instance-name: circleci-<< pipeline.id >>-dp
+          create-instance-args: |
+            --preemptible
+            --tags=circleci
+            --machine-type=n2-custom-6-24576
+            --boot-disk-size=64G
+            --boot-disk-type=pd-ssd
+            --no-boot-disk-auto-delete
+            --image=audius-protocol-<< pipeline.git.revision >>
           steps:
-            - gcp-audius-checkout
-            - run: echo "discovery"
-            # - run: audius-compose test run discovery-provider
+            - gcp-checkout
+            - run: audius-compose test discovery-provider
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
