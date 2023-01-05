@@ -115,7 +115,10 @@ jobs:
             - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull
       - run: |
           set +e
-          gcloud compute images create --family=audius-protocol "audius-protocol-<< pipeline.git.revision >>"
+          gcloud compute images create \
+            --family=audius-protocol \
+            --source-disk "circleci-<< pipeline.git.revision >>" \
+            "audius-protocol-<< pipeline.git.revision >>"
           image_create_exit_code=$?
           gcloud compute disks delete --quiet "circleci-<< pipeline.git.revision >>"
           disk_delete_exit_code=$?
