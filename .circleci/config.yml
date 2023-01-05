@@ -106,8 +106,8 @@ jobs:
             --no-boot-disk-auto-delete
           steps:
             - gcp-checkout
-            - run: bash ~/audius-protocol/dev-tools/setup.sh
-            - run: cd audius-protocol; audius-compose build; docker compose pull
+            - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+            - run: cd audius-protocol; dev-tools/audius-compose build; docker compose pull
       - run: |
           set +e
           gcloud compute images create --family=audius-protocol "audius-protocol-<< pipeline.git.revision >>"
