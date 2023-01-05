@@ -329,6 +329,7 @@ func validateNewChatRateLimit(q db.Queryable, users []int32) error {
 		return err
 	}
 	if numChats >= maxNumChats {
+		config.Logger.Info("hit rate limit (new chats)", "users", users)
 		return errors.New("An invited user has exceeded the maximum number of new chats")
 	}
 
@@ -365,6 +366,12 @@ func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) er
 		return err
 	}
 	if counts.TotalCount >= maxNumMessages || counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
+		if counts.TotalCount >= maxNumMessages {
+			config.Logger.Info("hit rate limit (total count new messages)", "user", userId, "chat", chatId)
+		}
+		if counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
+			config.Logger.Info("hit rate limit (new messages per recipient)", "user", userId, "chat", chatId)
+		}
 		return errors.New("User has exceeded the maximum number of new messages")
 	}
 
