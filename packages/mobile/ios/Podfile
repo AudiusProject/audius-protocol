@@ -51,6 +51,9 @@ target 'AudiusReactNative' do
     )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
     # flipper_post_install(installer)
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    end
 
     # https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693
     installer.pods_project.targets.each do |target|

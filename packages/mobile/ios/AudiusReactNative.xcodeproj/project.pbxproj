@@ -19,9 +19,9 @@
 		83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */; };
 		83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F735A423C64C950040A4C5 /* AirplayEvent.m */; };
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
-		88D68E15FC432AEA67A3DA43 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C9AFA01FEAC3FA84A647094 /* libPods-AudiusReactNative.a */; };
 		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
 		9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */; };
+		AE229D07E9084C6EB9B6B480 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CBAE08E8723848015A134661 /* libPods-AudiusReactNative.a */; };
 		C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */ = {isa = PBXBuildFile; fileRef = D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */; };
 		CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */ = {isa = PBXBuildFile; fileRef = D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */; };
 		F50849B3CA2D48F3852465FA /* AvenirNextLTPro-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */; };
@@ -31,6 +31,7 @@
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AudiusReactNativeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudiusReactNativeTests.m; sourceTree = "<group>"; };
+		1338317E32A70B3E796CE503 /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Audius Music.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Audius Music.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AudiusReactNative/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = AudiusReactNative/AppDelegate.mm; sourceTree = "<group>"; };
@@ -39,24 +40,23 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudiusReactNative/main.m; sourceTree = "<group>"; };
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
-		15F45C4E13F037F64B50D0EB /* Pods-AudiusReactNative.staging.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.debug.xcconfig"; sourceTree = "<group>"; };
-		17E5D19A7EB68785DB3E5118 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
+		6B15FA5E2656F49ECB139DC4 /* Pods-AudiusReactNative.staging.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.debug.xcconfig"; sourceTree = "<group>"; };
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BootSplash.storyboard; path = AudiusReactNative/BootSplash.storyboard; sourceTree = "<group>"; };
 		717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AvenirNextLTPro-DemiBold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-DemiBold.otf"; sourceTree = "<group>"; };
+		801C2ACA7332A59622B94234 /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
 		838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		83E8F64123F6101600817622 /* libRNAnalytics.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNAnalytics.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayViewManager.m; sourceTree = "<group>"; };
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
-		8C9AFA01FEAC3FA84A647094 /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; };
-		9F9B3FEB9AA3EC2408EC2910 /* Pods-AudiusReactNative.staging.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.release.xcconfig"; sourceTree = "<group>"; };
+		9337C65EB6B0AE1F76AB59C2 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
-		B8FB688C549652DD2AA0B978 /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Thin.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Thin.otf"; sourceTree = "<group>"; };
-		C787776E8BBB722A0A850241 /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
-		C9644DFFD6AFCE449630CFF6 /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
+		CBAE08E8723848015A134661 /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD771AE385683744E1D60474 /* Pods-AudiusReactNative.staging.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.release.xcconfig"; sourceTree = "<group>"; };
+		D210E8693CC315508248370D /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Heavy.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Heavy.otf"; sourceTree = "<group>"; };
 		D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-UltLt.otf"; path = "../src/assets/fonts/AvenirNextLTPro-UltLt.otf"; sourceTree = "<group>"; };
 		EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Bold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Bold.otf"; sourceTree = "<group>"; };
@@ -69,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				88D68E15FC432AEA67A3DA43 /* libPods-AudiusReactNative.a in Frameworks */,
+				AE229D07E9084C6EB9B6B480 /* libPods-AudiusReactNative.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +117,7 @@
 				83E8F64123F6101600817622 /* libRNAnalytics.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				8C9AFA01FEAC3FA84A647094 /* libPods-AudiusReactNative.a */,
+				CBAE08E8723848015A134661 /* libPods-AudiusReactNative.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,12 +159,12 @@
 		9203ADA7911C8949B98165F4 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				C787776E8BBB722A0A850241 /* Pods-AudiusReactNative.debug.xcconfig */,
-				15F45C4E13F037F64B50D0EB /* Pods-AudiusReactNative.staging.debug.xcconfig */,
-				B8FB688C549652DD2AA0B978 /* Pods-AudiusReactNative.release.xcconfig */,
-				C9644DFFD6AFCE449630CFF6 /* Pods-AudiusReactNative.releasecandidate.xcconfig */,
-				9F9B3FEB9AA3EC2408EC2910 /* Pods-AudiusReactNative.staging.release.xcconfig */,
-				17E5D19A7EB68785DB3E5118 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */,
+				801C2ACA7332A59622B94234 /* Pods-AudiusReactNative.debug.xcconfig */,
+				6B15FA5E2656F49ECB139DC4 /* Pods-AudiusReactNative.staging.debug.xcconfig */,
+				1338317E32A70B3E796CE503 /* Pods-AudiusReactNative.release.xcconfig */,
+				D210E8693CC315508248370D /* Pods-AudiusReactNative.releasecandidate.xcconfig */,
+				CD771AE385683744E1D60474 /* Pods-AudiusReactNative.staging.release.xcconfig */,
+				9337C65EB6B0AE1F76AB59C2 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -198,7 +198,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AudiusReactNative" */;
 			buildPhases = (
-				AD14F5EEED19256C01ABE5B8 /* [CP] Check Pods Manifest.lock */,
+				829DAC036920D05BDB53D967 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
@@ -206,10 +206,10 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				838AABE123CE404D004B2DA3 /* ShellScript */,
 				18A5B1D0CA1543ABB2DC5C65 /* Upload Debug Symbols to Sentry */,
-				06C8D235A00B405187565289 /* [CP] Embed Pods Frameworks */,
-				87159DBEE3DA99363110E9A2 /* [CP] Copy Pods Resources */,
-				6F06873AF0C2CC05C48315C0 /* [CP-User] [RNFB] Core Configuration */,
-				61378F15E8E74AFEB3F641FF /* [CP-User] [RNFB] Crashlytics Configuration */,
+				C8042B29AC93ADD3B70561DF /* [CP] Embed Pods Frameworks */,
+				33E3C7FCFDA1575189D657CB /* [CP] Copy Pods Resources */,
+				30F987564D7E62D33D5630AD /* [CP-User] [RNFB] Core Configuration */,
+				F6282EE930607BCBF8BD56D7 /* [CP-User] [RNFB] Crashlytics Configuration */,
 			);
 			buildRules = (
 			);
@@ -291,23 +291,6 @@
 			shellPath = /bin/sh;
 			shellScript = "${SRCROOT}/scripts/bundleReactNative.sh\n";
 		};
-		06C8D235A00B405187565289 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		18A5B1D0CA1543ABB2DC5C65 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -322,21 +305,7 @@
 			shellPath = /bin/sh;
 			shellScript = "${SRCROOT}/scripts/uploadSentryDebugSymbols.sh";
 		};
-		61378F15E8E74AFEB3F641FF /* [CP-User] [RNFB] Crashlytics Configuration */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
-				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
-			);
-			name = "[CP-User] [RNFB] Crashlytics Configuration";
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
-		};
-		6F06873AF0C2CC05C48315C0 /* [CP-User] [RNFB] Core Configuration */ = {
+		30F987564D7E62D33D5630AD /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -349,24 +318,7 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\n_MAX_LOOKUPS=2;\n_SEARCH_RESULT=''\n_RN_ROOT_EXISTS=''\n_CURRENT_LOOKUPS=1\n_JSON_ROOT=\"'react-native'\"\n_JSON_FILE_NAME='firebase.json'\n_JSON_OUTPUT_BASE64='e30=' # { }\n_CURRENT_SEARCH_DIR=${PROJECT_DIR}\n_PLIST_BUDDY=/usr/libexec/PlistBuddy\n_TARGET_PLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n_DSYM_PLIST=\"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist\"\n\n# plist arrays\n_PLIST_ENTRY_KEYS=()\n_PLIST_ENTRY_TYPES=()\n_PLIST_ENTRY_VALUES=()\n\nfunction setPlistValue {\n  echo \"info:      setting plist entry '$1' of type '$2' in file '$4'\"\n  ${_PLIST_BUDDY} -c \"Add :$1 $2 '$3'\" $4 || echo \"info:      '$1' already exists\"\n}\n\nfunction getFirebaseJsonKeyValue () {\n  if [[ ${_RN_ROOT_EXISTS} ]]; then\n    ruby -e \"require 'rubygems';require 'json'; output=JSON.parse('$1'); puts output[$_JSON_ROOT]['$2']\"\n  else\n    echo \"\"\n  fi;\n}\n\nfunction jsonBoolToYesNo () {\n  if [[ $1 == \"false\" ]]; then\n    echo \"NO\"\n  elif [[ $1 == \"true\" ]]; then\n    echo \"YES\"\n  else echo \"NO\"\n  fi\n}\n\necho \"info: -> RNFB build script started\"\necho \"info: 1) Locating ${_JSON_FILE_NAME} file:\"\n\nif [[ -z ${_CURRENT_SEARCH_DIR} ]]; then\n  _CURRENT_SEARCH_DIR=$(pwd)\nfi;\n\nwhile true; do\n  _CURRENT_SEARCH_DIR=$(dirname \"$_CURRENT_SEARCH_DIR\")\n  if [[ \"$_CURRENT_SEARCH_DIR\" == \"/\" ]] || [[ ${_CURRENT_LOOKUPS} -gt ${_MAX_LOOKUPS} ]]; then break; fi;\n  echo \"info:      ($_CURRENT_LOOKUPS of $_MAX_LOOKUPS) Searching in '$_CURRENT_SEARCH_DIR' for a ${_JSON_FILE_NAME} file.\"\n  _SEARCH_RESULT=$(find \"$_CURRENT_SEARCH_DIR\" -maxdepth 2 -name ${_JSON_FILE_NAME} -print | /usr/bin/head -n 1)\n  if [[ ${_SEARCH_RESULT} ]]; then\n    echo \"info:      ${_JSON_FILE_NAME} found at $_SEARCH_RESULT\"\n    break;\n  fi;\n  _CURRENT_LOOKUPS=$((_CURRENT_LOOKUPS+1))\ndone\n\nif [[ ${_SEARCH_RESULT} ]]; then\n  _JSON_OUTPUT_RAW=$(cat \"${_SEARCH_RESULT}\")\n  _RN_ROOT_EXISTS=$(ruby -e \"require 'rubygems';require 'json'; output=JSON.parse('$_JSON_OUTPUT_RAW'); puts output[$_JSON_ROOT]\" || echo '')\n\n  if [[ ${_RN_ROOT_EXISTS} ]]; then\n    if ! python3 --version >/dev/null 2>&1; then echo \"python3 not found, firebase.json file processing error.\" && exit 1; fi\n    _JSON_OUTPUT_BASE64=$(python3 -c 'import json,sys,base64;print(base64.b64encode(bytes(json.dumps(json.loads(open('\"'${_SEARCH_RESULT}'\"', '\"'rb'\"').read())['${_JSON_ROOT}']), '\"'utf-8'\"')).decode())' || echo \"e30=\")\n  fi\n\n  _PLIST_ENTRY_KEYS+=(\"firebase_json_raw\")\n  _PLIST_ENTRY_TYPES+=(\"string\")\n  _PLIST_ENTRY_VALUES+=(\"$_JSON_OUTPUT_BASE64\")\n\n  # config.app_data_collection_default_enabled\n  _APP_DATA_COLLECTION_ENABLED=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"app_data_collection_default_enabled\")\n  if [[ $_APP_DATA_COLLECTION_ENABLED ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FirebaseDataCollectionDefaultEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_APP_DATA_COLLECTION_ENABLED\")\")\n  fi\n\n  # config.analytics_auto_collection_enabled\n  _ANALYTICS_AUTO_COLLECTION=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"analytics_auto_collection_enabled\")\n  if [[ $_ANALYTICS_AUTO_COLLECTION ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FIREBASE_ANALYTICS_COLLECTION_ENABLED\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_ANALYTICS_AUTO_COLLECTION\")\")\n  fi\n\n  # config.analytics_collection_deactivated\n  _ANALYTICS_DEACTIVATED=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"analytics_collection_deactivated\")\n  if [[ $_ANALYTICS_DEACTIVATED ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FIREBASE_ANALYTICS_COLLECTION_DEACTIVATED\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_ANALYTICS_DEACTIVATED\")\")\n  fi\n\n  # config.analytics_idfv_collection_enabled\n  _ANALYTICS_IDFV_COLLECTION=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"analytics_idfv_collection_enabled\")\n  if [[ $_ANALYTICS_IDFV_COLLECTION ]]; then\n    _PLIST_ENTRY_KEYS+=(\"GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_ANALYTICS_IDFV_COLLECTION\")\")\n  fi\n\n  # config.analytics_default_allow_ad_personalization_signals\n  _ANALYTICS_PERSONALIZATION=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"analytics_default_allow_ad_personalization_signals\")\n  if [[ $_ANALYTICS_PERSONALIZATION ]]; then\n    _PLIST_ENTRY_KEYS+=(\"GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_ANALYTICS_PERSONALIZATION\")\")\n  fi\n\n  # config.google_analytics_automatic_screen_reporting_enabled\n  _ANALYTICS_AUTO_SCREEN_REPORTING=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"google_analytics_automatic_screen_reporting_enabled\")\n  if [[ $_ANALYTICS_AUTO_SCREEN_REPORTING ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FirebaseAutomaticScreenReportingEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_ANALYTICS_AUTO_SCREEN_REPORTING\")\")\n  fi\n\n  # config.perf_auto_collection_enabled\n  _PERF_AUTO_COLLECTION=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"perf_auto_collection_enabled\")\n  if [[ $_PERF_AUTO_COLLECTION ]]; then\n    _PLIST_ENTRY_KEYS+=(\"firebase_performance_collection_enabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_PERF_AUTO_COLLECTION\")\")\n  fi\n\n  # config.perf_collection_deactivated\n  _PERF_DEACTIVATED=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"perf_collection_deactivated\")\n  if [[ $_PERF_DEACTIVATED ]]; then\n    _PLIST_ENTRY_KEYS+=(\"firebase_performance_collection_deactivated\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_PERF_DEACTIVATED\")\")\n  fi\n\n  # config.messaging_auto_init_enabled\n  _MESSAGING_AUTO_INIT=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"messaging_auto_init_enabled\")\n  if [[ $_MESSAGING_AUTO_INIT ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FirebaseMessagingAutoInitEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_MESSAGING_AUTO_INIT\")\")\n  fi\n\n  # config.in_app_messaging_auto_colllection_enabled\n  _FIAM_AUTO_INIT=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"in_app_messaging_auto_collection_enabled\")\n  if [[ $_FIAM_AUTO_INIT ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FirebaseInAppMessagingAutomaticDataCollectionEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_FIAM_AUTO_INIT\")\")\n  fi\n\n  # config.app_check_token_auto_refresh\n  _APP_CHECK_TOKEN_AUTO_REFRESH=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"app_check_token_auto_refresh\")\n  if [[ $_APP_CHECK_TOKEN_AUTO_REFRESH ]]; then\n    _PLIST_ENTRY_KEYS+=(\"FirebaseAppCheckTokenAutoRefreshEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"$(jsonBoolToYesNo \"$_APP_CHECK_TOKEN_AUTO_REFRESH\")\")\n  fi\n\n  # config.crashlytics_disable_auto_disabler - undocumented for now - mainly for debugging, document if becomes useful\n  _CRASHLYTICS_AUTO_DISABLE_ENABLED=$(getFirebaseJsonKeyValue \"$_JSON_OUTPUT_RAW\" \"crashlytics_disable_auto_disabler\")\n  if [[ $_CRASHLYTICS_AUTO_DISABLE_ENABLED == \"true\" ]]; then\n    echo \"Disabled Crashlytics auto disabler.\" # do nothing\n  else\n    _PLIST_ENTRY_KEYS+=(\"FirebaseCrashlyticsCollectionEnabled\")\n    _PLIST_ENTRY_TYPES+=(\"bool\")\n    _PLIST_ENTRY_VALUES+=(\"NO\")\n  fi\nelse\n  _PLIST_ENTRY_KEYS+=(\"firebase_json_raw\")\n  _PLIST_ENTRY_TYPES+=(\"string\")\n  _PLIST_ENTRY_VALUES+=(\"$_JSON_OUTPUT_BASE64\")\n  echo \"warning:   A firebase.json file was not found, whilst this file is optional it is recommended to include it to configure firebase services in React Native Firebase.\"\nfi;\n\necho \"info: 2) Injecting Info.plist entries: \"\n\n# Log out the keys we're adding\nfor i in \"${!_PLIST_ENTRY_KEYS[@]}\"; do\n  echo \"    ->  $i) ${_PLIST_ENTRY_KEYS[$i]}\" \"${_PLIST_ENTRY_TYPES[$i]}\" \"${_PLIST_ENTRY_VALUES[$i]}\"\ndone\n\nfor plist in \"${_TARGET_PLIST}\" \"${_DSYM_PLIST}\" ; do\n  if [[ -f \"${plist}\" ]]; then\n\n    # paths with spaces break the call to setPlistValue. temporarily modify\n    # the shell internal field separator variable (IFS), which normally\n    # includes spaces, to consist only of line breaks\n    oldifs=$IFS\n    IFS=\"\n\"\n\n    for i in \"${!_PLIST_ENTRY_KEYS[@]}\"; do\n      setPlistValue \"${_PLIST_ENTRY_KEYS[$i]}\" \"${_PLIST_ENTRY_TYPES[$i]}\" \"${_PLIST_ENTRY_VALUES[$i]}\" \"${plist}\"\n    done\n\n    # restore the original internal field separator value\n    IFS=$oldifs\n  else\n    echo \"warning:   A Info.plist build output file was not found (${plist})\"\n  fi\ndone\n\necho \"info: <- RNFB build script finished\"\n";
 		};
-		838AABE123CE404D004B2DA3 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/FirebaseCrashlytics/run\"\nfind dSYM_DIRECTORY -name \"*.dSYM\" | xargs -I \\{\\} $PODS_ROOT/FirebaseCrashlytics/upload-symbols -gsp /PATH/TO/GoogleService-Info.plist -p PLATFORM \\{\\}\n";
-		};
-		87159DBEE3DA99363110E9A2 /* [CP] Copy Pods Resources */ = {
+		33E3C7FCFDA1575189D657CB /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -383,7 +335,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		AD14F5EEED19256C01ABE5B8 /* [CP] Check Pods Manifest.lock */ = {
+		829DAC036920D05BDB53D967 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -404,6 +356,54 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		838AABE123CE404D004B2DA3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/FirebaseCrashlytics/run\"\nfind dSYM_DIRECTORY -name \"*.dSYM\" | xargs -I \\{\\} $PODS_ROOT/FirebaseCrashlytics/upload-symbols -gsp /PATH/TO/GoogleService-Info.plist -p PLATFORM \\{\\}\n";
+		};
+		C8042B29AC93ADD3B70561DF /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F6282EE930607BCBF8BD56D7 /* [CP-User] [RNFB] Crashlytics Configuration */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "[CP-User] [RNFB] Crashlytics Configuration";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -444,7 +444,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C787776E8BBB722A0A850241 /* Pods-AudiusReactNative.debug.xcconfig */;
+			baseConfigurationReference = 801C2ACA7332A59622B94234 /* Pods-AudiusReactNative.debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -479,7 +479,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B8FB688C549652DD2AA0B978 /* Pods-AudiusReactNative.release.xcconfig */;
+			baseConfigurationReference = 1338317E32A70B3E796CE503 /* Pods-AudiusReactNative.release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -672,7 +672,7 @@
 		};
 		9E85FA582913022900DF18A9 /* ReleaseCandidate */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C9644DFFD6AFCE449630CFF6 /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
+			baseConfigurationReference = D210E8693CC315508248370D /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "RC - Prod (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.ReleaseCandidate;
@@ -759,7 +759,7 @@
 		};
 		9E85FA5A2914164300DF18A9 /* Staging.ReleaseCandidate */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 17E5D19A7EB68785DB3E5118 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */;
+			baseConfigurationReference = 9337C65EB6B0AE1F76AB59C2 /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "RC - Staging (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging.ReleaseCandidate;
@@ -854,7 +854,7 @@
 		};
 		D4E8207324577D66007BFEE4 /* Staging.Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 15F45C4E13F037F64B50D0EB /* Pods-AudiusReactNative.staging.debug.xcconfig */;
+			baseConfigurationReference = 6B15FA5E2656F49ECB139DC4 /* Pods-AudiusReactNative.staging.debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Staging (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging;
@@ -940,7 +940,7 @@
 		};
 		D4E8207524577D78007BFEE4 /* Staging.Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9F9B3FEB9AA3EC2408EC2910 /* Pods-AudiusReactNative.staging.release.xcconfig */;
+			baseConfigurationReference = CD771AE385683744E1D60474 /* Pods-AudiusReactNative.staging.release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Audius Music (Staging)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Staging;
