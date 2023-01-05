@@ -38,7 +38,7 @@
 
         <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="Activity"/>
         <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="Your activity on Audius"/>
-        <meta-data android:name="com.snapchat.kit.sdk.clientId" android:value="87c93c66-5a79-4ee0-be45-44f27e823474" />
+        <meta-data android:name="com.snapchat.kit.sdk.clientId" android:value="e4716145-55b7-4a90-9d90-e977733713ed" />
         <!-- Change the resource name to your App's accent color - or any other color you want -->
         <meta-data android:name="com.dieam.reactnativepushnotification.notification_color" android:resource="@android:color/white"/>
 
