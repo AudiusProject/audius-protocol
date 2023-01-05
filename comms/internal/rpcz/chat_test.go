@@ -21,7 +21,7 @@ func TestChat(t *testing.T) {
 	chatId := "chat1"
 
 	// reset tables under test
-	_, err = db.Conn.Exec("truncate chat cascade;")
+	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()

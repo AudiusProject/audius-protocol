@@ -83,9 +83,9 @@ func TestGetChats(t *testing.T) {
 	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
 
 	// Set up db
-	_, err = db.Conn.Exec("truncate chat cascade;")
+	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate users cascade;")
+	_, err = db.Conn.Exec("truncate table users cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -245,9 +245,9 @@ func TestGetMessages(t *testing.T) {
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
 
 	// Set up db
-	_, err = db.Conn.Exec("truncate chat cascade;")
+	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate users cascade;")
+	_, err = db.Conn.Exec("truncate table users cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
