@@ -20,6 +20,7 @@ export const init = async () => {
       const amplitude = await import('amplitude-js')
       amplitude
         .getInstance()
+        // Note: https is prepended to the apiEndpoint url specified
         .init(AMP_API_KEY, undefined, { apiEndpoint: AMPLITUDE_PROXY })
       amp = amplitude
       const source = getSource()
