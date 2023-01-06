@@ -36,7 +36,6 @@ from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
-from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -234,8 +233,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     num_users_in_immediate_balance_refresh_queue = int(
         redis.scard(IMMEDIATE_REFRESH_REDIS_PREFIX)
     )
-    last_scanned_block_for_balance_refresh = redis_get_or_restore(
-        redis, eth_indexing_last_scanned_block_key
+    last_scanned_block_for_balance_refresh = redis.get(
+        eth_indexing_last_scanned_block_key
     )
     index_eth_age_sec = get_elapsed_time_redis(
         redis, index_eth_last_completion_redis_key
@@ -549,26 +548,23 @@ def get_play_health_info(
 
     if is_unhealthy_sol_plays or not plays_count_max_drift:
         # Calculate time diff from now to latest play
-        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
+        latest_db_play = redis.get(latest_legacy_play_db_key)
         if not latest_db_play:
             # Query and cache latest db play if found
             latest_db_play = get_latest_play()
             if latest_db_play:
-                redis_set_and_dump(
-                    redis, latest_legacy_play_db_key, latest_db_play.timestamp()
-                )
+                redis.set(latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
             # Decode bytes into float for latest timestamp
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
-        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        oldest_unarchived_play = redis.get(redis, oldest_unarchived_play_key)
         if not oldest_unarchived_play:
             # Query and cache oldest unarchived play
             oldest_unarchived_play = get_oldest_unarchived_play()
             if oldest_unarchived_play:
-                redis_set_and_dump(
-                    redis,
+                redis.set(
                     oldest_unarchived_play_key,
                     oldest_unarchived_play.timestamp(),
                 )

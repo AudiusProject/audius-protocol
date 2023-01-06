@@ -153,11 +153,14 @@ services:
       mode: global
 
   discovery-provider-redis:
-    image: redis:5.0.5
+    image: redis:7.0
+    command: redis-server
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
+    volumes:
+      - ./discovery-provider/
     logging: *default-logging
     deploy:
       mode: global
@@ -203,7 +206,8 @@ services:
       mode: global
 
   identity-service-redis:
-    image: redis:5.0.5
+    image: redis:7.0
+    command: redis-server
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s

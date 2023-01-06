@@ -12,7 +12,8 @@ services:
     networks:
       - audius_dev
   identity-redis:
-    image: redis:5.0.4
+    image: redis:7.0
+    command: redis-server
     ports:
       - '7379:6379'
     networks:
