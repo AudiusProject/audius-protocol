@@ -1138,7 +1138,6 @@ def update_task(self):
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
-        logger.info("raymont has " + have_lock)
         if have_lock:
             logger.info(
                 f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"

@@ -33,7 +33,8 @@ def cache_latest_sol_db_tx(
 
 
 def get_latest_sol_db_tx(redis: Redis, cache_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(redis.get(cache_key))
+    value = redis.get(cache_key)
+    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(value) if value else None
     return latest_sol_db
 
 
@@ -79,5 +80,6 @@ def cache_latest_sol_play_program_tx(
 
 
 def get_cache_latest_sol_program_tx(redis: Redis, cache_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(redis.get(cache_key))
+    value = redis.get(cache_key)
+    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(value) if value else None
     return latest_sol_db
