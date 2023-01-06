@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
-
+from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -167,7 +167,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
         if current_block_number == 31563275:
-            latest_block["parentHash"] = "0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1"
+            latest_block["parentHash"] = HexBytes("0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1")
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -1089,14 +1089,15 @@ def update_task(self):
                         continue
 
                     index_blocks_list.append(latest_block)
-
+                    logger.info(f"index.py | index_blocks_list {index_blocks_list} ")
                     parent_block_query = session.query(Block).filter(
                         Block.blockhash == parent_hash
                     )
-
+                    logger.info(f"index.py | parent_block_query {parent_block_query.first()}")
                     # Intersection is considered found if current block parenthash is
                     # present in Blocks table
                     block_intersection_found = parent_block_query.count() > 0
+                    logger.info(f"index.py | block_intersection_found {block_intersection_found}")
 
                     num_blocks = len(index_blocks_list)
                     if num_blocks % 50 == 0:
@@ -1110,10 +1111,14 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += final_poa_block
-                        latest_block = AttributeDict(latest_block)
-                        intersect_block_hash = web3.toHex(latest_block.hash)
+                        if parent_hash == "0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1":
+                            block_intersection_found = True
+                            intersect_block_hash = web3.toHex(HexBytes("0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1"))
+                        else: 
+                            latest_block = dict(web3.eth.get_block(parent_hash, True))
+                            latest_block["number"] += final_poa_block
+                            latest_block = AttributeDict(latest_block)
+                            intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
@@ -1165,7 +1170,7 @@ def update_task(self):
 
             # Exit DB scope, revert/index functions will manage their own sessions
             # Perform revert operations
-            revert_blocks(self, db, revert_blocks_list)
+            # revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
