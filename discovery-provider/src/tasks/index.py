@@ -1089,7 +1089,7 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = current_hash
                         continue
-                    
+
                     index_blocks_list.append(latest_block)
 
                     parent_block_query = session.query(Block).filter(
