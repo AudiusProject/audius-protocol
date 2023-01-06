@@ -81,7 +81,7 @@ commands:
               sudo apt install -y git
             fi
 
-            if [[ -d "~/audius-protocol" ]]; then
+            if [[ -e "$HOME/audius-protocol" ]]; then
               cd ~/audius-protocol
               git remote set-url origin "<< pipeline.project.git_url >>" || true
               git fetch --force --tags origin
