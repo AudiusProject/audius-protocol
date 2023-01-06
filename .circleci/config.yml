@@ -167,7 +167,7 @@ jobs:
             --image=audius-protocol-<< pipeline.git.revision >>
           steps:
             - gcp-checkout
-            - run: . ~/.profile; audius-compose test creator-node
+            - run: . ~/.profile; audius-compose test run creator-node
 
   test-discovery-provider:
     resource_class: small
@@ -187,7 +187,7 @@ jobs:
             --image=audius-protocol-<< pipeline.git.revision >>
           steps:
             - gcp-checkout
-            - run: . ~/.profile; audius-compose test discovery-provider
+            - run: . ~/.profile; audius-compose test run discovery-provider
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
