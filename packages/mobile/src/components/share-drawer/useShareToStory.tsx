@@ -200,7 +200,7 @@ export const useShareToStory = ({
           width: 264,
           height: 365,
           posX: 0.5,
-          posY: 0.6,
+          posY: 0.5,
           rotationDegreesInClockwise: 0,
           isAnimated: false
         },
