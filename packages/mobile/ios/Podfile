@@ -19,10 +19,10 @@ target 'AudiusReactNative' do
   pod 'React-runtimeexecutor', :path => '../node_modules/react-native/ReactCommon/runtimeexecutor'
   pod 'SRSRadialGradient', :path => '../node_modules/react-native-radial-gradient/ios'
 
-
   pod 'boost', :podspec => '../node_modules/react-native/third-party-podspecs/boost.podspec'
   pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
-  pod 'react-native-flipper', :path => '../node_modules/react-native-flipper', :configuration => 'Debug'
+  pod 'react-native-flipper', :path => '../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
+
 
   config = use_native_modules!
 
@@ -37,7 +37,7 @@ target 'AudiusReactNative' do
     #
     # Note that if you have use_frameworks! enabled, Flipper will not work and
     # you should disable the next line.
-    :flipper_configuration => FlipperConfiguration.enabled,
+    :flipper_configuration => FlipperConfiguration.enabled(["Debug", "Staging.Debug"], { 'Flipper' => '0.175.0' }),
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -50,16 +50,33 @@ target 'AudiusReactNative' do
       :mac_catalyst_enabled => false
     )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-    # flipper_post_install(installer)
+
     installer.pods_project.build_configurations.each do |config|
       config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
+    apply_flipper_fix(installer) 
 
     # https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693
     installer.pods_project.targets.each do |target|
       if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
         target.build_configurations.each do |config|
             config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        end
+      end
+    end
+  end
+end
+
+# Fix for https://github.com/facebook/react-native/issues/34332
+def apply_flipper_fix(installer)
+  installer.pods_project.targets.each do |target|
+    if target.name.start_with?('React-Core')
+      target.build_configurations.each do |config|
+        if config.debug?
+          puts "Enabling Flipper for build configuration '#{config.name}'"
+          # For 0.68.2. Note that main branch now uses GCC_PREPROCESSOR_DEFINITIONS: 
+          # https://github.com/cipolleschi/react-native/blob/f3db6cc52792e3006a16408df4ae40f3aee19a86/scripts/cocoapods/flipper.rb#L87
+          config.build_settings['OTHER_CFLAGS'] = "$(inherited) -DFB_SONARKIT_ENABLED=1"
         end
       end
     end
