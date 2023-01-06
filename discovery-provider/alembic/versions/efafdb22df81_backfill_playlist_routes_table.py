@@ -21,7 +21,7 @@ Session = sessionmaker()
 def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
-    session.execute(sa.text("TRUNCATE TABLE track_routes"))
+    session.execute(sa.text("TRUNCATE TABLE playlist_routes"))
 
     # Bring over existing routes (current playlists)
     session.execute(
