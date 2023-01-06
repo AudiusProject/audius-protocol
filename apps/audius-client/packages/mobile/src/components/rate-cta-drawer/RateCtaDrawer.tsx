@@ -72,12 +72,13 @@ export const RateCtaDrawer = () => {
 
   const handleReviewConfirm = () => {
     const isAvailable = InAppReview.isAvailable()
+    track(make({ eventName: Name.RATE_CTA_RESPONSE_YES }))
+    setUserRateResponse('YES')
 
     if (isAvailable) {
       InAppReview.RequestInAppReview()
         .then((hasFlowFinishedSuccessfully) => {
-          setUserRateResponse('YES')
-          track(make({ eventName: Name.RATE_CTA_RESPONSE_YES }))
+          // Do things after the popup shows up
         })
         .catch((error) => {
           console.log(error)
