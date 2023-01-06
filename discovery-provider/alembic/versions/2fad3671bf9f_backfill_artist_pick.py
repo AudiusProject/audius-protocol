@@ -31,7 +31,7 @@ def build_sql(up, env):
         for entry in f:
             handle, pinned_track_id = entry.split(",")
 
-            handles.append(handle)
+            handles.append(handle.lower())
             if up:
                 pinned_track_id = int(pinned_track_id.strip())
                 pinned_track_ids.append(pinned_track_id)
@@ -44,13 +44,13 @@ def build_sql(up, env):
     if up:
         inner_sql = """UPDATE users
         SET artist_pick_track_id = data_table.pinned_track_id
-        FROM (SELECT unnest(:handles) AS handle, unnest(:pinned_track_ids) AS pinned_track_id) AS data_table
-        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle = data_table.handle;"""
+        FROM (SELECT unnest(:handles) AS handle_lc, unnest(:pinned_track_ids) AS pinned_track_id) AS data_table
+        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle_lc = data_table.handle_lc;"""
     else:
         inner_sql = """UPDATE users
         SET artist_pick_track_id = null
-        FROM (SELECT unnest(:handles) AS handle) AS data_table
-        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle = data_table.handle;"""
+        FROM (SELECT unnest(:handles) AS handle_lc) AS data_table
+        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle_lc = data_table.handle_lc;"""
 
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     sql = sql.bindparams(sa.bindparam("handles", ARRAY(String)))
