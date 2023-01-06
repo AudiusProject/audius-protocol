@@ -45,12 +45,12 @@ def build_sql(up, env):
         inner_sql = """UPDATE users
         SET artist_pick_track_id = data_table.pinned_track_id
         FROM (SELECT unnest(:handles) AS handle, unnest(:pinned_track_ids) AS pinned_track_id) AS data_table
-        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:15:00' AND users.handle = data_table.handle;"""
+        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle = data_table.handle;"""
     else:
         inner_sql = """UPDATE users
         SET artist_pick_track_id = null
         FROM (SELECT unnest(:handles) AS handle) AS data_table
-        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:15:00' AND users.handle = data_table.handle;"""
+        WHERE users.is_current = True AND users.updated_at < '2023-01-06 08:35:00' AND users.handle = data_table.handle;"""
 
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     sql = sql.bindparams(sa.bindparam("handles", ARRAY(String)))
