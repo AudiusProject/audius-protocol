@@ -1,126 +1,16 @@
 import logging
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
-from redis import Redis
-from src.app import get_eth_abi_values
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
     ManageEntityParameters,
     copy_record,
 )
-from src.utils import web3_provider
-from src.utils.config import shared_config
-from src.utils.eth_contracts_helpers import (
-    cnode_info_redis_ttl_s,
-    content_node_service_type,
-    sp_factory_registry_key,
-)
+from src.tasks.user_replica_set import get_endpoint_string_from_sp_ids
 from src.utils.eth_manager import ServiceProviderType
-from src.utils.redis_cache import (
-    get_cn_sp_id_key,
-    get_json_cached_key,
-    set_json_cached_key,
-)
 
 logger = logging.getLogger(__name__)
-
-
-# Reconstruct endpoint string from primary and secondary IDs
-# Attempt to retrieve from cached values populated in index_network_peers.py
-# If unavailable, then a fallback to ethereum mainnet contracts will occur
-# Note that in the case of an invalid spID - one that is not yet registered on
-# the ethereum mainnet contracts, there will be an empty value in the returned
-# creator_node_endpoint
-# If this discrepancy occurs, a client replica set health check sweep will
-# result in a client-initiated failover operation to a valid set of replicas
-def get_endpoint_string_from_sp_ids(
-    redis: Redis, primary: int, secondaries: List[int]
-) -> str:
-    sp_factory_inst = None
-    endpoint_string = None
-    primary_endpoint = None
-    try:
-        sp_factory_inst, primary_endpoint = get_endpoint_from_id(
-            redis, sp_factory_inst, primary
-        )
-        endpoint_string = f"{primary_endpoint}"
-        for secondary_id in secondaries:
-            secondary_endpoint = None
-            sp_factory_inst, secondary_endpoint = get_endpoint_from_id(
-                redis, sp_factory_inst, secondary_id
-            )
-            # Conditionally log if endpoint is None after fetching
-            if not secondary_endpoint:
-                logger.info(
-                    f"index.py | user_replica_set.py | Failed to find secondary info for {secondary_id}"
-                )
-            # Append to endpoint string regardless of status
-            endpoint_string = f"{endpoint_string},{secondary_endpoint}"
-    except Exception as exc:
-        logger.error(
-            f"index.py | user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}"
-        )
-        raise exc
-    logger.info(
-        f"index.py | user_replica_set.py | constructed:"
-        f"{endpoint_string} from {primary},{secondaries}",
-        exc_info=True,
-    )
-    return endpoint_string
-
-
-# Initializes sp_factory if necessary and retrieves spID
-# Returns initialized instance of contract and endpoint
-def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any, str]:
-    endpoint = None
-    # Get sp_id cache key
-    cache_key = get_cn_sp_id_key(sp_id)
-    # Attempt to fetch from cache
-    sp_info_cached = get_json_cached_key(redis, cache_key)
-    if sp_info_cached:
-        endpoint = sp_info_cached[1]
-        logger.info(
-            f"index.py | user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}"
-        )
-        return sp_factory_inst, endpoint
-
-    if not endpoint:
-        logger.info(
-            f"index.py | user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}"
-        )
-        if sp_factory_inst is None:
-            sp_factory_inst = get_sp_factory_inst()
-
-        cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-            content_node_service_type, sp_id
-        ).call()
-        logger.info(
-            f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}"
-        )
-        set_json_cached_key(redis, cache_key, cn_endpoint_info, cnode_info_redis_ttl_s)
-        endpoint = cn_endpoint_info[1]
-
-    return sp_factory_inst, endpoint
-
-
-# Return instance of ServiceProviderFactory initialized with configs
-def get_sp_factory_inst():
-    eth_web3 = web3_provider.get_eth_web3()
-    eth_registry_address = eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
-    )
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        sp_factory_registry_key
-    ).call()
-    sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address,
-        abi=get_eth_abi_values()["ServiceProviderFactory"]["abi"],
-    )
-    return sp_factory_inst
 
 
 def parse_update_sp_id(params) -> Tuple[List[int], List[int]]:
