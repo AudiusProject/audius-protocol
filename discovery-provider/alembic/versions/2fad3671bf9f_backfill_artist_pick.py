@@ -54,16 +54,14 @@ def build_sql(up, env):
 
 def upgrade():
     env = os.getenv("audius_discprov_env")
-    if env != "stage" and env != "prod":
-        pass
-    connection = op.get_bind()
-    sql, params = build_sql(True, env)
-    connection.execute(sql, params)
+    if env == "stage" or env == "prod":
+        connection = op.get_bind()
+        sql, params = build_sql(True, env)
+        connection.execute(sql, params)
 
 def downgrade():
     env = os.getenv("audius_discprov_env")
-    if env != "stage" and env != "prod":
-        pass
-    connection = op.get_bind()
-    sql, params = build_sql(False, env)
-    connection.execute(sql, params)
+    if env == "stage" or env == "prod":
+        connection = op.get_bind()
+        sql, params = build_sql(False, env)
+        connection.execute(sql, params)
