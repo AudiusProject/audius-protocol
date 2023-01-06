@@ -8,11 +8,10 @@ Create Date: 2022-10-27 02:14:19.935610
 import os
 from pathlib import Path
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.types import String
-from sqlalchemy.types import Integer
+from alembic import op
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Integer, String
 
 # revision identifiers, used by Alembic.
 revision = '2fad3671bf9f'
