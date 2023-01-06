@@ -1,4 +1,3 @@
-import { sanitizeNodes } from './sanitizeNodes'
 import { addSecondaries } from './addSecondaries'
 import { syncNodes } from './syncNodes'
 import { rolloverNodes } from './rolloverNodes'
@@ -21,7 +20,6 @@ export class SanityChecks {
    * Runs sanity checks
    */
   async run(creatorNodeWhitelist: Nullable<Set<string>> = null) {
-    await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
     await assignReplicaSetIfNecessary(this.libs)
     await syncNodes(this.libs)
