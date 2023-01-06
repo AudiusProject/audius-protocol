@@ -166,6 +166,8 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
+        if current_block_number == 31563275:
+            latest_block["parentHash"] = "0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1"
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -1079,10 +1081,6 @@ def update_task(self):
                     )
                     latest_db_block = latest_block_db_query.first()
                     logger.info(f"index.py | latest_db_block {latest_db_block}")
-
-                    if latest_db_block.number == 31563275:
-                        block_intersection_found = True
-                        intersect_block_hash = current_hash
 
                     # Exit loop if we are up to date
                     if latest_block_db_query.count() > 0:
