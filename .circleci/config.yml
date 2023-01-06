@@ -133,7 +133,10 @@ jobs:
           steps:
             - gcp-checkout
             - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-            - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull
+            - run:
+                name: Docker login
+                command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull; docker compose push
       - run:
           name: Create Image
           command: |

@@ -228,7 +228,11 @@ services:
       mode: global
 
   identity-service:
-    build: identity-service
+    image: "audius/identity-service:${GIT_COMMIT}"
+    build:
+      context: identity-service
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: scripts/dev-server.sh
     ports:
       - "7000:7000"
@@ -323,7 +327,11 @@ services:
       replicas: "${ELASTICSEARCH_REPLICAS}"
 
   discovery-provider:
-    build: discovery-provider
+    image: "audius/discovery-provider:${GIT_COMMIT}"
+    build:
+      context: discovery-provider
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
@@ -373,7 +381,11 @@ services:
   # creator-node
 
   creator-node:
-    build: creator-node
+    image: "audius/creator-node:${GIT_COMMIT}"
+    build:
+      context: creator-node
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:

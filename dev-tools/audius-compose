@@ -28,6 +28,16 @@ def generate_env(
 
     env = {}
 
+    env["GIT_COMMIT"] = (
+        subprocess.run(
+            ["git", f"--git-dir={protocol_dir / '.git'}", "rev-parse", "HEAD"],
+            capture_output=True,
+            check=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
     env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
 
     env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
