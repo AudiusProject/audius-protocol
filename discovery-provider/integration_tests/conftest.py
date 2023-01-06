@@ -15,6 +15,7 @@ from src.app import create_app, create_celery
 from src.models.base import Base
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
+from web3 import HTTPProvider, Web3
 
 DB_URL = os.getenv(
     "audius_db_url",
@@ -147,6 +148,79 @@ def celery_app():
 @pytest.fixture
 def client(app):  # pylint: disable=redefined-outer-name
     return app.test_client()
+
+
+def init_contracts(config):
+    """
+    Initializes contracts given an app/celery level config and returns
+    deployed contract addresses.
+    """
+    # Create web3 provider to real ganache
+    web3endpoint = f"http://{config['web3']['host']}:{config['web3']['port']}"
+    web3 = Web3(HTTPProvider(web3endpoint))
+
+    # set pre-funded account as sender
+    web3.eth.default_account = web3.eth.accounts[0]
+
+    registry_address = web3.toChecksumAddress(config["contracts"]["registry"])
+
+    abi_values = helpers.load_abi_values()
+    registry_return_val = web3.eth.contract(
+        address=registry_address, abi=abi_values["Registry"]["abi"]
+    )
+
+    # Get addresses for contracts from the registry
+    user_factory_address = registry_return_val.functions.getContract(
+        bytes("UserFactory", "utf-8")
+    ).call()
+    track_factory_address = registry_return_val.functions.getContract(
+        bytes("TrackFactory", "utf-8")
+    ).call()
+    user_replica_set_manager_address = registry_return_val.functions.getContract(
+        bytes("UserReplicaSetManager", "utf-8")
+    ).call()
+
+    # Initialize contracts
+    user_factory_contract = web3.eth.contract(
+        address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
+    )
+    track_factory_contract = web3.eth.contract(
+        address=track_factory_address, abi=abi_values["TrackFactory"]["abi"]
+    )
+    user_replica_set_manager_contract = web3.eth.contract(
+        address=user_replica_set_manager_address,
+        abi=abi_values["UserReplicaSetManager"]["abi"],
+    )
+
+    return {
+        "abi_values": abi_values,
+        "registry_address": registry_address,
+        "user_factory_address": user_factory_address,
+        "user_factory_contract": user_factory_contract,
+        "track_factory_address": track_factory_address,
+        "track_factory_contract": track_factory_contract,
+        "user_replica_set_manager_address": user_replica_set_manager_address,
+        "user_replica_set_manager_contract": user_replica_set_manager_contract,
+        "web3": web3,
+    }
+
+
+@pytest.fixture
+def contracts(app):  # pylint: disable=redefined-outer-name
+    """
+    Initializes contracts to be used with the `app` fixture
+    """
+    return init_contracts(app.config)
+
+
+@pytest.fixture
+def celery_app_contracts(celery_app):  # pylint: disable=redefined-outer-name
+    """
+    Initializes contracts to be used with the `celery_app` fixture
+    """
+    # Pull singletons off of the default first task
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    return init_contracts(task.shared_config)
 
 
 postgresql_my = factories.postgresql("postgresql_nooproc")

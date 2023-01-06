@@ -22,7 +22,7 @@ def test_creator_endpoint(app, client):
         assert num_users_from_endpoint == num_query_results
 
 
-def test_config_values(app, client, celery_app):
+def test_config_values(app, client, celery_app, contracts):
     """Ensure that all config values are reflected in flask/celery applications"""
     config_from_file = configparser.ConfigParser()
     config_from_file.read(config_files)
