@@ -129,7 +129,7 @@ export const RateCtaDrawer = () => {
                 icon: styles.buttonIcon,
                 text: styles.buttonText
               }}
-              variant='common'
+              variant='commonAlt'
               onPress={handleReviewConfirm}
             />
             <Button
@@ -142,7 +142,7 @@ export const RateCtaDrawer = () => {
                 icon: styles.buttonIcon,
                 text: styles.buttonText
               }}
-              variant='common'
+              variant='commonAlt'
               onPress={handleReviewDeny}
             />
           </>
