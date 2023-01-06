@@ -114,7 +114,7 @@ jobs:
               circleci-agent step halt
             fi
 
-            image_flag="--image-family=debian-11"
+            image_flag=""
             if echo "$available" | grep '^audius-protocol-<< pipeline.git.base_revision >>$' &>/dev/null; then
               image_flag="--image=audius-protocol-<<pipeline.git.base_revision>>"
             fi
