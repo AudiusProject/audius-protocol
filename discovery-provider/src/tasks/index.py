@@ -151,7 +151,8 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
 
         if current_block_number == None:
             current_block_number = 0
-
+        if current_block_number == 31563275:
+            return current_block
         target_latest_block_number = current_block_number + block_processing_window
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
@@ -1063,7 +1064,7 @@ def update_task(self):
             revert_blocks_list = []
 
             with db.scoped_session() as session:
-                block_intersection_found = False
+                block_intersection_found = True
                 intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # First, we capture the block hash at which the current tail
