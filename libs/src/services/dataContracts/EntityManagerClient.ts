@@ -19,7 +19,8 @@ export enum Action {
   UNREPOST = 'Unrepost',
   SUBSCRIBE = 'Subscribe',
   UNSUBSCRIBE = 'Unsubscribe',
-  VIEW = 'View'
+  VIEW = 'View',
+  VIEW_PLAYLIST = 'ViewPlaylist'
 }
 
 export enum EntityType {

@@ -5,6 +5,8 @@ import {
 } from '../services/dataContracts/EntityManagerClient'
 import { Base, BaseConstructorArgs } from './base'
 
+type AnnouncementData = {}
+
 export class Notifications extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
@@ -38,6 +40,70 @@ export class Notifications extends Base {
       const errorMessage = (e as Error).message
       logger.error(
         `Could not successfully submit view notification action to entity manager. Error: ${errorMessage}`
+      )
+      return { error: errorMessage }
+    }
+  }
+
+  /**
+   * Creates a new notification
+   * NOTE: currently only used for announcements and permissioned to a single wallet signer
+   */
+  async createNotification({
+    logger = console,
+    data
+  }: {
+    logger: any
+    data: AnnouncementData
+  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+    try {
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          1, // NOTE: This field does not matter
+          EntityType.NOTIFICATION,
+          1, // NOTE: This field does not matter
+          Action.CREATE,
+          JSON.stringify(data)
+        )
+      return { txReceipt }
+    } catch (e) {
+      const errorMessage = (e as Error).message
+      logger.error(
+        `Could not successfully submit create notification action to entity manager. Error: ${errorMessage}`
+      )
+      return { error: errorMessage }
+    }
+  }
+
+  async viewPlaylist({
+    logger = console,
+    playlistId
+  }: {
+    logger: any
+    playlistId: number
+  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+    try {
+      const userId: number | null = this.userStateManager.getCurrentUserId()
+      if (!userId) {
+        return { error: 'Missing current user ID' }
+      }
+      if (!playlistId) {
+        return { error: 'Missing playlist ID' }
+      }
+
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityType.NOTIFICATION,
+          playlistId,
+          Action.VIEW_PLAYLIST,
+          ''
+        )
+      return { txReceipt }
+    } catch (e) {
+      const errorMessage = (e as Error).message
+      logger.error(
+        `Could not successfully submit view playlist action to entity manager. Error: ${errorMessage}`
       )
       return { error: errorMessage }
     }
