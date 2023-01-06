@@ -1,8 +1,10 @@
 import type { ButtonProps } from 'app/components/core'
 import { Button } from 'app/components/core'
 
-type ScreenHeaderButtonProps = ButtonProps
+type ScreenHeaderButtonProps = ButtonProps & {
+  title: string
+}
 
 export const ScreenHeaderButton = (props: ScreenHeaderButtonProps) => {
-  return <Button variant='secondary' size='xs' {...props} />
+  return <Button key={props.title} variant='secondary' size='xs' {...props} />
 }
