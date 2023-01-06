@@ -1055,7 +1055,7 @@ def update_task(self):
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db, final_poa_block)
-
+            logger.info(f"index.py | latest_block {latest_block}")
             # Capture block information between latest and target block hash
             index_blocks_list = []
 
@@ -1077,13 +1077,19 @@ def update_task(self):
                         and Block.parenthash == parent_hash
                         and Block.is_current == True
                     )
+                    latest_db_block = latest_block_db_query.first()
+                    logger.info(f"index.py | latest_db_block {latest_db_block}")
+
+                    if latest_db_block.number == 31563275:
+                        block_intersection_found = True
+                        intersect_block_hash = current_hash
 
                     # Exit loop if we are up to date
                     if latest_block_db_query.count() > 0:
                         block_intersection_found = True
                         intersect_block_hash = current_hash
                         continue
-
+                    
                     index_blocks_list.append(latest_block)
 
                     parent_block_query = session.query(Block).filter(
