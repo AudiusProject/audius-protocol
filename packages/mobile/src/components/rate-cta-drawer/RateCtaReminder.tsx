@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
 import { accountSelectors, FeatureFlags } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
-import { useAsyncStorage } from 'app/hooks/useAsyncStorage'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import useSessionCount from 'app/hooks/useSessionCount'
 import { requestReview } from 'app/store/rate-cta/slice'
@@ -19,9 +20,12 @@ export const RateCtaReminder = () => {
   const { isEnabled: isRateCtaEnabled } = useFeatureFlag(
     FeatureFlags.RATE_CTA_ENABLED
   )
-  const [userRateResponse] = useAsyncStorage(RATE_CTA_STORAGE_KEY, null)
 
-  return isRateCtaEnabled && userRateResponse === null && hasAccount ? (
+  const { value: userRateResponse, loading } = useAsync(() =>
+    AsyncStorage.getItem(RATE_CTA_STORAGE_KEY)
+  )
+
+  return isRateCtaEnabled && !loading && !userRateResponse && hasAccount ? (
     <RateCtaReminderInternal />
   ) : null
 }

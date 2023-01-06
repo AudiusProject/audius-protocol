@@ -1,4 +1,8 @@
+import { useCallback, useState } from 'react'
+
+import type { Nullable } from '@audius/common'
 import { Name } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { View } from 'react-native'
 import InAppReview from 'react-native-in-app-review'
 
@@ -8,7 +12,6 @@ import IconThumbsUp from 'app/assets/images/iconThumbsUp.svg'
 import { Button, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { RATE_CTA_STORAGE_KEY } from 'app/constants/storage-keys'
-import { useAsyncStorage } from 'app/hooks/useAsyncStorage'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -65,15 +68,14 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 export const RateCtaDrawer = () => {
   const styles = useStyles()
   const { neutralLight2 } = useThemeColors()
-  const [userRateResponse, setUserRateResponse] = useAsyncStorage(
-    RATE_CTA_STORAGE_KEY,
-    null
-  )
+  const [userRateResponse, setUserRateResponse] =
+    useState<Nullable<'YES' | 'NO'>>(null)
 
-  const handleReviewConfirm = () => {
+  const handleReviewConfirm = useCallback(() => {
     const isAvailable = InAppReview.isAvailable()
     track(make({ eventName: Name.RATE_CTA_RESPONSE_YES }))
     setUserRateResponse('YES')
+    AsyncStorage.setItem(RATE_CTA_STORAGE_KEY, 'YES')
 
     if (isAvailable) {
       InAppReview.RequestInAppReview()
@@ -84,12 +86,13 @@ export const RateCtaDrawer = () => {
           console.log(error)
         })
     }
-  }
+  }, [])
 
-  const handleReviewDeny = () => {
+  const handleReviewDeny = useCallback(() => {
     track(make({ eventName: Name.RATE_CTA_RESPONSE_NO }))
     setUserRateResponse('NO')
-  }
+    AsyncStorage.setItem(RATE_CTA_STORAGE_KEY, 'NO')
+  }, [])
 
   return (
     <NativeDrawer drawerName={DRAWER_NAME}>
