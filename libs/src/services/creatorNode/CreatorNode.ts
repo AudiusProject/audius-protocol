@@ -115,7 +115,7 @@ export class CreatorNode {
   static async getClockValue(
     endpoint: string,
     wallet: string,
-    timeout: number,
+    timeout?: number,
     params: Record<string, string> = {}
   ) {
     const baseReq: AxiosRequestConfig = {
