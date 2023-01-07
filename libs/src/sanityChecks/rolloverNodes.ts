@@ -37,7 +37,7 @@ const getNewPrimary = async (libs: AudiusLibs, secondaries: string[]) => {
 export const rolloverNodes = async (
   libs: AudiusLibs,
   creatorNodeWhitelist: Nullable<Set<string>>,
-  creatorNodeBlacklist: Nullable<Set<string>>
+  creatorNodeBlacklist: Nullable<Set<string>> = null
 ) => {
   console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager?.getCurrentUser()
