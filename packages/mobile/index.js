@@ -24,3 +24,8 @@ LogBox.ignoreAllLogs()
 
 AppRegistry.registerComponent(appName, () => App)
 TrackPlayer.registerPlaybackService(() => require('./audio-service'))
+if (__DEV__) {
+  require('react-native-performance-flipper-reporter').setupDefaultFlipperReporter()
+  const { setResourceLoggingEnabled } = require('react-native-performance')
+  setResourceLoggingEnabled(true)
+}

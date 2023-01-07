@@ -431,6 +431,11 @@ PODS:
     - React
   - react-native-flipper (0.175.0):
     - React-Core
+  - react-native-flipper-performance-plugin (0.3.1):
+    - React-Core
+    - react-native-flipper-performance-plugin/FBDefines (= 0.3.1)
+  - react-native-flipper-performance-plugin/FBDefines (0.3.1):
+    - React-Core
   - react-native-get-random-values (1.8.0):
     - React-Core
   - react-native-google-cast (4.6.0):
@@ -454,6 +459,8 @@ PODS:
   - react-native-netinfo (9.3.0):
     - React-Core
   - react-native-pager-view (5.4.6):
+    - React-Core
+  - react-native-performance (4.0.0):
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
@@ -694,6 +701,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-fast-crypto (from `../node_modules/react-native-fast-crypto`)
   - react-native-flipper (from `../node_modules/react-native-flipper`)
+  - react-native-flipper-performance-plugin (from `../node_modules/react-native-flipper-performance-plugin`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
@@ -702,6 +710,7 @@ DEPENDENCIES:
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+  - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
@@ -847,6 +856,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fast-crypto"
   react-native-flipper:
     :path: "../node_modules/react-native-flipper"
+  react-native-flipper-performance-plugin:
+    :path: "../node_modules/react-native-flipper-performance-plugin"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-google-cast:
@@ -863,6 +874,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
+  react-native-performance:
+    :path: "../node_modules/react-native-performance"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
@@ -1010,6 +1023,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 4a959cd4d8d0a18b906e7bbff649a25fadea8df2
   react-native-fast-crypto: 60892c93813b88d865e2792944ef975a81359bc5
   react-native-flipper: fd500c92e89502a8a0e5a87b4bfe8da751ccd435
+  react-native-flipper-performance-plugin: 597bcf2ea01d3f4cbb38634866c1cd9f57ffe370
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-google-cast: f621202a36e6e82ac7e86aac721cadb05b45c231
   react-native-image-picker: bd579f59ff1cd14c78d6a041dbe2dbec858a9141
@@ -1018,6 +1032,7 @@ SPEC CHECKSUMS:
   react-native-keep-awake: 16f22b2dc09f7ede9f46e3b187a824a1841f1ddf
   react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
+  react-native-performance: f08613f428978a9e39a118ac0a776f5e0599c42e
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
   react-native-safe-area-context: ec0d85aca8110dae9327430a9541fec165352dab
   react-native-track-player: 86649137952f7beeed18b4be7974be1d431d967f
@@ -1066,6 +1081,6 @@ SPEC CHECKSUMS:
   Yoga: 99caf8d5ab45e9d637ee6e0174ec16fbbb01bcfc
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 6647e64ee0902a97be7f5b4a847b1b290fe61f94
+PODFILE CHECKSUM: 9f4f0b36a5d0d3b3aa8ee5b0b53655cd475ea735
 
 COCOAPODS: 1.11.3
