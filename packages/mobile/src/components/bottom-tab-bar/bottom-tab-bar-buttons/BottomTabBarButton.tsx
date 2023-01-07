@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { Pressable, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import Rive from 'rive-react-native'
 
-import type { IconJSON } from 'app/components/core'
-import { AnimatedButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -17,17 +17,16 @@ export type BaseBottomTabBarButtonProps = {
   routeKey: string
 }
 
-export type BottomTabBarButtonProps = BaseBottomTabBarButtonProps & {
+export type BottomTabBarRiveButtonProps = BaseBottomTabBarButtonProps & {
   name: string
-  iconJSON: IconJSON
   children?: ReactNode
 }
 
-const hitSlop = { top: 0, right: 0, bottom: 0, left: 0 }
-
 const useStyles = makeStyles(() => ({
-  animatedButton: {
-    width: '20%',
+  root: {
+    width: '20%'
+  },
+  button: {
     alignItems: 'center'
   },
   iconWrapper: {
@@ -41,9 +40,8 @@ const useStyles = makeStyles(() => ({
   }
 }))
 
-export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
-  const { name, routeKey, isActive, iconJSON, onPress, onLongPress, children } =
-    props
+export const BottomTabBarButton = (props: BottomTabBarRiveButtonProps) => {
+  const { name, routeKey, isActive, onPress, onLongPress, children } = props
   const styles = useStyles()
   const { neutralLight8, neutralLight10 } = useThemeColors()
 
@@ -54,24 +52,32 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
   const handleLongPress = isActive ? onLongPress : handlePress
 
   return (
-    <AnimatedButton
-      hitSlop={hitSlop}
-      iconJSON={iconJSON}
-      isActive={isActive}
-      onLongPress={handleLongPress}
-      onPress={handlePress}
-      style={styles.animatedButton}
-      wrapperStyle={styles.iconWrapper}
-      renderUnderlay={({ pressed }) =>
-        pressed ? (
-          <LinearGradient
-            style={styles.underlay}
-            colors={[neutralLight8, neutralLight10]}
-          />
-        ) : null
-      }
-    >
-      {children}
-    </AnimatedButton>
+    <View style={styles.root}>
+      <Pressable
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        pointerEvents='box-only'
+        style={styles.button}
+      >
+        {({ pressed }) => {
+          return (
+            <>
+              {pressed ? (
+                <LinearGradient
+                  style={styles.underlay}
+                  colors={[neutralLight8, neutralLight10]}
+                />
+              ) : null}
+              <Rive
+                style={styles.iconWrapper}
+                resourceName={name}
+                autoplay={isActive}
+              />
+              {children}
+            </>
+          )
+        }}
+      </Pressable>
+    </View>
   )
 }

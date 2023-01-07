@@ -11,6 +11,11 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
+		230397792967ED1D0070B7C9 /* feed.riv in Resources */ = {isa = PBXBuildFile; fileRef = 230397782967ED1D0070B7C9 /* feed.riv */; };
+		2303977B2967ED2C0070B7C9 /* trending.riv in Resources */ = {isa = PBXBuildFile; fileRef = 2303977A2967ED2C0070B7C9 /* trending.riv */; };
+		2303977E2967ED350070B7C9 /* explore.riv in Resources */ = {isa = PBXBuildFile; fileRef = 2303977C2967ED350070B7C9 /* explore.riv */; };
+		2303977F2967ED350070B7C9 /* favorites.riv in Resources */ = {isa = PBXBuildFile; fileRef = 2303977D2967ED350070B7C9 /* favorites.riv */; };
+		230397812967ED3E0070B7C9 /* notifications.riv in Resources */ = {isa = PBXBuildFile; fileRef = 230397802967ED3E0070B7C9 /* notifications.riv */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */; };
@@ -40,6 +45,11 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudiusReactNative/main.m; sourceTree = "<group>"; };
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
+		230397782967ED1D0070B7C9 /* feed.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = feed.riv; path = ../src/assets/rive/feed.riv; sourceTree = "<group>"; };
+		2303977A2967ED2C0070B7C9 /* trending.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending.riv; path = ../src/assets/rive/trending.riv; sourceTree = "<group>"; };
+		2303977C2967ED350070B7C9 /* explore.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = explore.riv; path = ../src/assets/rive/explore.riv; sourceTree = "<group>"; };
+		2303977D2967ED350070B7C9 /* favorites.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = favorites.riv; path = ../src/assets/rive/favorites.riv; sourceTree = "<group>"; };
+		230397802967ED3E0070B7C9 /* notifications.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications.riv; path = ../src/assets/rive/notifications.riv; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
 		6B15FA5E2656F49ECB139DC4 /* Pods-AudiusReactNative.staging.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.debug.xcconfig"; sourceTree = "<group>"; };
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
@@ -96,6 +106,7 @@
 		13B07FAE1A68108700A75B9A /* AudiusReactNative */ = {
 			isa = PBXGroup;
 			children = (
+				2390D7982967E01B00A85E6A /* Assets */,
 				838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */,
 				A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -109,6 +120,18 @@
 				83F735A423C64C950040A4C5 /* AirplayEvent.m */,
 			);
 			name = AudiusReactNative;
+			sourceTree = "<group>";
+		};
+		2390D7982967E01B00A85E6A /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				230397802967ED3E0070B7C9 /* notifications.riv */,
+				2303977C2967ED350070B7C9 /* explore.riv */,
+				2303977D2967ED350070B7C9 /* favorites.riv */,
+				2303977A2967ED2C0070B7C9 /* trending.riv */,
+				230397782967ED1D0070B7C9 /* feed.riv */,
+			);
+			name = Assets;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -261,16 +284,21 @@
 			files = (
 				717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */,
 				83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */,
+				2303977B2967ED2C0070B7C9 /* trending.riv in Resources */,
 				7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */,
 				838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */,
+				2303977E2967ED350070B7C9 /* explore.riv in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */,
 				C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */,
 				5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */,
 				9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */,
+				230397812967ED3E0070B7C9 /* notifications.riv in Resources */,
+				230397792967ED1D0070B7C9 /* feed.riv in Resources */,
 				CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */,
 				F50849B3CA2D48F3852465FA /* AvenirNextLTPro-Light.otf in Resources */,
 				9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */,
+				2303977F2967ED350070B7C9 /* favorites.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

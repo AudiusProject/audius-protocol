@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
+import * as haptics from 'app/haptics'
 import { makeStyles } from 'app/styles'
 
 import { bottomTabBarButtons } from './bottom-tab-bar-buttons'
@@ -76,6 +77,12 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
 
   const handlePress = useCallback(
     (isFocused: boolean, routeName: string, routeKey: string) => {
+      if (isFocused) {
+        haptics.light()
+      } else {
+        haptics.medium()
+      }
+
       const event = navigation.emit({
         type: 'tabPress',
         target: routeKey,
@@ -95,6 +102,7 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
   )
 
   const handleLongPress = useCallback(() => {
+    haptics.medium()
     navigation.emit({
       type: 'scrollToTop'
     })
@@ -109,10 +117,10 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
         style={[styles.bottomBar, { paddingBottom: insets.bottom }]}
       >
         {routes.map(({ name, key }, index) => {
-          const BottomButton = bottomTabBarButtons[name]
+          const BottomTabBarButton = bottomTabBarButtons[name]
 
           return (
-            <BottomButton
+            <BottomTabBarButton
               key={key}
               routeKey={key}
               isActive={index === activeIndex}
