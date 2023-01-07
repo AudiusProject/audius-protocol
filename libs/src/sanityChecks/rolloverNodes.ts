@@ -1,7 +1,7 @@
 import { Nullable, Utils } from '../utils'
 import { CreatorNode } from '../services/creatorNode'
 import type { AudiusLibs } from '../AudiusLibs'
-import _ from 'lodash'
+import maxBy from 'lodash/maxBy'
 
 const THREE_SECONDS = 3000
 const MAX_TRIES = 3
@@ -39,7 +39,7 @@ const getNewPrimary = async (secondaries: string[], wallet: string) => {
       })
     )
   ).filter(Boolean)
-  const max = _.maxBy(secondaryStatuses, (s) => s?.clockValue)?.secondary
+  const max = maxBy(secondaryStatuses, (s) => s?.clockValue)?.secondary
   if (!max) {
     throw new Error(`Could not find valid secondaries for user ${secondaries}`)
   }
