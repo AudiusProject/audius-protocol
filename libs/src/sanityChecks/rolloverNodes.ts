@@ -36,7 +36,8 @@ const getNewPrimary = async (libs: AudiusLibs, secondaries: string[]) => {
 
 export const rolloverNodes = async (
   libs: AudiusLibs,
-  creatorNodeWhitelist: Nullable<Set<string>>
+  creatorNodeWhitelist: Nullable<Set<string>>,
+  creatorNodeBlacklist: Nullable<Set<string>>
 ) => {
   console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager?.getCurrentUser()
@@ -45,8 +46,9 @@ export const rolloverNodes = async (
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
   if (!primary) return
+
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)
-  if (healthy) return
+  if (healthy && !creatorNodeBlacklist?.has(primary)) return
 
   const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
 
