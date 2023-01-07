@@ -46,7 +46,7 @@
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./src/sdk/api/generator/gen.js",
     "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full",
-    "postinstall": "patch-package"
+    "prepare": "patch-package"
   },
   "dependencies": {
     "@audius/anchor-audius-data": "0.0.2",
@@ -87,7 +87,6 @@
     "lodash": "4.17.21",
     "micro-aes-gcm": "0.3.3",
     "node-localstorage": "^1.3.1",
-    "patch-package": "6.5.0",
     "proper-url-join": "1.2.0",
     "rollup-plugin-shim": "^1.0.0",
     "safe-buffer": "5.2.1",
@@ -135,6 +134,7 @@
     "mocha": "9.2.2",
     "nock": "13.1.2",
     "nyc": "15.1.0",
+    "patch-package": "6.5.0",
     "prettier": "^2.6.1",
     "prettier-config-standard": "^5.0.0",
     "rollup": "2.70.1",
