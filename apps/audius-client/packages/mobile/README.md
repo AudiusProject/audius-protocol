@@ -57,7 +57,21 @@ cd android && ./gradlew clean && cd ..
 
 ## Debugging
 
-- To debug the app, install [React Native Debugger](https://github.com/jhen0409/react-native-debugger) and enable debugging (Cmd + D) in the simulator.
+- To debug the app, install [Flipper](https://fbflipper.com/) either through their website, or using brew `brew install --cask flipper`.
+
+> Note as of time of writing, flipper is not signed correctly, and macos will prevent Flipper from opening. To override this, follow the resulting popup's instructions (go to security and confirm you want to open Flipper)
+
+We use a few different plugins as a team, make sure to install and enable the various plugins in flipper GUI
+- Hermes (default)
+- React Devtools (default)
+- Network Inspector (default)
+- Layout (default)
+- Shared Preferences Viewer (default)
+- [Redux Debugger](https://github.com/jk-gan/flipper-plugin-redux-debugger)
+- [advanced-async-storage](https://github.com/lbaldy/flipper-plugin-async-storage-advanced)
+- [performance](https://github.com/oblador/react-native-performance)
+- [react-native-performance-monitor](https://github.com/bamlab/react-native-flipper-performance-monitor)
+
 
 On Android, you can use the adb Android Studio tool or
 

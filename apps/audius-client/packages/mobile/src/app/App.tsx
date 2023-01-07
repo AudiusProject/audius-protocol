@@ -8,6 +8,7 @@ import {
 } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
+import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
 import { Audio } from 'app/components/audio/Audio'
 import HCaptcha from 'app/components/hcaptcha'
@@ -71,6 +72,7 @@ const App = () => {
 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <FlipperAsyncStorage />
       <Provider store={store}>
         <ThemeProvider>
           <WalletConnectProvider>
