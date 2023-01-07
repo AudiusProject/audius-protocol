@@ -87,19 +87,25 @@ export async function getTrackIdToCIDMapping(
       return {};
     }
 
-    if (batchResp.response?.status !== 200) {
+    if (!batchResp.response?.ok || batchResp.response?.status !== 200) {
       console.log(`[ERROR] bad things - ${await batchResp.response?.json()}`);
       throw new Error("the response failed");
     }
 
-    const body = await batchResp.response?.json();
-    // console.log(`[INFO] response object: ${JSON.stringify(body.data)}`);
-    const mappingResponse: Record<string, string> = body.data as Record<
-      string,
-      string
-    >;
+    try {
+      const body = await batchResp.response?.json();
+      // console.log(`[INFO] response object: ${JSON.stringify(body.data)}`);
+      const mappingResponse: Record<string, string> = body.data as Record<
+        string,
+        string
+      >;
 
-    return mappingResponse;
+      return mappingResponse;
+    } catch (e: any) {
+      console.log(`[ERROR] with json : ${batchResp.response.body}`)
+      return {};
+    }
+
   } catch (e: any) {
     console.error(
       `[${endpoint}:getTrackIdToCIDMapping Error] - ${endpoint}${route} - numTracks ${batch.length} - ${e.message}`

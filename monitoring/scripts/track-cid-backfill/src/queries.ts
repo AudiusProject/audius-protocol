@@ -302,25 +302,14 @@ export async function getTrackCount() {
 
 // returns trackIds 
 export async function getTrackIdBatch(
+  trackIds: readonly number[],
   offset: number,
   batchSize: number
 ): Promise<number[]> {
-  console.log(`getting ${batchSize} items at offset ${offset}`);
-  const batchResp: unknown[] = await sequelizeConn.query(
-    `
-    SELECT track_id
-    FROM tracks
-    WHERE is_current = TRUE
-    AND track_cid is NULL
-    ORDER BY created_at
-    OFFSET :offset
-    LIMIT :batchSize; 
-    `, {
-    type: QueryTypes.SELECT,
-    replacements: { offset, batchSize },
-  });
 
-  const batch = (batchResp as { track_id: string }[]).map(obj => parseInt(obj.track_id));
+  const batch = trackIds.slice(offset, offset + batchSize)
+
+  // console.log(`DA trackIds ${trackIds.length} DA BATCH ${batch.length}`)
 
   return batch;
 }

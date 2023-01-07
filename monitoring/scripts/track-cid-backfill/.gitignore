@@ -1,5 +1,6 @@
 
 *.csv
+*.zip
 .env.stage
 .env.prod
 node_modules/

@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 
-csv_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'local-csv'))
-# csv_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'production-csv'))
+# csv_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'local-csv'))
+csv_path = os.path.abspath(os.path.join(os.getcwd(), '..', 'production-csv'))
 
 def get_all_csvs():
     # Get the list of all files and directories
@@ -14,8 +14,8 @@ def get_all_csvs():
 def generate_aggregate_csv():
     csvs = get_all_csvs()
     # print(csvs)
-    dfs = [pd.read_csv('../local-csv/' + csv) for csv in csvs]
-    # dfs = [pd.read_csv('../production-csv/' + csv) for csv in csvs]
+    # dfs = [pd.read_csv('../local-csv/' + csv) for csv in csvs]
+    dfs = [pd.read_csv('../production-csv/' + csv) for csv in csvs]
     # print(dfs)
     final_result = pd.concat(dfs)
     final_result = final_result.groupby(final_result.track_id).first()
@@ -46,17 +46,32 @@ def get_missing_track_cids_csv():
     # print(final_result_read)
 
     all_track_ids_read = pd.read_csv('../all_track_ids.csv').sort_values(by=['TrackId'])
+    # all_track_ids_read = pd.read_csv('../all_track_ids.csv')
     # print(all_track_ids_read)
 
     # print(final_result_read[['TrackId']].compare(all_track_ids_read[['TrackId']]))
     # print(final_result_read['TrackId'].isnotin(all_track_ids_read['TrackId']).value_counts())
 
     the_missing = all_track_ids_read[~all_track_ids_read['TrackId'].isin(final_result_read['track_id'])].sort_values(by=['TrackId'])
+    # the_missing = all_track_ids_read[~all_track_ids_read['TrackId'].isin(final_result_read['track_id'])]
     the_missing.to_csv('../missing_cids.csv', index=False, header=False)
+
+def combine_files():
+    first = pd.read_csv('../first_track_cids.csv')
+    second = pd.read_csv('../track_cids.csv')
+
+    combined = pd.concat([first, second])
+    combined = combined.groupby(combined.track_id).first()
+
+    print(combined)
+
+    combined.to_csv('../combined_track_cids.csv')
 
 def main():
     generate_aggregate_csv()
     get_missing_track_cids_csv()
+
+    # combine_files()
 
 if __name__ == '__main__':
     main()

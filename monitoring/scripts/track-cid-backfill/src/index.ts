@@ -4,17 +4,32 @@ import { closeDBConnection, verifyDBConnection } from "./db";
 import { 
   // dumpTrackIds,
   // getAllContentNodes,
-  getTrackCount,
+  // getTrackCount,
   getTrackIdBatch,
   prodContentNodes
 } from "./queries";
 
-const BATCH_SIZE = 10_000;
+import fs from 'fs-extra'
+
+const BATCH_SIZE = 60_000;
+
+async function readMissingTrackIds(): Promise<number[]> {
+  const missingTrackIdsFile = await (await fs.readFile('./missing_cids.csv')).toString()
+
+  const missingTrackIds = missingTrackIdsFile.split('\n')
+  missingTrackIds.shift()
+
+  return missingTrackIds.map(trackId => parseInt(trackId))
+}
 
 async function main() {
   await verifyDBConnection();
 
-  // const contentNodes: {
+  const missingTrackIds = await readMissingTrackIds()
+
+  console.log(`MISSING IDS: ${missingTrackIds.length}`)
+
+  // conscontentNodes: {
   //   spid: number;
   //   endpoint: string;
   // }[] = await getAllContentNodes();
@@ -30,12 +45,12 @@ async function main() {
 
   // await dumpTrackIds()
 
-  const trackCount = await getTrackCount();
-  console.log(`[INFO] track count: ${JSON.stringify(trackCount)}`);
+  // const trackCount = await getTrackCount();
+  // console.log(`[INFO] track count: ${JSON.stringify(trackCount)}`);
   await Promise.all(
     sortedContentNodes.map(async ({ spid, endpoint }) => {
-      for (let offset = 0; offset < trackCount; offset += BATCH_SIZE) {
-        const trackIdBatch = await getTrackIdBatch(offset, BATCH_SIZE);
+      for (let offset = 0; offset < missingTrackIds.length; offset += BATCH_SIZE) {
+        const trackIdBatch = await getTrackIdBatch(missingTrackIds, offset, BATCH_SIZE);
         try {
           // In batches, get trackId=>copy320cid mapping
           console.log(
