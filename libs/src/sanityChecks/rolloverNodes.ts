@@ -97,7 +97,11 @@ export const rolloverNodes = async (
     console.debug(
       `Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`
     )
-    await libs.User?.updateCreator(user.user_id, newMetadata)
+    await libs.User?.updateCreator(
+      user.user_id,
+      newMetadata,
+      true /* useEntityManager */
+    )
   } catch (e) {
     console.error(e)
   }
