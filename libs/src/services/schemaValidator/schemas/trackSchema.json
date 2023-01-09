@@ -312,9 +312,19 @@
         },
         "standard": {
           "enum": ["ERC721", "ERC1155"]
+        },
+        "name": {
+            "type": "string"
+        },
+        "slug": {
+            "type": "string"
+        },
+        "externalLink": {
+            "type": ["string", "null"],
+            "default": null
         }
       },
-      "required": ["chain", "address", "standard"],
+      "required": ["chain", "address", "standard", "name", "slug"],
       "title": "PremiumConditionsEthNFTCollection"
     },
     "PremiumConditionsSolNFTCollection": {
@@ -327,9 +337,16 @@
         },
         "address": {
           "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "externalLink": {
+            "type": ["string", "null"],
+            "default": null
         }
       },
-      "required": ["chain", "address"],
+      "required": ["chain", "address", "name"],
       "title": "PremiumConditionsSolNFTCollection"
     },
     "PremiumConditionsFollowUserId": {

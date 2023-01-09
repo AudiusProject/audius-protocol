@@ -395,12 +395,27 @@
                         "ERC721",
                         "ERC1155"
                     ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
                 "address",
-                "standard"
+                "standard",
+                "name",
+                "slug"
             ],
             "title": "PremiumConditionsEthNFTCollection"
         },
@@ -414,11 +429,22 @@
                 },
                 "address": {
                     "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
-                "address"
+                "address",
+                "name"
             ],
             "title": "PremiumConditionsSolNFTCollection"
         },
