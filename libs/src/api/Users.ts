@@ -669,6 +669,7 @@ export class Users extends Base {
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
+    const logPrefix = `[User:updateCreator()] [userId: ${userId}]`
 
     const fnStartMs = Date.now()
     let startMs = fnStartMs
