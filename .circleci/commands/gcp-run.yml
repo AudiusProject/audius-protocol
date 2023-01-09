@@ -1,0 +1,58 @@
+parameters:
+  instance-name:
+    description: Name of instance
+    type: string
+  create-instance-args:
+    description: Extra arguments to use when creating instance
+    type: string
+    default: --preemptible --tags=circleci
+  steps:
+    description: Steps to run on GCP instance
+    type: steps
+    default: []
+steps:
+  - run:
+      name: Create GCP instance
+      command: |
+        # Create firewall for instance
+        CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+        gcloud compute firewall-rules create "<< parameters.instance-name >>" \
+          --source-ranges "$CIRCLECI_IP" \
+          --action allow --rules tcp:22 \
+          --target-tags "<< parameters.instance-name >>"
+
+        # Create GCP instance
+        gcloud compute instances create \
+          "<< parameters.instance-name >>" \
+          << parameters.create-instance-args >> \
+          --tags "<< parameters.instance-name >>"
+
+        # SSH into machine to generate a ssh key
+        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command=exit
+
+        # Replace bash with executable that forwards commands to the instance
+        mv /bin/bash /tmp/bash.real
+        echo >/bin/bash '#!/tmp/bash.real
+        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
+        if [[ "$?" != "0" ]]; then
+          /tmp/cleanup failure
+          exit 1
+        fi'
+        chmod +x /bin/bash
+
+        echo >/tmp/cleanup '#!/tmp/bash.real
+        if [[ "$1" == "success" ]]; then
+          gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+        else
+          gcloud compute instances delete --quiet --delete-disks=all "<< parameters.instance-name >>"
+        fi
+
+        gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
+        mv /bin/bash /tmp/bash.deleted
+        mv /tmp/bash.real /bin/bash'
+        chmod +x /tmp/cleanup
+  - steps: << parameters.steps >>
+  - run:
+      name: Delete GCP instance
+      shell: /tmp/bash.real
+      command: /tmp/cleanup success

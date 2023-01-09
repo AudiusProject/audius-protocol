@@ -1,0 +1,5 @@
+resource_class: small
+docker:
+  - image: cimg/base:2023.01
+steps:
+  - echo "Release"

@@ -1,0 +1,14 @@
+jobs:
+  - build-gcp-image
+  - test-service:
+      name: test-creator-node
+      requires:
+        - build-gcp-image
+      instance-name: circleci-<< pipeline.id >>-cn
+      service: creator-node
+  - test-service:
+      name: test-discovery-provider
+      requires:
+        - build-gcp-image
+      instance-name: circleci-<< pipeline.id >>-dp
+      service: discovery-provider

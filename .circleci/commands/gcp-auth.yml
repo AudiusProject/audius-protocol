@@ -1,0 +1,9 @@
+steps:
+  - run:
+      name: Authorize gcloud cli
+      command: |
+        echo "$GCLOUD_SERVICE_KEY" | gcloud auth activate-service-account --key-file=-
+
+        # Set GCP project id and compute zone
+        gcloud config set project "$GOOGLE_PROJECT_ID"
+        gcloud config set compute/zone "$GOOGLE_COMPUTE_ZONE"

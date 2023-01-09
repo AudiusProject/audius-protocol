@@ -1,0 +1,54 @@
+resource_class: small
+docker:
+  - image: google/cloud-sdk:412.0.0-slim
+steps:
+  - gcp-auth
+  - run:
+      name: Early Exit
+      command: |
+        available="$(gcloud compute images list --filter "name=(
+          'audius-protocol-<< pipeline.git.base_revision >>'
+          'audius-protocol-<< pipeline.git.revision >>'
+        )" --format "csv(name)[no-heading]")"
+
+        if echo "$available" | grep '^audius-protocol-<< pipeline.git.revision >>$' &>/dev/null; then
+          circleci-agent step halt
+        fi
+
+        image_flag=""  # Default is debian-11
+        if echo "$available" | grep '^audius-protocol-<< pipeline.git.base_revision >>$' &>/dev/null; then
+          image_flag="--image=audius-protocol-<<pipeline.git.base_revision>>"
+        fi
+
+        echo "export IMAGE_FLAG='$image_flag'" >> "$BASH_ENV"
+  - gcp-run:
+      instance-name: circleci-<< pipeline.git.revision >>
+      create-instance-args: >-
+        $IMAGE_FLAG
+        --preemptible
+        --tags=circleci
+        --machine-type=n2-custom-6-24576
+        --boot-disk-size=64G
+        --boot-disk-type=pd-ssd
+        --no-boot-disk-auto-delete
+      steps:
+        - gcp-checkout
+        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+        - run:
+            name: Docker login
+            command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+        - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull; docker compose push
+  - run:
+      name: Create Image
+      command: |
+        set +e
+        gcloud compute images create \
+          --family=audius-protocol \
+          --source-disk "circleci-<< pipeline.git.revision >>" \
+          "audius-protocol-<< pipeline.git.revision >>"
+        image_create_exit_code=$?
+        gcloud compute disks delete --quiet "circleci-<< pipeline.git.revision >>"
+        disk_delete_exit_code=$?
+        if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
+          exit 1
+        fi

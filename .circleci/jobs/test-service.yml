@@ -1,0 +1,25 @@
+parameters:
+  instance-name:
+    description: "Name of gcp instance to use for the test"
+    type: string
+  service:
+    description: "Service to test"
+    type: string
+resource_class: small
+docker:
+  - image: google/cloud-sdk:412.0.0-slim
+steps:
+  - gcp-auth
+  - gcp-run:
+      instance-name: "<< parameters.instance-name >>"
+      create-instance-args: >-
+        --preemptible
+        --tags=circleci
+        --machine-type=n2-custom-6-24576
+        --boot-disk-size=64G
+        --boot-disk-type=pd-ssd
+        --no-boot-disk-auto-delete
+        --image=audius-protocol-<< pipeline.git.revision >>
+      steps:
+        - gcp-checkout
+        - run: . ~/.profile; audius-compose test run "<< parameters.service >>"

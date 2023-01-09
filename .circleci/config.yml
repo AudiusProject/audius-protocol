@@ -1,205 +1,36 @@
-# See: https://circleci.com/docs/2.0/configuration-reference
+# This is probably not the file you want to edit, you probably want to create/update
+# files in .circleci/{commands,jobs,workflows}
+
 version: 2.1
 
-# See: https://circleci.com/docs/configuration-reference/#commands
-commands:
-  gcp-auth:
-    steps:
-      - run:
-          name: Authorize gcloud cli
-          command: |
-            echo "$GCLOUD_SERVICE_KEY" | gcloud auth activate-service-account --key-file=-
+setup: true
 
-            # Set GCP project id and compute zone
-            gcloud config set project "$GOOGLE_PROJECT_ID"
-            gcloud config set compute/zone "$GOOGLE_COMPUTE_ZONE"
-  gcp-run:
-    parameters:
-      instance-name:
-        description: Name of instance
-        type: string
-      create-instance-args:
-        description: Extra arguments to use when creating instance
-        type: string
-        default: --preemptible --tags=circleci
-      steps:
-        description: Steps to run on GCP instance
-        type: steps
-        default: []
-    steps:
-      - run:
-          name: Create GCP instance
-          command: |
-            # Create firewall for instance
-            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
-            gcloud compute firewall-rules create "<< parameters.instance-name >>" \
-              --source-ranges "$CIRCLECI_IP" \
-              --action allow --rules tcp:22 \
-              --target-tags "<< parameters.instance-name >>"
+orbs:
+  continuation: circleci/continuation@0.3.1
 
-            # Create GCP instance
-            gcloud compute instances create \
-              "<< parameters.instance-name >>" \
-              << parameters.create-instance-args >> \
-              --tags "<< parameters.instance-name >>"
-
-            # SSH into machine to generate a ssh key
-            gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command=exit
-
-            # Replace bash with executable that forwards commands to the instance
-            mv /bin/bash /tmp/bash.real
-            echo >/bin/bash '#!/tmp/bash.real
-            gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
-            if [[ "$?" != "0" ]]; then
-              /tmp/cleanup failure
-              exit 1
-            fi'
-            chmod +x /bin/bash
-
-            echo >/tmp/cleanup '#!/tmp/bash.real
-            if [[ "$1" == "success" ]]; then
-              gcloud compute instances delete --quiet "<< parameters.instance-name >>"
-            else
-              gcloud compute instances delete --quiet --delete-disks=all "<< parameters.instance-name >>"
-            fi
-
-            gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
-            mv /bin/bash /tmp/bash.deleted
-            mv /tmp/bash.real /bin/bash'
-            chmod +x /tmp/cleanup
-      - steps: << parameters.steps >>
-      - run:
-          name: Delete GCP instance
-          shell: /tmp/bash.real
-          command: /tmp/cleanup success
-  gcp-checkout:
-    steps:
-      - run:
-          name: Checkout
-          command: |
-            if ! command -v git &>/dev/null; then
-              sudo apt update
-              sudo apt install -y git
-            fi
-
-            if [[ -e "$HOME/audius-protocol" ]]; then
-              cd ~/audius-protocol
-              git remote set-url origin "<< pipeline.project.git_url >>" || true
-              git fetch --force --tags origin
-            else
-              mkdir -p ~/audius-protocol
-              cd ~/audius-protocol
-              git clone --no-checkout "<< pipeline.project.git_url >>" .
-            fi
-
-            git checkout --force "<< pipeline.git.revision >>"
-
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build-gcp-image:
+  circleci-setup:
+    executor: continuation/default
     resource_class: small
-    docker:
-      - image: google/cloud-sdk:412.0.0-slim
     steps:
-      - gcp-auth
+      - checkout
+      # CircleCI cli distributed in continuation/default is outdated so we download
+      # manually
       - run:
-          name: Early Exit
+          name: Download circleci cli
           command: |
-            available="$(gcloud compute images list --filter "name=(
-              'audius-protocol-<< pipeline.git.base_revision >>'
-              'audius-protocol-<< pipeline.git.revision >>'
-            )" --format "csv(name)[no-heading]")"
-
-            if echo "$available" | grep '^audius-protocol-<< pipeline.git.revision >>$' &>/dev/null; then
-              circleci-agent step halt
-            fi
-
-            image_flag=""  # Default is debian-11
-            if echo "$available" | grep '^audius-protocol-<< pipeline.git.base_revision >>$' &>/dev/null; then
-              image_flag="--image=audius-protocol-<<pipeline.git.base_revision>>"
-            fi
-
-            echo "export IMAGE_FLAG='$image_flag'" >> "$BASH_ENV"
-      - gcp-run:
-          instance-name: circleci-<< pipeline.git.revision >>
-          create-instance-args: >-
-            $IMAGE_FLAG
-            --preemptible
-            --tags=circleci
-            --machine-type=n2-custom-6-24576
-            --boot-disk-size=64G
-            --boot-disk-type=pd-ssd
-            --no-boot-disk-auto-delete
-          steps:
-            - gcp-checkout
-            - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-            - run:
-                name: Docker login
-                command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull; docker compose push
+            curl -SfL 'https://github.com/CircleCI-Public/circleci-cli/releases/download/v0.1.22924/circleci-cli_0.1.22924_linux_amd64.tar.gz' \
+              | tar xzf - -C .circleci --no-anchored --strip-components 1 circleci
       - run:
-          name: Create Image
+          name: Generate config
           command: |
-            set +e
-            gcloud compute images create \
-              --family=audius-protocol \
-              --source-disk "circleci-<< pipeline.git.revision >>" \
-              "audius-protocol-<< pipeline.git.revision >>"
-            image_create_exit_code=$?
-            gcloud compute disks delete --quiet "circleci-<< pipeline.git.revision >>"
-            disk_delete_exit_code=$?
-            if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
-              exit 1
-            fi
+            cd .circleci
+            rm config.yml
+            ./circleci config pack . | tee generated_config.yml
+      - continuation/continue:
+          configuration_path: .circleci/generated_config.yml
 
-  test-creator-node:
-    resource_class: small
-    docker:
-      - image: google/cloud-sdk:412.0.0-slim
-    steps:
-      - gcp-auth
-      - gcp-run:
-          instance-name: circleci-<< pipeline.id >>-cn
-          create-instance-args: >-
-            --preemptible
-            --tags=circleci
-            --machine-type=n2-custom-6-24576
-            --boot-disk-size=64G
-            --boot-disk-type=pd-ssd
-            --no-boot-disk-auto-delete
-            --image=audius-protocol-<< pipeline.git.revision >>
-          steps:
-            - gcp-checkout
-            - run: . ~/.profile; audius-compose test run creator-node
-
-  test-discovery-provider:
-    resource_class: small
-    docker:
-      - image: google/cloud-sdk:412.0.0-slim
-    steps:
-      - gcp-auth
-      - gcp-run:
-          instance-name: circleci-<< pipeline.id >>-dp
-          create-instance-args: >-
-            --preemptible
-            --tags=circleci
-            --machine-type=n2-custom-6-24576
-            --boot-disk-size=64G
-            --boot-disk-type=pd-ssd
-            --no-boot-disk-auto-delete
-            --image=audius-protocol-<< pipeline.git.revision >>
-          steps:
-            - gcp-checkout
-            - run: . ~/.profile; audius-compose test run discovery-provider
-
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  test:
+  circleci-setup:
     jobs:
-      - build-gcp-image
-      - test-creator-node:
-          requires:
-            - build-gcp-image
-      - test-discovery-provider:
-          requires:
-            - build-gcp-image
+      - circleci-setup
