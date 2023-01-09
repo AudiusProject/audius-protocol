@@ -77,7 +77,7 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
 
     return (
       <View>
-        {handleRefresh ? (
+        {Platform.OS === 'ios' && handleRefresh ? (
           <PullToRefresh
             isRefreshing={isRefreshing}
             onRefresh={handleRefresh}
