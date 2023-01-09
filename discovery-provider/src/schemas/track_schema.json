@@ -408,13 +408,6 @@
                         "null"
                     ],
                     "default": null
-                },
-                "permaLink": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
                 }
             },
             "required": [
@@ -441,13 +434,6 @@
                     "type": "string"
                 },
                 "externalLink": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "permaLink": {
                     "type": [
                         "string",
                         "null"

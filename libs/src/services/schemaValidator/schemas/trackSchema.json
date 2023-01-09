@@ -322,10 +322,6 @@
         "externalLink": {
             "type": ["string", "null"],
             "default": null
-        },
-        "permaLink": {
-            "type": ["string", "null"],
-            "default": null
         }
       },
       "required": ["chain", "address", "standard", "name", "slug"],
@@ -346,10 +342,6 @@
             "type": "string"
         },
         "externalLink": {
-            "type": ["string", "null"],
-            "default": null
-        },
-        "permaLink": {
             "type": ["string", "null"],
             "default": null
         }
