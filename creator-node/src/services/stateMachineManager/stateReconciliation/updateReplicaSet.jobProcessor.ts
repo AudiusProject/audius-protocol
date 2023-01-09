@@ -642,7 +642,7 @@ const _issueUpdateReplicaSetOp = async (
       if (!audiusLibs) {
         tracing.info('init AudiusLibs')
         audiusLibs = await initAudiusLibs({
-          enableEthContracts: false,
+          enableEthContracts: true,
           enableContracts: true,
           enableDiscovery: true,
           enableIdentity: true,
