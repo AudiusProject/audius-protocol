@@ -40,7 +40,7 @@ steps:
         pass_env=(<< parameters.pass-env >>)
         set_env=""
         for env in "${pass_env[@]}"; do
-          set_env="$set_env; export $(printf "%q=%q" "$env" "$(printenv "$env"))"
+          set_env="$set_env; export $(printf "%q=%q" "$env" "$(printenv "$env")")"
         done
 
         gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="$set_env; bash $(printf "%q " "$@")"
