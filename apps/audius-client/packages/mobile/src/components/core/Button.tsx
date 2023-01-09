@@ -19,207 +19,24 @@ import { light, medium } from 'app/haptics'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
-import { flexRowCentered, makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { typography, flexRowCentered, makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors, useThemePalette } from 'app/utils/theme'
 
 import { Link } from './Link'
 
-const useStyles = makeStyles<
-  Required<
-    Pick<ButtonProps, 'size' | 'variant' | 'corners'> & { isPressing: boolean }
-  >
->(
-  (
-    { palette, spacing, typography },
-    { isPressing, size, variant, corners }
-  ) => {
-    const commonVariantStyles = {
-      root: {
-        borderColor: palette.neutralLight6,
-        borderWidth: 1,
-        backgroundColor: palette.white
-      },
-      text: {
-        color: palette.neutral
-      },
-      icon: {
-        color: palette.neutral
-      }
-    }
+type ButtonVariant =
+  | 'primary'
+  | 'primaryAlt'
+  | 'secondary'
+  | 'common'
+  | 'commonAlt'
+  | 'commonSecondary'
+  | 'destructive'
 
-    const variantStyles = {
-      primary: {
-        root: {
-          backgroundColor: palette.primary,
-          borderWidth: 0
-        },
-        text: {
-          color: palette.staticWhite
-        },
-        icon: {
-          color: palette.staticWhite
-        }
-      },
-      primaryAlt: {
-        root: {
-          borderColor: palette.primaryDark1,
-          borderWidth: 1,
-          backgroundColor: palette.white
-        },
-        text: {
-          color: palette.primary
-        },
-        icon: {
-          color: palette.primary
-        }
-      },
-      secondary: {
-        root: {
-          backgroundColor: palette.secondary,
-          borderWidth: 0
-        },
-        text: {
-          color: palette.staticWhite
-        },
-        icon: {
-          color: palette.staticWhite
-        }
-      },
-      common: commonVariantStyles,
-      commonAlt: commonVariantStyles,
-      commonSecondary: commonVariantStyles,
-      destructive: {
-        root: {
-          backgroundColor: palette.accentRed
-        },
-        text: {
-          color: palette.staticWhite
-        },
-        icon: {
-          color: palette.staticWhite
-        }
-      }
-    }
-
-    const variantPressingStyles = {
-      primaryAlt: variantStyles.primary,
-      common: variantStyles.primary,
-      commonAlt: variantStyles.commonAlt,
-      commonSecondary: variantStyles.secondary,
-      destructive: variantStyles.destructive
-    }
-
-    const sizeStyles = {
-      xs: {
-        button: {
-          height: spacing(6),
-          paddingHorizontal: spacing(3)
-        },
-        text: {
-          fontSize: typography.fontSize.small,
-          fontFamily: typography.fontByWeight.bold
-        }
-      },
-      small: {
-        button: {
-          height: spacing(8),
-          paddingHorizontal: spacing(2)
-        },
-        text: {
-          textTransform: 'uppercase',
-          fontSize: 11
-        },
-        icon: {
-          height: spacing(5),
-          width: spacing(5)
-        },
-        iconLeft: {
-          marginRight: spacing(1)
-        },
-        iconRight: {
-          marginLeft: spacing(1)
-        }
-      },
-      medium: {
-        button: {
-          height: spacing(10),
-          paddingHorizontal: spacing(6)
-        },
-        text: {
-          fontSize: 14
-        },
-        icon: {
-          height: spacing(6),
-          width: spacing(6)
-        },
-        iconLeft: {
-          marginRight: spacing(1)
-        },
-        iconRight: {
-          marginLeft: spacing(1)
-        }
-      },
-      large: {
-        button: {
-          height: spacing(12),
-          paddingHorizontal: spacing(8)
-        },
-        text: {
-          fontSize: 18
-        },
-        icon: {
-          height: spacing(8),
-          width: spacing(8)
-        },
-        iconLeft: {
-          marginRight: spacing(2)
-        },
-        iconRight: {
-          marginLeft: spacing(2)
-        }
-      }
-    }
-
-    const cornerStyles = {
-      rounded: {
-        root: {
-          borderRadius: spacing(1)
-        }
-      },
-      pill: {
-        root: {
-          borderRadius: spacing(10)
-        }
-      }
-    }
-
-    const baseStyles = {
-      root: {
-        ...flexRowCentered(),
-        justifyContent: 'center',
-        alignSelf: 'center',
-        // this should never be used, but helps merge with the types
-        backgroundColor: palette.primary
-      },
-      button: {
-        ...flexRowCentered(),
-        justifyContent: 'center'
-      },
-      text: {
-        fontFamily: typography.fontByWeight.bold,
-        letterSpacing: 0.5
-      }
-    }
-
-    return merge(
-      baseStyles,
-      variantStyles[variant],
-      isPressing && variantPressingStyles[variant],
-      sizeStyles[size],
-      cornerStyles[corners]
-    )
-  }
-)
+type ButtonSize = 'xs' | 'small' | 'medium' | 'large'
+type ButtonCorners = 'rounded' | 'pill'
 
 export type ButtonProps = Omit<RNButtonProps, 'title'> &
   PressableProps & {
@@ -228,7 +45,7 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
     IconProps?: SvgProps
     fullWidth?: boolean
     noText?: boolean
-    size?: 'xs' | 'small' | 'medium' | 'large'
+    size?: ButtonSize
     style?: ViewStyle
     styles?: StylesProp<{
       root: ViewStyle
@@ -236,22 +53,211 @@ export type ButtonProps = Omit<RNButtonProps, 'title'> &
       icon: ViewStyle
       text: TextStyle
     }>
-    variant?:
-      | 'primary'
-      | 'primaryAlt'
-      | 'secondary'
-      | 'common'
-      | 'commonAlt'
-      | 'commonSecondary'
-      | 'destructive'
+    variant?: ButtonVariant
     haptics?: boolean | 'light' | 'medium'
     url?: string
     // Custom color that will override the variant
     color?: string
-    corners?: 'rounded' | 'pill'
+    corners?: ButtonCorners
     title: ReactNode
     pressScale?: number
   }
+
+const useStyles = makeStyles(({ palette, typography }) => ({
+  root: {
+    ...flexRowCentered(),
+    justifyContent: 'center',
+    alignSelf: 'center',
+    // this should never be used, but helps merge with the types
+    backgroundColor: palette.primary
+  },
+  button: {
+    ...flexRowCentered(),
+    justifyContent: 'center'
+  },
+  text: {
+    fontFamily: typography.fontByWeight.bold,
+    letterSpacing: 0.5
+  }
+}))
+
+type CustomStylesConfig = {
+  palette: ThemeColors
+  isPressing: boolean
+  size: ButtonSize
+  variant: ButtonVariant
+  corners: ButtonCorners
+}
+
+const getCustomStyles = (config: CustomStylesConfig) => {
+  const { palette, isPressing, size, variant, corners } = config
+  const commonVariantStyles = {
+    root: {
+      borderColor: palette.neutralLight6,
+      borderWidth: 1,
+      backgroundColor: palette.white
+    },
+    text: {
+      color: palette.neutral
+    },
+    icon: {
+      color: palette.neutral
+    }
+  }
+
+  const variantStyles = {
+    primary: {
+      root: {
+        backgroundColor: palette.primary,
+        borderWidth: 0
+      },
+      text: {
+        color: palette.staticWhite
+      },
+      icon: {
+        color: palette.staticWhite
+      }
+    },
+    primaryAlt: {
+      root: {
+        borderColor: palette.primaryDark1,
+        borderWidth: 1,
+        backgroundColor: palette.white
+      },
+      text: {
+        color: palette.primary
+      },
+      icon: {
+        color: palette.primary
+      }
+    },
+    secondary: {
+      root: {
+        backgroundColor: palette.secondary,
+        borderWidth: 0
+      },
+      text: {
+        color: palette.staticWhite
+      },
+      icon: {
+        color: palette.staticWhite
+      }
+    },
+    common: commonVariantStyles,
+    commonAlt: commonVariantStyles,
+    commonSecondary: commonVariantStyles,
+    destructive: {
+      root: {
+        backgroundColor: palette.accentRed
+      },
+      text: {
+        color: palette.staticWhite
+      },
+      icon: {
+        color: palette.staticWhite
+      }
+    }
+  }
+
+  const variantPressingStyles = {
+    primaryAlt: variantStyles.primary,
+    common: variantStyles.primary,
+    commonAlt: variantStyles.commonAlt,
+    commonSecondary: variantStyles.secondary,
+    destructive: variantStyles.destructive
+  }
+
+  const sizeStyles = {
+    xs: {
+      button: {
+        height: spacing(6),
+        paddingHorizontal: spacing(3)
+      },
+      text: {
+        fontSize: typography.fontSize.small,
+        fontFamily: typography.fontByWeight.bold
+      }
+    },
+    small: {
+      button: {
+        height: spacing(8),
+        paddingHorizontal: spacing(2)
+      },
+      text: {
+        textTransform: 'uppercase',
+        fontSize: 11
+      },
+      icon: {
+        height: spacing(5),
+        width: spacing(5)
+      },
+      iconLeft: {
+        marginRight: spacing(1)
+      },
+      iconRight: {
+        marginLeft: spacing(1)
+      }
+    },
+    medium: {
+      button: {
+        height: spacing(10),
+        paddingHorizontal: spacing(6)
+      },
+      text: {
+        fontSize: 14
+      },
+      icon: {
+        height: spacing(6),
+        width: spacing(6)
+      },
+      iconLeft: {
+        marginRight: spacing(1)
+      },
+      iconRight: {
+        marginLeft: spacing(1)
+      }
+    },
+    large: {
+      button: {
+        height: spacing(12),
+        paddingHorizontal: spacing(8)
+      },
+      text: {
+        fontSize: 18
+      },
+      icon: {
+        height: spacing(8),
+        width: spacing(8)
+      },
+      iconLeft: {
+        marginRight: spacing(2)
+      },
+      iconRight: {
+        marginLeft: spacing(2)
+      }
+    }
+  }
+
+  const cornerStyles = {
+    rounded: {
+      root: {
+        borderRadius: spacing(1)
+      }
+    },
+    pill: {
+      root: {
+        borderRadius: spacing(10)
+      }
+    }
+  }
+
+  return merge(
+    variantStyles[variant],
+    isPressing && variantPressingStyles[variant],
+    sizeStyles[size],
+    cornerStyles[corners]
+  )
+}
 
 export const Button = (props: ButtonProps) => {
   const {
@@ -278,11 +284,12 @@ export const Button = (props: ButtonProps) => {
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
-  const stylesConfig = useMemo(
-    () => ({ isPressing, size, variant, corners }),
-    [isPressing, size, variant, corners]
+  const palette = useThemePalette()
+  const baseStyles = useStyles()
+  const styles = useMemo(
+    () => getCustomStyles({ isPressing, size, variant, corners, palette }),
+    [isPressing, size, variant, corners, palette]
   )
-  const styles = useStyles(stylesConfig)
   const rootLayoutRef =
     useRef<Nullable<{ height: number; width: number }>>(null)
   const {
@@ -405,6 +412,7 @@ export const Button = (props: ButtonProps) => {
     <View style={rootLayoutRef.current} onLayout={handleRootLayout}>
       <Animated.View
         style={[
+          baseStyles.root,
           styles.root,
           { transform: [{ scale }], backgroundColor: color },
           fullWidth && { width: '100%' },
@@ -416,6 +424,7 @@ export const Button = (props: ButtonProps) => {
         <PressableComponent
           url={url as string}
           style={[
+            baseStyles.button,
             styles.button,
             fullWidth && { width: '100%' },
             stylesProp?.button
@@ -433,7 +442,9 @@ export const Button = (props: ButtonProps) => {
         >
           {iconPosition !== 'left' ? null : icon}
           {noText ? null : typeof title === 'string' ? (
-            <Text style={[styles.text, stylesProp?.text]}>{title}</Text>
+            <Text style={[baseStyles.text, styles.text, stylesProp?.text]}>
+              {title}
+            </Text>
           ) : (
             title
           )}

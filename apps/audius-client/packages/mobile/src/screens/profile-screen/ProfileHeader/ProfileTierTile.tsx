@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile, Text } from 'app/components/core'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
 const { setVisibility } = modalsActions

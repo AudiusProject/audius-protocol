@@ -35,54 +35,47 @@ const BACKGROUND_OPACITY = 0.5
 // Controls the amount of friction in swiping when overflowing up or down
 const OVERFLOW_FRICTION = 4
 
-type MakeStylesProps = Pick<DrawerProps, 'zIndex' | 'shouldAnimateShadow'>
+export const useStyles = makeStyles(({ palette }) => ({
+  drawer: {
+    backgroundColor: palette.neutralLight10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    shadowRadius: 15,
+    borderTopRightRadius: BORDER_RADIUS,
+    borderTopLeftRadius: BORDER_RADIUS,
+    overflow: 'hidden'
+  },
+  fullDrawer: {
+    top: 0,
+    height: '100%'
+  },
+  content: {
+    height: 'auto'
+  },
+  fullScreenContent: {
+    height: '100%'
+  },
+  dismissContainer: {
+    position: 'absolute',
+    top: 24,
+    left: 24
+  },
+  background: {
+    position: 'absolute',
+    backgroundColor: 'black',
+    top: 0,
+    height: '100%',
+    width: '100%'
+  },
 
-export const useStyles = makeStyles<MakeStylesProps>(
-  ({ palette }, { zIndex = 5, shouldAnimateShadow = true }) => ({
-    drawer: {
-      backgroundColor: palette.neutralLight10,
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      elevation: zIndex,
-      zIndex,
-      shadowOpacity: shouldAnimateShadow ? 0 : MAX_SHADOW_OPACITY,
-      shadowRadius: 15,
-      borderTopRightRadius: BORDER_RADIUS,
-      borderTopLeftRadius: BORDER_RADIUS,
-      overflow: 'hidden'
-    },
-    fullDrawer: {
-      top: 0,
-      height: '100%'
-    },
-    content: {
-      height: 'auto'
-    },
-    fullScreenContent: {
-      height: '100%'
-    },
-    dismissContainer: {
-      position: 'absolute',
-      top: 24,
-      left: 24
-    },
-    background: {
-      position: 'absolute',
-      backgroundColor: 'black',
-      top: 0,
-      height: '100%',
-      width: '100%'
-    },
-
-    skirt: {
-      backgroundColor: palette.neutralLight10,
-      width: '100%',
-      height: 800
-    }
-  })
-)
+  skirt: {
+    backgroundColor: palette.neutralLight10,
+    width: '100%',
+    height: 800
+  }
+}))
 
 export enum DrawerAnimationStyle {
   STIFF = 'STIFF',
@@ -253,7 +246,7 @@ export const Drawer: DrawerComponent = ({
   initialOffsetPosition = 0,
   shouldCloseToInitialOffset,
   shouldHaveRoundedBordersAtInitialOffset = false,
-  zIndex,
+  zIndex = 5,
   drawerStyle,
   shouldAnimateShadow,
   onPercentOpen,
@@ -262,11 +255,7 @@ export const Drawer: DrawerComponent = ({
   translationAnim: providedTranslationAnim,
   disableSafeAreaView
 }: DrawerProps) => {
-  const stylesConfig = useMemo(
-    () => ({ zIndex, shouldAnimateShadow }),
-    [zIndex, shouldAnimateShadow]
-  )
-  const styles = useStyles(stylesConfig)
+  const styles = useStyles()
   const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const insets = useSafeAreaInsets()
 
@@ -681,6 +670,8 @@ export const Drawer: DrawerComponent = ({
           drawerStyle,
           isFullscreen && styles.fullDrawer,
           {
+            elevation: zIndex,
+            zIndex,
             shadowOpacity: shouldAnimateShadow
               ? shadowAnim.current
               : MAX_SHADOW_OPACITY,

@@ -4,7 +4,7 @@ import type { SvgProps } from 'react-native-svg'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProps } from 'app/styles'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 

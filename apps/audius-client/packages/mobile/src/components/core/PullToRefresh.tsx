@@ -21,12 +21,11 @@ import { useThemeColors } from 'app/utils/theme'
 const PULL_DISTANCE = 75
 const DEBOUNCE_TIME_MS = 0
 
-const useStyles = makeStyles((_, topOffset: number) => ({
+const useStyles = makeStyles(() => ({
   root: {
     width: '100%',
     position: 'absolute',
     height: 20,
-    top: topOffset,
     zIndex: 10
   }
 }))
@@ -188,7 +187,7 @@ export const PullToRefresh = ({
   yOffsetDisappearance = 0,
   color
 }: PullToRefreshProps) => {
-  const styles = useStyles(topOffset)
+  const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
   const wasRefreshing = usePrevious(isRefreshing)
@@ -272,6 +271,7 @@ export const PullToRefresh = ({
       style={[
         styles.root,
         {
+          top: topOffset,
           transform: [
             {
               translateY: interpolateTranslateY(scrollAnim)

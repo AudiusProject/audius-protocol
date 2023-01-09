@@ -6,16 +6,8 @@ import { View } from 'react-native'
 
 import { makeStyles, shadow } from 'app/styles'
 
-type ShadowConfig = Pick<
-  ViewStyle,
-  'shadowOffset' | 'shadowColor' | 'shadowOpacity' | 'shadowRadius'
->
-
-const useStyles = makeStyles<ShadowConfig>((_, shadowConfig) => ({
-  root: {
-    ...shadow(),
-    ...shadowConfig
-  }
+const useStyles = makeStyles(() => ({
+  root: shadow()
 }))
 
 type ShadowProps = {
@@ -29,17 +21,19 @@ type ShadowProps = {
 
 export const Shadow = (props: ShadowProps) => {
   const { offset, color, radius, opacity, children, style } = props
+  const styles = useStyles()
+
   const styleConfig = useMemo(
-    () => ({
-      ...(offset ? { shadowOffset: offset } : {}),
-      ...(color ? { shadowColor: color } : {}),
-      ...(radius ? { shadowRadius: radius } : {}),
-      ...(opacity ? { shadowOpacity: opacity } : {})
-    }),
-    [offset, color, radius, opacity]
+    () => [
+      styles.root,
+      style,
+      offset ? { shadowOffset: offset } : null,
+      color ? { shadowColor: color } : null,
+      radius ? { shadowRadius: radius } : null,
+      opacity ? { shadowOpacity: opacity } : null
+    ],
+    [styles.root, style, offset, color, radius, opacity]
   )
 
-  const styles = useStyles(styleConfig)
-
-  return <View style={[styles.root, style]}>{children}</View>
+  return <View style={styleConfig}>{children}</View>
 }

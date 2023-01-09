@@ -1,5 +1,5 @@
 import type { ComponentType, ReactElement, ReactNode } from 'react'
-import { useMemo, useEffect, useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
 import { useNavigation } from '@react-navigation/native'
@@ -10,27 +10,34 @@ import type { SvgProps } from 'react-native-svg'
 
 import { screen } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemePalette } from 'app/utils/theme'
 
 import { SecondaryScreenTitle } from './SecondaryScreenTitle'
+
+type ScreenVariant = 'primary' | 'secondary' | 'secondaryAlt' | 'white'
 
 const removeUndefined = (object: Record<string, unknown>) =>
   pickBy(object, negate(isUndefined))
 
-const useStyles = makeStyles<Pick<ScreenProps, 'variant'>>(
-  ({ palette }, { variant }) => ({
-    root: {
-      flex: 1,
-      backgroundColor:
-        variant === 'primary'
-          ? palette.background
-          : variant === 'secondary'
-          ? palette.background
-          : variant === 'secondaryAlt'
-          ? palette.backgroundSecondary
-          : palette.white
-    }
-  })
-)
+const getBackgroundColor = (variant: ScreenVariant, palette: ThemeColors) => {
+  switch (variant) {
+    case 'primary':
+      return palette.background
+    case 'secondary':
+      return palette.background
+    case 'secondaryAlt':
+      return palette.backgroundSecondary
+    default:
+      return palette.white
+  }
+}
+
+const useStyles = makeStyles(() => ({
+  root: {
+    flex: 1
+  }
+}))
 
 export type ScreenProps = {
   children: ReactNode
@@ -45,7 +52,7 @@ export type ScreenProps = {
   style?: StyleProp<ViewStyle>
   // url used for screen view analytics
   url?: string
-  variant?: 'primary' | 'secondary' | 'secondaryAlt' | 'white'
+  variant?: ScreenVariant
   as?: ComponentType<ViewProps>
 }
 
@@ -65,8 +72,9 @@ export const Screen = (props: ScreenProps) => {
     style,
     as: RootComponent = View
   } = props
-  const stylesConfig = useMemo(() => ({ variant }), [variant])
-  const styles = useStyles(stylesConfig)
+  const palette = useThemePalette()
+  const styles = useStyles()
+  const backgroundColor = getBackgroundColor(variant, palette)
   const navigation = useNavigation()
   const isSecondary = variant === 'secondary' || variant === 'white'
 
@@ -111,5 +119,9 @@ export const Screen = (props: ScreenProps) => {
     IconProps
   ])
 
-  return <RootComponent style={[styles.root, style]}>{children}</RootComponent>
+  return (
+    <RootComponent style={[styles.root, style, { backgroundColor }]}>
+      {children}
+    </RootComponent>
+  )
 }

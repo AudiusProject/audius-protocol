@@ -3,7 +3,7 @@ import { Animated, Platform, StyleSheet } from 'react-native'
 
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { UserCoverImage } from 'app/components/image/UserCoverImage'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from './selectors'
 

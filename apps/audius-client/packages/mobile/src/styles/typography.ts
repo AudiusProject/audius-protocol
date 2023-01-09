@@ -82,3 +82,8 @@ export const typography = {
   fontByWeight,
   fontSize
 }
+
+export type TextVariant = Exclude<
+  keyof typeof typography,
+  'fontByWeight' | 'fontSize'
+>

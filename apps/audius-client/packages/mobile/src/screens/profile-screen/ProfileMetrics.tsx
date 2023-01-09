@@ -8,7 +8,7 @@ import { Pressable, Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 
 import { useSelectProfile } from './selectors'
