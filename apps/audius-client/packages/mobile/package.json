@@ -5,7 +5,7 @@
   "scripts": {
     "jetifier": "jetifier",
     "android:dev": "ENVFILE=.env.dev react-native run-android --variant=prodDebug",
-    "android:stage": "ENVFILE=.env.stage react-native run-android --variant=bounceDebug --appIdSuffix bounce",
+    "android:stage": "ENVFILE=.env.stage react-native run-android --variant=stagingDebug --appIdSuffix staging",
     "android:prod": "ENVFILE=.env.prod react-native run-android --variant=prodDebug",
     "android:release": "ENVFILE=.env.prod react-native run-android --variant=prodRelease",
     "ios:dev": "react-native run-ios --scheme 'Dev' --simulator \"iPhone 14 Pro\"",

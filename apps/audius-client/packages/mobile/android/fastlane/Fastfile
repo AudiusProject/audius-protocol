@@ -16,12 +16,12 @@
 default_platform(:android)
 
 platform :android do
-  desc "Deploy a new version to the Google Play"
-  lane :bounce do
+  desc "Upload a new version to the Google Play"
+  lane :releaseCandidate do |options|
     upload_to_play_store(
-      track: "alpha",
-      package_name: "co.audius.app.bounce",
-      aab: "./app/build/outputs/bundle/bounceRelease/app-bounce-release.aab",
+      track: options[:track],
+      package_name: "co.audius.app.releasecandidate",
+      aab: "./app/build/outputs/bundle/releaseCandidateRelease/app-releaseCandidate-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
@@ -29,9 +29,33 @@ platform :android do
     )
   end
 
-  lane :alpha do
+  lane :staging do |options|
     upload_to_play_store(
-      track: "alpha",
+      track: options[:track],
+      package_name: "co.audius.app.staging",
+      aab: "./app/build/outputs/bundle/stagingRelease/app-staging-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  lane :stagingReleaseCandidate do |options|
+    upload_to_play_store(
+      track: options[:track],
+      package_name: "co.audius.app.staging.releasecandidate",
+      aab: "./app/build/outputs/bundle/stagingReleaseCandidateRelease/app-stagingReleaseCandidate-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  lane :prod do |options|
+    upload_to_play_store(
+      track: options[:track],
       aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
@@ -39,29 +63,6 @@ platform :android do
       skip_upload_screenshots: true
     )
   end
-
-  lane :beta do
-    upload_to_play_store(
-      track: "beta",
-      aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
-      skip_upload_metadata: true,
-      skip_upload_changelogs: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
-  end
-
-  lane :deploy do
-    upload_to_play_store(
-      track: "production",
-      aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
-      skip_upload_metadata: true,
-      skip_upload_changelogs: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true
-    )
-  end
-
 
   lane :incrementVersionCode do |options|
       # Get the max existing version code

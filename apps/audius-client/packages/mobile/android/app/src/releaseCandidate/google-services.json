@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "864225570590",
+    "project_id": "audius-android-rc",
+    "storage_bucket": "audius-android-rc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864225570590:android:bebe0de7cc94e40b53630f",
+        "android_client_info": {
+          "package_name": "co.audius.app.releasecandidate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "864225570590-m8i0vbutbcabvvu73tqna22o8rif8k6f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfOAc7YyO5M5axqlJvqmrL1FyCF1oDsX0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "864225570590-m8i0vbutbcabvvu73tqna22o8rif8k6f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
