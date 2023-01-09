@@ -1,7 +1,7 @@
 """backfill_artist_pick
 
 Revision ID: 2fad3671bf9f
-Revises: a8752810936c
+Revises: 4efaecad96fc
 Create Date: 2022-10-27 02:14:19.935610
 
 """
