@@ -9,7 +9,7 @@ parameters:
   pass-env:
     description: Name of enviroinment variables to pass to instance (useful for passing secrets)
     type: string
-    default:
+    default: ''
   steps:
     description: Steps to run on GCP instance
     type: steps
