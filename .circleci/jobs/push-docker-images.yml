@@ -1,0 +1,22 @@
+resource_class: small
+docker:
+  - image: google/cloud-sdk:412.0.0-slim
+steps:
+  - gcp-auth
+  - gcp-run:
+      instance-name: circleci-<< pipeline.id >>-docker
+      create-instance-args: >-
+        --preemptible
+        --tags=circleci
+        --machine-type=n2-standard-4
+        --boot-disk-size=64G
+        --boot-disk-type=pd-ssd
+        --no-boot-disk-auto-delete
+        --image=audius-protocol-<< pipeline.git.revision >>
+      pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
+      steps:
+        - gcp-checkout
+        - run:
+            name: Docker login
+            command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+        - run: . ~/.profile; docker compose push

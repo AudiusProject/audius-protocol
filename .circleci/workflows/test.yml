@@ -1,5 +1,8 @@
 jobs:
   - build-gcp-image
+  - push-docker-images:
+      requires:
+        - build-gcp-iamge
   - test-service:
       name: test-creator-node
       requires:
