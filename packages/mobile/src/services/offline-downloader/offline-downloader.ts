@@ -134,6 +134,7 @@ export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
 export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   const { trackId, downloadReason, favoriteCreatedAt } = trackForDownload
   const trackIdStr = trackId.toString()
+  store.dispatch(startDownload(trackIdStr))
 
   // Throw this
   const failJob = (message?: string) => {
@@ -169,11 +170,23 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   const track = await populateCoverArtSizes(trackFromApi)
 
   try {
-    store.dispatch(startDownload(trackIdStr))
     if (await verifyTrack(trackIdStr, false)) {
       // Track is already downloaded, so rewrite the json
       // to include this collection in the reasons_for_download list
       const trackJson = await getTrackJson(trackIdStr)
+
+      // Skip if duplicate download reason
+      if (
+        trackJson.offline?.reasons_for_download.some(
+          (existingReason) =>
+            existingReason.collection_id === downloadReason.collection_id &&
+            existingReason.is_from_favorites ===
+              downloadReason.is_from_favorites
+        )
+      ) {
+        store.dispatch(completeDownload(trackIdStr))
+        return
+      }
       const trackToWrite: Track & UserTrackMetadata = {
         ...trackJson,
         offline: {
