@@ -13,19 +13,21 @@ import {
   FeatureFlags,
   premiumContentSelectors,
   premiumContentActions,
+  collectiblesActions,
   TrackMetadata
 } from '@audius/common'
 import { takeLatest, select, call, put } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
+const { updatePremiumContentSignatures } = premiumContentActions
+
 const {
-  updatePremiumContentSignatures,
-  ethNFTsFetched,
-  solNFTsFetched,
-  ETH_NFTS_FETCHED,
-  SOL_NFTS_FETCHED
-} = premiumContentActions
+  ethCollectiblesFetched,
+  solCollectiblesFetched,
+  ETH_COLLECTIBLES_FETCHED,
+  SOL_COLLECTIBLES_FETCHED
+} = collectiblesActions
 
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
@@ -178,8 +180,8 @@ function* updateNewPremiumContentSignatures({
  */
 function* updateNFTGatedTrackAccess(
   action:
-    | ReturnType<typeof ethNFTsFetched>
-    | ReturnType<typeof solNFTsFetched>
+    | ReturnType<typeof ethCollectiblesFetched>
+    | ReturnType<typeof solCollectiblesFetched>
     | ReturnType<typeof cacheActions.add>
 ) {
   // Halt if premium content not enabled
@@ -188,6 +190,17 @@ function* updateNFTGatedTrackAccess(
   if (!getFeatureEnabled(FeatureFlags.PREMIUM_CONTENT_ENABLED)) {
     return
   }
+
+  const account = yield* select(getAccountUser)
+
+  // Halt if nfts fetched are not for logged in account
+  const areNFTsFetched = [
+    ETH_COLLECTIBLES_FETCHED,
+    SOL_COLLECTIBLES_FETCHED
+  ].includes(action.type)
+  const userIdForNFTs =
+    areNFTsFetched && 'userId' in action ? action.userId : null
+  if (userIdForNFTs && account?.user_id !== userIdForNFTs) return
 
   // get tracks for which we already previously got the signatures
   // filter out those tracks from the ones that need to be passed in to the DN request
@@ -209,7 +222,6 @@ function* updateNFTGatedTrackAccess(
   }
 
   // halt if no logged in user
-  const account = yield* select(getAccountUser)
   if (!account) return
 
   // halt if not all nfts have been fetched yet
@@ -280,7 +292,7 @@ function* updateNFTGatedTrackAccess(
 
 function* watchNFTGatedTracks() {
   yield takeLatest(
-    [cacheActions.ADD, ETH_NFTS_FETCHED, SOL_NFTS_FETCHED],
+    [cacheActions.ADD, ETH_COLLECTIBLES_FETCHED, SOL_COLLECTIBLES_FETCHED],
     updateNFTGatedTrackAccess
   )
 }

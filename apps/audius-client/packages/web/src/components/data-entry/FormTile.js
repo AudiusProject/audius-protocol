@@ -5,7 +5,8 @@ import {
   ELECTRONIC_PREFIX,
   getCanonicalName,
   createRemixOfMetadata,
-  creativeCommons
+  creativeCommons,
+  FeatureFlags
 } from '@audius/common'
 import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 import cn from 'classnames'
@@ -23,9 +24,11 @@ import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
 import Switch from 'components/switch/Switch'
+import TrackAvailabilityModal from 'components/track-availability-modal/TrackAvailabilityModal'
 import UnlistedTrackModal from 'components/unlisted-track-modal/UnlistedTrackModal'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { moodMap } from 'utils/moods'
 
@@ -43,11 +46,15 @@ const messages = {
   genre: 'Pick a Genre',
   mood: 'Pick a Mood',
   description: 'Description',
+  public: 'Public (Default)',
+  specialAccess: 'Special Access',
+  collectibleGated: 'Collectible Gated',
   hidden: 'Hidden',
-  public: 'Public (default)',
   thisIsARemix: 'This is a Remix',
   editRemix: 'Edit',
-  hideRemixes: 'Hide Remixes on Track Page'
+  hideRemixes: 'Hide Remixes on Track Page',
+  trackVisibility: 'Track Visibility',
+  availability: 'Availability'
 }
 
 const Divider = (props) => {
@@ -56,6 +63,73 @@ const Divider = (props) => {
       {props.label ? <div className={styles.label}>{props.label}</div> : null}
       <div className={styles.border} />
     </div>
+  )
+}
+
+// This is temporary. Will be removed along with feature flag after launch.
+// https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
+const TrackAvailabilityButton = (props) => {
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+
+  if (isPremiumContentEnabled) {
+    return (
+      <LabeledButton
+        type={ButtonType.COMMON_ALT}
+        name='setUnlisted'
+        text={props.availabilityButtonTitle}
+        label={messages.availability}
+        className={styles.trackAvailabilityButton}
+        textClassName={styles.trackAvailabilityButtonText}
+        onClick={() => {
+          props.setIsAvailabilityModalOpen(true)
+        }}
+      />
+    )
+  }
+
+  return (
+    <LabeledButton
+      type={ButtonType.COMMON_ALT}
+      name='setUnlisted'
+      text={props.availabilityButtonTitle}
+      label={messages.trackVisibility}
+      className={styles.hiddenTrackButton}
+      textClassName={styles.hiddenTrackButtonText}
+      onClick={() => {
+        props.setIsAvailabilityModalOpen(true)
+      }}
+    />
+  )
+}
+
+// This is temporary. Will be removed along with feature flag after launch.
+// https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
+const TrackAvailabilityModalContainer = (props) => {
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+
+  if (isPremiumContentEnabled) {
+    return (
+      <TrackAvailabilityModal
+        isOpen={props.isAvailabilityModalOpen}
+        onClose={() => props.setIsAvailabilityModalOpen(false)}
+        didUpdateState={props.didUpdateAvailabilityState}
+        metadataState={props.availabilityState}
+      />
+    )
+  }
+
+  return (
+    <UnlistedTrackModal
+      showHideTrackSwitch={props.showHideTrackSectionInModal}
+      isOpen={props.isAvailabilityModalOpen}
+      onClose={() => props.setIsAvailabilityModalOpen(false)}
+      didUpdateState={props.didUpdateAvailabilityState}
+      metadataState={props.availabilityState}
+    />
   )
 }
 
@@ -306,11 +380,15 @@ const BasicForm = (props) => {
 }
 
 const AdvancedForm = (props) => {
-  let unlistedState
-  let unlistedButtonTitle
-  const showUnlisted = props.type === 'track' && props.showUnlistedToggle
-  if (showUnlisted) {
-    unlistedState = {
+  let availabilityButtonTitle
+  let availabilityState = {
+    is_premium: props.defaultFields.is_premium,
+    premium_conditions: props.defaultFields.premium_conditions
+  }
+  const showAvailability = props.type === 'track' && props.showUnlistedToggle
+  if (showAvailability) {
+    availabilityState = {
+      ...availabilityState,
       unlisted: props.defaultFields.is_unlisted,
       genre: props.defaultFields.field_visibility.genre,
       mood: props.defaultFields.field_visibility.mood,
@@ -318,18 +396,29 @@ const AdvancedForm = (props) => {
       share: props.defaultFields.field_visibility.share,
       plays: props.defaultFields.field_visibility.play_count
     }
-    unlistedButtonTitle = unlistedState.unlisted
-      ? messages.hidden
-      : messages.public
+
+    availabilityButtonTitle = messages.public
+    if (availabilityState.unlisted) {
+      availabilityButtonTitle = messages.hidden
+    } else if (availabilityState.is_premium) {
+      if (
+        availabilityState.premium_conditions &&
+        'nft_collection' in availabilityState.premium_conditions
+      ) {
+        availabilityButtonTitle = messages.collectibleGated
+      } else {
+        availabilityButtonTitle = messages.specialAccess
+      }
+    }
   }
 
-  const [isUnlistedModalOpen, setIsUnlistedModalOpen] = useState(false)
+  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false)
   const [hideRemixes, setHideRemixes] = useState(
     !(props.defaultFields?.field_visibility?.remixes ?? true)
   )
 
   // Need to update two fields in the metadata.
-  const didUpdateUnlistedState = (newState) => {
+  const didUpdateAvailabilityState = (newState) => {
     props.onChangeField('is_unlisted', newState.unlisted)
     props.onChangeField('field_visibility', {
       genre: newState.genre,
@@ -339,28 +428,30 @@ const AdvancedForm = (props) => {
       play_count: newState.plays,
       remixes: !hideRemixes
     })
+    props.onChangeField('is_premium', newState.is_premium)
+    props.onChangeField('premium_conditions', newState.premium_conditions)
   }
 
   const didToggleHideRemixesState = () => {
     props.onChangeField('field_visibility', {
       genre:
-        unlistedState?.genre ??
+        availabilityState?.genre ??
         props.defaultFields?.field_visibility?.genre ??
         true,
       mood:
-        unlistedState?.mood ??
+        availabilityState?.mood ??
         props.defaultFields?.field_visibility?.mood ??
         true,
       tags:
-        unlistedState?.tags ??
+        availabilityState?.tags ??
         props.defaultFields?.field_visibility?.tags ??
         true,
       share:
-        unlistedState?.share ??
+        availabilityState?.share ??
         props.defaultFields?.field_visibility?.share ??
         true,
       play_count:
-        unlistedState?.plays ??
+        availabilityState?.plays ??
         props.defaultFields?.field_visibility?.play_count ??
         true,
       remixes: hideRemixes
@@ -370,13 +461,13 @@ const AdvancedForm = (props) => {
 
   return (
     <>
-      {showUnlisted && (
-        <UnlistedTrackModal
-          showHideTrackSwitch={props.showHideTrackSectionInModal}
-          isOpen={isUnlistedModalOpen}
-          onClose={() => setIsUnlistedModalOpen(false)}
-          didUpdateState={didUpdateUnlistedState}
-          metadataState={unlistedState}
+      {showAvailability && (
+        <TrackAvailabilityModalContainer
+          showHideTrackSectionInModal={props.showHideTrackSectionInModal}
+          isAvailabilityModalOpen={isAvailabilityModalOpen}
+          setIsAvailabilityModalOpen={setIsAvailabilityModalOpen}
+          didUpdateAvailabilityState={didUpdateAvailabilityState}
+          availabilityState={availabilityState}
         />
       )}
       <div
@@ -387,17 +478,10 @@ const AdvancedForm = (props) => {
       >
         <Divider label='' />
         <div className={styles.release}>
-          {showUnlisted && (
-            <LabeledButton
-              type={ButtonType.COMMON_ALT}
-              name='setUnlisted'
-              text={unlistedButtonTitle}
-              label='Track Visibility'
-              className={styles.hiddenTrackButton}
-              textClassName={styles.hiddenTrackButtonText}
-              onClick={() => {
-                setIsUnlistedModalOpen(true)
-              }}
+          {showAvailability && (
+            <TrackAvailabilityButton
+              availabilityButtonTitle={availabilityButtonTitle}
+              setIsAvailabilityModalOpen={setIsAvailabilityModalOpen}
             />
           )}
           <div className={styles.datePicker}>
