@@ -132,16 +132,57 @@ mobile-build-upload-staging-android:
   steps:
     - mobile-build-android:
         build-directory: 'build-mobile-staging'
-        build-type: 'bundleBounceRelease'
-        bundle-id: 'co.audius.app.bounce'
-        track: 'alpha'
+        build-type: 'bundleStagingRelease'
+        bundle-id: 'co.audius.app.staging'
+        track: 'internal'
         remote-directory: 'audius-mobile-staging'
     - when:
         condition:
           matches: { pattern: '^main$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-android:
-              upload-type: 'bounce'
+              upload-type: 'staging'
+              track: 'internal'
+
+mobile-build-upload-staging-releasecandidate-android:
+  working_directory: ~/audius-client
+  resource_class: large
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-build-android:
+        build-directory: 'build-mobile-staging-releasecandidate'
+        build-type: 'bundleStagingReleaseCandidateRelease'
+        bundle-id: 'co.audius.app.staging.releasecandidate'
+        track: 'internal'
+        remote-directory: 'audius-mobile-staging-releasecandidate'
+    - when:
+        condition:
+          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
+        steps:
+          - mobile-upload-android:
+              upload-type: 'stagingReleaseCandidate'
+              track: 'internal'
+
+mobile-build-upload-releasecandidate-android:
+  working_directory: ~/audius-client
+  resource_class: large
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-build-android:
+        build-directory: 'build-mobile-releasecandidate'
+        build-type: 'bundleReleaseCandidateRelease'
+        bundle-id: 'co.audius.app.releasecandidate'
+        track: 'internal'
+        remote-directory: 'audius-mobile-releasecandidate'
+    - when:
+        condition:
+          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
+        steps:
+          - mobile-upload-android:
+              upload-type: 'releaseCandidate'
+              track: 'internal'
 
 mobile-build-upload-production-android:
   working_directory: ~/audius-client
@@ -160,4 +201,5 @@ mobile-build-upload-production-android:
           matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
         steps:
           - mobile-upload-android:
-              upload-type: 'alpha'
+              upload-type: 'prod'
+              track: 'alpha'

@@ -73,7 +73,7 @@ mobile-build-android:
       default: 'co.audius.app'
       type: string
     track:
-      default: 'beta'
+      default: 'alpha'
       type: string
     remote-directory:
       default: 'audius-mobile'
@@ -120,9 +120,12 @@ mobile-build-android:
 mobile-upload-android:
   parameters:
     upload-type:
-      default: 'prod'
+      default: 'staging'
+      type: string
+    track:
+      default: 'alpha'
       type: string
   steps:
     - run:
         name: Upload to Play Store
-        command: cd packages/mobile/android && bundle exec fastlane <<parameters.upload-type>>
+        command: cd packages/mobile/android && bundle exec fastlane <<parameters.upload-type>> track:<<parameters.track>>

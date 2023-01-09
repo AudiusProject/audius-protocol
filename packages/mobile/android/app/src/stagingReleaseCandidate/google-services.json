@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "568474184609",
+    "project_id": "audius-android-rc-staging",
+    "storage_bucket": "audius-android-rc-staging.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:568474184609:android:69e4019f4e898cfee879e0",
+        "android_client_info": {
+          "package_name": "co.audius.app.staging.releasecandidate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "568474184609-4nk68k7hfvr56ak9vlb5s4ifjq0tirle.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSV0Uq6BMOfa9JLc427XKt3C3GOOiV88g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "568474184609-4nk68k7hfvr56ak9vlb5s4ifjq0tirle.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
