@@ -34,16 +34,18 @@ steps:
         # SSH into machine to generate a ssh key
         gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command=exit
 
+        # Generate env file with env to pass to gcp instance
+        touch /tmp/gcp-pass-env.sh
+        for env in << parameters.pass-env >>; do
+          printf "export %q=%q;" "$env" "$(printenv "$env")" >> /tmp/gcp-pass-env.sh
+        done
+        gcloud compute scp /tmp/gcp-pass-env.sh "$INSTANCE_USER@<< parameters.instance-name >>:/tmp/gcp-pass-env.sh"
+        rm /tmp/gcp-pass-env.sh
+
         # Replace bash with executable that forwards commands to the instance
         mv /bin/bash /tmp/bash.real
         echo >/bin/bash '#!/tmp/bash.real
-        pass_env=(<< parameters.pass-env >>)
-        set_env=""
-        for env in "${pass_env[@]}"; do
-          set_env="$set_env; export $(printf "%q=%q" "$env" "$(printenv "$env")")"
-        done
-
-        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="$set_env; bash $(printf "%q " "$@")"
+        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="source /tmp/gcp-pass-env.sh; bash $(printf "%q " "$@")"
         if [[ "$?" != "0" ]]; then
           /tmp/cleanup failure
           exit 1
