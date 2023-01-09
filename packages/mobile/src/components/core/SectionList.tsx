@@ -54,7 +54,7 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
 
   return (
     <View>
-      {onRefresh ? (
+      {Platform.OS === 'ios' && onRefresh ? (
         <Portal hostName='PullToRefreshPortalHost'>
           <PullToRefresh
             isRefreshing={refreshing}
@@ -113,7 +113,7 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
 
     return (
       <View>
-        {handleRefresh ? (
+        {Platform.OS === 'ios' && handleRefresh ? (
           <PullToRefresh
             isRefreshing={isRefreshing}
             onRefresh={handleRefresh}
