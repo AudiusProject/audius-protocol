@@ -18,7 +18,7 @@ import {
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_SUPPORTING_TILES,
   MAX_PROFILE_TOP_SUPPORTERS,
-  premiumContentActions
+  collectiblesActions
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -54,7 +54,7 @@ const { getProfileUserId, getProfileFollowers, getProfileUser } =
 
 const { getUserId, getAccountUser } = accountSelectors
 
-const { ethNFTsFetched, solNFTsFetched } = premiumContentActions
+const { ethCollectiblesFetched, solCollectiblesFetched } = collectiblesActions
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -134,10 +134,7 @@ export function* fetchOpenSeaAssets(user) {
     ])
   )
 
-  const currentUserId = yield select(getUserId)
-  if (currentUserId === user.user_id) {
-    yield put(ethNFTsFetched())
-  }
+  yield put(ethCollectiblesFetched(user.user_id))
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
@@ -173,10 +170,7 @@ export function* fetchSolanaCollectibles(user) {
     ])
   )
 
-  const currentUserId = yield select(getUserId)
-  if (currentUserId === user.user_id) {
-    yield put(solNFTsFetched())
-  }
+  yield put(solCollectiblesFetched(user.user_id))
 }
 
 function* fetchSupportersAndSupporting(userId) {

@@ -1,0 +1,132 @@
+.modalWrapper > div {
+  width: 720px;
+}
+
+.modalHeader {
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-2);
+}
+
+.modalHeader h2 {
+  color: var(--neutral-light-2);
+  font-weight: var(--font-heavy);
+}
+
+.modalHeaderDismissButton {
+  color: var(--neutral-light-2);
+}
+
+.modalTitleIcon path {
+  fill: var(--neutral-light-2);
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+  transition: opacity 0.2s ease-in-out;
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.sectionTitleClassname {
+  font-weight: 600;
+  font-size: var(--font-l);
+}
+
+.switchContainer {
+  margin-left: auto;
+  display: flex;
+  height: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.availabilityRowIcon {
+  margin: 0 10px;
+  width: 24px;
+  height: 24px;
+}
+
+.availabilityRowIcon path {
+  fill: var(--neutral);
+}
+
+.availabilityRowContent {
+  margin-left: 8px;
+  margin-bottom: 24px;
+}
+
+.availabilityRowContent:hover {
+  cursor: pointer;
+}
+
+.availabilityRowContent:not(:first-child) {
+  padding-top: 24px;
+  border-top: 1px solid var(--neutral-light-7);
+}
+
+.availabilityRowTitle {
+  display: flex;
+  margin-bottom: 8px;
+  font-weight: var(--font-bold);
+  font-size: 22px;
+}
+
+.availabilityRowDescription {
+  font-weight: var(--font-medium);
+  font-size: 18px;
+  line-height: 140%;
+}
+
+.availabilityRowSelection {
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: var(--font-l);
+}
+
+.hiddenSection {
+  display: flex;
+}
+
+.hiddenSection > div:last-child {
+  width: 304px;
+  margin-left: 12px;
+}
+
+.hiddenSection > div:first-child {
+  width: 304px;
+  margin-right: 12px;
+}
+
+.availabilityRowSelection > div:not(:last-child), .availabilityRowSelection > div > div:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+.doneButtonContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.doneButtonContainer .doneButton {
+  font-size: var(--font-l);
+}
+
+.selected {
+  color: var(--secondary);
+}
+
+.selected path {
+  fill: var(--secondary);
+}
+
+.supportersInfo {
+  margin-left: 8px;
+}

@@ -59,11 +59,18 @@ type PremiumConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
   address: string
+  name: string
+  slug: string
+  externalLink: Nullable<string>
+  permaLink: Nullable<string>
 }
 
 type PremiumConditionsSolNFTCollection = {
   chain: Chain.Sol
   address: string
+  name: string
+  externalLink: Nullable<string>
+  permaLink: Nullable<string>
 }
 
 export type PremiumConditions = {
@@ -71,6 +78,7 @@ export type PremiumConditions = {
     | PremiumConditionsEthNFTCollection
     | PremiumConditionsSolNFTCollection
   follow_user_id?: number
+  tip_user_id?: number
 }
 
 export type PremiumContentSignature = {

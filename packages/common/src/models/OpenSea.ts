@@ -25,6 +25,13 @@ type AssetContract = {
   payout_address: Nullable<string>
 }
 
+type AssetCollection = {
+  slug: string
+  name: string
+  description: string
+  external_url: string
+}
+
 type AssetPerson = {
   user: {
     username: string
@@ -50,6 +57,7 @@ export type OpenSeaAsset = {
   owner: Nullable<AssetOwner>
   creator: Nullable<AssetCreator>
   asset_contract: Nullable<AssetContract>
+  collection: Nullable<AssetCollection>
 }
 
 export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }

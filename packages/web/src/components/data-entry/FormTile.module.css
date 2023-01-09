@@ -184,6 +184,14 @@
   font-weight: var(--font-demi-bold);
 }
 
+.release .trackAvailabilityButton {
+  height: 35px;
+}
+
+.trackAvailabilityButton .trackAvailabilityButtonText {
+  font-size: var(--font-xs);
+}
+
 .datePicker {
   margin-right: 38px;
   flex-shrink: 0;
