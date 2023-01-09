@@ -172,6 +172,7 @@ def build(
             f"--file={protocol_dir / ('docker-compose.m1.yml' if ARM64 else 'docker-compose.yml')}",
             "build",
         ],
+        check=True,
     )
 
 
