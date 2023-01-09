@@ -6,6 +6,10 @@ parameters:
     description: Extra arguments to use when creating instance
     type: string
     default: --preemptible --tags=circleci
+  pass-env:
+    description: Name of enviroinment variables to pass to instance (useful for passing secrets)
+    type: string
+    default:
   steps:
     description: Steps to run on GCP instance
     type: steps
@@ -33,7 +37,13 @@ steps:
         # Replace bash with executable that forwards commands to the instance
         mv /bin/bash /tmp/bash.real
         echo >/bin/bash '#!/tmp/bash.real
-        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="bash $(printf "%q " "$@")"
+        pass_env=(<< parameters.pass-env >>)
+        set_env=""
+        for env in "${pass_env[@]}"; do
+          set_env="$set_env; export $(printf "%q=%q" "$env" "$(printenv "$env"))"
+        done
+
+        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="$set_env; bash $(printf "%q " "$@")"
         if [[ "$?" != "0" ]]; then
           /tmp/cleanup failure
           exit 1
