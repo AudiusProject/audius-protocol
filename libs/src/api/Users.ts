@@ -447,7 +447,6 @@ export class Users extends Base {
   }
 
   async createEntityManagerUser({ metadata }: { metadata: UserMetadata }) {
-    console.log('asdf createEntityManagerUser', metadata)
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
