@@ -1361,6 +1361,8 @@ workflows:
       - noop:
           name: discovery
       - noop:
+          name: comms
+      - noop:
           name: identity
 
       - noop:
@@ -1780,6 +1782,12 @@ workflows:
           repo: discovery-provider
           requires:
             - discovery
+      
+      - docker-build-and-push-updated:
+          name: build-comms
+          repo: comms
+          requires:
+            - comms
 
       - test-identity:
           name: test-identity
