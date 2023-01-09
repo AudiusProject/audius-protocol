@@ -1265,14 +1265,11 @@ export class Users extends Base {
       this._retrieveSpIDFromEndpoint(secondaries[0]!),
       this._retrieveSpIDFromEndpoint(secondaries[1]!)
     ])
-    let txReceipt
     const currentUser = this.userStateManager.getCurrentUser()
     if (!currentUser) throw new Error('Current user missing')
 
     // First try to update with URSM
     // Fallback to EntityManager when relay errors
-    let updateEndpointTxBlockNumber
-    let replicaSetSPIDs
     const currentPrimaryEndpoint = CreatorNode.getPrimary(
       currentUser.creator_node_endpoint
     )
@@ -1293,15 +1290,15 @@ export class Users extends Base {
         this._retrieveSpIDFromEndpoint(currentSecondaries[1]!)
       ])
 
-    txReceipt = await this.updateEntityManagerReplicaSet({
+    const txReceipt = await this.updateEntityManagerReplicaSet({
       userId,
       primary: primarySpID,
       secondaries: [secondary1SpID, secondary2SpID],
       oldPrimary: oldPrimary,
       oldSecondaries: [oldSecondary1SpID, oldSecondary2SpID]
     })
-    replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
-    updateEndpointTxBlockNumber = txReceipt?.blockNumber
+    const replicaSetSPIDs = [primarySpID, secondary1SpID, secondary2SpID]
+    const updateEndpointTxBlockNumber = txReceipt?.blockNumber
 
     await this.waitForReplicaSetDiscoveryIndexing(
       userId,
