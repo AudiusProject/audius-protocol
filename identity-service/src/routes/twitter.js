@@ -166,9 +166,7 @@ module.exports = function (app) {
             const [encodedABI, contractAddress] =
               await audiusLibsInstance.User.updateIsVerified(
                 userId,
-                true,
-                config.get('userVerifierPrivateKey'),
-                config.get('entityManagerReplicaSetEnabled')
+                config.get('userVerifierPrivateKey')
               )
             const contractRegKey =
               await audiusLibsInstance.contracts.getRegistryContractForAddress(
