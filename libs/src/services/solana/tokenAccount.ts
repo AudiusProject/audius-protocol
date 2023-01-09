@@ -3,10 +3,9 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
-  Keypair,
   Connection
 } from '@solana/web3.js'
-import type { Nullable } from '../../utils'
+import { Nullable, randomKeyPair } from '../../utils'
 import type { IdentityService } from '../identity'
 
 type FindAssociatedTokenAddressConfig = {
@@ -54,7 +53,7 @@ export async function getTokenAccountInfo({
     connection,
     mintKey,
     solanaTokenProgramKey,
-    Keypair.generate()
+    randomKeyPair
   )
 
   // Fetch token info with 'processed commitment to get any recently changed amounts.

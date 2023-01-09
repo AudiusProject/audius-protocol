@@ -16,7 +16,7 @@ import {
   findAssociatedTokenAddress
 } from './tokenAccount'
 import { wAudioFromWeiAudio } from './wAudio'
-import { Logger, Nullable, Utils } from '../../utils'
+import { Logger, Nullable, randomKeyPair, Utils } from '../../utils'
 import { SolanaUtils } from './SolanaUtils'
 import { TransactionHandler } from './transactionHandler'
 import {
@@ -240,7 +240,7 @@ export class SolanaWeb3Manager {
       )
       const anchorProvider = new anchor.AnchorProvider(
         connection,
-        Keypair.generate() as unknown as Wallet,
+        randomKeyPair as unknown as Wallet,
         anchor.AnchorProvider.defaultOptions()
       )
       this.anchorProgram = new anchor.Program(
