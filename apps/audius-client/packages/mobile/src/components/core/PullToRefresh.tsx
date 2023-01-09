@@ -195,10 +195,17 @@ export const PullToRefresh = ({
   const [shouldShowSpinner, setShouldShowSpinner] = useState(false)
   const animationRef = useRef<LottieView | null>()
 
-  const icon = shouldShowSpinner ? IconRefreshSpin : IconRefreshPull
-  const colorizedIcon = useMemo(
+  const colorizedIconRefreshSpin = useMemo(
     () =>
-      colorize(icon, {
+      colorize(IconRefreshSpin, {
+        'assets.0.layers.0.shapes.0.it.1.ck': color || neutralLight4
+      }),
+    [color, neutralLight4]
+  )
+
+  const colorizedIconRefreshPull = useMemo(
+    () =>
+      colorize(IconRefreshPull, {
         // arrow Outlines 4.Group 1.Stroke 1
         'assets.0.layers.0.shapes.0.it.1.c.k': color || neutralLight4,
         // arrow Outlines 2.Group 3.Stroke 1
@@ -208,8 +215,12 @@ export const PullToRefresh = ({
         // arrow Outlines.Group 2.Stroke 1
         'layers.2.shapes.1.it.1.c.k': color || neutralLight4
       }),
-    [icon, color, neutralLight4]
+    [color, neutralLight4]
   )
+
+  const colorizedIcon = shouldShowSpinner
+    ? colorizedIconRefreshSpin
+    : colorizedIconRefreshPull
 
   const handleAnimationFinish = useCallback(
     (isCancelled: boolean) => {
