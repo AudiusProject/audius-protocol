@@ -131,8 +131,7 @@ export class Account extends Base {
     handleUserBankOutcomes = (_outcome?: string, _errorCodes?: {}) => {},
     userBankOutcomes: Partial<UserBankOutcomes> = {},
     feePayerOverride: Nullable<string> = null,
-    generateRecoveryLink = true,
-    useEntityManager = false
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -200,35 +199,15 @@ export class Account extends Base {
         })()
       }
       // Add user to chain
-      if (!useEntityManager) {
-        phase = phases.ADD_USER
-        const response = await this.User.addUser(metadata)
-        userId = response.userId
-        blockHash = response.blockHash
-        blockNumber = response.blockNumber
+      const newMetadata = await this.User.createEntityManagerUser({
+        metadata
+      })
 
-        // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
-        phase = phases.ADD_REPLICA_SET
-        metadata = (await this.User.assignReplicaSet({ userId }))!
-        // Upload profile pic and cover photo to primary Content Node and sync across secondaries
-        phase = phases.UPLOAD_PROFILE_IMAGES
-        await this.User.uploadProfileImages(
-          profilePictureFile!,
-          coverPhotoFile!,
-          metadata,
-          useEntityManager
-        )
-      } else {
-        const newMetadata = await this.User.createEntityManagerUser({
-          metadata
-        })
-        await this.User.uploadProfileImages(
-          profilePictureFile!,
-          coverPhotoFile!,
-          newMetadata,
-          useEntityManager
-        )
-      }
+      await this.User.uploadProfileImages(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
     } catch (e: any) {
       return {
         error: e.message,
