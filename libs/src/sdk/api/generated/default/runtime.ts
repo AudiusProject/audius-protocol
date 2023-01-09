@@ -79,7 +79,7 @@ export class BaseAPI {
             // do not handle correctly sometimes.
             url += '?' + this.configuration.queryParamsStringify(context.query);
         }
-        const body = ((typeof FormData !== "undefined" && context.body instanceof FormData) || context.body instanceof URLSearchParams || isBlob(context.body))
+        const body = ((typeof FormData !== "undefined" && context.body instanceof FormData) || context.body instanceof URLSearchParams || isBlob(context.body) || typeof context.body === 'string')
         ? context.body
         : JSON.stringify(context.body);
 
@@ -153,6 +153,12 @@ export const COLLECTION_FORMATS = {
 // Returns unknown and is cast to the appropriate type in the corresponding api method
 export type FetchAPI = (url: string, init?: RequestInit) => Promise<unknown>
 
+// Injected helper methods for methods requiring user signatures or encryption
+export type WalletAPI = {
+    getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array>
+    sign: (data: string) => Promise<[Uint8Array, number]>
+}
+
 export interface ConfigurationParameters {
     basePath?: string; // override base path
     fetchApi: FetchAPI; // fetch implementation
@@ -164,6 +170,7 @@ export interface ConfigurationParameters {
     accessToken?: string | Promise<string> | ((name?: string, scopes?: string[]) => string | Promise<string>); // parameter for oauth2 security
     headers?: HTTPHeaders; //header params we want to use on every request
     credentials?: RequestCredentials; //value for the credentials param we want to use on each request
+    walletApi: WalletAPI
 }
 
 export class Configuration {
@@ -215,6 +222,10 @@ export class Configuration {
 
     get credentials(): RequestCredentials | undefined {
         return this.configuration.credentials;
+    }
+
+    get walletApi(): WalletAPI {
+        return this.configuration.walletApi;
     }
 }
 

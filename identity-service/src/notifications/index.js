@@ -214,7 +214,7 @@ class NotificationProcessor {
 
         // Index notifications
         if (minSlot < oldMaxSlot) {
-          logger.debug(
+          logger.error(
             'solana notification queue processing error - tried to process a minSlot < oldMaxSlot',
             minSlot,
             oldMaxSlot
@@ -228,6 +228,16 @@ class NotificationProcessor {
             minSlot,
             oldMaxSlot
           )
+
+          // If we got an unexpectedly low maxSlot, use min as max
+          if (maxSlot < minSlot) {
+            logger.error(
+              'solana notification queue processing error - unexpectedly got maxSlot < minSlot from Discovery, using old minSlot as max',
+              minSlot,
+              oldMaxSlot
+            )
+            maxSlot = minSlot
+          }
         }
 
         // Update cached max slot number
@@ -423,9 +433,15 @@ class NotificationProcessor {
       timeout
     )
     const { info: metadata, owners, milestones } = notificationsFromDN
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestBlock = await models.Notification.max('blocknumber')
+    notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
+
     logger.info(
       `notifications main indexAll job - query notifications from discovery node complete in ${
         Date.now() - time
@@ -544,9 +560,15 @@ class NotificationProcessor {
       timeout
     )
     const metadata = notificationsFromDN.info
-    const notifications = await filterOutAbusiveUsers(
+    let notifications = await filterOutAbusiveUsers(
       notificationsFromDN.notifications
     )
+
+    // Ensure we don't process any notifs
+    // that are already in the db
+    const latestSlot = await models.SolanaNotification.max('slot')
+    notifications = notifications.filter((n) => n.slot >= latestSlot)
+
     logger.info(
       `${logLabel} - query solana notifications from discovery node complete in ${
         Date.now() - time

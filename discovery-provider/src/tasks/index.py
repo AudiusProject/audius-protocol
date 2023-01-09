@@ -331,6 +331,11 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
+                    if (
+                        action == Action.CREATE
+                        and event_type == EntityType.NOTIFICATION
+                    ):
+                        continue
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id

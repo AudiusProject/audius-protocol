@@ -3,6 +3,7 @@ import { QueryTypes } from "sequelize";
 import { getEnv } from "../config";
 import { sequelizeConn } from "../db";
 import { instrumentTracing, tracing } from "../tracer";
+import { range } from "lodash";
 
 const _createNewRun = async (): Promise<number> => {
   tracing.info("[+] starting new run");
@@ -128,13 +129,28 @@ const _importContentNodes = async (run_id: number) => {
     preferHigherPatchForSecondaries: true,
   });
   await audiusLibs.init();
-  const contentNodes = await audiusLibs.ServiceProvider?.listCreatorNodes();
+  // const contentNodes = await audiusLibs.ServiceProvider?.listCreatorNodes();
+  const numberOfProviders = await audiusLibs.ethContracts?.ServiceProviderFactoryClient.getTotalServiceTypeProviders(
+    "content-node"
+  ) || 0
+
+  const contentNodes = await Promise.all(
+    range(1, numberOfProviders + 1).map(
+      async (i) => await audiusLibs.ethContracts?.ServiceProviderFactoryClient.getServiceEndpointInfo('content-node', i)
+    )
+  )
   if (contentNodes === undefined || contentNodes === null) {
     throw new Error("could not fetch content nodes");
   }
 
   await Promise.all(
-    contentNodes.map(async ({ spID, endpoint }) => {
+    contentNodes.map(async (cnode) => {
+      if (cnode === undefined || cnode === null) {
+        return;
+      }
+
+      const { spID, endpoint } = cnode;
+
       await sequelizeConn.query(
         `
           INSERT INTO network_monitoring_content_nodes (

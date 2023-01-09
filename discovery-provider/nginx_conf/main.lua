@@ -257,4 +257,16 @@ function _M.mark_request_processed ()
     ngx.shared.request_count:incr(rcount_key, rcount_step_value, rcount_init_value)
 end
 
+function _M.validate_nethermind_rpc_request ()
+    if ngx.req.get_method() == "GET" or ngx.req.get_method() == "OPTIONS" then
+        return
+    end
+    ngx.req.read_body()
+    local body = cjson.decode(ngx.req.get_body_data())
+    is_bad = utils.starts_with(body.method, "clique_")
+    if is_bad then
+        ngx.exit(405)
+    end
+end
+
 return _M

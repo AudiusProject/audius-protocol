@@ -131,6 +131,9 @@
               },
               {
                 "$ref": "#/definitions/PremiumConditionsFollowUserId"
+              },
+              {
+                "$ref": "#/definitions/PremiumConditionsTipUserId"
               }
             ]
           }
@@ -309,9 +312,19 @@
         },
         "standard": {
           "enum": ["ERC721", "ERC1155"]
+        },
+        "name": {
+            "type": "string"
+        },
+        "slug": {
+            "type": "string"
+        },
+        "externalLink": {
+            "type": ["string", "null"],
+            "default": null
         }
       },
-      "required": ["chain", "address", "standard"],
+      "required": ["chain", "address", "standard", "name", "slug"],
       "title": "PremiumConditionsEthNFTCollection"
     },
     "PremiumConditionsSolNFTCollection": {
@@ -322,11 +335,18 @@
           "type": "string",
           "const": "sol"
         },
-        "name": {
+        "address": {
           "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "externalLink": {
+            "type": ["string", "null"],
+            "default": null
         }
       },
-      "required": ["chain", "name"],
+      "required": ["chain", "address", "name"],
       "title": "PremiumConditionsSolNFTCollection"
     },
     "PremiumConditionsFollowUserId": {
@@ -339,6 +359,17 @@
       },
       "required": ["follow_user_id"],
       "title": "PremiumConditionsFollowUserId"
+    },
+    "PremiumConditionsTipUserId": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tip_user_id": {
+          "type": "number"
+        }
+      },
+      "required": ["tip_user_id"],
+      "title": "PremiumConditionsTipUserId"
     }
   }
 }

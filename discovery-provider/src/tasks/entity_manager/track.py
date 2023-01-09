@@ -116,7 +116,6 @@ def update_track(params: ManageEntityParameters):
     track_metadata = params.metadata[params.metadata_cid]
     track_id = params.entity_id
     existing_track = params.existing_records[EntityType.TRACK][track_id]
-    existing_track.is_current = False  # invalidate
     if (
         track_id in params.new_records[EntityType.TRACK]
     ):  # override with last updated track is in this block
@@ -144,7 +143,6 @@ def delete_track(params: ManageEntityParameters):
 
     track_id = params.entity_id
     existing_track = params.existing_records[EntityType.TRACK][track_id]
-    existing_track.is_current = False  # invalidate old playlist
     if params.entity_id in params.new_records[EntityType.TRACK]:
         # override with last updated playlist is in this block
         existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]

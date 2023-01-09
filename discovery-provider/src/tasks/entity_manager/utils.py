@@ -3,7 +3,11 @@ from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import (
+    Notification,
+    NotificationSeen,
+    PlaylistSeen,
+)
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -37,6 +41,7 @@ class Action(str, Enum):
     SUBSCRIBE = "Subscribe"
     UNSUBSCRIBE = "Unsubscribe"
     VIEW = "View"
+    VIEW_PLAYLIST = "ViewPlaylist"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -51,7 +56,9 @@ class EntityType(str, Enum):
     SAVE = "Save"
     REPOST = "Repost"
     SUBSCRIPTION = "Subscription"
+    NOTIFICATION_SEEN = "NotificationSeen"
     NOTIFICATION = "Notification"
+    PLAYLIST_SEEN = "PlaylistSeen"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -65,7 +72,9 @@ class RecordDict(TypedDict):
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
     Subscription: Dict[Tuple, List[Subscription]]
-    Notification: Dict[Tuple, List[NotificationSeen]]
+    NotificationSeen: Dict[Tuple, List[NotificationSeen]]
+    Notification: Dict[Tuple, List[Notification]]
+    PlaylistSeen: Dict[Tuple, List[PlaylistSeen]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -75,6 +84,7 @@ class ExistingRecordDict(TypedDict):
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
     Subscription: Dict[Tuple, Subscription]
+    PlaylistSeen: Dict[Tuple, PlaylistSeen]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -84,6 +94,7 @@ class EntitiesToFetchDict(TypedDict):
     Follow: Set[Tuple]
     Save: Set[Tuple]
     Subscription: Set[Tuple]
+    PlaylistSeen: Set[Tuple]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -161,9 +172,26 @@ class ManageEntityParameters:
         key: Tuple[int, datetime],
         record: NotificationSeen,
     ):
+        if key not in self.new_records[EntityType.NOTIFICATION_SEEN]:  # type: ignore
+            self.new_records[EntityType.NOTIFICATION_SEEN][key].append(record)  # type: ignore
+        # If key exists, do nothing
+
+    def add_notification_record(
+        self,
+        key: datetime,
+        record: NotificationSeen,
+    ):
         if key not in self.new_records[EntityType.NOTIFICATION]:  # type: ignore
             self.new_records[EntityType.NOTIFICATION][key].append(record)  # type: ignore
         # If key exists, do nothing
+
+    def add_playlist_seen_record(
+        self,
+        key: Tuple[int, int],
+        record: PlaylistSeen,
+    ):
+        self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
+        self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):

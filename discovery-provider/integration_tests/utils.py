@@ -3,6 +3,7 @@ from datetime import datetime
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
@@ -128,6 +129,8 @@ def populate_mock_db(db, entities, block_offset=None):
         supporter_rank_ups = entities.get("supporter_rank_ups", [])
         reward_manager_txs = entities.get("reward_manager_txs", [])
         challenge_disbursements = entities.get("challenge_disbursements", [])
+        notification_seens = entities.get("notification_seens", [])
+        playlist_seens = entities.get("playlist_seens", [])
 
         num_blocks = max(
             len(tracks),
@@ -136,6 +139,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(saves),
             len(reposts),
             len(subscriptions),
+            len(playlist_seens),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -180,6 +184,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_premium=track_meta.get("is_premium", False),
                 premium_conditions=track_meta.get("premium_conditions", None),
+                is_playlist_upload=track_meta.get("is_playlist_upload", False),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -526,4 +531,23 @@ def populate_mock_db(db, entities, block_offset=None):
                 amount=challenge_disbursement.get("amount", i),
             )
             session.add(cb)
-        session.flush()
+        for i, playlist_seen in enumerate(playlist_seens):
+            ps = PlaylistSeen(
+                user_id=playlist_seen.get("user_id", i),
+                playlist_id=playlist_seen.get("playlist_id", i),
+                is_current=playlist_seen.get("is_current", True),
+                seen_at=playlist_seen.get("seen_at", datetime.now()),
+                blockhash=playlist_seen.get("blockhash", str(i)),
+                blocknumber=playlist_seen.get("blocknumber", str(i)),
+                txhash=playlist_seen.get("txhash", str(i)),
+            )
+            session.add(ps)
+        for i, notification_seen in enumerate(notification_seens):
+            ns = NotificationSeen(
+                user_id=notification_seen.get("user_id", i),
+                blocknumber=notification_seen.get("blocknumber", i),
+                blockhash=notification_seen.get("signature", str(i)),
+                seen_at=notification_seen.get("seen_at", datetime.now()),
+            )
+            session.add(ns)
+        session.commit()

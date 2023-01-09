@@ -620,7 +620,7 @@ const _issueUpdateReplicaSetOp = async (
 
     const cNodeEndpointToSpIdMap = await getMapOfCNodeEndpointToSpId(logger)
 
-    // Create new array of replica set spIds and write to URSM
+    // Create new array of replica set spIds and write to contract
     for (const endpt of newReplicaSetEndpoints) {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
@@ -684,58 +684,44 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      // First try updateReplicaSet via URSM
-      // Fallback to EntityManager when relay errors
-      try {
-        await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+      if (!config.get('entityManagerReplicaSetEnabled')) {
+        throw new Error(
+          `[_issueUpdateReplicaSetOp] entityManagerReplicaSet not enabled`
+        )
+      }
+
+      logger.info(
+        `[_issueUpdateReplicaSetOp] updating replica set now ${
+          Date.now() - startTimeMs
+        }ms for userId=${userId} wallet=${wallet}`
+      )
+
+      const { blockNumber } =
+        await audiusLibs.User.updateEntityManagerReplicaSet({
           userId,
-          newReplicaSetSPIds[0], // new primary
-          newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
+          primary: newReplicaSetSPIds[0], // new primary
+          secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
           // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-          oldPrimarySpId || chainPrimarySpId,
-          [
+          oldPrimary: oldPrimarySpId || chainPrimarySpId,
+          oldSecondaries: [
             oldSecondary1SpId || chainSecondarySpIds?.[0],
             oldSecondary2SpId || chainSecondarySpIds?.[1]
           ]
+        })
+      logger.info(
+        `[_issueUpdateReplicaSetOp] did call audiusLibs.User.updateEntityManagerReplicaSet waiting for ${blockNumber}`
+      )
+      // Wait for blockhash/blockNumber to be indexed
+      try {
+        await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+          userId,
+          newReplicaSetSPIds,
+          blockNumber
         )
       } catch (err) {
-        if (!config.get('entityManagerReplicaSetEnabled')) {
-          throw err
-        }
-
-        logger.info(
-          `[_issueUpdateReplicaSetOp] updating replica set now ${
-            Date.now() - startTimeMs
-          }ms for userId=${userId} wallet=${wallet}`
+        throw new Error(
+          `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
         )
-
-        const { blockNumber } =
-          await audiusLibs.User.updateEntityManagerReplicaSet({
-            userId,
-            primary: newReplicaSetSPIds[0], // new primary
-            secondaries: newReplicaSetSPIds.slice(1), // [new secondary1, new secondary2]
-            // This defaulting logic is for the edge case when an SP deregistered and can't be fetched from our mapping, so we use the SP ID from the user's old replica set queried from the chain
-            oldPrimary: oldPrimarySpId || chainPrimarySpId,
-            oldSecondaries: [
-              oldSecondary1SpId || chainSecondarySpIds?.[0],
-              oldSecondary2SpId || chainSecondarySpIds?.[1]
-            ]
-          })
-        logger.info(
-          `[_issueUpdateReplicaSetOp] did call audiusLibs.User.updateEntityManagerReplicaSet waiting for ${blockNumber}`
-        )
-        // Wait for blockhash/blockNumber to be indexed
-        try {
-          await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
-            userId,
-            newReplicaSetSPIds,
-            blockNumber
-          )
-        } catch (err) {
-          throw new Error(
-            `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
-          )
-        }
       }
 
       response.issuedReconfig = true

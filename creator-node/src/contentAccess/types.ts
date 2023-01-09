@@ -24,6 +24,7 @@ export type SignedData = {
   cid: string
   timestamp: number
   shouldCache: boolean
+  trackId: number
 }
 
 export type CheckAccessResponse =
