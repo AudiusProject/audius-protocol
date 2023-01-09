@@ -162,7 +162,7 @@ const useStyles = makeStyles<
       large: {
         button: {
           height: spacing(12),
-          paddingHorizontal: spacing(12)
+          paddingHorizontal: spacing(8)
         },
         text: {
           fontSize: 18
