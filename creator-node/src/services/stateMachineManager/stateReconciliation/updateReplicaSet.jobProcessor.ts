@@ -644,7 +644,7 @@ const _issueUpdateReplicaSetOp = async (
         audiusLibs = await initAudiusLibs({
           enableEthContracts: false,
           enableContracts: true,
-          enableDiscovery: false,
+          enableDiscovery: true,
           enableIdentity: true,
           logger
         })
