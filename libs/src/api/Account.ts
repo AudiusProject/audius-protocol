@@ -199,11 +199,9 @@ export class Account extends Base {
         })()
       }
       // Add user to chain
-      console.log('asdf adding user to chain')
       const newMetadata = await this.User.createEntityManagerUser({
         metadata
       })
-      console.log('asdf upload profile images')
 
       await this.User.uploadProfileImages(
         profilePictureFile!,
