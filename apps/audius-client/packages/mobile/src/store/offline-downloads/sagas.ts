@@ -1,5 +1,6 @@
 import type { UserCollectionMetadata } from '@audius/common'
 import {
+  FavoriteSource,
   tracksSocialActions,
   collectionsSocialActions,
   accountSelectors
@@ -44,7 +45,12 @@ export function* downloadSavedCollection(
   const offlineCollections = yield* select(getOfflineCollections)
   const currentUserId = yield* select(getUserId)
 
-  if (!offlineCollections[DOWNLOAD_REASON_FAVORITES] || !currentUserId) return
+  if (
+    !offlineCollections[DOWNLOAD_REASON_FAVORITES] ||
+    action.source === FavoriteSource.OFFLINE_DOWNLOAD ||
+    !currentUserId
+  )
+    return
   const collection: UserCollectionMetadata = (yield* call(
     [apiClient, apiClient.getPlaylist],
     {
