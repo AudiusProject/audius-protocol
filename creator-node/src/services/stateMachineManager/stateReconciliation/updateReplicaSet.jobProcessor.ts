@@ -732,7 +732,7 @@ const _issueUpdateReplicaSetOp = async (
       )
     } catch (e: any) {
       throw new Error(
-        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
+        `[_issueUpdateReplicaSetOp] _updateReplicaSet Failed in ${
           Date.now() - startTimeMs
         }ms - Error ${e.message}`
       )
