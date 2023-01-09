@@ -1,11 +1,10 @@
-import { useMemo } from 'react'
-
 import type { User } from '@audius/common'
 import { formatCount } from '@audius/common'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
 
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 import { ProfilePicture } from './ProfilePicture'
 
@@ -20,42 +19,35 @@ const USER_LENGTH_LIMIT = 9
  */
 const defaultImageDimensions = { width: 38, height: 38 }
 
-type MakeStylesProps = { imageDimensions: { height: number; width: number } }
-
-const useStyles = makeStyles<MakeStylesProps>(
-  ({ spacing, palette, typography }, { imageDimensions }) => ({
-    root: {
-      flexDirection: 'row'
-    },
-    image: {
-      marginRight: spacing(-2)
-    },
-    imageExtraRoot: {
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    imageExtraDim: {
-      marginLeft: spacing(2.5) - imageDimensions.width,
-      backgroundColor: 'rgba(0,0,0,0.1)',
-      borderRadius: 15,
-      width: 24,
-      height: 24
-    },
-    imageCount: {
-      width: imageDimensions.width,
-      marginLeft: spacing(0.5) - imageDimensions.width,
-      textAlign: 'center',
-      color: palette.staticWhite,
-      fontSize: typography.fontSize.small,
-      fontFamily: typography.fontByWeight.bold,
-      textShadowColor: 'rgba(0,0,0,0.25)',
-      textShadowOffset: { width: 0, height: 2 },
-      textShadowRadius: 1
-    }
-  })
-)
+const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+  root: {
+    flexDirection: 'row'
+  },
+  image: {
+    marginRight: spacing(-2)
+  },
+  imageExtraRoot: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  imageExtraDim: {
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 15,
+    width: 24,
+    height: 24
+  },
+  imageCount: {
+    textAlign: 'center',
+    color: palette.staticWhite,
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.bold,
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 1
+  }
+}))
 
 type ProfilePictureListProps = {
   users: User[]
@@ -80,16 +72,8 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
     interactive,
     imageStyles
   } = props
-  const stylesConfig = useMemo(
-    () => ({
-      imageDimensions: {
-        width: imageStyles?.width ?? defaultImageDimensions.width,
-        height: imageStyles?.height ?? defaultImageDimensions.height
-      }
-    }),
-    [imageStyles]
-  )
-  const styles = useStyles(stylesConfig)
+  const imageWidth = imageStyles?.width ?? defaultImageDimensions.width
+  const styles = useStyles()
   const showUserListDrawer = totalUserCount > limit
   /**
    * We add a +1 because the remaining users count includes
@@ -127,8 +111,18 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
             navigationType={navigationType}
             interactive={interactive}
           />
-          <View style={styles.imageExtraDim} />
-          <Text style={styles.imageCount}>
+          <View
+            style={[
+              styles.imageExtraDim,
+              { marginLeft: spacing(2.5) - imageWidth }
+            ]}
+          />
+          <Text
+            style={[
+              styles.imageCount,
+              { width: imageWidth, marginLeft: spacing(0.5) - imageWidth }
+            ]}
+          >
             {`+${formatCount(remainingUsersCount)}`}
           </Text>
         </View>

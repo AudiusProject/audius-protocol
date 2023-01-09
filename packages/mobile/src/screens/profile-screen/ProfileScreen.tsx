@@ -18,7 +18,7 @@ import { IconButton, Screen } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { ProfileHeader } from './ProfileHeader'

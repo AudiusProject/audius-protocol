@@ -285,6 +285,11 @@ export const useThemeColors = () => {
   return themeColorsByThemeVariant[themeVariant]
 }
 
+export const useThemePalette = () => {
+  const themeVariant = useThemeVariant()
+  return themeColorsByThemeVariant[themeVariant]
+}
+
 export const useColor = (color: string): string => {
   const theme = useThemeColors()
   return (theme as any)[color]

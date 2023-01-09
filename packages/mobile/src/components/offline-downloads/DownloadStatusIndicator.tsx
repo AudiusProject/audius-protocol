@@ -14,7 +14,6 @@ import {
   getOfflineDownloadStatus
 } from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
-import { makeStyles } from 'app/styles'
 
 const { getCollection } = cacheCollectionsSelectors
 
@@ -25,15 +24,6 @@ type TrackDownloadIndicatorProps = {
   showNotDownloaded?: boolean
   size?: number
 }
-
-const useStyles = makeStyles<Pick<TrackDownloadIndicatorProps, 'size'>>(
-  (_, { size }) => ({
-    icon: {
-      height: size,
-      width: size
-    }
-  })
-)
 
 export const DownloadStatusIndicator = ({
   collectionId,
@@ -47,7 +37,6 @@ export const DownloadStatusIndicator = ({
   const isMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(collectionId)
   )
-  const styles = useStyles({ size })
 
   const trackDownloadStatus = trackId
     ? offlineDownloadStatus[trackId?.toString()]
@@ -91,7 +80,10 @@ export const DownloadStatusIndicator = ({
     case OfflineTrackDownloadStatus.LOADING:
       return (
         <LottieView
-          style={styles.icon}
+          style={{
+            height: size,
+            width: size
+          }}
           source={iconDownloading}
           autoPlay
           loop

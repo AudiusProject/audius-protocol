@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
 

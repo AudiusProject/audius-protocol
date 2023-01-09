@@ -3,7 +3,7 @@ import { View, Text } from 'react-native'
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import { Link } from 'app/components/core'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from './selectors'

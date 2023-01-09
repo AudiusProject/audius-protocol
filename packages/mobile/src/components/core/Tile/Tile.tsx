@@ -11,8 +11,7 @@ import { Animated, View } from 'react-native'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
-import { shadow } from 'app/styles'
-import { makeStyles } from 'app/styles/makeStyles'
+import { shadow, makeStyles } from 'app/styles'
 
 import { Pressable } from '../Pressable'
 

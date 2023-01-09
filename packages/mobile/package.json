@@ -86,7 +86,6 @@
     "moment": "2.24.0",
     "node-libs-react-native": "1.2.1",
     "numeral": "2.0.6",
-    "object-hash": "3.0.0",
     "path-dirname": "1.0.2",
     "promise": "8.3.0",
     "proxy-memoize": "1.2.0",

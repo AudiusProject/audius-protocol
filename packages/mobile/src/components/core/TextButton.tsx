@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 
-import { merge } from 'lodash'
 import type {
   ButtonProps,
   GestureResponderEvent,
@@ -15,46 +14,17 @@ import type { SvgProps } from 'react-native-svg'
 import { Text } from 'app/components/core'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
+import { useThemePalette } from 'app/utils/theme'
 
 import type { TextProps } from './Text'
 
-const useStyles = makeStyles<Pick<TextButtonProps, 'variant'>>(
-  // @ts-ignore need support for IconStyles in NamedStyles<T>
-  ({ palette, spacing }, { variant }) => {
-    const variantStyles = {
-      primary: {
-        icon: {
-          fill: palette.primary
-        }
-      },
-      secondary: {
-        icon: {
-          fill: palette.secondary
-        }
-      },
-      neutral: {
-        icon: {
-          fill: palette.neutral
-        }
-      },
-      neutralLight4: {
-        icon: {
-          fill: palette.neutralLight4
-        }
-      }
-    }
-
-    const baseStyles = {
-      root: { flexDirection: 'row' as const, alignItems: 'center' as const },
-      iconLeft: { marginRight: spacing(1) },
-      iconRight: { marginLeft: spacing(1) },
-      disabled: { color: palette.neutralLight7 },
-      activeUnderline: { textDecorationLine: 'underline' }
-    }
-
-    return merge(baseStyles, variantStyles[variant])
-  }
-)
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: { flexDirection: 'row' as const, alignItems: 'center' as const },
+  iconLeft: { marginRight: spacing(1) },
+  iconRight: { marginLeft: spacing(1) },
+  disabled: { color: palette.neutralLight7 },
+  activeUnderline: { textDecorationLine: 'underline' }
+}))
 
 export type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
@@ -87,8 +57,8 @@ export const TextButton = (props: TextButtonProps) => {
     ...other
   } = props
 
-  const styleConfig = useMemo(() => ({ variant }), [variant])
-  const styles = useStyles(styleConfig)
+  const styles = useStyles()
+  const palette = useThemePalette()
   const [isPressing, setIsPressing] = useState(false)
 
   const showDisabledColor = disabled && showDisabled
@@ -98,7 +68,7 @@ export const TextButton = (props: TextButtonProps) => {
       height={18}
       width={18}
       // @ts-ignored currently restricted to react-native style interfaces
-      fill={showDisabledColor ? styles.disabled.color : styles.icon.fill}
+      fill={showDisabledColor ? styles.disabled.color : palette[variant]}
       style={[
         iconPosition === 'left' ? styles.iconLeft : styles.iconRight,
         stylesProp?.icon

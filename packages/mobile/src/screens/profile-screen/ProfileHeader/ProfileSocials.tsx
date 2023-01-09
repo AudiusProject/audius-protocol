@@ -4,7 +4,8 @@ import { useSelectTierInfo } from '@audius/common'
 import { View, Animated } from 'react-native'
 
 import { Divider } from 'app/components/core'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 import { useSelectProfile } from '../selectors'
 
@@ -15,24 +16,21 @@ import {
   TwitterSocialLink
 } from './SocialLink'
 
-const useStyles = makeStyles<{ socialsCount: number }>(
-  ({ spacing }, { socialsCount }) => ({
-    root: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: spacing(3)
-    },
-    socials: {
-      flexDirection: 'row',
-      flex: 4,
-      marginVertical: spacing(3)
-    },
-    divider: {
-      marginVertical: spacing(1),
-      marginHorizontal: spacing(socialsCount === 2 ? 6 : 4)
-    }
-  })
-)
+const useStyles = makeStyles(({ spacing }) => ({
+  root: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing(3)
+  },
+  socials: {
+    flexDirection: 'row',
+    flex: 4,
+    marginVertical: spacing(3)
+  },
+  divider: {
+    marginVertical: spacing(1)
+  }
+}))
 
 export const ProfileSocials = () => {
   const { user_id, twitter_handle, instagram_handle, tiktok_handle } =
@@ -56,8 +54,7 @@ export const ProfileSocials = () => {
     return socialLinks.filter(([handle]) => !!handle).length
   }, [socialLinks])
 
-  const stylesOptions = useMemo(() => ({ socialsCount }), [socialsCount])
-  const styles = useStyles(stylesOptions)
+  const styles = useStyles()
 
   const { tier } = useSelectTierInfo(user_id)
 
@@ -90,7 +87,13 @@ export const ProfileSocials = () => {
             <Fragment key={name}>
               <SocialLink showText={socialsCount === 1} />
               {index === socialLinks.length - 1 ? null : (
-                <Divider orientation='vertical' style={styles.divider} />
+                <Divider
+                  orientation='vertical'
+                  style={[
+                    styles.divider,
+                    { marginHorizontal: spacing(socialsCount === 2 ? 6 : 4) }
+                  ]}
+                />
               )}
             </Fragment>
           )

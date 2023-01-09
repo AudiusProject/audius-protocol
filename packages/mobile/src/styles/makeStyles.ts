@@ -1,87 +1,64 @@
-import { useEffect, useMemo, useRef } from 'react'
-
-import { isEqual } from 'lodash'
-import hash from 'object-hash'
-import type { TextStyle, ViewStyle, ImageStyle } from 'react-native'
+import { Theme } from '@audius/common'
+import type { ImageStyle, TextStyle, ViewStyle } from 'react-native'
 import { StyleSheet } from 'react-native'
 
-import type { ThemeColors, Theme as ThemeType } from '../utils/theme'
-import { useThemeVariant, useThemeColors } from '../utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import {
+  matrixTheme,
+  defaultTheme,
+  darkTheme,
+  useThemeVariant
+} from 'app/utils/theme'
 
 import { spacing } from './spacing'
 import { typography } from './typography'
 
-const useMemoCompare = <Next>(
-  next: Next,
-  compare: (a?: Next, b?: Next) => boolean
-): Next => {
-  const previousRef = useRef<Next | undefined>()
-  const previous = previousRef.current
-
-  // Pass previous and next value to compare function
-  // to determine whether to consider them equal.
-  const isEqual = compare(previous, next)
-
-  // If not equal update previousRef to next value.
-  // We only update if not equal so that this hook continues to return
-  // the same old value if compare keeps returning true.
-  useEffect(() => {
-    if (!isEqual) {
-      previousRef.current = next
-    }
-  })
-
-  // Finally, if equal then return the previous value
-  // Note: isEqual == 'true' implies previous is type Next
-  return isEqual ? (previous as Next) : next
-}
-
-type Theme = {
+type StylesOptions = {
   palette: ThemeColors
   typography: typeof typography
   spacing: typeof spacing
-  type: ThemeType
+  type: Theme
 }
 
-// TODO: This doesn't cover style props for icons
 type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle }
 
-type Styles<T extends NamedStyles<T>, PropsT> = (
-  theme: Theme,
-  props: PropsT
-) => T | NamedStyles<T>
+export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>>(
+  styles: (options: StylesOptions) => T | NamedStyles<T>
+) => {
+  const baseOptions = { spacing, typography }
 
-type UseStyles<T, PropsT> = PropsT extends undefined
-  ? () => T
-  : (props: PropsT) => T
+  const defaultStylesheet = StyleSheet.create(
+    styles({
+      type: Theme.DEFAULT,
+      palette: defaultTheme,
+      ...baseOptions
+    })
+  )
 
-const styleCache = {}
+  const darkStylesheet = StyleSheet.create(
+    styles({
+      type: Theme.DARK,
+      palette: darkTheme,
+      ...baseOptions
+    })
+  )
 
-export const makeStyles = <
-  PropsT = undefined,
-  T extends NamedStyles<T> = NamedStyles<any>
->(
-  styles: Styles<T, PropsT>
-): UseStyles<T, PropsT> => {
-  return ((props?: PropsT): T => {
+  const matrixStylesheet = StyleSheet.create(
+    styles({
+      type: Theme.MATRIX,
+      palette: matrixTheme,
+      ...baseOptions
+    })
+  )
+
+  const themedStylesheets = {
+    [Theme.DEFAULT]: defaultStylesheet,
+    [Theme.DARK]: darkStylesheet,
+    [Theme.MATRIX]: matrixStylesheet
+  }
+
+  return function useStyles() {
     const themeVariant = useThemeVariant()
-    const palette = useThemeColors()
-
-    const memoizedProps = useMemoCompare<PropsT | undefined>(props, isEqual)
-
-    const stylesheet = useMemo(() => {
-      const theme = { palette, typography, spacing, type: themeVariant }
-      const namedStyles = styles(theme, memoizedProps!)
-      const namedStylesHash = hash(namedStyles)
-      const cachedStyle = styleCache[namedStylesHash]
-      if (cachedStyle) {
-        return cachedStyle
-      }
-      const stylesheet = StyleSheet.create(namedStyles)
-      styleCache[namedStylesHash] = stylesheet
-      return stylesheet
-    }, [palette, themeVariant, memoizedProps])
-
-    return stylesheet
-  }) as UseStyles<T, PropsT>
+    return themedStylesheets[themeVariant]
+  }
 }

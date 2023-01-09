@@ -21,7 +21,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import type { SearchUser } from 'app/store/search/types'
-import { makeStyles } from 'app/styles/makeStyles'
+import { makeStyles } from 'app/styles'
 const { downloadTrack } = tracksSocialActions
 
 export type DownloadButtonProps = {

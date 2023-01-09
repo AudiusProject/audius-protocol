@@ -550,6 +550,10 @@ PODS:
     - React-jsi (= 0.70.6)
     - React-logger (= 0.70.6)
     - React-perflogger (= 0.70.6)
+  - rive-react-native (3.0.41):
+    - React-Core
+    - RiveRuntime (= 2.0.12)
+  - RiveRuntime (2.0.12)
   - rn-fetch-blob (0.12.0):
     - React-Core
   - RNBootSplash (4.3.3):
@@ -730,6 +734,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - rive-react-native (from `../node_modules/rive-react-native`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
@@ -785,6 +790,7 @@ SPEC REPOS:
     - nanopb
     - OpenSSL-Universal
     - PromisesObjC
+    - RiveRuntime
     - Sentry
     - SnapSDK
     - SocketRocket
@@ -914,6 +920,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/runtimeexecutor"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  rive-react-native:
+    :path: "../node_modules/rive-react-native"
   rn-fetch-blob:
     :path: "../node_modules/rn-fetch-blob"
   RNBootSplash:
@@ -1052,6 +1060,8 @@ SPEC CHECKSUMS:
   React-RCTVibration: c75ceef7aa60a33b2d5731ebe5800ddde40cefc4
   React-runtimeexecutor: 15437b576139df27635400de0599d9844f1ab817
   ReactCommon: 349be31adeecffc7986a0de875d7fb0dcf4e251c
+  rive-react-native: b047ccae65e45e9724c41d504e8dcb09658e0a66
+  RiveRuntime: 00c431bf347aaad3a3d0ed381241cf945b537e1a
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBootSplash: b8c2e955d46c0df447bbbcdc28799c65ab73422b
   RNCAsyncStorage: 73b194e58ded504eee17b9a3c125651e2507ddde
@@ -1081,6 +1091,6 @@ SPEC CHECKSUMS:
   Yoga: 99caf8d5ab45e9d637ee6e0174ec16fbbb01bcfc
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 9f4f0b36a5d0d3b3aa8ee5b0b53655cd475ea735
+PODFILE CHECKSUM: 126389c172c6ac4031e713b718611228131f0d7c
 
 COCOAPODS: 1.11.3
