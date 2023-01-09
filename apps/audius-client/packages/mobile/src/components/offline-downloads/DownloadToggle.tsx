@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { DownloadReason } from '@audius/common'
+import type { CommonState, DownloadReason } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch, Text } from 'app/components/core'
+import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import {
   batchDownloadTrack,
   downloadCollectionById,
@@ -46,6 +47,7 @@ const useStyles = makeStyles<{ labelText?: string }>(
           flexDirection: 'row',
           justifyContent: 'space-between',
           width: '100%',
+          height: spacing(8),
           marginBottom: spacing(1)
         }
       : {
@@ -117,6 +119,24 @@ export const DownloadToggle = ({
     getIsCollectionMarkedForDownload(collectionIdStr)
   )
 
+  const userCollections = useSelector((state: CommonState) =>
+    getAccountCollections(state, '')
+  )
+  const isFavoritesMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(DOWNLOAD_REASON_FAVORITES)
+  )
+  const isThisFavoritedCollectionDownload = useMemo(
+    () =>
+      !!(
+        collectionId &&
+        isFavoritesMarkedForDownload &&
+        userCollections.some(
+          (collection) => collection.playlist_id === collectionId
+        )
+      ),
+    [collectionId, isFavoritesMarkedForDownload, userCollections]
+  )
+
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
       if (!collectionId && !isFavoritesDownload) return
@@ -155,22 +175,22 @@ export const DownloadToggle = ({
     ]
   )
 
-  if (!collectionId && !isFavoritesDownload) return null
-
   return (
     <View style={styles.root}>
       {labelText && <View style={styles.flex1} />}
       <View style={[styles.iconTitle]}>
-        <DownloadStatusIndicator
-          statusOverride={
-            isCollectionMarkedForDownload
-              ? isAnyDownloadInProgress
-                ? OfflineDownloadStatus.LOADING
-                : OfflineDownloadStatus.SUCCESS
-              : null
-          }
-          showNotDownloaded
-        />
+        {collectionId || isFavoritesDownload ? (
+          <DownloadStatusIndicator
+            statusOverride={
+              isCollectionMarkedForDownload || isThisFavoritedCollectionDownload
+                ? isAnyDownloadInProgress
+                  ? OfflineDownloadStatus.LOADING
+                  : OfflineDownloadStatus.SUCCESS
+                : null
+            }
+            showNotDownloaded
+          />
+        ) : null}
         {labelText ? (
           <Text
             style={[
@@ -183,11 +203,15 @@ export const DownloadToggle = ({
         ) : null}
       </View>
       <View style={[styles.flex1, styles.toggleContainer]}>
-        <Switch
-          value={isCollectionMarkedForDownload}
-          onValueChange={handleToggleDownload}
-          disabled={disabled}
-        />
+        {collectionId || isFavoritesDownload ? (
+          <Switch
+            value={
+              isCollectionMarkedForDownload || isThisFavoritedCollectionDownload
+            }
+            onValueChange={handleToggleDownload}
+            disabled={disabled || isThisFavoritedCollectionDownload}
+          />
+        ) : null}
       </View>
     </View>
   )
