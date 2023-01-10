@@ -35,6 +35,7 @@ import { reformat } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
+import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -805,6 +806,9 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
           })
         )
         yield put(cacheActions.setExpired(Kind.USERS, userId))
+
+        // Finally, add to the library
+        yield call(addPlaylistsNotInLibrary)
       },
       function* ({ timeout }) {
         // All other non-timeout errors have
