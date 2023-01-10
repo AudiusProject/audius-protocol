@@ -11,16 +11,20 @@ export class Notifications extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
     this.viewNotification = this.viewNotification.bind(this)
+    this.createNotification = this.createNotification.bind(this)
+    this.viewPlaylist = this.viewPlaylist.bind(this)
   }
 
   /**
    * Submit a user's view of notification event
    */
-  async viewNotification({
-    logger = console
-  }: {
-    logger: any
-  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+  async viewNotification(
+    {
+      logger = console
+    }: {
+      logger: any
+    } = { logger: console }
+  ): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
     try {
       const userId: number | null = this.userStateManager.getCurrentUserId()
       if (!userId) {
