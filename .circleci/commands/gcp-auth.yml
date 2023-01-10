@@ -10,4 +10,5 @@ steps:
 
         mkdir -p ~/.ssh
         echo "$GOOGLE_COMPUTE_SSH" > ~/.ssh/google_compute_engine
+        chmod 400 ~/.ssh/google_compute_engine
         ssh-keygen -f ~/.ssh/google_compute_engine -y > ~/.ssh/google_compute_engine.pub
