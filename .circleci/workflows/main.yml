@@ -1,21 +1,37 @@
 jobs:
   - build-gcp-image:
-      context: [GCP]
+      context: GCP
   - push-docker-images:
       context: [GCP, dockerhub]
       requires:
         - build-gcp-image
+
   - test-service:
       name: test-creator-node
-      context: [GCP]
+      context: GCP
       requires:
         - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-cn
       service: creator-node
   - test-service:
       name: test-discovery-provider
-      context: [GCP]
+      context: GCP
       requires:
         - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-dp
       service: discovery-provider
+
+  - slack/on-hold:
+      context: slack-secrets
+      filters:
+        branches:
+          only: /^release-v.*$/
+      requires:
+        - push-docker-images
+  - gh-release-hold:
+      requires:
+        - slack/on-hold
+      type: approval
+  - gh-release:
+      requires:
+        - gh-release-hold

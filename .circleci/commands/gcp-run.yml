@@ -31,6 +31,10 @@ steps:
           << parameters.create-instance-args >> \
           --tags "<< parameters.instance-name >>"
 
+        while ! gcloud compute ssh "$INSTANCE_USER@<< parameters.instance-name >>" true; do
+          sleep 1
+        done
+
         # Generate env file with env to pass to gcp instance
         touch /tmp/gcp-pass-env.sh
         for env in << parameters.pass-env >>; do

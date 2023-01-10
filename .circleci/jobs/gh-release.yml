@@ -1,0 +1,47 @@
+resource_class: small
+docker:
+  - image: cimg/base:2023.01
+steps:
+  - checkout
+  - run:
+      name: Checks
+      command:
+        if [[ "$CIRCLE_BRANCH" =~ ^release-v ]]; then
+          echo "gh-release run on non release branch"
+          exit 1
+        fi
+
+        CN_VERSION="$(jq -r .version creator-node/.version.json)"
+        DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
+        if [[ "$CN_VERSION" != "$DP_VERSION" ]]; then
+          echo "Existing creator-node ($CN_VERSION) and discovery-provider ($DP_VERSION) versions don't match"
+          exit 1
+        fi
+
+        OLD_VERSION="$CN_VERSION"
+        echo "export OLD_VERSION='$OLD_VERSION'" >> "$BASH_ENV"
+
+        NEW_VERSION="$(sed 's/^release-v//' <<< "$CIRCLE_BRANCH")"
+        echo "export NEW_VERSION='$NEW_VERSION'" >> "$BASH_ENV"
+
+        if ! dpkg --compare-versions "$OLD_VERSION" lt "$NEW_VERSION"; then
+          echo "Version in branch is older than current version"
+          exit 1
+        fi
+  - run:
+      name: Set git config
+      command: |
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
+  - run:
+      name: Generate Changelog
+      command: |
+        generate-changelog() {
+          service="$1"
+          start_commit=$(git show-ref --hash "refs/tags/@audius/$service@$OLD_VERSION")
+          printf "Full Changelog:\n"
+          git log --pretty='[%h] - %s' --abbrev-commit "$start_commit..HEAD" "$service"
+        }
+
+        generate-changelog creator-node | tee /tmp/creator-node-changelog
+        generate-changelog discovery-provider | tee /tmp/discovery-provider-changelog
