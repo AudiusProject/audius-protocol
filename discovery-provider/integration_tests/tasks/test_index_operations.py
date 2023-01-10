@@ -203,7 +203,7 @@ def cleanup(celery_app):
                 '0x0',
                 NULL,
                 TRUE,
-                0
+                -1
             );
             """
         )
