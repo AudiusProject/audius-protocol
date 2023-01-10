@@ -4,6 +4,10 @@ import { isEmpty } from 'lodash'
 
 import { reportToSentry } from 'store/errors/reportToSentry'
 
+import packageInfo from '../../../package.json'
+
+const { version: appVersion } = packageInfo
+
 declare global {
   interface Window {
     optimizelyDatafile: Config['datafile']
@@ -13,6 +17,7 @@ declare global {
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
+  appVersion,
   createOptimizelyClient: async () => {
     // Wait for optimizely to load if necessary (as it can be an async or defer tag)
     if (!window.optimizelyDatafile) {
