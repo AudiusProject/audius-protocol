@@ -106,7 +106,8 @@
   margin-right: 12px;
 }
 
-.availabilityRowSelection > div:not(:last-child), .availabilityRowSelection > div > div:not(:last-child) {
+.availabilityRowSelection > div:not(:last-child),
+.availabilityRowSelection > div > div:not(:last-child) {
   margin-bottom: 12px;
 }
 

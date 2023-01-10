@@ -1,0 +1,29 @@
+.root {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 16px;
+  padding: 8px;
+  overflow-y: auto;
+  background-color: var(--white);
+}
+
+.message {
+  display: flex;
+  gap: 8px;
+}
+
+.message.isAuthor {
+  flex-direction: row-reverse;
+}
+
+.messageBubble {
+  align-self: center;
+  background-color: var(--neutral-light-8);
+  padding: 12px;
+  border-radius: 16px;
+}
+
+.messageBubbleText {
+  word-break: break-word;
+  text-align: left;
+}

@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@audius/common": "1.5.5",
-    "@audius/sdk": "1.0.35",
+    "@audius/sdk": "1.0.37",
     "@audius/stems": "1.5.3",
     "@coinbase/cbpay-js": "1.2.0",
     "@craco/craco": "7.0.0-alpha.3",
@@ -59,6 +59,8 @@
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@juggle/resize-observer": "^3.3.1",
     "@jup-ag/core": "2.0.0-beta.3",
+    "@noble/hashes": "1.1.4",
+    "@noble/secp256k1": "1.7.0",
     "@opentelemetry/api": "^1.2.0",
     "@opentelemetry/context-zone": "^1.6.0",
     "@opentelemetry/exporter-trace-otlp-http": "0.32.0",

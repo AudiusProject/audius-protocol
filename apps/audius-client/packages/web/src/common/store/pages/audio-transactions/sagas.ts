@@ -5,7 +5,8 @@ import {
   TransactionType,
   formatDate,
   StringAudio,
-  transactionDetailsActions
+  transactionDetailsActions,
+  getContext
 } from '@audius/common'
 import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
@@ -13,7 +14,6 @@ import { call, takeLatest, put } from 'typed-redux-saga'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { audiusSdk } from 'services/audius-sdk'
 
 const {
   fetchAudioTransactions,
@@ -107,6 +107,7 @@ function* fetchAudioTransactionsAsync() {
         audiusBackendInstance,
         audiusBackendInstance.signDiscoveryNodeRequest
       ])
+      const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
       const response = yield* call(
         [
@@ -178,6 +179,7 @@ function* fetchTransactionsCount() {
       audiusBackendInstance,
       audiusBackendInstance.signDiscoveryNodeRequest
     ])
+    const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const response = yield* call(
       [

@@ -149,7 +149,8 @@ import {
   DEACTIVATE_PAGE,
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
-  publicSiteRoutes
+  publicSiteRoutes,
+  CHAT_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -159,6 +160,7 @@ import TopLevelPage from '../components/nav/mobile/TopLevelPage'
 import Notice from '../components/notice/Notice'
 
 import styles from './App.module.css'
+import { ChatPage } from './chat-page'
 import { CollectiblesPlaylistPage } from './collectibles-playlist-page'
 import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
@@ -790,6 +792,12 @@ class App extends Component {
                 path={AUDIO_TRANSACTIONS_PAGE}
                 isMobile={isMobileClient}
                 component={AudioTransactionsPage}
+              />
+              <Route
+                exact
+                path={CHAT_PAGE}
+                isMobile={isMobileClient}
+                component={ChatPage}
               />
               <Route
                 exact

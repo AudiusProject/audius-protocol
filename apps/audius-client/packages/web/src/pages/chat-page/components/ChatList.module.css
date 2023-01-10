@@ -1,0 +1,19 @@
+.root {
+  overflow-y: auto;
+  background-color: var(--white);
+  border-right: 1px solid var(--neutral-light-8);
+}
+
+.chat {
+  border-top: 1px solid var(--neutral-light-7);
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  background: var(--neutral-light-8);
+}
+.chat.current {
+  background: var(--neutral-light-7);
+}
+.chat > * {
+  margin: 8px;
+}
