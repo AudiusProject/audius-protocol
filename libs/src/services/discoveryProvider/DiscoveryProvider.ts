@@ -442,8 +442,8 @@ export class DiscoveryProvider {
     return await this._makeRequest<CollectionMetadata[]>(req)
   }
 
-  async getFullPlaylist(encodedPlaylistId: string, encodedUserId: string) {
-    const req = Requests.getFullPlaylist(encodedPlaylistId, encodedUserId)
+  async getFullPlaylist(encodedPlaylistId: string = '', encodedUserId: string, permalink: string = '') {
+    const req = Requests.getFullPlaylist(encodedPlaylistId, encodedUserId, permalink)
     return await this._makeRequest(req)
   }
 

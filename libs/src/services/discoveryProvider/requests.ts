@@ -243,13 +243,15 @@ export const getPlaylists = (
 
 export const getFullPlaylist = (
   encodedPlaylistId: string,
-  encodedUserId: string
+  encodedUserId: string,
+  permalink: string,
 ) => {
   return {
     endpoint: 'v1/full/playlists',
-    urlParams: '/' + encodedPlaylistId,
     queryParams: {
-      user_id: encodedUserId
+      user_id: encodedUserId,
+      playlist_id: [encodedPlaylistId],
+      permalink: [permalink]
     }
   }
 }
