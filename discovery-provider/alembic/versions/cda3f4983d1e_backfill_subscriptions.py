@@ -37,12 +37,40 @@ def build_sql(env):
         'is_currents': [True] * num_records,
         'is_deletes': [False] * num_records,
     }
+# Do not backfill any subscriptions updated after the backfill data was pulled.
+# In cases where discovery has an is_current=true, is_delete=true record created before the backfill data was
+# pulled from identity, but the subscriber, user pair is in the identity csv, meaning there should
+# be an active subscription, the INSERT will create 2 is_current=true records for the subscriber, user pair.
+# As identity is the source of truth, DELETE the is_delete=true record.
     inner_sql = """
-INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete)
-VALUES (unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes))
-ON CONFLICT (subscriber_id, user_id, is_current)
-DO UPDATE SET is_delete = False
-WHERE created_at < '2023-01-09 09:27:00' AND is_delete = True;"""
+INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) SELECT * FROM (
+    SELECT *
+    FROM (
+        SELECT
+            unnest(:subscriber_ids) AS subscriber_id,
+            unnest(:user_ids) AS user_id,
+            unnest(:is_currents) AS is_current,
+            unnest(:is_deletes) AS is_delete
+    ) AS csv
+    WHERE NOT EXISTS (
+        SELECT *
+        FROM subscriptions
+        WHERE subscriptions.created_at >= '2023-01-10 05:00:00' AND subscriptions.is_current = true AND subscriptions.subscriber_id = csv.subscriber_id AND subscriptions.user_id = csv.user_id
+    )
+) AS identity_records;
+
+DELETE FROM subscriptions
+WHERE created_at < '2023-01-10 05:00:00' AND is_current = true AND is_delete = true AND EXISTS (
+    SELECT *
+    FROM (
+        SELECT
+            unnest(:subscriber_ids) AS subscriber_id,
+            unnest(:user_ids) AS user_id
+    ) AS csv
+    WHERE csv.subscriber_id = subscriptions.subscriber_id AND csv.user_id = subscriptions.user_id
+);
+"""
+
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     sql = sql.bindparams(sa.bindparam("subscriber_ids"))
     sql = sql.bindparams(sa.bindparam("user_ids"))
