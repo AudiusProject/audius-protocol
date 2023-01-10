@@ -38,7 +38,7 @@ steps:
             . ~/.profile
             cd audius-protocol
             audius-compose build
-            docker compose pull --ignore-pull-failures
+            docker compose pull --ignore-buildable
   - run:
       name: Create Image
       command: |
