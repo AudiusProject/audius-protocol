@@ -15,7 +15,7 @@ if [[ $BUILDTARGET == "x86_64" ]]; then
 fi
 
 mkdir -p $ledger_dir
-solana-test-validator --ledger $ledger_dir &
+solana-test-validator --quiet --ledger $ledger_dir &
 solana_test_validator_pid=$!
 
 SOLANA_HOST="http://127.0.0.1:8899" ./scripts/deploy.sh
