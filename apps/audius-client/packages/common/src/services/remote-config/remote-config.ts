@@ -43,6 +43,7 @@ export type RemoteConfigOptions<Client> = {
   setFeatureFlagSessionId: (id: number) => Promise<void>
   setLogLevel: () => void
   environment: Environment
+  appVersion: string
 }
 
 export const remoteConfig = <
@@ -60,7 +61,8 @@ export const remoteConfig = <
   getFeatureFlagSessionId,
   setFeatureFlagSessionId,
   setLogLevel,
-  environment
+  environment,
+  appVersion
 }: RemoteConfigOptions<Client>) => {
   const state: State = {
     didInitialize: false,
@@ -219,8 +221,10 @@ export const remoteConfig = <
 
     try {
       const enabled = state.didInitialize
-        ? client.isFeatureEnabled(flag, id.toString(), { userId: id }) ??
-          defaultVal
+        ? client.isFeatureEnabled(flag, id.toString(), {
+            userId: id,
+            appVersion
+          }) ?? defaultVal
         : defaultVal
       return enabled
     } catch (err) {

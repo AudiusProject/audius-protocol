@@ -6,12 +6,17 @@ import Config from 'react-native-config'
 
 import { reportToSentry } from 'app/utils/reportToSentry'
 
+import packageInfo from '../../../package.json'
+
 export const FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
+
+const { version: appVersion } = packageInfo
 
 const OPTIMIZELY_KEY = Config.OPTIMIZELY_KEY
 const DATA_FILE_URL = 'https://experiments.audius.co/datafiles/%s.json'
 
 export const remoteConfigInstance = remoteConfig({
+  appVersion,
   createOptimizelyClient: async () => {
     return optimizely.createInstance({
       sdkKey: OPTIMIZELY_KEY,
