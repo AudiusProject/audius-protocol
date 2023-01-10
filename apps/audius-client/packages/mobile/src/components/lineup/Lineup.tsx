@@ -16,12 +16,9 @@ import {
 } from 'app/components/lineup-tile'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
-import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
-
 import { Delineator } from './Delineator'
 import { delineateByTime } from './delineate'
 import type {
-  FeedTipLineupItem,
   LineupProps,
   LoadingLineupItem,
   LineupItem,
@@ -111,7 +108,7 @@ type Section = {
   delineate: boolean
   hasLeadingElement?: boolean
   title?: string
-  data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
+  data: Array<LineupItem | LoadingLineupItem>
 }
 
 const getLineupTileComponent = (item: LineupItem) => {
@@ -174,10 +171,7 @@ const LineupItemTile = memo(function LineupItemTile({
   togglePlay
 }: LineupItemTileProps) {
   if (!item) return null
-
-  if ('_feedTip' in item) {
-    return <FeedTipTile />
-  } else if ('_loading' in item) {
+  if ('_loading' in item) {
     if (item._loading) {
       return <SkeletonTrackTileView />
     }
@@ -209,7 +203,6 @@ export const Lineup = ({
   header,
   LineupEmptyComponent,
   isTrending,
-  isFeed,
   leadingElementId,
   leadingElementDelineator,
   lineup: lineupProp,
@@ -355,7 +348,7 @@ export const Lineup = ({
       item
     }: {
       index: number
-      item: LineupItem | LoadingLineupItem | FeedTipLineupItem
+      item: LineupItem | LoadingLineupItem
     }) => {
       return (
         <LineupItemTile
@@ -413,16 +406,6 @@ export const Lineup = ({
       () => ({ _loading: true } as LoadingLineupItem)
     )
 
-    const prependFeedTipTileIfNeeded = (
-      data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
-    ) => {
-      if (isFeed) {
-        const newData = { _feedTip: true } as FeedTipLineupItem
-        return [newData, ...data]
-      }
-      return data
-    }
-
     if (delineate) {
       const result: Section[] = [
         ...delineateByTime(items),
@@ -431,7 +414,6 @@ export const Lineup = ({
           data: skeletonItems
         }
       ]
-      result[0].data = prependFeedTipTileIfNeeded(result[0].data)
       return result
     }
 
@@ -442,24 +424,16 @@ export const Lineup = ({
         { delineate: false, data: [artistPick] },
         { delineate: true, data: restEntries, hasLeadingElement: true }
       ]
-      result[0].data = prependFeedTipTileIfNeeded(result[0].data)
       return result
     }
 
     const data = [...items, ...skeletonItems]
 
     if (data.length === 0) {
-      const data = prependFeedTipTileIfNeeded([])
-      if (data.length === 0) return []
-      return [{ delineate: false, data }]
+      return []
     }
 
-    return [
-      {
-        delineate: false,
-        data: prependFeedTipTileIfNeeded(data)
-      }
-    ]
+    return [{ delineate: false, data }]
   }, [
     count,
     countOrDefault,
@@ -470,8 +444,7 @@ export const Lineup = ({
     leadingElementId,
     showLeadingElementArtistPick,
     start,
-    limit,
-    isFeed
+    limit
   ])
 
   const areSectionsEmpty = sections.every(

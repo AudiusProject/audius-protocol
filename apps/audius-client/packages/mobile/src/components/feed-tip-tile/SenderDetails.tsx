@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
-import { Platform, View } from 'react-native'
+import { Platform, TouchableOpacity, View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
@@ -10,7 +10,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { PressableText } from './PressableText'
 import { NUM_FEED_TIPPERS_DISPLAYED } from './constants'
 
 const messages = {
@@ -21,7 +20,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  wasTippedByContainer: {
+  root: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -36,13 +35,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.medium,
     color: palette.neutralLight4
   },
-  tippers: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    flexWrap: 'wrap'
-  },
   tipper: {
     flexDirection: 'row',
     alignItems: 'center'
@@ -52,10 +44,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.medium,
     color: palette.neutral,
     flexGrow: 0,
-    flexShrink: 1
-  },
-  pressedText: {
-    opacity: 0.2
+    flexShrink: 1,
+    flexWrap: 'wrap'
   },
   andOthers: {
     marginLeft: spacing(1)
@@ -80,45 +70,33 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
   }, [navigation, receiver])
 
   return (
-    <View style={styles.wasTippedByContainer}>
+    <TouchableOpacity style={styles.root} onPress={handlePressTippers}>
       <IconTip fill={neutralLight4} height={16} width={16} />
       <Text style={styles.wasTippedBy}>
         {Platform.OS === 'ios'
           ? messages.receivedAudioFrom
           : messages.wasTippedBy}
       </Text>
-      <PressableText style={styles.tippers} onPress={handlePressTippers}>
-        {({ pressed }) => {
-          const textStyle = [styles.tipperText, pressed && styles.pressedText]
-
-          return (
-            <>
-              {senders
-                .slice(0, NUM_FEED_TIPPERS_DISPLAYED)
-                .map((tipper, index) => (
-                  <View key={`tipper-${index}`} style={styles.tipper}>
-                    <Text style={textStyle} numberOfLines={1}>
-                      {tipper.name}
-                    </Text>
-                    <UserBadges user={tipper} badgeSize={12} hideName />
-                    {index < senders.length - 1 &&
-                    index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
-                      <Text style={textStyle}>&nbsp;,&nbsp;</Text>
-                    ) : null}
-                  </View>
-                ))}
-              {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
-                <Text style={[...textStyle, styles.andOthers]}>
-                  {messages.andOthers(
-                    receiver.supporter_count -
-                      Math.min(senders.length, NUM_FEED_TIPPERS_DISPLAYED)
-                  )}
-                </Text>
-              ) : null}
-            </>
-          )
-        }}
-      </PressableText>
-    </View>
+      {senders.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
+        <View key={`tipper-${index}`} style={styles.tipper}>
+          <Text style={styles.tipperText} numberOfLines={1}>
+            {tipper.name}
+          </Text>
+          <UserBadges user={tipper} badgeSize={12} hideName />
+          {index < senders.length - 1 &&
+          index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
+            <Text style={styles.tipperText}>&nbsp;,&nbsp;</Text>
+          ) : null}
+        </View>
+      ))}
+      {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
+        <Text style={[styles.tipperText, styles.andOthers]}>
+          {messages.andOthers(
+            receiver.supporter_count -
+              Math.min(senders.length, NUM_FEED_TIPPERS_DISPLAYED)
+          )}
+        </Text>
+      ) : null}
+    </TouchableOpacity>
   )
 }
