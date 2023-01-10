@@ -195,6 +195,7 @@ def cleanup(celery_app):
     with db.scoped_session() as session:
         session.execute(
             """
+            DELETE FROM "blocks";
             INSERT INTO "blocks"
             ("blockhash", "parenthash", "is_current")
             VALUES
@@ -202,11 +203,12 @@ def cleanup(celery_app):
                 '0x0',
                 NULL,
                 TRUE
-            )
+            );
             """
         )
 
     yield
+
     remove_test_file(track_metadata_json_file)
 
 
