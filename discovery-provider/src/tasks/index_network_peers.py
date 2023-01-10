@@ -1,15 +1,15 @@
 import logging
 
-from src.utils import get_all_other_nodes
-import os
+import requests
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
+from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.prometheus_metric import save_duration_metric
-import requests
 
 logger = logging.getLogger(__name__)
 
-LOCAL_RPC = "localhost:8545"
+LOCAL_RPC = "http://chain:8545"
+DOUBLE_CAST_ERROR_CODE = -32603
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network
@@ -35,19 +35,72 @@ def index_content_node_peers(self):
     cid_metadata_client.update_cnode_urls(content_peers)
     logger.info(f"index_network_peers.py | All known content peers {content_nodes}")
 
-    
+
+def clique_propose(wallet: str, vote: bool):
+    propose_data = (
+        '{"method":"clique_propose","params":["'
+        + wallet
+        + '", '
+        + str(vote).lower()
+        + "]}"
+    )
+    response = requests.post(LOCAL_RPC, data=propose_data)
+    return response.json()
+
 
 def index_discovery_node_peers(self):
-    discovery_nodes = get_all_other_nodes()
+    shared_config = update_network_peers.shared_config
+    current_wallet = shared_config["delegate"]["owner_wallet"].lower()
 
+    # the maximum signers in addition to the registered static nodes
+    max_signers = int(shared_config["discprov"]["max_signers"])
+
+    other_wallets = set([wallet.lower() for wallet in get_all_other_nodes()[1]])
+    logger.info(
+        f"index_network_peers.py | Other registered discovery addresses: {other_wallets}"
+    )
 
     # get current signers
-    data = '{"method":"clique_getSigners","params":[],"id":1,"jsonrpc":"2.0"}'
-    response = requests.post(LOCAL_RPC, data=data)
-    json = response.json()
+    get_signers_data = '{"method":"clique_getSigners","params":[]}'
+    signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
+    signers_response_dict = signers_response.json()
+    current_signers = set(
+        [wallet.lower() for wallet in signers_response_dict["result"]]
+    )
+    logger.info(f"index_network_peers.py | Current chain signers: {current_signers}")
 
-    # propose missing signers
+    # only signers can propose
+    if current_wallet not in current_signers:
+        return
 
+    # propose registered nodes as signers
+    current_signers.remove(current_wallet)
+    add_wallets = sorted(list(other_wallets - current_signers))[:max_signers]
+    for wallet in add_wallets:
+        response_dict = clique_propose(wallet, True)
+        if (
+            "error" in response_dict
+            and response_dict["error"]["code"] != DOUBLE_CAST_ERROR_CODE
+        ):
+            logger.error(
+                f"index_network_peers.py | Failed to add signer {wallet} with error {response_dict['error']['message']}"
+            )
+        else:
+            logger.info(f"index_network_peers.py | Proposed to add signer {wallet}")
+
+    # remove unregistered nodes as signers
+    remove_wallets = sorted(list(current_signers - other_wallets))
+    for wallet in remove_wallets:
+        response_dict = clique_propose(wallet, False)
+        if (
+            "error" in response_dict
+            and response_dict["error"]["code"] != DOUBLE_CAST_ERROR_CODE
+        ):
+            logger.error(
+                f"index_network_peers.py | Failed to remove signer {wallet} with error {response_dict['error']['message']}"
+            )
+        else:
+            logger.info(f"index_network_peers.py | Proposed to remove signer {wallet}")
 
 
 # ####### CELERY TASKS ####### #
