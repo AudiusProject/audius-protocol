@@ -1,3 +1,3 @@
 export type ReachabilityState = {
-  networkReachable: boolean
+  networkReachable: boolean | 'unconfirmed'
 }

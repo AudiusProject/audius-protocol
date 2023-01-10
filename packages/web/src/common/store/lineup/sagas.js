@@ -11,7 +11,8 @@ import {
   lineupActions as baseLineupActions,
   queueActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  waitForAccount
 } from '@audius/common'
 import {
   all,
@@ -29,6 +30,8 @@ import {
 
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+
+import { waitForBackendSetup } from '../backend/sagas'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
@@ -117,6 +120,8 @@ function* fetchLineupMetadatasAsync(
   sourceSelector,
   action
 ) {
+  yield waitForBackendSetup()
+  yield waitForAccount()
   const initLineup = yield select(lineupSelector)
   const initSource = sourceSelector
     ? yield select((state) =>

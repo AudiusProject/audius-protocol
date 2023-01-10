@@ -81,7 +81,12 @@ const createRootReducer = () =>
     shareToStoryProgress
   })
 
-const sagaMiddleware = createSagaMiddleware({ context: storeContext })
+const sagaMiddleware = createSagaMiddleware({
+  context: storeContext,
+  onError: (e) => {
+    console.error('Caught Saga Error', e, e.stack)
+  }
+})
 
 const middlewares = [sagaMiddleware]
 
