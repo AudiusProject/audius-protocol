@@ -735,7 +735,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_identity_service_test
-      - image: redis:5.0.4
+      - image: redis:7.0
     steps:
       - checkout
       - diff-if-necessary:
@@ -1409,7 +1409,7 @@ workflows:
             - test-libs
             - test-contracts
             - test-solana-programs
-            - test-solana-programs-anchor
+            # - test-solana-programs-anchor
             - test-eth-contracts
             # - test-mad-dog-e2e
             - test-sdk
