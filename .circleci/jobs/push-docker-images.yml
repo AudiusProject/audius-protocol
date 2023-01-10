@@ -19,4 +19,4 @@ steps:
         - run:
             name: Docker login
             command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        - run: . ~/.profile; docker compose push
+        - run: . ~/.profile; cd "$PROTOCOL_DIR"; docker compose push

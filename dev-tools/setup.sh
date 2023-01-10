@@ -27,7 +27,7 @@ debian | ubuntu)
 
     mkdir -p ~/.docker/cli-plugins
     curl -L "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-$(dpkg --print-architecture)" -o ~/.docker/cli-plugins/docker-buildx
-    curl -L "https://github.com/docker/compose/releases/download/v2.15.0/docker-compose-linux-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
+    curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
     chmod +x ~/.docker/cli-plugins/docker-buildx
     chmod +x ~/.docker/cli-plugins/docker-compose
 
