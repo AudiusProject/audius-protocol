@@ -124,56 +124,6 @@ def get_contract_info_if_exists(self, address):
     return None
 
 
-def initialize_blocks_table_if_necessary(db: SessionManager):
-    redis = update_task.redis
-
-    target_blockhash = None
-    target_blockhash = update_task.shared_config["discprov"]["start_block"]
-    target_block = update_task.web3.eth.get_block(target_blockhash, True)
-
-    with db.scoped_session() as session:
-        current_block_query_result = session.query(Block).filter_by(is_current=True)
-        if current_block_query_result.count() == 0:
-            blocks_query_result = session.query(Block)
-            assert (
-                blocks_query_result.count() == 0
-            ), "Corrupted DB State - Expect single row marked as current"
-            block_model = Block(
-                blockhash=target_blockhash,
-                number=target_block.number,
-                parenthash=target_blockhash,
-                is_current=True,
-            )
-            if (
-                target_block.number == 0
-                or target_blockhash == default_config_start_hash
-            ):
-                block_model.number = None
-
-            session.add(block_model)
-            logger.info(
-                f"index.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
-            )
-        else:
-            assert (
-                current_block_query_result.count() == 1
-            ), "Expected SINGLE row marked as current"
-
-            # set the last indexed block in redis
-            current_block_result = current_block_query_result.first()
-            if current_block_result.number:
-                redis.set(
-                    most_recent_indexed_block_redis_key, current_block_result.number
-                )
-            if current_block_result.blockhash:
-                redis.set(
-                    most_recent_indexed_block_hash_redis_key,
-                    current_block_result.blockhash,
-                )
-
-    return target_blockhash
-
-
 def get_latest_block(db: SessionManager):
     latest_block = None
     block_processing_window = int(
@@ -1192,7 +1142,6 @@ def update_task(self):
             logger.info(
                 f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
             )
-            initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
 
