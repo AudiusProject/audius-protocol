@@ -57,6 +57,7 @@ type ChatReactRPC struct {
 }
 
 type ChatReactRPCParams struct {
+	ChatID    string `json:"chat_id"`
 	MessageID string `json:"message_id"`
 	Reaction  string `json:"reaction"`
 }
