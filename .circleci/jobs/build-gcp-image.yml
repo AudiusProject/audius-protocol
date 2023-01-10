@@ -34,7 +34,11 @@ steps:
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: . ~/.profile; cd audius-protocol; audius-compose build; docker compose pull
+        - run: |
+            . ~/.profile
+            cd audius-protocol
+            audius-compose build
+            docker compose pull --ignore-pull-failures
   - run:
       name: Create Image
       command: |
