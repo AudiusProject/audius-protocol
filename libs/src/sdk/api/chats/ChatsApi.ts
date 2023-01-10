@@ -238,6 +238,7 @@ export class ChatsApi extends BaseAPI {
     return await this.sendRpc({
       method: 'chat.react',
       params: {
+        chat_id: requestParameters.chatId,
         message_id: requestParameters.messageId,
         reaction: requestParameters.reaction
       }
