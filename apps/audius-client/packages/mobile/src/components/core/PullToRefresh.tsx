@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import LottieView from 'lottie-react-native'
 import type {
@@ -13,13 +13,53 @@ import { usePrevious } from 'react-use'
 import IconRefreshPull from 'app/assets/animations/iconRefreshPull.json'
 import IconRefreshSpin from 'app/assets/animations/iconRefreshSpin.json'
 import * as haptics from 'app/haptics'
-import { makeStyles } from 'app/styles'
+import { makeAnimations, makeStyles } from 'app/styles'
 import { attachToScroll } from 'app/utils/animation'
 import { colorize } from 'app/utils/colorizeLottie'
-import { useThemeColors } from 'app/utils/theme'
 
 const PULL_DISTANCE = 75
 const DEBOUNCE_TIME_MS = 0
+
+const useAnimations = makeAnimations(({ palette }) => {
+  const { neutralLight4, staticWhite } = palette
+  const iconRefreshSpin = colorize(IconRefreshSpin, {
+    'assets.0.layers.0.shapes.0.it.1.ck': neutralLight4
+  })
+
+  const iconRefreshPull = colorize(IconRefreshPull, {
+    // arrow Outlines 4.Group 1.Stroke 1
+    'assets.0.layers.0.shapes.0.it.1.c.k': neutralLight4,
+    // arrow Outlines 2.Group 3.Stroke 1
+    'layers.1.shapes.0.it.1.c.k': neutralLight4,
+    // arrow Outlines.Group 1.Stroke 1
+    'layers.2.shapes.0.it.1.c.k': neutralLight4,
+    // arrow Outlines.Group 2.Stroke 1
+    'layers.2.shapes.1.it.1.c.k': neutralLight4
+  })
+
+  const iconRefreshSpinWhite = colorize(IconRefreshSpin, {
+    'assets.0.layers.0.shapes.0.it.1.ck': staticWhite
+  })
+
+  const iconRefreshPullWhite = colorize(IconRefreshPull, {
+    // arrow Outlines 4.Group 1.Stroke 1
+    'assets.0.layers.0.shapes.0.it.1.c.k': staticWhite,
+    // arrow Outlines 2.Group 3.Stroke 1
+    'layers.1.shapes.0.it.1.c.k': staticWhite,
+    // arrow Outlines.Group 1.Stroke 1
+    'layers.2.shapes.0.it.1.c.k': staticWhite,
+    // arrow Outlines.Group 2.Stroke 1
+    'layers.2.shapes.1.it.1.c.k': staticWhite
+  })
+
+  return {
+    neutral: {
+      spin: iconRefreshSpin,
+      pull: iconRefreshPull
+    },
+    white: { spin: iconRefreshSpinWhite, pull: iconRefreshPullWhite }
+  }
+})
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -188,8 +228,6 @@ export const PullToRefresh = ({
   color
 }: PullToRefreshProps) => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
-
   const wasRefreshing = usePrevious(isRefreshing)
 
   const [didHitTop, setDidHitTop] = useState(false)
@@ -198,32 +236,9 @@ export const PullToRefresh = ({
   const [shouldShowSpinner, setShouldShowSpinner] = useState(false)
   const animationRef = useRef<LottieView | null>()
 
-  const colorizedIconRefreshSpin = useMemo(
-    () =>
-      colorize(IconRefreshSpin, {
-        'assets.0.layers.0.shapes.0.it.1.ck': color || neutralLight4
-      }),
-    [color, neutralLight4]
-  )
-
-  const colorizedIconRefreshPull = useMemo(
-    () =>
-      colorize(IconRefreshPull, {
-        // arrow Outlines 4.Group 1.Stroke 1
-        'assets.0.layers.0.shapes.0.it.1.c.k': color || neutralLight4,
-        // arrow Outlines 2.Group 3.Stroke 1
-        'layers.1.shapes.0.it.1.c.k': color || neutralLight4,
-        // arrow Outlines.Group 1.Stroke 1
-        'layers.2.shapes.0.it.1.c.k': color || neutralLight4,
-        // arrow Outlines.Group 2.Stroke 1
-        'layers.2.shapes.1.it.1.c.k': color || neutralLight4
-      }),
-    [color, neutralLight4]
-  )
-
-  const colorizedIcon = shouldShowSpinner
-    ? colorizedIconRefreshSpin
-    : colorizedIconRefreshPull
+  const { neutral, white } = useAnimations()
+  const { spin, pull } = color ? white : neutral
+  const colorizedIcon = shouldShowSpinner ? spin : pull
 
   const handleAnimationFinish = useCallback(
     (isCancelled: boolean) => {
