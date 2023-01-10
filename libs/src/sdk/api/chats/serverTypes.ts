@@ -42,6 +42,7 @@ export type ChatMessageRPC = {
 export type ChatReactRPC = {
   method: 'chat.react'
   params: {
+    chat_id: string
     message_id: string
     reaction: string
   }
@@ -98,6 +99,7 @@ export type UserChat = {
   invite_code: string
   unread_message_count: number
   last_read_at: string
+  cleared_history_at: string
 }
 
 export type ChatMessage = {
