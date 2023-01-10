@@ -277,19 +277,18 @@ def test_build(protocol_dir):
         [
             "docker",
             "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.test.yml' if ARM64 else 'docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir}",
             "build",
         ],
-        env={"COMPOSE_PROFILES": "*"},
     )
 
     subprocess.run(
         [
             "docker",
             "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.test.yml' if ARM64 else 'docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir}",
             "pull",
@@ -314,7 +313,7 @@ def test_run(protocol_dir, service, args):
         [
             "docker",
             "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.test.yml' if ARM64 else 'docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir}",
             "run",
@@ -340,7 +339,7 @@ def test_down(protocol_dir):
         [
             "docker",
             "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
+            f"--file={protocol_dir / 'docker-compose.m1.test.yml' if ARM64 else 'docker-compose.test.yml'}",
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir}",
             "--profile=*",

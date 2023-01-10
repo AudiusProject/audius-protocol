@@ -188,10 +188,27 @@ class MockResponse:
 
 
 @pytest.fixture(autouse=True)
-def cleanup():
+def cleanup(celery_app):
     set_json_cached_key(redis, INDEXING_ERROR_KEY, None)  # clear indexing error
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    db = task.db
+    with db.scoped_session() as session:
+        session.execute(
+            """
+            INSERT INTO "blocks"
+            ("blockhash", "parenthash", "is_current", "number")
+            VALUES
+            (
+                '0x0',
+                NULL,
+                TRUE,
+                -1
+            ) ON CONFLICT DO NOTHING;
+            """
+        )
 
     yield
+
     remove_test_file(track_metadata_json_file)
 
 

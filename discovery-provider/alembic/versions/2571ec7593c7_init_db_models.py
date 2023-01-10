@@ -6,7 +6,7 @@ Create Date: 2018-11-27 17:24:52.534597
 
 """
 import sqlalchemy as sa
-from alembic import op
+from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = "2571ec7593c7"
@@ -24,17 +24,22 @@ def upgrade():
         sa.PrimaryKeyConstraint("blockhash"),
     )
     # Initialize the blocks table to contain one current row,
-    # after which, indexing will begin to add more rows
-    op.execute("""
-        INSERT INTO "blocks"
-        ("blockhash", "parenthash", "is_current")
-        VALUES
-        (
-            '0x0',
-            NULL,
-            TRUE
-        )
-    """)
+    # after which, indexing will begin to add more rows.
+    # When running in test config, do not initialize the table
+    # as many tests depend on clear database state.
+    mode = context.config.get_main_option("mode")
+    if mode != "test":
+        op.execute("""
+            INSERT INTO "blocks"
+            ("blockhash", "parenthash", "is_current")
+            VALUES
+            (
+                '0x0',
+                NULL,
+                TRUE
+            )
+        """)
+
     op.create_table(
         "tracks",
         sa.Column("blockhash", sa.String(), nullable=False),
