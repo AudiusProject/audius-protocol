@@ -244,7 +244,7 @@ export const getPlaylists = (
 export const getFullPlaylist = (
   encodedPlaylistId: string,
   encodedUserId: string,
-  permalink: string,
+  permalink: string
 ) => {
   return {
     endpoint: 'v1/full/playlists',
