@@ -12,7 +12,7 @@ type ChatCreateRPCParams struct {
 
 type PurpleInvite struct {
 	InviteCode string `json:"invite_code"`
-	UserID     string `json:"user_id"`    
+	UserID     string `json:"user_id"`
 }
 
 type ChatDeleteRPC struct {
@@ -36,7 +36,7 @@ type ChatInviteRPCParams struct {
 
 type FluffyInvite struct {
 	InviteCode string `json:"invite_code"`
-	UserID     string `json:"user_id"`    
+	UserID     string `json:"user_id"`
 }
 
 type ChatMessageRPC struct {
@@ -45,9 +45,9 @@ type ChatMessageRPC struct {
 }
 
 type ChatMessageRPCParams struct {
-	ChatID          string  `json:"chat_id"`                    
-	Message         string  `json:"message"`                    
-	MessageID       string  `json:"message_id"`                 
+	ChatID          string  `json:"chat_id"`
+	Message         string  `json:"message"`
+	MessageID       string  `json:"message_id"`
 	ParentMessageID *string `json:"parent_message_id,omitempty"`
 }
 
@@ -57,9 +57,8 @@ type ChatReactRPC struct {
 }
 
 type ChatReactRPCParams struct {
-	ChatID    string `json:"chat_id"`   
 	MessageID string `json:"message_id"`
-	Reaction  string `json:"reaction"`  
+	Reaction  string `json:"reaction"`
 }
 
 type ChatReadRPC struct {
@@ -104,28 +103,28 @@ type RPCPayload struct {
 }
 
 type RPCPayloadParams struct {
-	ChatID          *string           `json:"chat_id,omitempty"`          
-	Invites         []TentacledInvite `json:"invites,omitempty"`          
-	Message         *string           `json:"message,omitempty"`          
-	MessageID       *string           `json:"message_id,omitempty"`       
+	ChatID          *string           `json:"chat_id,omitempty"`
+	Invites         []TentacledInvite `json:"invites,omitempty"`
+	Message         *string           `json:"message,omitempty"`
+	MessageID       *string           `json:"message_id,omitempty"`
 	ParentMessageID *string           `json:"parent_message_id,omitempty"`
-	Reaction        *string           `json:"reaction,omitempty"`         
-	UserID          *string           `json:"user_id,omitempty"`          
-	Permit          *ChatPermission   `json:"permit,omitempty"`           
+	Reaction        *string           `json:"reaction,omitempty"`
+	UserID          *string           `json:"user_id,omitempty"`
+	Permit          *ChatPermission   `json:"permit,omitempty"`
 }
 
 type TentacledInvite struct {
 	InviteCode string `json:"invite_code"`
-	UserID     string `json:"user_id"`    
+	UserID     string `json:"user_id"`
 }
 
 type UserChat struct {
-	ChatID             string       `json:"chat_id"`             
-	ChatMembers        []ChatMember `json:"chat_members"`        
-	ClearedHistoryAt   string       `json:"cleared_history_at"`  
-	InviteCode         string       `json:"invite_code"`         
-	LastMessageAt      string       `json:"last_message_at"`     
-	LastReadAt         string       `json:"last_read_at"`        
+	ChatID             string       `json:"chat_id"`
+	ChatMembers        []ChatMember `json:"chat_members"`
+	ClearedHistoryAt   string       `json:"cleared_history_at"`
+	InviteCode         string       `json:"invite_code"`
+	LastMessageAt      string       `json:"last_message_at"`
+	LastReadAt         string       `json:"last_read_at"`
 	UnreadMessageCount float64      `json:"unread_message_count"`
 }
 
@@ -134,27 +133,27 @@ type ChatMember struct {
 }
 
 type ChatMessage struct {
-	CreatedAt    string     `json:"created_at"`    
-	Message      string     `json:"message"`       
-	MessageID    string     `json:"message_id"`    
-	Reactions    []Reaction `json:"reactions"`     
+	CreatedAt    string     `json:"created_at"`
+	Message      string     `json:"message"`
+	MessageID    string     `json:"message_id"`
+	Reactions    []Reaction `json:"reactions"`
 	SenderUserID string     `json:"sender_user_id"`
 }
 
 type Reaction struct {
 	CreatedAt string `json:"created_at"`
-	Reaction  string `json:"reaction"`  
-	UserID    string `json:"user_id"`   
+	Reaction  string `json:"reaction"`
+	UserID    string `json:"user_id"`
 }
 
 type ChatInvite struct {
 	InviteCode string `json:"invite_code"`
-	UserID     string `json:"user_id"`    
+	UserID     string `json:"user_id"`
 }
 
 type CommsResponse struct {
-	Data    interface{} `json:"data"`             
-	Health  Health      `json:"health"`           
+	Data    interface{} `json:"data"`
+	Health  Health      `json:"health"`
 	Summary *Summary    `json:"summary,omitempty"`
 }
 
@@ -163,10 +162,10 @@ type Health struct {
 }
 
 type Summary struct {
-	NextCursor     string  `json:"next_cursor"`    
-	PrevCursor     string  `json:"prev_cursor"`    
+	NextCursor     string  `json:"next_cursor"`
+	PrevCursor     string  `json:"prev_cursor"`
 	RemainingCount float64 `json:"remaining_count"`
-	TotalCount     float64 `json:"total_count"`    
+	TotalCount     float64 `json:"total_count"`
 }
 
 type ChatCreateRPCMethod string
