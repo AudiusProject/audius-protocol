@@ -1,5 +1,5 @@
 import { reachabilityActions, reachabilitySelectors } from '@audius/common'
-import { call, delay, put, race, select } from 'typed-redux-saga'
+import { delay, race, put, all, take, select, call } from 'typed-redux-saga'
 
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
@@ -10,9 +10,9 @@ const REACHABILITY_URL = process.env.REACT_APP_REACHABILITY_URL
 
 // Property values borrowed from
 // https://github.com/react-native-community/react-native-netinfo
-const REACHABILITY_LONG_TIMEOUT = 10 * 1000 // 10s
-const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
-const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
+export const REACHABILITY_LONG_TIMEOUT = 10 * 1000 // 10s
+export const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
+export const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
 
 // Check that a response from REACHABILITY_URL is valid
 const isResponseValid = (response: Response | undefined) =>
@@ -41,6 +41,20 @@ function* ping() {
     console.debug('Reachability call failed')
     return false
   }
+}
+
+// Wait until reachability is either true or 'unconfirmed'
+export function* waitForReachability() {
+  const isReachable = yield* select(getIsReachable)
+  if (isReachable !== false) return
+  yield* all([take(reachabilityActions.SET_REACHABLE)])
+}
+
+// Wait until reachability is true. 'unconfirmed' is not good enough
+export function* waitForConfirmedReachability() {
+  const isReachable = yield* select(getIsReachable)
+  if (isReachable === true) return
+  yield* all([take(reachabilityActions.SET_REACHABLE)])
 }
 
 /** Updates the reachability setting in the store and log-warns of any change. */

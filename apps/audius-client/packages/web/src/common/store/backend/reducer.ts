@@ -30,7 +30,7 @@ const actionsMap = {
   [SETUP_BACKEND_FAILED](state: BackendState) {
     return {
       ...state,
-      isSetup: true,
+      isSetup: false,
       web3Error: false
     }
   }

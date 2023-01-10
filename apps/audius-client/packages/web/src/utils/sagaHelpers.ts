@@ -1,10 +1,11 @@
 import { waitForAccount } from '@audius/common'
 import { call } from 'typed-redux-saga'
 
+import { waitForBackendSetup } from 'common/store/backend/sagas'
 import {
-  waitForBackendSetup,
+  waitForConfirmedReachability,
   waitForReachability
-} from 'common/store/backend/sagas'
+} from 'store/reachability/sagas'
 
 /**
  * Required for all writes
@@ -12,6 +13,7 @@ import {
 export function* waitForWrite() {
   yield* call(waitForBackendSetup)
   yield* call(waitForAccount)
+  yield* call(waitForConfirmedReachability)
 }
 
 /**
