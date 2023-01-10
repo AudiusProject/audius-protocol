@@ -570,7 +570,9 @@ def get_play_health_info(
                 )
         else:
             # Decode bytes into float for latest timestamp
-            oldest_unarchived_play = datetime.utcfromtimestamp(float(oldest_unarchived_play.decode()))
+            oldest_unarchived_play = datetime.utcfromtimestamp(
+                float(oldest_unarchived_play.decode())
+            )
 
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
