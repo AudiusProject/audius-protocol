@@ -78,6 +78,7 @@ def index_discovery_node_peers(self):
     add_wallets = sorted(list(other_wallets - current_signers))[:max_signers]
     for wallet in add_wallets:
         response_dict = clique_propose(wallet, True)
+        logger.info(f"index_network_peers.py | Proposed to add signer {wallet}")
         if (
             "error" in response_dict
             and response_dict["error"]["code"] != DOUBLE_CAST_ERROR_CODE
@@ -92,6 +93,7 @@ def index_discovery_node_peers(self):
     remove_wallets = sorted(list(current_signers - other_wallets))
     for wallet in remove_wallets:
         response_dict = clique_propose(wallet, False)
+        logger.info(f"index_network_peers.py | Proposed to remove signer {wallet}")
         if (
             "error" in response_dict
             and response_dict["error"]["code"] != DOUBLE_CAST_ERROR_CODE
