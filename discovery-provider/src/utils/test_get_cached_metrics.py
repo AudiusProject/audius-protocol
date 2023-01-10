@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timedelta
 
-from src.utils.helpers import redis_set_and_dump
 from src.utils.redis_metrics import (
     datetime_format_secondary,
     get_redis_metrics,
@@ -30,7 +29,7 @@ def test_get_cached_route_metrics(redis_mock):
             "another-ip": 3,
         },
     }
-    redis_set_and_dump(redis_mock, personal_route_metrics, json.dumps(metrics))
+    redis_mock.set(personal_route_metrics, json.dumps(metrics))
 
     result = get_redis_metrics(redis_mock, start_time_obj, personal_route_metrics)
 
@@ -54,7 +53,7 @@ def test_get_cached_app_metrics(redis_mock):
             "another-app": 3,
         },
     }
-    redis_set_and_dump(redis_mock, personal_app_metrics, json.dumps(metrics))
+    redis_mock.set(personal_app_metrics, json.dumps(metrics))
 
     result = get_redis_metrics(redis_mock, start_time_obj, personal_app_metrics)
 

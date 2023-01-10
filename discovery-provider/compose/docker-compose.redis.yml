@@ -3,7 +3,7 @@ version: "3"
 services:
   redis-server:
     image: redis:3.0-alpine
-    command: redis-server --save ''
+    command: redis-server
     ports:
       - "${audius_redis_port}:6379"
     networks:
