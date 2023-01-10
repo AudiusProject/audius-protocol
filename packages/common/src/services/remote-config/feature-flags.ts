@@ -33,7 +33,8 @@ export enum FeatureFlags {
   SOLANA_PHONE_WALLET_CONNECT = 'solana_phone_wallet_connect',
   AUDIO_TRANSACTIONS_HISTORY = 'audio_transactions_history',
   RATE_CTA_ENABLED = 'rate_cta_enabled',
-  SHARE_TO_SNAPCHAT = 'share_to_snapchat'
+  SHARE_TO_SNAPCHAT = 'share_to_snapchat',
+  CHAT_ENABLED = 'chat_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -82,5 +83,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_PHONE_WALLET_CONNECT]: false,
   [FeatureFlags.AUDIO_TRANSACTIONS_HISTORY]: false,
   [FeatureFlags.RATE_CTA_ENABLED]: false,
-  [FeatureFlags.SHARE_TO_SNAPCHAT]: false
+  [FeatureFlags.SHARE_TO_SNAPCHAT]: false,
+  [FeatureFlags.CHAT_ENABLED]: false
 }

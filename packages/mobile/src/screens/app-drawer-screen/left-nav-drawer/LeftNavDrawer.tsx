@@ -2,6 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common'
 import {
+  FeatureFlags,
   StringKeys,
   formatWei,
   walletSelectors,
@@ -23,7 +24,7 @@ import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
@@ -100,6 +101,7 @@ const WrappedLeftNavDrawer = () => {
   const totalBalance = useSelector(getAccountTotalBalance)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   const navigation = useAppDrawerNavigation()
 
@@ -152,6 +154,14 @@ const WrappedLeftNavDrawer = () => {
         to='Profile'
         params={{ handle: 'accountUser' }}
       />
+      {isChatEnabled ? (
+        <LeftNavLink
+          icon={IconUser}
+          label={'Messages'}
+          to='Chats'
+          params={{}}
+        />
+      ) : null}
       <LeftNavLink
         icon={IconCrown}
         label={messages.audio}

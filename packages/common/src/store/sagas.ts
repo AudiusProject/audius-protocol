@@ -7,6 +7,7 @@
 // import signOutSagas from 'common/store/sign-out/sagas'
 // import premiumContentSagas from 'common/store/premiumContent/sagas'
 import { sagas as castSagas } from 'store/cast/sagas'
+import { chatSagas } from 'store/pages/chat'
 import remoteConfigSagas from 'store/remote-config/sagas'
 
 import { CommonStoreContext } from './storeContext'
@@ -32,6 +33,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // users: usersSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
+  chat: chatSagas,
   toast: toastSagas,
   shareModalUI: shareModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,

@@ -12,10 +12,6 @@ require('node-libs-react-native/globals')
 require('react-native-get-random-values')
 require('react-native-url-polyfill/auto')
 
-// Polyfill BigInt
-// eslint-disable-next-line
-BigInt = require('big-integer')
-
 const { App } = require('./src/app')
 
 // Ignore LogBox logs for preferred log messages in external

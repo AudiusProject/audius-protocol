@@ -8,6 +8,7 @@ import * as analytics from 'app/services/analytics'
 import { audioPlayer } from 'app/services/audio-player'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { audiusSdk } from 'app/services/audius-sdk'
 import { cognito } from 'app/services/cognito'
 import { env } from 'app/services/env'
 import { explore } from 'app/services/explore'
@@ -48,5 +49,6 @@ export const storeContext: CommonStoreContext = {
   instagramAppId: Config.INSTAGRAM_APP_ID,
   instagramRedirectUrl: Config.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
-  openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL)
+  openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL),
+  audiusSdk
 }

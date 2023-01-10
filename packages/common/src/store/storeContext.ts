@@ -1,3 +1,5 @@
+import type { sdk } from '@audius/sdk'
+
 import { AnalyticsEvent, LineupState, Track } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
@@ -56,4 +58,5 @@ export type CommonStoreContext = {
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
   openSeaClient: OpenSeaClient
+  audiusSdk: () => Promise<ReturnType<typeof sdk>>
 }
