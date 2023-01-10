@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     Integer,
@@ -40,3 +41,16 @@ class NotificationSeen(Base, RepresentableMixin):
     txhash = Column(String)
     seen_at = Column(DateTime, nullable=False)
     PrimaryKeyConstraint(user_id, seen_at)
+
+
+class PlaylistSeen(Base, RepresentableMixin):
+    __tablename__ = "playlist_seen"
+
+    is_current = Column(Boolean, nullable=False)
+    user_id = Column(Integer, nullable=False)
+    playlist_id = Column(Integer, nullable=False)
+    blocknumber = Column(Integer)
+    blockhash = Column(String)
+    txhash = Column(String)
+    seen_at = Column(DateTime, nullable=False)
+    PrimaryKeyConstraint(is_current, user_id, playlist_id, seen_at)

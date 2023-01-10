@@ -2,8 +2,9 @@
 # Currently, the repository is not configured as such but may be moving forward
 # https://caremad.io/posts/2013/07/setup-vs-requirement/
 import uuid
-from setuptools import setup, find_packages
+
 from pip._internal.req import parse_requirements
+from setuptools import find_packages, setup
 
 install_reqs = parse_requirements("requirements.txt", session=uuid.uuid1())
 requirements = [str(ir.req) for ir in install_reqs]
