@@ -566,12 +566,11 @@ def get_play_health_info(
             if oldest_unarchived_play:
                 redis.set(
                     oldest_unarchived_play_key,
-                    oldest_unarchived_play.timestamp(),
+                    oldest_unarchived_play,
                 )
         else:
             # Decode bytes into float for latest timestamp
-            oldest_unarchived_play = float(oldest_unarchived_play.decode())
-            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+            oldest_unarchived_play = datetime.utcfromtimestamp(float(oldest_unarchived_play.decode()))
 
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
@@ -588,7 +587,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
-        "oldest_unarchived_play_created_at": oldest_unarchived_play,
+        "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
     }
 
 
