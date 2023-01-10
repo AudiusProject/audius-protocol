@@ -195,7 +195,6 @@ def cleanup(celery_app):
     with db.scoped_session() as session:
         session.execute(
             """
-            DELETE FROM "blocks";
             INSERT INTO "blocks"
             ("blockhash", "parenthash", "is_current", "number")
             VALUES
@@ -204,7 +203,7 @@ def cleanup(celery_app):
                 NULL,
                 TRUE,
                 -1
-            );
+            ) ON CONFLICT DO NOTHING;
             """
         )
 
