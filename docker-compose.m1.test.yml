@@ -1,0 +1,102 @@
+# Do not expose any ports in this file to allow running multiple tests and e2e dev at the same time
+
+version: "3.9"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
+
+services:
+  # TODO: remove duplication between docker-compose.yml and docker-compose.test.yml
+
+  poa-ganache:
+    extends:
+      file: docker-compose.test.yml
+      service: poa-ganache
+
+  eth-ganache:
+    extends:
+      file: docker-compose.test.yml
+      service: eth-ganache
+
+  solana-test-validator:
+    image: audius/solana-programs:m1-latest
+    environment:
+      SOLANA_HOST: "http://127.0.0.1:8899"
+    volumes:
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+    logging: *default-logging
+    deploy:
+      mode: global
+    ports:
+      - "8899:8899"
+
+  build-audius-libs:
+    extends:
+      file: docker-compose.test.yml
+      service: build-audius-libs
+
+  # creator-node
+
+  creator-node-db:
+    extends:
+      file: docker-compose.test.yml
+      service: creator-node-db
+
+  creator-node-redis:
+    extends:
+      file: docker-compose.test.yml
+      service: creator-node-redis
+
+  test-creator-node:
+    extends:
+      file: docker-compose.test.yml
+      service: test-creator-node
+
+  # discovery-provider
+
+  discovery-provider-elasticsearch:
+    extends:
+      file: docker-compose.test.yml
+      service: discovery-provider-elasticsearch
+
+  discovery-provider-db:
+    extends:
+      file: docker-compose.test.yml
+      service: discovery-provider-db
+
+  discovery-provider-redis:
+    extends:
+      file: docker-compose.test.yml
+      service: discovery-provider-redis
+
+  test-discovery-provider:
+    extends:
+      file: docker-compose.test.yml
+      service: test-discovery-provider
+
+  # identity-service
+
+  identity-service-db:
+    extends:
+      file: docker-compose.test.yml
+      service: identity-service-db
+
+  identity-service-redis:
+    extends:
+      file: docker-compose.test.yml
+      service: identity-service-redis
+
+  test-identity-service:
+    extends:
+      file: docker-compose.test.yml
+      service: test-identity-service
+
+volumes:
+  poa-contracts-abis:
+  eth-contracts-abis:
+  solana-programs-idl:
+  audius-libs:
