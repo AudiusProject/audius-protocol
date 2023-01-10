@@ -17,7 +17,7 @@ down_revision = '2fad3671bf9f'
 branch_labels = None
 depends_on = None
 
-def build_sql(up, env):
+def build_sql(env):
     if env == "stage":
         path = Path(__file__).parent.joinpath("../csvs/staging_subscriptions.csv")
     elif env == "prod":
@@ -37,10 +37,12 @@ def build_sql(up, env):
         'is_currents': [True] * num_records,
         'is_deletes': [False] * num_records,
     }
-    if up:
-        inner_sql = "INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) VALUES (unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes)) ON CONFLICT (subscriber_id, user_id, is_current) DO NOTHING;"
-    else:
-        inner_sql = "DELETE FROM subscriptions WHERE (subscriber_id, user_id, is_current, is_delete) IN (SELECT unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes));"
+    inner_sql = """
+INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete)
+VALUES (unnest(:subscriber_ids), unnest(:user_ids), unnest(:is_currents), unnest(:is_deletes))
+ON CONFLICT (subscriber_id, user_id, is_current)
+DO UPDATE SET is_delete = False
+WHERE created_at < '2023-01-09 09:27:00' AND is_delete = True;"""
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     sql = sql.bindparams(sa.bindparam("subscriber_ids"))
     sql = sql.bindparams(sa.bindparam("user_ids"))
@@ -53,12 +55,8 @@ def upgrade():
     env = os.getenv("audius_discprov_env")
     if env == "stage" or env == "prod":
         connection = op.get_bind()
-        sql, params = build_sql(True, env)
+        sql, params = build_sql(env)
         connection.execute(sql, params)
 
 def downgrade():
-    env = os.getenv("audius_discprov_env")
-    if env == "stage" or env == "prod":
-        connection = op.get_bind()
-        sql, params = build_sql(False, env)
-        connection.execute(sql, params)
+    pass
