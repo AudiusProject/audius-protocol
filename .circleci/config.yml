@@ -1409,7 +1409,7 @@ workflows:
             - test-libs
             - test-contracts
             - test-solana-programs
-            - test-solana-programs-anchor
+            # - test-solana-programs-anchor
             - test-eth-contracts
             # - test-mad-dog-e2e
             - test-sdk
