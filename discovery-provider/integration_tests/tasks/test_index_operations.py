@@ -197,12 +197,13 @@ def cleanup(celery_app):
             """
             DELETE FROM "blocks";
             INSERT INTO "blocks"
-            ("blockhash", "parenthash", "is_current")
+            ("blockhash", "parenthash", "is_current", "number")
             VALUES
             (
                 '0x0',
                 NULL,
-                TRUE
+                TRUE,
+                0
             );
             """
         )
