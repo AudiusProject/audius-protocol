@@ -94,11 +94,12 @@ export const FeedTipTile = () => {
     return null
   }
 
-  return !tipToDisplay || Object.keys(usersMap).length !== tipperIds.length ? (
-    <View style={styles.skeleton}>
-      <FeedTipTileSkeleton />
-    </View>
-  ) : (
+  const tipsLoading =
+    !tipToDisplay || Object.keys(usersMap).length !== tipperIds.length
+
+  if (tipsLoading) return <FeedTipTileSkeleton />
+
+  return (
     <Tile styles={{ tile: styles.tile }}>
       <View style={styles.header}>
         <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />

@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 
 import IconFeed from 'app/assets/images/iconFeed.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
+import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
@@ -49,10 +50,10 @@ export const FeedScreen = () => {
       </ScreenHeader>
       <ScreenContent>
         <Lineup
-          isFeed
           pullToRefresh
           delineate
           selfLoad
+          header={<FeedTipTile />}
           ListFooterComponent={<EndOfFeedNotice />}
           LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}
