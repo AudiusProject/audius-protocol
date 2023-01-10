@@ -38,7 +38,7 @@ const initialProfileState = {
   updateError: false,
   mostUsedTags: [],
 
-  collectionSortMode: CollectionSortMode.SAVE_COUNT,
+  collectionSortMode: CollectionSortMode.TIMESTAMP,
 
   profileMeterDismissed: false,
 

@@ -165,7 +165,7 @@ export function* addPlaylistsNotInLibrary() {
           type: 'playlist'
         } as PlaylistIdentifier)
     )
-    const newContents = library.contents.concat(newEntries)
+    const newContents = [...newEntries, ...library.contents]
     yield put(
       update({ playlistLibrary: { ...library, contents: newContents } })
     )

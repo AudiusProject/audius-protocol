@@ -376,6 +376,9 @@ const PlaylistLibrary = ({
         }
         acceptedKinds={['library-playlist', 'playlist-folder']}
       />
+      {Object.values(playlistsNotInLibrary).map((playlist) => {
+        return renderPlaylist(playlist.id)
+      })}
       {account && playlists && library ? (
         <LibraryContentsLevel
           contents={library.contents || []}
@@ -384,9 +387,6 @@ const PlaylistLibrary = ({
           renderFolder={renderFolder}
         />
       ) : null}
-      {Object.values(playlistsNotInLibrary).map((playlist) => {
-        return renderPlaylist(playlist.id)
-      })}
       {isEmpty(library?.contents) ? (
         <div className={cn(navColumnStyles.link, navColumnStyles.disabled)}>
           Create your first playlist!
