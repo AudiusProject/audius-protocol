@@ -559,7 +559,7 @@ def get_play_health_info(
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
-        oldest_unarchived_play = redis.get(oldest_unarchived_play_key)
+        oldest_unarchived_play: str = redis.get(oldest_unarchived_play_key)
         if not oldest_unarchived_play:
             # Query and cache oldest unarchived play
             oldest_unarchived_play = get_oldest_unarchived_play()
