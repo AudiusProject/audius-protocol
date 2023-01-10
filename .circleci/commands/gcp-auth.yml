@@ -7,3 +7,6 @@ steps:
         # Set GCP project id and compute zone
         gcloud config set project "$GOOGLE_PROJECT_ID"
         gcloud config set compute/zone "$GOOGLE_COMPUTE_ZONE"
+
+        mkdir -p ~/.ssh
+        echo "$GOOGLE_COMPUTE_SSH" > ~/.ssh/google_compute_engine

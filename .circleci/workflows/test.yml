@@ -1,16 +1,20 @@
 jobs:
-  - build-gcp-image
+  - build-gcp-image:
+      context: [GCP]
   - push-docker-images:
+      context: [GCP, dockerhub]
       requires:
         - build-gcp-image
   - test-service:
       name: test-creator-node
+      context: [GCP]
       requires:
         - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-cn
       service: creator-node
   - test-service:
       name: test-discovery-provider
+      context: [GCP]
       requires:
         - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-dp
