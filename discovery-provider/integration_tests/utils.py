@@ -98,7 +98,7 @@ def populate_mock_db(db, entities, block_offset=None):
             if block_offset:
                 block_offset += 1
             else:
-                block_offset = 1
+                block_offset = 0
 
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
