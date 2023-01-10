@@ -141,7 +141,7 @@ export const EditPlaylistScreen = () => {
   const initialValues = {
     playlist_name,
     description,
-    artwork: { url: collectionImageSource?.source[0].uri ?? '' },
+    artwork: { url: collectionImageSource?.source[0]?.uri ?? '' },
     removedTracks: [],
     tracks,
     track_ids: playlist.playlist_contents.track_ids
