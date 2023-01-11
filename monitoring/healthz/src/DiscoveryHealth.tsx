@@ -47,7 +47,9 @@ export function DiscoveryHealth() {
 function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const { data, error } = useSWR(sp.endpoint + '/health_check', fetcher)
 
-  if (!data)
+  const health = data?.data
+
+  if (!health)
     return (
       <tr>
         <td>
@@ -59,7 +61,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </tr>
     )
 
-  const health = data.data
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const fsUsed = bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
   const fsSize = bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
