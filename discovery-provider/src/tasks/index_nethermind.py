@@ -7,6 +7,7 @@ import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
+from hexbytes import HexBytes
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -115,6 +116,8 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
+        if current_block_number == final_poa_block:
+            latest_block["parentHash"] = HexBytes(current_block.blockhash)
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -986,6 +989,9 @@ def update_task(self):
             )
 
             latest_block = get_latest_block(db, final_poa_block)
+            logger.info(
+                f"index_nethermind.py | latest_block {latest_block}"
+            )
 
             # Capture block information between latest and target block hash
             index_blocks_list = []
@@ -1014,6 +1020,10 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = current_hash
                         continue
+                    logger.info(
+                        f"index_nethermind.py | populating {latest_block}"
+                    )
+
 
                     index_blocks_list.append(latest_block)
 
@@ -1037,10 +1047,18 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += final_poa_block
-                        latest_block = AttributeDict(latest_block)
-                        intersect_block_hash = web3.toHex(latest_block.hash)
+                        parent_block = parent_block_query.first()
+                        if parent_block.number == final_poa_block:
+                            # intersection with final POA block
+                            block_intersection_found = True
+                            intersect_block_hash = web3.toHex(
+                                HexBytes(parent_block.blockhash)
+                            )
+                        else:
+                            latest_block = dict(web3.eth.get_block(parent_hash, True))
+                            latest_block["number"] += final_poa_block
+                            latest_block = AttributeDict(latest_block)
+                            intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
