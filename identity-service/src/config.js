@@ -843,7 +843,7 @@ const config = convict({
     doc: 'Enable replica set updates with Entity Manager',
     format: Boolean,
     env: 'entityManagerReplicaSetEnabled',
-    default: false
+    default: true
   },
   updateReplicaSetReconfigurationLimit: {
     doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds. This limit is per cluster worker, not service wide',
