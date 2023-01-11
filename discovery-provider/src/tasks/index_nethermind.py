@@ -117,7 +117,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
         if current_block_number == final_poa_block:
-            # the parent of the latest block from the new chain 
+            # the parent of the latest block from the new chain
             # is the current block's hash
             latest_block["parentHash"] = HexBytes(current_block.blockhash)
         latest_block = AttributeDict(latest_block)  # type: ignore
