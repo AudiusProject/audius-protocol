@@ -42,7 +42,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot create playlist {playlist_id} that already exist")
+            raise Exception(f"Cannot create playlist {playlist_id} that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
             raise Exception(f"Cannot create playlist {playlist_id} below the offset")
     else:
