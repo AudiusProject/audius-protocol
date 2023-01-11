@@ -553,7 +553,10 @@ def save_cid_metadata(
         sanitized_data = json.dumps(val).encode("utf-8", "ignore").decode("utf-8", "ignore")
         vals.append({"cid": cid, "type": cid_type[cid], "data": sanitized_data})
 
-    session.execute(UPSERT_CID_METADATA_QUERY, vals)
+    try:
+        session.execute(UPSERT_CID_METADATA_QUERY, vals)
+    except Exception as e:
+        logger.error(f"Error in save_cid_metadata {e}")
 
 
 def create_and_raise_indexing_error(err, redis):
