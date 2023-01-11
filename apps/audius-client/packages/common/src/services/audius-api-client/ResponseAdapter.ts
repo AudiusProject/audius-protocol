@@ -72,12 +72,19 @@ export const makeUser = (
     cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
     profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
     metadata_multihash: user.metadata_multihash || null,
-    id: undefined,
     supporter_count,
-    supporting_count
+    supporting_count,
+
+    // Fields to prune
+    id: undefined,
+    cover_photo_legacy: undefined,
+    profile_picture_legacy: undefined,
+    artist_pick_track_id: null
   }
 
   delete newUser.id
+  delete newUser.cover_photo_legacy
+  delete newUser.profile_picture_legacy
 
   return newUser
 }
@@ -142,7 +149,12 @@ export const makeUserlessTrack = (
 
   const remixes =
     track.remix_of.tracks?.map(makeRemix).filter(removeNullable) ?? []
-  const play_count = 'play_count' in track ? track.play_count : 0
+  const play_count =
+    'play_count' in track
+      ? typeof track.play_count === 'string'
+        ? parseInt(track.play_count, 10)
+        : track.play_count
+      : 0
   const save_count = 'favorite_count' in track ? track.favorite_count : 0
   const repost_count = 'repost_count' in track ? track.repost_count : 0
   const has_current_user_reposted =
@@ -212,7 +224,13 @@ export const makeTrack = (
 
   const remixes =
     track.remix_of.tracks?.map(makeRemix).filter(removeNullable) ?? []
-  const play_count = 'play_count' in track ? track.play_count : 0
+  const play_count =
+    'play_count' in track
+      ? typeof track.play_count === 'string'
+        ? parseInt(track.play_count, 10)
+        : track.play_count
+      : 0
+
   const save_count = 'favorite_count' in track ? track.favorite_count : 0
   const repost_count = 'repost_count' in track ? track.repost_count : 0
   const has_current_user_reposted =
@@ -241,6 +259,7 @@ export const makeTrack = (
         : null,
 
     stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
+    premium_content_signature: track.premium_content_signature ?? null,
 
     // Fields to prune
     id: undefined,
@@ -248,7 +267,9 @@ export const makeTrack = (
     followee_favorites: undefined,
     artwork: undefined,
     downloadable: undefined,
-    favorite_count: undefined
+    favorite_count: undefined,
+    is_streamable: undefined,
+    track_cid: undefined
   }
 
   delete marshalled.id
@@ -257,6 +278,8 @@ export const makeTrack = (
   delete marshalled.artwork
   delete marshalled.downloadable
   delete marshalled.favorite_count
+  delete marshalled.is_streamable
+  delete marshalled.track_cid
 
   return marshalled
 }
