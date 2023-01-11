@@ -36,6 +36,7 @@ export type ChatMessageRequest = {
 }
 
 export type ChatReactRequest = {
+  chatId: string
   messageId: string
   reaction: string
 }
