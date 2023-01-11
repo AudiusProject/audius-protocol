@@ -319,6 +319,9 @@
         "slug": {
             "type": "string"
         },
+        "imageUrl":  {
+            "type": "string"
+        },
         "externalLink": {
             "type": ["string", "null"],
             "default": null
@@ -339,6 +342,9 @@
           "type": "string"
         },
         "name": {
+            "type": "string"
+        },
+        "imageUrl":  {
             "type": "string"
         },
         "externalLink": {

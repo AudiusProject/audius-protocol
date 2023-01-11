@@ -402,6 +402,9 @@
                 "slug": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": "string"
+                },
                 "externalLink": {
                     "type": [
                         "string",
@@ -431,6 +434,9 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "imageUrl": {
                     "type": "string"
                 },
                 "externalLink": {
