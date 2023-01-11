@@ -1,7 +1,7 @@
 """backfill null artist pick discrepancies in discprov
 
 Revision ID: 36ed02ac38f7
-Revises: 2fad3671bf9f
+Revises: efafdb22df81
 Create Date: 2023-01-06 23:42:58.493746
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '36ed02ac38f7'
-down_revision = '2fad3671bf9f'
+down_revision = 'efafdb22df81'
 branch_labels = None
 depends_on = None
 
