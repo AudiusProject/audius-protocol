@@ -244,14 +244,14 @@ def test_index_valid_social_features(app, mocker):
         # Automatic subscribe on follow
         assert 1 in subscriber_ids
         assert 3 in subscriber_ids
-        user_2_subscriber_1 = filter(
+        user_2_subscriber_1 = list(filter(
             lambda subscription: subscription.subscriber_id == 1, user_2_subscribers
-        )[0]
+        ))[0]
         assert user_2_subscriber_1.subscriber_id == 1
         assert user_2_subscriber_1.is_delete == False
-        user_2_subscriber_3 = filter(
+        user_2_subscriber_3 = list(filter(
             lambda subscription: subscription.subscriber_id == 3, user_2_subscribers
-        )[0]
+        ))[0]
         assert user_2_subscriber_3.subscriber_id == 3
         assert user_2_subscriber_3.is_delete == True
 
