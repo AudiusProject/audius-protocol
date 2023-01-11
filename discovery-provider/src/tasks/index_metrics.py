@@ -263,6 +263,7 @@ def synchronize_all_node_metrics(self, db):
 
 # ####### CELERY TASKS ####### #
 
+
 @celery.task(name="aggregate_metrics", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def aggregate_metrics(self):
