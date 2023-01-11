@@ -1244,8 +1244,7 @@ export const audiusBackend = ({
       trackFile,
       coverArtFile,
       metadata,
-      onProgress,
-      true
+      onProgress
     )
   }
 
@@ -1279,7 +1278,7 @@ export const audiusBackend = ({
   async function registerUploadedTracks(
     uploadedTracks: { metadataMultihash: string; metadataFileUUID: string }[]
   ) {
-    return audiusLibs.Track.addTracksToChainAndCnode(uploadedTracks, true)
+    return audiusLibs.Track.addTracksToChainAndCnode(uploadedTracks)
   }
 
   async function uploadImage(file: File) {
@@ -1297,7 +1296,7 @@ export const audiusBackend = ({
       cleanedMetadata.cover_art_sizes = resp.dirCID
     }
 
-    return await audiusLibs.Track.updateTrack(cleanedMetadata, true)
+    return await audiusLibs.Track.updateTrack(cleanedMetadata)
   }
 
   async function getCreators(ids: ID[]) {
@@ -1335,19 +1334,6 @@ export const audiusBackend = ({
     } catch (e) {
       console.error(e)
       return {}
-    }
-  }
-
-  async function getEntityManagerReplicaSetEnabled() {
-    try {
-      const res = await fetch(
-        `${identityServiceUrl}/health_check/entity_manager_replica_set_enabled`
-      )
-      const json = await res.json()
-      return json.entityManagerReplicaSetEnabled
-    } catch (e) {
-      console.error(e)
-      return false
     }
   }
 
@@ -1469,13 +1455,8 @@ export const audiusBackend = ({
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
-      const userEntityManagerEnabled = await getEntityManagerReplicaSetEnabled()
       const { blockHash, blockNumber, userId } =
-        await audiusLibs.User.updateCreator(
-          newMetadata.user_id,
-          newMetadata,
-          userEntityManagerEnabled
-        )
+        await audiusLibs.User.updateCreator(newMetadata.user_id, newMetadata)
       return { blockHash, blockNumber, userId }
     } catch (err) {
       console.error(getErrorMessage(err))
@@ -1755,7 +1736,7 @@ export const audiusBackend = ({
       )
 
       const trackDeletionPromises = trackIds.map((t) =>
-        audiusLibs.Track.deleteTrack(t.track, true)
+        audiusLibs.Track.deleteTrack(t.track)
       )
       const playlistDeletionPromise =
         audiusLibs.EntityManager.deletePlaylist(playlistId)
@@ -1969,8 +1950,6 @@ export const audiusBackend = ({
     }
 
     // Returns { userId, error, phase }
-    const userEntityManagerEnabled = await getEntityManagerReplicaSetEnabled()
-
     return audiusLibs.Account.signUp(
       email,
       password,
@@ -1987,8 +1966,7 @@ export const audiusBackend = ({
         Failure: Name.CREATE_USER_BANK_FAILURE
       },
       feePayerOverride,
-      true,
-      userEntityManagerEnabled
+      true
     )
   }
 
