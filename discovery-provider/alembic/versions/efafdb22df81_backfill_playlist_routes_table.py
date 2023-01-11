@@ -1,7 +1,7 @@
 """Backfill playlist_routes table
 
 Revision ID: efafdb22df81
-Revises: 1b6e405ef358
+Revises: 2fad3671bf9f
 Create Date: 2023-01-05 17:01:47.805581
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = "efafdb22df81"
-down_revision = "1b6e405ef358"
+down_revision = "2fad3671bf9f"
 branch_labels = None
 depends_on = None
 
