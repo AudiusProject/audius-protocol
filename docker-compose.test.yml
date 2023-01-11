@@ -164,8 +164,7 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: pytest
-    command: ""
+    command: "sleep infinity"
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"

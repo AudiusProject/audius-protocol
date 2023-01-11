@@ -38,8 +38,7 @@ brew install sshuttle
 If running protocol and client on localhost
 
 ```
-sshuttle -N -H -r sshuttle@localhost:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-# the password is sshuttle
+audius-compose connect
 ```
 
 ### Remote Machine
@@ -47,8 +46,7 @@ sshuttle -N -H -r sshuttle@localhost:2222 -e 'ssh -o StrictHostKeyChecking=no -o
 If running protocol on remote instance and client on localhost
 
 ```
-sshuttle --dns -N -r sshuttle@<server-machine-ip>:2222 -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-# the password is sshuttle
+audius-compose connect -r
 ```
 
 Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
