@@ -718,7 +718,7 @@ const _issueUpdateReplicaSetOp = async (
           newReplicaSetSPIds,
           blockNumber
         )
-      } catch (err : any) {
+      } catch (err: any) {
         throw new Error(
           `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}. Error: ${err.message}`
         )
