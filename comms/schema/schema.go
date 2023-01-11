@@ -163,10 +163,11 @@ type Health struct {
 }
 
 type Summary struct {
-	NextCursor     string  `json:"next_cursor"`
-	PrevCursor     string  `json:"prev_cursor"`
-	RemainingCount float64 `json:"remaining_count"`
-	TotalCount     float64 `json:"total_count"`
+	NextCount  float64 `json:"next_count"`
+	NextCursor string  `json:"next_cursor"`
+	PrevCount  float64 `json:"prev_count"`
+	PrevCursor string  `json:"prev_cursor"`
+	TotalCount float64 `json:"total_count"`
 }
 
 type ChatCreateRPCMethod string
