@@ -71,5 +71,5 @@ sqlc:: reset
 	sqlc generate
 
 quicktype::
-	cp ../audius-protocol/libs/src/sdk/api/chats/serverTypes.ts schema/schema.ts
+	cp ../libs/src/sdk/api/chats/serverTypes.ts schema/schema.ts
 	npx quicktype --package schema --out schema/schema.go --just-types-and-package schema/*.ts
