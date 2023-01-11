@@ -1,21 +1,45 @@
 import logging
 from datetime import datetime
-
-from src.queries.get_notifications import Notification, NotificationAction
+from typing import List, Union
+from src.queries.get_notifications import (
+    Notification,
+    NotificationData,
+    NotificationAction,
+    FollowNotification,
+    RepostNotification,
+    SaveNotification,
+    RemixNotification,
+    CosignRemixNotification,
+    CreateTrackNotification,
+    CreatePlaylistNotification,
+    TipReceiveNotification,
+    TipSendNotification,
+    ChallengeRewardNotification,
+    ReactionNotification,
+    SupporterRankUpNotification,
+    SupportingRankUpNotification,
+    FollowerMilestoneNotification,
+    TrackMilestoneNotification,
+    PlaylistMilestoneNotification,
+)
 from src.utils.helpers import encode_int_id
 
 logger = logging.getLogger(__name__)
 
 
 def extend_notification(notification: Notification):
-    notification["actions"] = list(
+    formatted = {
+        "group_id": notification["group_id"],
+        "is_seen": notification["is_seen"],
+    }
+    formatted["actions"] = list(
         map(extend_notification_action, notification["actions"])
     )
-    if notification["is_seen"]:
-        notification["seen_at"] = datetime.timestamp(notification["seen_at"])
+    if formatted["is_seen"] and formatted["seen_at"]:
+        formatted["seen_at"] = datetime.timestamp(notification["seen_at"])
     else:
-        notification["seen_at"] = None
-    return notification
+        formatted["seen_at"] = None
+    return formatted
 
 
 def extend_notification_action(action: NotificationAction):
@@ -26,7 +50,15 @@ def extend_notification_action(action: NotificationAction):
     return None
 
 
+def validate_keys(keys: List[str], data: NotificationData):
+    for key in keys:
+        if key not in data:
+            return False
+    return True
+
+
 def extend_follow(action: NotificationAction):
+    data: FollowNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -34,13 +66,14 @@ def extend_follow(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "follower_user_id": encode_int_id(action["data"]["follower_user_id"]),
-            "followee_user_id": encode_int_id(action["data"]["followee_user_id"]),
+            "follower_user_id": encode_int_id(data["follower_user_id"]),
+            "followee_user_id": encode_int_id(data["followee_user_id"]),
         },
     }
 
 
 def extend_repost(action: NotificationAction):
+    data: RepostNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -48,14 +81,15 @@ def extend_repost(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "type": action["data"]["type"],
-            "user_id": encode_int_id(action["data"]["user_id"]),
-            "repost_item_id": encode_int_id(action["data"]["repost_item_id"]),
+            "type": data["type"],
+            "user_id": encode_int_id(data["user_id"]),
+            "repost_item_id": encode_int_id(data["repost_item_id"]),
         },
     }
 
 
 def extend_save(action: NotificationAction):
+    data: SaveNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -63,14 +97,15 @@ def extend_save(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "type": action["data"]["type"],
-            "user_id": encode_int_id(action["data"]["user_id"]),
-            "save_item_id": encode_int_id(action["data"]["save_item_id"]),
+            "type": data["type"],
+            "user_id": encode_int_id(data["user_id"]),
+            "save_item_id": encode_int_id(data["save_item_id"]),
         },
     }
 
 
 def extend_remix(action: NotificationAction):
+    data: RemixNotification = action["data"]  # type: ignore
     # Specifier is the user who created the remix
     return {
         "specifier": encode_int_id(int(action["specifier"])),
@@ -79,13 +114,14 @@ def extend_remix(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "parent_track_id": encode_int_id(action["data"]["parent_track_id"]),
-            "track_id": encode_int_id(action["data"]["track_id"]),
+            "parent_track_id": encode_int_id(data["parent_track_id"]),
+            "track_id": encode_int_id(data["track_id"]),
         },
     }
 
 
 def extend_cosign(action: NotificationAction):
+    data: CosignRemixNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -93,40 +129,34 @@ def extend_cosign(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "track_owner_id": encode_int_id(action["data"]["track_owner_id"]),
-            "parent_track_id": encode_int_id(action["data"]["parent_track_id"]),
-            "track_id": encode_int_id(action["data"]["track_id"]),
+            "track_owner_id": encode_int_id(data["track_owner_id"]),
+            "parent_track_id": encode_int_id(data["parent_track_id"]),
+            "track_id": encode_int_id(data["track_id"]),
         },
     }
 
 
 def extend_create(action: NotificationAction):
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {},
+    }
     if "track_id" in action["data"]:
-        return {
-            "specifier": encode_int_id(int(action["specifier"])),
-            "type": action["type"],
-            "timestamp": datetime.timestamp(action["timestamp"])
-            if action["timestamp"]
-            else action["timestamp"],
-            "data": {
-                "track_id": encode_int_id(action["data"]["track_id"]),
-            },
-        }
+        data: CreateTrackNotification = action["data"]  # type: ignore
+        notification["track_id"] = (encode_int_id(data["track_id"]),)
     else:
-        return {
-            "specifier": encode_int_id(int(action["specifier"])),
-            "type": action["type"],
-            "timestamp": datetime.timestamp(action["timestamp"])
-            if action["timestamp"]
-            else action["timestamp"],
-            "data": {
-                "is_album": action["data"]["is_album"],
-                "playlist_id": encode_int_id(action["data"]["playlist_id"]),
-            },
-        }
+        data: CreatePlaylistNotification = action["data"]  # type: ignore
+        notification["is_album"] = data["is_album"]
+        notification["playlist_id"] = (encode_int_id(data["playlist_id"]),)
+    return notification
 
 
 def extend_tip(action: NotificationAction):
+    data: Union[TipReceiveNotification, TipSendNotification] = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -134,14 +164,15 @@ def extend_tip(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "amount": action["data"]["amount"],
-            "sender_user_id": encode_int_id(action["data"]["sender_user_id"]),
-            "receiver_user_id": encode_int_id(action["data"]["receiver_user_id"]),
+            "amount": data["amount"],
+            "sender_user_id": encode_int_id(data["sender_user_id"]),
+            "receiver_user_id": encode_int_id(data["receiver_user_id"]),
         },
     }
 
 
 def extend_support_rank_up(action: NotificationAction):
+    data: Union[SupporterRankUpNotification, SupportingRankUpNotification] = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -149,13 +180,15 @@ def extend_support_rank_up(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "rank": action["data"]["rank"],
-            "playlist_id": encode_int_id(action["data"]["playlist_id"]),
+            "rank": data["rank"],
+            "sender_user_id": encode_int_id(data["sender_user_id"]),
+            "receiver_user_id": encode_int_id(data["receiver_user_id"]),
         },
     }
 
 
 def extend_challenge_reward(action: NotificationAction):
+    data: ChallengeRewardNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -163,14 +196,15 @@ def extend_challenge_reward(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "amount": action["data"]["amount"],
-            "specifier": action["data"]["specifier"],
-            "challenge_id": action["data"]["challenge_id"],
+            "amount": data["amount"],
+            "specifier": data["specifier"],
+            "challenge_id": data["challenge_id"],
         },
     }
 
 
 def extend_reaction(action: NotificationAction):
+    data: ReactionNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -178,10 +212,10 @@ def extend_reaction(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "reacted_to": action["data"]["reacted_to"],
-            "reaction_type": action["data"]["reaction_type"],
-            "sender_wallet": action["data"]["sender_wallet"],
-            "reaction_value": action["data"]["reaction_value"],
+            "reacted_to": data["reacted_to"],
+            "reaction_type": data["reaction_type"],
+            "sender_wallet": data["sender_wallet"],
+            "reaction_value": data["reaction_value"],
         },
     }
 
@@ -193,19 +227,28 @@ def extend_milestone(action: NotificationAction):
         "timestamp": datetime.timestamp(action["timestamp"])
         if action["timestamp"]
         else action["timestamp"],
-        "data": {
-            "type": action["data"]["type"],
-            "threshold": action["data"]["threshold"],
-        },
     }
     if "track_id" in action["data"]:
-        notification["data"]["track_id"] = encode_int_id(action["data"]["track_id"])
+        data: TrackMilestoneNotification = action["data"]  # type: ignore
+        notification["data"] = {
+            "type": data["type"],
+            "threshold": data["threshold"],
+            "track_id": encode_int_id(data["track_id"]),
+        }
     if "playlist_id" in action["data"]:
-        notification["data"]["playlist_id"] = encode_int_id(
-            action["data"]["playlist_id"]
-        )
+        data: PlaylistMilestoneNotification = action["data"]  # type: ignore
+        notification["data"] = {
+            "type": data["type"],
+            "threshold": data["threshold"],
+            "playlist_id": encode_int_id(data["playlist_id"]),
+        }
     if "user_id" in action["data"]:
-        notification["data"]["user_id"] = encode_int_id(action["data"]["user_id"])
+        data: FollowerMilestoneNotification = action["data"]  # type: ignore
+        notification["data"] = {
+            "type": data["type"],
+            "threshold": data["threshold"],
+            "user_id": encode_int_id(data["user_id"]),
+        }
     return notification
 
 

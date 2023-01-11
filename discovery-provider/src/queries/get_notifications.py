@@ -133,11 +133,6 @@ class SaveNotification(TypedDict):
     save_item_id: int
 
 
-class MilestoneNotification(TypedDict):
-    type: str
-    threshold: int
-
-
 class RemixNotification(TypedDict):
     parent_track_id: int
     track_id: int
@@ -200,13 +195,7 @@ class FollowerMilestoneNotification(TypedDict):
     threshold: int
 
 
-class ListenMilestoneNotification(TypedDict):
-    type: str
-    track_id: int
-    threshold: int
-
-
-class TrackSaveMilestoneNotification(TypedDict):
+class TrackMilestoneNotification(TypedDict):
     type: str
     track_id: int
     threshold: int
@@ -222,7 +211,6 @@ NotificationData = Union[
     FollowNotification,
     RepostNotification,
     SaveNotification,
-    MilestoneNotification,
     RemixNotification,
     CosignRemixNotification,
     CreateTrackNotification,
@@ -234,8 +222,7 @@ NotificationData = Union[
     SupporterRankUpNotification,
     SupportingRankUpNotification,
     FollowerMilestoneNotification,
-    ListenMilestoneNotification,
-    TrackSaveMilestoneNotification,
+    TrackMilestoneNotification,
     PlaylistMilestoneNotification,
 ]
 
