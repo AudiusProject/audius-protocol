@@ -31,7 +31,7 @@ steps:
           << parameters.create-instance-args >> \
           --tags "<< parameters.instance-name >>"
 
-        while ! gcloud compute ssh "$INSTANCE_USER@<< parameters.instance-name >>" true; do
+        while ! gcloud compute ssh "$INSTANCE_USER@<< parameters.instance-name >>" --command=true; do
           sleep 1
         done
 
