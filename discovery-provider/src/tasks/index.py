@@ -1109,8 +1109,10 @@ def update_task(self):
                         if parent_block.number == final_poa_block:
                             # intersection with final POA block
                             block_intersection_found = True
-                            intersect_block_hash = web3.toHex(HexBytes(parent_block.blockhash))
-                        else: 
+                            intersect_block_hash = web3.toHex(
+                                HexBytes(parent_block.blockhash)
+                            )
+                        else:
                             latest_block = dict(web3.eth.get_block(parent_hash, True))
                             latest_block["number"] += final_poa_block
                             latest_block = AttributeDict(latest_block)
