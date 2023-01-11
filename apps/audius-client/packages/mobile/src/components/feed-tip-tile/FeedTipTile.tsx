@@ -13,7 +13,7 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
-import { Tile } from 'app/components/core'
+import { FadeInView, Tile } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { localStorage } from 'app/services/local-storage'
 import { makeStyles } from 'app/styles'
@@ -101,20 +101,22 @@ export const FeedTipTile = () => {
 
   return (
     <Tile styles={{ tile: styles.tile }}>
-      <View style={styles.header}>
-        <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />
-        <IconRemove {...styles.iconRemove} onPress={handlePressClose} />
-      </View>
-      <SenderDetails
-        senders={[
-          tipToDisplay.sender_id,
-          ...tipToDisplay.followee_supporter_ids
-        ]
-          .map((id) => usersMap[id])
-          .filter((user): user is User => !!user)}
-        receiver={usersMap[tipToDisplay.receiver_id]}
-      />
-      <SendTipButton receiver={usersMap[tipToDisplay.receiver_id]} />
+      <FadeInView>
+        <View style={styles.header}>
+          <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />
+          <IconRemove {...styles.iconRemove} onPress={handlePressClose} />
+        </View>
+        <SenderDetails
+          senders={[
+            tipToDisplay.sender_id,
+            ...tipToDisplay.followee_supporter_ids
+          ]
+            .map((id) => usersMap[id])
+            .filter((user): user is User => !!user)}
+          receiver={usersMap[tipToDisplay.receiver_id]}
+        />
+        <SendTipButton receiver={usersMap[tipToDisplay.receiver_id]} />
+      </FadeInView>
     </Tile>
   )
 }
