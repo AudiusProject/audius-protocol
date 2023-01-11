@@ -1043,7 +1043,7 @@ def update_task(self):
                         intersect_block_hash = default_config_start_hash
                     else:
                         parent_block = parent_block_query.first()
-                        if parent_block.number == final_poa_block:
+                        if parent_block and parent_block.number == final_poa_block:
                             # intersection with previous chain
                             block_intersection_found = True
                             intersect_block_hash = web3.toHex(
