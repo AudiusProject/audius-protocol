@@ -220,7 +220,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify subscriptions
         all_subscriptions: List[Subscription] = session.query(Subscription).all()
-        assert len(all_subscriptions) == 3
+        assert len(all_subscriptions) == 5
 
         user_1_subscribers: List[Subscription] = (
             session.query(Subscription)
@@ -237,10 +237,34 @@ def test_index_valid_social_features(app, mocker):
             .filter(Subscription.is_current == True, Subscription.user_id == 2)
             .all()
         )
-        assert len(user_2_subscribers) == 1
-        user_2_subscriber = user_2_subscribers[0]
-        assert user_2_subscriber.subscriber_id == 3
-        assert user_2_subscriber.is_delete == True
+        assert len(user_2_subscribers) == 2
+        subscriber_ids = map(
+            lambda subscription: subscription.subscriber_id, user_2_subscribers
+        )
+        # Automatic subscribe on follow
+        assert 1 in subscriber_ids
+        assert 3 in subscriber_ids
+        user_2_subscriber_1 = filter(
+            lambda subscription: subscription.subscriber_id == 1, user_2_subscribers
+        )[0]
+        assert user_2_subscriber_1.subscriber_id == 1
+        assert user_2_subscriber_1.is_delete == False
+        user_2_subscriber_3 = filter(
+            lambda subscription: subscription.subscriber_id == 3, user_2_subscribers
+        )[0]
+        assert user_2_subscriber_3.subscriber_id == 3
+        assert user_2_subscriber_3.is_delete == True
+
+        user_3_subscribers: List[Subscription] = (
+            session.query(Subscription)
+            .filter(Subscription.is_current == True, Subscription.user_id == 3)
+            .all()
+        )
+        assert len(user_3_subscribers) == 1
+        # Automatic unsubscribe on unfollow
+        user_3_subscriber = user_3_subscribers[0]
+        assert user_3_subscriber.subscriber_id == 1
+        assert user_3_subscriber.is_delete == True
 
         # Verify saves
         all_saves: List[Save] = session.query(Save).all()

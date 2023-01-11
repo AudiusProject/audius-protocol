@@ -22,7 +22,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exists")
+        raise Exception(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
@@ -42,7 +42,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot create playlist {playlist_id} that already exists")
+            raise Exception(f"Cannot create playlist {playlist_id} that already exist")
         if playlist_id < PLAYLIST_ID_OFFSET:
             raise Exception(f"Cannot create playlist {playlist_id} below the offset")
     else:
