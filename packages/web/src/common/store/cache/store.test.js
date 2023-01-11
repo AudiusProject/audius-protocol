@@ -50,13 +50,16 @@ describe('add', () => {
         ])
       )
       .put(
-        actions.addSucceeded(Kind.TRACKS, [
-          {
-            id: 1,
-            uid: '111',
-            metadata: { data: 10 }
-          }
-        ])
+        actions.addSucceeded({
+          kind: Kind.TRACKS,
+          entries: [
+            {
+              id: 1,
+              uid: '111',
+              metadata: { data: 10 }
+            }
+          ]
+        })
       )
       .silentRun()
     expect(storeState.tracks.entries).toEqual({
@@ -149,18 +152,21 @@ describe('add', () => {
         ])
       )
       .put(
-        actions.addSucceeded(Kind.TRACKS, [
-          {
-            id: 1,
-            uid: '111',
-            metadata: { data: 10 }
-          },
-          {
-            id: 2,
-            uid: '222',
-            metadata: { data: 20 }
-          }
-        ])
+        actions.addSucceeded({
+          kind: Kind.TRACKS,
+          entries: [
+            {
+              id: 1,
+              uid: '111',
+              metadata: { data: 10 }
+            },
+            {
+              id: 2,
+              uid: '222',
+              metadata: { data: 20 }
+            }
+          ]
+        })
       )
       .dispatch(
         actions.add(Kind.TRACKS, [
