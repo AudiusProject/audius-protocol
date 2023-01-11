@@ -20,12 +20,20 @@ jobs:
         - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-dp
       service: discovery-provider
+  - test-service:
+      name: test-identity-service
+      context: GCP
+      requires:
+        - build-gcp-image
+      instance-name: circleci-<< pipeline.id >>-is
+      service: identity-service
 
   - slack/on-hold:
       context: slack-secrets
-      filters:
-        branches:
-          only: /^release-v.*$/
+      # NOTE: commented for testing
+      # filters:
+      #   branches:
+      #     only: /^release-v.*$/
       requires:
         - push-docker-images
   - gh-release-hold:
