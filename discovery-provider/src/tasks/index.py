@@ -500,7 +500,8 @@ def save_cid_metadata(
 
     vals = []
     for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+        sanitized_data = val.encode("utf-8", "ignore").decode("utf-8", "ignore")
+        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(sanitized_data)})
 
     session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
