@@ -9,36 +9,31 @@ jobs:
   - test-service:
       name: test-creator-node
       context: GCP
-      requires:
-        - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-cn
       service: creator-node
   - test-service:
       name: test-discovery-provider
       context: GCP
-      requires:
-        - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-dp
       service: discovery-provider
   - test-service:
       name: test-identity-service
       context: GCP
-      requires:
-        - build-gcp-image
       instance-name: circleci-<< pipeline.id >>-is
       service: identity-service
 
-  - slack/on-hold:
-      context: slack-secrets
-      # NOTE: commented for testing
-      # filters:
-      #   branches:
-      #     only: /^release-v.*$/
-      requires:
-        - push-docker-images
+  # - slack/on-hold:
+  #     context: slack-secrets
+  #     # NOTE: commented for testing
+  #     # filters:
+  #     #   branches:
+  #     #     only: /^release-v.*$/
+  #     requires:
+  #       - push-docker-images
   - gh-release-hold:
       requires:
-        - slack/on-hold
+        # - slack/on-hold
+        - build-gcp-image
       type: approval
   - gh-release:
       requires:
