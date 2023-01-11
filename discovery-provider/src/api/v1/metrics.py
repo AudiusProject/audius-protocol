@@ -11,21 +11,15 @@ from src.api.v1.helpers import (
     parse_unix_epoch_param_non_utc,
     success_response,
 )
+from src.queries.get_aggregate_route_metrics import get_aggregate_route_metrics
 from src.queries.get_app_name_metrics import (
     get_aggregate_app_metrics,
     get_historical_app_metrics,
 )
 from src.queries.get_genre_metrics import get_genre_metrics
+from src.queries.get_historical_route_metrics import get_historical_route_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
-from src.queries.get_historical_route_metrics import (
-    get_historical_route_metrics
-)
-from src.queries.get_aggregate_route_metrics import (
-    get_aggregate_route_metrics
-)
-from src.queries.get_trailing_metrics import (
-    get_aggregate_route_metrics_trailing_month,
-)
+from src.queries.get_trailing_metrics import get_aggregate_route_metrics_trailing_month
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import (
     get_aggregate_metrics_info,
@@ -34,10 +28,7 @@ from src.utils.redis_metrics import (
     get_summed_unique_metrics,
 )
 
-from .models.metrics import (
-    genre_metric,
-    plays_metric
-)
+from .models.metrics import genre_metric, plays_metric
 
 logger = logging.getLogger(__name__)
 
