@@ -3,7 +3,7 @@ from src.models.social.play import Play
 from src.utils import db_session
 
 
-def get_oldest_unarchived_play():
+def get_oldest_unarchived_play() -> str:
     """
     Gets the oldest unarchived play in the database
     """

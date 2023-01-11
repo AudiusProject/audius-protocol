@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "1.0.30",
+  "version": "1.0.37",
   "audius": {
-    "releaseSHA": "7ce874a45ba7adba69a2f46056ce11392c38509e"
+    "releaseSHA": "dd0ddae94286c577c8a34ada50f2f79f613b55d2"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -46,7 +46,7 @@
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./src/sdk/api/generator/gen.js",
     "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full",
-    "postinstall": "patch-package"
+    "prepare": "patch-package"
   },
   "dependencies": {
     "@audius/anchor-audius-data": "0.0.2",

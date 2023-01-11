@@ -396,8 +396,7 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void,
-    useEntityManager: boolean
+    onProgress: () => void
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -461,36 +460,22 @@ export class Track extends Base {
       phase = phases.ADDING_TRACK
 
       // Write metadata to chain
-      let txReceipt: TransactionReceipt
-      let trackId: number
-      if (useEntityManager) {
-        trackId = await this._generateTrackId()
-        const response = await this.contracts.EntityManagerClient!.manageEntity(
-          ownerId,
-          EntityManagerClient.EntityType.TRACK,
-          trackId,
-          EntityManagerClient.Action.CREATE,
-          metadataMultihash
-        )
-        txReceipt = response.txReceipt
-      } else {
-        const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-        const response = await this.contracts.TrackFactoryClient.addTrack(
-          ownerId,
-          multihashDecoded.digest,
-          multihashDecoded.hashFn,
-          multihashDecoded.size
-        )
-        txReceipt = response.txReceipt
-        trackId = response.trackId
-      }
+      const trackId = await this._generateTrackId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        ownerId,
+        EntityManagerClient.EntityType.TRACK,
+        trackId,
+        EntityManagerClient.Action.CREATE,
+        metadataMultihash
+      )
+      const txReceipt = response.txReceipt
 
       phase = phases.ASSOCIATING_TRACK
       // Associate the track id with the file metadata and block number
       await this.creatorNode.associateTrack(
         trackId,
         metadataFileUUID,
-        txReceipt!.blockNumber,
+        txReceipt.blockNumber,
         transcodedTrackUUID
       )
       return {
@@ -577,10 +562,7 @@ export class Track extends Base {
    * Adds tracks to chain for this user
    * Associates tracks with user on creatorNode
    */
-  async addTracksToChainAndCnode(
-    trackMultihashAndUUIDList: ChainInfo[],
-    useEntityManager: boolean
-  ) {
+  async addTracksToChainAndCnode(trackMultihashAndUUIDList: ChainInfo[]) {
     this.REQUIRES(Services.CREATOR_NODE)
     const ownerId = this.userStateManager.getCurrentUserId()
     if (!ownerId) {
@@ -601,30 +583,16 @@ export class Track extends Base {
             trackInfo
 
           // Write metadata to chain
-          let txReceipt: TransactionReceipt
-          let trackId: number
-          if (useEntityManager && this.contracts.EntityManagerClient) {
-            trackId = await this._generateTrackId()
-            const response =
-              await this.contracts.EntityManagerClient.manageEntity(
-                ownerId,
-                EntityManagerClient.EntityType.TRACK,
-                trackId,
-                EntityManagerClient.Action.CREATE,
-                metadataMultihash
-              )
-            txReceipt = response.txReceipt
-          } else {
-            const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-            const response = await this.contracts.TrackFactoryClient.addTrack(
+          const trackId = await this._generateTrackId()
+          const response =
+            await this.contracts.EntityManagerClient!.manageEntity(
               ownerId,
-              multihashDecoded.digest,
-              multihashDecoded.hashFn,
-              multihashDecoded.size
+              EntityManagerClient.EntityType.TRACK,
+              trackId,
+              EntityManagerClient.Action.CREATE,
+              metadataMultihash
             )
-            txReceipt = response.txReceipt
-            trackId = response.trackId
-          }
+          const txReceipt = response.txReceipt
           addedToChain[i] = {
             trackId,
             metadataFileUUID,
@@ -680,7 +648,7 @@ export class Track extends Base {
    * such as track content, cover art are already on creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
    */
-  async updateTrack(metadata: TrackMetadata, useEntityManager: boolean) {
+  async updateTrack(metadata: TrackMetadata) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
 
@@ -696,28 +664,15 @@ export class Track extends Base {
     const { metadataMultihash, metadataFileUUID } =
       await this.creatorNode.uploadTrackMetadata(metadata)
     // Write the new metadata to chain
-    let txReceipt: TransactionReceipt
     const trackId: number = metadata.track_id
-    if (useEntityManager) {
-      const response = await this.contracts.EntityManagerClient!.manageEntity(
-        ownerId,
-        EntityManagerClient.EntityType.TRACK,
-        trackId,
-        EntityManagerClient.Action.UPDATE,
-        metadataMultihash
-      )
-      txReceipt = response.txReceipt
-    } else {
-      const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-      const response = await this.contracts.TrackFactoryClient.updateTrack(
-        trackId,
-        ownerId,
-        multihashDecoded.digest,
-        multihashDecoded.hashFn,
-        multihashDecoded.size
-      )
-      txReceipt = response.txReceipt
-    }
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.UPDATE,
+      metadataMultihash
+    )
+    const txReceipt = response.txReceipt
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(
       trackId,
@@ -805,22 +760,18 @@ export class Track extends Base {
    * Marks a tracks as deleted
    * @param trackId
    */
-  async deleteTrack(trackId: number, useEntityManager: boolean) {
-    if (useEntityManager) {
-      const ownerId = this.userStateManager.getCurrentUserId()
+  async deleteTrack(trackId: number) {
+    const ownerId = this.userStateManager.getCurrentUserId()
 
-      if (!ownerId) throw new Error('No users loaded for this wallet')
+    if (!ownerId) throw new Error('No users loaded for this wallet')
 
-      return await this.contracts.EntityManagerClient!.manageEntity(
-        ownerId,
-        EntityManagerClient.EntityType.TRACK,
-        trackId,
-        EntityManagerClient.Action.DELETE,
-        ''
-      )
-    } else {
-      return await this.contracts.TrackFactoryClient.deleteTrack(trackId)
-    }
+    return await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.DELETE,
+      ''
+    )
   }
 
   /* ------- PRIVATE  ------- */
