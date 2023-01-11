@@ -166,8 +166,8 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
         latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
         latest_block["number"] += final_poa_block
-        if current_block_number == 31563275:
-            latest_block["parentHash"] = HexBytes("0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1")
+        if current_block_number == final_poa_block:
+            latest_block["parentHash"] = HexBytes(current_block.blockhash)
         latest_block = AttributeDict(latest_block)  # type: ignore
     return latest_block
 
@@ -1057,7 +1057,6 @@ def update_task(self):
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db, final_poa_block)
-            logger.info(f"index.py | latest_block {latest_block}")
             # Capture block information between latest and target block hash
             index_blocks_list = []
 
@@ -1079,8 +1078,6 @@ def update_task(self):
                         and Block.parenthash == parent_hash
                         and Block.is_current == True
                     )
-                    latest_db_block = latest_block_db_query.first()
-                    logger.info(f"index.py | latest_db_block {latest_db_block}")
 
                     # Exit loop if we are up to date
                     if latest_block_db_query.count() > 0:
@@ -1089,15 +1086,12 @@ def update_task(self):
                         continue
 
                     index_blocks_list.append(latest_block)
-                    logger.info(f"index.py | index_blocks_list {index_blocks_list} ")
                     parent_block_query = session.query(Block).filter(
                         Block.blockhash == parent_hash
                     )
-                    logger.info(f"index.py | parent_block_query {parent_block_query.first()}")
                     # Intersection is considered found if current block parenthash is
                     # present in Blocks table
                     block_intersection_found = parent_block_query.count() > 0
-                    logger.info(f"index.py | block_intersection_found {block_intersection_found}")
 
                     num_blocks = len(index_blocks_list)
                     if num_blocks % 50 == 0:
@@ -1111,9 +1105,11 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        if parent_hash == "0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1":
+                        parent_block = parent_block_query.first()
+                        if parent_block.number == final_poa_block:
+                            # intersection with final POA block
                             block_intersection_found = True
-                            intersect_block_hash = web3.toHex(HexBytes("0x6e76ceb864f0e059d545e4de73169e7d6104101a7e349ca6ae08bebd6a8eacf1"))
+                            intersect_block_hash = web3.toHex(HexBytes(parent_block.blockhash))
                         else: 
                             latest_block = dict(web3.eth.get_block(parent_hash, True))
                             latest_block["number"] += final_poa_block
@@ -1170,7 +1166,7 @@ def update_task(self):
 
             # Exit DB scope, revert/index functions will manage their own sessions
             # Perform revert operations
-            # revert_blocks(self, db, revert_blocks_list)
+            revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
