@@ -550,9 +550,11 @@ def save_cid_metadata(
 
     vals = []
     for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+        sanitized_data = json.dumps(val).encode("utf-8", "ignore").decode("utf-8", "ignore")
+        vals.append({"cid": cid, "type": cid_type[cid], "data": sanitized_data})
 
-    session.execute(UPSERT_CID_METADATA_QUERY, vals)
+    # TODO: Flare-136
+    # session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def create_and_raise_indexing_error(err, redis):
