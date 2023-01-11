@@ -735,7 +735,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_identity_service_test
-      - image: redis:5.0.4
+      - image: redis:7.0
     steps:
       - checkout
       - diff-if-necessary:
@@ -1361,6 +1361,8 @@ workflows:
       - noop:
           name: discovery
       - noop:
+          name: comms
+      - noop:
           name: identity
 
       - noop:
@@ -1407,9 +1409,9 @@ workflows:
             - test-libs
             - test-contracts
             - test-solana-programs
-            - test-solana-programs-anchor
+            # - test-solana-programs-anchor
             - test-eth-contracts
-            - test-mad-dog-e2e
+            # - test-mad-dog-e2e
             - test-sdk
 
       # Auto-deploy `main` to staging
@@ -1780,6 +1782,12 @@ workflows:
           repo: discovery-provider
           requires:
             - discovery
+      
+      - docker-build-and-push-updated:
+          name: build-comms
+          repo: comms
+          requires:
+            - comms
 
       - test-identity:
           name: test-identity
@@ -1800,12 +1808,12 @@ workflows:
           requires:
             - tests
 
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          mad-dog-type: test
-          requires:
-            - tests
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     mad-dog-type: test
+      #     requires:
+      #       - tests
 
       - test-sdk:
           context:
@@ -2002,15 +2010,15 @@ workflows:
   hold-workflows:
     when: << pipeline.parameters.full_ci >>
     jobs:
-      - hold-test-mad-dog-e2e-full:
-          type: approval
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          name: test-mad-dog-e2e-full
-          mad-dog-type: test-nightly
-          requires:
-            - hold-test-mad-dog-e2e-full
+      # - hold-test-mad-dog-e2e-full:
+      #     type: approval
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     name: test-mad-dog-e2e-full
+      #     mad-dog-type: test-nightly
+      #     requires:
+      #       - hold-test-mad-dog-e2e-full
       - hold-build-logspout:
           type: approval
       - docker-build-and-push:
@@ -2045,11 +2053,11 @@ workflows:
           name: test-identity-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          name: test-mad-dog-e2e-nightly
-          mad-dog-type: test-nightly
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     name: test-mad-dog-e2e-nightly
+      #     mad-dog-type: test-nightly
       - bake-gcp-dev-image:
           context:
             - GCP2

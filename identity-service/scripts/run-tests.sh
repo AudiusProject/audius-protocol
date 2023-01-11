@@ -54,7 +54,7 @@ REDIS_CONTAINER='identity_test_redis'
 REDIS_EXISTS=$(docker ps -a -q -f status=running -f name=^/${REDIS_CONTAINER}$)
 if [ ! "${REDIS_EXISTS}" ]; then
   echo "Redis Container doesn't exist"
-  docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
+  docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:7.0
   sleep 1
 fi
 

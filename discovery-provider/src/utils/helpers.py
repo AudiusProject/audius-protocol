@@ -45,71 +45,6 @@ def get_openresty_public_key():
         return None
 
 
-def redis_restore(redis, key):
-    logger = logging.getLogger(__name__)
-    filename = f"{key}_dump"
-    try:
-        with open(filename, "rb") as f:
-            dumped = f.read()
-            redis.restore(key, 0, dumped)
-            logger.debug(f"successfully restored redis value for key: {key}")
-            return redis.get(key)
-    except FileNotFoundError as not_found:
-        logger.error(
-            f"could not read redis dump file: {filename} with error {not_found}"
-        )
-        return None
-    except Exception as e:
-        logger.error(f"could not perform redis restore for key: {key} with error {e}")
-        return None
-
-
-def redis_get_or_restore(redis, key):
-    value = redis.get(key)
-    return value if value else redis_restore(redis, key)
-
-
-def redis_get_json_cached_key_or_restore(redis, key):
-    logger = logging.getLogger(__name__)
-    cached_value = redis.get(key)
-    if not cached_value:
-        logger.debug(f"Redis Cache - miss {key}, restoring")
-        cached_value = redis_restore(redis, key)
-
-    if cached_value:
-        logger.debug(f"Redis Cache - hit {key}")
-        try:
-            deserialized = json.loads(cached_value)
-            return deserialized
-        except Exception as e:
-            logger.warning(f"Unable to deserialize json cached response: {e}")
-            return None
-    logger.debug(f"Redis Cache - miss {key}")
-    return None
-
-
-def redis_dump(redis, key):
-    logger = logging.getLogger(__name__)
-    try:
-        dumped = redis.dump(key)
-        filename = f"{key}_dump"
-        with open(filename, "wb") as f:
-            f.write(dumped)
-            logger.debug(f"successfully performed redis dump for key: {key}")
-    except Exception as e:
-        logger.error(f"could not perform redis dump for key: {key} with error {e}")
-
-
-def redis_set_json_and_dump(redis, key, value):
-    serialized = json.dumps(value)
-    redis_set_and_dump(redis, key, serialized)
-
-
-def redis_set_and_dump(redis, key, value):
-    redis.set(key, value)
-    redis_dump(redis, key)
-
-
 @contextlib.contextmanager
 def cd(path):
     """Context manager that changes to directory `path` and return to CWD
@@ -622,7 +557,7 @@ def get_final_poa_block(shared_config) -> Optional[int]:
 
         final_poa_block = int(response_json.get("finalPOABlock", None))
 
-        redis_set_and_dump(redis, final_poa_block_redis_key, final_poa_block)
+        redis.set(final_poa_block_redis_key, final_poa_block)
     except requests.exceptions.ConnectionError:
         # while identity is not running e.g. test env
         pass

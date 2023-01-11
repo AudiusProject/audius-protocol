@@ -48,6 +48,8 @@ import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
 
+import { idl } from '@audius/anchor-audius-data'
+
 type LibsIdentityServiceConfig = {
   url: string
   useHedgehogLocalStorage: boolean
@@ -305,7 +307,7 @@ export class AudiusLibs {
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
-      audiusDataIdl
+      audiusDataIdl: audiusDataIdl || idl
     }
   }
 

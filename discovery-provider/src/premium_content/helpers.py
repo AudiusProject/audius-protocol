@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from src.models.social.follow import Follow
+from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -24,5 +25,18 @@ def does_user_follow_artist(user_id: int, follow_user_id: int):
             .filter(Follow.follower_user_id == user_id)
             .filter(Follow.followee_user_id == follow_user_id)
             .one_or_none()
+        )
+        return True if result else False
+
+
+def does_user_support_artist(user_id: int, supporting_user_id: int):
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        result = (
+            session.query(AggregateUserTip)
+            .filter(AggregateUserTip.sender_user_id == user_id)
+            .filter(AggregateUserTip.receiver_user_id == supporting_user_id)
+            .filter(AggregateUserTip.amount >= 0)
+            .first()
         )
         return True if result else False

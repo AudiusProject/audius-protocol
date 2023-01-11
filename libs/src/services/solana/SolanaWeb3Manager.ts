@@ -7,7 +7,6 @@ import solanaWeb3, {
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
 import anchor, { Address, Idl, Program, Wallet } from '@project-serum/anchor'
-import { idl } from '@audius/anchor-audius-data'
 
 import { transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
@@ -17,7 +16,7 @@ import {
   findAssociatedTokenAddress
 } from './tokenAccount'
 import { wAudioFromWeiAudio } from './wAudio'
-import { Logger, Nullable, Utils } from '../../utils'
+import { Logger, Nullable, randomKeyPair, Utils } from '../../utils'
 import { SolanaUtils } from './SolanaUtils'
 import { TransactionHandler } from './transactionHandler'
 import {
@@ -228,7 +227,7 @@ export class SolanaWeb3Manager {
     this.audiusDataAdminStorageKeypairPublicKey =
       audiusDataAdminStorageKeypairPublicKey
 
-    this.audiusDataIdl = audiusDataIdl || idl
+    this.audiusDataIdl = audiusDataIdl
 
     if (
       this.audiusDataProgramId &&
@@ -241,7 +240,7 @@ export class SolanaWeb3Manager {
       )
       const anchorProvider = new anchor.AnchorProvider(
         connection,
-        Keypair.generate() as unknown as Wallet,
+        randomKeyPair as unknown as Wallet,
         anchor.AnchorProvider.defaultOptions()
       )
       this.anchorProgram = new anchor.Program(

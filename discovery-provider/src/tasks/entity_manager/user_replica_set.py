@@ -89,7 +89,7 @@ def update_user_replica_set(params: ManageEntityParameters):
 
     user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    existing_user.is_current = False  # invalidate
+
     if (
         user_id in params.new_records[EntityType.USER]
     ):  # override with last updated user is in this block

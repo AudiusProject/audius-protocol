@@ -137,7 +137,6 @@ def update_user(params: ManageEntityParameters):
     user_metadata = params.metadata[params.metadata_cid]
     user_id = params.entity_id
     existing_user = params.existing_records[EntityType.USER][user_id]
-    existing_user.is_current = False  # invalidate
     if (
         user_id in params.new_records[EntityType.USER]
         and params.new_records[EntityType.USER][user_id]

@@ -73,6 +73,20 @@ def test_index_valid_user(app, mocker):
                 )
             },
         ],
+        "UpdateArtistPickTrack": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": "QmUpdateArtistPickTrack",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         "UpdateUser1Tx": [
             {
                 "args": AttributeDict(
@@ -154,6 +168,10 @@ def test_index_valid_user(app, mocker):
             },
             "events": None,
             "user_id": USER_ID_OFFSET + 1,
+        },
+        "QmUpdateArtistPickTrack": {
+            "track_id": TRACK_ID_OFFSET,
+            "title": "track 1 update",
         },
         "QmUpdateUser1": {
             "is_verified": False,
@@ -406,6 +424,20 @@ def test_index_invalid_users(app, mocker):
                 )
             },
         ],
+        "UpdateUserInvalidArtistPick": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,  # existing user
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "QmInvalidArtistPick",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
     test_metadata = {
         "QmCreateUser1": {
@@ -527,6 +559,9 @@ def test_index_invalid_users(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmInvalidArtistPick": {
+            "artist_pick_track_id": TRACK_ID_OFFSET + 1,
+        },
     }
 
     entity_manager_txs = [
@@ -559,6 +594,8 @@ def test_index_invalid_users(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
+        existing_user: List[User] = session.query(User).filter(User.is_current).first()
+
         # index transactions
         entity_manager_update(
             None,
@@ -572,8 +609,14 @@ def test_index_invalid_users(app, mocker):
         )
 
         # validate db records
-        all_users: List[User] = session.query(User).all()
+        all_users: List[User] = session.query(User).filter(User.is_current).all()
         assert len(all_users) == 2  # no new users indexed
+
+        existing_user_after_index: List[User] = (
+            session.query(User).filter(User.user_id == 1).first()
+        )
+
+        assert existing_user == existing_user_after_index
 
 
 def test_index_verify_users(app, mocker):

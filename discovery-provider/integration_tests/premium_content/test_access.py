@@ -23,7 +23,10 @@ def test_access(app):
                 "nft_collection": {
                     "chain": "eth",
                     "standard": "ERC721",
-                    "address": "some-nft-collection",
+                    "address": "some-nft-collection-address",
+                    "name": "some nft collection name",
+                    "slug": "some-nft-collection",
+                    "externalLink": "some-nft-collection-external-link",
                 }
             },
         }
@@ -35,7 +38,10 @@ def test_access(app):
                 "nft_collection": {
                     "chain": "eth",
                     "standard": "ERC721",
-                    "address": "some-nft-collection",
+                    "address": "some-nft-collection-address",
+                    "name": "some nft collection name",
+                    "slug": "some-nft-collection",
+                    "externalLink": "some-nft-collection-external-link",
                 }
             },
         }
@@ -133,7 +139,10 @@ def test_batch_access(app):
                 "nft_collection": {
                     "chain": "eth",
                     "standard": "ERC721",
-                    "address": "some-nft-collection",
+                    "address": "some-nft-collection-address",
+                    "name": "some nft collection name",
+                    "slug": "some-nft-collection",
+                    "externalLink": "some-nft-collection-external-link",
                 }
             },
         }
@@ -145,7 +154,10 @@ def test_batch_access(app):
                 "nft_collection": {
                     "chain": "eth",
                     "standard": "ERC721",
-                    "address": "some-nft-collection",
+                    "address": "some-nft-collection-address",
+                    "name": "some nft collection name",
+                    "slug": "some-nft-collection",
+                    "externalLink": "some-nft-collection-external-link",
                 }
             },
         }
