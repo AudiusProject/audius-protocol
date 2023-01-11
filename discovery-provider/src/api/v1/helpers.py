@@ -626,6 +626,24 @@ trending_parser.remove_argument("limit")
 trending_parser.remove_argument("offset")
 
 
+notifications_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+notifications_parser.add_argument(
+    "timestamp",
+    type=int,
+    required=False,
+    description="The timestamp from which to paginate",
+)
+notifications_parser.add_argument(
+    "group_id", required=False, description="The group_id form which to paginate"
+)
+notifications_parser.add_argument(
+    "limit",
+    required=False,
+    type=int,
+    description="The number of notifications to return",
+)
+
+
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)
 
