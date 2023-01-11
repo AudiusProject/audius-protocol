@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -49,7 +50,15 @@ func Solicit() {
 
 	wg.Wait()
 
+	conf, err := natsConfig(ListPeers())
+	if err != nil {
+		config.Logger.Warn("invalid config " + err.Error())
+	} else {
+		fmt.Println(conf)
+	}
+
 	manager.StartNats(peersByWallet)
+
 	config.Logger.Info("solicit done")
 
 }
@@ -100,6 +109,18 @@ func solicitServer(endpoint string) (*Info, error) {
 	err = dec.Decode(&info)
 	if err != nil {
 		return nil, err
+	}
+
+	info.IsSelf = info.Address == config.WalletAddress
+
+	natsUrl := fmt.Sprintf("nats://%s:4222", info.IP)
+	nc, err := dialNatsUrl(natsUrl)
+	if err != nil {
+		config.Logger.Warn("nats connection test failed", "ip", info.IP, "err", err)
+	} else {
+		servers := nc.Servers()
+		fmt.Println("nc servers", servers)
+		info.NatsConnected = true
 	}
 
 	return info, nil

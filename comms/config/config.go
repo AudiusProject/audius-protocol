@@ -123,6 +123,10 @@ func generatePrivateKeyHex() string {
 }
 
 func configureNatsCliNkey() error {
+	if !NatsUseNkeys {
+		return nil
+	}
+
 	var err error
 
 	bytes, err := NkeyPair.Seed()

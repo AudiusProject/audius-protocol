@@ -13,6 +13,9 @@ type Info struct {
 	IP        string
 	NatsRoute string
 	// todo: public key for shared secret stuff?
+
+	IsSelf        bool
+	NatsConnected bool
 }
 
 func MyInfo() (*Info, error) {

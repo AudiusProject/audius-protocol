@@ -1,11 +1,14 @@
 package peering
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"sync"
+	"text/template"
 	"time"
 
 	"comms.audius.co/config"
@@ -58,6 +61,11 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 		// Debug:      true,
 
 		JetStream: true,
+
+		Websocket: server.WebsocketOpts{
+			Port:  8944,
+			NoTLS: true,
+		},
 	}
 
 	if config.NatsReplicaCount < 2 {
@@ -99,8 +107,9 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 	manager.natsServer.ConfigureLogger()
 	go manager.natsServer.Start()
 
+	// todo: this client connectivity stuff should be separate from starting server
+	// server should be like vanilla nats that you can run separate from client code
 	manager.setupNatsClient()
-
 	manager.setupJetstream()
 }
 
@@ -117,15 +126,7 @@ func (manager *NatsManager) setupNatsClient() {
 		// todo: this needs to have multiple URLs for peers
 		// importantly... if this nats is not reachable we NEED to user a peer url
 		natsUrl := manager.natsServer.ClientURL()
-
-		if config.NatsUseNkeys {
-			nkeySign := func(nonce []byte) ([]byte, error) {
-				return config.NkeyPair.Sign(nonce)
-			}
-			NatsClient, err = nats.Connect(natsUrl, nats.Nkey(config.NkeyPublic, nkeySign))
-		} else {
-			NatsClient, err = nats.Connect(natsUrl)
-		}
+		NatsClient, err = dialNatsUrl(natsUrl)
 
 		if err != nil {
 			config.Logger.Info("nats client dail failed", "attempt", attempt, "err", err)
@@ -136,6 +137,17 @@ func (manager *NatsManager) setupNatsClient() {
 		}
 	}
 
+}
+
+func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
+	if config.NatsUseNkeys {
+		nkeySign := func(nonce []byte) ([]byte, error) {
+			return config.NkeyPair.Sign(nonce)
+		}
+		return nats.Connect(natsUrl, nats.Nkey(config.NkeyPublic, nkeySign))
+	} else {
+		return nats.Connect(natsUrl)
+	}
 }
 
 func (manager *NatsManager) setupJetstream() {
@@ -238,4 +250,57 @@ func (manager *NatsManager) setupJetstream() {
 	// finally "expose" this via the jetstream package
 	// the server checks if this is non-nil to know if it's ready
 	jetstream.SetJetstreamContext(jsc)
+}
+
+var natsConfigTemplate = template.Must(template.New("NatsConfig").Parse(`
+
+port: 4222
+monitor_port: 8222
+
+cluster {
+	name: "audius_cluster"
+	port: 6222
+
+	authorization {
+		user: {{.NatsClusterUsername}}
+		password: {{.NatsClusterPassword}}
+		timeout: 2
+	}
+
+	routes = [
+		{{range .Peers}}
+		{{.NatsRoute}}
+		{{end}}
+	]
+}
+
+`))
+
+func natsConfig(peers []Info) (string, error) {
+
+	data := map[string]interface{}{
+		"NatsClusterUsername": config.NatsClusterUsername,
+		"NatsClusterPassword": config.NatsClusterPassword,
+		"Peers":               peers,
+	}
+
+	// write to file
+	natsConfigFilePath := "/tmp/nats.conf"
+	f, err := os.Create(natsConfigFilePath)
+	if err != nil {
+		return "", err
+	}
+	if err := natsConfigTemplate.Execute(f, data); err != nil {
+		return "", err
+	}
+
+	// os.WriteFile()
+
+	// render to string
+	var out bytes.Buffer
+	if err := natsConfigTemplate.Execute(&out, data); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }

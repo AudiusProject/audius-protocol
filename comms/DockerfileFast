@@ -11,11 +11,7 @@ RUN cd /tmp && \
 
 WORKDIR /app
 
-# COPY go.mod ./
-# COPY go.sum ./
-# RUN go mod download
-# COPY . ./
-# RUN CGO_ENABLED=0 GOOS=linux go build -o /comms-linux
+
 
 COPY build/comms-linux-amd64 /comms-linux
 COPY db/migrations ./db/migrations
