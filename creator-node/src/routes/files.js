@@ -944,10 +944,18 @@ router.post(
 router.post(
   '/segment_to_cid',
   handleResponse(async (req, _res) => {
-    const { trackSegmentCid } = req.body
-    if (trackSegmentCid) {
-      return errorResponseBadRequest(`trackSegment is null or undefined`)
+    const { trackSegment } = req.body
+    if (
+      !trackSegment ||
+      (trackSegment && (!trackSegment.cid || !trackSegment.wallet))
+    ) {
+      return errorResponseBadRequest(
+        `trackSegment is null or undefined or missing the cid/wallet field`
+      )
     }
+
+    // get uuid from wallet (with cNodeUser)
+    const uuid = trackSegment.wallet
 
     const queryResults = sequelize.query(
       `
@@ -956,13 +964,16 @@ router.post(
       WHERE "sourceFile" in (
         SELECT "sourceFile" 
         FROM "Files" 
-        WHERE "multihash" = :trackSegment
+        WHERE "multihash" = :trackSegmentCid
       )
       AND "type" = 'copy320'
-      AND "cnodeUserUUID" = '69459271-e01e-432d-a5dd-8b00137ddaef' -- get this from wallet address
+      AND "cnodeUserUUID" = :cnodeUserUUID
     `,
       {
-        replacements: { trackSegmentCid }
+        replacements: {
+          trackSegmentCid: trackSegment.cid,
+          cnodeUserUUID: uuid
+        }
       }
     )
 
