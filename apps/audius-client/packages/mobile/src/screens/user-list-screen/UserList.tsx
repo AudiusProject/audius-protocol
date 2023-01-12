@@ -101,10 +101,12 @@ export const UserList = (props: UserListProps) => {
 
   // hands off loading state from refreshing to loading
   useEffect(() => {
-    if (loading || !users.length) {
-      setIsRefreshing(false)
+    if (isRefreshing) {
+      if (loading || !users.length) {
+        setIsRefreshing(false)
+      }
     }
-  }, [loading, users])
+  }, [loading, users, isRefreshing])
 
   const handleEndReached = useCallback(() => {
     if (hasMore && isFocused) {
