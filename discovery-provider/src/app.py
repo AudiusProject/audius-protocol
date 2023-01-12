@@ -556,6 +556,12 @@ def configure_celery(celery, test_config=None):
     )
     logger.info("Database instance initialized!")
 
+    # One time hotfix
+    with db.scoped_session() as session:
+        session.execute(
+            "DELETE FROM subscriptions WHERE blockhash = '0xf73b7a49af8c14b7ee6f95c3163d96fc4d5ef9e77368d7b3f87349bfca0be860';"
+        )
+
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
 
