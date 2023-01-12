@@ -77,7 +77,7 @@ web3 = web3_provider.get_nethermind_web3()
 # HELPER FUNCTIONS
 
 default_padded_start_hash = (
-    "0x7ef3e7395b68247c807e301774a94df3decdd4e17b7527524b57b58c694252b2"
+    "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 default_config_start_hash = "0x0"
 
@@ -103,12 +103,10 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = web3.eth.get_block("latest", True)
-        latest_block_number_from_chain = latest_block_from_chain.number
-
-        target_latest_block_number = min(
-            target_latest_block_number, latest_block_number_from_chain
+        target_block_from_chain = web3.eth.get_block(
+            target_latest_block_number - final_poa_block, True
         )
+        target_latest_block_number = target_block_from_chain.number
 
         logger.info(
             f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
@@ -1032,10 +1030,10 @@ def update_task(self):
                         )
 
                     # Special case for initial block hash value of 0x0 and 0x0000....
-                    reached_initial_block = parent_hash == default_padded_start_hash
+                    reached_initial_block = latest_block.number == final_poa_block + 1
                     if reached_initial_block:
                         block_intersection_found = True
-                        intersect_block_hash = default_config_start_hash
+                        intersect_block_hash = latest_block.parentHash
                     else:
                         latest_block = dict(web3.eth.get_block(parent_hash, True))
                         latest_block["number"] += final_poa_block
@@ -1055,6 +1053,7 @@ def update_task(self):
                 # Check current block
                 undo_operations_required = (
                     db_current_block.blockhash != intersect_block_hash
+                    and not reached_initial_block
                 )
 
                 if undo_operations_required:
@@ -1073,7 +1072,10 @@ def update_task(self):
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                while traverse_block.blockhash != intersect_block_hash:
+                while (
+                    traverse_block.blockhash != intersect_block_hash
+                    and undo_operations_required
+                ):
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash
