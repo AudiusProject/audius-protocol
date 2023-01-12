@@ -5,16 +5,17 @@ steps:
   - checkout
   - run:
       name: Checks
-      command: if [[ "$CIRCLE_BRANCH" =~ ^release-v ]]; then
-        echo "gh-release run on non release branch"
-        exit 1
+      command: |
+        if [[ "$CIRCLE_BRANCH" =~ ^release-v ]]; then
+          echo "gh-release run on non release branch"
+          exit 1
         fi
 
         CN_VERSION="$(jq -r .version creator-node/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
         if [[ "$CN_VERSION" != "$DP_VERSION" ]]; then
-        echo "Existing creator-node ($CN_VERSION) and discovery-provider ($DP_VERSION) versions don't match"
-        exit 1
+          echo "Existing creator-node ($CN_VERSION) and discovery-provider ($DP_VERSION) versions don't match"
+          exit 1
         fi
 
         OLD_VERSION="$CN_VERSION"
@@ -24,8 +25,8 @@ steps:
         echo "export NEW_VERSION='$NEW_VERSION'" >> "$BASH_ENV"
 
         if ! dpkg --compare-versions "$OLD_VERSION" lt "$NEW_VERSION"; then
-        echo "Version in branch is older than current version"
-        exit 1
+          echo "Version in branch is older than current version"
+          exit 1
         fi
   - run:
       name: Set git config
