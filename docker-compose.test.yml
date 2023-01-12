@@ -74,6 +74,14 @@ services:
       file: docker-compose.yml
       service: build-audius-libs
 
+  # libs
+
+  test-audius-libs:
+    extends:
+      file: docker-compose.yml
+      service: build-audius-libs
+    command: npm run test:unit && npx ts-mocha tests/index.js
+
   # creator-node
 
   creator-node-db:
