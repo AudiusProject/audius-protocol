@@ -76,7 +76,7 @@ export const ShareToStorySticker = ({
   const styles = useStyles()
 
   const trackImage = useTrackImage(track, user)
-  const { neutralLight2 } = useThemeColors()
+  const { neutralLight2, staticNeutralLight8 } = useThemeColors()
   return (
     <View style={[styles.container, style]}>
       <View>
@@ -116,7 +116,7 @@ export const ShareToStorySticker = ({
             hideName
           />
         </View>
-        <Divider color='staticNeutralLight8' width={2} />
+        <Divider color={staticNeutralLight8} width={2} />
         <View style={styles.belowDividerContainer}>
           <Text
             allowFontScaling={false}

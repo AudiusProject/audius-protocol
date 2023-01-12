@@ -2,11 +2,10 @@ import type { ViewProps } from 'react-native'
 import { View } from 'react-native'
 
 import { makeStyles } from 'app/styles'
-import type { ThemeColors } from 'app/utils/theme'
 
 type DividerProps = ViewProps & {
   orientation?: 'horizontal' | 'vertical'
-  color?: keyof ThemeColors
+  color?: string
   width?: number
 }
 
