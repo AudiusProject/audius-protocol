@@ -79,7 +79,7 @@ func Apply(msg *nats.Msg) {
 		if count == 0 {
 			// No rows were inserted because the jetstream seq number is already in rpc_log.
 			// Do not process redelivered messages that have already been processed.
-			logger.Info("rpc already in log, skipping duplicate seq number", meta.Sequence.Stream)
+			logger.Info("rpc already in log, skipping duplicate seq number", "seq", meta.Sequence.Stream)
 			return
 		}
 
