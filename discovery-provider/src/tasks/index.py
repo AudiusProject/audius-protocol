@@ -965,6 +965,7 @@ def revert_blocks(self, db, revert_blocks_list):
                         == subscription_to_revert.subscriber_id
                     )
                     .filter(Subscription.user_id == subscription_to_revert.user_id)
+                    .filter(Subscription.blocknumber < revert_block_number)
                     .order_by(Subscription.blocknumber.desc())
                     .first()
                 )
