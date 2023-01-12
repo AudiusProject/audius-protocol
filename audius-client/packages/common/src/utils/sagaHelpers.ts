@@ -67,10 +67,10 @@ export function* channelCanceller(
 export function* waitForValue(
   selector: (state: any, selectorArgs?: any) => any,
   args?: any,
-  customCheck: (value: any) => boolean = () => true
+  customCheck?: (value: any) => boolean
 ) {
   let value = yield* select(selector, args)
-  while (!value || !customCheck(value)) {
+  while (customCheck ? !customCheck(value) : !value) {
     yield* take()
     value = yield* select(selector, args)
   }
