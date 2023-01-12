@@ -1,5 +1,6 @@
 import logging
-from typing import List
+from datetime import datetime
+from typing import List, TypedDict
 
 from sqlalchemy.sql import text
 from src.utils import db_session
@@ -10,7 +11,9 @@ logger = logging.getLogger(__name__)
 sql = text(
     """
 SELECT
-    p.playlist_id
+    p.playlist_id,
+    p.updated_at,
+    ps.seen_at
 from
     playlists p
 INNER JOIN
@@ -34,7 +37,13 @@ where
 )
 
 
-def get_user_playlist_update(user_id: int) -> List[int]:
+class PlaylistUpdate(TypedDict):
+    playlist_id: int
+    updated_at: datetime
+    last_seen_at: datetime
+
+
+def get_user_playlist_update(user_id: int) -> List[PlaylistUpdate]:
     """
     Returns list of playlist_ids for a user_id which have been updated
     and the user has not seen
@@ -51,5 +60,12 @@ def get_user_playlist_update(user_id: int) -> List[int]:
             sql,
             {"user_id": user_id},
         )
-        playlists_with_updates = [row[0] for row in rows]
+        playlists_with_updates: List[PlaylistUpdate] = [
+            {
+                "playlist_id": row[0],
+                "updated_at": row[1],
+                "last_seen_at": row[2],
+            }
+            for row in rows
+        ]
         return playlists_with_updates

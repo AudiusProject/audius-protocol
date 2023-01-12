@@ -76,11 +76,28 @@ def test_user_playlist_update(app):
 
         user_id = 1
         playlist_updates = get_user_playlist_update(user_id)
-        assert playlist_updates == [1, 4]
+        assert playlist_updates == [
+            {
+                "playlist_id": 1,
+                "updated_at": t2,
+                "last_seen_at": t1,
+            },
+            {
+                "playlist_id": 4,
+                "updated_at": t2,
+                "last_seen_at": t1,
+            },
+        ]
 
         user_id = 2
         playlist_updates = get_user_playlist_update(user_id)
-        assert playlist_updates == [2]
+        assert playlist_updates == [
+            {
+                "playlist_id": 2,
+                "updated_at": t2,
+                "last_seen_at": None,
+            }
+        ]
 
         user_id = 3
         playlist_updates = get_user_playlist_update(user_id)
