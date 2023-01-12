@@ -141,7 +141,7 @@ const interpolateImageTranslate = (animatedValue: Animated.Value) =>
   })
 
 /**
- * A dynamic image that transitions between changes to the `uri` prop.
+ * A dynamic image that transitions between changes to the `source` prop.
  */
 export const DynamicImage = memo(function DynamicImage({
   source,
