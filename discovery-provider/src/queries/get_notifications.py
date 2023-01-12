@@ -55,6 +55,7 @@ LEFT JOIN user_seen on
 WHERE
   :user_id = ANY(n.user_ids) AND
   (
+    (:timestamp_offset is NULL) OR
     (user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
     (:timestamp_offset is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
     (
@@ -108,7 +109,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
             "notification_ids": r[1],
             "is_seen": r[2] if r[2] != None else False,
             "seen_at": r[3],
-            "prev_seen_at": r[3],
+            "prev_seen_at": r[4],
             "count": r[5],
         }
         for r in rows
