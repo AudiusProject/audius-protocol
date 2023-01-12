@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 
 import type { Nullable, CID, WidthSizes } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import { SquareSizes, interleave } from '@audius/common'
 import type { User } from '@sentry/react-native'
 import type { ImageSourcePropType, ImageURISource } from 'react-native'
 
@@ -103,8 +103,9 @@ const createAllImageSources = ({
 
   const sourceList = [
     ...(localSource && localSource.length > 0 ? [localSource] : []),
-    ...newImageSources,
-    ...legacyImageSources
+    // Alternate between new and legacy paths, so the legacy path is tried for each
+    // content node
+    ...interleave(newImageSources, legacyImageSources)
   ]
   return sourceList
 }
