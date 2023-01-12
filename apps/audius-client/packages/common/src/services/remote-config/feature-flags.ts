@@ -36,7 +36,9 @@ export enum FeatureFlags {
   SHARE_TO_SNAPCHAT = 'share_to_snapchat',
   CHAT_ENABLED = 'chat_enabled',
   FAST_CACHE = 'fast_cache',
-  SAFE_FAST_CACHE = 'safe_fast_cache'
+  SAFE_FAST_CACHE = 'safe_fast_cache',
+  ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED = 'entity_manager_view_playlist_enabled',
+  ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -88,5 +90,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SHARE_TO_SNAPCHAT]: false,
   [FeatureFlags.CHAT_ENABLED]: false,
   [FeatureFlags.FAST_CACHE]: false,
-  [FeatureFlags.SAFE_FAST_CACHE]: false
+  [FeatureFlags.SAFE_FAST_CACHE]: false,
+  [FeatureFlags.ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED]: false,
+  [FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED]: false
 }

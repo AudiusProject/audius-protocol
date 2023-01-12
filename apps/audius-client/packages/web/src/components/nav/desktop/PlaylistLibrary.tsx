@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo, MouseEvent } from 'react'
 
 import {
   ID,
@@ -56,7 +56,7 @@ const {
 } = accountSelectors
 
 type PlaylistLibraryProps = {
-  onClickNavLinkWithAccount: () => void
+  onClickNavLinkWithAccount: (e?: MouseEvent, playlistId?: number) => void
 }
 
 type LibraryContentsLevelProps = {
@@ -271,8 +271,10 @@ const PlaylistLibrary = ({
   }
 
   const onClickPlaylist = useCallback(
-    (playlistId: ID, hasUpdate: boolean) => {
-      onClickNavLinkWithAccount()
+    (e: MouseEvent, playlistId: ID, hasUpdate: boolean) => {
+      if (hasUpdate) {
+        onClickNavLinkWithAccount(e, playlistId)
+      }
       record(
         make(Name.PLAYLIST_LIBRARY_CLICKED, {
           playlistId,

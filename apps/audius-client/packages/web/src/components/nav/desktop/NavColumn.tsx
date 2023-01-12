@@ -228,7 +228,7 @@ const NavColumn = ({
   ])
 
   const onClickNavLinkWithAccount = useCallback(
-    (e?: MouseEvent<HTMLAnchorElement>, id?: number) => {
+    (e?: MouseEvent, id?: number) => {
       if (!account) {
         e?.preventDefault()
         goToSignUp('restricted page')
