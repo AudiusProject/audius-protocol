@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 
@@ -53,6 +54,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 		// Debug:      true,
 
 		JetStream: true,
+		StoreDir:  os.Getenv("NATS_STORE_DIR"),
 	}
 
 	if config.NatsReplicaCount < 2 {
