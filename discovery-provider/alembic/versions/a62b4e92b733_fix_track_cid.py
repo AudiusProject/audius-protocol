@@ -40,11 +40,4 @@ def upgrade():
     )
 
 def downgrade():
-    connection = op.get_bind()
-    connection.execute(
-        """
-        BEGIN;
-
-        COMMIT;
-    """
-    )
+    pass
