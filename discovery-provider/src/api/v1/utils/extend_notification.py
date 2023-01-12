@@ -1,26 +1,27 @@
 import logging
 from datetime import datetime
 from typing import List, Union
+
 from src.queries.get_notifications import (
-    Notification,
-    NotificationData,
-    NotificationAction,
+    ChallengeRewardNotification,
+    CosignRemixNotification,
+    CreatePlaylistNotification,
+    CreateTrackNotification,
+    FollowerMilestoneNotification,
     FollowNotification,
+    Notification,
+    NotificationAction,
+    NotificationData,
+    PlaylistMilestoneNotification,
+    ReactionNotification,
+    RemixNotification,
     RepostNotification,
     SaveNotification,
-    RemixNotification,
-    CosignRemixNotification,
-    CreateTrackNotification,
-    CreatePlaylistNotification,
-    TipReceiveNotification,
-    TipSendNotification,
-    ChallengeRewardNotification,
-    ReactionNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
-    FollowerMilestoneNotification,
+    TipReceiveNotification,
+    TipSendNotification,
     TrackMilestoneNotification,
-    PlaylistMilestoneNotification,
 )
 from src.utils.helpers import encode_int_id
 
