@@ -8,7 +8,7 @@ import { Screen, Text } from 'app/components/core'
 
 export const ChatsScreen = () => {
   const dispatch = useDispatch()
-  const chats = useSelector(chatSelectors.getChats)
+  const { data: chats } = useSelector(chatSelectors.getChats)
   const id = 'clbyghuy800003bat0th2ivy5'
   const messages =
     useSelector((state) => chatSelectors.getChatMessages(state, id)) ?? []
