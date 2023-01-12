@@ -1,5 +1,5 @@
-import { chatSelectors, FeatureFlags } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { FeatureFlags } from '@audius/common'
+import { RouteComponentProps } from 'react-router-dom'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -15,8 +15,8 @@ const messages = {
   pageDescription: '',
   headerText: 'Messages'
 }
-export const ChatPage = () => {
-  const chatId = useSelector(chatSelectors.getCurrentChatId)
+export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
+  const chatId = match.params.id
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   if (!isChatEnabled) {
     return null
@@ -27,7 +27,7 @@ export const ChatPage = () => {
       header={<Header primary={messages.headerText} />}
     >
       <div className={styles.layout}>
-        <ChatList className={styles.chatList} />
+        <ChatList className={styles.chatList} currentChatId={chatId} />
         <div className={styles.messages}>
           <ChatMessageList className={styles.messageList} chatId={chatId} />
           <ChatComposer className={styles.messageComposer} chatId={chatId} />

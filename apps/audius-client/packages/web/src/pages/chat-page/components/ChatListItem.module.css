@@ -1,0 +1,100 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--unit-2);
+  padding: var(--unit-4) var(--unit-6);
+  background-color: var(--white);
+  border-bottom: 1px solid var(--neutral-light-8);
+
+  cursor: pointer;
+  position: relative;
+}
+
+.root:hover {
+  background-color: var(--neutral-light-9);
+}
+
+.root.active::before {
+  content: '';
+  position: absolute;
+  width: var(--unit-1);
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: var(--secondary-light-2);
+}
+
+.root.active:hover::before {
+  background-color: var(--secondary);
+}
+
+.root .profilePicture {
+  width: var(--unit-12);
+  height: var(--unit-12);
+}
+
+.user {
+  display: flex;
+  gap: var(--unit-2);
+  width: 100%;
+}
+
+.userDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--unit-1);
+  min-width: 0;
+}
+
+.userDetails > :global(.artistPopover) {
+  max-width: 100%;
+}
+
+.nameAndBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  line-height: 130%;
+  max-width: 100%;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nameAndBadge,
+.handle,
+.profilePicture {
+  cursor: pointer;
+}
+
+.unreadIndicatorTag {
+  align-self: flex-start;
+  margin-left: auto;
+
+  padding: 5.5px var(--unit-2);
+  background: var(--secondary);
+  border-radius: 2px;
+
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--static-white);
+  white-space: nowrap;
+}
+
+.messagePreview {
+  width: 100%;
+  text-align: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 130%;
+}

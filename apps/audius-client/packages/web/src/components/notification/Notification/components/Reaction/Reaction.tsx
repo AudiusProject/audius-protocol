@@ -16,10 +16,19 @@ export type ReactionProps = {
   isActive?: boolean
   isResponsive?: boolean
   onClick?: MouseEventHandler
+  width?: number
+  height?: number
 }
 
 export const Reaction = (props: ReactionProps) => {
-  const { animationData, isActive, isResponsive, onClick } = props
+  const {
+    animationData,
+    isActive,
+    isResponsive,
+    onClick,
+    width = 86,
+    height = 86
+  } = props
   const [isInteracting, setInteracting] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
 
@@ -71,8 +80,8 @@ export const Reaction = (props: ReactionProps) => {
       onMouseLeave={handleMouseLeave}
     >
       <Lottie
-        height={86}
-        width={86}
+        height={width}
+        width={height}
         options={lottieOptions}
         isStopped={isActive === false && !isInteracting}
         isClickToPauseDisabled
