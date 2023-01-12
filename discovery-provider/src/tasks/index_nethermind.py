@@ -101,12 +101,14 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         if current_block_number == None:
             current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window
+        target_latest_block_number = current_block_number + block_processing_window - final_poa_block
 
-        target_block_from_chain = web3.eth.get_block(
-            target_latest_block_number - final_poa_block, True
+        latest_block_from_chain = web3.eth.get_block("latest", True)
+        latest_block_number_from_chain = latest_block_from_chain.number
+
+        target_latest_block_number = min(
+            target_latest_block_number, latest_block_number_from_chain
         )
-        target_latest_block_number = target_block_from_chain.number
 
         logger.info(
             f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
