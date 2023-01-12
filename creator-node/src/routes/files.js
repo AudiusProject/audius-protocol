@@ -44,6 +44,7 @@ const {
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
+const { sequelize } = require('../models')
 const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -937,6 +938,37 @@ router.post(
 
     // return results
     return successResponse(trackIdMapping)
+  })
+)
+
+router.post(
+  '/segment_to_cid',
+  handleResponse(async (req, _res) => {
+    const { trackSegmentCid } = req.body
+    if (trackSegmentCid) {
+      return errorResponseBadRequest(`trackSegment is null or undefined`)
+    }
+
+    const queryResults = sequelize.query(
+      `
+      SELECT * 
+      FROM "Files" 
+      WHERE "sourceFile" in (
+        SELECT "sourceFile" 
+        FROM "Files" 
+        WHERE "multihash" = :trackSegment
+      )
+      AND "type" = 'copy320'
+      AND "cnodeUserUUID" = '69459271-e01e-432d-a5dd-8b00137ddaef' -- get this from wallet address
+    `,
+      {
+        replacements: { trackSegmentCid }
+      }
+    )
+
+    const copy320Cid = queryResults
+
+    return successResponse(copy320Cid)
   })
 )
 
