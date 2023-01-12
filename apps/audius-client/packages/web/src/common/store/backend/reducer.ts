@@ -1,11 +1,13 @@
 import { SETUP, SETUP_BACKEND_SUCCEEDED, SETUP_BACKEND_FAILED } from './actions'
 
 type BackendState = {
+  isSettingUp: boolean
   isSetup: boolean
   web3Error: boolean
 }
 
 const initialState: BackendState = {
+  isSettingUp: false,
   isSetup: false,
   web3Error: false
 }
@@ -14,6 +16,7 @@ const actionsMap = {
   [SETUP](state: BackendState) {
     return {
       ...state,
+      isSettingUp: true,
       isSetup: false
     }
   },
@@ -23,6 +26,7 @@ const actionsMap = {
   ) {
     return {
       ...state,
+      isSettingUp: false,
       isSetup: true,
       web3Error: action.web3Error
     }
@@ -30,6 +34,7 @@ const actionsMap = {
   [SETUP_BACKEND_FAILED](state: BackendState) {
     return {
       ...state,
+      isSettingUp: false,
       isSetup: false,
       web3Error: false
     }

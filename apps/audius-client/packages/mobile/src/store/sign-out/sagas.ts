@@ -4,12 +4,13 @@ import {
   accountActions,
   feedPageLineupActions,
   themeActions,
-  Theme
+  Theme,
+  waitForValue
 } from '@audius/common'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
-import { getIsSetup } from 'audius-client/src/common/store/backend/selectors'
+import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors'
 import { make } from 'common/store/analytics/actions'
-import { takeLatest, put, call, select, take } from 'typed-redux-saga'
+import { takeLatest, put, call } from 'typed-redux-saga'
 
 import { ENTROPY_KEY, THEME_STORAGE_KEY } from 'app/constants/storage-keys'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -28,14 +29,9 @@ const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY]
 
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))
-  // UX obstruction, but if the user somehow makes it
-  // all the way to the sign out flow before the
-  // backend has initted (e.g. there's still an account fetch)
-  // in-flight, we need to wait here.
-  const isBackendSetup = yield* select(getIsSetup)
-  if (!isBackendSetup) {
-    yield* take(accountActions.fetchAccountSucceeded.type)
-  }
+
+  // Wait for in-flight set up to resolve
+  yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
 
   yield* put(resetAccount())
   yield* put(feedPageLineupActions.reset())

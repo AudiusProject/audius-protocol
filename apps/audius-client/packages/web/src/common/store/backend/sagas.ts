@@ -19,7 +19,7 @@ import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 
 import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
-import { getIsSetup } from './selectors'
+import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
 /**
@@ -103,10 +103,9 @@ function* watchSetupBackend() {
 
 // If not fully set up, re set-up the backend
 export function* setupBackendIfNotSetUp() {
-  yield* put(backendActions.setupBackend())
-
   const isSetup = yield* select(getIsSetup)
-  if (!isSetup) {
+  const isSettingUp = yield* select(getIsSettingUp)
+  if (!isSetup && !isSettingUp) {
     // Try to set up again, which should block further actions until completed
     yield* put(backendActions.setupBackend())
   }
@@ -116,6 +115,10 @@ function* watchSetReachable() {
   yield* takeEvery(reachabilityActions.SET_REACHABLE, setupBackendIfNotSetUp)
 }
 
+function* init() {
+  yield* put(backendActions.setupBackend())
+}
+
 export default function sagas() {
-  return [watchSetupBackend, watchBackendErrors, watchSetReachable]
+  return [init, watchSetupBackend, watchBackendErrors, watchSetReachable]
 }
