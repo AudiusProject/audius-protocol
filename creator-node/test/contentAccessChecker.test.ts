@@ -19,10 +19,12 @@ describe('Test content access', function () {
     '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
 
   const cid = 'QmcbnrugPPDrRXb5NeYKwPb7HWUj7aN2tXmhgwRfw2pRXo'
+  const trackId = 12345
   const data = {
     cid,
     shouldCache: true,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    trackId
   }
 
   before(async () => {
@@ -51,10 +53,7 @@ describe('Test content access', function () {
 
   describe('content access', () => {
     it('fails when recovered DN wallet is not from registered DN', async () => {
-      const signature = generateSignature(
-        data,
-        badDNPrivateKey
-      )
+      const signature = generateSignature(data, badDNPrivateKey)
 
       const access = await checkCIDAccess({
         cid,
@@ -72,10 +71,7 @@ describe('Test content access', function () {
     })
 
     it('failed when the cid does not match what is signed', async () => {
-      const signature = generateSignature(
-        data,
-        dummyDNPrivateKey
-      )
+      const signature = generateSignature(data, dummyDNPrivateKey)
       const access = await checkCIDAccess({
         cid: 'incorrectCID',
         data,
@@ -95,6 +91,7 @@ describe('Test content access', function () {
       const tenDays = 1_000 * 60 * 60 * 24 * 10
       const expiredTimestampData = {
         cid: cid,
+        trackId,
         shouldCache: true,
         timestamp: Date.now() - tenDays // ten days old
       }
@@ -119,10 +116,7 @@ describe('Test content access', function () {
     })
 
     it('passes when everything matches', async () => {
-      const signature = generateSignature(
-        data,
-        dummyDNPrivateKey
-      )
+      const signature = generateSignature(data, dummyDNPrivateKey)
       const access = await checkCIDAccess({
         cid,
         signature,

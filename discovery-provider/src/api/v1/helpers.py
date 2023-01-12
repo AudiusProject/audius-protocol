@@ -22,7 +22,7 @@ def make_image(endpoint, cid, width="", height=""):
 
 
 def get_primary_endpoint(user):
-    raw_endpoint = user["creator_node_endpoint"]
+    raw_endpoint = user.get("creator_node_endpoint")
     if not raw_endpoint:
         return ""
     return raw_endpoint.split(",")[0]
@@ -77,14 +77,14 @@ def add_playlist_added_timestamps(playlist):
 
 def add_user_artwork(user):
     # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user["cover_photo"]
-    user["profile_picture_legacy"] = user["profile_picture"]
+    user["cover_photo_legacy"] = user.get("cover_photo")
+    user["profile_picture_legacy"] = user.get("profile_picture")
 
     endpoint = get_primary_endpoint(user)
     if not endpoint:
         return user
-    cover_cid = user["cover_photo_sizes"]
-    profile_cid = user["profile_picture_sizes"]
+    cover_cid = user.get("cover_photo_sizes")
+    profile_cid = user.get("profile_picture_sizes")
     if profile_cid:
         profile = {
             "150x150": make_image(endpoint, profile_cid, 150, 150),
@@ -123,6 +123,8 @@ def extend_search(resp):
 
 
 def extend_user(user, current_user_id=None):
+    if not user.get("user_id"):
+        return user
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
     user = add_user_artwork(user)
@@ -209,8 +211,8 @@ def extend_track(track):
     if "save_count" in track:
         track["favorite_count"] = track["save_count"]
 
-    track["is_streamable"] = (
-        not track["is_delete"] and not track["user"]["is_deactivated"]
+    track["is_streamable"] = not track["is_delete"] and not track["user"].get(
+        "is_deactivated"
     )
 
     duration = 0.0

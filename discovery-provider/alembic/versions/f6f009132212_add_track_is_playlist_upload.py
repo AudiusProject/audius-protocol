@@ -21,21 +21,27 @@ up_files = [
     "handle_track.sql",
 ]
 
+def column_exists(table_name, column_name):
+    bind = op.get_context().bind
+    insp = sa.inspect(bind)
+    columns = insp.get_columns(table_name)
+    return any(c["name"] == column_name for c in columns)
 
 def upgrade():
-    op.add_column(
-        "tracks",
-        sa.Column("is_playlist_upload", sa.Boolean(), nullable=False, server_default="false"),
-    )
+    if not column_exists("tracks", "is_playlist_upload"):
+        op.add_column(
+            "tracks",
+            sa.Column("is_playlist_upload", sa.Boolean(), nullable=False, server_default="false"),
+        )
 
-    connection = op.get_bind()
-    connection.execute(build_sql(up_files))
+        connection = op.get_bind()
+        connection.execute(build_sql(up_files))
 
 
 def downgrade():
-    connection = op.get_bind()
-
-    op.drop_column("tracks", "premium_conditions")
-    sql = build_sql(up_files)
-    connection = op.get_bind()
-    connection.execute(sql)
+    if column_exists("tracks", "is_playlist_upload"):
+        connection = op.get_bind()
+        op.drop_column("tracks", "premium_conditions")
+        sql = build_sql(up_files)
+        connection = op.get_bind()
+        connection.execute(sql)

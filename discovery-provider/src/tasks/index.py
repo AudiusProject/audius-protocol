@@ -18,6 +18,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
@@ -122,56 +123,6 @@ def get_contract_info_if_exists(self, address):
         if update_task.web3.toChecksumAddress(contract_address) == address:
             return (contract_name, contract_address)
     return None
-
-
-def initialize_blocks_table_if_necessary(db: SessionManager):
-    redis = update_task.redis
-
-    target_blockhash = None
-    target_blockhash = update_task.shared_config["discprov"]["start_block"]
-    target_block = update_task.web3.eth.get_block(target_blockhash, True)
-
-    with db.scoped_session() as session:
-        current_block_query_result = session.query(Block).filter_by(is_current=True)
-        if current_block_query_result.count() == 0:
-            blocks_query_result = session.query(Block)
-            assert (
-                blocks_query_result.count() == 0
-            ), "Corrupted DB State - Expect single row marked as current"
-            block_model = Block(
-                blockhash=target_blockhash,
-                number=target_block.number,
-                parenthash=target_blockhash,
-                is_current=True,
-            )
-            if (
-                target_block.number == 0
-                or target_blockhash == default_config_start_hash
-            ):
-                block_model.number = None
-
-            session.add(block_model)
-            logger.info(
-                f"index.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
-            )
-        else:
-            assert (
-                current_block_query_result.count() == 1
-            ), "Expected SINGLE row marked as current"
-
-            # set the last indexed block in redis
-            current_block_result = current_block_query_result.first()
-            if current_block_result.number:
-                redis.set(
-                    most_recent_indexed_block_redis_key, current_block_result.number
-                )
-            if current_block_result.blockhash:
-                redis.set(
-                    most_recent_indexed_block_hash_redis_key,
-                    current_block_result.blockhash,
-                )
-
-    return target_blockhash
 
 
 def get_latest_block(db: SessionManager):
@@ -330,6 +281,11 @@ def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, entity_manager_t
                     if not cid or event_type == EntityType.USER_REPLICA_SET:
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
+                        continue
+                    if (
+                        action == Action.CREATE
+                        and event_type == EntityType.NOTIFICATION
+                    ):
                         continue
 
                     cids_txhash_set.add((cid, txhash))
@@ -865,6 +821,11 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_follow_entries = (
                 session.query(Follow).filter(Follow.blockhash == revert_hash).all()
             )
+            revert_subscription_entries = (
+                session.query(Subscription)
+                .filter(Subscription.blockhash == revert_hash)
+                .all()
+            )
             revert_playlist_entries = (
                 session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
             )
@@ -950,6 +911,23 @@ def revert_blocks(self, db, revert_blocks_list):
                 # remove outdated follow entry
                 logger.info(f"Reverting follow: {follow_to_revert}")
                 session.delete(follow_to_revert)
+
+            for subscription_to_revert in revert_subscription_entries:
+                previous_subscription_entry = (
+                    session.query(Subscription)
+                    .filter(
+                        Subscription.subscriber_id
+                        == subscription_to_revert.subscriber_id
+                    )
+                    .filter(Subscription.user_id == subscription_to_revert.user_id)
+                    .filter(Subscription.blocknumber < revert_block_number)
+                    .order_by(Subscription.blocknumber.desc())
+                    .first()
+                )
+                if previous_subscription_entry:
+                    previous_subscription_entry.is_current = True
+                logger.info(f"Reverting subscription: {subscription_to_revert}")
+                session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
                 playlist_id = playlist_to_revert.playlist_id
@@ -1187,7 +1165,6 @@ def update_task(self):
             logger.info(
                 f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
             )
-            initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
 

@@ -110,6 +110,12 @@ export interface TrackFull
         * @type {string}
         * @memberof TrackFull
         */
+        track_cid?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof TrackFull
+        */
         mood?: string;
         /**
         * 
@@ -321,12 +327,6 @@ export interface TrackFull
         * @memberof TrackFull
         */
         is_available?: boolean;
-        /**
-        * 
-        * @type {string}
-        * @memberof TrackFull
-        */
-        track_cid?: string;
         /**
         * 
         * @type {boolean}
