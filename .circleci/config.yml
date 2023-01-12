@@ -1217,13 +1217,15 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
-      - run: |
-          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          mkdir -p ssh_keys
-          cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
-          SLASH_ADDRESS=<< parameters.slash_address >> \
-          SLASH_AMOUNT=<< parameters.slash_amount >> \
-          .circleci/release-scripts/<< parameters.target >>.sh
+      - run:
+          no_output_timeout: 30m
+          command: |
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+            mkdir -p ssh_keys
+            cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+            SLASH_ADDRESS=<< parameters.slash_address >> \
+            SLASH_AMOUNT=<< parameters.slash_amount >> \
+            .circleci/release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
           condition:
