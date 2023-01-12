@@ -101,7 +101,9 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         if current_block_number == None:
             current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window - final_poa_block
+        target_latest_block_number = (
+            current_block_number + block_processing_window - final_poa_block
+        )
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
