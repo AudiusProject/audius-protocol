@@ -1,0 +1,97 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.root.isAuthor {
+  align-items: flex-end;
+}
+
+.bubble {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  max-width: 448px;
+  padding: var(--unit-4);
+  border-radius: var(--unit-3);
+  box-shadow: var(--box-shadow-near);
+  color: var(--netural);
+  background-color: var(--white);
+}
+
+.bubble:hover {
+  background-color: var(--neutral-light-10);
+  box-shadow: var(--box-shadow-far);
+}
+
+.isAuthor .bubble {
+  color: var(--white);
+  background-color: var(--secondary-light-2);
+}
+
+.isAuthor .bubble:hover {
+  background-color: var(--secondary-light-1);
+}
+
+.text {
+  word-break: break-word;
+  text-align: left;
+  line-height: 150%;
+}
+
+.date {
+  font-size: var(--font-xs);
+  color: var(--neutral-light-2);
+  margin-bottom: var(--unit-4);
+}
+
+.reaction {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  cursor: pointer;
+  bottom: -16px;
+}
+
+.reaction:not(.hasReaction) {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  width: var(--unit-8);
+  height: var(--unit-8);
+  bottom: -8px;
+  border-radius: 50%;
+}
+
+.root.isAuthor .reaction {
+  left: -8px;
+}
+.root:not(.isAuthor) .reaction {
+  right: -8px;
+}
+
+.root.isAuthor .reaction.hasReaction {
+  left: -16px;
+}
+.root:not(.isAuthor) .reaction {
+  right: -16px;
+}
+
+.bubble:hover .reaction,
+.reaction.isOpened,
+.reaction.hasReaction {
+  display: flex;
+}
+
+.reaction:not(.hasReaction) g path {
+  width: 24px;
+  height: 24px;
+  fill: var(--secondary);
+}
+
+.reactionEmoji {
+  width: var(--unit-10);
+  height: var(--unit-10);
+}

@@ -1,19 +1,31 @@
 .root {
   overflow-y: auto;
-  background-color: var(--white);
-  border-right: 1px solid var(--neutral-light-8);
+  background-color: var(--neutral-light-9);
+  border-right: 1px solid var(--neutral-light-7);
 }
 
-.chat {
-  border-top: 1px solid var(--neutral-light-7);
-  gap: 8px;
+.empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  background: var(--neutral-light-8);
+  justify-content: center;
+  gap: var(--unit-2);
+  margin-top: var(--unit-10);
+  padding: var(--unit-6);
 }
-.chat.current {
-  background: var(--neutral-light-7);
+
+.header {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  line-height: 130%;
 }
-.chat > * {
-  margin: 8px;
+
+.subheader {
+  line-height: 150%;
+}
+
+.spinner {
+  margin: auto;
+  width: var(--unit-8);
+  height: 100px;
 }

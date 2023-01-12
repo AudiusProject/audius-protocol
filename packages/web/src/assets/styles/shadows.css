@@ -1,0 +1,16 @@
+:root {
+  /*
+   * Default/Near
+   * - onPress state on card elements
+   */
+  --box-shadow-near: 0px 0px 1px -2px var(--tile-shadow-1),
+    0px 1px 0px -2px var(--tile-shadow-2), 0px 2px 5px -2px var(--tile-shadow-3);
+  /* 
+   * Default/Far
+   * - Hover state for card elements.  
+   * - Larger cards/sections without hover states
+   * - Modal Shadows
+   */
+  --box-shadow-far: 0px 0px 1px -2px var(--tile-shadow-1),
+    0px 1px 0px -2px var(--tile-shadow-2), 0px 16px 20px var(--table-shadow);
+}

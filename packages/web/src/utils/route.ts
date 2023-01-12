@@ -82,7 +82,7 @@ export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
 export const CHECK_PAGE = '/check'
 export const DEACTIVATE_PAGE = '/deactivate'
-export const CHAT_PAGE = '/chat'
+export const CHAT_PAGE = '/messages/:id?'
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
@@ -322,6 +322,10 @@ export const fullSearchResultsPage = (query: string) => {
 
 export const exploreMoodPlaylistsPage = (mood: string) => {
   return `/explore/${mood}`
+}
+
+export const chatPage = (id: string) => {
+  return `/messages/${id}`
 }
 
 export const doesMatchRoute = (route: string, exact = true) => {
