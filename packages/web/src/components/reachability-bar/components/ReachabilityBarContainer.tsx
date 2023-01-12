@@ -11,7 +11,7 @@ const ReachabilityBar = () => {
 }
 
 type ReachabilityBarProps = {
-  isReachable: boolean | null
+  isReachable: boolean | 'unconfirmed'
 }
 
 const upPosition = {
