@@ -1,34 +1,26 @@
 package peering
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"sync"
-	"text/template"
 	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/internal/rpcz"
-	"comms.audius.co/jetstream"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 )
 
-var NatsClient *nats.Conn
-
 type NatsManager struct {
-	natsServer *server.Server
-	mu         sync.Mutex
+	myNatsClient *nats.Conn
+	natsServer   *server.Server
+	mu           sync.Mutex
 }
 
 func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
-	if config.NatsClusterUsername == "" {
-		log.Fatal("config.NatsClusterUsername not set")
-	}
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -61,17 +53,15 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 		// Debug:      true,
 
 		JetStream: true,
-
-		Websocket: server.WebsocketOpts{
-			Port:  8944,
-			NoTLS: true,
-		},
 	}
 
 	if config.NatsReplicaCount < 2 {
 		config.Logger.Info("starting NATS in standalone mode", "peer count", len(routes))
 	} else {
 		config.Logger.Info("starting NATS in cluster mode... ")
+		if config.NatsClusterUsername == "" {
+			log.Fatal("config.NatsClusterUsername not set")
+		}
 
 		opts.Cluster = server.ClusterOpts{
 			Name:     "comms",
@@ -126,7 +116,7 @@ func (manager *NatsManager) setupNatsClient() {
 		// todo: this needs to have multiple URLs for peers
 		// importantly... if this nats is not reachable we NEED to user a peer url
 		natsUrl := manager.natsServer.ClientURL()
-		NatsClient, err = dialNatsUrl(natsUrl)
+		manager.myNatsClient, err = dialNatsUrl(natsUrl)
 
 		if err != nil {
 			config.Logger.Info("nats client dail failed", "attempt", attempt, "err", err)
@@ -152,7 +142,7 @@ func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
 
 func (manager *NatsManager) setupJetstream() {
 	natsServer := manager.natsServer
-	nc := NatsClient
+	nc := manager.myNatsClient
 	var jsc nats.JetStreamContext
 
 	// TEMP: hardcoded stream config
@@ -214,6 +204,7 @@ func (manager *NatsManager) setupJetstream() {
 
 	}
 
+	// ------------------------------------------------------------------------------
 	// TEMP: Subscribe to the subject for the demo
 	// this is the "processor" for DM messages... which just inserts them into comm log table for now
 	// it assumes that nats message has the signature header
@@ -247,60 +238,4 @@ func (manager *NatsManager) setupJetstream() {
 		log.Fatal("CreateKeyValue failed", err, "bucket", config.RateLimitRulesBucketName)
 	}
 
-	// finally "expose" this via the jetstream package
-	// the server checks if this is non-nil to know if it's ready
-	jetstream.SetJetstreamContext(jsc)
-}
-
-var natsConfigTemplate = template.Must(template.New("NatsConfig").Parse(`
-
-port: 4222
-monitor_port: 8222
-
-cluster {
-	name: "audius_cluster"
-	port: 6222
-
-	authorization {
-		user: {{.NatsClusterUsername}}
-		password: {{.NatsClusterPassword}}
-		timeout: 2
-	}
-
-	routes = [
-		{{range .Peers}}
-		{{.NatsRoute}}
-		{{end}}
-	]
-}
-
-`))
-
-func natsConfig(peers []Info) (string, error) {
-
-	data := map[string]interface{}{
-		"NatsClusterUsername": config.NatsClusterUsername,
-		"NatsClusterPassword": config.NatsClusterPassword,
-		"Peers":               peers,
-	}
-
-	// write to file
-	natsConfigFilePath := "/tmp/nats.conf"
-	f, err := os.Create(natsConfigFilePath)
-	if err != nil {
-		return "", err
-	}
-	if err := natsConfigTemplate.Execute(f, data); err != nil {
-		return "", err
-	}
-
-	// os.WriteFile()
-
-	// render to string
-	var out bytes.Buffer
-	if err := natsConfigTemplate.Execute(&out, data); err != nil {
-		return "", err
-	}
-
-	return out.String(), nil
 }

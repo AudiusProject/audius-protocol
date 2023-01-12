@@ -6,10 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
+	"time"
 
 	"comms.audius.co/config"
+	"comms.audius.co/jetstream"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/nats-io/nats.go"
 )
 
 var manager = &NatsManager{}
@@ -21,6 +25,7 @@ var (
 )
 
 func Solicit() {
+
 	config.Logger.Info("solicit begin")
 
 	sps, err := GetDiscoveryNodes()
@@ -30,6 +35,8 @@ func Solicit() {
 	}
 
 	var wg sync.WaitGroup
+
+	goodNatsUrls := []string{}
 
 	for _, sp := range sps {
 		sp := sp
@@ -42,6 +49,11 @@ func Solicit() {
 			} else {
 				mu.Lock()
 				peersByWallet[info.Address] = info
+
+				if info.NatsConnected {
+					goodNatsUrls = append(goodNatsUrls, fmt.Sprintf("nats://%s:4222", info.IP))
+				}
+
 				mu.Unlock()
 			}
 			wg.Done()
@@ -50,14 +62,34 @@ func Solicit() {
 
 	wg.Wait()
 
-	conf, err := natsConfig(ListPeers())
-	if err != nil {
-		config.Logger.Warn("invalid config " + err.Error())
-	} else {
-		fmt.Println(conf)
-	}
-
 	manager.StartNats(peersByWallet)
+
+	// create nats client with valid connections
+	goodNatsUrl := strings.Join(goodNatsUrls, ",")
+	config.Logger.Debug("nats client urls: " + goodNatsUrl)
+	for i := 0; i < 5; i++ {
+		var nc *nats.Conn
+		var jsc nats.JetStreamContext
+
+		if err != nil {
+			config.Logger.Warn("dial nats failed "+err.Error(), "attempt", i)
+			time.Sleep(time.Second)
+		}
+
+		nc, err = dialNatsUrl(goodNatsUrl)
+		if err != nil {
+			continue
+		}
+
+		jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
+		if err != nil {
+			continue
+		}
+
+		jetstream.SetJetstreamContext(jsc)
+		break
+
+	}
 
 	config.Logger.Info("solicit done")
 
@@ -113,6 +145,7 @@ func solicitServer(endpoint string) (*Info, error) {
 
 	info.IsSelf = info.Address == config.WalletAddress
 
+	// nats connection test
 	natsUrl := fmt.Sprintf("nats://%s:4222", info.IP)
 	nc, err := dialNatsUrl(natsUrl)
 	if err != nil {
@@ -121,6 +154,7 @@ func solicitServer(endpoint string) (*Info, error) {
 		servers := nc.Servers()
 		fmt.Println("nc servers", servers)
 		info.NatsConnected = true
+		nc.Close()
 	}
 
 	return info, nil

@@ -38,7 +38,6 @@ func main() {
 	fmt.Println("dbmate: ", string(out))
 
 	// start solicit...
-	// TODO: re-enable nkeys
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 
