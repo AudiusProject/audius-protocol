@@ -45,6 +45,7 @@ const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const { sequelize } = require('../models')
+const { TypePredicateKind } = require('typescript')
 const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -954,10 +955,15 @@ router.post(
       )
     }
 
-    // get uuid from wallet (with cNodeUser)
-    const uuid = trackSegment.wallet
+    const uuid = await models.track.findOne({
+      attributes: ['cnodeUserUUID'],
+      raw: true,
+      where: {
+        walletPublicKey: trackSegment.wallet
+      }
+    })
 
-    const queryResults = sequelize.query(
+    const queryResults = await sequelize.query(
       `
       SELECT * 
       FROM "Files" 
