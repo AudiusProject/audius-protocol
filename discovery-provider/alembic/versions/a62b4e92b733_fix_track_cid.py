@@ -20,7 +20,7 @@ def upgrade():
     connection.execute(
         """
         BEGIN;
-            UPDATE tracks SET track_cid = sb.track_cid
+            UPDATE tracks SET track_cid = sub.track_cid
             FROM (
                 SELECT DISTINCT track_id, track_cid
                 FROM tracks 
