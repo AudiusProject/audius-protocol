@@ -22,11 +22,10 @@ def upgrade():
         BEGIN;
             UPDATE tracks SET track_cid = sb.track_cid
             FROM (
-                -- all tracks with no current track_cid but do have an old one
                 SELECT DISTINCT track_id, track_cid
                 FROM tracks 
                 WHERE track_cid IS NOT NULL
-                WHERE track_id IN (
+                AND track_id IN (
                     -- all current tracks with no track_cid
                     SELECT track_id 
                     FROM tracks 
