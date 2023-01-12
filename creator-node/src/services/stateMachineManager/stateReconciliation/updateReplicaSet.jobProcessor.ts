@@ -642,9 +642,9 @@ const _issueUpdateReplicaSetOp = async (
       if (!audiusLibs) {
         tracing.info('init AudiusLibs')
         audiusLibs = await initAudiusLibs({
-          enableEthContracts: false,
+          enableEthContracts: true,
           enableContracts: true,
-          enableDiscovery: false,
+          enableDiscovery: true,
           enableIdentity: true,
           logger
         })
@@ -718,9 +718,9 @@ const _issueUpdateReplicaSetOp = async (
           newReplicaSetSPIds,
           blockNumber
         )
-      } catch (err) {
+      } catch (err: any) {
         throw new Error(
-          `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}`
+          `[_issueUpdateReplicaSetOp] waitForReplicaSetDiscovery Indexing Unable to confirm updated replica set for user ${userId}. Error: ${err.message}`
         )
       }
 
@@ -732,7 +732,7 @@ const _issueUpdateReplicaSetOp = async (
       )
     } catch (e: any) {
       throw new Error(
-        `UserReplicaSetManagerClient._updateReplicaSet() Failed in ${
+        `[_issueUpdateReplicaSetOp] _updateReplicaSet Failed in ${
           Date.now() - startTimeMs
         }ms - Error ${e.message}`
       )

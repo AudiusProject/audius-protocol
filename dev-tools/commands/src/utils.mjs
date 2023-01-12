@@ -12,6 +12,8 @@ export const initializeAudiusLibs = async (handle) => {
     web3Config: AudiusLibs.configInternalWeb3(
       process.env.POA_REGISTRY_ADDRESS,
       process.env.POA_PROVIDER_URL,
+      null,
+      process.env.ENTITY_MANAGER_ADDRESS
     ),
     solanaWeb3Config: AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
@@ -66,6 +68,7 @@ export const initializeAudiusSdk = async () => {
       web3Config: AudiusLibs.configInternalWeb3(
         process.env.POA_REGISTRY_ADDRESS,
         process.env.POA_PROVIDER_URL,
+        process.env.ENTITY_MANAGER_ADDRESS
       ),
     });
   }

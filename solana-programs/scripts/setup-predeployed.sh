@@ -4,15 +4,13 @@ set -e
 
 cd $(dirname "$(readlink -f "$0")")/..
 
-ledger_dir=$1
+ledger_dir="$1"
 if [[ "$ledger_dir" == "" ]]; then
     echo "Usage: $o <ledgerDir>"
     exit 1
 fi
 
-if [[ $BUILDTARGET == "x86_64" ]]; then
-    ./scripts/build.sh
-fi
+./scripts/build.sh
 
 mkdir -p $ledger_dir
 solana-test-validator --quiet --ledger $ledger_dir &
