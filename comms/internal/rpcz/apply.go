@@ -2,7 +2,9 @@ package rpcz
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/db"
@@ -55,12 +57,7 @@ func Apply(msg *nats.Msg) {
 		return
 	}
 
-	for attempt := 1; attempt < 5; attempt++ {
-		logger = logger.New("attempt", attempt)
-
-		if err != nil {
-			logger.Warn(err.Error())
-		}
+	attemptApply := func(msg *nats.Msg) error {
 
 		// write to db
 		tx := db.Conn.MustBegin()
@@ -68,19 +65,20 @@ func Apply(msg *nats.Msg) {
 		query := `
 		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
 		`
+		var result sql.Result
 		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
-			continue
+			return err
 		}
 		count, err := result.RowsAffected()
 		if err != nil {
-			continue
+			return err
 		}
 		if count == 0 {
 			// No rows were inserted because the jetstream seq number is already in rpc_log.
 			// Do not process redelivered messages that have already been processed.
 			logger.Info("rpc already in log, skipping duplicate seq number", "seq", meta.Sequence.Stream)
-			return
+			return nil
 		}
 
 		switch schema.RPCMethod(rawRpc.Method) {
@@ -88,35 +86,48 @@ func Apply(msg *nats.Msg) {
 			var params schema.ChatCreateRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatCreate(tx, userId, meta.Timestamp, params)
+			if err != nil {
+				return err
+			}
 		case schema.RPCMethodChatDelete:
 			var params schema.ChatDeleteRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatDelete(tx, userId, params.ChatID, meta.Timestamp)
+			if err != nil {
+				return err
+			}
 		case schema.RPCMethodChatMessage:
 			var params schema.ChatMessageRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatSendMessage(tx, userId, params.ChatID, params.MessageID, meta.Timestamp, params.Message)
+			if err != nil {
+				return err
+			}
 		case schema.RPCMethodChatReact:
 			var params schema.ChatReactRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatReactMessage(tx, userId, params.MessageID, params.Reaction, meta.Timestamp)
+			if err != nil {
+				return err
+			}
+
 		case schema.RPCMethodChatRead:
 			var params schema.ChatReadRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			// do nothing if last active at >= message timestamp
 			lastActive, err := queries.LastActiveAt(tx, context.Background(), queries.ChatMembershipParams{
@@ -124,47 +135,64 @@ func Apply(msg *nats.Msg) {
 				UserID: userId,
 			})
 			if err != nil {
-				continue
+				return err
 			}
 			if !lastActive.Valid || meta.Timestamp.After(lastActive.Time) {
 				err = chatReadMessages(tx, userId, params.ChatID, meta.Timestamp)
+				if err != nil {
+					return err
+				}
 			}
 		case schema.RPCMethodChatPermit:
 			var params schema.ChatPermitRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatSetPermissions(tx, userId, params.Permit)
+			if err != nil {
+				return err
+			}
 		case schema.RPCMethodChatBlock:
 			var params schema.ChatBlockRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			blockeeUserId, err := misc.DecodeHashId(params.UserID)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatBlock(tx, userId, int32(blockeeUserId), meta.Timestamp)
+			if err != nil {
+				return err
+			}
 		case schema.RPCMethodChatUnblock:
 			var params schema.ChatUnblockRPCParams
 			err = json.Unmarshal(rawRpc.Params, &params)
 			if err != nil {
-				continue
+				return err
 			}
 			unblockedUserId, err := misc.DecodeHashId(params.UserID)
 			if err != nil {
-				continue
+				return err
 			}
 			err = chatUnblock(tx, userId, int32(unblockedUserId))
+			if err != nil {
+				return err
+			}
 		default:
 			logger.Warn("no handler for ", rawRpc.Method)
 		}
 
-		err = tx.Commit()
+		return tx.Commit()
+	}
+
+	for i := 1; i < 5; i++ {
+		err := attemptApply(msg)
 		if err != nil {
-			continue
+			logger.Warn("apply failed "+err.Error(), "attempt", i)
+			time.Sleep(time.Second * 3)
 		} else {
 			break
 		}
