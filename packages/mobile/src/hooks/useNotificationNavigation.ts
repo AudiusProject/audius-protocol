@@ -261,6 +261,7 @@ export const useNotificationNavigation = () => {
 
   const handleNavigate = useCallback(
     (notification: any) => {
+      if (!notification) return
       notificationTypeHandlerMap[notification.type]?.(notification)
     },
     [notificationTypeHandlerMap]
