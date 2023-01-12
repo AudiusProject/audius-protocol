@@ -104,7 +104,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = web3.eth.get_block("latest", True)
+        latest_block_from_chain = web3.eth.get_block(current_block_number - final_poa_block + block_processing_window, True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -1001,6 +1001,7 @@ def update_task(self):
                 # First, we capture the block hash at which the current tail
                 # and our indexed data intersect
                 while not block_intersection_found:
+                    logger.info(f"index_nethermind.py | latest_block {latest_block}")
                     current_hash = web3.toHex(latest_block.hash)
                     parent_hash = web3.toHex(latest_block.parentHash)
 
@@ -1033,7 +1034,7 @@ def update_task(self):
                         )
 
                     # Special case for initial block hash value of 0x0 and 0x0000....
-                    reached_initial_block = latest_block.number == 0
+                    reached_initial_block = latest_block.number == final_poa_block + 1
                     if reached_initial_block:
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
