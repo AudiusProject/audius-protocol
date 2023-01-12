@@ -403,7 +403,11 @@
                     "type": "string"
                 },
                 "imageUrl": {
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 },
                 "externalLink": {
                     "type": [
@@ -437,7 +441,11 @@
                     "type": "string"
                 },
                 "imageUrl": {
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 },
                 "externalLink": {
                     "type": [

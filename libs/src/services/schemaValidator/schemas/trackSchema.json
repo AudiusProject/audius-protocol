@@ -320,7 +320,8 @@
             "type": "string"
         },
         "imageUrl":  {
-            "type": "string"
+            "type": ["string", "null"],
+            "default": null
         },
         "externalLink": {
             "type": ["string", "null"],
@@ -345,7 +346,8 @@
             "type": "string"
         },
         "imageUrl":  {
-            "type": "string"
+            "type": ["string", "null"],
+            "default": null
         },
         "externalLink": {
             "type": ["string", "null"],
