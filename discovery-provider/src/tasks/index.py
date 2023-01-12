@@ -18,6 +18,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
@@ -820,6 +821,11 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_follow_entries = (
                 session.query(Follow).filter(Follow.blockhash == revert_hash).all()
             )
+            revert_subscription_entries = (
+                session.query(Subscription)
+                .filter(Subscription.blockhash == revert_hash)
+                .all()
+            )
             revert_playlist_entries = (
                 session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
             )
@@ -905,6 +911,23 @@ def revert_blocks(self, db, revert_blocks_list):
                 # remove outdated follow entry
                 logger.info(f"Reverting follow: {follow_to_revert}")
                 session.delete(follow_to_revert)
+
+            for subscription_to_revert in revert_subscription_entries:
+                previous_subscription_entry = (
+                    session.query(Subscription)
+                    .filter(
+                        Subscription.subscriber_id
+                        == subscription_to_revert.subscriber_id
+                    )
+                    .filter(Subscription.user_id == subscription_to_revert.user_id)
+                    .filter(Subscription.blocknumber < revert_block_number)
+                    .order_by(Subscription.blocknumber.desc())
+                    .first()
+                )
+                if previous_subscription_entry:
+                    previous_subscription_entry.is_current = True
+                logger.info(f"Reverting subscription: {subscription_to_revert}")
+                session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
                 playlist_id = playlist_to_revert.playlist_id
