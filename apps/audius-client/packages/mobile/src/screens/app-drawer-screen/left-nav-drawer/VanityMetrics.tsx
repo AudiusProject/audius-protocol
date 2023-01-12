@@ -134,15 +134,15 @@ export const VanityMetrics = () => {
       <View style={styles.vanityMetrics}>
         {track_count === 0 ? (
           <VanityMetric
-            metric={track_count}
-            onPress={handlePressAccount}
-            icon={IconNote}
-          />
-        ) : (
-          <VanityMetric
             metric={playlist_count}
             onPress={handlePressAccount}
             icon={IconPlaylists}
+          />
+        ) : (
+          <VanityMetric
+            metric={track_count}
+            onPress={handlePressAccount}
+            icon={IconNote}
           />
         )}
         <Divider orientation='vertical' style={styles.verticalDivider} />
