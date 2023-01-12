@@ -140,6 +140,7 @@ class RemixNotification(TypedDict):
 
 class CosignRemixNotification(TypedDict):
     parent_track_id: int
+    track_owner_id: int
     track_id: int
 
 
@@ -179,13 +180,13 @@ class ReactionNotification(TypedDict):
 
 class SupporterRankUpNotification(TypedDict):
     rank: int
-    sender_use_id: int
+    sender_user_id: int
     receiver_user_id: int
 
 
 class SupportingRankUpNotification(TypedDict):
     rank: int
-    sender_use_id: int
+    sender_user_id: int
     receiver_user_id: int
 
 

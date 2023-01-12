@@ -147,12 +147,12 @@ def extend_create(action: NotificationAction):
         "data": {},
     }
     if "track_id" in action["data"]:
-        data: CreateTrackNotification = action["data"]  # type: ignore
-        notification["track_id"] = (encode_int_id(data["track_id"]),)
+        track_data: CreateTrackNotification = action["data"]  # type: ignore
+        notification["track_id"] = encode_int_id(track_data["track_id"])
     else:
-        data: CreatePlaylistNotification = action["data"]  # type: ignore
-        notification["is_album"] = data["is_album"]
-        notification["playlist_id"] = (encode_int_id(data["playlist_id"]),)
+        playlist_data: CreatePlaylistNotification = action["data"]  # type: ignore
+        notification["is_album"] = playlist_data["is_album"]
+        notification["playlist_id"] = (encode_int_id(playlist_data["playlist_id"]),)
     return notification
 
 
@@ -230,25 +230,25 @@ def extend_milestone(action: NotificationAction):
         else action["timestamp"],
     }
     if "track_id" in action["data"]:
-        data: TrackMilestoneNotification = action["data"]  # type: ignore
+        track_data: TrackMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
-            "type": data["type"],
-            "threshold": data["threshold"],
-            "track_id": encode_int_id(data["track_id"]),
+            "type": track_data["type"],
+            "threshold": track_data["threshold"],
+            "track_id": encode_int_id(track_data["track_id"]),
         }
     if "playlist_id" in action["data"]:
-        data: PlaylistMilestoneNotification = action["data"]  # type: ignore
+        playlist_data: PlaylistMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
-            "type": data["type"],
-            "threshold": data["threshold"],
-            "playlist_id": encode_int_id(data["playlist_id"]),
+            "type": playlist_data["type"],
+            "threshold": playlist_data["threshold"],
+            "playlist_id": encode_int_id(playlist_data["playlist_id"]),
         }
     if "user_id" in action["data"]:
-        data: FollowerMilestoneNotification = action["data"]  # type: ignore
+        user_data: FollowerMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
-            "type": data["type"],
-            "threshold": data["threshold"],
-            "user_id": encode_int_id(data["user_id"]),
+            "type": user_data["type"],
+            "threshold": user_data["threshold"],
+            "user_id": encode_int_id(user_data["user_id"]),
         }
     return notification
 
