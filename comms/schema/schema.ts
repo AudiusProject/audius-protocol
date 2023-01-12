@@ -44,7 +44,7 @@ export type ChatReactRPC = {
   params: {
     chat_id: string
     message_id: string
-    reaction?: string
+    reaction: string | null
   }
 }
 

@@ -59,7 +59,7 @@ type ChatReactRPC struct {
 type ChatReactRPCParams struct {
 	ChatID    string  `json:"chat_id"`
 	MessageID string  `json:"message_id"`
-	Reaction  *string `json:"reaction,omitempty"`
+	Reaction  *string `json:"reaction"`
 }
 
 type ChatReadRPC struct {
@@ -109,7 +109,7 @@ type RPCPayloadParams struct {
 	Message         *string           `json:"message,omitempty"`
 	MessageID       *string           `json:"message_id,omitempty"`
 	ParentMessageID *string           `json:"parent_message_id,omitempty"`
-	Reaction        *string           `json:"reaction,omitempty"`
+	Reaction        *string           `json:"reaction"`
 	UserID          *string           `json:"user_id,omitempty"`
 	Permit          *ChatPermission   `json:"permit,omitempty"`
 }
