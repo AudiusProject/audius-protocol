@@ -97,7 +97,7 @@ type PlaylistNavItemProps = {
   hasUpdate?: boolean
   dragging: boolean
   draggingKind: string
-  onClickPlaylist: (id: ID, hasUpdate: boolean) => void
+  onClickPlaylist: (e: MouseEvent, id: ID, hasUpdate: boolean) => void
   onClickEdit?: (id: ID) => void
   isInsideFolder?: boolean
 }
@@ -149,7 +149,7 @@ export const PlaylistNavItem = ({
               draggingKind !== 'library-playlist') ||
               !isOwner)
         })}
-        onClick={() => onClickPlaylist(id, hasUpdate)}
+        onClick={(e) => onClickPlaylist(e, id, hasUpdate)}
         onMouseEnter={() => {
           setIsHovering(true)
         }}
