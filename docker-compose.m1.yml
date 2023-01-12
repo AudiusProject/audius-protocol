@@ -80,6 +80,11 @@ services:
       file: docker-compose.yml
       service: discovery-provider-elasticsearch
 
+  discovery-provider-notifications:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider-notifications
+
   discovery-provider:
     extends:
       file: docker-compose.yml

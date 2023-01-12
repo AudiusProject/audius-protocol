@@ -303,6 +303,14 @@ services:
 
   # discovery-provider
 
+  discovery-provider-notifications:
+    build: discovery-provider/plugins/notifications
+    environment:
+      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+    volumes:
+      - ./discovery-provider/plugins/notifications:/notifications/
+
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
@@ -357,6 +365,8 @@ services:
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev-tools:/tmp/dev-tools
+    expose:
+      - "5432"
     depends_on:
       poa-ganache:
         condition: service_healthy
