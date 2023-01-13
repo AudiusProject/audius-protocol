@@ -1033,7 +1033,7 @@ def update_task(self):
                             f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
-                    # Special case for initial block hash value of 0x0 and 0x0000....
+                    # Special case for initial block 0x0 or first block number after final_poa_block
                     reached_initial_block = latest_block.number == final_poa_block + 1
                     if reached_initial_block:
                         block_intersection_found = True
