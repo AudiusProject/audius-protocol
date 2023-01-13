@@ -957,7 +957,6 @@ router.post(
       }
     })
 
-    req.logger.info(`ahhhhhhhhhhhh ${uuid}`)
     if (!uuid) {
       return errorResponseNotFound(
         `could not find the user uuid with the wallet provided`
