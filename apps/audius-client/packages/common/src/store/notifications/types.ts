@@ -423,11 +423,10 @@ export type TipReceivePushNotification = {
   slot: number
   initiator: ID
   metadata: {
-    // TODO: Need to verify camelCase vs snake_case
-    entityId: ID
-    entityType: Entity.User
+    entity_id: ID
+    entity_type: Entity.User
     amount: StringWei
-    tipTxSignature: string
+    tx_signature: string
   }
 }
 

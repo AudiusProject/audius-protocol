@@ -64,11 +64,7 @@ class PushNotifications {
 
   onNotification = (notification: any) => {
     console.info(`Received notification ${JSON.stringify(notification)}`)
-    if (
-      Platform.OS === 'android' ||
-      notification.userInteration ||
-      !notification.foreground
-    ) {
+    if (notification.userInteraction) {
       track(
         make({
           eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION,
@@ -80,8 +76,7 @@ class PushNotifications {
             : {})
         })
       )
-
-      this.navigation?.navigate(notification.data.data)
+      this.navigation?.navigate(notification.data.data ?? notification.data)
     }
   }
 
