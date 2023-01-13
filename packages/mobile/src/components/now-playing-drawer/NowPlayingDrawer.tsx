@@ -46,7 +46,7 @@ import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
 const { seek, reset } = playerActions
 
-const { getPlaying, getCurrentTrack, getCounter } = playerSelectors
+const { getPlaying, getCurrentTrack, getCounter, getUid } = playerSelectors
 const { next, previous } = queueActions
 const { getUser } = cacheUsersSelectors
 
@@ -115,6 +115,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
   const playCounter = useSelector(getCounter)
+  const currentUid = useSelector(getUid)
   const isPlaying = useSelector(getPlaying)
   const [isPlayBarShowing, setIsPlayBarShowing] = useState(false)
 
@@ -213,7 +214,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
 
   useEffect(() => {
     setMediaKey((mediaKey) => mediaKey + 1)
-  }, [playCounter])
+  }, [playCounter, currentUid])
 
   const onNext = useCallback(() => {
     if (track?.genre === Genre.PODCASTS) {
