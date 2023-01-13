@@ -16,10 +16,6 @@ reset::
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
 
-db.schema::
-	pg_dump --schema-only --create --no-owner --no-privileges postgres://postgres:postgres@10.128.0.23:5454/audius_discovery > database/docker-initdb/00_schema.sql
-
-
 
 
 
@@ -46,6 +42,11 @@ test::
 	go test ./... -count=1 -p=1
 
 
+
+build::
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
+	docker push audius/wip-comms:latest
+
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)
 # and copy into container (see Dockerfile with build instructions commented out)
@@ -54,12 +55,8 @@ test::
 # also... this is pretty much identical to doing a docker "multi-stage" build, but way simpler.
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-linux-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/wip-comms:latest
 	docker push audius/wip-comms:latest
-
-# build::
-# 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
-# 	docker push audius/wip-comms:latest
 
 
 tools::

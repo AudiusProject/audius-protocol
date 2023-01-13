@@ -57,12 +57,7 @@ ENABLE_DEVELOPMENT_FEATURES = True
 
 
 def get_record_columns(record) -> List[str]:
-    logger.info(record.__table__.columns)
-    for col in record.__table__.columns:
-        logger.info(col)
-        logger.info(col.key)
     columns = [str(m.key) for m in record.__table__.columns]
-    logger.info(columns)
     return columns
 
 

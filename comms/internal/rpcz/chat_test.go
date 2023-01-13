@@ -72,11 +72,15 @@ func TestChat(t *testing.T) {
 		assert.Equal(t, expected, unreadCount)
 	}
 
-	assertReaction := func(userId int, messageId string, expected string) {
+	assertReaction := func(userId int, messageId string, expected *string) {
 		var reaction string
 		err := tx.Get(&reaction, "select reaction from chat_message_reactions where user_id = $1 and message_id = $2", userId, messageId)
-		assert.NoError(t, err)
-		assert.Equal(t, expected, reaction)
+		if expected != nil {
+			assert.NoError(t, err)
+			assert.Equal(t, *expected, reaction)
+		} else {
+			assert.ErrorIs(t, err, sql.ErrNoRows)
+		}
 	}
 
 	// assert sender has no unread messages
@@ -119,14 +123,19 @@ func TestChat(t *testing.T) {
 	// 91 reacts to 92's message
 	reactTs := time.Now()
 	reaction := "fire"
-	err = chatReactMessage(tx, 91, replyMessageId, reaction, reactTs)
-	assertReaction(91, replyMessageId, reaction)
+	err = chatReactMessage(tx, 91, replyMessageId, &reaction, reactTs)
+	assertReaction(91, replyMessageId, &reaction)
 
-	// 91 changes reaction to 92's old message
+	// 91 changes reaction to 92's message
 	changedReactTs := time.Now()
 	newReaction := "heart"
-	err = chatReactMessage(tx, 91, replyMessageId, newReaction, changedReactTs)
-	assertReaction(91, replyMessageId, newReaction)
+	err = chatReactMessage(tx, 91, replyMessageId, &newReaction, changedReactTs)
+	assertReaction(91, replyMessageId, &newReaction)
+
+	// 91 removes reaction to 92's message
+	removedReactTs := time.Now()
+	err = chatReactMessage(tx, 91, replyMessageId, nil, removedReactTs)
+	assertReaction(91, replyMessageId, nil)
 
 	tx.Rollback()
 }
