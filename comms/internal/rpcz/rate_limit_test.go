@@ -70,17 +70,17 @@ func TestRateLimit(t *testing.T) {
 	user4Id := seededRand.Int31()
 	user5Id := seededRand.Int31()
 
-	useruser1IdEncoded, err := misc.EncodeHashId(int(user1Id))
+	user1IdEncoded, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
-	useruser3IdEncoded, err := misc.EncodeHashId(int(user3Id))
+	user3IdEncoded, err := misc.EncodeHashId(int(user3Id))
 	assert.NoError(t, err)
-	useruser4IdEncoded, err := misc.EncodeHashId(int(user4Id))
+	user4IdEncoded, err := misc.EncodeHashId(int(user4Id))
 	assert.NoError(t, err)
-	useruser5IdEncoded, err := misc.EncodeHashId(int(user5Id))
+	user5IdEncoded, err := misc.EncodeHashId(int(user5Id))
 	assert.NoError(t, err)
 
 	// user1Id created a new chat with user2Id 48 hours ago
-	chatId1 := "chat1"
+	chatId1 := strconv.Itoa(seededRand.Int())
 	chatTs := time.Now().UTC().Add(-time.Hour * time.Duration(48))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", chatId1, chatTs)
 	assert.NoError(t, err)
@@ -119,9 +119,9 @@ func TestRateLimit(t *testing.T) {
 	assert.ErrorContains(t, err, "User has exceeded the maximum number of new messages")
 
 	// user1Id creates a new chat with user3Id (1 chat created in 24h)
-	chatId2 := "chat2"
+	chatId2 := strconv.Itoa(seededRand.Int())
 	createRpc := schema.RawRPC{
-		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId2, useruser1IdEncoded, chatId2, useruser3IdEncoded, chatId2)),
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId2, user1IdEncoded, chatId2, user3IdEncoded, chatId2)),
 	}
 	err = Validators[chatCreate](tx, user1Id, createRpc)
 	assert.NoError(t, err)
@@ -147,9 +147,9 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 
 	// user1Id creates a new chat with user4Id (2 chats created in 24h)
-	chatId3 := "chat3"
+	chatId3 := strconv.Itoa(seededRand.Int())
 	createRpc = schema.RawRPC{
-		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId3, useruser1IdEncoded, chatId3, useruser4IdEncoded, chatId3)),
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId3, user1IdEncoded, chatId3, user4IdEncoded, chatId3)),
 	}
 	err = Validators[chatCreate](tx, user1Id, createRpc)
 	assert.NoError(t, err)
@@ -176,9 +176,9 @@ func TestRateLimit(t *testing.T) {
 
 	// user1Id creates a new chat with user5Id (3 chats created in 24h)
 	// Blocked by rate limiter (hit max # new chats)
-	chatId4 := "chat4"
+	chatId4 := strconv.Itoa(seededRand.Int())
 	createRpc = schema.RawRPC{
-		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId4, useruser1IdEncoded, chatId2, useruser5IdEncoded, chatId4)),
+		Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "%s"}, {"user_id": "%s", "invite_code": "%s"}]}`, chatId4, user1IdEncoded, chatId2, user5IdEncoded, chatId4)),
 	}
 	err = Validators[chatCreate](tx, user1Id, createRpc)
 	assert.ErrorContains(t, err, "An invited user has exceeded the maximum number of new chats")

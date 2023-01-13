@@ -3,6 +3,7 @@ package rpcz
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
@@ -37,10 +38,10 @@ func TestChatBlocking(t *testing.T) {
 
 	// validate user1Id can block user2Id
 	{
-		hashUserId, err := misc.EncodeHashId(int(user2Id))
+		encodedUserId, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 		exampleRpc := schema.RawRPC{
-			Params: []byte(fmt.Sprintf(`{"user_id": "%s"}`, hashUserId)),
+			Params: []byte(fmt.Sprintf(`{"user_id": "%s"}`, encodedUserId)),
 		}
 
 		chatBlock := string(schema.RPCMethodChatBlock)
@@ -49,7 +50,7 @@ func TestChatBlocking(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
-	// user user1Id blocks user2Id
+	// user1Id blocks user2Id
 	messageTs := time.Now()
 	err = chatBlock(tx, user1Id, user2Id, messageTs)
 	assert.NoError(t, err)
@@ -64,14 +65,14 @@ func TestChatBlocking(t *testing.T) {
 
 	// validate user1Id and user2Id cannot create a chat with each other
 	{
-		chatId := "chat1"
-		useruser1IdHashId, err := misc.EncodeHashId(int(user1Id))
+		chatId := strconv.Itoa(seededRand.Int())
+		user1IdEncoded, err := misc.EncodeHashId(int(user1Id))
 		assert.NoError(t, err)
-		useruser2IdHashId, err := misc.EncodeHashId(int(user2Id))
+		user2IdEncoded, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 
 		exampleRpc := schema.RawRPC{
-			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, useruser1IdHashId, useruser2IdHashId)),
+			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, user1IdEncoded, user2IdEncoded)),
 		}
 
 		chatCreate := string(schema.RPCMethodChatCreate)
@@ -83,7 +84,7 @@ func TestChatBlocking(t *testing.T) {
 	// validate user1Id and user2Id cannot message each other
 	{
 		// Assume chat was already created before blocking
-		chatId := "chat1"
+		chatId := strconv.Itoa(seededRand.Int())
 		SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
 
 		exampleRpc := schema.RawRPC{
@@ -96,7 +97,7 @@ func TestChatBlocking(t *testing.T) {
 		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
-	// user user1Id unblocks user2Id
+	// user1Id unblocks user2Id
 	err = chatUnblock(tx, user1Id, user2Id)
 	assert.NoError(t, err)
 	assertBlocked(user1Id, user2Id, messageTs, 0)
