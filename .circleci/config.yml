@@ -370,6 +370,20 @@ jobs:
           event: always
           branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
+      - restore_cache:
+          keys:
+            - sdk-cache-{{ checksum "libs/package-lock.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - sdk-cache-
+      - run:
+          name: Install sdk dependencies
+          command: |
+            cd libs
+            npm i
+      - save_cache:
+          key: sdk-cache-{{ checksum "libs/package-lock.json" }}
+          paths:
+            - ./libs/node_modules
       - run:
           name: Bump and Publish Libs
           command: |
@@ -1770,9 +1784,9 @@ workflows:
           context:
             - Audius Client
             - slack-secrets
-          filters:
-            branches:
-              only: /(^main$)/
+          # filters:
+          #   branches:
+          #     only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
