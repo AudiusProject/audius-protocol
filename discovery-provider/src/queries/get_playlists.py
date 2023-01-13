@@ -39,6 +39,7 @@ class GetPlaylistArgs(TypedDict):
 def _get_unpopulated_playlists(session, args):
     playlist_query = session.query(Playlist).filter(Playlist.is_current == True)
     routes = args.get("routes", None)
+
     current_user_id = args.get("current_user_id")
 
     if routes:
@@ -55,7 +56,7 @@ def _get_unpopulated_playlists(session, args):
             formatted_routes.append(
                 {
                     "slug": route["slug"],
-                    "owner_id": user_id_map[route["handle"].lower()],
+                    "owner_id": user_id_map.get(route["handle"].lower(), None),
                 }
             )
 
@@ -112,6 +113,7 @@ def _get_unpopulated_playlists(session, args):
 
     # retrieve playlist ids list
     playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
+
     return (playlists, playlist_ids)
 
 

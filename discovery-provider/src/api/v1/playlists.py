@@ -126,18 +126,6 @@ class Playlist(Resource):
         return response
 
 
-def parse_playlist_permalink(permalink: str) -> RouteArgs:
-    try:
-        # Permalinks for playlists look like <handle>/playlist/<slug>
-        return {
-            "handle": permalink.split("/")[-3],
-            "slug": permalink.split("/")[-1],
-        }
-    except IndexError:
-        abort_bad_request_param("permalink", ns)
-        return {"handle": "", "slug": ""}
-
-
 @full_ns.route(PLAYLIST_ROUTE)
 class FullPlaylist(Resource):
     @ns.doc(
@@ -152,7 +140,12 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-        playlist = get_playlist(playlist_id, current_user_id)
+        get_playlist_args = {
+            "with_users": True,
+            "current_user_id": current_user_id,
+            "playlist_id": playlist_id,
+        }
+        playlist = get_playlist(get_playlist_args)
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
@@ -160,17 +153,17 @@ class FullPlaylist(Resource):
         return response
 
 
-@full_ns.route("by_permalink/<string:permalink>")
+@full_ns.route("/by_permalink/<string:handle>/<string:slug>")
 class FullPlaylistByPermalink(Resource):
     @ns.doc(
-        id="""Get Playlist""",
+        id="""Get Playlist By Permalink""",
         description="""Get a playlist by permalink""",
-        params={"permalink": "A playlist permalink"},
+        params={"handle": "playlist owner handle", "slug": "playlist slug"},
     )
     @ns.expect(current_user_parser)
     @ns.marshal_with(full_playlists_response)
     @cache(ttl_sec=5)
-    def get(self, permalink):
+    def get(self, handle, slug):
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
@@ -179,8 +172,11 @@ class FullPlaylistByPermalink(Resource):
             "current_user_id": current_user_id,
         }
 
-        parsed_permalink = parse_playlist_permalink(permalink)
-        get_playlist_args["routes"] = [parsed_permalink]
+        route = {
+            "handle": handle,
+            "slug": slug,
+        }
+        get_playlist_args["routes"] = [route]
 
         playlist = get_playlist(get_playlist_args)
         if playlist:
