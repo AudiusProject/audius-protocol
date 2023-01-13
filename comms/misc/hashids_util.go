@@ -21,5 +21,5 @@ func DecodeHashId(id string) (int, error) {
 	return ids[0], err
 }
 func EncodeHashId(id int) (string, error) {
-	return hashIdUtil.Encode([]int{ id })
+	return hashIdUtil.Encode([]int{id})
 }

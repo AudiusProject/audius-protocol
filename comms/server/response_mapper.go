@@ -44,11 +44,11 @@ func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.Us
 
 func ToSummaryResponse(prevCursor string, nextCursor string, summary queries.SummaryRow) schema.Summary {
 	responseSummary := schema.Summary{
-		TotalCount:     float64(summary.TotalCount),
-		PrevCount: 		float64(summary.BeforeCount),
-		PrevCursor:		prevCursor,
-		NextCount: 		float64(summary.AfterCount),
-		NextCursor:     nextCursor,
+		TotalCount: float64(summary.TotalCount),
+		PrevCount:  float64(summary.BeforeCount),
+		PrevCursor: prevCursor,
+		NextCount:  float64(summary.AfterCount),
+		NextCursor: nextCursor,
 	}
 	return responseSummary
 }

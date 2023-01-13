@@ -171,11 +171,11 @@ func TestGetChats(t *testing.T) {
 			expectedChat1Data,
 		}
 		expectedSummary := schema.Summary{
-			TotalCount:     float64(2),
-			NextCount: 		float64(0),
-			NextCursor:		chat2CreatedAt.Format(time.RFC3339Nano),
-			PrevCount: 		float64(0),
-			PrevCursor:     chat1CreatedAt.Format(time.RFC3339Nano),
+			TotalCount: float64(2),
+			NextCount:  float64(0),
+			NextCursor: chat2CreatedAt.Format(time.RFC3339Nano),
+			PrevCount:  float64(0),
+			PrevCursor: chat1CreatedAt.Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -339,11 +339,11 @@ func TestGetMessages(t *testing.T) {
 		expectedMessage1Data,
 	}
 	expectedSummary := schema.Summary{
-		TotalCount:     float64(2),
-		NextCount: 		float64(0),
-		NextCursor:     message2CreatedAt.Format(time.RFC3339Nano),
-		PrevCount: 		float64(0),
-		PrevCursor: 	message1CreatedAt.Format(time.RFC3339Nano),
+		TotalCount: float64(2),
+		NextCount:  float64(0),
+		NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+		PrevCount:  float64(0),
+		PrevCursor: message1CreatedAt.Format(time.RFC3339Nano),
 	}
 	expectedResponse, err := json.Marshal(
 		schema.CommsResponse{

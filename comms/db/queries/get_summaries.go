@@ -8,9 +8,9 @@ import (
 )
 
 type SummaryRow struct {
-	TotalCount     int64 `db:"total_count" json:"total_count"`
-  BeforeCount int64 `db:"before_count" json:"before_count"`
-	AfterCount int64 `db:"after_count" json:"after_count"`
+	TotalCount  int64 `db:"total_count" json:"total_count"`
+	BeforeCount int64 `db:"before_count" json:"before_count"`
+	AfterCount  int64 `db:"after_count" json:"after_count"`
 }
 
 const chatMessagesSummary = `
@@ -33,8 +33,8 @@ SELECT
 type ChatMessagesSummaryParams struct {
 	UserID int32     `db:"user_id" json:"user_id"`
 	ChatID string    `db:"chat_id" json:"chat_id"`
-  Before time.Time `json:"before"`
-	After time.Time `json:"after"`
+	Before time.Time `json:"before"`
+	After  time.Time `json:"after"`
 }
 
 func ChatMessagesSummary(q db.Queryable, ctx context.Context, arg ChatMessagesSummaryParams) (SummaryRow, error) {
