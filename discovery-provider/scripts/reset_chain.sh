@@ -67,6 +67,9 @@ EOF
 }
 
 function poll_chain_health {
+    echo "Waiting for 10 seconds after chain reset..."
+    sleep 10
+
     for i in "${discovery_nodes[@]}"
         do
         expected_response="\"Healthy\""
