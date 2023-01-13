@@ -235,7 +235,14 @@ async function createTrackListenInstructions({
   return [secpInstruction, listenInstruction]
 }
 
+const createFeePriorityInstruction = (microLamports) => {
+  return solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports
+  })
+}
+
 module.exports = {
   createTrackListenInstructions,
-  getFeePayerKeypair
+  getFeePayerKeypair,
+  createFeePriorityInstruction
 }

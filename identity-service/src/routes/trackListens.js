@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
-const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 const axios = require('axios')
 
@@ -15,7 +14,8 @@ const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 const {
   createTrackListenInstructions,
-  getFeePayerKeypair
+  getFeePayerKeypair,
+  createFeePriorityInstruction
 } = require('../solana-client')
 const config = require('../config.js')
 
@@ -448,6 +448,7 @@ module.exports = function (app) {
           location,
           connection
         })
+        const priority = createFeePriorityInstruction(10000)
         const feePayerAccount = getFeePayerKeypair(false)
         req.logger.debug(
           `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
@@ -456,7 +457,7 @@ module.exports = function (app) {
         const transactionHandler = libs.solanaWeb3Manager.transactionHandler
         const { res: solTxSignature, error } =
           await transactionHandler.handleTransaction({
-            instructions,
+            instructions: [priority, ...instructions],
             skipPreflight: false, // TODO
             feePayerOverride: feePayerAccount,
             retry: true
