@@ -147,8 +147,9 @@ export type CommsResponse = {
   }
   summary?: {
     prev_cursor: string
+    prev_count: number
     next_cursor: string
-    remaining_count: number
+    next_count: number
     total_count: number
   }
   // Overridden in client types but left as any for the server.
