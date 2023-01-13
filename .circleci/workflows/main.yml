@@ -1,45 +1,50 @@
 jobs:
-    - build-gcp-image:
-          context: GCP
-    - push-docker-images:
-          context: [GCP, dockerhub]
-          requires:
-              - build-gcp-image
+      - build-gcp-image:
+              context: GCP
+      - push-docker-images:
+              context: [GCP, dockerhub]
+              requires:
+                    - build-gcp-image
 
-    - test:
-          name: test-creator-node
-          context: GCP
-          instance-name: circleci-<< pipeline.id >>-cn
-          service: creator-node
-    - test:
-          name: test-discovery-provider
-          context: GCP
-          instance-name: circleci-<< pipeline.id >>-dp
-          service: discovery-provider
-    - test:
-          name: test-identity-service
-          context: GCP
-          instance-name: circleci-<< pipeline.id >>-is
-          service: identity-service
-    - test:
-          name: test-audius-libs
-          context: GCP
-          instance-name: circleci-<< pipeline.id >>-libs
-          service: audius-libs
+      - test:
+              name: test-creator-node
+              context: GCP
+              instance-name: circleci-<< pipeline.id >>-cn
+              service: creator-node
+      - test:
+              name: test-discovery-provider
+              context: GCP
+              instance-name: circleci-<< pipeline.id >>-dp
+              service: discovery-provider
+      - test:
+              name: test-identity-service
+              context: GCP
+              instance-name: circleci-<< pipeline.id >>-is
+              service: identity-service
+      - test:
+              name: test-audius-libs
+              context: GCP
+              instance-name: circleci-<< pipeline.id >>-libs
+              service: audius-libs
+      - test:
+              name: test-poa-contracts
+              context: GCP
+              instance-name: circleci-<< pipeline.id >>-poa
+              service: poa-contracts
 
-    # - slack/on-hold:
-    #     context: slack-secrets
-    #     # NOTE: commented for testing
-    #     # filters:
-    #     #   branches:
-    #     #     only: /^release-v.*$/
-    #     requires:
-    #       - push-docker-images
-    - gh-release-hold:
-          requires:
-              # - slack/on-hold
-              - build-gcp-image
-          type: approval
-    - gh-release:
-          requires:
-              - gh-release-hold
+      # - slack/on-hold:
+      #     context: slack-secrets
+      #     # NOTE: commented for testing
+      #     # filters:
+      #     #   branches:
+      #     #     only: /^release-v.*$/
+      #     requires:
+      #       - push-docker-images
+      - gh-release-hold:
+              requires:
+                    # - slack/on-hold
+                    - build-gcp-image
+              type: approval
+      - gh-release:
+              requires:
+                    - gh-release-hold
