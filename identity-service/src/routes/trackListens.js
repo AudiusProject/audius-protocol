@@ -459,7 +459,7 @@ module.exports = function (app) {
         const { res: solTxSignature, error } =
           await transactionHandler.handleTransaction({
             instructions: [priority, ...instructions],
-            skipPreflight: false, // TODO
+            skipPreflight: true, // TODO
             feePayerOverride: feePayerAccount,
             retry: true
           })
