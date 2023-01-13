@@ -402,6 +402,13 @@
                 "slug": {
                     "type": "string"
                 },
+                "imageUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
                 "externalLink": {
                     "type": [
                         "string",
@@ -432,6 +439,13 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "imageUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 },
                 "externalLink": {
                     "type": [

@@ -94,6 +94,7 @@ export type PremiumConditionsEthNFTCollection = {
   address: string
   name: string
   slug: string
+  imageUrl: Nullable<string>
   externalLink: Nullable<string>
 }
 
@@ -101,6 +102,7 @@ export type PremiumConditionsSolNFTCollection = {
   chain: 'sol'
   address: string
   name: string
+  imageUrl: Nullable<string>
   externalLink: Nullable<string>
 }
 

@@ -95,8 +95,8 @@ func TestGetChats(t *testing.T) {
 	// Create 2 chats
 	chatId1 := "chat1"
 	chatId2 := "chat2"
-	chat1CreatedAt := time.Now().UTC()
-	chat2CreatedAt := time.Now().UTC().Add(time.Minute * time.Duration(30))
+	chat1CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(60))
+	chat2CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(30))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2), ($3, $4, $4)", chatId1, chat1CreatedAt, chatId2, chat2CreatedAt)
 	assert.NoError(t, err)
 
@@ -171,9 +171,11 @@ func TestGetChats(t *testing.T) {
 			expectedChat1Data,
 		}
 		expectedSummary := schema.Summary{
-			TotalCount:     float64(2),
-			RemainingCount: float64(0),
-			NextCursor:     chat1CreatedAt.Format(time.RFC3339Nano),
+			TotalCount: float64(2),
+			NextCount:  float64(0),
+			NextCursor: chat2CreatedAt.Format(time.RFC3339Nano),
+			PrevCount:  float64(0),
+			PrevCursor: chat1CreatedAt.Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -337,9 +339,11 @@ func TestGetMessages(t *testing.T) {
 		expectedMessage1Data,
 	}
 	expectedSummary := schema.Summary{
-		TotalCount:     float64(2),
-		RemainingCount: float64(0),
-		NextCursor:     message1CreatedAt.Format(time.RFC3339Nano),
+		TotalCount: float64(2),
+		NextCount:  float64(0),
+		NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+		PrevCount:  float64(0),
+		PrevCursor: message1CreatedAt.Format(time.RFC3339Nano),
 	}
 	expectedResponse, err := json.Marshal(
 		schema.CommsResponse{

@@ -66,8 +66,13 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	return err
 }
 
-func chatReactMessage(tx *sqlx.Tx, userId int32, messageId string, reaction string, messageTimestamp time.Time) error {
-	_, err := tx.Exec("insert into chat_message_reactions (user_id, message_id, reaction, created_at, updated_at) values ($1, $2, $3, $4, $4) on conflict (user_id, message_id) do update set reaction = $3, updated_at = $4", userId, messageId, reaction, messageTimestamp)
+func chatReactMessage(tx *sqlx.Tx, userId int32, messageId string, reaction *string, messageTimestamp time.Time) error {
+	var err error
+	if reaction != nil {
+		_, err = tx.Exec("insert into chat_message_reactions (user_id, message_id, reaction, created_at, updated_at) values ($1, $2, $3, $4, $4) on conflict (user_id, message_id) do update set reaction = $3, updated_at = $4", userId, messageId, *reaction, messageTimestamp)
+	} else {
+		_, err = tx.Exec("delete from chat_message_reactions where user_id = $1 and message_id = $2", userId, messageId)
+	}
 	if err != nil {
 		return err
 	}

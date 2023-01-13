@@ -19,7 +19,6 @@ export type ChatGetMessagesRequest = {
 }
 
 export type ChatCreateRequest = {
-  chatId: string
   userId: string
   invitedUserIds: string[]
 }
