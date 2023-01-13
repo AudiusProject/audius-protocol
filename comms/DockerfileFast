@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:latest
+FROM golang:1.19
 
 # install in-container tools: dbmate, nats cli
 RUN cd /tmp && \

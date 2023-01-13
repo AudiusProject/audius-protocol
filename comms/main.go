@@ -21,6 +21,9 @@ func main() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 	g.Go(func() error {
+		return peering.PollDiscoveryProviders()
+	})
+	g.Go(func() error {
 		return db.Dial()
 	})
 	g.Go(func() error {

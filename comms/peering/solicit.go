@@ -177,7 +177,6 @@ func PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	// req.Header.Set(config.SigHeader, hexutil.Encode(signature))
 
 	sigBase64 := base64.StdEncoding.EncodeToString(signature)
 	req.Header.Set(config.SigHeader, sigBase64)

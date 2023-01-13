@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"comms.audius.co/config"
+	"github.com/avast/retry-go"
 )
 
 type ServiceNode struct {
@@ -17,6 +18,46 @@ type ServiceNode struct {
 	SPID                string
 	Endpoint            string
 	DelegateOwnerWallet string
+	Type                struct {
+		ID string
+	}
+}
+
+var (
+	allNodes = map[string]ServiceNode{}
+)
+
+func PollDiscoveryProviders() error {
+	// don't start polling for
+	if config.Env == "standalone" || os.Getenv("test_host") != "" {
+		return nil
+	}
+
+	refresh := func() error {
+		config.Logger.Debug("refreshing SPs")
+		sps, err := queryServiceNodes(false, config.IsStaging)
+		if err != nil {
+			config.Logger.Warn("refresh SPs failed " + err.Error())
+			return err
+		}
+		mu.Lock()
+		for _, sp := range sps {
+			allNodes[sp.ID] = sp
+		}
+		mu.Unlock()
+		return nil
+	}
+
+	// start polling in goroutine
+	go func() {
+		for {
+			time.Sleep(time.Hour)
+			retry.Do(refresh)
+		}
+	}()
+
+	return retry.Do(refresh)
+
 }
 
 func GetDiscoveryNodes() ([]ServiceNode, error) {
@@ -27,8 +68,15 @@ func GetDiscoveryNodes() ([]ServiceNode, error) {
 		return testDiscoveryNodes, nil
 	}
 
-	// todo: some caching
-	return queryServiceNodes(false, config.IsStaging)
+	result := []ServiceNode{}
+	mu.Lock()
+	for _, node := range allNodes {
+		if node.Type.ID == "discovery-node" {
+			result = append(result, node)
+		}
+	}
+	mu.Unlock()
+	return result, nil
 }
 
 func GetContentNodes() ([]ServiceNode, error) {
@@ -67,6 +115,9 @@ var (
 				spId
 				endpoint
 				delegateOwnerWallet
+				type {
+					id
+				}
 			}
 		}
 	`
