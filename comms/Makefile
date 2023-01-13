@@ -39,7 +39,7 @@ fmt::
 
 test::
 	docker compose up -d comdb
-	go test ./... -count=1 -p=1
+	go test ./...
 
 
 

@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -19,20 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
-
-// func TestServer(t *testing.T) {
-// 	e := createServer()
-// 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(userJSON))
-// 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-// 	rec := httptest.NewRecorder()
-// 	c := e.NewContext(req, rec)
-
-// 	// Assertions
-// 	if assert.NoError(t, h.createUser(c)) {
-// 		assert.Equal(t, http.StatusCreated, rec.Code)
-// 		assert.Equal(t, userJSON, rec.Body.String())
-// 	}
-// }
 
 func TestSig(t *testing.T) {
 	privateKey, err := crypto.GenerateKey()
@@ -49,8 +37,6 @@ func TestSig(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// fmt.Println(hexutil.Encode(signature))
 
 	// recover
 	sigPublicKey, err := crypto.SigToPub(hash.Bytes(), signature)
@@ -88,20 +74,26 @@ func TestGetChats(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
+
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+	user3Id := seededRand.Int31()
+
 	// Create 3 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true)", 1, wallet1, 2, wallet2, 3, wallet3)
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3)
 	assert.NoError(t, err)
 
 	// Create 2 chats
-	chatId1 := "chat1"
-	chatId2 := "chat2"
+	chatId1 := strconv.Itoa(seededRand.Int())
+	chatId2 := strconv.Itoa(seededRand.Int())
 	chat1CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(60))
 	chat2CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(30))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2), ($3, $4, $4)", chatId1, chat1CreatedAt, chatId2, chat2CreatedAt)
 	assert.NoError(t, err)
 
 	// Insert members into chats (1 and 2, 1 and 3)
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3), ($4, $2, $4, $2), ($4, $2, $4, $5)", chatId1, 1, 2, chatId2, 3)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3), ($4, $2, $4, $2), ($4, $2, $4, $5)", chatId1, user1Id, user2Id, chatId2, user3Id)
 	assert.NoError(t, err)
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -110,11 +102,11 @@ func TestGetChats(t *testing.T) {
 	expectedHealth := schema.Health{
 		IsHealthy: true,
 	}
-	encodedUser1, err := misc.EncodeHashId(1)
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
-	encodedUser2, err := misc.EncodeHashId(2)
+	encodedUser2, err := misc.EncodeHashId(int(user2Id))
 	assert.NoError(t, err)
-	encodedUser3, err := misc.EncodeHashId(3)
+	encodedUser3, err := misc.EncodeHashId(int(user3Id))
 	assert.NoError(t, err)
 	expectedMember1 := schema.ChatMember{
 		UserID: encodedUser1,
@@ -246,18 +238,23 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
+
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+
 	// Create 2 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", 1, wallet1, 2, wallet2)
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
 	assert.NoError(t, err)
 
 	// Create a chat
-	chatId := "chat1"
+	chatId := strconv.Itoa(seededRand.Int())
 	chatCreatedAt := time.Now().UTC().Add(-time.Hour * time.Duration(2))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", chatId, chatCreatedAt)
 	assert.NoError(t, err)
 
 	// Insert members 1 and 2 into chat
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId, 1, 2)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId, user1Id, user2Id)
 	assert.NoError(t, err)
 
 	// Insert chat messages
@@ -267,7 +264,7 @@ func TestGetMessages(t *testing.T) {
 	messageId2 := "message2"
 	message2CreatedAt := time.Now().UTC().Add(-time.Hour * time.Duration(1))
 	message2 := "ack from user 2"
-	_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5), ($6, $2, $7, $8, $9)", messageId1, chatId, 1, message1CreatedAt, message1, messageId2, 2, message2CreatedAt, message2)
+	_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5), ($6, $2, $7, $8, $9)", messageId1, chatId, user1Id, message1CreatedAt, message1, messageId2, user2Id, message2CreatedAt, message2)
 	assert.NoError(t, err)
 
 	// Insert 2 message reactions to message 1
@@ -275,7 +272,7 @@ func TestGetMessages(t *testing.T) {
 	reaction1CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(30))
 	reaction2 := "fire"
 	reaction2CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(15))
-	_, err = tx.Exec("insert into chat_message_reactions (user_id, message_id, reaction, created_at) values ($1, $2, $3, $4), ($5, $2, $6, $7)", 1, messageId1, reaction1, reaction1CreatedAt, 2, reaction2, reaction2CreatedAt)
+	_, err = tx.Exec("insert into chat_message_reactions (user_id, message_id, reaction, created_at) values ($1, $2, $3, $4), ($5, $2, $6, $7)", user1Id, messageId1, reaction1, reaction1CreatedAt, user2Id, reaction2, reaction2CreatedAt)
 	assert.NoError(t, err)
 
 	err = tx.Commit()
@@ -302,9 +299,9 @@ func TestGetMessages(t *testing.T) {
 	defer res.Body.Close()
 
 	// Assertions
-	encodedUser1, err := misc.EncodeHashId(1)
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
-	encodedUser2, err := misc.EncodeHashId(2)
+	encodedUser2, err := misc.EncodeHashId(int(user2Id))
 	assert.NoError(t, err)
 	expectedHealth := schema.Health{
 		IsHealthy: true,

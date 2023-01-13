@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -22,9 +23,11 @@ func TestChatBlocking(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	// TODO test queries
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
 
-	assertBlocked := func(blockerUserId int, blockeeUserId int, timestamp time.Time, expected int) {
+	assertBlocked := func(blockerUserId int32, blockeeUserId int32, timestamp time.Time, expected int) {
 		row := tx.QueryRow("select count(*) from chat_blocked_users where blocker_user_id = $1 and blockee_user_id = $2 and created_at = $3", blockerUserId, blockeeUserId, timestamp)
 		var count int
 		err = row.Scan(&count)
@@ -32,9 +35,9 @@ func TestChatBlocking(t *testing.T) {
 		assert.Equal(t, expected, count)
 	}
 
-	// validate 91 can block 92
+	// validate user1Id can block user2Id
 	{
-		hashUserId, err := misc.EncodeHashId(92)
+		hashUserId, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"user_id": "%s"}`, hashUserId)),
@@ -42,46 +45,46 @@ func TestChatBlocking(t *testing.T) {
 
 		chatBlock := string(schema.RPCMethodChatBlock)
 
-		err = Validators[chatBlock](tx, 91, exampleRpc)
+		err = Validators[chatBlock](tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 	}
 
-	// user 91 blocks 92
+	// user user1Id blocks user2Id
 	messageTs := time.Now()
-	err = chatBlock(tx, 91, 92, messageTs)
+	err = chatBlock(tx, user1Id, user2Id, messageTs)
 	assert.NoError(t, err)
-	assertBlocked(91, 92, messageTs, 1)
+	assertBlocked(user1Id, user2Id, messageTs, 1)
 
 	// assert no update if duplicate block requests
 	duplicateMessageTs := time.Now()
-	err = chatBlock(tx, 91, 92, duplicateMessageTs)
+	err = chatBlock(tx, user1Id, user2Id, duplicateMessageTs)
 	assert.NoError(t, err)
-	assertBlocked(91, 92, messageTs, 1)
-	assertBlocked(91, 92, duplicateMessageTs, 0)
+	assertBlocked(user1Id, user2Id, messageTs, 1)
+	assertBlocked(user1Id, user2Id, duplicateMessageTs, 0)
 
-	// validate 91 and 92 cannot create a chat with each other
+	// validate user1Id and user2Id cannot create a chat with each other
 	{
 		chatId := "chat1"
-		user91HashId, err := misc.EncodeHashId(91)
+		useruser1IdHashId, err := misc.EncodeHashId(int(user1Id))
 		assert.NoError(t, err)
-		user92HashId, err := misc.EncodeHashId(92)
+		useruser2IdHashId, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 
 		exampleRpc := schema.RawRPC{
-			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, user91HashId, user92HashId)),
+			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, useruser1IdHashId, useruser2IdHashId)),
 		}
 
 		chatCreate := string(schema.RPCMethodChatCreate)
 
-		err = Validators[chatCreate](tx, 91, exampleRpc)
+		err = Validators[chatCreate](tx, user1Id, exampleRpc)
 		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
-	// validate 91 and 92 cannot message each other
+	// validate user1Id and user2Id cannot message each other
 	{
 		// Assume chat was already created before blocking
 		chatId := "chat1"
-		SetupChatWithMembers(t, tx, chatId, 91, 92)
+		SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
 
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message_id": "1", "message": "test"}`, chatId)),
@@ -89,14 +92,14 @@ func TestChatBlocking(t *testing.T) {
 
 		chatMessage := string(schema.RPCMethodChatMessage)
 
-		err = Validators[chatMessage](tx, 91, exampleRpc)
+		err = Validators[chatMessage](tx, user1Id, exampleRpc)
 		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
-	// user 91 unblocks 92
-	err = chatUnblock(tx, 91, 92)
+	// user user1Id unblocks user2Id
+	err = chatUnblock(tx, user1Id, user2Id)
 	assert.NoError(t, err)
-	assertBlocked(91, 92, messageTs, 0)
+	assertBlocked(user1Id, user2Id, messageTs, 0)
 
 	tx.Rollback()
 }
