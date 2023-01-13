@@ -55,7 +55,7 @@ export type RemixOf = {
 
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
-type PremiumConditionsEthNFTCollection = {
+export type PremiumConditionsEthNFTCollection = {
   chain: Chain.Eth
   standard: TokenStandard
   address: string
@@ -65,7 +65,7 @@ type PremiumConditionsEthNFTCollection = {
   externalLink: Nullable<string>
 }
 
-type PremiumConditionsSolNFTCollection = {
+export type PremiumConditionsSolNFTCollection = {
   chain: Chain.Sol
   address: string
   name: string

@@ -1,0 +1,28 @@
+<svg width="41" height="40" viewBox="0 0 41 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_380_3724)">
+        <g filter="url(#filter0_di_380_3724)">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.5 8C0.5 3.58172 4.08172 0 8.5 0H40.5L0.5 40V8Z" fill="#1BA1F1"/>
+        </g>
+        <path d="M14.0834 9.375C14.0834 8.33906 14.9225 7.5 15.9584 7.5C16.9943 7.5 17.8334 8.33906 17.8334 9.375V10.5C17.8334 10.9148 18.1686 11.25 18.5834 11.25C18.9982 11.25 19.3334 10.9148 19.3334 10.5V9.375C19.3334 7.51172 17.8217 6 15.9584 6C14.0952 6 12.5834 7.51172 12.5834 9.375V10.5H7.33348C6.50615 10.5 5.8335 11.1727 5.8335 12V16.5C5.8335 17.3273 6.50615 18 7.33348 18H14.8334C15.6608 18 16.3334 17.3273 16.3334 16.5V12C16.3334 11.1727 15.6608 10.5 14.8334 10.5H14.0834V9.375Z" fill="white"/>
+    </g>
+    <defs>
+        <filter id="filter0_di_380_3724" x="-7.5" y="-8" width="56" height="56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feOffset/>
+            <feGaussianBlur stdDeviation="4"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_380_3724"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_380_3724" result="shape"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feOffset dx="4" dy="4"/>
+            <feGaussianBlur stdDeviation="4"/>
+            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.2 0"/>
+            <feBlend mode="normal" in2="shape" result="effect2_innerShadow_380_3724"/>
+        </filter>
+        <clipPath id="clip0_380_3724">
+            <path d="M0.5 8C0.5 3.58172 4.08172 0 8.5 0H40.5V40H0.5V8Z" fill="white"/>
+        </clipPath>
+    </defs>
+</svg>

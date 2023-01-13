@@ -13,8 +13,6 @@ import {
   IconRocket,
   IconRepost,
   IconHeart,
-  IconPause,
-  IconPlay,
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
@@ -30,13 +28,16 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
-import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
 import { moodMap } from 'utils/moods'
 
 import Badge from './Badge'
+import { CardTitle } from './CardTitle'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import InfoLabel from './InfoLabel'
+import { PlayPauseButton } from './PlayPauseButton'
+import { PremiumTrackCornerTag } from './PremiumTrackCornerTag'
+import { PremiumTrackSection } from './PremiumTrackSection'
 import Tag from './Tag'
 
 const BUTTON_COLLAPSE_WIDTHS = {
@@ -50,9 +51,6 @@ const REPOST_TIMEOUT = 1000
 const SAVED_TIMEOUT = 1000
 
 const messages = {
-  trackTitle: 'TRACK',
-  remixTitle: 'REMIX',
-  hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   makePublic: 'MAKE PUBLIC',
   isPublishing: 'PUBLISHING',
   repostButtonText: 'repost',
@@ -65,30 +63,15 @@ class GiantTrackTile extends PureComponent {
   }
 
   renderCardTitle(className) {
-    const { isUnlisted, isRemix } = this.props
-
-    if (!isUnlisted) {
-      return (
-        <div className={cn(styles.headerContainer, className)}>
-          <div className={styles.typeLabel}>
-            {isRemix ? messages.remixTitle : messages.trackTitle}
-          </div>
-        </div>
-      )
-    }
-
+    const { isUnlisted, isRemix, isPremium, premiumConditions } = this.props
     return (
-      <div className={cn(styles.headerContainer, className)}>
-        <Tooltip
-          text={messages.hiddenTrackTooltip}
-          mouseEnterDelay={0}
-          shouldWrapContent={false}
-        >
-          <div>
-            <HiddenTrackHeader />
-          </div>
-        </Tooltip>
-      </div>
+      <CardTitle
+        className={className}
+        isUnlisted={isUnlisted}
+        isRemix={isRemix}
+        isPremium={isPremium}
+        premiumConditions={premiumConditions}
+      />
     )
   }
 
@@ -358,6 +341,7 @@ class GiantTrackTile extends PureComponent {
     const {
       playing,
       trackId,
+      ownerId,
       trackTitle,
       coverArtSizes,
       artistName,
@@ -375,6 +359,9 @@ class GiantTrackTile extends PureComponent {
       onUnfollow,
       isArtistPick,
       isUnlisted,
+      isPremium,
+      premiumConditions,
+      doesUserHaveAccess,
       onExternalLinkClick,
       coSign,
       loading,
@@ -420,6 +407,9 @@ class GiantTrackTile extends PureComponent {
     return (
       <div className={styles.giantTrackTile}>
         <div className={styles.topSection}>
+          {isPremium && (
+            <PremiumTrackCornerTag doesUserHaveAccess={doesUserHaveAccess} />
+          )}
           <GiantArtwork
             trackId={trackId}
             coverArtSizes={coverArtSizes}
@@ -454,14 +444,10 @@ class GiantTrackTile extends PureComponent {
             </div>
 
             <div className={cn(styles.playSection, fadeIn)}>
-              <Button
-                name='play'
-                className={styles.playButton}
-                textClassName={styles.playButtonText}
-                type={ButtonType.PRIMARY_ALT}
-                text={playing ? 'PAUSE' : 'PLAY'}
-                leftIcon={playing ? <IconPause /> : <IconPlay />}
-                onClick={onPlay}
+              <PlayPauseButton
+                doesUserHaveAccess={doesUserHaveAccess}
+                playing={playing}
+                onPlay={onPlay}
               />
               {this.renderListenCount()}
             </div>
@@ -505,6 +491,14 @@ class GiantTrackTile extends PureComponent {
           ) : null}
         </div>
 
+        {isPremium && (
+          <PremiumTrackSection
+            isLoading={isLoading}
+            premiumConditions={premiumConditions}
+            doesUserHaveAccess={doesUserHaveAccess}
+          />
+        )}
+
         <div className={cn(styles.bottomSection, fadeIn)}>
           <div className={styles.infoLabelsSection}>
             <InfoLabel
@@ -546,6 +540,7 @@ GiantTrackTile.propTypes = {
   active: PropTypes.bool,
   trackTitle: PropTypes.string,
   trackId: PropTypes.number,
+  ownerId: PropTypes.number,
   artistName: PropTypes.string,
   artistHandle: PropTypes.string,
   coverArtSizes: PropTypes.object,
@@ -565,6 +560,9 @@ GiantTrackTile.propTypes = {
   isDownloadable: PropTypes.bool,
   badge: PropTypes.string,
   isUnlisted: PropTypes.bool,
+  isPremium: PropTypes.bool,
+  premiumConditions: PropTypes.object,
+  doesUserHaveAccess: PropTypes.bool,
   isRemix: PropTypes.bool,
   isPublishing: PropTypes.bool,
   fieldVisibility: PropTypes.object,

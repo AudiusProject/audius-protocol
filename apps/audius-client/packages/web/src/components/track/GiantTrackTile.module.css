@@ -19,7 +19,6 @@
   background-color: var(--neutral-light-10);
 
   padding: 24px;
-  border-bottom: 1px solid var(--neutral-light-8);
 }
 
 .infoSection {
@@ -50,6 +49,21 @@
   line-height: 28px;
 
   user-select: none;
+}
+
+.premiumContent .typeLabel {
+  display: flex;
+  align-items: center;
+  color: var(--accent-blue);
+  letter-spacing: 2px;
+}
+
+.premiumContent svg {
+  margin-right: 10px
+}
+
+.premiumContent path {
+  fill: var(--accent-blue);
 }
 
 .title {
@@ -179,8 +193,111 @@
   align-items: center;
 }
 
+.premiumContentSection {
+  margin: 0 24px 24px 24px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 8px;
+}
+
+.premiumContentSectionLocked {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.premiumContentSectionTitle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: var(--font-heavy);
+  font-size: var(--font-m);
+}
+
+.premiumContentSectionDescription {
+  font-weight: var(--font-demi-bold);
+}
+
+.premiumContentSectionDescription > p {
+  display: flex;
+  align-items: center;
+}
+
+.premiumContentSectionDescription img {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 4px;
+}
+
+.premiumContentSectionCollection {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.premiumContentSectionButton {
+  display: flex;
+  width: 250px;
+  margin-left: 16px;
+}
+
+.premiumContentSectionButton button {
+  width: 100%;
+}
+
+.premiumContentSectionButton .buttonText {
+  font-size: var(--font-l);
+}
+
+.premiumContentSectionButton .buttonIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.premiumContentSectionButton .followButton {
+  width: 100%;
+  flex: unset;
+  max-width: none;
+  height: 46px;
+}
+
+.premiumContentSectionButton .followButton > span {
+  font-size: var(--font-l);
+}
+
+.collectibleName {
+  color: var(--secondary);
+}
+
+.lockedIcon, .unlockedIcon {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+.badgeIcon {
+  margin-left: 4px;
+}
+
+.verifiedGreenIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.cornerTag {
+  position: absolute;
+  top: 0;
+  /* may need design to reproduce a more pixel perfect icon to avoid the -1px below */
+  left: -1px;
+}
+
 .bottomSection {
   padding: 20px 24px 20px;
+  border-top: 1px solid var(--neutral-light-8);
 }
 
 .infoLabelsSection {
