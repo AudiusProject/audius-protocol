@@ -4,8 +4,6 @@
 
 FINAL_BLOCK=$1
 NETHERMIND_DEPLOYER_PRIVATE_KEY=$2
-VERIFIER_ADDRESS=$3
-NETWORK_ID=$4
 
 discovery_nodes=("stage-discovery-1" "stage-discovery-2" "stage-discovery-3")
 
@@ -96,8 +94,6 @@ function deploy_entity_manager {
     cd ../../contracts
     npm i
     export NETHERMIND_DEPLOYER_PRIVATE_KEY
-    export VERIFIER_ADDRESS
-    export NETWORK_ID
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run
 }
 
