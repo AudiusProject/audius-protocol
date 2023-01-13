@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run from local
+# Run from local discovery-provider/scripts/
 
 FINAL_BLOCK=$1
 NETHERMIND_DEPLOYER_PRIVATE_KEY=$2
@@ -33,7 +33,6 @@ function poll_identity_final_block {
     do
     response=$(curl $identity_final_block_endpoint)
 
-    # check response
     if [ "$response" == "$expected_response" ]; then
         echo "Identity final block is set to $FINAL_BLOCK"
         break
