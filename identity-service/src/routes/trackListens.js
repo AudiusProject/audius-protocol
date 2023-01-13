@@ -446,7 +446,8 @@ module.exports = function (app) {
           trackId: trackId.toString(),
           source: 'relay',
           location,
-          connection
+          connection,
+          secpInstructionIndex: 1 // Index 1 to account for priority instruction
         })
         const priority = createFeePriorityInstruction(10000)
         const feePayerAccount = getFeePayerKeypair(false)
@@ -457,7 +458,7 @@ module.exports = function (app) {
         const transactionHandler = libs.solanaWeb3Manager.transactionHandler
         const { res: solTxSignature, error } =
           await transactionHandler.handleTransaction({
-            instructions: [...instructions, priority],
+            instructions: [priority, ...instructions],
             skipPreflight: false, // TODO
             feePayerOverride: feePayerAccount,
             retry: true

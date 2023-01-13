@@ -158,7 +158,8 @@ async function createTrackListenInstructions({
   trackId,
   source,
   location,
-  connection
+  connection,
+  secpInstructionIndex = 0
 }) {
   const validSigner = VALID_SIGNER
 
@@ -214,7 +215,8 @@ async function createTrackListenInstructions({
       publicKey: pubKey,
       message: serializedTrackData.toJSON().data,
       signature: sigObj.signature,
-      recoveryId: sigObj.recid
+      recoveryId: sigObj.recid,
+      instructionIndex: secpInstructionIndex
     })
   const listenInstruction = new solanaWeb3.TransactionInstruction({
     keys: [
