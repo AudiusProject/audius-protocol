@@ -45,7 +45,6 @@ const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const { sequelize } = require('../models')
-const { TypePredicateKind } = require('typescript')
 const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
