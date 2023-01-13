@@ -64,15 +64,6 @@ let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
 
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const streamMp3IsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.STREAM_MP3
-  ) ?? false
-  const isPremiumContentEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
-  ) ?? false
-
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload ?? {}
 
@@ -102,6 +93,14 @@ export function* watchPlay() {
       }
 
       yield* waitForWrite()
+      const streamMp3IsEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.STREAM_MP3
+      ) ?? false
+      const isPremiumContentEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.PREMIUM_CONTENT_ENABLED
+      ) ?? false
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const remoteConfigInstance = yield* getContext('remoteConfigInstance')
