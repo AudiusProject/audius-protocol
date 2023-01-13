@@ -35,6 +35,8 @@ class DropdownInput extends Component {
       defaultValue,
       label,
       labelStyle,
+      dropdownStyle,
+      dropdownInputStyle,
       mount,
       layout,
       size,
@@ -72,7 +74,7 @@ class DropdownInput extends Component {
         return (
           <Option
             key={item.text}
-            value={item.text}
+            value={item.value || item.text}
             query={item.text}
             role='option'
           >
@@ -121,12 +123,12 @@ class DropdownInput extends Component {
             {label}
           </label>
         ) : null}
-        <div className={styles.dropdownInput}>
+        <div className={cn(styles.dropdownInput, dropdownInputStyle)}>
           <Select
             {...defaultValueProp}
             id={id}
             aria-label={ariaLabel}
-            dropdownClassName={cn(styles.select, style)}
+            dropdownClassName={cn(styles.select, dropdownStyle, style)}
             showSearch
             disabled={disabled}
             placeholder={
@@ -158,6 +160,8 @@ DropdownInput.propTypes = {
   menu: PropTypes.object,
   label: PropTypes.string,
   labelStyle: PropTypes.string,
+  dropdownStyle: PropTypes.string,
+  dropdownInputStyle: PropTypes.string,
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   layout: PropTypes.oneOf(['horizontal', 'vertical']),
   variant: PropTypes.oneOf(['default', 'alternative']),

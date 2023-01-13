@@ -1,2 +1,2 @@
-export { default as collectiblesReducer } from './reducer'
-export * as collectiblesActions from './actions'
+export { reducer as collectiblesReducer, actions as collectiblesActions } from './slice'
+export * as collectiblesSelectors from './selectors'

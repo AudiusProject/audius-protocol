@@ -157,7 +157,7 @@ export class SolanaClient {
     }
   }
 
-  isCollectionNFT = async (mintAddress: string) => {
+  getNFTMetadataFromMint = async (mintAddress: string) => {
     if (this.connection === null) return
 
     try {
@@ -171,16 +171,18 @@ export class SolanaClient {
           this.metadataProgramIdPublicKey
         )
       )[0]
-      const { collectionDetails } = await Metadata.fromAccountAddress(
+      const metadata = await Metadata.fromAccountAddress(
         this.connection,
         programAddress
       )
-
-      // "If the CollectionDetails field is set, it means the NFT is a Collection NFT
-      // and additional attributes can be found inside this field."
-      // https://docs.metaplex.com/programs/token-metadata/certified-collections#differentiating-regular-nfts-from-collection-nfts
-      return !!collectionDetails
+      const result = (await (await fetch(metadata.data.uri)).json()) ?? {}
+      const imageUrl = result?.image
+      return {
+        metadata,
+        imageUrl
+      }
     } catch (e) {
+      console.warn(`Could not get nft metadata for mint address ${mintAddress}`)
       return null
     }
   }
