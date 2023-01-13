@@ -112,13 +112,9 @@ func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
 
 func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
-	// TEMP: hardcoded stream config
-	tempStreamName := "audius"
-	tempStreamSubject := "audius.>"
-
 	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
-		Name:     tempStreamName,
-		Subjects: []string{tempStreamSubject},
+		Name:     config.GlobalStreamName,
+		Subjects: []string{config.GlobalStreamSubject},
 		Replicas: config.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
@@ -128,19 +124,6 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	}
 
 	config.Logger.Info("create stream", "strm", streamInfo)
-
-	// ------------------------------------------------------------------------------
-	// TEMP: Subscribe to the subject for the demo
-	// this is the "processor" for DM messages... which just inserts them into comm log table for now
-	// it assumes that nats message has the signature header
-	// but this is not the case for identity relay messages, for instance, which should have their own consumer
-	// also, should be a pull consumer with explicit ack.
-	// matrix-org/dendrite codebase has some nice examples to follow...
-
-	_, err = jsc.Subscribe(tempStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
-	if err != nil {
-		return err
-	}
 
 	// create kv buckets
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
@@ -160,4 +143,23 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	}
 
 	return nil
+}
+
+func createConsumer(jsc nats.JetStreamContext) error {
+
+	// ------------------------------------------------------------------------------
+	// TEMP: Subscribe to the subject for the demo
+	// this is the "processor" for DM messages... which just inserts them into comm log table for now
+	// it assumes that nats message has the signature header
+	// but this is not the case for identity relay messages, for instance, which should have their own consumer
+	// also, should be a pull consumer with explicit ack.
+	// matrix-org/dendrite codebase has some nice examples to follow...
+
+	sub, err := jsc.Subscribe(config.GlobalStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
+
+	if info, err := sub.ConsumerInfo(); err == nil {
+		config.Logger.Info("create subscription", "sub", info)
+	}
+
+	return err
 }

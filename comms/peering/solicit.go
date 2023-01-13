@@ -5,13 +5,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
-	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/jetstream"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nats-io/nats.go"
 )
@@ -20,8 +21,9 @@ var manager = &NatsManager{}
 
 // todo: this should probably live in a struct
 var (
-	mu            sync.Mutex
-	peersByWallet = map[string]*Info{}
+	mu                 sync.Mutex
+	peersByWallet      = map[string]*Info{}
+	setupJetstreamOnce sync.Once
 )
 
 func Solicit() {
@@ -64,37 +66,46 @@ func Solicit() {
 
 	manager.StartNats(peersByWallet)
 
-	// create nats client with valid connections
-	goodNatsUrl := strings.Join(goodNatsUrls, ",")
-	config.Logger.Debug("nats client urls: " + goodNatsUrl)
-	for i := 0; i < 5; i++ {
+	setupJetstreamOnce.Do(func() {
+		// create nats client with valid connections
+		goodNatsUrl := strings.Join(goodNatsUrls, ",")
+		config.Logger.Debug("nats client urls: " + goodNatsUrl)
+
+		// setup client + streams: kind of like a db migration step
 		var nc *nats.Conn
 		var jsc nats.JetStreamContext
+		err = retry.Do(func() error {
+			var err error
+			nc, err = dialNatsUrl(goodNatsUrl)
+			if err != nil {
+				return err
+			}
+
+			jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
+			if err != nil {
+				return err
+			}
+
+			err = createJetstreamStreams(jsc)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
 
 		if err != nil {
-			config.Logger.Warn("dial nats failed "+err.Error(), "attempt", i)
-			time.Sleep(time.Second)
+			log.Fatal(err)
 		}
 
-		nc, err = dialNatsUrl(goodNatsUrl)
+		// setup client
+		err = createConsumer(jsc)
 		if err != nil {
-			continue
+			log.Fatal(err)
 		}
 
-		jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
-		if err != nil {
-			continue
-		}
-
-		err = createJetstreamStreams(jsc)
-		if err != nil {
-			continue
-		}
-
+		// success
 		jetstream.SetJetstreamContext(jsc)
-		break
-
-	}
+	})
 
 	config.Logger.Info("solicit done")
 

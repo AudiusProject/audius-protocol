@@ -374,6 +374,32 @@ func createServer() *echo.Echo {
 		return c.JSON(200, peers)
 	})
 
+	g.GET("/debug/stream", func(c echo.Context) error {
+		jsc := jetstream.GetJetstreamContext()
+		if jsc == nil {
+			return c.String(500, "jetstream not ready")
+		}
+
+		info, err := jsc.StreamInfo(config.GlobalStreamName)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, info)
+	})
+
+	g.GET("/debug/consumer", func(c echo.Context) error {
+		jsc := jetstream.GetJetstreamContext()
+		if jsc == nil {
+			return c.String(500, "jetstream not ready")
+		}
+
+		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, info)
+	})
+
 	// static files
 	staticFs := getFileSystem(false)
 	assetHandler := http.FileServer(staticFs)
