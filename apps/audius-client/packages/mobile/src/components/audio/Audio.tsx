@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
+import type { Track } from '@audius/common'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -16,6 +17,7 @@ import {
   Genre,
   tracksSocialActions
 } from '@audius/common'
+import { isEqual } from 'lodash'
 import queue from 'react-native-job-queue'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -25,6 +27,7 @@ import TrackPlayer, {
   usePlaybackState,
   useTrackPlayerEvents,
   useProgress,
+  RepeatMode as TrackPlayerRepeatMode,
   TrackType
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
@@ -34,17 +37,21 @@ import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { getLocalTrackImageSource } from 'app/hooks/useLocalImage'
-import { useOfflineTrackUri } from 'app/hooks/useOfflineTrackUri'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import {
+  getLocalAudioPath,
+  isAudioAvailableOffline
+} from 'app/services/offline-downloader'
 import type { PlayCountWorkerPayload } from 'app/services/offline-downloader/workers/playCounterWorker'
 import { PLAY_COUNTER_WORKER } from 'app/services/offline-downloader/workers/playCounterWorker'
+import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 
 import { useChromecast } from './GoogleCast'
 
-const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
+const { getUsers } = cacheUsersSelectors
+const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
 const {
@@ -136,35 +143,40 @@ export const Audio = () => {
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
-  const trackOwner = useSelector((state) =>
-    getUser(state, { id: track?.owner_id })
-  )
   const currentUserId = useSelector(getUserId)
+
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const offlineTracks = useSelector(getOfflineTracks)
 
-  // Queue things
+  // Queue Things
   const queueIndex = useSelector(getIndex)
   const queueOrder = useSelector(getOrder)
+  const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
+  const queueTrackMap = useSelector((state) =>
+    getTracks(state, { uids: queueTrackUids })
+  )
+  const queueTracks = queueOrder.map(
+    (trackData) => queueTrackMap[trackData.id] as Track
+  )
+  const queueTrackOwnerIds = queueTracks.map((track) => track.owner_id)
+  const queueTrackOwnersMap = useSelector((state) =>
+    getUsers(state, { ids: queueTrackOwnerIds })
+  )
+  // Queue Shuffle Things
   const queueShuffle = useSelector(getShuffle)
   const queueShuffleIndex = useSelector(getShuffleIndex)
   const queueShuffleOrder = useSelector(getShuffleOrder)
-
-  const nextTrackIndex = queueShuffle
-    ? queueShuffleOrder[queueShuffleIndex + 1]
-    : queueIndex + 1
-  const nextTrackId = queueOrder[nextTrackIndex]?.id
-  const nextTrack = useSelector((state) =>
-    getTrack(state, { id: Number(nextTrackId ?? 0) })
+  const queueShuffleTrackUids = queueShuffleOrder.map(
+    (idx) => queueTrackUids[idx]
   )
-  const nextTrackOwner = useSelector((state) =>
-    getUser(state, { id: nextTrack?.owner_id })
-  )
+  const queueShuffleTracks = queueShuffleOrder.map((idx) => queueTracks[idx])
 
   const { isCasting } = useChromecast()
   const dispatch = useDispatch()
 
+  const isPodcastRef = useRef<boolean>(false)
   const [isAudioSetup, setIsAudioSetup] = useState(false)
   const [listenLoggedForTrack, setListenLoggedForTrack] = useState(false)
 
@@ -177,6 +189,21 @@ export const Audio = () => {
   )
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
+    [dispatch]
+  )
+  const updateQueueIndex = useCallback(
+    (index: number) => dispatch(queueActions.updateIndex({ index })),
+    [dispatch]
+  )
+  const updateQueueShuffleIndex = useCallback(
+    (shuffleIndex: number) =>
+      dispatch(queueActions.updateIndex({ shuffleIndex })),
+    [dispatch]
+  )
+  const updatePlayerInfo = useCallback(
+    ({ trackId, uid }: { trackId: number; uid: string }) => {
+      dispatch(playerActions.set({ trackId, uid }))
+    },
     [dispatch]
   )
 
@@ -234,35 +261,44 @@ export const Audio = () => {
       setSeekPosition(Math.max(0, position - SKIP_DURATION_SEC))
     }
 
-    const autoPlayNext = async () => {
-      if (repeatMode !== RepeatMode.SINGLE) {
-        await TrackPlayer.pause()
-      } else {
-        setSeekPosition(0)
+    if (event.type === Event.PlaybackQueueEnded) {
+      // TODO: Queue ended, what should done here?
+    }
+
+    if (event.type === Event.PlaybackTrackChanged) {
+      const playerIndex = await TrackPlayer.getCurrentTrack()
+      if (playerIndex === null) return
+
+      // Update queue and player state if the track player auto plays next track
+      const trackIndex = queueShuffle ? queueShuffleIndex : queueIndex
+      if (playerIndex !== trackIndex) {
+        if (queueShuffle) {
+          updateQueueShuffleIndex(playerIndex)
+          const track = queueShuffleTracks[playerIndex]
+          updatePlayerInfo({
+            trackId: track.track_id,
+            uid: queueShuffleTrackUids[playerIndex]
+          })
+        } else {
+          updateQueueIndex(playerIndex)
+          const track = queueTracks[playerIndex]
+          updatePlayerInfo({
+            trackId: track.track_id,
+            uid: queueTrackUids[playerIndex]
+          })
+        }
       }
 
-      next()
-    }
-
-    // TODO: Need to listen for different event when the queue is used properly
-    if (event.type === Event.PlaybackQueueEnded) {
-      await autoPlayNext()
-    }
-
-    // TODO: Hacky solution to playing next. This should be changed when we update to use track player's queue properly
-    if (event.type === Event.PlaybackTrackChanged) {
-      const queue = await TrackPlayer.getQueue()
-      const currentTrackIndex = await TrackPlayer.getCurrentTrack()
-      // If we are at the last track in the queue, we should auto play the next track
-      if (currentTrackIndex && currentTrackIndex === queue.length - 1) {
-        await autoPlayNext()
+      const isPodcast = queueTracks[playerIndex]?.genre === Genre.PODCASTS
+      if (isPodcast !== isPodcastRef.current) {
+        isPodcastRef.current = isPodcast
+        await updatePlayerOptions(isPodcast)
       }
     }
   })
 
-  const trackId = track?.track_id
-
   const onProgress = useCallback(async () => {
+    const trackId = track?.track_id
     if (!trackId || !currentUserId) return
     if (progressInvalidator.current) {
       progressInvalidator.current = false
@@ -276,7 +312,7 @@ export const Audio = () => {
       setListenLoggedForTrack(true)
       if (isReachable) {
         dispatch(recordListen(trackId))
-      } else if (isOfflineModeEnabled && !isReachable) {
+      } else if (isOfflineModeEnabled) {
         queue.addJob<PlayCountWorkerPayload>(PLAY_COUNTER_WORKER, { trackId })
       }
     }
@@ -290,13 +326,13 @@ export const Audio = () => {
       global.progress.duration = duration
     }
   }, [
+    track?.track_id,
     currentUserId,
+    listenLoggedForTrack,
     isCasting,
     isReachable,
-    listenLoggedForTrack,
-    trackId,
-    dispatch,
-    isOfflineModeEnabled
+    isOfflineModeEnabled,
+    dispatch
   ])
 
   useEffect(() => {
@@ -349,211 +385,155 @@ export const Audio = () => {
     setListenLoggedForTrack(false)
   }, [counter, resetPositionForSameTrack])
 
-  const { loading: loadingOfflineTrack, value: offlineTrackUri } =
-    useOfflineTrackUri(track?.track_id.toString())
-  const { loading: loadingNextOfflineTrack, value: nextOfflineTrackUri } =
-    useOfflineTrackUri(nextTrack?.track_id.toString())
+  // Ref to keep track of the queue in the track player vs the queue in state
+  const queueListRef = useRef<string[]>([])
+  // Ref to ensure that we do not try to update while we are already updating
+  const updatingQueueRef = useRef<boolean>(false)
 
-  const streamingUri = useMemo(() => {
-    return track && isReachable
-      ? apiClient.makeUrl(`/tracks/${encodeHashId(track.track_id)}/stream`)
-      : null
-  }, [isReachable, track])
-  const nextStreamingUri = useMemo(() => {
-    return nextTrack && isReachable
-      ? apiClient.makeUrl(`/tracks/${encodeHashId(nextTrack.track_id)}/stream`)
-      : null
-  }, [isReachable, nextTrack])
+  const handleQueueChange = useCallback(async () => {
+    const refUids = queueListRef.current
+    const trackUids = queueShuffle ? queueShuffleTrackUids : queueTrackUids
+    const tracks = queueShuffle ? queueShuffleTracks : queueTracks
 
-  const gateways = trackOwner
-    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-        trackOwner.creator_node_endpoint
-      )
-    : []
-  const nextGateways = nextTrackOwner
-    ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-        nextTrackOwner.creator_node_endpoint
-      )
-    : []
+    if (updatingQueueRef.current || isEqual(refUids, trackUids)) return
+    updatingQueueRef.current = true
+    // Check if this is a new queue or we are appending to the queue
+    const isQueueAppend =
+      refUids.length > 0 && isEqual(trackUids.slice(0, refUids.length), refUids)
+    const newQueueTracks = isQueueAppend ? tracks.slice(refUids.length) : tracks
 
-  const m3u8 = hlsUtils.generateM3U8Variants({
-    segments: track?.track_segments ?? [],
-    gateways
-  })
-  const nextM3u8 = hlsUtils.generateM3U8Variants({
-    segments: nextTrack?.track_segments ?? [],
-    gateways: nextGateways
-  })
+    const newTrackData = await Promise.all(
+      newQueueTracks.map(async (track) => {
+        const trackOwner = queueTrackOwnersMap[track.owner_id]
+        const trackId = track.track_id.toString()
+        const offlineTrackAvailable =
+          trackId &&
+          isOfflineModeEnabled &&
+          offlineTracks[trackId] &&
+          (await isAudioAvailableOffline(trackId))
 
-  const offlineSource = useMemo(
-    () =>
-      offlineTrackUri
-        ? {
-            type: TrackType.Default,
-            uri: offlineTrackUri
-          }
-        : null,
-    [offlineTrackUri]
-  )
-  const streamingSource = useMemo(
-    () =>
-      isStreamMp3Enabled && streamingUri
-        ? {
-            type: TrackType.Default,
-            uri: streamingUri
-          }
-        : null,
-    [isStreamMp3Enabled, streamingUri]
-  )
-  const hlsSource = useMemo(
-    () => ({
-      type: TrackType.HLS,
-      uri: m3u8
-    }),
-    [m3u8]
-  )
-  const source = offlineSource ?? streamingSource ?? hlsSource
+        // Get Track url
+        let url: string
+        let isM3u8 = false
+        if (offlineTrackAvailable) {
+          const audioFilePath = getLocalAudioPath(trackId)
+          url = `file://${audioFilePath}`
+        } else if (isStreamMp3Enabled && isReachable) {
+          url = apiClient.makeUrl(
+            `/tracks/${encodeHashId(track.track_id)}/stream`
+          )
+        } else {
+          isM3u8 = true
+          const ownerGateways =
+            audiusBackendInstance.getCreatorNodeIPFSGateways(
+              trackOwner.creator_node_endpoint
+            )
+          url = hlsUtils.generateM3U8Variants({
+            segments: track?.track_segments ?? [],
+            gateways: ownerGateways
+          })
+        }
 
-  const nextOfflineSource = useMemo(
-    () =>
-      nextOfflineTrackUri
-        ? {
-            type: TrackType.Default,
-            uri: nextOfflineTrackUri
-          }
-        : null,
-    [nextOfflineTrackUri]
-  )
-  const nextStreamingSource = useMemo(
-    () =>
-      isStreamMp3Enabled && nextStreamingUri
-        ? {
-            type: TrackType.Default,
-            uri: nextStreamingUri
-          }
-        : null,
-    [isStreamMp3Enabled, nextStreamingUri]
-  )
-  const nextHlsSource = useMemo(
-    () => ({
-      type: TrackType.HLS,
-      uri: nextM3u8
-    }),
-    [nextM3u8]
-  )
-  const nextSource = nextOfflineSource ?? nextStreamingSource ?? nextHlsSource
+        const localSource = isNotReachable
+          ? await getLocalTrackImageSource(trackId)
+          : undefined
 
-  const currentUriRef = useRef<string | null>(null)
-  const isPodcastRef = useRef<boolean>(false)
+        const imageUrl =
+          getImageSourceOptimistic({
+            cid: track ? track.cover_art_sizes || track.cover_art : null,
+            user: trackOwner,
+            localSource
+          })?.[2]?.uri ?? DEFAULT_IMAGE_URL
 
-  const handleSourceChange = useCallback(async () => {
-    const newUri = source.uri
-    if (
-      loadingOfflineTrack ||
-      loadingNextOfflineTrack ||
-      currentUriRef.current === newUri
-    ) {
-      return
+        return {
+          url,
+          type: isM3u8 ? TrackType.HLS : TrackType.Default,
+          title: track?.title,
+          artist: trackOwner?.name,
+          genre: track?.genre,
+          date: track?.created_at,
+          artwork: imageUrl,
+          duration: track?.duration
+        }
+      })
+    )
+
+    if (isQueueAppend) {
+      await TrackPlayer.add(newTrackData)
+    } else {
+      // New queue, reset before adding new tracks
+      // NOTE: Should only happen when the user selects a new lineup so reset should never be called in the background and cause an error
+      await TrackPlayer.reset()
+      await TrackPlayer.add(newTrackData)
+      await TrackPlayer.skip(queueShuffle ? queueShuffleIndex : queueIndex)
     }
-
-    currentUriRef.current = newUri
-
-    const localImageSource = isNotReachable
-      ? await getLocalTrackImageSource(
-          track ? String(track.track_id) : undefined
-        )
-      : undefined
-
-    const imageUrl =
-      getImageSourceOptimistic({
-        cid: track ? track.cover_art_sizes || track.cover_art : null,
-        user: trackOwner,
-        localSource: localImageSource
-      })?.[2]?.uri ?? DEFAULT_IMAGE_URL
-
-    const nextLocalImageSource = isNotReachable
-      ? await getLocalTrackImageSource(
-          nextTrack ? String(nextTrack.track_id) : undefined
-        )
-      : undefined
-
-    const nextImageUrl =
-      getImageSourceOptimistic({
-        cid: nextTrack
-          ? nextTrack.cover_art_sizes || nextTrack.cover_art
-          : null,
-        user: nextTrackOwner,
-        localSource: nextLocalImageSource
-      })?.[2]?.uri ?? DEFAULT_IMAGE_URL
-
-    // NOTE: Adding two tracks into the queue to make sure that android has a next button on the lock screen and notification controls
-    // This should be removed when the track player queue is used properly
-    await TrackPlayer.add([
-      {
-        url: newUri,
-        type: source.type ?? TrackType.Default,
-        title: track?.title,
-        artist: trackOwner?.name,
-        genre: track?.genre,
-        date: track?.created_at,
-        artwork: imageUrl,
-        duration: track?.duration
-      },
-      {
-        url: nextSource.uri,
-        type: nextSource.type ?? TrackType.Default,
-        title: nextTrack?.title,
-        artist: nextTrackOwner?.name,
-        genre: nextTrack?.genre,
-        date: nextTrack?.created_at,
-        artwork: nextImageUrl,
-        duration: nextTrack?.duration
-      }
-    ])
-
-    // NOTE: Skipping to the proper track index within the queue
-    // Should be the second to last track in the queue
-    // This is a hacky solution to fix background reset calls breaking the app.
-    // Plz remove when we update track player to use the queue properly
-    const queue = await TrackPlayer.getQueue()
-    await TrackPlayer.skip(queue.length - 2)
 
     if (playing) await TrackPlayer.play()
-
-    const isPodcast = track?.genre === Genre.PODCASTS
-    if (isPodcast !== isPodcastRef.current) {
-      isPodcastRef.current = isPodcast
-      await updatePlayerOptions(isPodcast)
-    }
+    queueListRef.current = trackUids
+    updatingQueueRef.current = false
   }, [
-    loadingNextOfflineTrack,
-    loadingOfflineTrack,
-    nextSource,
-    nextTrack,
-    nextTrackOwner,
+    isNotReachable,
+    isOfflineModeEnabled,
+    isReachable,
+    isStreamMp3Enabled,
+    offlineTracks,
     playing,
-    source,
-    track,
-    trackOwner
+    queueIndex,
+    queueShuffle,
+    queueShuffleIndex,
+    queueShuffleTrackUids,
+    queueShuffleTracks,
+    queueTrackOwnersMap,
+    queueTrackUids,
+    queueTracks
   ])
 
-  const handleTogglePlay = useCallback(
-    async (isPlaying: boolean) => {
-      if (playbackState === State.Playing && !isPlaying) {
-        await TrackPlayer.pause()
-      } else if (playbackState === State.Paused && isPlaying) {
-        await TrackPlayer.play()
-      }
-    },
-    [playbackState]
-  )
+  const handleQueueIdxChange = useCallback(async () => {
+    const playerIdx = await TrackPlayer.getCurrentTrack()
+    const trackIdx = queueShuffle ? queueShuffleIndex : queueIndex
+
+    if (trackIdx !== -1 && trackIdx !== playerIdx) {
+      await TrackPlayer.skip(trackIdx)
+    }
+  }, [queueIndex, queueShuffle, queueShuffleIndex])
+
+  const handleTogglePlay = useCallback(async () => {
+    if (playbackState === State.Playing && !playing) {
+      await TrackPlayer.pause()
+    } else if (
+      (playbackState === State.Paused ||
+        playbackState === State.Ready ||
+        playbackState === State.Stopped) &&
+      playing
+    ) {
+      await TrackPlayer.play()
+    }
+  }, [playbackState, playing])
+
+  const handleRepeatModeChange = useCallback(async () => {
+    if (repeatMode === RepeatMode.SINGLE) {
+      await TrackPlayer.setRepeatMode(TrackPlayerRepeatMode.Track)
+    } else if (repeatMode === RepeatMode.ALL) {
+      await TrackPlayer.setRepeatMode(TrackPlayerRepeatMode.Queue)
+    } else {
+      await TrackPlayer.setRepeatMode(TrackPlayerRepeatMode.Off)
+    }
+  }, [repeatMode])
 
   useEffect(() => {
-    handleSourceChange()
-  }, [handleSourceChange, source])
+    handleRepeatModeChange()
+  }, [handleRepeatModeChange, repeatMode])
 
   useEffect(() => {
-    handleTogglePlay(playing)
+    handleQueueChange()
+  }, [handleQueueChange, queueTrackUids, queueShuffleTrackUids, queueShuffle])
+
+  useEffect(() => {
+    handleQueueIdxChange()
+  }, [handleQueueIdxChange, queueIndex, queueShuffleIndex])
+
+  useEffect(() => {
+    handleTogglePlay()
   }, [handleTogglePlay, playing])
 
   return null

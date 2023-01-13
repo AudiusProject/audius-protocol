@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { RepeatMode, Queueable } from 'store/queue/types'
-
 import { ID, UID, Collectible } from '../../models'
 import { Maybe, Nullable } from '../../utils'
+import { RepeatMode, Queueable } from '../queue/types'
 
 type State = {
   order: Queueable[]
@@ -70,7 +69,8 @@ type NextPayload = Maybe<{
 type PreviousPayload = undefined
 
 type UpdateIndexPayload = {
-  index: number
+  index?: number
+  shuffleIndex?: number
 }
 
 type RepeatPayload = {
@@ -177,8 +177,9 @@ const slice = createSlice({
     // Updates the queue's index to a given value. Useful when the queue
     // is paused, but we would like to resume playback later from somewhere else.
     updateIndex: (state, action: PayloadAction<UpdateIndexPayload>) => {
-      const { index } = action.payload
-      state.index = index
+      const { index, shuffleIndex } = action.payload
+      state.index = index ?? state.index
+      state.shuffleIndex = shuffleIndex ?? state.shuffleIndex
     },
     // Changes the queue's repeat mode
     repeat: (state, action: PayloadAction<RepeatPayload>) => {
