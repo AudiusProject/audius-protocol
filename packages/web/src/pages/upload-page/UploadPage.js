@@ -243,17 +243,8 @@ class Upload extends Component {
   }
 
   publish = () => {
-    // Set the premium content fields for the tracks
-    // so that libs track metadata validation passes.
-    // This will change once we introduce premium content UI
-    // in the track upload flow.
-    const tracks = [...this.state.tracks]
-    tracks.forEach((track) => {
-      track.metadata.is_premium = false
-      track.metadata.premium_conditions = null
-    })
     this.props.uploadTracks(
-      tracks,
+      this.state.tracks,
       this.state.metadata,
       this.state.uploadType,
       this.state.stems

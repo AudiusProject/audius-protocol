@@ -22,19 +22,15 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 const { updatePremiumContentSignatures } = premiumContentActions
 
-const {
-  ethCollectiblesFetched,
-  solCollectiblesFetched,
-  ETH_COLLECTIBLES_FETCHED,
-  SOL_COLLECTIBLES_FETCHED
-} = collectiblesActions
+const { updateUserEthCollectibles, updateUserSolCollectibles } =
+  collectiblesActions
 
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 const { getAccountUser } = accountSelectors
 const { getTracks } = cacheTracksSelectors
 
-function hasNotFetchedAllNFTs(account: User) {
+function hasNotFetchedAllCollectibles(account: User) {
   const { collectibleList, solanaCollectibleList } = account
   const hasCollectibles = account?.has_collectibles ?? false
   return (
@@ -178,10 +174,10 @@ function* updateNewPremiumContentSignatures({
  * Halts if not all nfts have been fetched yet. Similarly, does not proceed if no tracks are in the cache yet.
  * Skips tracks whose signatures have already been previously obtained.
  */
-function* updateNFTGatedTrackAccess(
+function* updateCollectibleGatedTrackAccess(
   action:
-    | ReturnType<typeof ethCollectiblesFetched>
-    | ReturnType<typeof solCollectiblesFetched>
+    | ReturnType<typeof updateUserEthCollectibles>
+    | ReturnType<typeof updateUserSolCollectibles>
     | ReturnType<typeof cacheActions.add>
 ) {
   // Halt if premium content not enabled
@@ -194,13 +190,14 @@ function* updateNFTGatedTrackAccess(
   const account = yield* select(getAccountUser)
 
   // Halt if nfts fetched are not for logged in account
-  const areNFTsFetched = [
-    ETH_COLLECTIBLES_FETCHED,
-    SOL_COLLECTIBLES_FETCHED
+  const areCollectiblesFetched = [
+    updateUserEthCollectibles.type,
+    updateUserSolCollectibles.type
   ].includes(action.type)
-  const userIdForNFTs =
-    areNFTsFetched && 'userId' in action ? action.userId : null
-  if (userIdForNFTs && account?.user_id !== userIdForNFTs) return
+  const userIdForCollectibles =
+    areCollectiblesFetched && 'payload' in action ? action.payload.userId : null
+  if (userIdForCollectibles && account?.user_id !== userIdForCollectibles)
+    return
 
   // get tracks for which we already previously got the signatures
   // filter out those tracks from the ones that need to be passed in to the DN request
@@ -225,7 +222,7 @@ function* updateNFTGatedTrackAccess(
   if (!account) return
 
   // halt if not all nfts have been fetched yet
-  if (yield* call(hasNotFetchedAllNFTs, account)) return
+  if (yield* call(hasNotFetchedAllCollectibles, account)) return
 
   // halt if no tracks in cache and no added tracks
   const cachedTracks = yield* select(getTracks, {})
@@ -290,15 +287,19 @@ function* updateNFTGatedTrackAccess(
   }
 }
 
-function* watchNFTGatedTracks() {
+function* watchCollectibleGatedTracks() {
   yield takeLatest(
-    [cacheActions.ADD, ETH_COLLECTIBLES_FETCHED, SOL_COLLECTIBLES_FETCHED],
-    updateNFTGatedTrackAccess
+    [
+      cacheActions.ADD,
+      updateUserEthCollectibles.type,
+      updateUserSolCollectibles.type
+    ],
+    updateCollectibleGatedTrackAccess
   )
 }
 
 const sagas = () => {
-  return [watchNFTGatedTracks]
+  return [watchCollectibleGatedTracks]
 }
 
 export default sagas
