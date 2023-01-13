@@ -457,7 +457,7 @@ module.exports = function (app) {
         const transactionHandler = libs.solanaWeb3Manager.transactionHandler
         const { res: solTxSignature, error } =
           await transactionHandler.handleTransaction({
-            instructions: [priority, ...instructions],
+            instructions: [...instructions, priority],
             skipPreflight: false, // TODO
             feePayerOverride: feePayerAccount,
             retry: true
