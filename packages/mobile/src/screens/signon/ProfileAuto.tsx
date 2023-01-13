@@ -10,7 +10,8 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import type { EditableField } from 'common/store/pages/signon/types'
-import { Animated, View, TouchableOpacity, SafeAreaView } from 'react-native'
+import { Animated, View, TouchableOpacity } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconImage from 'app/assets/images/iconImage.svg'
