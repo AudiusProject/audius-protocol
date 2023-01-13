@@ -1,13 +1,11 @@
 package peering
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"sync"
-	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/internal/rpcz"
@@ -99,36 +97,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 	manager.natsServer.ConfigureLogger()
 	go manager.natsServer.Start()
 
-	// todo: this client connectivity stuff should be separate from starting server
-	// server should be like vanilla nats that you can run separate from client code
-	manager.setupNatsClient()
-	manager.setupJetstream()
-}
-
-func (manager *NatsManager) setupNatsClient() {
-
-	for attempt := 1; attempt < 20; attempt++ {
-		var err error
-
-		if !manager.natsServer.ReadyForConnections(5 * time.Second) {
-			config.Logger.Info("nats routing not ready")
-			continue
-		}
-
-		// todo: this needs to have multiple URLs for peers
-		// importantly... if this nats is not reachable we NEED to user a peer url
-		natsUrl := manager.natsServer.ClientURL()
-		manager.myNatsClient, err = dialNatsUrl(natsUrl)
-
-		if err != nil {
-			config.Logger.Info("nats client dail failed", "attempt", attempt, "err", err)
-			time.Sleep(time.Second * 3)
-			continue
-		} else {
-			break
-		}
-	}
-
 }
 
 func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
@@ -142,69 +110,24 @@ func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
 	}
 }
 
-func (manager *NatsManager) setupJetstream() {
-	natsServer := manager.natsServer
-	nc := manager.myNatsClient
-	var jsc nats.JetStreamContext
+func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
 	// TEMP: hardcoded stream config
 	tempStreamName := "audius"
 	tempStreamSubject := "audius.>"
 
-	var err error
-	for i := 1; i < 1000; i++ {
-
-		if i > 1 {
-			config.Logger.Warn(err.Error(), "attempt", i)
-			time.Sleep(time.Second * 3)
-		}
-
-		// wait for server + jetstream to be ready
-		if !natsServer.JetStreamIsCurrent() {
-			err = errors.New("jetstream not current")
-			continue
-		}
-
-		config.Logger.Info("jetstream is ready",
-			"js_clustered", natsServer.JetStreamIsClustered(),
-			"js_leader", natsServer.JetStreamIsLeader(),
-			"js_current", natsServer.JetStreamIsCurrent(),
-			// "js_peers", natsServer.JetStreamClusterPeers(),
-		)
-
-		jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
-		if err != nil {
-			continue
-		}
-
-		var streamInfo *nats.StreamInfo
-
-		if natsServer.JetStreamIsLeader() {
-			streamInfo, err = jsc.AddStream(&nats.StreamConfig{
-				Name:     tempStreamName,
-				Subjects: []string{tempStreamSubject},
-				Replicas: config.NatsReplicaCount,
-				// DenyDelete: true,
-				// DenyPurge:  true,
-			})
-			if err != nil {
-				continue
-			}
-		} else {
-			// wait for stream to exist
-			streamInfo, err = jsc.StreamInfo(tempStreamName)
-			if err != nil {
-				continue
-			}
-		}
-
-		config.Logger.Info("Stream OK",
-			"name", streamInfo.Config.Name,
-			"created", streamInfo.Created,
-			"replicas", streamInfo.Config.Replicas)
-		break
-
+	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
+		Name:     tempStreamName,
+		Subjects: []string{tempStreamSubject},
+		Replicas: config.NatsReplicaCount,
+		// DenyDelete: true,
+		// DenyPurge:  true,
+	})
+	if err != nil {
+		return err
 	}
+
+	config.Logger.Info("create stream", "strm", streamInfo)
 
 	// ------------------------------------------------------------------------------
 	// TEMP: Subscribe to the subject for the demo
@@ -213,15 +136,10 @@ func (manager *NatsManager) setupJetstream() {
 	// but this is not the case for identity relay messages, for instance, which should have their own consumer
 	// also, should be a pull consumer with explicit ack.
 	// matrix-org/dendrite codebase has some nice examples to follow...
-	for {
-		sub, err := jsc.Subscribe(tempStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
-		if err != nil {
-			config.Logger.Warn("error creating consumer", "err", err)
-			time.Sleep(time.Second * 5)
-		} else {
-			config.Logger.Info("sub OK", "sub", sub.Subject)
-			break
-		}
+
+	_, err = jsc.Subscribe(tempStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
+	if err != nil {
+		return err
 	}
 
 	// create kv buckets
@@ -230,14 +148,16 @@ func (manager *NatsManager) setupJetstream() {
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err, "bucket", config.PubkeystoreBucketName)
+		return err
 	}
+
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:   config.RateLimitRulesBucketName,
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err, "bucket", config.RateLimitRulesBucketName)
+		return err
 	}
 
+	return nil
 }

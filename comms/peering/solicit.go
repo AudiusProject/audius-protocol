@@ -86,6 +86,11 @@ func Solicit() {
 			continue
 		}
 
+		err = createJetstreamStreams(jsc)
+		if err != nil {
+			continue
+		}
+
 		jetstream.SetJetstreamContext(jsc)
 		break
 
