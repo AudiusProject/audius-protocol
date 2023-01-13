@@ -21,7 +21,7 @@
 }
 
 .updateAppBanner:hover .contentSelection {
-  border-bottom: 1px solid var(--white);
+  border-bottom: 1px solid var(--static-white);
 }
 
 .pill {
@@ -32,11 +32,11 @@
 .pill .pillText {
   padding-top: 1px;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--static-white);
 }
 
 .text {
-  color: var(--white);
+  color: var(--static-white);
   font-size: var(--font-m);
   font-weight: var(--font-medium);
   text-align: center;
@@ -50,8 +50,9 @@
   padding-left: 8px;
   height: 20px;
   width: 20px;
+  color: var(--static-white);
 }
 
 .arrow g path {
-  fill: var(--white);
+  fill: var(--static-white);
 }
