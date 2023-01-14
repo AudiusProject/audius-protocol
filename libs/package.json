@@ -27,7 +27,7 @@
     "build:sdk:native": "rollup -c rollup.sdk.native.config.ts --configPlugin typescript",
     "build:legacy:browser": "rollup -c rollup.legacy.browser.config.ts --configPlugin typescript",
     "build:legacy:native": "rollup -c rollup.legacy.native.config.ts --configPlugin typescript",
-    "start": "rollup -c -w --configPlugin typescript",
+    "start": "rollup -c --configPlugin typescript",
     "start:sdk": "rollup -c rollup.sdk.config.ts -w --configPlugin typescript",
     "start:sdk:browser": "rollup -c rollup.sdk.browser.config.ts -w --configPlugin typescript",
     "start:sdk:native": "rollup -c rollup.sdk.native.config.ts -w --configPlugin typescript",

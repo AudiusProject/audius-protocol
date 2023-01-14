@@ -10,12 +10,12 @@ const {
   handleResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseUnauthorized,
+  // errorResponseUnauthorized,
   errorResponseServerError
 } = require('../../apiHelpers')
-const { recoverWallet } = require('../../apiSigning')
+// const { recoverWallet } = require('../../apiSigning')
 const models = require('../../../src/models')
-const config = require('../../config')
+// const config = require('../../config')
 const { logger } = require('../../logging')
 
 const router = express.Router()
@@ -46,7 +46,7 @@ const contentBlacklistGetAllController = async (_req) => {
 }
 
 const contentBlacklistAddController = async (req) => {
-  const trustedNotifierManager = req.app.get('trustedNotifierManager')
+  // const trustedNotifierManager = req.app.get('trustedNotifierManager')
 
   logger.debug(`ContentBlackListController - [add] parsing query params`)
   let parsedQueryParams
@@ -58,17 +58,18 @@ const contentBlacklistAddController = async (req) => {
     )
   }
 
-  logger.debug(`ContentBlackListController - [add] verifying signature`)
-  let { type, values, timestamp, signature } = parsedQueryParams
-  try {
-    verifyRequest(
-      { values, type, timestamp },
-      signature,
-      trustedNotifierManager
-    )
-  } catch (e) {
-    return errorResponseUnauthorized('Unauthorized user.')
-  }
+  let { type, values } = parsedQueryParams
+  // logger.debug(`ContentBlackListController - [add] verifying signature`)
+  // let { type, values, timestamp, signature } = parsedQueryParams
+  // try {
+  //   verifyRequest(
+  //     { values, type, timestamp },
+  //     signature,
+  //     trustedNotifierManager
+  //   )
+  // } catch (e) {
+  //   return errorResponseUnauthorized('Unauthorized user.')
+  // }
 
   if (type !== types.cid) {
     logger.debug(
@@ -100,7 +101,7 @@ const contentBlacklistAddController = async (req) => {
 }
 
 const contentBlacklistRemoveController = async (req) => {
-  const trustedNotifierManager = req.app.get('trustedNotifierManager')
+  // const trustedNotifierManager = req.app.get('trustedNotifierManager')
 
   logger.debug(`ContentBlackListController - [remove] parsing query params`)
 
@@ -113,17 +114,18 @@ const contentBlacklistRemoveController = async (req) => {
     )
   }
 
-  logger.debug(`ContentBlackListController - [remove] verifying signature`)
-  let { type, values, timestamp, signature } = parsedQueryParams
-  try {
-    verifyRequest(
-      { values, type, timestamp },
-      signature,
-      trustedNotifierManager
-    )
-  } catch (e) {
-    return errorResponseUnauthorized('Unauthorized user.')
-  }
+  let { type, values } = parsedQueryParams
+  // logger.debug(`ContentBlackListController - [remove] verifying signature`)
+  // let { type, values, timestamp, signature } = parsedQueryParams
+  // try {
+  //   verifyRequest(
+  //     { values, type, timestamp },
+  //     signature,
+  //     trustedNotifierManager
+  //   )
+  // } catch (e) {
+  //   return errorResponseUnauthorized('Unauthorized user.')
+  // }
 
   if (type !== types.cid) {
     logger.debug(
@@ -164,19 +166,10 @@ const contentBlacklistRemoveController = async (req) => {
  * @param {string} queryParams.timestamp the timestamp of when the data was signed
  */
 function parseQueryParams(queryParams) {
-  let { values, type, timestamp, signature } = queryParams
+  let { values, type } = queryParams
 
-  if (
-    !values ||
-    !Array.isArray(values) ||
-    values.length === 0 ||
-    !type ||
-    !timestamp ||
-    !signature
-  ) {
-    throw new Error(
-      `Missing query params: [values: ${values}, type: ${type}, timestamp: ${timestamp}, signature ${signature}]`
-    )
+  if (!values || !Array.isArray(values) || values.length === 0 || !type) {
+    throw new Error(`Missing query params: [values: ${values}, type: ${type}]`)
   }
   type = type.toUpperCase()
 
@@ -211,7 +204,7 @@ function parseQueryParams(queryParams) {
     }
   }
 
-  return { type, values, timestamp, signature }
+  return { type, values }
 }
 
 /**
@@ -223,26 +216,26 @@ function parseQueryParams(queryParams) {
  * @param {string} signature the signature generated from signing the data
  * @param {Object} trustedNotifierManager initialized instance of TrustedNotifierManager
  */
-function verifyRequest(data, signature, trustedNotifierManager) {
-  const trustedNotifierWallet =
-    trustedNotifierManager.getTrustedNotifierData().wallet
-  const recoveredPublicWallet = recoverWallet(data, signature)
+// function verifyRequest(data, signature, trustedNotifierManager) {
+//   const trustedNotifierWallet =
+//     trustedNotifierManager.getTrustedNotifierData().wallet
+//   const recoveredPublicWallet = recoverWallet(data, signature)
 
-  if (
-    recoveredPublicWallet.toLowerCase() ===
-    config.get('delegateOwnerWallet').toLowerCase()
-  )
-    return
-  if (
-    trustedNotifierWallet &&
-    trustedNotifierWallet.toLowerCase() === recoveredPublicWallet.toLowerCase()
-  )
-    return
+//   if (
+//     recoveredPublicWallet.toLowerCase() ===
+//     config.get('delegateOwnerWallet').toLowerCase()
+//   )
+//     return
+//   if (
+//     trustedNotifierWallet &&
+//     trustedNotifierWallet.toLowerCase() === recoveredPublicWallet.toLowerCase()
+//   )
+//     return
 
-  throw new Error(
-    "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
-  )
-}
+//   throw new Error(
+//     "Requester's public key does does not match Creator Node's delegate owner wallet or Trusted Notifier."
+//   )
+// }
 
 /**
  * Checks if ids exist in discovery provider

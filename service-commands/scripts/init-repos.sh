@@ -74,10 +74,10 @@ cd $PROTOCOL_DIR/service-commands
 npm link @audius/sdk
 
 cd $PROTOCOL_DIR/creator-node
-npm link @audius/sdk
+# npm link @audius/sdk
 
 cd $PROTOCOL_DIR/identity-service
-npm link @audius/sdk
+# npm link @audius/sdk
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
