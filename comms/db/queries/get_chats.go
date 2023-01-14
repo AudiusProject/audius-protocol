@@ -53,17 +53,16 @@ func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (Us
 // Get all chats (with user-specific details) for the given user
 const userChats = `
 WITH last_message_per_chat AS (
-	SELECT ranked_message.ciphertext, ranked_message.chat_id
+	SELECT ciphertext, chat_id
 	FROM (
-		SELECT RANK() OVER (PARTITION BY chat_id ORDER BY created_at DESC, message_id) AS chat_rank,
-		created_at,
-		ciphertext,
-		chat_id
+		SELECT RANK() OVER (PARTITION BY chat_message.chat_id ORDER BY chat_message.created_at DESC, chat_message.message_id) AS chat_rank,
+		chat_message.ciphertext,
+		chat_message.chat_id
 		FROM chat_message
+		JOIN chat_member on chat_member.chat_id = chat_message.chat_id
+		WHERE chat_member.user_id = $1
 	) ranked_message
-	JOIN chat_member on chat_member.chat_id = ranked_message.chat_id
-	WHERE chat_member.user_id = $1
-		AND ranked_message.chat_rank = 1
+	WHERE chat_rank = 1
 )
 SELECT
   chat.chat_id,
