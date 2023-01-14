@@ -79,7 +79,31 @@ func getChats(c echo.Context) error {
 	if err != nil {
 		return c.String(400, "wallet not found: "+err.Error())
 	}
-	chats, err := queries.UserChats(db.Conn, ctx, userId)
+
+	params := queries.UserChatsParams{UserID: int32(userId), Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
+	if c.QueryParam("before") != "" {
+		beforeCursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("before"))
+		if err != nil {
+			return err
+		}
+		params.Before = beforeCursor
+	}
+	if c.QueryParam("after") != "" {
+		afterCursor, err := time.Parse(time.RFC3339Nano, c.QueryParam("after"))
+		if err != nil {
+			return err
+		}
+		params.After = afterCursor
+	}
+	if c.QueryParam("limit") != "" {
+		limit, err := strconv.Atoi(c.QueryParam("limit"))
+		if err != nil {
+			return err
+		}
+		params.Limit = int32(limit)
+	}
+
+	chats, err := queries.UserChats(db.Conn, ctx, params)
 	if err != nil {
 		return err
 	}
@@ -91,14 +115,13 @@ func getChats(c echo.Context) error {
 		}
 		responseData[i] = ToChatResponse(chats[i], members)
 	}
-	// TODO: Get these from params and filter queries.UserChats similarly
-	beforeCursorPos := time.Now().UTC()
-	afterCursorPos := time.Now().UTC()
+	beforeCursorPos := params.Before
+	afterCursorPos := params.After
 	if len(chats) > 0 {
 		beforeCursorPos = chats[len(chats)-1].LastMessageAt
 		afterCursorPos = chats[0].LastMessageAt
 	}
-	summary, err := queries.UserChatsSummary(db.Conn, ctx, queries.UserChatsSummaryParams{UserID: userId, Before: beforeCursorPos})
+	summary, err := queries.UserChatsSummary(db.Conn, ctx, queries.UserChatsSummaryParams{UserID: userId, Before: beforeCursorPos, After: afterCursorPos})
 	if err != nil {
 		return err
 	}

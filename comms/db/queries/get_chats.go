@@ -52,13 +52,25 @@ SELECT
   chat_member.cleared_history_at
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
-WHERE chat_member.user_id = $1 AND (chat_member.cleared_history_at IS NULL OR chat.last_message_at > chat_member.cleared_history_at)
+WHERE chat_member.user_id = $1
+	AND chat.created_at < $3
+	AND chat.created_at > $4
+  AND (chat_member.cleared_history_at IS NULL
+	  OR chat.last_message_at > chat_member.cleared_history_at)
 ORDER BY chat.last_message_at DESC, chat.chat_id
+LIMIT $2
 `
 
-func UserChats(q db.Queryable, ctx context.Context, userID int32) ([]UserChatRow, error) {
+type UserChatsParams struct {
+	UserID int32     `db:"user_id" json:"user_id"`
+	Limit  int32     `json:"limit"`
+	Before time.Time `json:"before"`
+	After  time.Time `json:"after"`
+}
+
+func UserChats(q db.Queryable, ctx context.Context, arg UserChatsParams) ([]UserChatRow, error) {
 	var items []UserChatRow
-	err := q.SelectContext(ctx, &items, userChats, userID)
+	err := q.SelectContext(ctx, &items, userChats, arg.UserID, arg.Limit, arg.Before, arg.After)
 	return items, err
 }
 
