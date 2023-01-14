@@ -288,12 +288,12 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 func getRateLimit(kv nats.KeyValue, rule string, fallback int) int {
 	got, err := kv.Get(rule)
 	if err != nil {
-		config.Logger.Warn("unable to retrive rate limit KV rule, using default value", "error", err, "rule", rule)
+		config.Logger.Debug("unable to retrive rate limit KV rule, using default value", "error", err, "rule", rule)
 		return fallback
 	}
 	limit, err := strconv.Atoi(string(got.Value()))
 	if err != nil {
-		config.Logger.Warn("unable to convert rate limit from KV to int, using default value", "error", err, "rule", rule)
+		config.Logger.Debug("unable to convert rate limit from KV to int, using default value", "error", err, "rule", rule)
 		return fallback
 	}
 	return limit
@@ -317,7 +317,7 @@ func validateNewChatRateLimit(q db.Queryable, users []int32) error {
 		timeframe = getRateLimit(kv, config.RateLimitTimeframeHours, timeframe)
 		maxNumChats = getRateLimit(kv, config.RateLimitMaxNumNewChats, maxNumChats)
 	} else {
-		config.Logger.Warn("unable to retrive rate limit KV, using default values", "error", err)
+		config.Logger.Debug("unable to retrive rate limit KV, using default values", "error", err)
 	}
 
 	cursor := calculateRateLimitCursor(timeframe)
@@ -352,7 +352,7 @@ func validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) er
 		maxNumMessages = getRateLimit(kv, config.RateLimitMaxNumMessages, maxNumMessages)
 		maxNumMessagesPerRecipient = getRateLimit(kv, config.RateLimitMaxNumMessagesPerRecipient, maxNumMessagesPerRecipient)
 	} else {
-		config.Logger.Warn("unable to retrive rate limit KV, using default values", "error", err)
+		config.Logger.Debug("unable to retrive rate limit KV, using default values", "error", err)
 	}
 
 	// Cursor for rate limit timeframe

@@ -292,7 +292,10 @@ func createServer() *echo.Echo {
 		}
 
 		// call validator
-		rpcz.Validate(userId, rawRpc)
+		err = rpcz.Validate(userId, rawRpc)
+		if err != nil {
+			return c.JSON(400, "bad request: "+err.Error())
+		}
 
 		subject := "audius.dms.demo"
 		jsc := jetstream.GetJetstreamContext()

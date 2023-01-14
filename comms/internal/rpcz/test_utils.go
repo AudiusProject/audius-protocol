@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func SetupChatWithMembers(t *testing.T, tx *sqlx.Tx, chatId string, user1 int, user2 int) {
+func SetupChatWithMembers(t *testing.T, tx *sqlx.Tx, chatId string, user1 int32, user2 int32) {
 	var err error
 
 	// create chat
