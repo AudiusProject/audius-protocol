@@ -37,3 +37,7 @@ export * from './followers/types'
 export * as favoritesUserListActions from './favorites/actions'
 export * as favoritesUserListSelectors from './favorites/selectors'
 export * from './favorites/types'
+
+export * as searchUserListActions from './search/actions'
+export * as searchUserListSelectors from './search/selectors'
+export * from './search/types'

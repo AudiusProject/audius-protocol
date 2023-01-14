@@ -1,7 +1,9 @@
 import type { TypedCommsResponse, UserChat, ChatMessage } from '@audius/sdk'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import dayjs from 'dayjs'
 
-import { Status } from 'models'
+import { ID, Status } from 'models'
+import { encodeHashId } from 'utils/hashIds'
 
 type ChatState = {
   chatList: {
@@ -37,6 +39,13 @@ const slice = createSlice({
   name: 'application/pages/chat',
   initialState,
   reducers: {
+    createChat: (_state, _action: PayloadAction<{ userIds: ID[] }>) => {
+      // triggers saga
+    },
+    createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
+      const { chat } = action.payload
+      state.chatList.data = [chat].concat(state.chatList.data)
+    },
     fetchMoreChats: (state) => {
       // triggers saga
       state.chatList.status = Status.LOADING
@@ -99,27 +108,30 @@ const slice = createSlice({
     setMessageReactionSucceeded: (
       state,
       action: PayloadAction<
-        SetMessageReactionPayload & { userId: string; createdAt: string }
+        SetMessageReactionPayload & { userId: ID; createdAt: string }
       >
     ) => {
       const { userId, chatId, messageId, reaction } = action.payload
       const index = state.chatMessages[chatId].data.findIndex(
         (message) => message.message_id === messageId
       )
+      const encodedUserId = encodeHashId(userId)
       if (index > -1) {
         const existingReactions = (
           state.chatMessages[chatId].data[index].reactions ?? []
-        ).filter((r) => r.user_id !== userId)
-        console.log({ index, existingReactions, messageId })
+        ).filter((r) => r.user_id !== encodedUserId)
         state.chatMessages[chatId].data[index].reactions = [
           ...existingReactions,
           {
-            user_id: userId,
+            user_id: encodedUserId,
             reaction,
-            created_at: ''
+            created_at: dayjs().toISOString()
           }
         ]
       }
+    },
+    markChatAsRead: (_state, _action: PayloadAction<{ chatId: string }>) => {
+      // triggers saga
     }
   }
 })

@@ -58,6 +58,7 @@ import followingPageSagas from 'common/store/user-list/following/sagas'
 import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
 import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
 import repostPageSagas from 'common/store/user-list/reposts/sagas'
+import searchPageSagas from 'common/store/user-list/search/sagas'
 import supportingPageSagas from 'common/store/user-list/supporting/sagas'
 import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
@@ -69,6 +70,7 @@ import deletedSagas from 'pages/deleted-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
 import webAnalyticsSagas from 'store/analytics/sagas'
 import buyAudioSagas from 'store/application/ui/buy-audio/sagas'
+import chatWebSagas from 'store/application/ui/chat/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
@@ -150,6 +152,7 @@ export default function* rootSaga() {
     artistRecommendationsSagas(),
     buyAudioSagas(),
     changePasswordSagas(),
+    chatWebSagas(),
     deactivateAccountSagas(),
     deletedSagas(),
     deletePlaylistConfirmationModalSagas(),
@@ -165,6 +168,7 @@ export default function* rootSaga() {
     remixSettingsSagas(),
     repostPageSagas(),
     scrollLockSagas(),
+    searchPageSagas(),
     shareModalSagas(),
     overflowMenuSagas(),
     toastSagas(),

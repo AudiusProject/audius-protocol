@@ -10,6 +10,9 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import styles from './ChatList.module.css'
 import { ChatListItem } from './ChatListItem'
 
+const { getChats, getChatsStatus } = chatSelectors
+const { fetchMoreChats } = chatActions
+
 const messages = {
   nothingHere: 'Nothing Here Yet',
   start: 'Start a Conversation!'
@@ -17,23 +20,25 @@ const messages = {
 
 type ChatListProps = {
   currentChatId?: string
+  onChatClicked: (chatId: string) => void
 } & ComponentPropsWithoutRef<'div'>
 
 export const ChatList = (props: ChatListProps) => {
+  const { currentChatId, onChatClicked } = props
   const dispatch = useDispatch()
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
-  const chatsState = useSelector(chatSelectors.getChats)
-  const chats = chatsState.data
+  const chats = useSelector(getChats)
+  const status = useSelector(getChatsStatus)
 
   useEffect(() => {
-    dispatch(chatActions.fetchMoreChats())
+    dispatch(fetchMoreChats())
   }, [dispatch])
 
   useEffect(() => {
-    if (chatsState.status === Status.SUCCESS) {
+    if (status === Status.SUCCESS) {
       setHasLoadedOnce(true)
     }
-  }, [chatsState, setHasLoadedOnce])
+  }, [status, setHasLoadedOnce])
 
   return (
     <div className={cn(styles.root, props.className)}>
@@ -41,8 +46,9 @@ export const ChatList = (props: ChatListProps) => {
         chats?.map((chat) => (
           <ChatListItem
             key={chat.chat_id}
-            currentChatId={props.currentChatId}
+            currentChatId={currentChatId}
             chat={chat}
+            onChatClicked={onChatClicked}
           />
         ))
       ) : hasLoadedOnce ? (
@@ -51,7 +57,7 @@ export const ChatList = (props: ChatListProps) => {
           <div className={styles.subheader}>{messages.start}</div>
         </div>
       ) : null}
-      {chatsState.status === Status.LOADING ? (
+      {status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : null}
     </div>

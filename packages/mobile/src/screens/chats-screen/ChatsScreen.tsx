@@ -6,12 +6,13 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Screen, Text } from 'app/components/core'
 
+const { getChats, getChatMessages } = chatSelectors
+
 export const ChatsScreen = () => {
   const dispatch = useDispatch()
-  const { data: chats } = useSelector(chatSelectors.getChats)
+  const chats = useSelector(getChats)
   const id = 'clbyghuy800003bat0th2ivy5'
-  const messages =
-    useSelector((state) => chatSelectors.getChatMessages(state, id)) ?? []
+  const messages = useSelector((state) => getChatMessages(state, id)) ?? []
 
   useEffect(() => {
     dispatch(chatActions.fetchMoreChats())

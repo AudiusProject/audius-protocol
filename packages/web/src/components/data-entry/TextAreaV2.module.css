@@ -1,0 +1,76 @@
+.root {
+  position: relative;
+  display: flex;
+  width: 100%;
+  padding: var(--unit-2) var(--unit-1) var(--unit-2) var(--unit-4);
+  border: 1px solid var(--neutral-light-8);
+  background-color: var(--neutral-light-10);
+  border-radius: var(--unit-1);
+  transition: border ease-in-out 0.1s;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.root.medium {
+  font-size: var(--font-m);
+}
+.root.small {
+  padding: 6px 0 6px var(--unit-2);
+  font-size: var(--font-xs);
+}
+.root > textarea {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  outline: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--neutral);
+  font-weight: var(--font-medium);
+  line-height: 150%;
+  overflow: visible;
+}
+.root:hover > textarea {
+  border-color: var(--neutral-light-6);
+}
+.root:has(textarea:focus) {
+  border-color: var(--secondary);
+}
+.root.error {
+  border-color: var(--accent-red);
+}
+.root > textarea::placeholder {
+  color: var(--neutral-light-4);
+  font-weight: 500;
+}
+.root.noResize > textarea {
+  resize: none;
+}
+
+.characterCount {
+  color: var(--neutral-light-4);
+  font-size: 12px;
+  font-weight: 500;
+}
+.characterCount.nearLimit {
+  color: var(--accent-orange);
+  font-weight: var(--font-bold);
+}
+
+.bottom {
+  display: flex;
+  align-items: flex-end;
+  position: sticky;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding-left: var(--unit-1);
+}
+.bottomRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--unit-1);
+}

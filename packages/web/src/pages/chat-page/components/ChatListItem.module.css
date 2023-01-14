@@ -29,51 +29,6 @@
   background-color: var(--secondary);
 }
 
-.root .profilePicture {
-  width: var(--unit-12);
-  height: var(--unit-12);
-}
-
-.user {
-  display: flex;
-  gap: var(--unit-2);
-  width: 100%;
-}
-
-.userDetails {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--unit-1);
-  min-width: 0;
-}
-
-.userDetails > :global(.artistPopover) {
-  max-width: 100%;
-}
-
-.nameAndBadge {
-  display: flex;
-  align-items: center;
-  gap: var(--unit-1);
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
-  line-height: 130%;
-  max-width: 100%;
-}
-
-.name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nameAndBadge,
-.handle,
-.profilePicture {
-  cursor: pointer;
-}
-
 .unreadIndicatorTag {
   align-self: flex-start;
   margin-left: auto;
@@ -97,4 +52,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 130%;
+}
+
+@media (max-width: 1080px) {
+  .messagePreview,
+  .userText,
+  .unreadIndicatorTag {
+    display: none;
+  }
 }

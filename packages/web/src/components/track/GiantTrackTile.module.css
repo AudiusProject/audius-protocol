@@ -59,7 +59,7 @@
 }
 
 .premiumContent svg {
-  margin-right: 10px
+  margin-right: 10px;
 }
 
 .premiumContent path {
@@ -272,7 +272,8 @@
   color: var(--secondary);
 }
 
-.lockedIcon, .unlockedIcon {
+.lockedIcon,
+.unlockedIcon {
   margin-right: 8px;
   width: 16px;
   height: 16px;

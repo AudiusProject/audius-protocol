@@ -18,13 +18,15 @@ import { reactionMap } from 'components/notification/Notification/components/Rea
 import styles from './ChatMessageListItem.module.css'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
+const { setMessageReaction } = chatActions
+
 type ChatMessageListItemProps = {
   chatId: string
   message: ChatMessage
-  isTail: boolean
+  hasTail: boolean
 }
 
-const formatMessageDate = (date: string) => {
+export const formatMessageDate = (date: string) => {
   const d = dayjs(date)
   const today = dayjs()
   if (d.isBefore(today, 'week')) return d.format('M/D/YY h:mm A')
@@ -33,7 +35,7 @@ const formatMessageDate = (date: string) => {
 }
 
 export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
-  const { chatId, message, isTail } = props
+  const { chatId, message, hasTail } = props
   const reactionButtonRef = useRef<HTMLDivElement>(null)
   const dispatch = useDispatch()
   const [isReactionPopupVisible, setReactionPopupVisible] = useState(false)
@@ -52,7 +54,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const handleReactionSelected = useCallback(
     (reaction: ReactionTypes) => {
       dispatch(
-        chatActions.setMessageReaction({
+        setMessageReaction({
           chatId,
           messageId: message.message_id,
           reaction
@@ -109,7 +111,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
         }
         onSelected={handleReactionSelected}
       />
-      {isTail ? (
+      {hasTail ? (
         <div className={styles.date}>
           {formatMessageDate(message.created_at)}
         </div>
