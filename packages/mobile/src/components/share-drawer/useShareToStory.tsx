@@ -84,7 +84,7 @@ export const useShareToStory = ({
   }
 
   const trackImageUri =
-    (content?.type === 'track' && trackImage && trackImage?.source[2].uri) ??
+    (content?.type === 'track' && trackImage?.source?.[2]?.uri) ??
     DEFAULT_IMAGE_URL
   const captureStickerImage = useCallback(async () => {
     if (!isStickerImageLoadedRef.current) {
