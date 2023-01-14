@@ -33,6 +33,9 @@ func ToChatResponse(chat queries.UserChatRow, members []db.ChatMember) schema.Us
 		UnreadMessageCount: float64(chat.UnreadCount),
 		ChatMembers:        Map(members, ToChatMemberResponse),
 	}
+	if chat.LastMessage.Valid {
+		chatData.LastMessage = chat.LastMessage.String
+	}
 	if chat.LastActiveAt.Valid {
 		chatData.LastReadAt = chat.LastActiveAt.Time.Format(time.RFC3339Nano)
 	}
