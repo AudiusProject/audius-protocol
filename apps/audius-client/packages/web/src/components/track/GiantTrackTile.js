@@ -341,7 +341,6 @@ class GiantTrackTile extends PureComponent {
     const {
       playing,
       trackId,
-      ownerId,
       trackTitle,
       coverArtSizes,
       artistName,

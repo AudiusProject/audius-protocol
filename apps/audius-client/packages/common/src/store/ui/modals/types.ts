@@ -30,5 +30,6 @@ export type Modals =
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
+  | 'ChatCompose'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

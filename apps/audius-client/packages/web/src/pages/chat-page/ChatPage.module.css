@@ -6,10 +6,16 @@
   padding-bottom: 0 !important;
 }
 
-.page > :global(#page) {
+.page > :global(#page).pageContent {
   margin-top: -37px;
   width: 100%;
+  max-width: 100%;
   height: calc(100% + 37px);
+}
+
+/* Update box-shadow to be slightly darker */
+.page > div:first-child > div:last-child {
+  box-shadow: 1px 2px 5px rgba(133, 129, 153, 0.25);
 }
 
 .layout {
@@ -23,18 +29,26 @@
 
 .chatList {
   width: 400px;
+  height: 100%;
+}
+
+.chatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .messages {
-  display: flex;
-  flex-direction: column;
   flex: 1;
+  overflow-y: scroll;
 }
 
 .messageList {
   flex: 1;
 }
 
-.messageComposer {
-  height: 48px;
+@media (max-width: 1080px) {
+  .chatList {
+    width: 96px;
+  }
 }

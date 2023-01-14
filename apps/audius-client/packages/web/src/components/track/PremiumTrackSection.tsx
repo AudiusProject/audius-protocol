@@ -16,18 +16,18 @@ import {
 import { Button, ButtonType, IconLock, IconUnlocked } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
 import FollowButton from 'components/follow-button/FollowButton'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
-import { usePrevious } from 'react-use'
 
 import styles from './GiantTrackTile.module.css'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 const { getUsers } = cacheUsersSelectors
 const { getSendStatus } = tippingSelectors
@@ -224,7 +224,13 @@ const LockedPremiumTrackSection = ({
 
     // should not reach here
     return null
-  }, [premiumConditions, handleGoToCollection, handleFollow, handleSendTip, isUnlocking])
+  }, [
+    premiumConditions,
+    handleGoToCollection,
+    handleFollow,
+    handleSendTip,
+    isUnlocking
+  ])
 
   return (
     <div className={styles.premiumContentSectionLocked}>

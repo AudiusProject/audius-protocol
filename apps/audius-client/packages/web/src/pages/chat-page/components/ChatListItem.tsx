@@ -1,48 +1,39 @@
 import { useCallback } from 'react'
 
-import {
-  accountSelectors,
-  decodeHashId,
-  cacheUsersSelectors
-} from '@audius/common'
+import { chatSelectors, useProxySelector } from '@audius/common'
 import type { UserChat } from '@audius/sdk'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
-import { useDispatch } from 'react-redux'
-
-import { useSelector } from 'common/hooks/useSelector'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
-import UserBadges from 'components/user-badges/UserBadges'
-import { chatPage } from 'utils/route'
 
 import styles from './ChatListItem.module.css'
+import { formatMessageDate } from './ChatMessageListItem'
+import { ChatUser } from './ChatUser'
+
+const { getOtherChatUsersFromChat } = chatSelectors
+
+const messages = {
+  new: 'New'
+}
 
 type ChatListItemProps = {
   currentChatId?: string
   chat: UserChat
+  onChatClicked: (chatId: string) => void
 }
 
 export const ChatListItem = (props: ChatListItemProps) => {
-  const { chat, currentChatId } = props
-  const dispatch = useDispatch()
-  const currentUserId = useSelector(accountSelectors.getUserId)
-  const member = chat.chat_members.find(
-    (u) => decodeHashId(u.user_id) !== currentUserId
-  )
-  const user = useSelector((state) =>
-    cacheUsersSelectors.getUser(state, {
-      id: member ? decodeHashId(member.user_id) ?? -1 : -1
-    })
-  )
+  const { chat, currentChatId, onChatClicked } = props
   const isCurrentChat = currentChatId && currentChatId === chat.chat_id
-  console.log({ isCurrentChat, currentChatId, chatId: chat.chat_id })
+
+  const users = useProxySelector(
+    (state) => getOtherChatUsersFromChat(state, chat),
+    [chat]
+  )
 
   const handleClick = useCallback(() => {
-    dispatch(push(chatPage(chat.chat_id)))
-  }, [dispatch, chat])
+    onChatClicked(chat.chat_id)
+  }, [onChatClicked, chat])
 
-  if (!user || !member) {
+  if (users.length === 0) {
     return null
   }
   return (
@@ -50,27 +41,18 @@ export const ChatListItem = (props: ChatListItemProps) => {
       className={cn(styles.root, { [styles.active]: isCurrentChat })}
       onClick={handleClick}
     >
-      <div className={styles.user}>
-        <ProfilePicture user={user} className={styles.profilePicture} />
-        <div className={styles.userDetails}>
-          <ArtistPopover handle={user.handle}>
-            <div className={styles.nameAndBadge}>
-              <span className={styles.name}>{user.name}</span>
-              <UserBadges userId={user.user_id} badgeSize={14} />
-            </div>
-          </ArtistPopover>
-          <ArtistPopover handle={user.handle}>
-            <span className={styles.handle}>@{user.handle}</span>
-          </ArtistPopover>
-        </div>
+      <ChatUser user={users[0]} textClassName={styles.userText}>
         {chat.unread_message_count > 0 ? (
           <div className={styles.unreadIndicatorTag}>
             {chat.unread_message_count > 9 ? '9+' : chat.unread_message_count}{' '}
-            New
+            {messages.new}
           </div>
         ) : null}
+      </ChatUser>
+      <div className={styles.messagePreview}>
+        todo: replace with latest message{' '}
+        {formatMessageDate(chat.last_message_at)}
       </div>
-      <div className={styles.messagePreview}>&nbsp;</div>
     </div>
   )
 }

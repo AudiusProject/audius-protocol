@@ -33,7 +33,8 @@ const initialState: ModalsState = {
   BuyAudioRecovery: false,
   TransactionDetails: false,
   VipDiscord: false,
-  StripeOnRamp: false
+  StripeOnRamp: false,
+  ChatCompose: false
 }
 
 const slice = createSlice({

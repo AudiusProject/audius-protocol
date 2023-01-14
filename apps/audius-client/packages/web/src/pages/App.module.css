@@ -54,6 +54,10 @@ body {
   overflow-x: hidden;
 }
 
+.mainContentWrapper.noScroll {
+  overflow-y: hidden;
+}
+
 .mainContentWrapperMobile {
   min-height: 100vh;
   position: relative;

@@ -43,7 +43,7 @@
   /* --white everywhere except darkmode, which is static*/
   --darkmode-static-white: var(--white);
 
-  --accent-blue: #1BA1F1;
+  --accent-blue: #1ba1f1;
 
   --accent-red: #d0021b;
   --accent-red-dark-1: #aa0115;

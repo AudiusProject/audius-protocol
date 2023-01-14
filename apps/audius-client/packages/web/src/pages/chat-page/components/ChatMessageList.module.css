@@ -3,7 +3,6 @@
   flex-direction: column-reverse;
   gap: 8px;
   padding: 32px;
-  overflow-y: auto;
   background-color: var(--background);
 }
 

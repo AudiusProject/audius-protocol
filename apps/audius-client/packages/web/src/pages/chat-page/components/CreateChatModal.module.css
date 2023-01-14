@@ -1,0 +1,21 @@
+.modalContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search {
+  width: 488px;
+  max-width: 100%;
+  padding: var(--unit-6);
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.scrollbar {
+  height: 440px;
+  max-height: 100%;
+}
+
+.results {
+  flex: 1;
+}

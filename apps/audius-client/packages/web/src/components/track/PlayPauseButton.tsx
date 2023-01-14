@@ -29,11 +29,7 @@ export const PlayPauseButton = ({
       text={playing ? 'PAUSE' : 'PLAY'}
       leftIcon={playing ? <IconPause /> : <IconPlay />}
       onClick={onPlay}
-      disabled={
-        isPremiumContentEnabled
-          ? !doesUserHaveAccess
-          : false
-      }
+      disabled={isPremiumContentEnabled ? !doesUserHaveAccess : false}
     />
   )
 }
