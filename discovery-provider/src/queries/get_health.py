@@ -566,7 +566,7 @@ def get_play_health_info(
             if oldest_unarchived_play:
                 redis.set(
                     oldest_unarchived_play_key,
-                    oldest_unarchived_play,
+                    oldest_unarchived_play.timestamp(),
                 )
         else:
             # Decode bytes into float for latest timestamp

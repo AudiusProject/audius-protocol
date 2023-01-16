@@ -2,7 +2,9 @@ package rpcz
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"comms.audius.co/db"
 	"comms.audius.co/schema"
@@ -18,6 +20,9 @@ func TestChatPermissions(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+
 	assertPermissions := func(userId int32, permits schema.ChatPermission, expected int) {
 		row := tx.QueryRow("select count(*) from chat_permissions where user_id = $1 and permits = $2", userId, permits)
 		var count int
@@ -26,7 +31,7 @@ func TestChatPermissions(t *testing.T) {
 		assert.Equal(t, expected, count)
 	}
 
-	// validate 91 can set permissions
+	// validate user1Id can set permissions
 	{
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"permit": "all"}`)),
@@ -34,17 +39,17 @@ func TestChatPermissions(t *testing.T) {
 
 		chatPermit := string(schema.RPCMethodChatPermit)
 
-		err = Validators[chatPermit](tx, 91, exampleRpc)
+		err = Validators[chatPermit](tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 	}
 
-	// 91 sets chat permissions to followees only
-	userId := int32(91)
+	// user1Id sets chat permissions to followees only
+	userId := int32(user1Id)
 	err = chatSetPermissions(tx, userId, schema.Followees)
 	assert.NoError(t, err)
 	assertPermissions(userId, schema.Followees, 1)
 
-	// 91 changes chat permissions to none
+	// user1Id changes chat permissions to none
 	err = chatSetPermissions(tx, userId, schema.None)
 	assert.NoError(t, err)
 	assertPermissions(userId, schema.Followees, 0)

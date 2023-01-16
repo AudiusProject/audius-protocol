@@ -73,8 +73,8 @@ module.exports = {
       skipDryRun: true
     },
     nethermind: {
-      provider: () => new HDWalletProvider("private key", "staging chain RPC"), // fill in values 
-      network_id: "*",
+      provider: () => new HDWalletProvider(process.env.NETHERMIND_DEPLOYER_PRIVATE_KEY, "https://poa-gateway.staging.audius.co/"), // fill in values 
+      network_id: "1056800",
       gas: 0,
       gasPrice: 0,
       gasLimit: 0,

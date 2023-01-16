@@ -26,6 +26,7 @@ def test_access(app):
                     "address": "some-nft-collection-address",
                     "name": "some nft collection name",
                     "slug": "some-nft-collection",
+                    "imageUrl": "some-nft-collection-image-url",
                     "externalLink": "some-nft-collection-external-link",
                 }
             },
@@ -41,6 +42,7 @@ def test_access(app):
                     "address": "some-nft-collection-address",
                     "name": "some nft collection name",
                     "slug": "some-nft-collection",
+                    "imageUrl": "some-nft-collection-image-url",
                     "externalLink": "some-nft-collection-external-link",
                 }
             },
@@ -142,6 +144,7 @@ def test_batch_access(app):
                     "address": "some-nft-collection-address",
                     "name": "some nft collection name",
                     "slug": "some-nft-collection",
+                    "imageUrl": "some-nft-collection-image-url",
                     "externalLink": "some-nft-collection-external-link",
                 }
             },
@@ -157,6 +160,7 @@ def test_batch_access(app):
                     "address": "some-nft-collection-address",
                     "name": "some nft collection name",
                     "slug": "some-nft-collection",
+                    "imageUrl": "some-nft-collection-image-url",
                     "externalLink": "some-nft-collection-external-link",
                 }
             },

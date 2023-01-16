@@ -31,7 +31,13 @@ SELECT chat_message.message_id, chat_message.chat_id, chat_message.user_id, chat
 FROM chat_message
 JOIN chat_member ON chat_message.chat_id = chat_member.chat_id
 LEFT JOIN chat_message_reactions reactions ON chat_message.message_id = reactions.message_id
-WHERE chat_member.user_id = $1 AND chat_message.chat_id = $2 AND chat_message.created_at < $4 AND (chat_member.cleared_history_at IS NULL OR chat_message.created_at > chat_member.cleared_history_at)
+WHERE chat_member.user_id = $1
+	AND chat_message.chat_id = $2
+	AND chat_message.created_at < $4 
+	AND chat_message.created_at > $5 
+	AND (chat_member.cleared_history_at IS NULL 
+		OR chat_message.created_at > chat_member.cleared_history_at
+	)
 GROUP BY chat_message.message_id
 ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
@@ -41,7 +47,8 @@ type ChatMessagesAndReactionsParams struct {
 	UserID int32     `db:"user_id" json:"user_id"`
 	ChatID string    `db:"chat_id" json:"chat_id"`
 	Limit  int32     `json:"limit"`
-	Cursor time.Time `json:"cursor"`
+	Before time.Time `json:"before"`
+	After  time.Time `json:"after"`
 }
 
 type ChatMessageAndReactionsRow struct {
@@ -98,7 +105,8 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 		arg.UserID,
 		arg.ChatID,
 		arg.Limit,
-		arg.Cursor,
+		arg.Before,
+		arg.After,
 	)
 	return rows, err
 }

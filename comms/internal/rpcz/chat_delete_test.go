@@ -3,6 +3,8 @@ package rpcz
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
@@ -20,10 +22,15 @@ func TestChatDeletion(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	chatId := "chat1"
-	SetupChatWithMembers(t, tx, chatId, 91, 92)
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+	user3Id := seededRand.Int31()
+	chatId := strconv.Itoa(seededRand.Int())
 
-	assertDeleted := func(chatId string, userId int, expectDeleted bool) {
+	SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
+
+	assertDeleted := func(chatId string, userId int32, expectDeleted bool) {
 		row := tx.QueryRow("select cleared_history_at from chat_member where chat_id = $1 and user_id = $2", chatId, userId)
 		var clearedHistoryAt sql.NullTime
 		err = row.Scan(&clearedHistoryAt)
@@ -35,7 +42,7 @@ func TestChatDeletion(t *testing.T) {
 		}
 	}
 
-	// validate 91 and 92 can delete their chats
+	// validate user1Id and user2Id can delete their chats
 	{
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s"}`, chatId)),
@@ -43,21 +50,21 @@ func TestChatDeletion(t *testing.T) {
 
 		chatDelete := string(schema.RPCMethodChatDelete)
 
-		err = Validators[chatDelete](tx, 91, exampleRpc)
+		err = Validators[chatDelete](tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatDelete](tx, 93, exampleRpc)
+		err = Validators[chatDelete](tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
-	// 91 deletes the chat
+	// user1Id deletes the chat
 	deleteTs := time.Now()
-	err = chatDelete(tx, 91, chatId, deleteTs)
+	err = chatDelete(tx, user1Id, chatId, deleteTs)
 	assert.NoError(t, err)
-	assertDeleted(chatId, 91, true)
+	assertDeleted(chatId, user1Id, true)
 
-	// chat is not deleted for 92
-	assertDeleted(chatId, 92, false)
+	// chat is not deleted for user2Id
+	assertDeleted(chatId, user2Id, false)
 
 	tx.Rollback()
 }
