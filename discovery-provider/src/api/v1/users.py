@@ -842,7 +842,6 @@ class UserSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
-            "exclude_premium": True,
         }
         response = search(search_args)
         return success_response(response["users"])

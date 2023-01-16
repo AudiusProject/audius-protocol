@@ -61,19 +61,7 @@ def test_search_track_tags(app_module):
     assert tracks[2]["track_id"] == 4  # Third w/ 1 reposts
     # Track id 6 does not appear b/c kpop and pop are not exact matches
 
-    # exclude_premium
-    result = search_tags_es("pop", kind="tracks", exclude_premium=True)
-    tracks = result["tracks"]
-    assert len(tracks) == 2
-
     # curent user
     result = search_tags_es("pop", kind="tracks", current_user_id=1)
     tracks = result["saved_tracks"]
     assert len(tracks) == 2
-
-    # curent user + exclude_premium
-    result = search_tags_es(
-        "pop", kind="tracks", current_user_id=1, exclude_premium=True
-    )
-    tracks = result["saved_tracks"]
-    assert len(tracks) == 1
