@@ -513,7 +513,6 @@ class TrackSearchResult(Resource):
             "limit": 10,
             "offset": 0,
             "only_downloadable": args["only_downloadable"],
-            "exclude_premium": True,
         }
         response = search(search_args)
         return success_response(response["tracks"])
