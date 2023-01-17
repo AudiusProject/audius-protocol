@@ -119,12 +119,12 @@ const isDiscoveryNodeHealthy = async ({
     })
     return false
   }
-  if (!data.version || semver.lt(data.version, currentVersion)) {
-    console.warn('Audius SDK discovery provider version unhealthy', {
-      endpoint
-    })
-    return false
-  }
+  // if (!data.version || semver.lt(data.version, currentVersion)) {
+  //   console.warn('Audius SDK discovery provider version unhealthy', {
+  //     endpoint
+  //   })
+  //   return false
+  // }
   if (!data.block_difference || data.block_difference > unhealthyBlockDiff) {
     console.warn('Audius SDK discovery provider POA indexing unhealthy', {
       endpoint
