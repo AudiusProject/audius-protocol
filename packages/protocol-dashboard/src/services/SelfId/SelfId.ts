@@ -1,7 +1,6 @@
 import { Address } from 'types'
 import { getRandomDefaultImage } from 'utils/identicon'
 import { Core } from '@self.id/core'
-import { getLegacy3BoxProfileAsBasicProfile } from '@self.id/3box-legacy'
 import { IdxUser } from './types'
 
 const core = new Core({ ceramic: 'https://gateway.ceramic.network' })
@@ -35,26 +34,13 @@ const getSelfIdUser = async (wallet: string) => {
   return null
 }
 
-const get3BoxUser = async (wallet: string) => {
-  const threeBoxUser: IdxUser | null = await getLegacy3BoxProfileAsBasicProfile(
-    wallet
-  )
-  if (threeBoxUser) {
-    return transformIdxUser(threeBoxUser)
-  }
-  return null
-}
-
 export const getSelfIdProfile = async (wallet: Address): Promise<User> => {
   let profile: User | null = null
 
   try {
     profile = await getSelfIdUser(wallet)
-    if (!profile) {
-      profile = await get3BoxUser(wallet)
-    }
   } catch (e) {
-    profile = await get3BoxUser(wallet)
+    console.error(e)
   }
 
   if (!profile) {
