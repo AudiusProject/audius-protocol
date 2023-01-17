@@ -39,11 +39,21 @@ function poll_identity_final_block {
     done
 }
 
-function kill_old_chain {
+function kill_indexer {
     for i in "${discovery_nodes[@]}"
     do
         ssh "$i" << "EOF"
         docker rm -f indexer
+        exit
+EOF
+    done
+
+}
+
+function kill_old_chain {
+    for i in "${discovery_nodes[@]}"
+    do
+        ssh "$i" << "EOF"
         docker rm -f chain
         sudo rm -rf /var/k8s/discovery-provider-chain/db/clique/
         audius-cli launch discovery-provider -y
@@ -98,10 +108,10 @@ function deploy_entity_manager {
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run
 }
 
-# kill identity
-# kill_old_chain
-# start_new_chain
-# poll_chain_health
-# deploy_entity_manager
-# set_identity_config
-# poll_identity_final_block
+kill_indexer
+set_identity_config
+poll_identity_final_block
+kill_old_chain
+start_new_chain
+poll_chain_health
+deploy_entity_manager
