@@ -5,7 +5,7 @@
 FINAL_BLOCK=$1
 NETHERMIND_DEPLOYER_PRIVATE_KEY=$2
 
-discovery_nodes=("stage-discovery-1" "stage-discovery-2" "stage-discovery-3")
+discovery_nodes=("stage-discovery-1" "stage-discovery-2" "stage-discovery-3" "stage-discovery-4" "stage-discovery-5")
 
 function set_identity_config {
     echo "Setting final_poa_block on identity chain $FINAL_BLOCK"
@@ -98,9 +98,10 @@ function deploy_entity_manager {
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run
 }
 
-set_identity_config
-poll_identity_final_block
-kill_old_chain
-start_new_chain
-poll_chain_health
-deploy_entity_manager
+# kill identity
+# kill_old_chain
+# start_new_chain
+# poll_chain_health
+# deploy_entity_manager
+# set_identity_config
+# poll_identity_final_block
