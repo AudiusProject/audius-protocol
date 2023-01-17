@@ -21,6 +21,9 @@ func main() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 	g.Go(func() error {
+		return peering.PollDiscoveryProviders()
+	})
+	g.Go(func() error {
 		return db.Dial()
 	})
 	g.Go(func() error {
@@ -38,7 +41,6 @@ func main() {
 	fmt.Println("dbmate: ", string(out))
 
 	// start solicit...
-	// TODO: re-enable nkeys
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 

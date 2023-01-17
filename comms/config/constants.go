@@ -18,4 +18,7 @@ var (
 		RateLimitMaxNumMessagesPerRecipient: 1000,
 		RateLimitMaxNumNewChats:             100,
 	}
+
+	GlobalStreamName    = "audius"
+	GlobalStreamSubject = "audius.>"
 )

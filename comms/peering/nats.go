@@ -1,31 +1,25 @@
 package peering
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"sync"
-	"time"
 
 	"comms.audius.co/config"
 	"comms.audius.co/internal/rpcz"
-	"comms.audius.co/jetstream"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 )
 
-var NatsClient *nats.Conn
-
 type NatsManager struct {
-	natsServer *server.Server
-	mu         sync.Mutex
+	myNatsClient *nats.Conn
+	natsServer   *server.Server
+	mu           sync.Mutex
 }
 
 func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
-	if config.NatsClusterUsername == "" {
-		log.Fatal("config.NatsClusterUsername not set")
-	}
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -58,12 +52,16 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 		// Debug:      true,
 
 		JetStream: true,
+		StoreDir:  os.Getenv("NATS_STORE_DIR"),
 	}
 
 	if config.NatsReplicaCount < 2 {
 		config.Logger.Info("starting NATS in standalone mode", "peer count", len(routes))
 	} else {
 		config.Logger.Info("starting NATS in cluster mode... ")
+		if config.NatsClusterUsername == "" {
+			log.Fatal("config.NatsClusterUsername not set")
+		}
 
 		opts.Cluster = server.ClusterOpts{
 			Name:     "comms",
@@ -99,125 +97,33 @@ func (manager *NatsManager) StartNats(peerMap map[string]*Info) {
 	manager.natsServer.ConfigureLogger()
 	go manager.natsServer.Start()
 
-	manager.setupNatsClient()
-
-	manager.setupJetstream()
 }
 
-func (manager *NatsManager) setupNatsClient() {
-
-	for attempt := 1; attempt < 20; attempt++ {
-		var err error
-
-		if !manager.natsServer.ReadyForConnections(5 * time.Second) {
-			config.Logger.Info("nats routing not ready")
-			continue
+func dialNatsUrl(natsUrl string) (*nats.Conn, error) {
+	if config.NatsUseNkeys {
+		nkeySign := func(nonce []byte) ([]byte, error) {
+			return config.NkeyPair.Sign(nonce)
 		}
-
-		// todo: this needs to have multiple URLs for peers
-		// importantly... if this nats is not reachable we NEED to user a peer url
-		natsUrl := manager.natsServer.ClientURL()
-
-		if config.NatsUseNkeys {
-			nkeySign := func(nonce []byte) ([]byte, error) {
-				return config.NkeyPair.Sign(nonce)
-			}
-			NatsClient, err = nats.Connect(natsUrl, nats.Nkey(config.NkeyPublic, nkeySign))
-		} else {
-			NatsClient, err = nats.Connect(natsUrl)
-		}
-
-		if err != nil {
-			config.Logger.Info("nats client dail failed", "attempt", attempt, "err", err)
-			time.Sleep(time.Second * 3)
-			continue
-		} else {
-			break
-		}
+		return nats.Connect(natsUrl, nats.Nkey(config.NkeyPublic, nkeySign))
+	} else {
+		return nats.Connect(natsUrl)
 	}
-
 }
 
-func (manager *NatsManager) setupJetstream() {
-	natsServer := manager.natsServer
-	nc := NatsClient
-	var jsc nats.JetStreamContext
+func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
-	// TEMP: hardcoded stream config
-	tempStreamName := "audius"
-	tempStreamSubject := "audius.>"
-
-	var err error
-	for i := 1; i < 1000; i++ {
-
-		if i > 1 {
-			config.Logger.Warn(err.Error(), "attempt", i)
-			time.Sleep(time.Second * 3)
-		}
-
-		// wait for server + jetstream to be ready
-		if !natsServer.JetStreamIsCurrent() {
-			err = errors.New("jetstream not current")
-			continue
-		}
-
-		config.Logger.Info("jetstream is ready",
-			"js_clustered", natsServer.JetStreamIsClustered(),
-			"js_leader", natsServer.JetStreamIsLeader(),
-			"js_current", natsServer.JetStreamIsCurrent(),
-			// "js_peers", natsServer.JetStreamClusterPeers(),
-		)
-
-		jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
-		if err != nil {
-			continue
-		}
-
-		var streamInfo *nats.StreamInfo
-
-		if natsServer.JetStreamIsLeader() {
-			streamInfo, err = jsc.AddStream(&nats.StreamConfig{
-				Name:     tempStreamName,
-				Subjects: []string{tempStreamSubject},
-				Replicas: config.NatsReplicaCount,
-				// DenyDelete: true,
-				// DenyPurge:  true,
-			})
-			if err != nil {
-				continue
-			}
-		} else {
-			// wait for stream to exist
-			streamInfo, err = jsc.StreamInfo(tempStreamName)
-			if err != nil {
-				continue
-			}
-		}
-
-		config.Logger.Info("Stream OK",
-			"name", streamInfo.Config.Name,
-			"created", streamInfo.Created,
-			"replicas", streamInfo.Config.Replicas)
-		break
-
+	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
+		Name:     config.GlobalStreamName,
+		Subjects: []string{config.GlobalStreamSubject},
+		Replicas: config.NatsReplicaCount,
+		// DenyDelete: true,
+		// DenyPurge:  true,
+	})
+	if err != nil {
+		return err
 	}
 
-	// TEMP: Subscribe to the subject for the demo
-	// this is the "processor" for DM messages... which just inserts them into comm log table for now
-	// it assumes that nats message has the signature header
-	// but this is not the case for identity relay messages, for instance, which should have their own consumer
-	// also, should be a pull consumer with explicit ack.
-	// matrix-org/dendrite codebase has some nice examples to follow...
-	for {
-		sub, err := jsc.Subscribe(tempStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
-		if err != nil {
-			config.Logger.Warn("error creating consumer", "err", err)
-			time.Sleep(time.Second * 5)
-		} else {
-			config.Logger.Info("sub OK", "sub", sub.Subject)
-			break
-		}
-	}
+	config.Logger.Info("create stream", "strm", streamInfo)
 
 	// create kv buckets
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
@@ -225,17 +131,35 @@ func (manager *NatsManager) setupJetstream() {
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err, "bucket", config.PubkeystoreBucketName)
+		return err
 	}
+
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:   config.RateLimitRulesBucketName,
 		Replicas: config.NatsReplicaCount,
 	})
 	if err != nil {
-		log.Fatal("CreateKeyValue failed", err, "bucket", config.RateLimitRulesBucketName)
+		return err
 	}
 
-	// finally "expose" this via the jetstream package
-	// the server checks if this is non-nil to know if it's ready
-	jetstream.SetJetstreamContext(jsc)
+	return nil
+}
+
+func createConsumer(jsc nats.JetStreamContext) error {
+
+	// ------------------------------------------------------------------------------
+	// TEMP: Subscribe to the subject for the demo
+	// this is the "processor" for DM messages... which just inserts them into comm log table for now
+	// it assumes that nats message has the signature header
+	// but this is not the case for identity relay messages, for instance, which should have their own consumer
+	// also, should be a pull consumer with explicit ack.
+	// matrix-org/dendrite codebase has some nice examples to follow...
+
+	sub, err := jsc.Subscribe(config.GlobalStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
+
+	if info, err := sub.ConsumerInfo(); err == nil {
+		config.Logger.Info("create subscription", "sub", info)
+	}
+
+	return err
 }

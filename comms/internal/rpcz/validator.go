@@ -288,7 +288,6 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 func getRateLimit(kv nats.KeyValue, rule string, fallback int) int {
 	got, err := kv.Get(rule)
 	if err != nil {
-		config.Logger.Debug("unable to retrive rate limit KV rule, using default value", "error", err, "rule", rule)
 		return fallback
 	}
 	limit, err := strconv.Atoi(string(got.Value()))

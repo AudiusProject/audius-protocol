@@ -4,22 +4,30 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"comms.audius.co/config"
+	"comms.audius.co/jetstream"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/nats-io/nats.go"
 )
 
 var manager = &NatsManager{}
 
 // todo: this should probably live in a struct
 var (
-	mu            sync.Mutex
-	peersByWallet = map[string]*Info{}
+	mu                 sync.Mutex
+	peersByWallet      = map[string]*Info{}
+	setupJetstreamOnce sync.Once
 )
 
 func Solicit() {
+
 	config.Logger.Info("solicit begin")
 
 	sps, err := GetDiscoveryNodes()
@@ -29,6 +37,8 @@ func Solicit() {
 	}
 
 	var wg sync.WaitGroup
+
+	goodNatsUrls := []string{}
 
 	for _, sp := range sps {
 		sp := sp
@@ -41,6 +51,11 @@ func Solicit() {
 			} else {
 				mu.Lock()
 				peersByWallet[info.Address] = info
+
+				if info.NatsConnected {
+					goodNatsUrls = append(goodNatsUrls, fmt.Sprintf("nats://%s:4222", info.IP))
+				}
+
 				mu.Unlock()
 			}
 			wg.Done()
@@ -50,6 +65,48 @@ func Solicit() {
 	wg.Wait()
 
 	manager.StartNats(peersByWallet)
+
+	setupJetstreamOnce.Do(func() {
+		// create nats client with valid connections
+		goodNatsUrl := strings.Join(goodNatsUrls, ",")
+		config.Logger.Debug("nats client urls: " + goodNatsUrl)
+
+		// setup client + streams: kind of like a db migration step
+		var nc *nats.Conn
+		var jsc nats.JetStreamContext
+		err = retry.Do(func() error {
+			var err error
+			nc, err = dialNatsUrl(goodNatsUrl)
+			if err != nil {
+				return err
+			}
+
+			jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
+			if err != nil {
+				return err
+			}
+
+			err = createJetstreamStreams(jsc)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// setup client
+		err = createConsumer(jsc)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// success
+		jetstream.SetJetstreamContext(jsc)
+	})
+
 	config.Logger.Info("solicit done")
 
 }
@@ -102,6 +159,20 @@ func solicitServer(endpoint string) (*Info, error) {
 		return nil, err
 	}
 
+	info.IsSelf = info.Address == config.WalletAddress
+
+	// nats connection test
+	natsUrl := fmt.Sprintf("nats://%s:4222", info.IP)
+	nc, err := dialNatsUrl(natsUrl)
+	if err != nil {
+		config.Logger.Warn("nats connection test failed", "ip", info.IP, "err", err)
+	} else {
+		servers := nc.Servers()
+		fmt.Println("nc servers", servers)
+		info.NatsConnected = true
+		nc.Close()
+	}
+
 	return info, nil
 }
 
@@ -122,7 +193,6 @@ func PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	// req.Header.Set(config.SigHeader, hexutil.Encode(signature))
 
 	sigBase64 := base64.StdEncoding.EncodeToString(signature)
 	req.Header.Set(config.SigHeader, sigBase64)
