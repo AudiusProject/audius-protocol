@@ -154,10 +154,10 @@ class FullPlaylist(Resource):
 
 
 @full_ns.route("/by_permalink/<string:handle>/<string:slug>")
-class FullPlaylistByPermalink(Resource):
+class FullPlaylistByHandleAndSlug(Resource):
     @ns.doc(
-        id="""Get Playlist By Permalink""",
-        description="""Get a playlist by permalink""",
+        id="""Get Playlist By Handle and Slug""",
+        description="""Get a playlist by handle and slug""",
         params={"handle": "playlist owner handle", "slug": "playlist slug"},
     )
     @ns.expect(current_user_parser)
