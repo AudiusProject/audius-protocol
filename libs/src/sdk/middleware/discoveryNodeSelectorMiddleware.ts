@@ -85,10 +85,12 @@ const isApiResponseHealthy = ({
 
 const isDiscoveryNodeHealthy = async ({
   endpoint,
+  currentVersion,
   unhealthyBlockDiff,
   unhealthySlotDiffPlays
 }: {
   endpoint: string
+  currentVersion: string
   unhealthyBlockDiff: number
   unhealthySlotDiffPlays: number | null
 }) => {
@@ -113,6 +115,15 @@ const isDiscoveryNodeHealthy = async ({
   }
   if (data.service !== DISCOVERY_SERVICE_NAME) {
     console.warn('Audius SDK discovery provider service name unhealthy', {
+      endpoint
+    })
+    return false
+  }
+  if (
+    currentVersion &&
+    (!data.version || semver.lt(data.version, currentVersion))
+  ) {
+    console.warn('Audius SDK discovery provider version unhealthy', {
       endpoint
     })
     return false
@@ -229,6 +240,7 @@ export const discoveryNodeSelectorMiddleware = ({
         console.warn('Audius SDK request failed:', context)
         const isHealthy = await isDiscoveryNodeHealthy({
           endpoint,
+          currentVersion,
           unhealthyBlockDiff,
           unhealthySlotDiffPlays
         })
