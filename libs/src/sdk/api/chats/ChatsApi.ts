@@ -226,11 +226,16 @@ export class ChatsApi extends BaseAPI {
 
   public async react(requestParameters: ChatReactRequest) {
     this.assertNotNullOrUndefined(
+      requestParameters.chatId,
+      'requestParameters.chatId',
+      'react'
+    )
+    this.assertNotNullOrUndefined(
       requestParameters.messageId,
       'requestParameters.messageId',
       'react'
     )
-    this.assertNotNullOrUndefined(
+    this.assertNotUndefined(
       requestParameters.reaction,
       'requestParameters.reaction',
       'react'
@@ -238,6 +243,7 @@ export class ChatsApi extends BaseAPI {
     return await this.sendRpc({
       method: 'chat.react',
       params: {
+        chat_id: requestParameters.chatId,
         message_id: requestParameters.messageId,
         reaction: requestParameters.reaction
       }
@@ -309,6 +315,15 @@ export class ChatsApi extends BaseAPI {
       throw new RequiredError(
         name,
         `Required parameter ${name} was null or undefined when calling ${method}.`
+      )
+    }
+  }
+
+  private assertNotUndefined(value: any, name: string, method: string) {
+    if (value === undefined) {
+      throw new RequiredError(
+        name,
+        `Required parameter ${name} was undefined when calling ${method}.`
       )
     }
   }

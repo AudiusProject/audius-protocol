@@ -19,7 +19,6 @@ export type ChatGetMessagesRequest = {
 }
 
 export type ChatCreateRequest = {
-  chatId: string
   userId: string
   invitedUserIds: string[]
 }
@@ -36,6 +35,7 @@ export type ChatMessageRequest = {
 }
 
 export type ChatReactRequest = {
+  chatId: string
   messageId: string
   reaction: string
 }

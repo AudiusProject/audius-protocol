@@ -3,6 +3,8 @@ package rpcz
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
@@ -18,15 +20,19 @@ import (
 func TestChat(t *testing.T) {
 	var err error
 
-	chatId := "chat1"
-
 	// reset tables under test
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
 
-	SetupChatWithMembers(t, tx, chatId, 91, 92)
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	chatId := strconv.Itoa(seededRand.Int())
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+	user3Id := seededRand.Int31()
+
+	SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
 
 	// Connect to NATS and create JetStream Context
 	opts := server.Options{
@@ -43,7 +49,7 @@ func TestChat(t *testing.T) {
 	assert.NoError(t, err)
 	jetstream.SetJetstreamContext(js)
 
-	// validate 91 and 92 can both send messages in this chat
+	// validate user1Id and user2Id can both send messages in this chat
 	{
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "test123"}`, chatId)),
@@ -51,57 +57,61 @@ func TestChat(t *testing.T) {
 
 		chatMessage := string(schema.RPCMethodChatMessage)
 
-		err = Validators[chatMessage](tx, 91, exampleRpc)
+		err = Validators[chatMessage](tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatMessage](tx, 93, exampleRpc)
+		err = Validators[chatMessage](tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
-	// 91 sends 92 a message
+	// user1Id sends user2Id a message
 	messageTs := time.Now()
-	messageId := "1"
-	err = chatSendMessage(tx, 91, chatId, messageId, messageTs, "hello 92")
+	messageId := strconv.Itoa(seededRand.Int())
+	err = chatSendMessage(tx, user1Id, chatId, messageId, messageTs, "hello user2Id")
 	assert.NoError(t, err)
 
 	// assertUnreadCount helper fun in a closure
-	assertUnreadCount := func(chatId string, userId int, expected int) {
+	assertUnreadCount := func(chatId string, userId int32, expected int) {
 		unreadCount := 0
 		err := tx.Get(&unreadCount, "select unread_count from chat_member where chat_id = $1 and user_id = $2", chatId, userId)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, unreadCount)
 	}
 
-	assertReaction := func(userId int, messageId string, expected string) {
+	assertReaction := func(userId int32, messageId string, expected *string) {
 		var reaction string
 		err := tx.Get(&reaction, "select reaction from chat_message_reactions where user_id = $1 and message_id = $2", userId, messageId)
-		assert.NoError(t, err)
-		assert.Equal(t, expected, reaction)
+		if expected != nil {
+			assert.NoError(t, err)
+			assert.Equal(t, *expected, reaction)
+		} else {
+			assert.ErrorIs(t, err, sql.ErrNoRows)
+		}
 	}
 
 	// assert sender has no unread messages
-	assertUnreadCount(chatId, 91, 0)
+	assertUnreadCount(chatId, user1Id, 0)
 
-	// assert 92 has one unread message
-	assertUnreadCount(chatId, 92, 1)
+	// assert user2Id has one unread message
+	assertUnreadCount(chatId, user2Id, 1)
 
-	// 92 reads message
-	chatReadMessages(tx, 92, chatId, time.Now())
+	// user2Id reads message
+	chatReadMessages(tx, user2Id, chatId, time.Now())
 
-	// assert 92 has zero unread messages
-	assertUnreadCount(chatId, 92, 0)
+	// assert user2Id has zero unread messages
+	assertUnreadCount(chatId, user2Id, 0)
 
-	// 92 sends a reply to 91
+	// user2Id sends a reply to user1Id
 	replyTs := time.Now()
 	replyMessageId := "2"
-	err = chatSendMessage(tx, 92, chatId, replyMessageId, replyTs, "oh hey there 91 thanks for your message")
+	err = chatSendMessage(tx, user2Id, chatId, replyMessageId, replyTs, "oh hey there user1 thanks for your message")
 	assert.NoError(t, err)
 
 	// the tables have turned!
-	assertUnreadCount(chatId, 92, 0)
-	assertUnreadCount(chatId, 91, 1)
+	assertUnreadCount(chatId, user2Id, 0)
+	assertUnreadCount(chatId, user1Id, 1)
 
-	// validate 91 and 92 can both send reactions in this chat
+	// validate user1Id and user2Id can both send reactions in this chat
 	{
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message_id": "%s", "reaction": "heart"}`, chatId, replyMessageId)),
@@ -109,24 +119,29 @@ func TestChat(t *testing.T) {
 
 		chatReact := string(schema.RPCMethodChatReact)
 
-		err = Validators[chatReact](tx, 91, exampleRpc)
+		err = Validators[chatReact](tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatReact](tx, 93, exampleRpc)
+		err = Validators[chatReact](tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
-	// 91 reacts to 92's message
+	// user1Id reacts to user2Id's message
 	reactTs := time.Now()
 	reaction := "fire"
-	err = chatReactMessage(tx, 91, replyMessageId, reaction, reactTs)
-	assertReaction(91, replyMessageId, reaction)
+	err = chatReactMessage(tx, user1Id, replyMessageId, &reaction, reactTs)
+	assertReaction(user1Id, replyMessageId, &reaction)
 
-	// 91 changes reaction to 92's old message
+	// user1Id changes reaction to user2Id's message
 	changedReactTs := time.Now()
 	newReaction := "heart"
-	err = chatReactMessage(tx, 91, replyMessageId, newReaction, changedReactTs)
-	assertReaction(91, replyMessageId, newReaction)
+	err = chatReactMessage(tx, user1Id, replyMessageId, &newReaction, changedReactTs)
+	assertReaction(user1Id, replyMessageId, &newReaction)
+
+	// user1Id removes reaction to user2Id's message
+	removedReactTs := time.Now()
+	err = chatReactMessage(tx, user1Id, replyMessageId, nil, removedReactTs)
+	assertReaction(user1Id, replyMessageId, nil)
 
 	tx.Rollback()
 }

@@ -377,31 +377,6 @@ services:
     build: creator-node
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
-    environment:
-      logLevel: "debug"
-      devMode: "true"
-      creatorNodeIsDebug: "true"
-      debuggerPort: 10000
-
-      rateLimitingAudiusUserReqLimit: 3000
-      rateLimitingUserReqLimit: 3000
-      rateLimitingMetadataReqLimit: 3000
-      rateLimitingImageReqLimit: 6000
-      rateLimitingTrackReqLimit: 6000
-      rateLimitingBatchCidsExistLimit: 1
-      maxAudioFileSizeBytes: 250000000
-      maxMemoryFileSizeBytes: 50000000
-      expressAppConcurrency: 2
-
-      identityService: "http://identity-service:7000"
-
-      ethProviderUrl: "http://eth-ganache:8545"
-      ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
-      ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
-      ethOwnerWallet: "${ETH_OWNER_WALLET}"
-
-      dataProviderUrl: "http://poa-ganache:8545"
-      dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
     volumes:
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs
