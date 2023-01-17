@@ -50,6 +50,7 @@ const isApiResponseHealthy = ({
     return false
   }
   if (
+    currentVersion &&
     data.version?.version &&
     semver.lt(data.version.version, currentVersion)
   ) {
