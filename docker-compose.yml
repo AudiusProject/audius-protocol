@@ -39,8 +39,9 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   poa-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -61,8 +62,9 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   # eth-contracts
 
@@ -95,8 +97,9 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   eth-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -117,8 +120,9 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   # solana-programs
 
@@ -199,10 +203,13 @@ services:
     volumes:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
       - ./dev-tools/commands/src:/usr/src/app/src
+      - ./dev-tools/commands/test:/usr/src/app/test
     depends_on:
       build-audius-libs:
         condition: service_started
     logging: *default-logging
+    deploy:
+      mode: global
 
   # identity-service
 
@@ -234,7 +241,7 @@ services:
       context: identity-service
       args:
         git_sha: "${GIT_COMMIT}"
-    command: scripts/dev-server.sh
+    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"
     ports:
       - "7000:7000"
       - "9229:9229"
@@ -287,6 +294,7 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
       - ./identity-service/src:/usr/src/app/src
+      - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
     depends_on:
       identity-service-db:
@@ -326,6 +334,8 @@ services:
     deploy:
       mode: replicated
       replicas: "${ELASTICSEARCH_REPLICAS}"
+    profiles:
+      - elasticsearch
 
   discovery-provider:
     image: "audius/discovery-provider:${GIT_COMMIT}"
@@ -436,6 +446,9 @@ services:
       - "2222:2222"
     volumes:
       - ./dev-tools/:/tmp/dev-tools
+    logging: *default-logging
+    deploy:
+      mode: global
 
 volumes:
   poa-contracts-abis:
