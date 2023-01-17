@@ -25,7 +25,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.playlists import full_playlist_model, playlist_model
 from src.api.v1.models.users import user_model_full
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.queries.get_playlists import RouteArgs, get_playlists
+from src.queries.get_playlists import get_playlists
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
