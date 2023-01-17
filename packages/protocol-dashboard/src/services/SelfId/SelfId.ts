@@ -6,7 +6,7 @@ import { IdxUser } from './types'
 
 const core = new Core({ ceramic: 'https://gateway.ceramic.network' })
 
-const ipfsGateway = 'https://ipfs.infura.io/ipfs/'
+const ipfsGateway = 'https://ipfs.io/ipfs/'
 
 type User = {
   status?: string
