@@ -10,5 +10,7 @@ const { version } = packageInfo
 export const useUpdateRequired = () => {
   const minAppVersion = useRemoteVar(StringKeys.MIN_APP_VERSION)
 
-  return { updateRequired: semver.lt(version, minAppVersion) }
+  return {
+    updateRequired: minAppVersion ? semver.lt(version, minAppVersion) : false
+  }
 }
