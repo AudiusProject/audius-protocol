@@ -362,8 +362,9 @@ class BlacklistManager {
 
   /**
    * Adds ids and types as individual entries to ContentBlacklist table
-   * @param {number} id user or track id
-   * @param {'USER'|'TRACK'|'CID'} type
+   * @param { { values: string[], type: 'USER'|'TRACK'|'CID } } params
+   * @param {string[]} params.values array of either user ids, track ids, or cids
+   * @param {'USER'|'TRACK'|'CID'} params.type
    */
   static async _addToDb({ values, type }) {
     try {
@@ -386,15 +387,16 @@ class BlacklistManager {
 
   /**
    * Removes entry from Contentblacklist table
-   * @param {number} id user or track id
-   * @param {'USER'|'TRACK'|'CID'} type
+   * @param { { values: string[], type: 'USER'|'TRACK'|'CID } } params
+   * @param {string[]} params.values array of either user ids, track ids, or cids
+   * @param {'USER'|'TRACK'|'CID'} params.type
    */
   static async _removeFromDb({ values, type }) {
     let numRowsDestroyed
     try {
       numRowsDestroyed = await models.ContentBlacklist.destroy({
         where: {
-          value: { [models.Sequelize.Op.in]: values }, // todo: might need to convert this to string before where clause
+          value: { [models.Sequelize.Op.in]: values },
           type
         }
       })
@@ -405,13 +407,13 @@ class BlacklistManager {
     }
 
     if (numRowsDestroyed > 0) {
-      this._logDebug(
+      this._log(
         `Removed entry with type [${type}] and values [${values.toString()}] to the ContentBlacklist table!`
       )
       return { type, values }
     }
 
-    this._logDebug(
+    this._log(
       `Entry with type [${type}] and id [${values.toString()}] does not exist in ContentBlacklist.`
     )
     return null
