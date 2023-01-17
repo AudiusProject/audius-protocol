@@ -81,6 +81,11 @@
                 android:resource="@xml/file_paths"
             />
         </provider>
+        <provider
+            android:name="com.facebook.react.modules.blob.BlobProvider"
+            android:authorities="@string/blob_provider_authority"
+            android:exported="false"
+        />
     </application>
 
     <queries>
