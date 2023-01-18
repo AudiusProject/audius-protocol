@@ -54,14 +54,7 @@ const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
-const {
-  getIndex,
-  getOrder,
-  getRepeat,
-  getShuffle,
-  getShuffleIndex,
-  getShuffleOrder
-} = queueSelectors
+const { getIndex, getOrder, getRepeat, getShuffle } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const { getUserId } = accountSelectors
@@ -152,6 +145,7 @@ export const Audio = () => {
 
   // Queue Things
   const queueIndex = useSelector(getIndex)
+  const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
   const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
   const queueTrackMap = useSelector((state) =>
@@ -164,14 +158,6 @@ export const Audio = () => {
   const queueTrackOwnersMap = useSelector((state) =>
     getUsers(state, { ids: queueTrackOwnerIds })
   )
-  // Queue Shuffle Things
-  const queueShuffle = useSelector(getShuffle)
-  const queueShuffleIndex = useSelector(getShuffleIndex)
-  const queueShuffleOrder = useSelector(getShuffleOrder)
-  const queueShuffleTrackUids = queueShuffleOrder.map(
-    (idx) => queueTrackUids[idx]
-  )
-  const queueShuffleTracks = queueShuffleOrder.map((idx) => queueTracks[idx])
 
   const { isCasting } = useChromecast()
   const dispatch = useDispatch()
@@ -193,11 +179,6 @@ export const Audio = () => {
   )
   const updateQueueIndex = useCallback(
     (index: number) => dispatch(queueActions.updateIndex({ index })),
-    [dispatch]
-  )
-  const updateQueueShuffleIndex = useCallback(
-    (shuffleIndex: number) =>
-      dispatch(queueActions.updateIndex({ shuffleIndex })),
     [dispatch]
   )
   const updatePlayerInfo = useCallback(
@@ -279,15 +260,11 @@ export const Audio = () => {
       }
 
       // Update queue and player state if the track player auto plays next track
-      const trackIndex = queueShuffle ? queueShuffleIndex : queueIndex
-      if (playerIndex !== trackIndex) {
+      if (playerIndex !== queueIndex) {
         if (queueShuffle) {
-          updateQueueShuffleIndex(playerIndex)
-          const track = queueShuffleTracks[playerIndex]
-          updatePlayerInfo({
-            trackId: track.track_id,
-            uid: queueShuffleTrackUids[playerIndex]
-          })
+          // TODO: There will be a very short period where the next track in the queue is played instead of the next shuffle track.
+          // Figure out how to call next earlier
+          next()
         } else {
           updateQueueIndex(playerIndex)
           const track = queueTracks[playerIndex]
@@ -378,10 +355,9 @@ export const Audio = () => {
 
   const resetPositionForSameTrack = useCallback(() => {
     // NOTE: Make sure that we only set seek position to 0 when we are restarting a track
-    const trackIndex = queueShuffle ? queueShuffleIndex : queueIndex
-    if (trackIndex === counterTrackIndex.current) setSeekPosition(0)
-    counterTrackIndex.current = trackIndex
-  }, [queueIndex, queueShuffle, queueShuffleIndex, setSeekPosition])
+    if (queueIndex === counterTrackIndex.current) setSeekPosition(0)
+    counterTrackIndex.current = queueIndex
+  }, [queueIndex, setSeekPosition])
 
   const counterRef = useRef<number | null>(null)
 
@@ -401,19 +377,18 @@ export const Audio = () => {
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current
-    const trackUids = queueShuffle ? queueShuffleTrackUids : queueTrackUids
-    const tracks = queueShuffle ? queueShuffleTracks : queueTracks
-    const playIndex = queueShuffle ? queueShuffleIndex : queueIndex
-
-    if (playIndex === -1 || isEqual(refUids, trackUids)) return
+    if (queueIndex === -1 || isEqual(refUids, queueTrackUids)) return
 
     updatingQueueRef.current = true
-    queueListRef.current = trackUids
+    queueListRef.current = queueTrackUids
 
     // Check if this is a new queue or we are appending to the queue
     const isQueueAppend =
-      refUids.length > 0 && isEqual(trackUids.slice(0, refUids.length), refUids)
-    const newQueueTracks = isQueueAppend ? tracks.slice(refUids.length) : tracks
+      refUids.length > 0 &&
+      isEqual(queueTrackUids.slice(0, refUids.length), refUids)
+    const newQueueTracks = isQueueAppend
+      ? queueTracks.slice(refUids.length)
+      : queueTracks
 
     const newTrackData = await Promise.all(
       newQueueTracks.map(async (track) => {
@@ -478,7 +453,7 @@ export const Audio = () => {
       // NOTE: Should only happen when the user selects a new lineup so reset should never be called in the background and cause an error
       await TrackPlayer.reset()
       await TrackPlayer.add(newTrackData)
-      await TrackPlayer.skip(playIndex)
+      await TrackPlayer.skip(queueIndex)
     }
 
     if (playing) await TrackPlayer.play()
@@ -491,10 +466,6 @@ export const Audio = () => {
     offlineTracks,
     playing,
     queueIndex,
-    queueShuffle,
-    queueShuffleIndex,
-    queueShuffleTrackUids,
-    queueShuffleTracks,
     queueTrackOwnersMap,
     queueTrackUids,
     queueTracks
@@ -502,16 +473,15 @@ export const Audio = () => {
 
   const handleQueueIdxChange = useCallback(async () => {
     const playerIdx = await TrackPlayer.getCurrentTrack()
-    const trackIdx = queueShuffle ? queueShuffleIndex : queueIndex
 
     if (
       !updatingQueueRef.current &&
-      trackIdx !== -1 &&
-      trackIdx !== playerIdx
+      queueIndex !== -1 &&
+      queueIndex !== playerIdx
     ) {
-      await TrackPlayer.skip(trackIdx)
+      await TrackPlayer.skip(queueIndex)
     }
-  }, [queueIndex, queueShuffle, queueShuffleIndex])
+  }, [queueIndex])
 
   const handleTogglePlay = useCallback(async () => {
     if (playbackState === State.Playing && !playing) {
@@ -542,11 +512,11 @@ export const Audio = () => {
 
   useEffect(() => {
     handleQueueChange()
-  }, [handleQueueChange, queueTrackUids, queueShuffleTrackUids, queueShuffle])
+  }, [handleQueueChange, queueTrackUids])
 
   useEffect(() => {
     handleQueueIdxChange()
-  }, [handleQueueIdxChange, queueIndex, queueShuffleIndex])
+  }, [handleQueueIdxChange, queueIndex])
 
   useEffect(() => {
     handleTogglePlay()
