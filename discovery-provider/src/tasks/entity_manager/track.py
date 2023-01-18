@@ -2,7 +2,12 @@ import logging
 from typing import Dict
 
 from sqlalchemy.sql import null
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.tracks.remix import Remix
+from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
@@ -11,15 +16,199 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
 )
-from src.tasks.tracks import (
-    dispatch_challenge_track_upload,
-    populate_track_record_metadata,
-    update_remixes_table,
-    update_stems_table,
-    update_track_routes_table,
-)
+from src.tasks.task_helpers import generate_slug_and_collision_id
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
+
+
+def update_stems_table(session, track_record, track_metadata):
+    if ("stem_of" not in track_metadata) or (
+        not isinstance(track_metadata["stem_of"], dict)
+    ):
+        return
+    parent_track_id = track_metadata["stem_of"].get("parent_track_id")
+    if not isinstance(parent_track_id, int):
+        return
+
+    # Avoid re-adding stem if it already exists
+    existing_stem = (
+        session.query(Stem)
+        .filter_by(
+            parent_track_id=parent_track_id, child_track_id=track_record.track_id
+        )
+        .first()
+    )
+    if existing_stem:
+        return
+
+    stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
+    session.add(stem)
+
+
+def update_remixes_table(session, track_record, track_metadata):
+    child_track_id = track_record.track_id
+
+    # Delete existing remix parents
+    session.query(Remix).filter_by(child_track_id=child_track_id).delete()
+
+    # Add all remixes
+    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
+        tracks = track_metadata["remix_of"].get("tracks")
+        if tracks and isinstance(tracks, list):
+            for track in tracks:
+                if not isinstance(track, dict):
+                    continue
+                parent_track_id = track.get("parent_track_id")
+                if isinstance(parent_track_id, int):
+                    remix = Remix(
+                        parent_track_id=parent_track_id, child_track_id=child_track_id
+                    )
+                    session.add(remix)
+
+
+@helpers.time_method
+def update_track_routes_table(
+    session, track_record, track_metadata, pending_track_routes
+):
+    """Creates the route for the given track"""
+
+    # Check if the title is staying the same, and if so, return early
+    if track_record.title == track_metadata["title"]:
+        return
+
+    # Get the title slug, and set the new slug to that
+    # (will check for conflicts later)
+    new_track_slug_title = helpers.sanitize_slug(
+        track_metadata["title"], track_record.track_id
+    )
+    new_track_slug = new_track_slug_title
+
+    # Find the current route for the track
+    # Check the pending track route updates first
+    prev_track_route_record = next(
+        (
+            route
+            for route in pending_track_routes
+            if route.is_current and route.track_id == track_record.track_id
+        ),
+        None,
+    )
+
+    # Then query the DB if necessary
+    if prev_track_route_record is None:
+        prev_track_route_record = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.track_id == track_record.track_id,
+                TrackRoute.is_current == True,
+            )  # noqa: E712
+            .one_or_none()
+        )
+
+    if prev_track_route_record is not None:
+        if prev_track_route_record.title_slug == new_track_slug_title:
+            # If the title slug hasn't changed, we have no work to do
+            return
+        # The new route will be current
+        prev_track_route_record.is_current = False
+
+    new_track_slug, new_collision_id = generate_slug_and_collision_id(
+        session,
+        TrackRoute,
+        track_record.track_id,
+        track_metadata["title"],
+        track_record.owner_id,
+        pending_track_routes,
+        new_track_slug_title,
+        new_track_slug,
+    )
+
+    # Add the new track route
+    new_track_route = TrackRoute()
+    new_track_route.slug = new_track_slug
+    new_track_route.title_slug = new_track_slug_title
+    new_track_route.collision_id = new_collision_id
+    new_track_route.owner_id = track_record.owner_id
+    new_track_route.track_id = track_record.track_id
+    new_track_route.is_current = True
+    new_track_route.blockhash = track_record.blockhash
+    new_track_route.blocknumber = track_record.blocknumber
+    new_track_route.txhash = track_record.txhash
+    session.add(new_track_route)
+
+    # Add to pending track routes so we don't add the same route twice
+    pending_track_routes.append(new_track_route)
+
+
+def dispatch_challenge_track_upload(
+    bus: ChallengeEventBus, block_number: int, track_record
+):
+    bus.dispatch(ChallengeEvent.track_upload, block_number, track_record.owner_id)
+
+
+def is_valid_json_field(metadata, field):
+    if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
+        return True
+    return False
+
+
+def populate_track_record_metadata(track_record, track_metadata, handle):
+    track_record.track_cid = track_metadata["track_cid"]
+    track_record.title = track_metadata["title"]
+    track_record.length = track_metadata.get("length", 0) or 0
+    track_record.cover_art = track_metadata["cover_art"]
+    if track_metadata["cover_art_sizes"]:
+        track_record.cover_art = track_metadata["cover_art_sizes"]
+    track_record.tags = track_metadata["tags"]
+    track_record.genre = track_metadata["genre"]
+    track_record.mood = track_metadata["mood"]
+    track_record.credits_splits = track_metadata["credits_splits"]
+    track_record.create_date = track_metadata["create_date"]
+    track_record.release_date = track_metadata["release_date"]
+    track_record.file_type = track_metadata["file_type"]
+    track_record.description = track_metadata["description"]
+    track_record.license = track_metadata["license"]
+    track_record.isrc = track_metadata["isrc"]
+    track_record.iswc = track_metadata["iswc"]
+    track_record.track_segments = track_metadata["track_segments"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.field_visibility = track_metadata["field_visibility"]
+
+    track_record.is_premium = track_metadata["is_premium"]
+    if is_valid_json_field(track_metadata, "premium_conditions"):
+        track_record.premium_conditions = track_metadata["premium_conditions"]
+    else:
+        track_record.premium_conditions = null()
+
+    if is_valid_json_field(track_metadata, "stem_of"):
+        track_record.stem_of = track_metadata["stem_of"]
+    else:
+        track_record.stem_of = null()
+    if is_valid_json_field(track_metadata, "remix_of"):
+        track_record.remix_of = track_metadata["remix_of"]
+    else:
+        track_record.remix_of = null()
+
+    if "download" in track_metadata:
+        track_record.download = {
+            "is_downloadable": track_metadata["download"].get("is_downloadable")
+            == True,
+            "requires_follow": track_metadata["download"].get("requires_follow")
+            == True,
+            "cid": track_metadata["download"].get("cid", None),
+        }
+    else:
+        track_record.download = {
+            "is_downloadable": False,
+            "requires_follow": False,
+            "cid": None,
+        }
+
+    track_record.route_id = helpers.create_track_route_id(
+        track_metadata["title"], handle
+    )
+    return track_record
 
 
 def validate_track_tx(params: ManageEntityParameters):
