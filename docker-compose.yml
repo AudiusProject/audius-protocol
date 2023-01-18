@@ -417,9 +417,8 @@ services:
     image: linuxserver/openssh-server:latest # don't pin
     command: bash /tmp/dev-tools/startup/sshuttle-server.sh
     environment:
-      PASSWORD_ACCESS: "true"
+      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
       USER_NAME: "sshuttle"
-      USER_PASSWORD: "sshuttle"
     ports:
       - "2222:2222"
     volumes:
