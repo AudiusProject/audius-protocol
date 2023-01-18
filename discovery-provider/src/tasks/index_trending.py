@@ -32,6 +32,7 @@ from src.utils.prometheus_metric import (
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
+from src.utils.web3_provider import get_web3
 from web3 import Web3
 
 logger = logging.getLogger(__name__)
@@ -370,8 +371,8 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
 def get_block(web3, block_number: int):
     final_poa_block = helpers.get_final_poa_block(shared_config)
     if final_poa_block:
-        nethermin_block_number = block_number - final_poa_block
-        return web3.eth.get_block(nethermin_block_number, True)
+        nethermind_block_number = block_number - final_poa_block
+        return web3.eth.get_block(nethermind_block_number, True)
     else:
         return web3.eth.get_block(block_number, True)
 
@@ -423,7 +424,7 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
-    web3 = index_trending_task.web3
+    web3 = get_web3()
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
