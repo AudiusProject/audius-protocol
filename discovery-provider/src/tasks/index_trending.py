@@ -216,7 +216,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     index_trending_notifications(db, timestamp)
 
 
-def index_trending_notifications(db: SessionManager, timestamp: datetime):
+def index_trending_notifications(db: SessionManager, timestamp: int):
     # Get the top 5 trending tracks from the new trending calculations
     # Get the most recent trending tracks notifications
     # Calculate any diff and write the new notifications if the trending track has moved up in rank
@@ -282,21 +282,21 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
             previous_track_notification = previous_trending.get(str(track["track_id"]))
             logger.info(previous_track_notification)
             if previous_track_notification is not None:
+                current_datetime = datetime.fromtimestamp(timestamp)
                 prev_notification_datetime = datetime.fromtimestamp(
                     previous_track_notification["timestamp"].timestamp()
                 )
                 if (
-                    timestamp - prev_notification_datetime
+                    current_datetime - prev_notification_datetime
                 ).total_seconds() < NOTIFICATION_INTERVAL_SEC:
                     continue
                 prev_rank = previous_track_notification["rank"]
                 if prev_rank <= rank:
                     continue
-            notif_timestamp = int(round(timestamp.timestamp()))
             notifications.append(
                 {
                     "owner_id": track["owner_id"],
-                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{notif_timestamp}",
+                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{timestamp}",
                     "track_id": track_id,
                     "rank": rank,
                 }
@@ -319,6 +319,10 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
                 )
                 for n in notifications
             ]
+        )
+        logger.info(
+            f"index_trending.py | Created trending notifications",
+            extra={"job": "index_trending", "subtask": "trending notification"},
         )
 
 
