@@ -125,14 +125,12 @@ export async function getFileInformation(filePath: string) {
  * @param fileDir the directory of the uploaded track artifact
  * @param fileName the uploaded track artifact filename
  * @param logContext the log context used to instantiate a logger
- * @param overrideIfExists override file at destinationPath if set to true
  * @returns the path to the newly created transcoded file
  */
 export async function transcodeFileTo320(
   fileDir: string,
   fileName: string,
-  { logContext }: { logContext: LogContext },
-  overrideIfExists: Boolean = false
+  { logContext }: { logContext: LogContext }
 ): Promise<string> {
   const logger = genericLogger.child(logContext)
 
@@ -146,7 +144,7 @@ export async function transcodeFileTo320(
   )
 
   // Exit if dl-copy file already exists at target path
-  if ((await fs.pathExists(destinationPath)) && !overrideIfExists) {
+  if (await fs.pathExists(destinationPath)) {
     logger.info(`Downloadable copy already exists at ${destinationPath}.`)
     return destinationPath
   }
@@ -156,7 +154,6 @@ export async function transcodeFileTo320(
     const args = [
       '-i',
       sourcePath,
-      overrideIfExists ? '-y' : '-n',
       '-metadata',
       `fileName="${fileName}"`,
       '-metadata',

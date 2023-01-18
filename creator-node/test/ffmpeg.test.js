@@ -96,6 +96,10 @@ describe('test segmentFile()', () => {
   })
 })
 
+function computeTranscodeDestinationPath (fileDir, fileName) {
+  return path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
+}
+
 /**
  * Ignores milliseconds bc of inaccuracy in comparison due to how we transcode
  * e.g. Input file info shows:
@@ -133,36 +137,43 @@ describe('test transcodeFileTo320()', () => {
   const fileName = 'testTrack.mp3'
   const inputFilePath = path.resolve(fileDir, fileName)
 
+  // Ensure no file exists at destinationPath
+  beforeEach(async () => {
+    const destinationPath = computeTranscodeDestinationPath(fileDir, fileName)
+    await fs.remove(destinationPath)
+  })
+
+  // Ensure no file exists at destinationPath
+  after(async () => {
+    const destinationPath = computeTranscodeDestinationPath(fileDir, fileName)
+    await fs.remove(destinationPath)
+  })
+
   it('Happy path - Transcode file to 320kbps, ensure duration matches input file, and metadata properties correctly defined', async () => {
     const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
-    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {}, true)
+    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {})
     const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
     assert.strictEqual(inputFileDuration, outputFileDuration)
-
-    await fs.remove(transcodeFilePath)
   })
 
   it('Happy path - Ensure works without overrideIfExists param set', async () => {
-    // Ensure no file exists at destinationPath
-    const destinationPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
-    await fs.remove(destinationPath)
-
     const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
     const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {})
     const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
 
     assert.strictEqual(inputFileDuration, outputFileDuration)
-
-    await fs.remove(transcodeFilePath)
   })
 
   it('Confirm same file transcoded with different metadata has different CID but same duration & fileSize', async () => {
-    const filePath1 = await transcodeFileTo320(fileDir, fileName, {}, true)
+    const filePath1 = await transcodeFileTo320(fileDir, fileName, {})
     const { duration: duration1, metadata: metadata1 } = await getAudioFileInformation(filePath1)
     const { size: size1 } = await fs.stat(filePath1)
     const cid1 = await Utils.fileHasher.generateNonImageCid(filePath1)
 
-    const filePath2 = await transcodeFileTo320(fileDir, fileName, {}, true)
+    // Remove file before re-transcoding
+    await fs.remove(filePath1)
+
+    const filePath2 = await transcodeFileTo320(fileDir, fileName, {})
     const { duration: duration2, metadata: metadata2 } = await getAudioFileInformation(filePath2)
     const { size: size2 } = await fs.stat(filePath2)
     const cid2 = await Utils.fileHasher.generateNonImageCid(filePath2)
@@ -180,7 +191,5 @@ describe('test transcodeFileTo320()', () => {
 
     // Assert CIDs are different
     assert.notStrictEqual(cid1, cid2)
-
-    await fs.remove(filePath2)
   })
 })
