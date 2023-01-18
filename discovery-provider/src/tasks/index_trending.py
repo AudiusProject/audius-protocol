@@ -306,7 +306,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             [
                 Notification(
                     user_ids=[n["owner_id"]],
-                    timestamp=timestamp,
+                    timestamp=datetime.fromtimestamp(timestamp),
                     type="trending",
                     group_id=n["group_id"],
                     specifier=n["track_id"],
