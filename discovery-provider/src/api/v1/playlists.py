@@ -179,11 +179,13 @@ class FullPlaylistByHandleAndSlug(Resource):
         get_playlist_args["routes"] = [route]
 
         playlist = get_playlist(get_playlist_args)
+        return_response = []
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
             playlist["tracks"] = tracks
-        response = success_response([playlist] if playlist else [])
-        return response
+            return_response = [playlist]
+
+        return success_response(return_response)
 
 
 playlist_tracks_response = make_response(
