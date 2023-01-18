@@ -12,6 +12,11 @@ from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
+from src.utils.redis_connection import get_redis
+from src.tasks.users import (
+    UserEventMetadata,
+    update_user_events,
+)
 
 
 def set_patches(mocker):
@@ -711,3 +716,22 @@ def test_index_verify_users(app, mocker):
             assert not all_users[1].is_verified  # user 2 is not verified
             calls = [mock.call.dispatch(ChallengeEvent.connect_verified, 0, 1)]
             bus_mock.assert_has_calls(calls, any_order=True)
+
+
+@mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
+def test_self_referrals(bus_mock: mock.MagicMock, app):
+    """Test that users can't refer themselves"""
+    block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+        bus_mock(redis)
+    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
+        user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
+        events: UserEventMetadata = {"referrer": 1}
+        update_user_events(session, user, events, bus_mock)
+        mock_call = mock.call.dispatch(
+            ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
+        )
+        assert mock_call not in bus_mock.method_calls
+
