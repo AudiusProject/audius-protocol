@@ -13,6 +13,7 @@ import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
+import collectiblesSlice from './collectibles/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -75,7 +76,6 @@ import buyAudioReducer from './ui/buy-audio/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from './ui/collectible-details/slice'
-import collectiblesSlice from './collectibles/slice'
 import createPlaylistModalReducer from './ui/createPlaylistModal/reducer'
 import { CreatePlaylistModalState } from './ui/createPlaylistModal/types'
 import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation-modal/slice'

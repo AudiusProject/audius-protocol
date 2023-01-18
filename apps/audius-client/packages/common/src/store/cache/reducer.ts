@@ -20,11 +20,12 @@ import {
   SET_CACHE_TYPE,
   SetCacheTypeAction
 } from './actions'
+import { Metadata } from './types'
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 
 type CacheState = {
-  entries: Record<ID, { _timestamp: number; metadata: Record<string, unknown> }>
+  entries: Record<ID, { _timestamp: number; metadata: Metadata }>
   statuses: Record<ID, Status>
   uids: Record<UID, ID>
   subscribers: Record<ID, Set<UID>>

@@ -16,7 +16,7 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 import PropTypes from 'prop-types'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'

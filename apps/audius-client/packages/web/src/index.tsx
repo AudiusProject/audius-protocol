@@ -3,8 +3,7 @@
 import { setupTracing } from './utils/tracer'
 setupTracing()
 
-// eslint-disable-next-line import/first
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import './index.css'
 
@@ -13,4 +12,8 @@ import './index.css'
 // when running in dev mode.
 import Root from './root'
 
-ReactDOM.render(<Root />, document.getElementById('root'))
+const container = document.getElementById('root')
+if (container) {
+  const root = createRoot(container)
+  root.render(<Root />)
+}

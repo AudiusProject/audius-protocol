@@ -120,7 +120,6 @@ type ArtistTestimonialsProps = {
 const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed()
-  // @ts-ignore
   const titleStyles = useSpring({
     config: { mass: 3, tension: 2000, friction: 500 },
     opacity: hasViewed ? 1 : 0,
@@ -155,7 +154,6 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
             <animated.div
               style={{
                 opacity: titleStyles.opacity,
-                // @ts-ignore
                 transform: titleStyles.x.interpolate(
                   (x) => `translate3d(0,${x}px,0)`
                 ),
@@ -172,18 +170,11 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
             ))}
           </div>
         </div>
-        <Parallax
-          y={[-15, 30]}
-          styleInner={{
-            position: 'absolute',
-            top: '-70px',
-            height: '100%'
-          }}
-        >
+        <Parallax translateY={[-15, 30]}>
           <div
             className={styles.dotsBackground}
             style={{ backgroundImage: `url(${dots2x})` }}
-          ></div>
+          />
         </Parallax>
       </div>
     </div>

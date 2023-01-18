@@ -27,24 +27,16 @@ const CTASignUp = (props: CTASignUpProps) => {
         <div
           className={styles.footerForeground}
           style={{ backgroundImage: `url(${footerForeground})` }}
-        ></div>
+        />
         <div className={styles.mobileBgContent}>
           <div className={styles.parallaxBg}></div>
-          <Parallax
-            className={styles.bgParallax}
-            y={[-100, 0]}
-            styleInner={{
-              position: 'absolute',
-              height: '100%',
-              width: '100%'
-            }}
-          >
+          <Parallax className={styles.bgParallax} translateY={[-100, 0]}>
             <div
               className={styles.footerBackground}
               style={{
                 backgroundImage: `url(${footerBackgroundMobile})`
               }}
-            ></div>
+            />
           </Parallax>
         </div>
         <div className={styles.title}>{messages.title}</div>
@@ -79,24 +71,18 @@ const CTASignUp = (props: CTASignUpProps) => {
         <div
           className={styles.footerForeground}
           style={{ backgroundImage: `url(${footerForeground})` }}
-        ></div>
+        />
       </div>
       <div className={styles.footerBackgroundContainer}>
         <div className={styles.bgContent}>
           <div className={styles.parallaxBg}></div>
-          <Parallax
-            className={styles.bgParallax}
-            y={[-80, -40]}
-            styleInner={{
-              position: 'absolute',
-              height: '100%',
-              width: '100%'
-            }}
-          >
+          <Parallax className={styles.bgParallax} translateY={[-70, -30]}>
             <div
               className={styles.footerBackground}
-              style={{ backgroundImage: `url(${footerBackground})` }}
-            ></div>
+              style={{
+                backgroundImage: `url(${footerBackground})`
+              }}
+            />
           </Parallax>
         </div>
       </div>

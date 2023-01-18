@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { Maybe, Nullable } from '@audius/common'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { ThemeColor } from 'utils/theme/theme'
@@ -15,7 +16,7 @@ export type TooltipProps = {
   mount?: 'parent' | 'page' | 'body'
   // Whether the tooltip should have a custom container/mount.
   // Takes precedence over `mount`
-  getPopupContainer?: () => React.ReactNode
+  getPopupContainer?: () => Maybe<Nullable<ParentNode>>
   mouseEnterDelay?: number
   mouseLeaveDelay?: number
   placement?: TooltipPlacement

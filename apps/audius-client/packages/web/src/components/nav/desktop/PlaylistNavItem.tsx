@@ -1,6 +1,12 @@
 import { useCallback, useState, MouseEvent } from 'react'
 
-import { ID, SmartCollectionVariant, AccountCollection } from '@audius/common'
+import {
+  ID,
+  SmartCollectionVariant,
+  AccountCollection,
+  PlaylistLibraryID,
+  PlaylistLibraryKind
+} from '@audius/common'
 import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
@@ -52,7 +58,10 @@ export const PlaylistNavLink = ({
       key={droppableKey}
       className={styles.droppable}
       hoverClassName={styles.droppableHover}
-      onDrop={(id: ID | SmartCollectionVariant | string, draggingKind) => {
+      onDrop={(
+        id: PlaylistLibraryID | string,
+        draggingKind: PlaylistLibraryKind
+      ) => {
         onReorder(id, playlistId, draggingKind)
       }}
       stopPropogationOnDrop={true}

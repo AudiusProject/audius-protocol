@@ -7,10 +7,10 @@ import {
 } from 'react'
 
 import {
-  ID,
   Name,
   PlaylistLibraryFolder,
-  SmartCollectionVariant
+  PlaylistLibraryID,
+  PlaylistLibraryKind
 } from '@audius/common'
 import {
   IconCaretRight,
@@ -77,13 +77,13 @@ type PlaylistFolderNavItemProps = {
   onClickEdit: (folderId: string) => void
   onDropInFolder: (
     folder: PlaylistLibraryFolder,
-    draggingKind: 'library-playlist' | 'playlist',
-    draggingId: ID | string | SmartCollectionVariant
+    draggingKind: PlaylistLibraryKind,
+    draggingId: PlaylistLibraryID
   ) => void
   onDropBelowFolder: (
     folderId: string,
-    draggingKind: 'playlist-folder' | 'library-playlist',
-    draggingId: ID | string | SmartCollectionVariant
+    draggingKind: PlaylistLibraryKind,
+    draggingId: PlaylistLibraryID
   ) => void
   children?: ReactNode
 }
@@ -128,7 +128,7 @@ export const PlaylistFolderNavItem = ({
       <Droppable
         className={navColumnStyles.droppable}
         hoverClassName={navColumnStyles.droppableHover}
-        onDrop={(playlistId, kind) => {
+        onDrop={(playlistId: PlaylistLibraryID, kind: PlaylistLibraryKind) => {
           onDropInFolder(folder, kind, playlistId)
         }}
         acceptedKinds={['library-playlist', 'playlist']}
@@ -197,7 +197,7 @@ export const PlaylistFolderNavItem = ({
       <Droppable
         className={styles.droppable}
         hoverClassName={styles.droppableHover}
-        onDrop={(draggingId, kind) => {
+        onDrop={(draggingId: PlaylistLibraryID, kind: PlaylistLibraryKind) => {
           onDropBelowFolder(id, kind, draggingId)
         }}
         acceptedKinds={['playlist-folder', 'library-playlist']}

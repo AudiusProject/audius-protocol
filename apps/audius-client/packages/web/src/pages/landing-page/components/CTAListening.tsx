@@ -81,11 +81,7 @@ const CTAListening = (props: CTAListeningProps) => {
       <div className={styles.mobileContainer}>
         <div className={styles.bgContainer}>
           <div className={styles.parallaxBg}></div>
-          <Parallax
-            className={cn(styles.mobileBgImage)}
-            y={[-100, 0]}
-            styleInner={{ height: '100%' }}
-          >
+          <Parallax className={cn(styles.mobileBgImage)} translateY={[-100, 0]}>
             <img
               className={styles.mobileBackground}
               src={hqAudio}
@@ -187,11 +183,7 @@ const CTAListening = (props: CTAListeningProps) => {
       </div>
       <div className={styles.bgContainer}>
         <div className={styles.parallaxBg}></div>
-        <Parallax
-          className={cn(styles.bgParallax)}
-          y={[-100, 20]}
-          styleInner={{ height: '100%' }}
-        >
+        <Parallax className={cn(styles.bgParallax)} translateY={[-100, 20]}>
           <img
             className={styles.background}
             src={hqAudio}

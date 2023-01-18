@@ -2,7 +2,7 @@ import { useCallback, useMemo, MouseEvent } from 'react'
 
 import { Chain, formatSeconds } from '@audius/common'
 import cn from 'classnames'
-import { Cell, ColumnInstance, Row } from 'react-table'
+import { Cell, Row } from 'react-table'
 
 import { Table, TablePlayButton } from 'components/table'
 
@@ -115,10 +115,7 @@ export const CollectiblesPlaylistTable = ({
   }, [])
 
   // Columns
-  const tableColumnMap: Record<
-    CollectiblesPlaylistTableColumn,
-    Partial<ColumnInstance>
-  > = useMemo(
+  const tableColumnMap = useMemo(
     () => ({
       playButton: {
         id: 'playButton',

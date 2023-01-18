@@ -15,10 +15,9 @@ import {
   UserTip,
   PremiumConditions,
   PremiumContentSignature,
-  ID,
-  License
+  ID
 } from '../../models'
-import { Nullable } from '../../utils'
+import { License, Nullable } from '../../utils'
 
 export type OpaqueID = string
 

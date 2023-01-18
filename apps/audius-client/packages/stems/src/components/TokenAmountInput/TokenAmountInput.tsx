@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { ChangeEventHandler, useCallback, useMemo, useRef } from 'react'
 
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -46,12 +46,12 @@ export const TokenAmountInput = (props: TokenAmountInputProps) => {
   const inputRefInternal = useRef<HTMLInputElement>(null)
   const generatedId = useMemo(() => uniqueId(), [])
 
-  const handleChange = useCallback(
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const input = e.target.value.replace(/[^0-9.]+/g, '')
       // Regex to grab the whole and decimal parts of the number, stripping duplicate '.' characters
       const match = input.match(/^(?<whole>\d*)(?<dot>.)?(?<decimal>\d*)/)
-      const { whole, decimal, dot } = match.groups
+      const { whole, decimal, dot } = match?.groups || {}
 
       // Conditionally render the decimal part, and only for the number of decimals specified
       const stringAmount =

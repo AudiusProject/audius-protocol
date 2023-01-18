@@ -326,7 +326,7 @@ const NavColumn = ({
         })}
       >
         <Scrollbar
-          containerRef={(el) => {
+          containerRef={(el: HTMLElement) => {
             scrollbarRef.current = el
           }}
           className={styles.scrollable}

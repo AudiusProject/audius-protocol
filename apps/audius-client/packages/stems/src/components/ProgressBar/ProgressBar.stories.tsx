@@ -29,6 +29,6 @@ export const WithLabelWrappers = Template.bind({})
 WithLabelWrappers.args = {
   ...baseProps,
   showLabels: true,
-  minWrapper: ({ value }) => <span>{value} $AUDIO</span>,
-  maxWrapper: ({ value }) => <span>{value} $AUDIO</span>
+  minWrapper: ({ value }) => <span>{value.toString()} $AUDIO</span>,
+  maxWrapper: ({ value }) => <span>{value.toString()} $AUDIO</span>
 }

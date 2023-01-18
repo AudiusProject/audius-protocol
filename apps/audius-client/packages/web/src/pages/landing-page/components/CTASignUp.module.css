@@ -128,9 +128,8 @@
 
 .footerBackground {
   position: absolute;
-  top: 0%;
-  left: -10%;
   width: 120%;
+  left: -10%;
   min-height: 200%;
   background-size: cover;
   background-repeat: no-repeat;

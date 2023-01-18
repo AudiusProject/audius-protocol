@@ -1,8 +1,9 @@
-import { PureComponent } from 'react'
+import { PureComponent, ReactNode } from 'react'
 
 import * as Sentry from '@sentry/browser'
 
 export type ErrorWrapperProps = {
+  children: ReactNode
   errorMessage?: string
 }
 

@@ -8,7 +8,7 @@ import {
   IconTikTokInverted
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 
 import Tooltip from 'components/tooltip/Tooltip'
 

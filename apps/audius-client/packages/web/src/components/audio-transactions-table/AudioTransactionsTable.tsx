@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 import moment from 'moment'
-import { Cell, ColumnInstance, Row } from 'react-table'
+import { Cell, Row } from 'react-table'
 
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { Table } from 'components/table'
@@ -146,10 +146,7 @@ export const AudioTransactionsTable = ({
   }
 
   // Columns
-  const tableColumnMap: Record<
-    AudioTransactionsTableColumn,
-    Partial<ColumnInstance>
-  > = useMemo(
+  const tableColumnMap = useMemo(
     () => ({
       transactionType: {
         id: 'transactionType',

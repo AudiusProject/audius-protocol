@@ -49,8 +49,8 @@ const PlatformTagline = (props: PlatformTaglineProps) => {
       </div>
       {!props.isMobile && (
         <Parallax
-          y={[-25, 10]}
-          styleInner={{
+          translateY={[-25, 10]}
+          style={{
             position: 'absolute',
             bottom: '-280px',
             left: '-152px',

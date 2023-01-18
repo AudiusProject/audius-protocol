@@ -41,7 +41,7 @@ const getNextImage =
     return imageSizes[next]
   }
 
-type BaseUserImageSizeProps<
+export type BaseUserImageSizeProps<
   ImageSize extends Size,
   ImageSizes extends ImageSizesObject<ImageSize>
 > = {
@@ -109,7 +109,7 @@ export function useImageSize<
   sizes
 }: BaseUserImageSizeProps<ImageSize, ImageSizes> & {
   onDemand?: boolean
-}): Maybe<string> | (() => Maybe<string>) {
+}): string | undefined | (() => Maybe<string>) {
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
   const getSmallerImage = useMemo(

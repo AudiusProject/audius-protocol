@@ -3,7 +3,7 @@ import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 import { formatCount, formatSeconds, UID, UserTrack } from '@audius/common'
 import cn from 'classnames'
 import moment from 'moment'
-import { Cell, ColumnInstance, Row } from 'react-table'
+import { Cell, Row } from 'react-table'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import {
@@ -366,10 +366,7 @@ export const TracksTable = ({
   )
 
   // Columns
-  const tableColumnMap: Record<
-    TracksTableColumn,
-    Partial<ColumnInstance>
-  > = useMemo(
+  const tableColumnMap = useMemo(
     () => ({
       addedDate: {
         id: 'dateAdded',

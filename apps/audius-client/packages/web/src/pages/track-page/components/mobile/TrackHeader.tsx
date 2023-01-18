@@ -17,7 +17,7 @@ import {
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import CoSign from 'components/co-sign/CoSign'
@@ -345,8 +345,6 @@ const TrackHeader = ({
         onClickReposts={onClickReposts}
       />
       {description ? (
-        // https://github.com/Soapbox/linkifyjs/issues/292
-        // @ts-ignore
         <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
           <h3 className={styles.description}>{squashNewLines(description)}</h3>
         </Linkify>

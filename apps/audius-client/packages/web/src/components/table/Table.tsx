@@ -654,7 +654,11 @@ export const Table = ({
                     <tbody
                       className={styles.tableBody}
                       {...getTableBodyProps()}
-                      ref={registerChild}
+                      ref={
+                        registerChild as (
+                          instance: HTMLTableSectionElement | null
+                        ) => void
+                      }
                     >
                       <AutoSizer disableHeight>
                         {({ width }) => (

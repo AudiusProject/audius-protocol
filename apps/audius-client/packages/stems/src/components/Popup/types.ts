@@ -13,7 +13,7 @@ export type PopupProps = {
   /**
    * A ref to the element whose position will be used to anchor the Popup
    */
-  anchorRef: MutableRefObject<HTMLElement | undefined>
+  anchorRef: MutableRefObject<HTMLElement | null>
 
   /**
    * Duration of the animations in ms

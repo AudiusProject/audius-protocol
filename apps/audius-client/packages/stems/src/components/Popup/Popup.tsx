@@ -255,7 +255,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position
   // when the popup became visible.
   const watchScroll = useCallback(
-    (scrollParent, initialScrollPosition) => {
+    (scrollParent: Element, initialScrollPosition: number) => {
       const scrollTop = scrollParent.scrollTop
       if (wrapperRef.current) {
         wrapperRef.current.style.top = `${

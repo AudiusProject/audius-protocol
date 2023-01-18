@@ -1,7 +1,8 @@
+import { License } from 'utils/creativeCommons'
+
 import { Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
-import type { License } from './CreativeCommons'
 import { Favorite } from './Favorite'
 import { CID, ID, UID } from './Identifiers'
 import { CoverArtSizes } from './ImageSizes'

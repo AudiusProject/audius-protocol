@@ -1,4 +1,5 @@
 import {
+  ChangeEventHandler,
   ComponentPropsWithoutRef,
   ReactNode,
   useCallback,
@@ -39,9 +40,9 @@ export const RadioPillButton = (props: RadioPillButtonProps) => {
     }
   }
 
-  const handleChange = useCallback(
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      onChange?.(e.target.value)
+      onChange?.(e)
       radioGroup?.onChange?.(e)
     },
     [onChange, radioGroup]

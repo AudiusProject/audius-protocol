@@ -3,8 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Name, squashNewLines } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
-import { Options } from 'linkifyjs'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
@@ -230,13 +229,9 @@ export const ProfileBio = ({
     </animated.div>
   )
 
-  const linkifyOptions = {
-    attributes: { onClick: onExternalLinkClick }
-  } as unknown as Options
-
   return (
     <div>
-      <Linkify options={linkifyOptions}>
+      <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
         <div
           className={cn(styles.description, {
             [styles.truncated]: isCollapsed
