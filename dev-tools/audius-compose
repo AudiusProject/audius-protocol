@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 import urllib.request
 
 import click
@@ -49,7 +50,6 @@ def generate_env(
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
-    block_explorer_enabled,
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -78,8 +78,6 @@ def generate_env(
     env["DISCOVERY_NODE_VERSION"] = json.loads(
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
-
-    env["BLOCK_EXPLORER_ENABLED"] = "1" if block_explorer_enabled else "0"
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
     if elasticsearch_replicas:
@@ -176,32 +174,30 @@ def cli(ctx, protocol_dir):
 @click.option("-c", "--creator-node-replicas", default=4, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
-@click.option("-b", "--block-explorer", is_flag=True)
 @click.pass_obj
 def build(
     protocol_dir,
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
-    block_explorer,
 ):
     generate_env(
         protocol_dir,
         creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
-        block_explorer,
     )
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.yml'}",
-            "build",
-        ],
-        check=True,
+    sys.exit(
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--project-directory={protocol_dir}",
+                f"--file={protocol_dir / 'docker-compose.yml'}",
+                "build",
+            ],
+        ).returncode
     )
 
 
@@ -242,6 +238,7 @@ def load_env(protocol_dir, service, environment):
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -251,6 +248,7 @@ def up(
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
+    wait,
     services,
 ):
     generate_env(
@@ -258,27 +256,30 @@ def up(
         creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
-        block_explorer,
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--project-directory={protocol_dir}",
-            f"--file={protocol_dir / 'docker-compose.yml'}",
-            *(
-                [f"--file={AAO_DIR / 'audius-compose.yml'}"]
-                if anti_abuse_oracle
-                else []
-            ),
-            "up",
-            "--build",
-            "-d",
-            *services,
-        ],
+    sys.exit(
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--project-directory={protocol_dir}",
+                f"--file={protocol_dir / 'docker-compose.yml'}",
+                *(
+                    [f"--file={AAO_DIR / 'audius-compose.yml'}"]
+                    if anti_abuse_oracle
+                    else []
+                ),
+                *(["--profile=block-explorer"] if block_explorer else []),
+                *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+                "up",
+                "--build",
+                ("--wait" if wait else "--detach"),
+                *services,
+            ],
+        ).returncode
     )
 
 
@@ -291,6 +292,7 @@ def down(protocol_dir):
             "compose",
             f"--project-directory={protocol_dir}",
             f"--file={protocol_dir / 'docker-compose.yml'}",
+            "--profile=*",
             "down",
             "--remove-orphans",
             "--volumes",
@@ -317,6 +319,7 @@ def connect(protocol_dir, remote):
         ]
     )
 
+
 @cli.group(cls=DefaultCommandGroup)
 def test():
     pass
@@ -325,13 +328,7 @@ def test():
 @test.command(name="build")
 @click.pass_obj
 def test_build(protocol_dir):
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-        False,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
     subprocess.run(
         [
@@ -364,13 +361,7 @@ def test_run(protocol_dir, service, args):
     """
     Runs tests for a given service.
     """
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-        False,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
     if service == "discovery-provider":
         cmd = "pytest"
@@ -385,20 +376,21 @@ def test_run(protocol_dir, service, args):
         )
         return
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
-            f"--project-directory={protocol_dir}",
-            "run",
-            "--rm",
-            f"test-{service}",
-            cmd,
-            *args,
-        ],
-        check=True,
+    sys.exit(
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                f"--project-name={protocol_dir.name}-test",
+                f"--project-directory={protocol_dir}",
+                "run",
+                "--rm",
+                f"test-{service}",
+                cmd,
+                *args,
+            ]
+        ).returncode
     )
 
 
@@ -409,39 +401,29 @@ def test_up(protocol_dir, service):
     """
     Brings up a testing container for a given service.
     """
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-        False,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--file={protocol_dir / 'docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
-            f"--project-directory={protocol_dir}",
-            "up",
-            "--build",
-            "-d",
-            f"test-{service}"
-        ]
+    sys.exit(
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                f"--project-name={protocol_dir.name}-test",
+                f"--project-directory={protocol_dir}",
+                "up",
+                "--build",
+                "-d",
+                f"test-{service}"
+            ]
+        ).returncode
     )
 
 
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-        False,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
     subprocess.run(
         [
@@ -555,14 +537,15 @@ def ps(protocol_dir):
 
 
 @cli.command()
+@click.option("-y", "--yes", is_flag=True)
 @click.pass_obj
-def prune(protocol_dir):
+def prune(protocol_dir, yes):
     click.secho(
         "WARNING! This will remove all dangling images and build cache not used within the last 72h",
         fg="yellow",
     )
 
-    if click.confirm("Are you sure you want to continue?"):
+    if yes or click.confirm("Are you sure you want to continue?"):
         subprocess.run(["docker", "image", "prune", "-f"])
         subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
 

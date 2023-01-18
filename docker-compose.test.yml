@@ -98,6 +98,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
 
   test-creator-node:
     extends:
@@ -135,8 +136,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      # Override default replicas
-      replicas: 1
+      replicas: 1  # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -186,10 +186,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      # Override default replicas
-      replicas: 1
+      replicas: 1  # Override default replicas
     profiles:
       - tests
+      - elasticsearch
 
   # identity-service
 
