@@ -1,6 +1,7 @@
 import { PortalProvider } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
+import codePush from 'react-native-code-push'
 import Config from 'react-native-config'
 import {
   SafeAreaProvider,
@@ -100,6 +101,7 @@ const App = () => {
   )
 }
 
-const AppWithSentry = Sentry.wrap(App)
+const AppWithCodePush = codePush(App)
+const AppWithSentry = Sentry.wrap(AppWithCodePush)
 
 export { AppWithSentry as App }
