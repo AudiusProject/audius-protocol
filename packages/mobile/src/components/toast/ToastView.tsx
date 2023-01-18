@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useRef } from 'react'
 
-import { StyleSheet, Animated, View } from 'react-native'
+import { Animated, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 const DISTANCE_DOWN = 60
 
@@ -17,37 +16,33 @@ const springConfig = {
 
 export type ToastType = 'info' | 'error'
 
-const createStyles = (type: ToastType) => (themeColors: ThemeColors) => {
-  let backgroundColor: string
-  switch (type) {
-    case 'info':
-      backgroundColor = themeColors.secondary
-      break
-    case 'error':
-      backgroundColor = themeColors.accentRed
-      break
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  container: {
+    zIndex: 50,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  toastView: {
+    position: 'absolute',
+    backgroundColor: palette.secondary,
+    borderRadius: 8
+  },
+  toastViewError: {
+    backgroundColor: palette.accentRed
+  },
+  toastTextContainer: {
+    paddingTop: spacing(3) + 2,
+    paddingBottom: spacing(3),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: spacing(4),
+    paddingRight: spacing(4)
+  },
+  content: {
+    color: palette.staticWhite,
+    fontSize: 14
   }
-  return StyleSheet.create({
-    container: {
-      zIndex: 50,
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    toastView: {
-      position: 'absolute',
-      backgroundColor,
-      borderRadius: 8
-    },
-    content: {
-      color: themeColors.staticWhite,
-      fontSize: 14,
-      paddingLeft: 16,
-      paddingRight: 16,
-      paddingTop: 12,
-      paddingBottom: 12
-    }
-  })
-}
+}))
 
 export type ToastViewProps = {
   /**
@@ -65,7 +60,7 @@ export type ToastViewProps = {
 }
 
 const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
-  const styles = useThemedStyles(createStyles(type))
+  const styles = useStyles()
   const translationAnim = useRef(new Animated.Value(0)).current
   const opacityAnim = useRef(new Animated.Value(0)).current
   const insets = useSafeAreaInsets()
@@ -117,12 +112,15 @@ const ToastView = ({ content, timeout, type = 'info' }: ToastViewProps) => {
                 translateY: translationAnim
               }
             ]
-          }
+          },
+          type === 'error' ? styles.toastViewError : {}
         ]}
       >
-        <Text style={styles.content} weight={'demiBold'}>
-          {content}
-        </Text>
+        <View style={styles.toastTextContainer}>
+          <Text style={styles.content} weight={'demiBold'}>
+            {content}
+          </Text>
+        </View>
       </Animated.View>
     </View>
   )
