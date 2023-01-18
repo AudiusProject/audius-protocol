@@ -27,14 +27,14 @@ func TestChatPermissions(t *testing.T) {
 	chat1Id := strconv.Itoa(seededRand.Int())
 	chat2Id := strconv.Itoa(seededRand.Int())
 
-	// TODO change this to db.DNConn?
-	// user 1 follows user 2
-	_, err = db.Conn.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user1Id, user2Id)
-	// user 3 has tipped user 1
-	_, err = db.Conn.Exec("insert into user_tips (slot, signature, sender_user_id, receiver_user_id, amount) values (0, 'sig', $1, $2, 100)", user3Id, user1Id)
-
 	tx := db.Conn.MustBegin()
 
+	// user 1 follows user 2
+	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user1Id, user2Id)
+	assert.NoError(t, err)
+	// user 3 has tipped user 1
+	_, err = tx.Exec("insert into user_tips (slot, signature, sender_user_id, receiver_user_id, amount) values (0, 'sig', $1, $2, 100)", user3Id, user1Id)
+	assert.NoError(t, err)
 	// user 1 has a chat with user 2
 	SetupChatWithMembers(t, tx, chat1Id, user1Id, user2Id)
 	// user 1 has a chat with user 3

@@ -27,9 +27,6 @@ func main() {
 		return db.Dial()
 	})
 	g.Go(func() error {
-		return db.DNDial()
-	})
-	g.Go(func() error {
 		return pubkeystore.Dial()
 	})
 	if err := g.Wait(); err != nil {

@@ -322,7 +322,7 @@ func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 		return permissionFailure
 	} else if permits == schema.Followees {
 		// Only allow messages from users that receiver follows
-		count, err := queries.CountFollows(db.DNConn, context.Background(), queries.CountFollowsParams{
+		count, err := queries.CountFollows(q, context.Background(), queries.CountFollowsParams{
 			FollowerUserID: receiver,
 			FolloweeUserID: sender,
 		})
@@ -334,7 +334,7 @@ func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 		}
 	} else if permits == schema.Tippers {
 		// Only allow messages from users that have tipped receiver
-		count, err := queries.CountTips(db.DNConn, context.Background(), queries.CountTipsParams{
+		count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
 			SenderUserID:   sender,
 			ReceiverUserID: receiver,
 		})
