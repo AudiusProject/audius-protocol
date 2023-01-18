@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
 import type {
   CollectionMetadata,
@@ -11,8 +11,7 @@ import {
   Kind,
   makeUid,
   cacheActions,
-  cacheCollectionsSelectors,
-  reachabilitySelectors
+  cacheCollectionsSelectors
 } from '@audius/common'
 import { orderBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
@@ -36,8 +35,11 @@ import {
 } from '../services/offline-downloader/offline-storage'
 
 import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
+import {
+  useBecomeReachable,
+  useBecomeUnreachable
+} from './useReachabilityState'
 const { getCollection } = cacheCollectionsSelectors
-const { getIsReachable } = reachabilitySelectors
 
 export const useLoadOfflineTracks = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -135,86 +137,66 @@ export const useOfflineCollectionLineup = (
   fetchOnlineContent: () => void,
   lineupActions: lineupActions.LineupActions
 ) => {
+  const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const isReachable = useSelector(getIsReachable)
   const offlineTracks = useSelector(getOfflineTracks)
   const collection = useSelector((state) => {
     if (collectionId !== DOWNLOAD_REASON_FAVORITES) {
       return getCollection(state, { id: collectionId as number })
     }
   })
-  const [hasGoneOffline, setHasGoneOffline] = useState(false)
 
-  const dispatch = useDispatch()
-
-  // Record if we have gone offline so that when we come
-  // back online we can refetch fresh content
-  useEffect(() => {
-    if (!isReachable) {
-      setHasGoneOffline(true)
-    }
-  }, [isReachable, setHasGoneOffline])
-
-  // If we go offline, set lineup into a success state with
-  // offline data
-  useEffect(() => {
-    if (isOfflineModeEnabled && collectionId && !isReachable) {
-      const lineupTracks = Object.values(offlineTracks).filter((track) =>
-        track.offline?.reasons_for_download.some(
-          (reason) => reason.collection_id === collectionId.toString()
-        )
-      )
-
-      if (collectionId === DOWNLOAD_REASON_FAVORITES) {
-        // Reorder lineup tracks accorinding to favorite time
-        const sortedTracks = orderBy(
-          lineupTracks,
-          (track) => track.offline?.favorite_created_at,
-          ['desc']
-        )
-        dispatch(
-          lineupActions.fetchLineupMetadatasSucceeded(
-            sortedTracks,
-            0,
-            lineupTracks.length,
-            false,
-            false
+  useBecomeReachable(fetchOnlineContent)
+  useBecomeUnreachable(
+    useCallback(() => {
+      if (isOfflineModeEnabled && collectionId) {
+        const lineupTracks = Object.values(offlineTracks).filter((track) =>
+          track.offline?.reasons_for_download.some(
+            (reason) => reason.collection_id === collectionId.toString()
           )
         )
-      } else {
-        // Reorder lineup tracks according to the collection
-        // TODO: This may have issues for playlists with duplicate tracks
-        const sortedTracks = collection?.playlist_contents.track_ids.map(
-          ({ track: trackId }) =>
-            lineupTracks.find((track) => trackId === track.track_id)
-        )
-        dispatch(
-          lineupActions.fetchLineupMetadatasSucceeded(
-            sortedTracks,
-            0,
-            lineupTracks.length,
-            false,
-            false
+
+        if (collectionId === DOWNLOAD_REASON_FAVORITES) {
+          // Reorder lineup tracks accorinding to favorite time
+          const sortedTracks = orderBy(
+            lineupTracks,
+            (track) => track.offline?.favorite_created_at,
+            ['desc']
           )
-        )
+          dispatch(
+            lineupActions.fetchLineupMetadatasSucceeded(
+              sortedTracks,
+              0,
+              lineupTracks.length,
+              false,
+              false
+            )
+          )
+        } else {
+          // Reorder lineup tracks according to the collection
+          // TODO: This may have issues for playlists with duplicate tracks
+          const sortedTracks = collection?.playlist_contents.track_ids.map(
+            ({ track: trackId }) =>
+              lineupTracks.find((track) => trackId === track.track_id)
+          )
+          dispatch(
+            lineupActions.fetchLineupMetadatasSucceeded(
+              sortedTracks,
+              0,
+              lineupTracks.length,
+              false,
+              false
+            )
+          )
+        }
       }
-    }
-  }, [
-    dispatch,
-    offlineTracks,
-    isOfflineModeEnabled,
-    lineupActions,
-    isReachable,
-    collectionId,
-    setHasGoneOffline,
-    collection?.playlist_contents.track_ids
-  ])
-
-  // If we go back online, trigger a refetch of the original content
-  useEffect(() => {
-    if (isReachable && hasGoneOffline) {
-      fetchOnlineContent()
-      setHasGoneOffline(false)
-    }
-  }, [dispatch, isReachable, hasGoneOffline, fetchOnlineContent])
+    }, [
+      collection?.playlist_contents.track_ids,
+      collectionId,
+      dispatch,
+      isOfflineModeEnabled,
+      lineupActions,
+      offlineTracks
+    ])
+  )
 }
