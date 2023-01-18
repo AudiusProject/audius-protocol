@@ -292,11 +292,11 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
                 prev_rank = previous_track_notification["rank"]
                 if prev_rank <= rank:
                     continue
-
+            notif_timestamp = int(round(timestamp.timestamp()))
             notifications.append(
                 {
                     "owner_id": track["owner_id"],
-                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{int(timestamp.timestamp())}",
+                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{notif_timestamp}",
                     "track_id": track_id,
                     "rank": rank,
                 }
