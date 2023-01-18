@@ -6,8 +6,7 @@ import {
   accountSelectors,
   smartCollectionPageActions,
   collectionPageActions,
-  getContext,
-  User
+  getContext
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
@@ -38,10 +37,10 @@ function* fetchHeavyRotation() {
   const explore = yield* getContext('explore')
   const topListens = yield* call([explore, 'getTopUserListens'])
 
-  const users = (yield* call(
+  const users = yield* call(
     retrieveUsers,
     topListens.map((t) => t.userId)
-  )) as { entries: Record<string, User> }
+  )
 
   const trackIds = topListens
     .filter(
