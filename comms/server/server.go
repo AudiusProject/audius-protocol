@@ -32,10 +32,10 @@ var (
 	logger = config.Logger
 )
 
-func Start() {
-	e := createServer()
-	e.Logger.Fatal(e.Start(":8925"))
-}
+// func Start() {
+// 	e := NewServer()
+// 	e.Logger.Fatal(e.Start(":8925"))
+// }
 
 func getHealthStatus() schema.Health {
 	return schema.Health{
@@ -224,7 +224,7 @@ func getMessages(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func createServer() *echo.Echo {
+func NewServer() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -241,7 +241,7 @@ func createServer() *echo.Echo {
 	g := e.Group("/comms")
 
 	g.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP")
+		return c.String(http.StatusOK, "comms are UP: v1")
 	})
 
 	g.GET("/pubkey/:id", func(c echo.Context) error {
@@ -438,7 +438,7 @@ func createServer() *echo.Echo {
 	})
 
 	// static files
-	staticFs := getFileSystem(false)
+	staticFs := getFileSystem()
 	assetHandler := http.FileServer(staticFs)
 	g.GET("/static/*", echo.WrapHandler(http.StripPrefix("/comms/static/", assetHandler)))
 
@@ -456,13 +456,14 @@ func createServer() *echo.Echo {
 //go:embed static
 var embededFiles embed.FS
 
-func getFileSystem(useOS bool) http.FileSystem {
-	if useOS {
-		log.Print("using live mode")
-		return http.FS(os.DirFS("app"))
+func getFileSystem() http.FileSystem {
+	devMode := config.Env == "standalone"
+	if devMode {
+		log.Println("_________________ using live mode")
+		return http.FS(os.DirFS("server/static"))
 	}
 
-	log.Print("using embed mode")
+	log.Println("using embed mode")
 	fsys, err := fs.Sub(embededFiles, "static")
 	if err != nil {
 		panic(err)

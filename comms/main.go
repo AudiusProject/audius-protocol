@@ -10,6 +10,8 @@ import (
 	"comms.audius.co/config"
 	"comms.audius.co/db"
 	"comms.audius.co/internal/pubkeystore"
+	"comms.audius.co/internal/transcode"
+	"comms.audius.co/jetstream"
 	"comms.audius.co/peering"
 	"comms.audius.co/server"
 	"golang.org/x/sync/errgroup"
@@ -42,7 +44,7 @@ func main() {
 
 	// start solicit...
 	go func() {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 
 		for {
 			peering.Solicit()
@@ -50,5 +52,25 @@ func main() {
 		}
 	}()
 
-	server.Start()
+	{
+
+		e := server.NewServer()
+
+		// super shitty thing to wait for jsc to be ready
+		go func() {
+			for {
+				time.Sleep(200 * time.Millisecond)
+				jsc := jetstream.GetJetstreamContext()
+				if jsc != nil {
+					fmt.Println("_____________________ JSC READY")
+					transcode.DemoTime(jsc, e)
+					break
+				}
+			}
+
+		}()
+
+		e.Logger.Fatal(e.Start(":8925"))
+
+	}
 }

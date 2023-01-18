@@ -104,7 +104,13 @@ func Init() {
 	NatsClusterUsername = signedHex[0:10]
 	NatsClusterPassword = signedHex[10:20]
 
-	Logger.Info("config", "wallet", WalletAddress, "nkey", NkeyPublic, "ip", IP, "nu", NatsClusterUsername, "np", NatsClusterPassword)
+	Logger.Info("config",
+		"env", Env,
+		"wallet", WalletAddress,
+		"nkey", NkeyPublic,
+		"ip", IP,
+		"nu", NatsClusterUsername,
+		"np", NatsClusterPassword)
 }
 
 func dieOnErr(err error) {

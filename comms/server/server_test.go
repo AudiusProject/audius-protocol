@@ -152,7 +152,7 @@ func TestGetChats(t *testing.T) {
 		},
 	}
 
-	e := createServer()
+	e := NewServer()
 
 	// Test GET /comms/chats
 	{
