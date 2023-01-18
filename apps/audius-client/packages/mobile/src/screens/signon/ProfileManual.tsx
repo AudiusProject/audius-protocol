@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
+  getEmailField,
   getHandleField,
   getNameField,
   getProfileImageField,
@@ -29,7 +30,9 @@ import IconArrow from 'app/assets/images/iconArrow.svg'
 import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
 import type { Image } from 'app/types/image'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 import { useColor, useThemeColors } from 'app/utils/theme'
@@ -253,6 +256,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
 
   const handleField: EditableField = useSelector(getHandleField)
   const nameField: EditableField = useSelector(getNameField)
+  const emailField: EditableField = useSelector(getEmailField)
   const profileImage: Image = useSelector(getProfileImageField)
   const isVerified: boolean = useSelector(getIsVerified)
 
@@ -348,7 +352,15 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
 
   const onContinuePress = () => {
     Keyboard.dismiss()
+
     dispatch(signOnActions.signUp())
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_COMPLETE_PROFILE,
+        handle: handleField.value,
+        emailAddress: emailField.value
+      })
+    )
     navigation.replace('FirstFollows')
   }
 
