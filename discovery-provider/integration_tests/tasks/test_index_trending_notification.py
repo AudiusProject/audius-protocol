@@ -49,8 +49,9 @@ def test_index_trending_notification(app):
             "users": [{}] * 2,
         }
         populate_mock_db(db, entities)
+        base_time_int = int(round(BASE_TIME.timestamp()))
 
-        index_trending_notifications(db, BASE_TIME)
+        index_trending_notifications(db, base_time_int)
         with db.scoped_session() as session:
             notifications = (
                 session.query(Notification).order_by(asc(Notification.specifier)).all()
@@ -105,8 +106,9 @@ def test_index_trending_notification(app):
         trending_tracks = (trending_tracks, track_ids)
         set_json_cached_key(redis, trending_key, trending_tracks)
         updated_time = BASE_TIME + timedelta(hours=1)
+        updated_time_int = int(round(updated_time.timestamp()))
 
-        index_trending_notifications(db, updated_time)
+        index_trending_notifications(db, updated_time_int)
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 6
@@ -127,8 +129,9 @@ def test_index_trending_notification(app):
             }
 
         updated_time = BASE_TIME + timedelta(hours=24)
+        updated_time_int = int(round(updated_time.timestamp()))
 
-        index_trending_notifications(db, updated_time)
+        index_trending_notifications(db, updated_time_int)
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 9

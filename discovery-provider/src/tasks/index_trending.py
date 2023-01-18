@@ -32,6 +32,7 @@ from src.utils.prometheus_metric import (
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
+from src.utils.web3_provider import get_web3
 from web3 import Web3
 
 logger = logging.getLogger(__name__)
@@ -215,7 +216,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     index_trending_notifications(db, timestamp)
 
 
-def index_trending_notifications(db: SessionManager, timestamp: datetime):
+def index_trending_notifications(db: SessionManager, timestamp: int):
     # Get the top 5 trending tracks from the new trending calculations
     # Get the most recent trending tracks notifications
     # Calculate any diff and write the new notifications if the trending track has moved up in rank
@@ -268,7 +269,6 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
         previous_trending = {
             n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
         }
-        logger.info(previous_trending)
 
         notifications = []
 
@@ -279,23 +279,22 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
             track_id = track["track_id"]
             rank = index + 1
             previous_track_notification = previous_trending.get(str(track["track_id"]))
-            logger.info(previous_track_notification)
             if previous_track_notification is not None:
+                current_datetime = datetime.fromtimestamp(timestamp)
                 prev_notification_datetime = datetime.fromtimestamp(
                     previous_track_notification["timestamp"].timestamp()
                 )
                 if (
-                    timestamp - prev_notification_datetime
+                    current_datetime - prev_notification_datetime
                 ).total_seconds() < NOTIFICATION_INTERVAL_SEC:
                     continue
                 prev_rank = previous_track_notification["rank"]
                 if prev_rank <= rank:
                     continue
-
             notifications.append(
                 {
                     "owner_id": track["owner_id"],
-                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{int(timestamp.timestamp())}",
+                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{timestamp}",
                     "track_id": track_id,
                     "rank": rank,
                 }
@@ -305,7 +304,7 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
             [
                 Notification(
                     user_ids=[n["owner_id"]],
-                    timestamp=timestamp,
+                    timestamp=datetime.fromtimestamp(timestamp),
                     type="trending",
                     group_id=n["group_id"],
                     specifier=n["track_id"],
@@ -318,6 +317,10 @@ def index_trending_notifications(db: SessionManager, timestamp: datetime):
                 )
                 for n in notifications
             ]
+        )
+        logger.info(
+            "index_trending.py | Created trending notifications",
+            extra={"job": "index_trending", "subtask": "trending notification"},
         )
 
 
@@ -364,14 +367,17 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
         if prev_timestamp >= min_timestamp:
             block = prev_block
             curr_block_number -= 1
+        else:
+            return block
+
     return block
 
 
 def get_block(web3, block_number: int):
     final_poa_block = helpers.get_final_poa_block(shared_config)
     if final_poa_block:
-        nethermin_block_number = block_number - final_poa_block
-        return web3.eth.get_block(nethermin_block_number, True)
+        nethermind_block_number = block_number - final_poa_block
+        return web3.eth.get_block(nethermind_block_number, True)
     else:
         return web3.eth.get_block(block_number, True)
 
@@ -423,7 +429,7 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
-    web3 = index_trending_task.web3
+    web3 = get_web3()
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
