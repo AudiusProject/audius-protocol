@@ -88,6 +88,7 @@ project.ext.envConfigFiles = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
@@ -250,17 +251,20 @@ android {
     }
     productFlavors { 
         prod {
+            resValue "string", "CodePushDeploymentKey", '"09yN4-3LHKp_GVKFJEOoDDRqx2o3fJirP5nZf"'
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher"
             ]
         }
         releaseCandidate {
+            resValue "string", "CodePushDeploymentKey", '"ceWFTSWpNzjz-T8OV_RGTClMLUTHne9GeVoSh"'
             applicationIdSuffix ".releasecandidate"
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher_releasecandidate"
             ]
         }
         staging {
+            resValue "string", "CodePushDeploymentKey", '""'
             // Pre-compile run ENVFILE=.env.stage
             applicationIdSuffix ".staging"
             manifestPlaceholders = [
@@ -268,6 +272,7 @@ android {
             ]
         }
         stagingReleaseCandidate {
+            resValue "string", "CodePushDeploymentKey", '"ceWFTSWpNzjz-T8OV_RGTClMLUTHne9GeVoSh"'
             applicationIdSuffix ".staging.releasecandidate"
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher_staging_releasecandidate"
@@ -301,6 +306,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            resValue "string", "CodePushDeploymentKey", '""'
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
