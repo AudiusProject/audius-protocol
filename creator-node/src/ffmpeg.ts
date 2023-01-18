@@ -122,10 +122,10 @@ export async function getFileInformation(filePath: string) {
 /**
  * Transcode file into 320kbps mp3 and store in same directory.
  * @date 01-27-2022
- * @param params
- * @param params.fileDir the directory of the uploaded track artifact
- * @param params.fileName the uploaded track artifact filename
- * @param params.logContext the log context used to instantiate a logger
+ * @param fileDir the directory of the uploaded track artifact
+ * @param fileName the uploaded track artifact filename
+ * @param logContext the log context used to instantiate a logger
+ * @param overrideIfExists override file at destinationPath if set to true
  * @returns the path to the newly created transcoded file
  */
 export async function transcodeFileTo320(
