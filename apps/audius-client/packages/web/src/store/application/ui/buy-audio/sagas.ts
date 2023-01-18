@@ -24,7 +24,8 @@ import {
   modalsActions,
   AmountObject,
   FeatureFlags,
-  ErrorLevel
+  ErrorLevel,
+  LocalStorage
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
@@ -136,15 +137,18 @@ const defaultBuyAudioLocalStorageState: BuyAudioLocalStorageState = {
   provider: OnRampProvider.UNKNOWN
 }
 
-function* getLocalStorageStateWithFallback() {
-  const localStorage = yield* getContext('localStorage')
+function* getLocalStorageStateWithFallback(): Generator<
+  any,
+  [LocalStorage, BuyAudioLocalStorageState]
+> {
+  const audiusLocalStorage = yield* getContext('localStorage')
   const state =
     (yield* call(
       (val: string) =>
-        localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
+        audiusLocalStorage.getJSONValue<BuyAudioLocalStorageState>(val),
       BUY_AUDIO_LOCAL_STORAGE_KEY
     )) ?? defaultBuyAudioLocalStorageState
-  return state
+  return [audiusLocalStorage, state]
 }
 
 /**
@@ -458,7 +462,7 @@ Total: ${estimatedLamports.toNumber() / LAMPORTS_PER_SOL} SOL ($${
 
 function* populateAndSaveTransactionDetails() {
   // Get transaction details from local storage
-  const localStorageState = yield* getLocalStorageStateWithFallback()
+  const [, localStorageState] = yield* getLocalStorageStateWithFallback()
   const {
     purchaseTransactionId,
     setupTransactionId,
@@ -609,13 +613,14 @@ function* purchaseStep({
     )
   }
 
-  const localStorageState = yield* getLocalStorageStateWithFallback()
+  const [audiusLocalStorage, localStorageState] =
+    yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.purchaseTransactionId =
     purchaseTransactionId
   localStorageState.transactionDetailsArgs.purchasedLamports =
     purchasedLamports.toString()
   yield* call(
-    [localStorage, localStorage.setJSONValue],
+    [audiusLocalStorage, audiusLocalStorage.setJSONValue],
     BUY_AUDIO_LOCAL_STORAGE_KEY,
     localStorageState
   )
@@ -696,7 +701,8 @@ function* swapStep({
     })
 
   // Write transaction details to local storage
-  const localStorageState = yield* getLocalStorageStateWithFallback()
+  const [audiusLocalStorage, localStorageState] =
+    yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.setupTransactionId =
     setupTransactionId ?? undefined
   localStorageState.transactionDetailsArgs.swapTransactionId =
@@ -704,7 +710,7 @@ function* swapStep({
   localStorageState.transactionDetailsArgs.cleanupTransactionId =
     cleanupTransactionId ?? undefined
   yield* call(
-    [localStorage, localStorage.setJSONValue],
+    [audiusLocalStorage, audiusLocalStorage.setJSONValue],
     BUY_AUDIO_LOCAL_STORAGE_KEY,
     localStorageState
   )
@@ -770,13 +776,14 @@ function* transferStep({
   const audioTransferredWei = convertWAudioToWei(transferAmount)
 
   // Write transaction details to local storage
-  const localStorageState = yield* getLocalStorageStateWithFallback()
+  const [audiusLocalStorage, localStorageState] =
+    yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.transferTransactionId =
     transferTransactionId ?? undefined
   localStorageState.transactionDetailsArgs.purchasedAudioWei =
     audioTransferredWei.toString()
   yield* call(
-    [localStorage, localStorage.setJSONValue],
+    [audiusLocalStorage, audiusLocalStorage.setJSONValue],
     BUY_AUDIO_LOCAL_STORAGE_KEY,
     localStorageState
   )
@@ -809,7 +816,7 @@ function* doBuyAudio({
     )
 
     // Initialize local storage
-    const localStorage = yield* getContext('localStorage')
+    const audiusLocalStorage = yield* getContext('localStorage')
     const initialState: BuyAudioLocalStorageState = {
       ...defaultBuyAudioLocalStorageState,
       transactionDetailsArgs: {
@@ -820,7 +827,7 @@ function* doBuyAudio({
       desiredAudioAmount
     }
     yield* call(
-      [localStorage, localStorage.setJSONValue],
+      [audiusLocalStorage, audiusLocalStorage.setJSONValue],
       BUY_AUDIO_LOCAL_STORAGE_KEY,
       initialState
     )
@@ -973,9 +980,9 @@ function* recoverPurchaseIfNecessary() {
     userRootWallet = rootAccount.publicKey.toString()
 
     // Restore local storage state, lightly sanitizing
-    const localStorage = yield* getContext('localStorage')
+    const audiusLocalStorage = yield* getContext('localStorage')
     const savedLocalStorageState = (yield* call(
-      (val) => localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
+      (val) => audiusLocalStorage.getJSONValue<BuyAudioLocalStorageState>(val),
       BUY_AUDIO_LOCAL_STORAGE_KEY
     )) ?? { transactionDetailsArgs: {} }
     const localStorageState: BuyAudioLocalStorageState = {
@@ -987,7 +994,7 @@ function* recoverPurchaseIfNecessary() {
       }
     }
     yield* call(
-      [localStorage, localStorage.setJSONValue],
+      [audiusLocalStorage, audiusLocalStorage.setJSONValue],
       BUY_AUDIO_LOCAL_STORAGE_KEY,
       localStorageState
     )
@@ -1202,9 +1209,9 @@ function* watchRecovery() {
  * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
  */
 function* recoverOnPageLoad() {
-  const localStorage = yield* getContext('localStorage')
+  const audiusLocalStorage = yield* getContext('localStorage')
   const savedLocalStorageState = yield* call(
-    (val) => localStorage.getJSONValue<BuyAudioLocalStorageState>(val),
+    (val) => audiusLocalStorage.getJSONValue<BuyAudioLocalStorageState>(val),
     BUY_AUDIO_LOCAL_STORAGE_KEY
   )
   if (savedLocalStorageState !== null && !isMobileWeb()) {
