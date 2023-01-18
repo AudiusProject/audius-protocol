@@ -50,13 +50,12 @@
     "@types/bn.js": "4.11.6",
     "@types/lodash": "4.14.149",
     "@types/numeral": "^2.0.2",
-    "@types/react": "17.0.2",
+    "@types/react": "18.0.26",
     "@types/react-redux": "7.1.7",
     "@types/redux-saga": "0.10.5",
     "eslint": "8.19.0",
     "eslint-config-audius": "1.5.6",
     "patch-package": "6.4.7",
-    "react": "17.0.2",
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
     "rollup-plugin-typescript2": "0.32.1",
@@ -66,7 +65,7 @@
   "peerDependencies": {
     "@solana/spl-token": "0.1.8",
     "@solana/web3.js": "1.24.1",
-    "react": "17.0.2",
+    "react": "^18.2.0",
     "react-redux": "7.2.5",
     "redux": "4.0.5",
     "redux-saga": "1.1.3"

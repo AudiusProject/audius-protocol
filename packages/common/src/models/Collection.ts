@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { FunctionComponent, SVGProps } from 'react'
 
 import { CID, ID, UID } from '../models/Identifiers'
 import { CoverArtSizes } from '../models/ImageSizes'
@@ -78,7 +78,7 @@ export type SmartCollection = {
   gradient?: string
   imageOverride?: string
   shadow?: string
-  icon?: ReactNode
+  icon?: FunctionComponent<SVGProps<SVGSVGElement> & { title?: string }>
   link: string
   playlist_contents?: PlaylistContents
   has_current_user_saved?: boolean

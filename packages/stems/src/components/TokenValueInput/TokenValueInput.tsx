@@ -72,7 +72,7 @@ export const TokenValueInput = ({
 
   const [inputPadding, setInputPadding] = useState(inputPaddingRight)
   const setLabelRef = useCallback(
-    (node) => {
+    (node: HTMLDivElement) => {
       if (node) {
         // TODO: wait for animation before getting width
         // const width = node.getBoundingClientRect().width

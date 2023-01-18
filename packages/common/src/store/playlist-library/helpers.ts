@@ -6,7 +6,9 @@ import { ID } from '../../models/Identifiers'
 import {
   PlaylistLibrary,
   PlaylistLibraryIdentifier,
-  PlaylistLibraryFolder
+  PlaylistLibraryFolder,
+  PlaylistLibraryID,
+  PlaylistLibraryKind
 } from '../../models/PlaylistLibrary'
 import { SmartCollectionVariant } from '../../models/SmartCollectionVariant'
 import { AccountCollection } from '../account/types'
@@ -402,12 +404,9 @@ export const removePlaylistLibraryDuplicates = (
  */
 export const reorderPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  draggingId: ID | SmartCollectionVariant | string,
+  draggingId: PlaylistLibraryID,
   droppingId: ID | SmartCollectionVariant | string,
-  draggingKind:
-    | 'library-playlist'
-    | 'playlist'
-    | 'playlist-folder' = 'library-playlist',
+  draggingKind: PlaylistLibraryKind = 'library-playlist',
   reorderBeforeTarget = false
 ) => {
   // Find the dragging id and remove it from the library if present.

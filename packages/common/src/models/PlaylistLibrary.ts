@@ -1,5 +1,14 @@
 import { SmartCollectionVariant } from 'models/SmartCollectionVariant'
 
+import { ID } from './Identifiers'
+
+export type PlaylistLibraryID = ID | string | SmartCollectionVariant
+
+export type PlaylistLibraryKind =
+  | 'library-playlist'
+  | 'playlist'
+  | 'playlist-folder'
+
 export type PlaylistIdentifier = {
   type: 'playlist'
   playlist_id: number

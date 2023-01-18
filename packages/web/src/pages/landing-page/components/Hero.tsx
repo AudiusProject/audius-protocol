@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { IconArrow, IconDownload } from '@audius/stems'
 import cn from 'classnames'
-import { Parallax, withController } from 'react-scroll-parallax'
+import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
 import HeroForeground from 'assets/img/publicSite/AudiusApp@2x.png'
 import HeroBackgroundMobile from 'assets/img/publicSite/Hero-BG@1x.jpg'
@@ -33,14 +33,15 @@ type HeroProps = {
   isMobile: boolean
   onImageLoad: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
-} & { parallaxController: any }
+}
 
 const iOSDownloadLink = getIOSAppLink()
 
 export const Hero = (props: HeroProps) => {
-  const { parallaxController, onImageLoad, isMobile } = props
+  const parallaxController = useParallaxController()
+  const { onImageLoad, isMobile } = props
   const onImgSet = useCallback(() => {
-    if (!isMobile) parallaxController.update()
+    if (!isMobile) parallaxController?.update()
     onImageLoad()
   }, [parallaxController, onImageLoad, isMobile])
 
@@ -49,7 +50,7 @@ export const Hero = (props: HeroProps) => {
       <div className={cn(styles.heroContainer, styles.mobileContainer)}>
         <div className={styles.content}>
           <div className={styles.parallaxBg}> </div>
-          <Parallax className={cn(styles.mobileBG)} y={[0, -30]}>
+          <Parallax className={cn(styles.mobileBG)} translateY={[0, -30]}>
             <img
               src={HeroBackgroundMobile}
               sizes={'10vw'}
@@ -119,8 +120,8 @@ export const Hero = (props: HeroProps) => {
         <div className={styles.parallaxBg}> </div>
         <Parallax
           className={cn(styles.background, styles.fgContainer)}
-          y={[51, -10]}
-          x={[64, 64]}
+          translateY={[51, -10]}
+          translateX={[64, 64]}
         >
           <img
             src={HeroForeground}
@@ -129,9 +130,11 @@ export const Hero = (props: HeroProps) => {
             alt='Foreground Audius Mobile App'
           />
         </Parallax>
-        <Parallax className={styles.background} y={[-10, -20]} x={[-25, -25]}>
-          {/*
-          // @ts-ignore */}
+        <Parallax
+          className={styles.background}
+          translateY={[-10, -20]}
+          translateX={[-25, -25]}
+        >
           <img
             srcSet={`${HeroBackground} 3840w, ${HeroBackgroundXL} 5500w`}
             sizes={'(max-width: 3815px) 3840w, 5500w'}
@@ -141,7 +144,10 @@ export const Hero = (props: HeroProps) => {
             alt='Background Purple Decoration'
           />
         </Parallax>
-        <Parallax className={styles.textContent} y={['-40px', '110px']}>
+        <Parallax
+          className={styles.textContent}
+          translateY={['-40px', '110px']}
+        >
           <div className={styles.content}>
             <h1 className={styles.title}>{messages.title}</h1>
             <h2 className={styles.subtitle}>{messages.subtitle}</h2>
@@ -149,7 +155,7 @@ export const Hero = (props: HeroProps) => {
         </Parallax>
         <Parallax
           className={styles.buttonContentParallax}
-          y={['-40px', '110px']}
+          translateY={['-40px', '110px']}
         >
           <div className={styles.buttonContent}>
             <button
@@ -178,7 +184,7 @@ export const Hero = (props: HeroProps) => {
         </Parallax>
         <Parallax
           className={styles.appLinksContentParallax}
-          y={['-40px', '110px']}
+          translateY={['-40px', '110px']}
         >
           <div className={styles.appLinksContent}>
             <a
@@ -218,4 +224,4 @@ export const Hero = (props: HeroProps) => {
   )
 }
 
-export default withController(Hero)
+export default Hero

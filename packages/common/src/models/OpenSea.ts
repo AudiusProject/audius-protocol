@@ -1,4 +1,5 @@
 import { Nullable } from '../utils/typeUtils'
+
 import { TokenStandard } from './Track'
 
 type AssetContract = {

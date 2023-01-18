@@ -1,15 +1,24 @@
-import { DefaultSizes, SquareSizes, useImageSize } from '@audius/common'
+import {
+  BaseUserImageSizeProps,
+  DefaultSizes,
+  ImageSizesObject,
+  SquareSizes,
+  useImageSize
+} from '@audius/common'
 import { render } from '@testing-library/react'
+import type { Dispatch } from 'redux'
 
 jest.mock('react-redux', () => ({
   useDispatch: () => () => {}
 }))
 
-const TestComponent = (
-  props: Omit<Parameters<typeof useImageSize>[0], 'dispatch'>
-) => {
-  const dispatch = () => {}
-  // @ts-ignore
+type TestComponentProps = Omit<
+  BaseUserImageSizeProps<SquareSizes, ImageSizesObject<SquareSizes>>,
+  'dispatch'
+>
+
+const TestComponent = (props: TestComponentProps) => {
+  const dispatch = (() => {}) as Dispatch<any>
   const image = useImageSize({ ...props, dispatch })
   return <div>{image ?? 'nothing'}</div>
 }

@@ -22,7 +22,7 @@ import {
   IconTikTok
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -441,8 +441,6 @@ const ProfileHeader = ({
             )}
           </div>
           {bio ? (
-            // https://github.com/Soapbox/linkifyjs/issues/292
-            // @ts-ignore
             <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
               <p
                 ref={bioRefCb}

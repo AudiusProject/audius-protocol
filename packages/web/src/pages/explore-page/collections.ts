@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ComponentType, SVGProps } from 'react'
 
 import { ExploreCollectionsVariant } from '@audius/common'
 
@@ -20,7 +20,7 @@ export type ExploreCollection = {
   subtitle?: string
   gradient: string
   shadow: string
-  icon?: ReactNode
+  icon?: ComponentType<SVGProps<SVGSVGElement>>
   incentivized?: boolean // Whether we reward winners with Audio
   link: string
   cardSensitivity?: number

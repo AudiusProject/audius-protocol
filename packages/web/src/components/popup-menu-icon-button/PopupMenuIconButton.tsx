@@ -7,7 +7,7 @@ import styles from './PopupMenuIconButton.module.css'
 
 type PopupMenuIconButtonProps = {
   disabled?: boolean
-  icon?: ReactNode | Element
+  icon?: ReactNode
   iconClassName?: string
 } & Omit<PopupMenuProps, 'renderTrigger'>
 

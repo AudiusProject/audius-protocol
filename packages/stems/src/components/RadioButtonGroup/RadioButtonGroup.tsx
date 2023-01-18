@@ -32,7 +32,7 @@ export const RadioButtonGroup = (props: RadioButtonGroupProps) => {
     componentName: 'RadioButtonGroup'
   })
   const handleChange = useCallback(
-    (e) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       setValueState(e.target.value)
       if (onChange) {
         onChange(e)

@@ -3,6 +3,8 @@
 import { ID, UID } from 'models/Identifiers'
 import { Kind } from 'models/Kind'
 
+import { Metadata } from './types'
+
 // TODO(nkang) - convert to TS
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
@@ -37,7 +39,7 @@ export type AddSuccededAction = {
   entries: {
     id: ID
     uid: UID
-    metadata: Record<string, unknown>
+    metadata: Metadata
     timestamp: number
   }[]
   // replace optionally replaces the entire entry instead of joining metadata

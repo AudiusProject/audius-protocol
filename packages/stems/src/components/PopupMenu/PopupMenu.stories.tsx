@@ -58,22 +58,22 @@ const withIconsProps: Omit<PopupMenuProps, 'renderTrigger'> = {
   items: [
     {
       text: 'Item 1',
-      icon: <IconCamera></IconCamera>,
+      icon: <IconCamera />,
       onClick: () => {}
     },
     {
       text: 'Item 2',
-      icon: <IconMail></IconMail>,
+      icon: <IconMail />,
       onClick: () => {}
     },
     {
       text: 'Item 3',
-      icon: <IconPencil></IconPencil>,
+      icon: <IconPencil />,
       onClick: () => {}
     },
     {
       text: 'Item 4',
-      icon: <IconLock></IconLock>,
+      icon: <IconLock />,
       onClick: () => {}
     }
   ]

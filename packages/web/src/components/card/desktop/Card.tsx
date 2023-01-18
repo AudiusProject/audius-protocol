@@ -5,7 +5,8 @@ import React, {
   useCallback,
   ReactNode,
   useRef,
-  MouseEventHandler
+  MouseEventHandler,
+  Ref
 } from 'react'
 
 import {
@@ -206,7 +207,10 @@ const Card = ({
     bottomActions = (
       <div className={sizeStyles.actionsContainer} ref={menuActionsRef}>
         <Menu menu={menu}>
-          {(ref, triggerPopup) => (
+          {(
+            ref: Ref<SVGSVGElement>,
+            triggerPopup: MouseEventHandler<HTMLDivElement>
+          ) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
               <IconKebabHorizontal
                 className={styles.iconKebabHorizontal}

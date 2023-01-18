@@ -45,7 +45,7 @@ import {
 
 import styles from './SearchPageContent.module.css'
 
-type SearchPageContentProps = {
+export type SearchPageContentProps = {
   tracks: LineupState<{}>
   playlists: UserCollection[]
   albums: UserCollection[]

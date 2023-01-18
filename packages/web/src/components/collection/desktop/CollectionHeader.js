@@ -21,7 +21,7 @@ import {
   IconRocket
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+import Linkify from 'linkify-react'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'

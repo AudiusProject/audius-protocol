@@ -1,8 +1,8 @@
 import { ErrorLevel } from '@audius/common'
+import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
-import { composeWithDevTools } from 'redux-devtools-extension/logOnlyInProduction'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 
@@ -122,7 +122,10 @@ const middlewares = applyMiddleware(
 )
 
 const configureStore = () => {
-  const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 25 })
+  const composeEnhancers = composeWithDevToolsLogOnlyInProduction({
+    trace: true,
+    traceLimit: 25
+  })
   const store = createStore(
     createRootReducer(history),
     composeEnhancers(middlewares)

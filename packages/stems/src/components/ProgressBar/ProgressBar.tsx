@@ -62,10 +62,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       {showLabels && (
         <div className={styles.labels}>
           <div className={styles.minLabel}>
-            {MinWrapper ? <MinWrapper value={min} /> : min}
+            {MinWrapper ? <MinWrapper value={min} /> : min.toString()}
           </div>
           <div className={styles.maxLabel}>
-            {MaxWrapper ? <MaxWrapper value={max} /> : max}
+            {MaxWrapper ? <MaxWrapper value={max} /> : max.toString()}
           </div>
         </div>
       )}

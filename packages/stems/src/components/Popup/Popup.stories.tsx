@@ -13,7 +13,7 @@ export default {
 }
 
 const Template: Story<PopupProps> = (args) => {
-  const anchorRef = useRef<HTMLButtonElement>()
+  const anchorRef = useRef<HTMLButtonElement | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
   return (

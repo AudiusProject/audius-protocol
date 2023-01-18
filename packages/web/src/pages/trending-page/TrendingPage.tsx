@@ -19,10 +19,7 @@ const TrendingPage = ({ containerRef, isMobile }: TrendingPageContentProps) => {
   const content = isMobile ? TrendingPageMobileContent : TrendingPageContent
 
   return (
-    <TrendingPageProvider
-      // @ts-ignore
-      containerRef={containerRef}
-    >
+    <TrendingPageProvider containerRef={containerRef}>
       {content}
     </TrendingPageProvider>
   )

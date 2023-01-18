@@ -24,7 +24,7 @@ export type PopupMenuProps = {
   renderTrigger: (
     anchorRef: React.MutableRefObject<any>,
     triggerPopup: () => void
-  ) => React.ReactNode | Element
+  ) => React.ReactNode
 } & ApplicablePopupProps
 
 export type PopupMenuItem = {
@@ -36,7 +36,7 @@ export type PopupMenuItem = {
   /**
    * An optional icon to display with the menu item
    */
-  icon?: React.ReactNode | Element
+  icon?: React.ReactNode
 
   /**
    * An optional className to apply to the icon
@@ -51,5 +51,5 @@ export type PopupMenuItem = {
   /**
    * The text of the menu item
    */
-  text: string | React.ReactNode | Element
+  text: string | React.ReactNode
 }

@@ -12,7 +12,9 @@ import {
   notificationsSelectors,
   collectionsSocialActions,
   playlistLibraryActions,
-  playlistLibraryHelpers
+  playlistLibraryHelpers,
+  PlaylistLibraryKind,
+  PlaylistLibraryID
 } from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
@@ -170,8 +172,8 @@ const PlaylistLibrary = ({
   const handleDropInFolder = useCallback(
     (
       folder: PlaylistLibraryFolder,
-      droppedKind: 'playlist' | 'library-playlist',
-      droppedId: ID | string | SmartCollectionVariant
+      droppedKind: PlaylistLibraryKind,
+      droppedId: PlaylistLibraryID
     ) => {
       if (!library) return
       const newLibrary = addPlaylistToFolder(library, droppedId, folder.id)
@@ -332,7 +334,10 @@ const PlaylistLibrary = ({
             <Droppable
               className={styles.droppable}
               hoverClassName={styles.droppableHover}
-              onDrop={(draggingId, draggingKind) => {
+              onDrop={(
+                draggingId: PlaylistLibraryID,
+                draggingKind: PlaylistLibraryKind
+              ) => {
                 onReorder(
                   draggingId,
                   folder.contents[0].type === 'folder'
@@ -373,7 +378,7 @@ const PlaylistLibrary = ({
         key={-1}
         className={cn(styles.droppable, styles.top)}
         hoverClassName={styles.droppableHover}
-        onDrop={(id: ID | SmartCollectionVariant, kind) =>
+        onDrop={(id: PlaylistLibraryID, kind: PlaylistLibraryKind) =>
           onReorder(id, -1, kind)
         }
         acceptedKinds={['library-playlist', 'playlist-folder']}
