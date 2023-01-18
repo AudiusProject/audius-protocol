@@ -3,7 +3,6 @@ server::
 	@	audius_discprov_env='standalone' \
 		audius_delegate_private_key='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
-		dn_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
 		go run main.go
 
 
