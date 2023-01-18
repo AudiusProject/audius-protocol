@@ -93,7 +93,7 @@ def _get_unpopulated_playlists(session, args):
         playlist_query = playlist_query.filter(Playlist.is_private == False)
 
     # Filter out deletes unless we're fetching explicitly by id
-    if "playlist_id" not in args:
+    if "playlist_ids" not in args and "routes" not in args:
         playlist_query = playlist_query.filter(Playlist.is_delete == False)
 
     playlist_query = playlist_query.order_by(desc(Playlist.created_at))

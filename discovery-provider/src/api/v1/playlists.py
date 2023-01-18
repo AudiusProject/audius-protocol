@@ -76,8 +76,23 @@ full_playlists_with_score_response = make_full_response(
 )
 
 
-def get_playlist(args):
+def format_get_playlists_args(
+    current_user_id, playlist_id=None, route=None, with_users=True
+):
+    args = {
+        "current_user_id": current_user_id,
+        "with_users": with_users,
+    }
+    if playlist_id:
+        args["playlist_ids"] = [playlist_id]
+    if route:
+        args["routes"] = [route]
+    return args
+
+
+def get_playlist(current_user_id, playlist_id=None, route=None, with_users=True):
     """Returns a single playlist, or None"""
+    args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
         return extend_playlist(playlists[0])
@@ -116,11 +131,8 @@ class Playlist(Resource):
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
         playlist = get_playlist(
-            {
-                "with_users": True,
-                "current_user_id": None,
-                "playlist_ids": [playlist_id],
-            }
+            current_user_id=None,
+            playlist_id=playlist_id,
         )
         response = success_response([playlist] if playlist else [])
         return response
@@ -140,12 +152,9 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-        get_playlist_args = {
-            "with_users": True,
-            "current_user_id": current_user_id,
-            "playlist_id": playlist_id,
-        }
-        playlist = get_playlist(get_playlist_args)
+        playlist = get_playlist(
+            current_user_id=current_user_id, playlist_id=playlist_id
+        )
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
@@ -167,18 +176,12 @@ class FullPlaylistByHandleAndSlug(Resource):
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
-        get_playlist_args = {
-            "with_users": True,
-            "current_user_id": current_user_id,
-        }
-
         route = {
             "handle": handle,
             "slug": slug,
         }
-        get_playlist_args["routes"] = [route]
 
-        playlist = get_playlist(get_playlist_args)
+        playlist = get_playlist(current_user_id=current_user_id, route=route)
         return_response = []
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
