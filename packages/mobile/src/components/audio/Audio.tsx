@@ -206,6 +206,10 @@ export const Audio = () => {
     },
     [dispatch]
   )
+  const incrementCount = useCallback(
+    () => dispatch(playerActions.incrementCount()),
+    [dispatch]
+  )
 
   // Perform initial setup for the track player
   const setupTrackPlayer = async () => {
@@ -268,6 +272,11 @@ export const Audio = () => {
     if (event.type === Event.PlaybackTrackChanged) {
       const playerIndex = await TrackPlayer.getCurrentTrack()
       if (playerIndex === null) return
+
+      // Manually increment player count if we are repeating
+      if ((await TrackPlayer.getRepeatMode()) === TrackPlayerRepeatMode.Track) {
+        incrementCount()
+      }
 
       // Update queue and player state if the track player auto plays next track
       const trackIndex = queueShuffle ? queueShuffleIndex : queueIndex
@@ -394,9 +403,13 @@ export const Audio = () => {
     const refUids = queueListRef.current
     const trackUids = queueShuffle ? queueShuffleTrackUids : queueTrackUids
     const tracks = queueShuffle ? queueShuffleTracks : queueTracks
+    const playIndex = queueShuffle ? queueShuffleIndex : queueIndex
 
-    if (updatingQueueRef.current || isEqual(refUids, trackUids)) return
+    if (playIndex === -1 || isEqual(refUids, trackUids)) return
+
     updatingQueueRef.current = true
+    queueListRef.current = trackUids
+
     // Check if this is a new queue or we are appending to the queue
     const isQueueAppend =
       refUids.length > 0 && isEqual(trackUids.slice(0, refUids.length), refUids)
@@ -465,11 +478,10 @@ export const Audio = () => {
       // NOTE: Should only happen when the user selects a new lineup so reset should never be called in the background and cause an error
       await TrackPlayer.reset()
       await TrackPlayer.add(newTrackData)
-      await TrackPlayer.skip(queueShuffle ? queueShuffleIndex : queueIndex)
+      await TrackPlayer.skip(playIndex)
     }
 
     if (playing) await TrackPlayer.play()
-    queueListRef.current = trackUids
     updatingQueueRef.current = false
   }, [
     isNotReachable,
@@ -492,7 +504,11 @@ export const Audio = () => {
     const playerIdx = await TrackPlayer.getCurrentTrack()
     const trackIdx = queueShuffle ? queueShuffleIndex : queueIndex
 
-    if (trackIdx !== -1 && trackIdx !== playerIdx) {
+    if (
+      !updatingQueueRef.current &&
+      trackIdx !== -1 &&
+      trackIdx !== playerIdx
+    ) {
       await TrackPlayer.skip(trackIdx)
     }
   }, [queueIndex, queueShuffle, queueShuffleIndex])
