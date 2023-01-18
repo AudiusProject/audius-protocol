@@ -28,7 +28,7 @@ ENV GIT_SHA=$git_sha
 
 EXPOSE 7000
 
-HEALTHCHECK --interval=5s --timeout=5s \
+HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
     CMD curl -f http://localhost:7000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
