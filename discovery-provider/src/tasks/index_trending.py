@@ -269,7 +269,6 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
         previous_trending = {
             n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
         }
-        logger.info(previous_trending)
 
         notifications = []
 
@@ -280,7 +279,6 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             track_id = track["track_id"]
             rank = index + 1
             previous_track_notification = previous_trending.get(str(track["track_id"]))
-            logger.info(previous_track_notification)
             if previous_track_notification is not None:
                 current_datetime = datetime.fromtimestamp(timestamp)
                 prev_notification_datetime = datetime.fromtimestamp(
