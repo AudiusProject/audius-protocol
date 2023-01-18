@@ -1,13 +1,17 @@
-const { segmentFile } = require('../src/ffmpeg')
-
 const path = require('path')
 const fs = require('fs-extra')
 const assert = require('assert')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
+
+const { segmentFile, transcodeFileTo320, getFileInformation } = require('../src/ffmpeg')
 
 describe('test segmentFile()', () => {
-  // Create the segments directory to store segments in.
-  // Middleware would normally handle this, however, in this test
-  // context, segmentFile() is unit tested directly without the middleware.
+  /**
+   * Create the segments directory to store segments in.
+   * Middleware would normally handle this, however, in this test
+   * context, segmentFile() is unit tested directly without the middleware.
+   */
   before(async () => {
     const segmentsDirPath = path.join(__dirname, 'segments')
     if (!(await fs.pathExists(segmentsDirPath))) {
@@ -89,6 +93,94 @@ describe('test segmentFile()', () => {
 
     // check that all the expected segments were found
     assert.deepStrictEqual(allSegmentsSet.size, 0)
+  })
+})
 
+/**
+ * Ignores milliseconds bc of inaccuracy in comparison due to how we transcode
+ * e.g. Input file info shows:
+ *    [mp3 @ 0x72367c0] Estimating duration from bitrate, this may be inaccurate
+ *    Duration: 00:03:07.44, start: 0.000000, bitrate: 320 kb/s
+ * and output file shows:
+ *    Duration: 00:03:07.46, start: 0.023021, bitrate: 320 kb/s
+ * Note these durations are the same after accounting for the start offset (not sure why thats there)
+ */
+async function getAudioFileInformation (filePath) {
+  const info = await getFileInformation(filePath)
+  if (!info) throw new Error('Failed to get file information')
+
+  let duration = /Duration: (\d{2}:\d{2}:\d{2}\.\d{2})/g.exec(info.toString())
+  if (!duration) throw new Error('Failed to find file duration')
+  duration = duration[1].split('.')[0]
+
+  let metadata = {}
+  // Extract the metadata properties using a regular expression
+  const properties = /^\s{4}(\w+)\s+:(.+)/gm
+  let match
+  while ((match = properties.exec(info.toString())) !== null) {
+    metadata[match[1]] = match[2].trim()
+  }
+
+  return {
+    info,
+    duration,
+    metadata
+  }
+}
+
+describe('test transcodeFileTo320()', () => {
+  const fileDir = __dirname
+  const fileName = 'testTrack.mp3'
+  const inputFilePath = path.resolve(fileDir, fileName)
+
+  it('Happy path - Transcode file to 320kbps, ensure duration matches input file, and metadata properties correctly defined', async () => {
+    const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
+    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {}, true)
+    const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
+    assert.strictEqual(inputFileDuration, outputFileDuration)
+
+    await fs.remove(transcodeFilePath)
+  })
+
+  it('Happy path - Ensure works without overrideIfExists param set', async () => {
+    // Ensure no file exists at destinationPath
+    const destinationPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
+    await fs.remove(destinationPath)
+
+    const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
+    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {})
+    const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
+
+    assert.strictEqual(inputFileDuration, outputFileDuration)
+
+    await fs.remove(transcodeFilePath)
+  })
+
+  it('Confirm same file transcoded with different metadata has different CID but same duration & fileSize', async () => {
+    const filePath1 = await transcodeFileTo320(fileDir, fileName, {}, true)
+    const { duration: duration1, metadata: metadata1 } = await getAudioFileInformation(filePath1)
+    const { size: size1 } = await fs.stat(filePath1)
+    const cid1 = await Utils.fileHasher.generateNonImageCid(filePath1)
+
+    const filePath2 = await transcodeFileTo320(fileDir, fileName, {}, true)
+    const { duration: duration2, metadata: metadata2 } = await getAudioFileInformation(filePath2)
+    const { size: size2 } = await fs.stat(filePath2)
+    const cid2 = await Utils.fileHasher.generateNonImageCid(filePath2)
+
+    assert.strictEqual(filePath1, filePath2)
+
+    // Assert duration and size are same
+    assert.strictEqual(duration1, duration2)
+    assert.strictEqual(size1, size2)
+
+    // Assert metadata values for fileName and encoder are same, but uuid is different
+    assert.strictEqual(metadata1.fileName, metadata2.fileName)
+    assert.strictEqual(metadata1.encoder, metadata2.encoder)
+    assert.notStrictEqual(metadata1.uuid, metadata2.uuid)
+
+    // Assert CIDs are different
+    assert.notStrictEqual(cid1, cid2)
+
+    await fs.remove(filePath2)
   })
 })

@@ -9,6 +9,7 @@ import ffmpegPath from 'ffmpeg-static'
 // The typing for the ffmpeg-static model is incorrect
 // so this line is here to fix that
 const ffmpeg = (ffmpegPath as unknown as { path: string }).path
+const uuid = require('uuid/v4')
 
 /**
  * Segments file into equal size chunks without re-encoding.
@@ -99,29 +100,55 @@ export function segmentFile(
 }
 
 /**
+ * Call `ffmpeg -i <filepath>` to get audio file information with ffmpeg
+ * NOTE - ffmpeg requires an output file always, but for our purposes we don't need one
+ * For now function always resolves using stderr, which is where the current command pipes output
+ * This function can be made more robust by either adding an output file to the ffmpeg command, or using ffprobe-static instead
+ */
+export async function getFileInformation(filePath: string) {
+  return new Promise((resolve) => {
+    const proc = spawn(ffmpeg, ['-i', filePath])
+
+    // capture output
+    let stderr = ''
+    proc.stderr.on('data', (data) => (stderr += data.toString()))
+
+    proc.on('close', () => {
+      resolve(stderr)
+    })
+  })
+}
+
+/**
  * Transcode file into 320kbps mp3 and store in same directory.
  * @date 01-27-2022
- * @param {Object} params
- * @param {string} params.fileDir the directory of the uploaded track artifact
- * @param {string} params.fileName the uploaded track artifact filename
- * @param {LogContext} params.logContext the log context used to instantiate a logger
- * @returns {Promise<string>} the path to the transcode
+ * @param params
+ * @param params.fileDir the directory of the uploaded track artifact
+ * @param params.fileName the uploaded track artifact filename
+ * @param params.logContext the log context used to instantiate a logger
+ * @returns the path to the newly created transcoded file
  */
 export async function transcodeFileTo320(
   fileDir: string,
   fileName: string,
-  { logContext }: { logContext: LogContext }
-) {
+  { logContext }: { logContext: LogContext },
+  overrideIfExists: Boolean = false
+): Promise<string> {
   const logger = genericLogger.child(logContext)
 
   const sourcePath = path.resolve(fileDir, fileName)
-  const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
-  logger.info(`Transcoding file ${sourcePath}...`)
+  const destinationPath = path.resolve(
+    fileDir,
+    fileName.split('.')[0] + '-dl.mp3'
+  )
+  logger.info(
+    `Transcoding file at ${sourcePath} and saving to ${destinationPath}...`
+  )
 
-  // Exit if dl-copy file already exists at target path.
-  if (await fs.pathExists(targetPath)) {
-    logger.info(`Downloadable copy already exists at ${targetPath}.`)
-    return targetPath
+  // Exit if dl-copy file already exists at target path
+  if ((await fs.pathExists(destinationPath)) && !overrideIfExists) {
+    logger.info(`Downloadable copy already exists at ${destinationPath}.`)
+    return destinationPath
   }
 
   return new Promise((resolve, reject) => {
@@ -129,6 +156,11 @@ export async function transcodeFileTo320(
     const args = [
       '-i',
       sourcePath,
+      overrideIfExists ? '-y' : '-n',
+      '-metadata',
+      `fileName="${fileName}"`,
+      '-metadata',
+      `uuid="${uuid()}"`,
       '-ar',
       '48000', // TODO - move to configs
       '-b:a',
@@ -136,9 +168,8 @@ export async function transcodeFileTo320(
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn', // skip inclusion of video, process only the audio file without "video"
-      targetPath
+      destinationPath
     ]
-    logger.debug(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output
@@ -150,18 +181,24 @@ export async function transcodeFileTo320(
     proc.on('close', (code) => {
       async function asyncFn() {
         if (code === 0) {
-          if (await fs.pathExists(targetPath)) {
-            logger.info(`Transcoded file ${targetPath}`)
-            resolve(targetPath)
+          if (await fs.pathExists(destinationPath)) {
+            logger.info(`Transcoded file ${destinationPath}`)
+            resolve(destinationPath)
           } else {
-            logger.error('Error when processing file with ffmpeg')
-            logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
-            reject(new Error('FFMPEG Error'))
+            const logMsg =
+              'Error when processing file with ffmpeg' +
+              `\nCommand stdout: ${stdout}` +
+              `\nCommand stderr: ${stderr}`
+            logger.error(logMsg)
+            reject(new Error(`FFMPEG Error: ${logMsg}`))
           }
         } else {
-          logger.error('Error when processing file with ffmpeg')
-          logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
-          reject(new Error('FFMPEG Error'))
+          const logMsg =
+            'Error when processing file with ffmpeg' +
+            `\nCommand stdout: ${stdout}` +
+            `\nCommand stderr: ${stderr}`
+          logger.error(logMsg)
+          reject(new Error(`FFMPEG Error: ${logMsg}`))
         }
       }
       asyncFn()

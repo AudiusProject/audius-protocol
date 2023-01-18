@@ -681,6 +681,7 @@ const trackDiskStorage = multer.diskStorage({
       const fileExtension = getFileExtension(file.originalname)
       req.fileNameNoExtension = fileName
       req.fileName = fileName + fileExtension
+      req.originalFileName = file.originalname
 
       req.logger.debug(
         `Created track disk storage: ${req.fileDir}, ${req.fileName}`
