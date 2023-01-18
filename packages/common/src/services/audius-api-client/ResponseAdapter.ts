@@ -269,7 +269,6 @@ export const makeTrack = (
     downloadable: undefined,
     favorite_count: undefined,
     is_streamable: undefined,
-    track_cid: undefined
   }
 
   delete marshalled.id
@@ -279,7 +278,6 @@ export const makeTrack = (
   delete marshalled.downloadable
   delete marshalled.favorite_count
   delete marshalled.is_streamable
-  delete marshalled.track_cid
 
   return marshalled
 }
