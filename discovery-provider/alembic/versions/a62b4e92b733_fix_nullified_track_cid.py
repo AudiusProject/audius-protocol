@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'a62b4e92b733'
-down_revision = 'efafdb22df81'
+revision = "a62b4e92b733"
+down_revision = "6a9f01e775d5"
 branch_labels = None
 depends_on = None
 
@@ -38,6 +38,7 @@ def upgrade():
         COMMIT;
     """
     )
+
 
 def downgrade():
     pass
