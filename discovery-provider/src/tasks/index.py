@@ -3,13 +3,13 @@ import asyncio
 import concurrent.futures
 import json
 import logging
-import os
 import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
 from sqlalchemy.orm.session import Session
+from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -37,7 +37,7 @@ from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.sort_block_transactions import sort_block_transactions
-from src.utils import helpers, web3_provider
+from src.utils import helpers
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -61,7 +61,6 @@ from src.utils.redis_constants import (
 )
 from src.utils.session_manager import SessionManager
 from src.utils.user_event_constants import entity_manager_event_types_arr
-from web3.datastructures import AttributeDict
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -74,17 +73,24 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
-web3 = web3_provider.get_nethermind_web3()
+
 
 # HELPER FUNCTIONS
 
 default_padded_start_hash = (
-    "0x7ef3e7395b68247c807e301774a94df3decdd4e17b7527524b57b58c694252b2"
+    "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
+
+
+def get_contract_info_if_exists(self, address):
+    for contract_name, contract_address in get_contract_addresses().items():
+        if update_task.web3.toChecksumAddress(contract_address) == address:
+            return (contract_name, contract_address)
+    return None
 
 
 def get_latest_block(db: SessionManager):
@@ -105,7 +111,7 @@ def get_latest_block(db: SessionManager):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = web3.eth.get_block("latest", True)
+        latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -115,14 +121,12 @@ def get_latest_block(db: SessionManager):
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = dict(web3.eth.get_block(target_latest_block_number, True))
-        latest_block["number"] += final_poa_block
-        latest_block = AttributeDict(latest_block)  # type: ignore
+        latest_block = update_task.web3.eth.get_block(target_latest_block_number, True)
     return latest_block
 
 
 def update_latest_block_redis():
-    latest_block_from_chain = web3.eth.get_block("latest", True)
+    latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
     default_indexing_interval_seconds = int(
         update_task.shared_config["discprov"]["block_processing_interval_sec"]
     )
@@ -151,7 +155,7 @@ def fetch_tx_receipt(transaction):
 
 
 def fetch_tx_receipts(self, block):
-    block_hash = web3.toHex(block.hash)
+    block_hash = self.web3.toHex(block.hash)
     block_number = block.number
     block_transactions = block.transactions
     block_tx_with_receipts = {}
@@ -169,9 +173,6 @@ def fetch_tx_receipts(self, block):
                 logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
-    logger.info(
-        f"index.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
-    )
     if num_processed_txs != num_submitted_txs:
         raise IndexingError(
             type="tx",
@@ -197,7 +198,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
-            txhash = web3.toHex(tx_receipt.transactionHash)
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in entity_manager_event_types_arr:
                 entity_manager_events_tx = getattr(
                     entity_manager_contract.events, event_type
@@ -306,13 +307,10 @@ def save_skipped_tx(session, redis):
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
-    entity_manager_address = os.getenv(
-        "audius_contracts_nethermind_entity_manager_address"
-    )
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
-        tx_is_type = tx_target_contract_address == entity_manager_address
+        tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
         if tx_is_type:
             contract_type = tx_type
             logger.info(
@@ -321,9 +319,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             break
 
-    logger.info(
-        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
-    )
     return contract_type
 
 
@@ -387,6 +382,7 @@ def process_state_changes(
         )
 
 
+cid_types = ["track", "user", "playlist_data"]
 UPSERT_CID_METADATA_QUERY = """
     INSERT INTO cid_data (cid, type, data)
     VALUES (:cid, :type, :data)
@@ -465,7 +461,6 @@ def index_blocks(self, db, blocks_list):
                     Fetch transaction receipts
                     """
                     fetch_tx_receipts_start_time = time.time()
-                    logger.info(f"index.py fetching block {block}")
                     tx_receipt_dict = fetch_tx_receipts(self, block)
                     metric.save_time(
                         {"scope": "fetch_tx_receipts"},
@@ -519,13 +514,11 @@ def index_blocks(self, db, blocks_list):
                     Fetch JSON metadata
                     """
                     fetch_metadata_start_time = time.time()
-                    # pre-fetch cids asynchronously to not have it block in entity_manager_update
+                    # pre-fetch cids asynchronously to not have it block in user_state_update
+                    # and track_state_update
                     cid_metadata, cid_type = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[ENTITY_MANAGER],
-                    )
-                    logger.info(
-                        f"index.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
                     duration_ms = round(
@@ -599,7 +592,7 @@ def index_blocks(self, db, blocks_list):
 
                 except Exception as e:
 
-                    blockhash = web3.toHex(block_hash)
+                    blockhash = update_task.web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
                     )
@@ -616,7 +609,7 @@ def index_blocks(self, db, blocks_list):
                 # Use 'commit' as the tx hash here.
                 # We're at a point where the whole block can't be added to the database, so
                 # we should skip it in favor of making progress
-                blockhash = web3.toHex(block_hash)
+                blockhash = update_task.web3.toHex(block_hash)
                 indexing_error = IndexingError(
                     "session.commit", block_number, blockhash, "commit", str(e)
                 )
@@ -964,42 +957,36 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 
 # CELERY TASKS
-@celery.task(name="update_discovery_provider_nethermind", bind=True)
+@celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-
-    # ask identity did you switch relay
-    # start indexing from the start block we've configured (stage/prod may be different)
 
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    web3 = web3_provider.get_nethermind_web3()
+    web3 = update_task.web3
     redis = update_task.redis
-
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
     current_block_query_results = None
 
     with db.scoped_session() as session:
         current_block_query = session.query(Block).filter_by(is_current=True)
         current_block_query_results = current_block_query.all()
-
-        if not final_poa_block or (
-            current_block_query_results
-            and current_block_query_results[0].number < final_poa_block
+        if (
+            final_poa_block
+            and current_block_query_results
+            and current_block_query_results[0].number >= final_poa_block
         ):
-            # need to finish indexing POA
+            # done indexing POA
             return
 
     # Initialize contracts and attach to the task singleton
-    entity_manager_address = web3.toChecksumAddress(
-        os.getenv("audius_contracts_nethermind_entity_manager_address")
-    )
-
-    entity_manager_contract_abi = helpers.load_abi_values()["EntityManager"]["abi"]
-    entity_manager_contract = web3.eth.contract(
-        address=entity_manager_address,
+    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
+        "abi"
+    ]
+    entity_manager_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[ENTITY_MANAGER],
         abi=entity_manager_contract_abi,
     )
 
@@ -1026,7 +1013,7 @@ def update_task(self):
                 f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
             )
 
-            latest_block = get_latest_block(db, final_poa_block)
+            latest_block = get_latest_block(db)
 
             # Capture block information between latest and target block hash
             index_blocks_list = []
@@ -1078,9 +1065,7 @@ def update_task(self):
                         block_intersection_found = True
                         intersect_block_hash = default_config_start_hash
                     else:
-                        latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += final_poa_block
-                        latest_block = AttributeDict(latest_block)
+                        latest_block = web3.eth.get_block(parent_hash, True)
                         intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
