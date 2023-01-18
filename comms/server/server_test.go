@@ -95,6 +95,19 @@ func TestGetChats(t *testing.T) {
 	// Insert members into chats (1 and 2, 1 and 3)
 	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3), ($4, $2, $4, $2), ($4, $2, $4, $5)", chatId1, user1Id, user2Id, chatId2, user3Id)
 	assert.NoError(t, err)
+
+	// Insert 2 messages into chat 1
+	messageId1 := strconv.Itoa(seededRand.Int())
+	message1CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(59))
+	message1 := "first message"
+	messageId2 := strconv.Itoa(seededRand.Int())
+	message2CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(45))
+	message2 := "second message"
+	_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5), ($6, $2, $7, $8, $9)", messageId1, chatId1, user1Id, message1CreatedAt, message1, messageId2, user2Id, message2CreatedAt, message2)
+	assert.NoError(t, err)
+	_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", message2CreatedAt, message2, chatId1)
+	assert.NoError(t, err)
+
 	err = tx.Commit()
 	assert.NoError(t, err)
 
@@ -119,7 +132,8 @@ func TestGetChats(t *testing.T) {
 	}
 	expectedChat1Data := schema.UserChat{
 		ChatID:             chatId1,
-		LastMessageAt:      chat1CreatedAt.Format(time.RFC3339Nano),
+		LastMessage:        message2,
+		LastMessageAt:      message2CreatedAt.Format(time.RFC3339Nano),
 		InviteCode:         chatId1,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -167,7 +181,56 @@ func TestGetChats(t *testing.T) {
 			NextCount:  float64(0),
 			NextCursor: chat2CreatedAt.Format(time.RFC3339Nano),
 			PrevCount:  float64(0),
-			PrevCursor: chat1CreatedAt.Format(time.RFC3339Nano),
+			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health:  expectedHealth,
+				Data:    expectedData,
+				Summary: &expectedSummary,
+			},
+		)
+		assert.NoError(t, err)
+		if assert.NoError(t, getChats(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test paginated GET /comms/chats
+	{
+		// Query /comms/chats
+		req, err := http.NewRequest(http.MethodGet, "/comms/chats", nil)
+		assert.NoError(t, err)
+
+		// Set sig header
+		payload := []byte(req.URL.Path)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(config.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Set query params
+		before := time.Now().UTC().Add(-time.Minute * time.Duration(45)).Format(time.RFC3339Nano)
+		after := time.Now().UTC().Add(-time.Hour * time.Duration(2)).Format(time.RFC3339Nano)
+		queryParams := c.QueryParams()
+		queryParams["before"] = []string{before}
+		queryParams["after"] = []string{after}
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := []schema.UserChat{
+			expectedChat1Data,
+		}
+		expectedSummary := schema.Summary{
+			TotalCount: float64(2),
+			NextCount:  float64(1),
+			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCount:  float64(0),
+			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -197,7 +260,7 @@ func TestGetChats(t *testing.T) {
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
-		// Set query params
+		// Set path params
 		c.SetParamNames("id")
 		c.SetParamValues(chatId1)
 
@@ -258,10 +321,10 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Insert chat messages
-	messageId1 := "message1"
+	messageId1 := strconv.Itoa(seededRand.Int())
 	message1CreatedAt := time.Now().UTC().Add(-time.Hour * time.Duration(2))
 	message1 := "hello from user 1"
-	messageId2 := "message2"
+	messageId2 := strconv.Itoa(seededRand.Int())
 	message2CreatedAt := time.Now().UTC().Add(-time.Hour * time.Duration(1))
 	message2 := "ack from user 2"
 	_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5), ($6, $2, $7, $8, $9)", messageId1, chatId, user1Id, message1CreatedAt, message1, messageId2, user2Id, message2CreatedAt, message2)
@@ -278,27 +341,7 @@ func TestGetMessages(t *testing.T) {
 	err = tx.Commit()
 	assert.NoError(t, err)
 
-	// Test GET /comms/chats/:id/messages
-	e := createServer()
-	req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
-	assert.NoError(t, err)
-
-	// Set sig header
-	payload := []byte(req.URL.Path)
-	sigBase64 := signPayload(t, payload, privateKey1)
-	req.Header.Set(config.SigHeader, sigBase64)
-
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	// Set query params
-	c.SetParamNames("id")
-	c.SetParamValues(chatId)
-
-	res := rec.Result()
-	defer res.Body.Close()
-
-	// Assertions
+	// Common expected responses
 	encodedUser1, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
 	encodedUser2, err := misc.EncodeHashId(int(user2Id))
@@ -331,28 +374,105 @@ func TestGetMessages(t *testing.T) {
 		Message:      message2,
 		CreatedAt:    message2CreatedAt.Format(time.RFC3339Nano),
 	}
-	expectedData := []schema.ChatMessage{
-		expectedMessage2Data,
-		expectedMessage1Data,
+
+	// Test GET /comms/chats/:id/messages
+	{
+		e := createServer()
+		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
+		assert.NoError(t, err)
+
+		// Set sig header
+		payload := []byte(req.URL.Path)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(config.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Set path params
+		c.SetParamNames("id")
+		c.SetParamValues(chatId)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := []schema.ChatMessage{
+			expectedMessage2Data,
+			expectedMessage1Data,
+		}
+		expectedSummary := schema.Summary{
+			TotalCount: float64(2),
+			NextCount:  float64(0),
+			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCount:  float64(0),
+			PrevCursor: message1CreatedAt.Format(time.RFC3339Nano),
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health:  expectedHealth,
+				Data:    expectedData,
+				Summary: &expectedSummary,
+			},
+		)
+		assert.NoError(t, err)
+		if assert.NoError(t, getMessages(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
 	}
-	expectedSummary := schema.Summary{
-		TotalCount: float64(2),
-		NextCount:  float64(0),
-		NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
-		PrevCount:  float64(0),
-		PrevCursor: message1CreatedAt.Format(time.RFC3339Nano),
-	}
-	expectedResponse, err := json.Marshal(
-		schema.CommsResponse{
-			Health:  expectedHealth,
-			Data:    expectedData,
-			Summary: &expectedSummary,
-		},
-	)
-	assert.NoError(t, err)
-	if assert.NoError(t, getMessages(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+
+	// Test paginated GET /comms/chats/:id/messages
+	{
+		e := createServer()
+		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
+		assert.NoError(t, err)
+
+		// Set sig header
+		payload := []byte(req.URL.Path)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(config.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		// Set path params
+		c.SetParamNames("id")
+		c.SetParamValues(chatId)
+
+		// Set query params
+		before := time.Now().UTC().Add(-time.Minute * time.Duration(15)).Format(time.RFC3339Nano)
+		after := time.Now().UTC().Add(-time.Minute * time.Duration(90)).Format(time.RFC3339Nano)
+		queryParams := c.QueryParams()
+		queryParams["before"] = []string{before}
+		queryParams["after"] = []string{after}
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := []schema.ChatMessage{
+			expectedMessage2Data,
+		}
+		expectedSummary := schema.Summary{
+			TotalCount: float64(2),
+			NextCount:  float64(0),
+			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCount:  float64(1),
+			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health:  expectedHealth,
+				Data:    expectedData,
+				Summary: &expectedSummary,
+			},
+		)
+		assert.NoError(t, err)
+		if assert.NoError(t, getMessages(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
 	}
 }
 

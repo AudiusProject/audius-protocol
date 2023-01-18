@@ -50,23 +50,30 @@ WITH user_chats AS (
     chat.last_message_at
   FROM chat_member
   JOIN chat ON chat.chat_id = chat_member.chat_id
-  WHERE chat_member.user_id = $2 AND (chat_member.cleared_history_at IS NULL OR chat.last_message_at > chat_member.cleared_history_at)
+  WHERE chat_member.user_id = $1
+	  AND (chat_member.cleared_history_at IS NULL
+		  OR chat.last_message_at > chat_member.cleared_history_at)
 )
 SELECT
   (SELECT COUNT(*) AS total_count FROM user_chats),
   (
     SELECT COUNT(*) FROM user_chats
-    WHERE last_message_at < $1
-  ) AS before_count
+    WHERE last_message_at < $2
+  ) AS before_count,
+	(
+	  SELECT COUNT(*) FROM user_chats
+		WHERE last_message_at > $3
+	) AS after_count
 `
 
 type UserChatsSummaryParams struct {
-	Before time.Time `json:"before"`
 	UserID int32     `db:"user_id" json:"user_id"`
+	Before time.Time `json:"before"`
+	After  time.Time `json:"after"`
 }
 
 func UserChatsSummary(q db.Queryable, ctx context.Context, arg UserChatsSummaryParams) (SummaryRow, error) {
 	var summary SummaryRow
-	err := q.GetContext(ctx, &summary, userChatsSummary, arg.Before, arg.UserID)
+	err := q.GetContext(ctx, &summary, userChatsSummary, arg.UserID, arg.Before, arg.After)
 	return summary, err
 }

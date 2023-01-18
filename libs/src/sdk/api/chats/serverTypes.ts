@@ -96,6 +96,7 @@ export type UserChat = {
   chat_members: Array<{ user_id: string }>
 
   // User specific
+  last_message: string
   invite_code: string
   unread_message_count: number
   last_read_at: string
