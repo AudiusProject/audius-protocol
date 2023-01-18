@@ -356,7 +356,7 @@ class SearchBar extends Component {
         {!isTagSearch && this.state.value && (
           <div
             className={cn(styles.loadingAnimation, {
-              [styles.show]: status === Status.LOADING
+              [styles.show]: status === Status.LOADING && this.state.open
             })}
           >
             <Lottie
