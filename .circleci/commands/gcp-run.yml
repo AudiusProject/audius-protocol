@@ -14,14 +14,9 @@ parameters:
     description: Steps to run on GCP instance
     type: steps
     default: []
-  no_output_timeout:
-    description: No output timeout
-    type: string
-    default: 10m
 steps:
   - run:
       name: Create GCP instance
-      no_output_timeout: "<< parameters.timeout >>"
       command: |
         # Create firewall for instance
         CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
