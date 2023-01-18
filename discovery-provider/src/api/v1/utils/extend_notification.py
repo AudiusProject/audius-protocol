@@ -19,6 +19,7 @@ from src.queries.get_notifications import (
     SaveNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
+    TierChangeNotification,
     TipReceiveNotification,
     TipSendNotification,
     TrackMilestoneNotification,
@@ -253,6 +254,19 @@ def extend_milestone(action: NotificationAction):
     return notification
 
 
+def extend_tier_change(action: NotificationAction):
+    data: TierChangeNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": data,
+    }
+    return notification
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
@@ -267,4 +281,5 @@ notification_action_handler = {
     "supporter_rank_up": extend_support_rank_up,
     "challenge_reward": extend_challenge_reward,
     "reaction": extend_reaction,
+    "tier_change": extend_tier_change,
 }
