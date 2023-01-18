@@ -9,6 +9,7 @@ import {
 } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
+import { PersistGate } from 'redux-persist/integration/react'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
 import { Audio } from 'app/components/audio/Audio'
@@ -24,7 +25,7 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { setLibs } from 'app/services/libs'
-import { store } from 'app/store'
+import { persistor, store } from 'app/store'
 import {
   forceRefreshConnectivity,
   subscribeToNetworkStatusUpdates
@@ -75,27 +76,29 @@ const App = () => {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <FlipperAsyncStorage />
       <Provider store={store}>
-        <ThemeProvider>
-          <WalletConnectProvider>
-            <PortalProvider>
-              <ToastContextProvider>
-                <ErrorBoundary>
-                  <NavigationContainer>
-                    <Airplay />
-                    <RootScreen />
-                    <Drawers />
-                    <Modals />
-                    <Audio />
-                    <OAuth />
-                    <NotificationReminder />
-                    <RateCtaReminder />
-                    <OfflineDownloader />
-                  </NavigationContainer>
-                </ErrorBoundary>
-              </ToastContextProvider>
-            </PortalProvider>
-          </WalletConnectProvider>
-        </ThemeProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider>
+            <WalletConnectProvider>
+              <PortalProvider>
+                <ToastContextProvider>
+                  <ErrorBoundary>
+                    <NavigationContainer>
+                      <Airplay />
+                      <RootScreen />
+                      <Drawers />
+                      <Modals />
+                      <Audio />
+                      <OAuth />
+                      <NotificationReminder />
+                      <RateCtaReminder />
+                      <OfflineDownloader />
+                    </NavigationContainer>
+                  </ErrorBoundary>
+                </ToastContextProvider>
+              </PortalProvider>
+            </WalletConnectProvider>
+          </ThemeProvider>
+        </PersistGate>
       </Provider>
     </SafeAreaProvider>
   )
