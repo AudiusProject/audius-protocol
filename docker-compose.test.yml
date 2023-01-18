@@ -214,6 +214,7 @@ services:
       mode: global
     profiles:
       - tests
+      - elasticsearch
 
   # identity-service
 
