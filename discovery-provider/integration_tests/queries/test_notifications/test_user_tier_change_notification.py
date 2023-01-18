@@ -34,7 +34,7 @@ def test_get_save_notifications(app):
             assert len(u1_notifiations) == 1
             assert (
                 u1_notifiations[0]["group_id"]
-                == "tier_change:user_id:2:tier:bronze:blocknumber:10"
+                == "tier_change:user_id:1:tier:bronze:blocknumber:10"
             )
             assert u1_notifiations[0]["is_seen"] == False
             assert len(u1_notifiations[0]["actions"]) == 1
