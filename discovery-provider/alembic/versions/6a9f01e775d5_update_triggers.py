@@ -1,8 +1,8 @@
-"""migrate triggers for notifications
+"""update  triggers
 
-Revision ID: 58b26285cdcf
-Revises: b0623220e904
-Create Date: 2022-07-13 16:02:12.264201
+Revision ID: 6a9f01e775d5
+Revises: efafdb22df81
+Create Date: 2023-01-17 18:39:06.300212
 
 """
 from pathlib import Path
@@ -11,8 +11,8 @@ import sqlalchemy
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "58b26285cdcf"
-down_revision = "b0623220e904"
+revision = "6a9f01e775d5"
+down_revision = "efafdb22df81"
 branch_labels = None
 depends_on = None
 
@@ -31,17 +31,7 @@ def build_sql(file_names):
 
 up_files = [
     # New triggers
-    "handle_challenge_disbursements.sql",
-    "handle_supporter_rank_ups.sql",
-    "handle_reaction.sql",
-    "handle_user_tip.sql",
-    # Updates to old triggers
-    "handle_reaction.sql",
-    "handle_play.sql",
-    "handle_repost.sql",
-    "handle_save.sql",
-    "handle_track.sql",
-    "handle_follow.sql",
+    "handle_user_balance_changes.sql",
 ]
 
 

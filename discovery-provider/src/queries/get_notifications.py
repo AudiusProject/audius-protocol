@@ -209,6 +209,12 @@ class PlaylistMilestoneNotification(TypedDict):
     threshold: int
 
 
+class TierChangeNotification(TypedDict):
+    new_tier: str
+    new_tier_value: int
+    current_value: str
+
+
 NotificationData = Union[
     FollowNotification,
     RepostNotification,
@@ -226,6 +232,7 @@ NotificationData = Union[
     FollowerMilestoneNotification,
     TrackMilestoneNotification,
     PlaylistMilestoneNotification,
+    TierChangeNotification,
 ]
 
 
