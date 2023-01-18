@@ -106,8 +106,8 @@ const VerifyBody = (props: VerifyBodyProps) => {
 
   return (
     <div className={styles.container}>
-      <div>{messages.instructions}</div>
-      <div className={styles.warning}>{messages.warning}</div>
+      <div className={styles.text}>{messages.instructions}</div>
+      <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
       <div className={styles.btnContainer}>
         <TwitterAuthButton
           onClick={handleClickTwitter}

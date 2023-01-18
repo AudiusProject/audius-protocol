@@ -1,4 +1,4 @@
-import { useState, useCallback, KeyboardEvent } from 'react'
+import { useState, useCallback, KeyboardEvent, useContext } from 'react'
 
 import {
   AccountImage,
@@ -12,6 +12,7 @@ import {
 import cn from 'classnames'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import { ToastContext } from 'components/toast/ToastContext'
 import CompleteProfileWithSocial, {
   CompleteProfileWithSocialProps
 } from 'pages/sign-on/components/CompleteProfileWithSocial'
@@ -27,7 +28,8 @@ const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION ?? ''
 const isMobile = getIsMobile()
 
 const messages = {
-  header: 'Tell Us About Yourself So Others Can Find You'
+  header: 'Tell Us About Yourself So Others Can Find You',
+  error: 'Something went wrong, please try again'
 }
 
 type ProfilePageProps = {
@@ -96,10 +98,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   const [isInitial, setIsInitial] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const setLoading = useCallback(() => setIsLoading(true), [setIsLoading])
-  const setFinishedLoading = useCallback(
-    () => setIsLoading(false),
-    [setIsLoading]
-  )
+  const { toast } = useContext(ToastContext)
 
   const onToggleCompleteProfileWithSocial = useCallback(() => {
     setShowCompleteProfileWithSocial((show) => !show)
@@ -116,6 +115,11 @@ const ProfilePage = (props: ProfilePageProps) => {
   const onContinue = useCallback(() => {
     if (getProfileValid()) onNextPage()
   }, [getProfileValid, onNextPage])
+
+  const handleAuthFailure = useCallback(() => {
+    setIsLoading(false)
+    toast(messages.error)
+  }, [setIsLoading, toast])
 
   const onTwitterLogin = async (
     uuid: string,
@@ -143,6 +147,7 @@ const ProfilePage = (props: ProfilePageProps) => {
       )
     } catch (err) {
       console.error(err)
+      toast(messages.error)
       setShowCompleteProfileWithSocial(false)
       setIsInitial(false)
       setIsLoading(false)
@@ -175,7 +180,7 @@ const ProfilePage = (props: ProfilePageProps) => {
         }
       )
     } catch (err) {
-      // Continue if error
+      toast(messages.error)
     } finally {
       setShowCompleteProfileWithSocial(false)
       setIsInitial(false)
@@ -203,6 +208,7 @@ const ProfilePage = (props: ProfilePageProps) => {
         }
       )
     } catch (err) {
+      toast(messages.error)
       setShowCompleteProfileWithSocial(false)
       setIsInitial(false)
       setIsLoading(false)
@@ -234,7 +240,7 @@ const ProfilePage = (props: ProfilePageProps) => {
           isMobile={isMobile}
           initial={isInitial}
           onClick={setLoading}
-          onFailure={setFinishedLoading}
+          onFailure={handleAuthFailure}
           onInstagramLogin={onInstagramLogin}
           onInstagramStart={recordInstagramStart}
           onTikTokLogin={onTikTokLogin}
