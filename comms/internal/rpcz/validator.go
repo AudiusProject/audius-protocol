@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"strconv"
@@ -55,7 +56,6 @@ var Validators = map[string]validatorFunc{
 			return errors.New("Chat already exists")
 		}
 
-		// for 1-1 DMs: validate chat members are not a <blocker, blockee> pair
 		var q db.Queryable
 		q = db.Conn
 		if tx != nil {
@@ -71,13 +71,25 @@ var Validators = map[string]validatorFunc{
 			if err != nil {
 				return err
 			}
+			// validate chat members are not a <blocker, blockee> pair
 			err = validateNotBlocked(q, int32(user1), int32(user2))
 			if err != nil {
 				return err
 			}
-		}
 
-		// TODO check receiving invitee's permission settings
+			// validate receiver permits chats from sender
+			receiver := int32(user1)
+			if receiver == userId {
+				receiver = int32(user2)
+			}
+			err = validatePermissions(q, userId, receiver)
+			if err != nil {
+				return err
+			}
+		} else {
+			// validate chat has 2 members
+			return errors.New("Chat must have 2 members")
+		}
 
 		// validate does not exceed new chat rate limit for any invited users
 		var users []int32
@@ -137,12 +149,22 @@ var Validators = map[string]validatorFunc{
 			return err
 		}
 
-		// TODO check receiver's permission settings
-
-		// for 1-1 DMs: validate chat members are not a <blocker, blockee> pair
 		chatMembers, err := queries.ChatMembers(q, context.Background(), params.ChatID)
+		// 1-1 DMs
 		if len(chatMembers) == 2 {
+			// validate chat members are not a <blocker, blockee> pair
 			err = validateNotBlocked(q, chatMembers[0].UserID, chatMembers[1].UserID)
+			if err != nil {
+				return err
+			}
+
+			// validate receiver permits messages from sender
+			receiver := chatMembers[0].UserID
+			if receiver == userId {
+				receiver = chatMembers[1].UserID
+			}
+
+			err = validatePermissions(q, userId, receiver)
 			if err != nil {
 				return err
 			}
@@ -282,6 +304,47 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 		return errors.New("Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
+	return nil
+}
+
+func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
+	permissionFailure := errors.New("Not permitted to send messages to this user")
+	permits, err := queries.GetChatPermissions(q, context.Background(), receiver)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return err
+		}
+		// No permissions set; default to 'all'
+		return nil
+	}
+
+	if permits == schema.None {
+		return permissionFailure
+	} else if permits == schema.Followees {
+		// Only allow messages from users that receiver follows
+		count, err := queries.CountFollows(db.DNConn, context.Background(), queries.CountFollowsParams{
+			FollowerUserID: receiver,
+			FolloweeUserID: sender,
+		})
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return permissionFailure
+		}
+	} else if permits == schema.Tippers {
+		// Only allow messages from users that have tipped receiver
+		count, err := queries.CountTips(db.DNConn, context.Background(), queries.CountTipsParams{
+			SenderUserID:   sender,
+			ReceiverUserID: receiver,
+		})
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return permissionFailure
+		}
+	}
 	return nil
 }
 

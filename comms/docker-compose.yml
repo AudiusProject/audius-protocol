@@ -19,6 +19,7 @@ services:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
       audius_comms_cluster: "true"
+      dn_db_url: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
       # audius_comms_replica_count: 3 # could be a future dynamic replica config count thing
     volumes:
       - ./comms-linux:/comms-linux
@@ -42,6 +43,7 @@ services:
       audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable"
       audius_comms_cluster: "true"
+      dn_db_url: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
     depends_on:
       - comdb
     ports:
@@ -59,6 +61,7 @@ services:
       audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable"
       audius_comms_cluster: "true"
+      dn_db_url: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
     depends_on:
       - comdb
     ports:
@@ -75,6 +78,7 @@ services:
       audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable"
       audius_comms_cluster: "true"
+      dn_db_url: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
     depends_on:
       - comdb
     ports:
