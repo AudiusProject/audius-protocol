@@ -18,7 +18,7 @@ import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
 import { clearOfflineDownloads } from '../offline-downloads/slice'
-import { clearHistory } from '../search/actions'
+import { clearHistory } from '../search/slice'
 import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions

@@ -3,12 +3,12 @@ import { useState, useCallback } from 'react'
 
 import type {
   ButtonProps,
-  GestureResponderEvent,
   TextStyle,
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
+import type { GenericTouchableProps } from 'react-native-gesture-handler/lib/typescript/components/touchables/GenericTouchable'
 import type { SvgProps } from 'react-native-svg'
 
 import { Text } from 'app/components/core'
@@ -27,6 +27,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 export type TextButtonProps = TouchableOpacityProps &
+  GenericTouchableProps &
   ButtonProps & {
     activeUnderline?: boolean
     variant: 'primary' | 'secondary' | 'neutral' | 'neutralLight4'
@@ -77,21 +78,15 @@ export const TextButton = (props: TextButtonProps) => {
     />
   ) : null
 
-  const handlePressIn = useCallback(
-    (event: GestureResponderEvent) => {
-      setIsPressing(true)
-      onPressIn?.(event)
-    },
-    [onPressIn]
-  )
+  const handlePressIn = useCallback(() => {
+    setIsPressing(true)
+    onPressIn?.()
+  }, [onPressIn])
 
-  const handlePressOut = useCallback(
-    (event: GestureResponderEvent) => {
-      setIsPressing(false)
-      onPressOut?.(event)
-    },
-    [onPressOut]
-  )
+  const handlePressOut = useCallback(() => {
+    setIsPressing(false)
+    onPressOut?.()
+  }, [onPressOut])
 
   return (
     <TouchableOpacity

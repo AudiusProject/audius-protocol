@@ -2,7 +2,6 @@ import {
   getSearch,
   getSearchBarText
 } from 'audius-client/src/common/store/search-bar/selectors'
-import pick from 'lodash/pick'
 import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -11,9 +10,9 @@ import { getSearchQuery } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 
 import { SearchBar } from './SearchBar'
-import SearchHistory from './SearchHistory'
+import { SearchHistory } from './SearchHistory'
 import SearchResults from './SearchResults'
-import EmptySearch from './content/EmptySearch'
+import { EmptySearch } from './content/EmptySearch'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
@@ -37,53 +36,46 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const SearchScreen = () => {
   const styles = useStyles()
   const searchQuery = useSelector(getSearchQuery)
-  const searchResultQuery = useSelector(getSearchBarText)
-  const searchState = useSelector(getSearch)
+  const searchBarText = useSelector(getSearchBarText)
+  const hasResults = useSelector((state) => {
+    const { tracks, users, playlists, albums } = getSearch(state)
+    return [tracks, users, playlists, albums].some(
+      (result) => result && result.length > 0
+    )
+  })
 
-  const searchResults = pick(searchState, [
-    'tracks',
-    'users',
-    'playlists',
-    'albums'
-  ])
-  const hasResults = Object.values(searchResults).some(
-    (result) => result && result.length > 0
-  )
-
-  const renderBody = () => {
+  const renderSearchContent = () => {
     if (searchQuery && hasResults) {
       return <SearchResults />
     }
     if (
       searchQuery &&
-      searchResultQuery &&
-      searchQuery === searchResultQuery &&
+      searchBarText &&
+      searchQuery === searchBarText &&
       !hasResults
     ) {
-      return <EmptySearch query={searchResultQuery} />
+      return <EmptySearch query={searchBarText} />
     }
     return <SearchHistory />
   }
 
-  const renderSearchBar = () => {
-    return (
-      <View style={styles.topbarRight}>
-        <View style={styles.searchBar}>
-          <SearchBar />
-        </View>
+  const searchBar = (
+    <View style={styles.topbarRight}>
+      <View style={styles.searchBar}>
+        <SearchBar />
       </View>
-    )
-  }
+    </View>
+  )
 
   return (
     <Screen
-      topbarRight={renderSearchBar()}
+      topbarRight={searchBar}
       variant='white'
       title={null}
       headerTitle={null}
     >
       <ScreenHeader text='Search' />
-      <ScreenContent unboxed>{renderBody()}</ScreenContent>
+      <ScreenContent unboxed>{renderSearchContent()}</ScreenContent>
     </Screen>
   )
 }
