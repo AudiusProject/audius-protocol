@@ -366,9 +366,18 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
             block = prev_block
             curr_block_number -= 1
         logger.info(
+            "index_trending.py | find min block above timestamp start",
+        )
+        logger.info(
+            f"index_trending.py | find min block above timestamp start num {curr_block_number}",
+        )
+        logger.info(
+            f"index_trending.py | find min block above timestamp start {min_timestamp} prev {prev_timestamp}",
+        )
+
+        logger.info(
             "index_trending.py | find min block above timestamp",
             extra={
-                "block_timestamp": block["timestamp"],
                 "curr_block_number": curr_block_number,
                 "min_timestamp": min_timestamp,
                 "prev_timestamp": prev_timestamp,
