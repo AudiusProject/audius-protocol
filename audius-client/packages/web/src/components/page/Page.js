@@ -131,6 +131,7 @@ export const Page = (props) => {
           {props.header && (
             <HeaderContainer
               header={props.header}
+              showSearch={props.showSearch}
               containerRef={calculateHeaderHeight}
             />
           )}
