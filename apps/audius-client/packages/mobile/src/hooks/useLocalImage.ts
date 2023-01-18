@@ -50,6 +50,10 @@ export const getLocalImageSource = async (
   return verifiedSources
 }
 
+// When reachable, return empty array for local source.
+// defined here to have a single reference and avoid rerenders
+const reachableResult = { value: [], loading: false }
+
 export const useLocalImage = (
   getLocalPath: (size: string) => string | undefined
 ): AsyncState<ImageURISource[]> => {
@@ -65,7 +69,7 @@ export const useLocalImage = (
   }, [getLocalPath])
 
   if (isReachable) {
-    return { value: [], loading: false }
+    return reachableResult
   }
 
   return sourceResult
