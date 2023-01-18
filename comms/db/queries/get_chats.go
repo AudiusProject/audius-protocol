@@ -22,17 +22,10 @@ type UserChatRow struct {
 
 // Get a chat with user-specific details
 const userChat = `
-WITH last_message AS (
-	SELECT ciphertext, chat_id
-	FROM chat_message
-	WHERE chat_id = $2
-	ORDER BY created_at DESC, message_id
-	LIMIT 1
-)
 SELECT
   chat.chat_id,
   chat.created_at, 
-	last_message.ciphertext AS last_message,
+	chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
   chat_member.last_active_at,
@@ -40,7 +33,6 @@ SELECT
   chat_member.cleared_history_at
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
-LEFT JOIN last_message ON last_message.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1 AND chat_member.chat_id = $2
 `
 
@@ -52,22 +44,10 @@ func UserChat(q db.Queryable, ctx context.Context, arg ChatMembershipParams) (Us
 
 // Get all chats (with user-specific details) for the given user
 const userChats = `
-WITH last_message_per_chat AS (
-	SELECT ciphertext, chat_id
-	FROM (
-		SELECT RANK() OVER (PARTITION BY chat_message.chat_id ORDER BY chat_message.created_at DESC, chat_message.message_id) AS chat_rank,
-		chat_message.ciphertext,
-		chat_message.chat_id
-		FROM chat_message
-		JOIN chat_member on chat_member.chat_id = chat_message.chat_id
-		WHERE chat_member.user_id = $1
-	) ranked_message
-	WHERE chat_rank = 1
-)
 SELECT
   chat.chat_id,
   chat.created_at, 
-	last_message_per_chat.ciphertext AS last_message,
+	chat.last_message,
   chat.last_message_at,
   chat_member.invite_code,
   chat_member.last_active_at,
@@ -75,7 +55,6 @@ SELECT
   chat_member.cleared_history_at
 FROM chat_member
 JOIN chat ON chat.chat_id = chat_member.chat_id
-LEFT JOIN last_message_per_chat ON last_message_per_chat.chat_id = chat_member.chat_id
 WHERE chat_member.user_id = $1
 	AND chat.last_message_at < $3
 	AND chat.last_message_at > $4

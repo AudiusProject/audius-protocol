@@ -105,7 +105,7 @@ func TestGetChats(t *testing.T) {
 	message2 := "second message"
 	_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5), ($6, $2, $7, $8, $9)", messageId1, chatId1, user1Id, message1CreatedAt, message1, messageId2, user2Id, message2CreatedAt, message2)
 	assert.NoError(t, err)
-	_, err = tx.Exec("update chat set last_message_at = $1 where chat_id = $2", message2CreatedAt, chatId1)
+	_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", message2CreatedAt, message2, chatId1)
 	assert.NoError(t, err)
 
 	err = tx.Commit()

@@ -47,8 +47,8 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 		return err
 	}
 
-	// update chat's last_message_at
-	_, err = tx.Exec("update chat set last_message_at = $1 where chat_id = $2", messageTimestamp, chatId)
+	// update chat's info on last message
+	_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", messageTimestamp, ciphertext, chatId)
 	if err != nil {
 		return err
 	}
