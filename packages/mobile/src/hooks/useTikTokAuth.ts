@@ -15,6 +15,11 @@ export const useTikTokAuth = (args: UseTikTokAuthArguments) => {
   return createUseTikTokAuthHook({
     authenticate: async () => {
       return new Promise<Credentials>((resolve, reject) => {
+        track(
+          make({
+            eventName: EventNames.TIKTOK_START_OAUTH
+          })
+        )
         const authenticationUrl = `${Config.IDENTITY_SERVICE}/tiktok`
 
         dispatch(

@@ -65,6 +65,15 @@ export const SignOnScreen = () => {
 
   useEffect(() => {
     if (accountReady) {
+      // Record both CREATE_ACCOUNT_COMPLETE_CREATING and
+      // CREATE_ACCOUNT_FINISH events
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_COMPLETE_CREATING,
+          emailAddress: emailField.value,
+          handle: handleField.value
+        })
+      )
       track(
         make({
           eventName: EventNames.CREATE_ACCOUNT_FINISH,

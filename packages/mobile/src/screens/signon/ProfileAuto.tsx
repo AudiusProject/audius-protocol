@@ -298,6 +298,13 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
         trackOAuthComplete(completeEvent, handle, verified)
         setOAuthInfo()
         signUp()
+        track(
+          make({
+            eventName: EventNames.CREATE_ACCOUNT_COMPLETE_PROFILE,
+            emailAddress: emailField.value,
+            handle
+          })
+        )
         goTo('FirstFollows')
         setHasNavigatedAway(true)
         setIsLoading(false)
@@ -305,6 +312,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
     },
     [
       handleField,
+      emailField,
       didValidateHandle,
       validateHandle,
       setOAuthInfo,
