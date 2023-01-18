@@ -16,6 +16,10 @@
   font-weight: var(--font-bold);
 }
 
+.text {
+  line-height: 22px;
+}
+
 .warning {
   margin-top: 32px;
 }

@@ -8,6 +8,10 @@
   max-width: 400px;
 }
 
+.text {
+  line-height: 20px;
+}
+
 .container {
   border-top: 1px solid var(--neutral-light-8);
   padding: 24px 20px;
@@ -75,7 +79,6 @@
   display: flex;
   width: 100%;
   text-align: left;
-  padding: 0px 28px;
   margin-top: 28px;
 }
 
