@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
+import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
@@ -75,6 +76,8 @@ min_number_of_cpus: int = 8  # 8 cpu
 min_total_memory: int = 15500000000  # 15.5 GB of RAM
 min_filesystem_size: int = 240000000000  # 240 GB of file system storage
 
+CHAIN_HEALTH_ENDPOINT = "http://chain:8545/health"
+
 
 def get_elapsed_time_redis(redis, redis_key):
     last_seen = redis.get(redis_key)
@@ -114,6 +117,14 @@ def _get_query_insights():
     )
 
     return query_insights, False
+
+
+def _get_chain_health():
+    try:
+        response = requests.get(CHAIN_HEALTH_ENDPOINT, timeout=0.02)
+        return response.json()
+    except:
+        pass
 
 
 class GetHealthArgs(TypedDict):
@@ -397,6 +408,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # TODO - this will become strictly enforced in upcoming service versions and return with error
     else:
         health_results["meets_min_requirements"] = True
+
+    health_results["chain_health"] = _get_chain_health()
 
     if verbose:
         # Elasticsearch health
