@@ -66,13 +66,14 @@ const { getUserFromCollection } = cacheUsersSelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 /** Main entrypoint - perform all steps required to complete a download for each track */
-export const downloadCollectionById = (
+export const downloadCollectionById = async (
   collectionId?: number | null,
   isFavoritesDownload?: boolean
 ) => {
   const state = store.getState()
   const collection = getCollection(state, { id: collectionId })
-  return downloadCollection(collection, isFavoritesDownload)
+
+  downloadCollection(collection, isFavoritesDownload)
 }
 
 export const downloadCollection = async (
@@ -80,6 +81,16 @@ export const downloadCollection = async (
   isFavoritesDownload?: boolean
 ) => {
   const state = store.getState()
+  const currentUserId = getUserId(state)
+
+  // Prevent download of unavailable collections
+  if (
+    !collection ||
+    collection.is_delete ||
+    (collection.is_private && collection.playlist_owner_id !== currentUserId)
+  )
+    return
+
   const user = getUserFromCollection(state, { id: collection?.playlist_id })
   const collectionIdStr: string | undefined = isFavoritesDownload
     ? DOWNLOAD_REASON_FAVORITES
