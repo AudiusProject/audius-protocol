@@ -41,7 +41,7 @@ import {
 } from './useReachabilityState'
 const { getCollection } = cacheCollectionsSelectors
 
-export const useLoadOfflineTracks = () => {
+export const useLoadOfflineData = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const dispatch = useDispatch()
   const cacheUsers: { uid: string; id: number; metadata: UserMetadata }[] = []
