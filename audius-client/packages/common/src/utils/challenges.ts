@@ -145,3 +145,26 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   }
 }
+
+export const sortChallenges = (
+  userChallenges: Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>
+): ((id1: ChallengeRewardID, id2: ChallengeRewardID) => number) => {
+  return (id1, id2) => {
+    const userChallenge1 = userChallenges[id1]
+    const userChallenge2 = userChallenges[id2]
+
+    if (userChallenge1?.state === 'disbursed') {
+      return 1
+    }
+    if (userChallenge1?.state === 'completed') {
+      return -1
+    }
+    if (userChallenge2?.state === 'disbursed') {
+      return -1
+    }
+    if (userChallenge2?.state === 'completed') {
+      return 1
+    }
+    return 0
+  }
+}
