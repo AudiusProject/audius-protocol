@@ -12,8 +12,6 @@ import (
 	"comms.audius.co/jetstream"
 	"comms.audius.co/misc"
 	"comms.audius.co/schema"
-	"github.com/nats-io/nats-server/v2/server"
-	"github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,23 +23,8 @@ func TestRateLimit(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 
-	// Connect to NATS and create JetStream Context
-	opts := server.Options{
-		Host:      "127.0.0.1",
-		Port:      4222,
-		JetStream: true,
-	}
-	natsServer := test.RunServer(&opts)
-	defer natsServer.Shutdown()
-	nc, err := nats.Connect(nats.DefaultURL)
-	assert.NoError(t, err)
-	defer nc.Close()
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
-	assert.NoError(t, err)
-	jetstream.SetJetstreamContext(js)
-
 	// Create rate limit KV
-	kv, err := js.CreateKeyValue(&nats.KeyValueConfig{
+	kv, err := jetstream.GetJetstreamContext().CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:   config.RateLimitRulesBucketName,
 		Replicas: 1,
 	})

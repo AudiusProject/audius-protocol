@@ -9,11 +9,7 @@ import (
 	"time"
 
 	"comms.audius.co/db"
-	"comms.audius.co/jetstream"
 	"comms.audius.co/schema"
-	"github.com/nats-io/nats-server/v2/server"
-	"github.com/nats-io/nats-server/v2/test"
-	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,21 +29,6 @@ func TestChat(t *testing.T) {
 	user3Id := seededRand.Int31()
 
 	SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
-
-	// Connect to NATS and create JetStream Context
-	opts := server.Options{
-		Host:      "127.0.0.1",
-		Port:      4222,
-		JetStream: true,
-	}
-	natsServer := test.RunServer(&opts)
-	defer natsServer.Shutdown()
-	nc, err := nats.Connect(nats.DefaultURL)
-	assert.NoError(t, err)
-	defer nc.Close()
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
-	assert.NoError(t, err)
-	jetstream.SetJetstreamContext(js)
 
 	// validate user1Id and user2Id can both send messages in this chat
 	{
