@@ -66,20 +66,38 @@ const { getUserFromCollection } = cacheUsersSelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 /** Main entrypoint - perform all steps required to complete a download for each track */
-export const downloadCollectionById = async (
-  collectionId?: number | null,
-  isFavoritesDownload?: boolean
-) => {
+export const downloadCollectionById = async (collectionId?: number | null) => {
   const state = store.getState()
   const collection = getCollection(state, { id: collectionId })
-
-  downloadCollection(collection, isFavoritesDownload)
+  if (!collection) return
+  downloadCollection(collection)
 }
 
-export const downloadCollection = async (
-  collection: Collection | null,
-  isFavoritesDownload?: boolean
-) => {
+export const downloadAllFavorites = async () => {
+  const state = store.getState()
+  store.dispatch(addCollection(DOWNLOAD_REASON_FAVORITES))
+  writeFavoritesCollectionJson()
+  // @ts-ignore state is CommonState
+  const userCollections = getAccountCollections(state as CommonState, '')
+  userCollections.forEach(async (userCollection) => {
+    const user = getUserFromCollection(state, {
+      id: userCollection.playlist_id
+    })
+    if (!user) return
+    userCollection = await populateCoverArtSizes({
+      ...userCollection,
+      user
+    })
+    downloadCollectionCoverArt(userCollection)
+    writeCollectionJson(
+      userCollection.playlist_id.toString(),
+      userCollection,
+      user
+    )
+  })
+}
+
+export const downloadCollection = async (collection: Collection) => {
   const state = store.getState()
   const currentUserId = getUserId(state)
 
@@ -92,43 +110,19 @@ export const downloadCollection = async (
     return
 
   const user = getUserFromCollection(state, { id: collection?.playlist_id })
-  const collectionIdStr: string | undefined = isFavoritesDownload
-    ? DOWNLOAD_REASON_FAVORITES
-    : collection?.playlist_id.toString()
-  if (!collectionIdStr) return
+  const collectionIdStr: string = collection.playlist_id.toString()
   store.dispatch(addCollection(collectionIdStr))
-  if (isFavoritesDownload) {
-    writeFavoritesCollectionJson()
-    // @ts-ignore state is CommonState
-    const userCollections = getAccountCollections(state as CommonState, '')
-    userCollections.forEach(async (userCollection) => {
-      const user = getUserFromCollection(state, {
-        id: userCollection.playlist_id
-      })
-      if (!user) return
-      userCollection = await populateCoverArtSizes({
-        ...userCollection,
-        user
-      })
-      downloadCollectionCoverArt(userCollection)
-      writeCollectionJson(
-        userCollection.playlist_id.toString(),
-        userCollection,
-        user
-      )
-    })
-  } else {
-    if (!collection || !user) return
-    store.dispatch(
-      saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
-    )
-    collection = await populateCoverArtSizes({
-      ...collection,
-      user
-    })
-    downloadCollectionCoverArt(collection)
-    await writeCollectionJson(collectionIdStr, collection!, user)
-  }
+
+  if (!user) return
+  store.dispatch(
+    saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
+  )
+  collection = await populateCoverArtSizes({
+    ...collection,
+    user
+  })
+  downloadCollectionCoverArt(collection)
+  await writeCollectionJson(collectionIdStr, collection!, user)
 }
 
 export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {

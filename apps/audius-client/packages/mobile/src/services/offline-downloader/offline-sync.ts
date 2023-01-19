@@ -116,7 +116,7 @@ export const syncFavoritedCollections = async (
         collection_id: collection.playlist_id.toString()
       }
     }))
-    downloadCollection(collection, true)
+    downloadCollection(collection)
     if (!tracksForDownload) return
     batchDownloadTrack(tracksForDownload)
   })
