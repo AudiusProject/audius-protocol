@@ -145,7 +145,9 @@ function* fetchLineupMetadatasAsync(
 
       const lineupMetadatasResponse = yield call(lineupMetadatasCall, action)
 
-      if (lineupMetadatasResponse === null) return
+      if (lineupMetadatasResponse === null) {
+        yield put(lineupActions.fetchLineupMetadatasFailed())
+      }
       const lineup = yield select((state) =>
         lineupSelector(state, action.handle?.toLowerCase())
       )

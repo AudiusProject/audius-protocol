@@ -1406,7 +1406,7 @@ export class AudiusAPIClient {
         PathType.RootPath,
         headers
       )
-    if (!response) return []
+    if (!response) return null
     return response.data
   }
 

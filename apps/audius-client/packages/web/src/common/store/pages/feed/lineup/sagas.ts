@@ -38,7 +38,7 @@ function* getTracks({
 }: {
   offset: number
   limit: number
-}): Generator<any, FeedItem[], any> {
+}): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
   const currentUser = yield select(getAccountUser)
   if (!currentUser) return []
@@ -67,6 +67,7 @@ function* getTracks({
   const feed: (UserTrackMetadata | UserCollectionMetadata)[] =
     yield apiClient.getSocialFeed(params)
 
+  if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
   const trackIds = tracks.map((t) => t.track_id)
