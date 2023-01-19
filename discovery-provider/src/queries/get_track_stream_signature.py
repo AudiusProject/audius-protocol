@@ -9,7 +9,7 @@ from src.premium_content.premium_content_access_checker import (
 from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_authed_user import get_authed_user
 
-CID_STREAM_ENABLED = False
+CID_STREAM_ENABLED = True
 
 
 class GetTrackStreamSignature(TypedDict):
