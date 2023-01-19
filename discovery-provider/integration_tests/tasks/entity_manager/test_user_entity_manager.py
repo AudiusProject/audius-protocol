@@ -9,14 +9,11 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
+from src.tasks.users import UserEventMetadata, update_user_events
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 from web3 import Web3
 from web3.datastructures import AttributeDict
-from src.utils.redis_connection import get_redis
-from src.tasks.users import (
-    UserEventMetadata,
-    update_user_events,
-)
 
 
 def set_patches(mocker):
@@ -734,4 +731,3 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
         )
         assert mock_call not in bus_mock.method_calls
-
