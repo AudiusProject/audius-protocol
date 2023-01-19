@@ -38,7 +38,7 @@ const { getAccountUser } = accountSelectors
 const messages = {
   title: 'Verification',
   gettingVerified:
-    'Getting verified on Audius is easy! Just link your verified Twitter or Instagram account and you’ll be verified immediately.',
+    'Getting verified on Audius is easy! Just link your verified Instagram, TikTok or legacy verified Twitter account and you’ll be verified immediately.',
   handleMatch:
     'Your Audius handle must exactly match the verified handle you’re connecting.',
   verified: "You're verified!",

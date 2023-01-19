@@ -37,7 +37,7 @@ const messages = {
   title: 'Verification',
   buttonText: 'Verify',
   description:
-    'Getting verified on Audius is easy! Just link your verified Twitter or Instagram account and you’ll be verified immediately.',
+    'Getting verified on Audius is easy! Just link your verified Instagram, TikTok or legacy verified Twitter account and you’ll be verified immediately.',
   warning: (
     <p>
       Your Audius handle must <b>exactly</b> match the verified handle you’re
@@ -49,7 +49,7 @@ const messages = {
   backToMusic: 'Back To The Music',
   failure: 'Sorry, unable to retrieve information',
   errorHandle: 'Sorry, your handle does not match',
-  errorVerifiedTwitter: "Your Twitter account isn't verified",
+  errorVerifiedTwitter: "Your Twitter account isn't legacy verified",
   errorVerifiedInstagram: "Your Instagram account isn't verified",
   errorVerifiedTikTok: "Your TikTok account isn't verified",
   twitterVerify: 'Verify with Twitter',
