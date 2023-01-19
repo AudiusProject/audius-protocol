@@ -5,7 +5,7 @@
 FINAL_BLOCK=$1
 NETHERMIND_DEPLOYER_PRIVATE_KEY=$2
 
-discovery_nodes=("stage-discovery-1" "stage-discovery-2" "stage-discovery-3")
+discovery_nodes=("stage-discovery-1" "stage-discovery-2" "stage-discovery-3" "stage-discovery-4" "stage-discovery-5")
 
 function set_identity_config {
     echo "Setting final_poa_block on identity chain $FINAL_BLOCK"
@@ -39,11 +39,21 @@ function poll_identity_final_block {
     done
 }
 
-function kill_old_chain {
+function kill_indexer {
     for i in "${discovery_nodes[@]}"
     do
         ssh "$i" << "EOF"
         docker rm -f indexer
+        exit
+EOF
+    done
+
+}
+
+function kill_old_chain {
+    for i in "${discovery_nodes[@]}"
+    do
+        ssh "$i" << "EOF"
         docker rm -f chain
         sudo rm -rf /var/k8s/discovery-provider-chain/db/clique/
         audius-cli launch discovery-provider -y
@@ -98,6 +108,7 @@ function deploy_entity_manager {
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run
 }
 
+kill_indexer
 set_identity_config
 poll_identity_final_block
 kill_old_chain
