@@ -40,7 +40,7 @@ import styles from './VerificationPage.module.css'
 const messages = {
   title: 'VERIFICATION',
   instructions:
-    'Getting verified on Audius is easy! Just link your verified Twitter or Instagram account and you’ll be verified immediately.',
+    'Getting verified on Audius is easy! Just link your verified Instagram, TikTok or legacy verified Twitter account and you’ll be verified immediately.',
   warning: (
     <span>
       {'Your Audius handle must '}
@@ -49,7 +49,7 @@ const messages = {
   ),
   failure: 'Sorry, unable to retrieve information',
   errorHandle: 'Sorry, your handle does not match',
-  errorVerifiedTwitter: 'Your Twitter account isn’t verified',
+  errorVerifiedTwitter: 'Your Twitter account isn’t legacy verified',
   errorVerifiedInstagram: 'Your Instagram account isn’t verified',
   errorVerifiedTikTok: 'Your TikTok account isn’t verified',
   backToMusic: 'Back To The Music',
