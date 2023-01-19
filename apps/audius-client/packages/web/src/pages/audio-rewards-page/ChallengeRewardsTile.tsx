@@ -4,6 +4,7 @@ import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   removeNullable,
+  sortChallenges,
   StringKeys,
   fillString,
   formatNumberCommas,
@@ -168,6 +169,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
 
   // The referred challenge only needs a tile if the user was referred
@@ -194,6 +196,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     // Filter out challenges that DN didn't return
     .map((id) => userChallenges[id]?.challenge_id)
     .filter(removeNullable)
+    .sort(sortChallenges(optimisticUserChallenges))
     .map((id) => {
       const props = getChallengeConfig(id)
       return <RewardPanel {...props} openModal={openModal} key={props.id} />
