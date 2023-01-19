@@ -265,8 +265,14 @@ def _unpack_metadata_account_for_metaplex_nft(data):
             i += 1  # creator share
     i += 1  # primary sale happened
     i += 1  # is mutable
-    i += 2  # edition nonce
-    i += 2  # token standard
+    has_edition_nonce = data[i]
+    i += 1
+    if has_edition_nonce:
+        i += 1  # edition nonce
+    has_token_standard = data[i]
+    i += 1
+    if has_token_standard:
+        i += 1  # token standard
     has_collection = data[i]
     if not has_collection:
         return {"collection": None}
@@ -296,9 +302,16 @@ def _get_token_account_info(token_account):
 
 
 def _decode_metadata_account(metadata_account):
-    return base64.b64decode(
-        solana_client_manager.get_account_info(metadata_account)["value"]["data"][0]
-    )
+    account_info = solana_client_manager.get_account_info(metadata_account)
+    if (
+        (not account_info)
+        or ("value" not in account_info)
+        or (not account_info["value"])
+        or ("data" not in account_info["value"])
+        or (not account_info["value"]["data"])
+    ):
+        return None
+    return base64.b64decode(account_info["value"]["data"][0])
 
 
 async def _wrap_decode_metadata_account(metadata_account):
@@ -348,6 +361,7 @@ def _does_user_own_sol_nft_collection(
             )
             metadata_accounts = list(map(_get_metadata_account, nft_mints))
             datas = asyncio.run(_decode_metadata_accounts_async(metadata_accounts))
+            datas = list(filter(lambda data: data, datas))
             metadatas = list(map(_unpack_metadata_account_for_metaplex_nft, datas))
             collections = list(map(lambda metadata: metadata["collection"], metadatas))
             has_collection_mint_address = list(
