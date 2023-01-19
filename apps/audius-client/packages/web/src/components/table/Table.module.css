@@ -263,7 +263,7 @@
   margin: 24px auto;
 }
 
-.draggableRow {
+.reorderableRow {
   cursor: grab;
 }
 

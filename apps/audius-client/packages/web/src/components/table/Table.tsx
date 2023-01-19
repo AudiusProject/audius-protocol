@@ -407,6 +407,23 @@ export const Table = ({
   const renderDraggableRow = useCallback(
     (row: any, key: string, props: TableRowProps, className = '') => {
       return (
+        <Draggable
+          id={isTracksTable ? row.original.track_id : row.id}
+          index={row.id}
+          text={row.original.title}
+          isOwner
+          kind={isTracksTable ? 'track' : 'table-row'}
+        >
+          {renderTableRow(row, key, props, className)}
+        </Draggable>
+      )
+    },
+    [isTracksTable, renderTableRow]
+  )
+
+  const renderReorderableRow = useCallback(
+    (row: any, key: string, props: TableRowProps, className = '') => {
+      return (
         <Droppable
           key={row.index}
           className={styles.droppable}
@@ -428,7 +445,7 @@ export const Table = ({
               row,
               key,
               props,
-              cn(styles.draggableRow, className)
+              cn(styles.reorderableRow, className)
             )}
           </Draggable>
         </Droppable>
@@ -454,18 +471,24 @@ export const Table = ({
       if (isEmptyRow(row)) {
         render = renderSkeletonRow
       } else {
-        render = isReorderable ? renderDraggableRow : renderTableRow
+        render = isReorderable
+          ? renderReorderableRow
+          : isTracksTable
+          ? renderDraggableRow
+          : renderTableRow
       }
       return render(row, key, { ...row.getRowProps({ style }) })
     },
     [
       rows,
       prepareRow,
+      isEmptyRow,
       renderSkeletonRow,
       isReorderable,
+      renderReorderableRow,
+      isTracksTable,
       renderDraggableRow,
-      renderTableRow,
-      isEmptyRow
+      renderTableRow
     ]
   )
 
@@ -473,15 +496,21 @@ export const Table = ({
     const displayRows = !showMore ? rows.slice(0, showMoreLimit) : rows
     return displayRows.map((row) => {
       prepareRow(row)
-      const render = isReorderable ? renderDraggableRow : renderTableRow
+      const render = isReorderable
+        ? renderReorderableRow
+        : isTracksTable
+        ? renderDraggableRow
+        : renderTableRow
       return render(row, row.id, { ...row.getRowProps() })
     })
   }, [
-    showMoreLimit,
     showMore,
     rows,
+    showMoreLimit,
     prepareRow,
     isReorderable,
+    renderReorderableRow,
+    isTracksTable,
     renderDraggableRow,
     renderTableRow
   ])
