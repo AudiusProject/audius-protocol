@@ -1,17 +1,21 @@
 import { memo, MouseEvent, useCallback } from 'react'
 
-import { formatCount, pluralize, formatSeconds } from '@audius/common'
-import { IconCrown, IconHidden } from '@audius/stems'
+import {
+  formatCount,
+  pluralize,
+  formatSeconds
+} from '@audius/common'
+import {
+  IconCrown,
+  IconHidden
+} from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import FavoriteButton from 'components/alt-button/FavoriteButton'
-import RepostButton from 'components/alt-button/RepostButton'
-import ShareButton from 'components/alt-button/ShareButton'
 import Skeleton from 'components/skeleton/Skeleton'
-import Tooltip from 'components/tooltip/Tooltip'
 
+import { PremiumTrackCornerTag } from '../PremiumTrackCornerTag'
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {
   TrackTileSize,
@@ -19,13 +23,17 @@ import {
 } from '../types'
 
 import styles from './TrackTile.module.css'
+import { BottomRow } from './BottomRow'
+import { PremiumContentLabel } from './PremiumContentLabel'
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
   artistPick: 'Artist Pick',
   hiddenTrack: 'Hidden Track',
-  repostLabel: 'Repost',
-  unrepostLabel: 'Unrepost'
+  collectibleGated: 'Collectible Gated',
+  specialAccess: 'Special Access',
+  unlocked: 'Unlocked',
+  locked: 'LOCKED'
 }
 
 const RankAndIndexIndicator = ({
@@ -64,6 +72,9 @@ const TrackTile = memo(
     isReposted,
     isOwner,
     isUnlisted,
+    isPremium,
+    premiumConditions,
+    doesUserHaveAccess,
     listenCount,
     isActive,
     isDisabled,
@@ -88,13 +99,11 @@ const TrackTile = memo(
     onClickShare,
     onTogglePlay,
     showRankIcon,
-    permalink
+    permalink,
+    canOverrideBottomBar
   }: TrackTileProps) => {
     const hasOrdering = order !== undefined
-    const onStopPropagation = useCallback(
-      (e: MouseEvent) => e.stopPropagation(),
-      []
-    )
+
     const onClickTitleWrapper = useCallback(
       (e: MouseEvent) => {
         e.stopPropagation()
@@ -103,42 +112,10 @@ const TrackTile = memo(
       },
       [onClickTitle]
     )
-    const hideShare: boolean = fieldVisibility
-      ? fieldVisibility.share === false
-      : false
+
     const hidePlays = fieldVisibility
       ? fieldVisibility.play_count === false
       : false
-
-    const renderShareButton = () => {
-      return (
-        <Tooltip
-          text={'Share'}
-          disabled={isDisabled || hideShare}
-          placement='top'
-          mount='page'
-        >
-          <div
-            className={cn(styles.iconButtonContainer, {
-              [styles.isHidden]: hideShare
-            })}
-            onClick={onStopPropagation}
-          >
-            <ShareButton
-              onClick={onClickShare}
-              isDarkMode={!!isDarkMode}
-              className={styles.iconButton}
-              stopPropagation={false}
-              isMatrixMode={isMatrixMode}
-            />
-          </div>
-        </Tooltip>
-      )
-    }
-
-    const repostLabel = isReposted
-      ? messages.unrepostLabel
-      : messages.repostLabel
 
     return (
       <div
@@ -156,6 +133,9 @@ const TrackTile = memo(
         })}
         onClick={isLoading || isDisabled ? undefined : onTogglePlay}
       >
+        {isPremium && (
+          <PremiumTrackCornerTag doesUserHaveAccess={!!doesUserHaveAccess} />
+        )}
         {/* prefix ordering */}
         <RankAndIndexIndicator
           hasOrdering={hasOrdering}
@@ -229,6 +209,9 @@ const TrackTile = memo(
               )}
             </div>
             <div className={styles.topRight}>
+              {isPremium && (
+                <PremiumContentLabel premiumConditions={premiumConditions} doesUserHaveAccess={!!doesUserHaveAccess} />
+              )}
               {isArtistPick && (
                 <div className={styles.topRightIconLabel}>
                   <IconStar className={styles.topRightIcon} />
@@ -259,63 +242,25 @@ const TrackTile = memo(
             </div>
           </div>
           <div className={styles.divider} />
-          <div className={styles.bottomRow}>
-            {bottomBar}
-            {!isLoading && showIconButtons && isUnlisted && (
-              <div className={styles.iconButtons}>{renderShareButton()}</div>
-            )}
-            {!isLoading && showIconButtons && !isUnlisted && (
-              <div className={styles.iconButtons}>
-                <Tooltip
-                  text={repostLabel}
-                  disabled={isDisabled || isOwner}
-                  placement='top'
-                  mount='page'
-                >
-                  <div
-                    className={cn(styles.iconButtonContainer, {
-                      [styles.isDisabled]: isOwner,
-                      [styles.isHidden]: isUnlisted
-                    })}
-                  >
-                    <RepostButton
-                      aria-label={repostLabel}
-                      onClick={onClickRepost}
-                      isActive={isReposted}
-                      isDisabled={isOwner}
-                      isDarkMode={!!isDarkMode}
-                      isMatrixMode={isMatrixMode}
-                      wrapperClassName={styles.iconButton}
-                    />
-                  </div>
-                </Tooltip>
-                <Tooltip
-                  text={isFavorited ? 'Unfavorite' : 'Favorite'}
-                  disabled={isDisabled || isOwner}
-                  placement='top'
-                  mount='page'
-                >
-                  <div
-                    className={cn(styles.iconButtonContainer, {
-                      [styles.isDisabled]: isOwner,
-                      [styles.isHidden]: isUnlisted
-                    })}
-                  >
-                    <FavoriteButton
-                      onClick={onClickFavorite}
-                      isActive={isFavorited}
-                      isDisabled={isOwner}
-                      isDarkMode={!!isDarkMode}
-                      isMatrixMode={isMatrixMode}
-                      wrapperClassName={styles.iconButton}
-                    />
-                  </div>
-                </Tooltip>
-                {renderShareButton()}
-              </div>
-            )}
-            {!isLoading && <div>{rightActions}</div>}
-          </div>
+          <BottomRow
+            doesUserHaveAccess={doesUserHaveAccess}
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            isFavorited={isFavorited}
+            isReposted={isReposted}
+            rightActions={rightActions}
+            bottomBar={bottomBar}
+            isUnlisted={isUnlisted}
+            fieldVisibility={fieldVisibility}
+            isOwner={isOwner}
+            isDarkMode={isDarkMode}
+            isMatrixMode={isMatrixMode}
+            showIconButtons={showIconButtons}
+            onClickRepost={onClickRepost}
+            onClickFavorite={onClickFavorite}
+            onClickShare={onClickShare}
+            canOverrideBottomBar={canOverrideBottomBar}
+          />
         </div>
       </div>
     )

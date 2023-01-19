@@ -59,7 +59,7 @@ const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
-const getUserHandle = accountSelectors.getUserHandle
+const { getUserHandle, getUserId } = accountSelectors
 
 type OwnProps = {
   uid: UID
@@ -112,6 +112,9 @@ const ConnectedTrackTile = memo(
     const {
       is_delete,
       is_unlisted: isUnlisted,
+      is_premium: isPremium,
+      premium_conditions: premiumConditions,
+      premium_content_signature: premiumContentSignature,
       track_id: trackId,
       title,
       permalink,
@@ -140,6 +143,8 @@ const ConnectedTrackTile = memo(
     const isTrackPlaying = isActive && isPlaying
     const isOwner = handle === userHandle
     const isArtistPick = showArtistPick && _artist_pick === trackId
+    const doesUserHaveAccess =
+      !isPremium || isOwner || !!premiumContentSignature
 
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -172,7 +177,8 @@ const ConnectedTrackTile = memo(
         showArtworkIcon: !isLoading,
         showSkeleton: isLoading,
         callback: () => setArtworkLoaded(true),
-        label: `${title} by ${name}`
+        label: `${title} by ${name}`,
+        doesUserHaveAccess
       }
       return <TrackArtwork {...artworkProps} />
     }
@@ -355,6 +361,9 @@ const ConnectedTrackTile = memo(
           isReposted={isReposted}
           isOwner={isOwner}
           isUnlisted={isUnlisted}
+          isPremium={isPremium}
+          premiumConditions={premiumConditions}
+          doesUserHaveAccess={doesUserHaveAccess}
           isLoading={isLoading}
           isDarkMode={isDarkMode()}
           isMatrixMode={isMatrix()}
@@ -381,6 +390,7 @@ const ConnectedTrackTile = memo(
           isTrending={isTrending}
           showRankIcon={showRankIcon}
           permalink={permalink}
+          canOverrideBottomBar
         />
       </Draggable>
     )

@@ -14,13 +14,19 @@ import {
   premiumContentSelectors,
   premiumContentActions,
   collectiblesActions,
+  trackPageActions,
   TrackMetadata
 } from '@audius/common'
-import { takeLatest, select, call, put } from 'typed-redux-saga'
+import { takeLatest, select, call, put, delay } from 'typed-redux-saga'
 
+import { TrackRouteParams } from 'utils/route/trackRouteParser'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { updatePremiumContentSignatures } = premiumContentActions
+const {
+  updatePremiumContentSignatures,
+  updatePremiumTrackStatus,
+  refreshPremiumTrack
+} = premiumContentActions
 
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
   collectiblesActions
@@ -181,7 +187,7 @@ function* updateCollectibleGatedTrackAccess(
     | ReturnType<typeof cacheActions.add>
 ) {
   // Halt if premium content not enabled
-  yield waitForWrite()
+  yield* waitForWrite()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   if (!getFeatureEnabled(FeatureFlags.PREMIUM_CONTENT_ENABLED)) {
     return
@@ -287,8 +293,45 @@ function* updateCollectibleGatedTrackAccess(
   }
 }
 
+const PREMIUM_TRACK_POLL_FREQUENCY = 2000
+
+function* pollPremiumTrack({
+  trackParams,
+  frequency
+}: {
+  trackParams: TrackRouteParams
+  frequency: number
+}) {
+  const { trackId, slug, handle } = trackParams ?? {}
+  while (true) {
+    const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
+    if (trackId && premiumTrackSignatureMap[trackId]) {
+      yield* put(updatePremiumTrackStatus({ status: 'UNLOCKED' }))
+      break
+    }
+    yield* put(
+      trackPageActions.fetchTrack(
+        trackId,
+        slug ?? undefined,
+        handle ?? undefined,
+        false
+      )
+    )
+    yield* delay(frequency)
+  }
+}
+
+function* refreshPremiumTrackAccess(
+  action: ReturnType<typeof refreshPremiumTrack>
+) {
+  yield* call(pollPremiumTrack, {
+    trackParams: action.payload.trackParams,
+    frequency: PREMIUM_TRACK_POLL_FREQUENCY
+  })
+}
+
 function* watchCollectibleGatedTracks() {
-  yield takeLatest(
+  yield* takeLatest(
     [
       cacheActions.ADD,
       updateUserEthCollectibles.type,
@@ -298,8 +341,12 @@ function* watchCollectibleGatedTracks() {
   )
 }
 
+function* watchRefreshPremiumTrack() {
+  yield* takeLatest(refreshPremiumTrack.type, refreshPremiumTrackAccess)
+}
+
 const sagas = () => {
-  return [watchCollectibleGatedTracks]
+  return [watchCollectibleGatedTracks, watchRefreshPremiumTrack]
 }
 
 export default sagas

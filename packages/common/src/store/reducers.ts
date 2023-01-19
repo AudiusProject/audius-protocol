@@ -54,7 +54,7 @@ import {
   playlistLibraryReducer,
   PlaylistLibraryState
 } from './playlist-library'
-import premiumContentReducer from './premium-content/reducer'
+import premiumContentSlice from './premium-content/slice'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
@@ -218,7 +218,7 @@ export const reducers = () => ({
   tipping: tippingReducer,
 
   // Premium content
-  premiumContent: premiumContentReducer,
+  premiumContent: premiumContentSlice.reducer,
 
   // Collectibles
   collectibles: collectiblesSlice.reducer,
@@ -324,7 +324,7 @@ export type CommonState = {
   tipping: ReturnType<typeof tippingReducer>
 
   // Premium content
-  premiumContent: ReturnType<typeof premiumContentReducer>
+  premiumContent: ReturnType<typeof premiumContentSlice.reducer>
 
   // Collectibles
   collectibles: ReturnType<typeof collectiblesSlice.reducer>

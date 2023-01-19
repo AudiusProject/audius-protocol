@@ -49,7 +49,7 @@
   height: 65%;
 }
 
-.artworkWrapper .artworkIcon g path {
+.artworkWrapper .artworkIcon path {
   fill: var(--static-white);
 }
 .artworkWrapper .artworkIcon g circle[fill='#FFFFFF'] {
