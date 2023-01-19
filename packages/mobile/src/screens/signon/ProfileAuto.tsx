@@ -171,13 +171,6 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
   const [hasNavigatedAway, setHasNavigatedAway] = useState(false)
   const [didValidateHandle, setDidValidateHandle] = useState(false)
 
-  const goTo = useCallback(
-    (page: 'ProfileManual' | 'FirstFollows') => {
-      navigation.replace(page)
-    },
-    [navigation]
-  )
-
   const validateHandle = useCallback(
     (handle: string, verified: boolean) => {
       dispatch(signOnActions.validateHandle(handle, verified))
@@ -291,7 +284,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
       ) {
         trackOAuthComplete(completeEvent, handle, verified)
         setOAuthInfo()
-        goTo('ProfileManual')
+        navigation.push('ProfileManual')
         setHasNavigatedAway(true)
         setIsLoading(false)
       } else if (handleField.status === EditingStatus.SUCCESS) {
@@ -305,7 +298,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
             handle
           })
         )
-        goTo('FirstFollows')
+        navigation.push('FirstFollows')
         setHasNavigatedAway(true)
         setIsLoading(false)
       }
@@ -317,7 +310,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
       validateHandle,
       setOAuthInfo,
       signUp,
-      goTo,
+      navigation,
       trackOAuthComplete
     ]
   )
@@ -397,6 +390,10 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
       })
     )
   }
+
+  const handlePressManual = useCallback(() => {
+    navigation.push('ProfileManual')
+  }, [navigation])
 
   useEffect(() => {
     if (abandoned) {
@@ -479,7 +476,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
 
             <TouchableOpacity
               activeOpacity={0.6}
-              onPress={() => goTo('ProfileManual')}
+              onPress={handlePressManual}
               style={styles.manualButton}
             >
               <Text

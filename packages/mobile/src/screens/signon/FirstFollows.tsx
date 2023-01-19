@@ -49,7 +49,7 @@ const FirstFollows = (props: FirstFollowsProps) => {
       })
     )
 
-    navigation.replace('SignupLoadingPage')
+    navigation.push('SignupLoadingPage')
   }
 
   return (

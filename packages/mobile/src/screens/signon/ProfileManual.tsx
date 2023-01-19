@@ -361,8 +361,12 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
         emailAddress: emailField.value
       })
     )
-    navigation.replace('FirstFollows')
+    navigation.push('FirstFollows')
   }
+
+  const handlePressBackButton = useCallback(() => {
+    navigation.replace('ProfileAuto')
+  }, [navigation])
 
   return (
     <SafeAreaView style={{ backgroundColor: 'white' }}>
@@ -375,7 +379,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
           keyboardShouldPersistTaps='always'
         >
           <View>
-            <SignupHeader />
+            <SignupHeader showBackButton onPressBack={handlePressBackButton} />
             <TouchableWithoutFeedback
               onPress={Keyboard.dismiss}
               accessible={false}
