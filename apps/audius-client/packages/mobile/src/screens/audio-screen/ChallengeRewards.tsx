@@ -11,7 +11,8 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   audioRewardsPageSelectors,
-  modalsActions
+  modalsActions,
+  sortChallenges
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
@@ -104,6 +105,7 @@ export const ChallengeRewards = () => {
     // Filter out challenges that DN didn't return
     .map((id) => userChallenges[id]?.challenge_id)
     .filter(removeNullable)
+    .sort(sortChallenges(optimisticUserChallenges))
     .map((id) => {
       const props = getChallengeConfig(id)
       return (
