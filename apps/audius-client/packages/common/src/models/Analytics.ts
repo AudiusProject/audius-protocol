@@ -469,6 +469,7 @@ type ErrorPage = {
   eventName: Name.ERROR_PAGE
   error: string
   name: string
+  route?: string
 }
 type NotFoundPage = {
   eventName: Name.NOT_FOUND_PAGE

@@ -35,13 +35,17 @@ const onSagaError = (
     `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
   )
   store.dispatch(pushRoute(ERROR_PAGE))
+  const additionalInfo = {
+    ...errorInfo,
+    route: window.location.pathname
+  }
 
   reportToSentry({
     level: ErrorLevel.Fatal,
     error,
-    additionalInfo: errorInfo
+    additionalInfo
   })
-  amplitudeTrack(ERROR_PAGE, errorInfo)
+  amplitudeTrack(ERROR_PAGE, additionalInfo)
 }
 
 // Can't send up the entire Redux state b/c it's too fat

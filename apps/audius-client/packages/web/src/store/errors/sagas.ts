@@ -26,7 +26,8 @@ function* handleError(action: errorActions.HandleErrorAction) {
       yield put(
         make(Name.ERROR_PAGE, {
           error: action.message,
-          name: action.name
+          name: action.name,
+          route: window.location.pathname
         })
       )
     }
