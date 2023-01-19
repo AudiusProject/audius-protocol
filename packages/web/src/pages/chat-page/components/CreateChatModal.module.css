@@ -19,3 +19,7 @@
 .results {
   flex: 1;
 }
+
+.icon path {
+  fill: var(--neutral);
+}

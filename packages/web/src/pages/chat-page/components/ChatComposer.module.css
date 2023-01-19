@@ -12,10 +12,10 @@
   height: 1.5em;
 }
 
-.icon g path {
+.icon path {
   fill: var(--primary);
 }
 
-.icon:hover g path {
+.sendButton:not(:disabled) .icon:hover path {
   fill: var(--secondary);
 }

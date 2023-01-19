@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { chatSelectors, modalsActions } from '@audius/common'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -43,6 +43,7 @@ export const CreateChatPrompt = () => {
         className={styles.button}
         type={ButtonType.PRIMARY_ALT}
         text={messages.writeMessage}
+        leftIcon={<IconCompose />}
         onClick={handleClick}
       />
     </div>
