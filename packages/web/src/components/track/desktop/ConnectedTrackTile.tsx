@@ -59,7 +59,7 @@ const { getTrack } = cacheTracksSelectors
 const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
-const { getUserHandle, getUserId } = accountSelectors
+const { getUserHandle } = accountSelectors
 
 type OwnProps = {
   uid: UID

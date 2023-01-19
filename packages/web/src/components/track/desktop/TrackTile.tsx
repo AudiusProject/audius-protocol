@@ -1,14 +1,7 @@
 import { memo, MouseEvent, useCallback } from 'react'
 
-import {
-  formatCount,
-  pluralize,
-  formatSeconds
-} from '@audius/common'
-import {
-  IconCrown,
-  IconHidden
-} from '@audius/stems'
+import { formatCount, pluralize, formatSeconds } from '@audius/common'
+import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
@@ -22,9 +15,9 @@ import {
   DesktopTrackTileProps as TrackTileProps
 } from '../types'
 
-import styles from './TrackTile.module.css'
 import { BottomRow } from './BottomRow'
 import { PremiumContentLabel } from './PremiumContentLabel'
+import styles from './TrackTile.module.css'
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
@@ -210,7 +203,10 @@ const TrackTile = memo(
             </div>
             <div className={styles.topRight}>
               {isPremium && (
-                <PremiumContentLabel premiumConditions={premiumConditions} doesUserHaveAccess={!!doesUserHaveAccess} />
+                <PremiumContentLabel
+                  premiumConditions={premiumConditions}
+                  doesUserHaveAccess={!!doesUserHaveAccess}
+                />
               )}
               {isArtistPick && (
                 <div className={styles.topRightIconLabel}>

@@ -1,15 +1,14 @@
-import { ReactNode, useCallback } from "react"
-import {
-  FeatureFlags,
-  FieldVisibility
-} from '@audius/common'
+import { ReactNode, useCallback } from 'react'
+
+import { FeatureFlags, FieldVisibility } from '@audius/common'
 import { IconLock } from '@audius/stems'
-import { useFlag } from "hooks/useRemoteConfig"
+import cn from 'classnames'
+
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
-import cn from 'classnames'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './TrackTile.module.css'
 
@@ -68,10 +67,7 @@ export const BottomRow = ({
     ? fieldVisibility.share === false
     : false
 
-  const onStopPropagation = useCallback(
-    (e: any) => e.stopPropagation(),
-    []
-  )
+  const onStopPropagation = useCallback((e: any) => e.stopPropagation(), [])
 
   const renderShareButton = () => {
     return (
