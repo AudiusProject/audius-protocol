@@ -14,7 +14,7 @@ export class LineupSagas {
       offset: number
       limit: number
       payload: any
-    }) => Generator<any, any[], any>,
+    }) => Generator<any, any[] | null, any>,
     retainSelector?: (entry: (LineupTrack | Collection) & { uid: string }) => {
       uid: string
       kind: string
