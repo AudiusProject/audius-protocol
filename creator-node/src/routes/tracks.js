@@ -982,7 +982,7 @@ router.get(
       trackId
     )
     const cidBlacklisted = await BlacklistManager.CIDIsInBlacklist(CID)
-    const isNotServable = !cidBlacklisted && !trackIdBlacklisted
+    const isNotServable = cidBlacklisted || trackIdBlacklisted
     if (isNotServable) {
       return sendResponse(
         req,
