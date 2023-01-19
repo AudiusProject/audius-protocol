@@ -361,12 +361,9 @@ def _does_user_own_sol_nft_collection(
             )
             metadata_accounts = list(map(_get_metadata_account, nft_mints))
             datas = asyncio.run(_decode_metadata_accounts_async(metadata_accounts))
-            datas = list(filter(lambda data: data, datas))
-            logger.info(f"datas: {datas}")
+            datas = list(filter(lambda data: data is not None, datas))
             metadatas = list(map(_unpack_metadata_account_for_metaplex_nft, datas))
-            logger.info(f"metadatas: {metadatas}")
             collections = list(map(lambda metadata: metadata["collection"], metadatas))
-            logger.info(f"collections: {collections}")
             has_collection_mint_address = list(
                 filter(
                     lambda collection: collection
