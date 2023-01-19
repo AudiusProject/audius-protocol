@@ -993,42 +993,6 @@ router.get(
       )
     }
 
-    // attempt to fetch cached stream data for blockchainId
-    // if found, bypass the db and discovery queries and proceed to getCID
-    try {
-      const cachedData = await redisClient.get(`trackStreamCache:::${trackId}`)
-
-      if (cachedData) {
-        if (libs.identityService) {
-          req.logger.info(
-            `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
-          )
-          const signatureData = generateListenTimestampAndSignature(
-            config.get('delegatePrivateKey')
-          )
-          // Fire and forget listen recording
-          libs.identityService.logTrackListen(
-            trackId,
-            delegateOwnerWallet,
-            req.ip,
-            signatureData
-          )
-        }
-
-        req.params.CID = cachedData
-        req.params.streamable = true
-        res.set('Content-Type', 'audio/mpeg')
-        res.set('Copy320-CID', cachedData)
-        // early exit and call next() which continues to getCID
-        return next()
-      }
-    } catch (e) {
-      // do nothing if unable to fetch cached data from redis, continue with rest of the process
-      req.logger.debug(
-        `Could not fetch cached track stream data for track ${trackId}`
-      )
-    }
-
     if (libs.identityService) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
