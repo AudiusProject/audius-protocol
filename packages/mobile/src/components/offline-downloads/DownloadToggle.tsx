@@ -8,6 +8,7 @@ import { Switch, Text } from 'app/components/core'
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import {
   batchDownloadTrack,
+  downloadAllFavorites,
   downloadCollectionById,
   DOWNLOAD_REASON_FAVORITES
 } from 'app/services/offline-downloader'
@@ -128,7 +129,9 @@ export const DownloadToggle = ({
     (isDownloadEnabled: boolean) => {
       if (!collectionId && !isFavoritesDownload) return
       if (isDownloadEnabled) {
-        downloadCollectionById(collectionId, isFavoritesDownload)
+        isFavoritesDownload
+          ? downloadAllFavorites()
+          : downloadCollectionById(collectionId)
         batchDownloadTrack(tracksForDownload)
       } else {
         if (!isFavoritesDownload && collectionIdStr) {
