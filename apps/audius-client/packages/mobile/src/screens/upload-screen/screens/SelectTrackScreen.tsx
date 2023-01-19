@@ -7,7 +7,14 @@ import { useAsyncFn } from 'react-use'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
-import { Button, ErrorText, Screen, Text, Tile } from 'app/components/core'
+import {
+  Button,
+  ErrorText,
+  Screen,
+  ScreenContent,
+  Text,
+  Tile
+} from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackAnalytcs } from 'app/services/analytics'
@@ -101,31 +108,33 @@ export const SelectTrackScreen = () => {
       }
       url='/select-track'
     >
-      <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
-        <IconUpload
-          fill={neutralLight4}
-          height={spacing(20)}
-          width={spacing(20)}
-        />
-        <Text fontSize='xxl' weight='bold' style={styles.title}>
-          {messages.title}
-        </Text>
-        <Text variant='h4' style={styles.description}>
-          {messages.description}
-        </Text>
-        <Button
-          title={messages.browse}
-          fullWidth
-          variant='primary'
-          size='large'
-          icon={isLoading ? LoadingSpinner : undefined}
-          disabled={Boolean(isLoading)}
-          onPress={handleSelectTrack}
-        />
-        {error && !loading ? (
-          <ErrorText style={styles.errorText}>{error.message}</ErrorText>
-        ) : null}
-      </Tile>
+      <ScreenContent>
+        <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
+          <IconUpload
+            fill={neutralLight4}
+            height={spacing(20)}
+            width={spacing(20)}
+          />
+          <Text fontSize='xxl' weight='bold' style={styles.title}>
+            {messages.title}
+          </Text>
+          <Text variant='h4' style={styles.description}>
+            {messages.description}
+          </Text>
+          <Button
+            title={messages.browse}
+            fullWidth
+            variant='primary'
+            size='large'
+            icon={isLoading ? LoadingSpinner : undefined}
+            disabled={Boolean(isLoading)}
+            onPress={handleSelectTrack}
+          />
+          {error && !loading ? (
+            <ErrorText style={styles.errorText}>{error.message}</ErrorText>
+          ) : null}
+        </Tile>
+      </ScreenContent>
     </Screen>
   )
 }

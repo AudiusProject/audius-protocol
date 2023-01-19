@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import { Screen, Tag, ScreenHeader } from 'app/components/core'
+import { Screen, Tag, ScreenHeader, ScreenContent } from 'app/components/core'
 import { TabNavigator, tabScreen } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -67,14 +67,16 @@ export const TagSearchScreen = () => {
       <ScreenHeader text={messages.header} styles={{ root: styles.headerRoot }}>
         <Tag style={styles.tag}>{query.replace(/^#/, '')}</Tag>
       </ScreenHeader>
-      <SearchFocusContext.Provider value={focusContext}>
-        <SearchQueryContext.Provider value={searchQueryContext}>
-          <TabNavigator initialScreenName='Tracks'>
-            {tracksScreen}
-            {profilesScreen}
-          </TabNavigator>
-        </SearchQueryContext.Provider>
-      </SearchFocusContext.Provider>
+      <ScreenContent unboxed>
+        <SearchFocusContext.Provider value={focusContext}>
+          <SearchQueryContext.Provider value={searchQueryContext}>
+            <TabNavigator initialScreenName='Tracks'>
+              {tracksScreen}
+              {profilesScreen}
+            </TabNavigator>
+          </SearchQueryContext.Provider>
+        </SearchFocusContext.Provider>
+      </ScreenContent>
     </Screen>
   )
 }

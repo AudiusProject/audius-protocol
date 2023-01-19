@@ -9,7 +9,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
-import { Screen, ScreenHeader } from 'app/components/core'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 
 import { TOP_ALBUMS } from '../../collections'
@@ -34,9 +34,11 @@ export const TopAlbumsScreen = () => {
   return (
     <Screen>
       <ScreenHeader text={TOP_ALBUMS.title} />
-      <WithLoader loading={status === Status.LOADING}>
-        <CollectionList collection={exploreData} />
-      </WithLoader>
+      <ScreenContent>
+        <WithLoader loading={status === Status.LOADING}>
+          <CollectionList collection={exploreData} />
+        </WithLoader>
+      </ScreenContent>
     </Screen>
   )
 }

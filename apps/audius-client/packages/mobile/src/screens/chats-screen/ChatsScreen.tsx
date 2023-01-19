@@ -4,7 +4,7 @@ import { chatActions, chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Screen, Text } from 'app/components/core'
+import { Screen, ScreenContent, Text } from 'app/components/core'
 
 const { getChats, getChatMessages } = chatSelectors
 
@@ -24,18 +24,20 @@ export const ChatsScreen = () => {
 
   return (
     <Screen>
-      <View>
-        <Text>You have {chats?.length} chats:</Text>
-        {messages.map((message) => {
-          return (
-            <View key={message.message_id}>
-              <Text>{message.sender_user_id} says:</Text>
-              <Text>{message.message}</Text>
-              <Text>{message.created_at}</Text>
-            </View>
-          )
-        })}
-      </View>
+      <ScreenContent>
+        <View>
+          <Text>You have {chats?.length} chats:</Text>
+          {messages.map((message) => {
+            return (
+              <View key={message.message_id}>
+                <Text>{message.sender_user_id} says:</Text>
+                <Text>{message.message}</Text>
+                <Text>{message.created_at}</Text>
+              </View>
+            )
+          })}
+        </View>
+      </ScreenContent>
     </Screen>
   )
 }

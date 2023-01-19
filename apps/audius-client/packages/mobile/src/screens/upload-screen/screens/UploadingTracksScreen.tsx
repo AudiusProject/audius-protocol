@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
-import { Screen, Text, Tile } from 'app/components/core'
+import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -92,29 +92,31 @@ export const UploadingTracksScreen = () => {
       topbarLeft={null}
       url='/uploading-track'
     >
-      <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
-        <View style={styles.title}>
-          <IconUpload
-            fill={neutralLight4}
-            width={24}
-            height={24}
-            style={styles.tileIcon}
-          />
-          <Text fontSize='xxl' weight='bold' color='neutralLight4'>
-            {messages.uploadTitle}
+      <ScreenContent>
+        <Tile styles={{ root: styles.tile, content: styles.tileContent }}>
+          <View style={styles.title}>
+            <IconUpload
+              fill={neutralLight4}
+              width={24}
+              height={24}
+              style={styles.tileIcon}
+            />
+            <Text fontSize='xxl' weight='bold' color='neutralLight4'>
+              {messages.uploadTitle}
+            </Text>
+          </View>
+          <Text variant='body' style={styles.description}>
+            {messages.uploadDescription}
           </Text>
-        </View>
-        <Text variant='body' style={styles.description}>
-          {messages.uploadDescription}
-        </Text>
-      </Tile>
-      {tracks.map((track) => (
-        <UploadingTrackTile
-          key={track.metadata.title}
-          track={track}
-          uploadProgress={trackUploadProgress}
-        />
-      ))}
+        </Tile>
+        {tracks.map((track) => (
+          <UploadingTrackTile
+            key={track.metadata.title}
+            track={track}
+            uploadProgress={trackUploadProgress}
+          />
+        ))}
+      </ScreenContent>
     </Screen>
   )
 }

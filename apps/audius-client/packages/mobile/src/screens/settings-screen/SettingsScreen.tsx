@@ -8,7 +8,7 @@ import Headphone from 'app/assets/images/emojis/headphone.png'
 import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
 import Trophy from 'app/assets/images/emojis/trophy.png'
 import IconSettings from 'app/assets/images/iconSettings.svg'
-import { Screen, ScrollView } from 'app/components/core'
+import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
@@ -74,29 +74,40 @@ export const SettingsScreen = () => {
       url='/settings'
       topbarRight={null}
     >
-      <ScrollView>
-        <Image source={audiusLogoHorizontal} style={styles.logo} />
-        <AccountSettingsRow />
-        <SettingsRow onPress={handlePressRewards}>
-          <SettingsRowLabel label={messages.audioRewards} iconSource={Trophy} />
-        </SettingsRow>
-        <SettingsRow onPress={handlePressHistory}>
-          <SettingsRowLabel
-            label={messages.listeningHistory}
-            iconSource={Headphone}
-          />
-        </SettingsRow>
-        <Divider />
-        <SettingsRow onPress={handlePressNotifications}>
-          <SettingsRowLabel label={messages.notifications} iconSource={Bell} />
-        </SettingsRow>
-        <AppearanceSettingsRow />
-        {IS_IOS ? <CastSettingsRow /> : null}
-        <Divider />
-        <SettingsRow onPress={handlePressAbout}>
-          <SettingsRowLabel label={messages.about} iconSource={SpeechBalloon} />
-        </SettingsRow>
-      </ScrollView>
+      <ScreenContent isOfflineCapable>
+        <ScrollView>
+          <Image source={audiusLogoHorizontal} style={styles.logo} />
+          <AccountSettingsRow />
+          <SettingsRow onPress={handlePressRewards}>
+            <SettingsRowLabel
+              label={messages.audioRewards}
+              iconSource={Trophy}
+            />
+          </SettingsRow>
+          <SettingsRow onPress={handlePressHistory}>
+            <SettingsRowLabel
+              label={messages.listeningHistory}
+              iconSource={Headphone}
+            />
+          </SettingsRow>
+          <Divider />
+          <SettingsRow onPress={handlePressNotifications}>
+            <SettingsRowLabel
+              label={messages.notifications}
+              iconSource={Bell}
+            />
+          </SettingsRow>
+          <AppearanceSettingsRow />
+          {IS_IOS ? <CastSettingsRow /> : null}
+          <Divider />
+          <SettingsRow onPress={handlePressAbout}>
+            <SettingsRowLabel
+              label={messages.about}
+              iconSource={SpeechBalloon}
+            />
+          </SettingsRow>
+        </ScrollView>
+      </ScreenContent>
     </Screen>
   )
 }

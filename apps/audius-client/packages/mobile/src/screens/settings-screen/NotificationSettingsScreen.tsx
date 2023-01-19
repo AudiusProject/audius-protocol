@@ -2,7 +2,7 @@ import { PushNotificationSetting, settingsPageActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { Screen } from 'app/components/core'
+import { Screen, ScreenContent } from 'app/components/core'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 
 import { Divider } from './Divider'
@@ -33,32 +33,34 @@ export const NotificationSettingsScreen = () => {
 
   return (
     <Screen title={messages.title} variant='secondary' topbarRight={null}>
-      <NotificationRow
-        label={messages.enablePn}
-        type={PushNotificationSetting.MobilePush}
-      />
-      <NotificationRow
-        label={messages.milestones}
-        type={PushNotificationSetting.MilestonesAndAchievements}
-      />
-      <NotificationRow
-        label={messages.followers}
-        type={PushNotificationSetting.Followers}
-      />
-      <NotificationRow
-        label={messages.reposts}
-        type={PushNotificationSetting.Reposts}
-      />
-      <NotificationRow
-        label={messages.favorites}
-        type={PushNotificationSetting.Favorites}
-      />
-      <NotificationRow
-        label={messages.remixes}
-        type={PushNotificationSetting.Remixes}
-      />
-      <Divider />
-      <EmailFrequencyControlRow />
+      <ScreenContent>
+        <NotificationRow
+          label={messages.enablePn}
+          type={PushNotificationSetting.MobilePush}
+        />
+        <NotificationRow
+          label={messages.milestones}
+          type={PushNotificationSetting.MilestonesAndAchievements}
+        />
+        <NotificationRow
+          label={messages.followers}
+          type={PushNotificationSetting.Followers}
+        />
+        <NotificationRow
+          label={messages.reposts}
+          type={PushNotificationSetting.Reposts}
+        />
+        <NotificationRow
+          label={messages.favorites}
+          type={PushNotificationSetting.Favorites}
+        />
+        <NotificationRow
+          label={messages.remixes}
+          type={PushNotificationSetting.Remixes}
+        />
+        <Divider />
+        <EmailFrequencyControlRow />
+      </ScreenContent>
     </Screen>
   )
 }

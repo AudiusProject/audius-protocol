@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import { isEmpty } from 'lodash'
 
 import type { ScreenProps } from '../core/Screen'
-import { Screen } from '../core/Screen'
+import { ScreenContent, Screen } from '../core/Screen'
 import { TextButton } from '../core/TextButton'
 
 const messages = {
@@ -19,7 +19,7 @@ type FormScreenProps = ScreenProps & {
   goBackOnSubmit?: boolean
 }
 
-export const FormScreen = (props: FormScreenProps) => {
+export const FormScreen = ({ children, ...props }: FormScreenProps) => {
   const { onSubmit, onReset, errors, goBackOnSubmit, ...other } = props
 
   const navigation = useNavigation()
@@ -53,12 +53,15 @@ export const FormScreen = (props: FormScreenProps) => {
     />
   )
 
+  // TODO: add <ScreenContent> to usages of SafeAreaScreen
   return (
     <Screen
       variant={'white'}
       topbarLeft={topbarLeft}
       topbarRight={topbarRight}
       {...other}
-    />
+    >
+      <ScreenContent>{children}</ScreenContent>
+    </Screen>
   )
 }

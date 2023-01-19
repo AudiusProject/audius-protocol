@@ -9,7 +9,7 @@ import {
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Button, Screen, Text } from 'app/components/core'
+import { Button, Screen, ScreenContent, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -159,7 +159,7 @@ export const ChangePasswordScreen = () => {
 
   return (
     <Screen topbarRight={null} variant='secondary'>
-      {renderContent()}
+      <ScreenContent>{renderContent()}</ScreenContent>
     </Screen>
   )
 }

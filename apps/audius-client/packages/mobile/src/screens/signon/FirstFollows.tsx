@@ -11,7 +11,7 @@ import type {
 } from 'common/store/pages/signon/types'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { SafeAreaScreen } from 'app/components/core'
+import { SafeAreaScreen, ScreenContent } from 'app/components/core'
 import { SuggestedFollows } from 'app/components/suggested-follows'
 import { track, make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
@@ -54,11 +54,13 @@ const FirstFollows = (props: FirstFollowsProps) => {
 
   return (
     <SafeAreaScreen>
-      <SuggestedFollows
-        title={messages.title}
-        onArtistsSelected={handleArtistsSelected}
-        screen='sign-on'
-      />
+      <ScreenContent>
+        <SuggestedFollows
+          title={messages.title}
+          onArtistsSelected={handleArtistsSelected}
+          screen='sign-on'
+        />
+      </ScreenContent>
     </SafeAreaScreen>
   )
 }

@@ -10,7 +10,7 @@ import IconContact from 'app/assets/images/iconContact.svg'
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
-import { Screen, Text } from 'app/components/core'
+import { Screen, ScreenContent, Text } from 'app/components/core'
 import { toggleLocalOfflineModeOverride } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 
@@ -60,40 +60,42 @@ export const AboutScreen = () => {
 
   return (
     <Screen variant='secondary' title={messages.title} topbarRight={null}>
-      <View style={styles.header}>
-        <Image source={appIcon} style={styles.appIcon} />
-        <View>
-          <TouchableWithoutFeedback onPress={handleTitleClick}>
-            <Text variant='h2'>{messages.appName}</Text>
-          </TouchableWithoutFeedback>
-          <Text variant='body2'>
-            {messages.version} {VersionNumber.appVersion}
-          </Text>
-          <Text variant='body2'>{messages.copyright}</Text>
+      <ScreenContent isOfflineCapable>
+        <View style={styles.header}>
+          <Image source={appIcon} style={styles.appIcon} />
+          <View>
+            <TouchableWithoutFeedback onPress={handleTitleClick}>
+              <Text variant='h2'>{messages.appName}</Text>
+            </TouchableWithoutFeedback>
+            <Text variant='body2'>
+              {messages.version} {VersionNumber.appVersion}
+            </Text>
+            <Text variant='body2'>{messages.copyright}</Text>
+          </View>
         </View>
-      </View>
-      <SettingsRow url='https://discordapp.com/invite/yNUg2e2' firstItem>
-        <SettingsRowLabel label={messages.discord} icon={IconDiscord} />
-      </SettingsRow>
-      <SettingsRow url='https://twitter.com/AudiusProject'>
-        <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
-      </SettingsRow>
-      <SettingsRow url='https://www.instagram.com/audiusmusic/'>
-        <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
-      </SettingsRow>
-      <SettingsRow url='mailto:contact@audius.co'>
-        <SettingsRowLabel label={messages.contact} icon={IconContact} />
-      </SettingsRow>
-      <SettingsRow url='https://jobs.lever.co/audius'>
-        <SettingsRowLabel label={messages.careers} icon={IconCareers} />
-      </SettingsRow>
-      <Divider />
-      <SettingsRow url='https://help.audius.co/'>
-        <SettingsRowLabel label={messages.help} />
-      </SettingsRow>
-      <SettingsRow url='https://audius.co/legal/terms-of-use'>
-        <SettingsRowLabel label={messages.terms} />
-      </SettingsRow>
+        <SettingsRow url='https://discordapp.com/invite/yNUg2e2' firstItem>
+          <SettingsRowLabel label={messages.discord} icon={IconDiscord} />
+        </SettingsRow>
+        <SettingsRow url='https://twitter.com/AudiusProject'>
+          <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
+        </SettingsRow>
+        <SettingsRow url='https://www.instagram.com/audiusmusic/'>
+          <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
+        </SettingsRow>
+        <SettingsRow url='mailto:contact@audius.co'>
+          <SettingsRowLabel label={messages.contact} icon={IconContact} />
+        </SettingsRow>
+        <SettingsRow url='https://jobs.lever.co/audius'>
+          <SettingsRowLabel label={messages.careers} icon={IconCareers} />
+        </SettingsRow>
+        <Divider />
+        <SettingsRow url='https://help.audius.co/'>
+          <SettingsRowLabel label={messages.help} />
+        </SettingsRow>
+        <SettingsRow url='https://audius.co/legal/terms-of-use'>
+          <SettingsRowLabel label={messages.terms} />
+        </SettingsRow>
+      </ScreenContent>
     </Screen>
   )
 }

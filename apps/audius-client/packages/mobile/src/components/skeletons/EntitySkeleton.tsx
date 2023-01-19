@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Screen, Tile, Text, Divider } from 'app/components/core'
+import { Screen, Tile, Text, Divider, ScreenContent } from 'app/components/core'
 import Skeleton, { StaticSkeleton } from 'app/components/skeleton/Skeleton'
 import { makeStyles } from 'app/styles'
 
@@ -110,57 +110,59 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
 
   return (
     <Screen>
-      <Tile styles={{ root: styles.root, content: styles.content }}>
-        <View style={styles.heading}>
-          <Text
-            fontSize='small'
-            weight='demiBold'
-            color='neutralLight4'
-            textTransform='uppercase'
-            style={styles.headingText}
-          >
-            {entityType ? messages[entityType] : ''}
-          </Text>
-          <Skeleton style={styles.trackArtwork} />
-          <StaticSkeleton style={styles.trackTitle} />
-          <StaticSkeleton style={styles.artistName} />
-          <StaticSkeleton style={styles.playButton} />
-          <View style={styles.socialActions}>
-            <StaticSkeleton style={styles.socialAction} />
-            <StaticSkeleton style={styles.socialAction} />
-            <StaticSkeleton style={styles.socialAction} />
-            <StaticSkeleton style={styles.socialAction} />
+      <ScreenContent>
+        <Tile styles={{ root: styles.root, content: styles.content }}>
+          <View style={styles.heading}>
+            <Text
+              fontSize='small'
+              weight='demiBold'
+              color='neutralLight4'
+              textTransform='uppercase'
+              style={styles.headingText}
+            >
+              {entityType ? messages[entityType] : ''}
+            </Text>
+            <Skeleton style={styles.trackArtwork} />
+            <StaticSkeleton style={styles.trackTitle} />
+            <StaticSkeleton style={styles.artistName} />
+            <StaticSkeleton style={styles.playButton} />
+            <View style={styles.socialActions}>
+              <StaticSkeleton style={styles.socialAction} />
+              <StaticSkeleton style={styles.socialAction} />
+              <StaticSkeleton style={styles.socialAction} />
+              <StaticSkeleton style={styles.socialAction} />
+            </View>
+            <Divider style={styles.divider} />
+            <View style={styles.metrics}>
+              <StaticSkeleton style={styles.metric} />
+              <StaticSkeleton style={styles.metric} />
+              <StaticSkeleton style={styles.metric} />
+            </View>
+            <View style={styles.description}>
+              {times(random(5, 15), () => random(20, 100)).map(
+                (elementWidth: number, i) => (
+                  <StaticSkeleton
+                    key={i}
+                    style={[styles.descriptionText, { width: elementWidth }]}
+                  />
+                )
+              )}
+            </View>
+            <Divider style={styles.divider} />
+            <View style={styles.metadataSection}>
+              <StaticSkeleton style={styles.metadata} />
+              <StaticSkeleton style={styles.metadata} />
+              <StaticSkeleton style={styles.metadata} />
+            </View>
+            {children ? (
+              <>
+                <Divider style={styles.divider} />
+                {children}
+              </>
+            ) : null}
           </View>
-          <Divider style={styles.divider} />
-          <View style={styles.metrics}>
-            <StaticSkeleton style={styles.metric} />
-            <StaticSkeleton style={styles.metric} />
-            <StaticSkeleton style={styles.metric} />
-          </View>
-          <View style={styles.description}>
-            {times(random(5, 15), () => random(20, 100)).map(
-              (elementWidth: number, i) => (
-                <StaticSkeleton
-                  key={i}
-                  style={[styles.descriptionText, { width: elementWidth }]}
-                />
-              )
-            )}
-          </View>
-          <Divider style={styles.divider} />
-          <View style={styles.metadataSection}>
-            <StaticSkeleton style={styles.metadata} />
-            <StaticSkeleton style={styles.metadata} />
-            <StaticSkeleton style={styles.metadata} />
-          </View>
-          {children ? (
-            <>
-              <Divider style={styles.divider} />
-              {children}
-            </>
-          ) : null}
-        </View>
-      </Tile>
+        </Tile>
+      </ScreenContent>
     </Screen>
   )
 }

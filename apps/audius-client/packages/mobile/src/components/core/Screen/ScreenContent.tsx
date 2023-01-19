@@ -10,9 +10,22 @@ const { getIsReachable } = reachabilitySelectors
 
 export type ScreenContentProps = OfflinePlaceholderProps & {
   children: ReactNode
+  isOfflineCapable?: boolean
 }
 
-export const ScreenContent = ({ children, ...other }: ScreenContentProps) => {
-  const isNotReachable = useSelector(getIsReachable) === false
-  return <>{isNotReachable ? <OfflinePlaceholder {...other} /> : children}</>
+export const ScreenContent = ({
+  children,
+  isOfflineCapable,
+  ...other
+}: ScreenContentProps) => {
+  const isReachable = useSelector(getIsReachable)
+  return (
+    <>
+      {isReachable || isOfflineCapable ? (
+        children
+      ) : (
+        <OfflinePlaceholder {...other} />
+      )}
+    </>
+  )
 }

@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
-import { Text, Screen } from 'app/components/core'
+import { Text, Screen, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -58,16 +58,18 @@ export const WalletConnectScreen = () => {
       }
       url='/wallet-connect'
     >
-      <View style={styles.root}>
-        <Text weight='bold' style={styles.subtitle}>
-          {messages.subtitle}
-        </Text>
-        <Text weight='medium' fontSize='medium' style={styles.text}>
-          {messages.text}
-        </Text>
-        <ConnectNewWalletButton />
-        <LinkedWallets />
-      </View>
+      <ScreenContent>
+        <View style={styles.root}>
+          <Text weight='bold' style={styles.subtitle}>
+            {messages.subtitle}
+          </Text>
+          <Text weight='medium' fontSize='medium' style={styles.text}>
+            {messages.text}
+          </Text>
+          <ConnectNewWalletButton />
+          <LinkedWallets />
+        </View>
+      </ScreenContent>
     </Screen>
   )
 }
