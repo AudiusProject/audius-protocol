@@ -1,32 +1,67 @@
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import HeaderLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
+import { IconButton } from 'app/components/core'
+import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  container: {
+    zIndex: 15
+  },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: palette.white,
     top: 0,
-    width: '100%',
     height: 39,
-    alignItems: 'center',
     zIndex: 15,
+    width: '100%',
+    justifyContent: 'center',
     borderBottomWidth: 1,
-    borderColor: '#F7F7F9'
+    borderColor: palette.neutralLight9
+  },
+  backButton: {
+    width: spacing(6),
+    height: spacing(6),
+    marginLeft: spacing(4)
+  },
+  backButtonIcon: {
+    width: spacing(6),
+    height: spacing(6)
   },
   audiusLogoHeader: {
     position: 'absolute',
     alignSelf: 'center',
-    top: 8,
-    marginBottom: 16,
+    top: spacing(2),
+    marginBottom: spacing(4),
     zIndex: 3,
-    height: 24
+    height: spacing(6)
   }
-})
+}))
 
-const SignupHeader = () => {
+type SignupHeaderProps = {
+  showBackButton?: boolean
+  onPressBack?: () => void
+}
+
+const SignupHeader = (props: SignupHeaderProps) => {
+  const { showBackButton, onPressBack } = props
+  const styles = useStyles()
+  const { neutralLight4 } = useThemeColors()
   return (
-    <View style={{ backgroundColor: 'white', zIndex: 15 }}>
+    <View style={styles.container}>
       <View style={styles.header}>
+        {showBackButton ? (
+          <IconButton
+            styles={{
+              root: styles.backButton,
+              icon: styles.backButtonIcon
+            }}
+            fill={neutralLight4}
+            icon={IconCaretLeft}
+            onPress={onPressBack}
+          />
+        ) : null}
         <HeaderLogo style={styles.audiusLogoHeader} fill={'#C2C0CC'} />
       </View>
     </View>

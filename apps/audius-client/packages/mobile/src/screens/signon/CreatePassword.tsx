@@ -427,7 +427,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
               emailAddress: emailField.value
             })
           )
-          navigation.replace('ProfileAuto')
+          navigation.push('ProfileAuto')
         }}
         disabled={isDisabled}
         containerStyle={styles.mainButtonContainer}
