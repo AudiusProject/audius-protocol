@@ -23,7 +23,8 @@ import {
   downloadCollectionCoverArt,
   downloadTrackCoverArt,
   DOWNLOAD_REASON_FAVORITES,
-  removeCollectionDownload
+  removeCollectionDownload,
+  removeDownloadedCollectionFromFavorites
 } from './offline-downloader'
 import { purgeDownloadedTrack, writeTrackJson } from './offline-storage'
 import type { TrackDownloadWorkerPayload } from './workers/trackDownloadWorker'
@@ -109,16 +110,7 @@ export const syncFavoritedCollections = async (
   )
 
   addedCollections.forEach((collection) => {
-    const tracksForDownload = collection.tracks?.map((track) => ({
-      trackId: track.track_id,
-      downloadReason: {
-        is_from_favorites: true,
-        collection_id: collection.playlist_id.toString()
-      }
-    }))
-    downloadCollection(collection)
-    if (!tracksForDownload) return
-    batchDownloadTrack(tracksForDownload)
+    downloadCollection(collection, /* isFavoritesDownload */ true)
   })
 
   removedCollections.forEach((collection) => {
@@ -131,7 +123,7 @@ export const syncFavoritedCollections = async (
         }
       })) ?? []
 
-    removeCollectionDownload(
+    removeDownloadedCollectionFromFavorites(
       collection.playlist_id.toString(),
       tracksForDownload
     )

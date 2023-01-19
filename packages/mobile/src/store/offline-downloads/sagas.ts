@@ -26,12 +26,12 @@ import { apiClient } from 'app/services/audius-api-client'
 import {
   purgeAllDownloads,
   batchDownloadTrack,
-  downloadCollectionById,
   DOWNLOAD_REASON_FAVORITES,
   syncFavoritedTracks,
   syncFavoritedCollections,
   syncStaleTracks,
-  syncCollectionsTracks
+  syncCollectionsTracks,
+  downloadCollection
 } from 'app/services/offline-downloader'
 
 import { getOfflineCollections } from './selectors'
@@ -89,7 +89,7 @@ export function* downloadSavedCollection(
     }
   }))
   if (!tracksForDownload) return
-  downloadCollectionById(action.collectionId)
+  downloadCollection(collection, /* isFavoritesDownload */ true)
   batchDownloadTrack(tracksForDownload)
 }
 

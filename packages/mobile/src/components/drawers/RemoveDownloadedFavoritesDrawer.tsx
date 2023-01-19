@@ -1,7 +1,4 @@
-import { useCallback } from 'react'
-
-import { useDrawer } from 'app/hooks/useDrawer'
-import { removeCollectionDownload } from 'app/services/offline-downloader'
+import { removeAllDownloadedFavorites } from 'app/services/offline-downloader'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 
@@ -15,18 +12,11 @@ const messages = {
 const drawerName = 'RemoveDownloadedFavorites'
 
 export const RemoveDownloadedFavoritesDrawer = () => {
-  const { data } = useDrawer(drawerName)
-  const { collectionId, tracksForDownload } = data
-
-  const handleConfirm = useCallback(() => {
-    removeCollectionDownload(collectionId, tracksForDownload)
-  }, [collectionId, tracksForDownload])
-
   return (
     <ConfirmationDrawer
       drawerName={drawerName}
       messages={messages}
-      onConfirm={handleConfirm}
+      onConfirm={removeAllDownloadedFavorites}
     />
   )
 }

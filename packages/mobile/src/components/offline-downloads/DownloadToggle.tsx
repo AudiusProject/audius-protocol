@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import type { CommonState, DownloadReason } from '@audius/common'
+import type { Collection, CommonState, DownloadReason } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -9,7 +9,7 @@ import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import {
   batchDownloadTrack,
   downloadAllFavorites,
-  downloadCollectionById,
+  downloadCollection,
   DOWNLOAD_REASON_FAVORITES
 } from 'app/services/offline-downloader'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -33,7 +33,7 @@ export type TrackForDownload = {
 type DownloadToggleProps = {
   tracksForDownload: TrackForDownload[]
   labelText?: string
-  collectionId?: number | null
+  collection?: Collection | null
   isFavoritesDownload?: boolean
 }
 
@@ -83,16 +83,16 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const DownloadToggle = ({
   tracksForDownload,
-  collectionId,
+  collection,
   labelText,
-  isFavoritesDownload
+  isFavoritesDownload: isAllFavoritesToggle
 }: DownloadToggleProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const [disabled, setDisabled] = useState(false)
-  const collectionIdStr = isFavoritesDownload
+  const collectionIdStr = isAllFavoritesToggle
     ? DOWNLOAD_REASON_FAVORITES
-    : collectionId?.toString()
+    : collection?.playlist_id?.toString()
 
   const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
   const isAnyDownloadInProgress = useMemo(
@@ -116,25 +116,28 @@ export const DownloadToggle = ({
   const isThisFavoritedCollectionDownload = useMemo(
     () =>
       !!(
-        collectionId &&
+        collection &&
         isFavoritesMarkedForDownload &&
         userCollections.some(
-          (collection) => collection.playlist_id === collectionId
+          (userCollection) =>
+            userCollection.playlist_id === collection.playlist_id
         )
       ),
-    [collectionId, isFavoritesMarkedForDownload, userCollections]
+    [collection, isFavoritesMarkedForDownload, userCollections]
   )
 
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
-      if (!collectionId && !isFavoritesDownload) return
+      if (!collection && !isAllFavoritesToggle) return
       if (isDownloadEnabled) {
-        isFavoritesDownload
-          ? downloadAllFavorites()
-          : downloadCollectionById(collectionId)
-        batchDownloadTrack(tracksForDownload)
+        if (isAllFavoritesToggle) {
+          downloadAllFavorites()
+        } else if (collection) {
+          downloadCollection(collection, /* isFavoritesDownload */ false)
+          batchDownloadTrack(tracksForDownload)
+        }
       } else {
-        if (!isFavoritesDownload && collectionIdStr) {
+        if (!isAllFavoritesToggle && collectionIdStr) {
           // we are trying to remove download from a collection page
           dispatch(
             setVisibility({
@@ -157,10 +160,10 @@ export const DownloadToggle = ({
       setTimeout(() => setDisabled(false), 1000)
     },
     [
-      collectionId,
+      collection,
       collectionIdStr,
       dispatch,
-      isFavoritesDownload,
+      isAllFavoritesToggle,
       tracksForDownload
     ]
   )
@@ -169,7 +172,7 @@ export const DownloadToggle = ({
     <View style={labelText ? styles.rootWithLabel : styles.root}>
       {labelText ? <View style={styles.flex1} /> : null}
       <View style={labelText ? styles.iconTitle : null}>
-        {collectionId || isFavoritesDownload ? (
+        {collection || isAllFavoritesToggle ? (
           <DownloadStatusIndicator
             statusOverride={
               isCollectionMarkedForDownload || isThisFavoritedCollectionDownload
@@ -193,7 +196,7 @@ export const DownloadToggle = ({
         ) : null}
       </View>
       <View style={labelText ? styles.toggleContainer : null}>
-        {collectionId || isFavoritesDownload ? (
+        {collection || isAllFavoritesToggle ? (
           <Switch
             value={
               isCollectionMarkedForDownload || isThisFavoritedCollectionDownload

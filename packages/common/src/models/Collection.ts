@@ -48,6 +48,12 @@ export type CollectionMetadata = {
   activity_timestamp?: string
   playlist_image_multihash?: string
   playlist_image_sizes_multihash?: string
+  offline?: OfflineCollectionMetadata
+}
+
+// This is available on mobile for offline tracks
+export type OfflineCollectionMetadata = {
+  isFavoritesDownload?: boolean
 }
 
 export type ComputedCollectionProperties = {
