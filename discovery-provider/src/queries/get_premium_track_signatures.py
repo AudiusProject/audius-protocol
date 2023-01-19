@@ -265,8 +265,16 @@ def _unpack_metadata_account_for_metaplex_nft(data):
             i += 1  # creator share
     i += 1  # primary sale happened
     i += 1  # is mutable
-    i += 2  # edition nonce
-    i += 2  # token standard
+    has_edition_nonce = data[i]
+    i += 1
+    if has_edition_nonce:
+        i += 1  # edition nonce
+    has_token_standard = data[i]
+    i += 1
+    if has_token_standard:
+        i += 1  # token standard
+    # i += 2  # edition nonce
+    # i += 2  # token standard
     has_collection = data[i]
     if not has_collection:
         return {"collection": None}
@@ -278,6 +286,87 @@ def _unpack_metadata_account_for_metaplex_nft(data):
         bytes(struct.unpack("<" + "B" * 32, data[i : i + 32]))
     )
     return {"collection": {"verified": collection_verified, "key": collection_key}}
+
+
+# def _unpack_metadata_account_for_metaplex_nft2(data):
+#     assert data[0] == 4
+#     i = 1
+#     source_account = base58.b58encode(
+#         bytes(struct.unpack("<" + "B" * 32, data[i : i + 32]))
+#     )
+#     i += 32
+#     mint_account = base58.b58encode(
+#         bytes(struct.unpack("<" + "B" * 32, data[i : i + 32]))
+#     )
+#     i += 32
+#     name_len = struct.unpack("<I", data[i : i + 4])[0]
+#     i += 4
+#     name = struct.unpack("<" + "B" * name_len, data[i : i + name_len])
+#     i += name_len
+#     symbol_len = struct.unpack("<I", data[i : i + 4])[0]
+#     i += 4
+#     symbol = struct.unpack("<" + "B" * symbol_len, data[i : i + symbol_len])
+#     i += symbol_len
+#     uri_len = struct.unpack("<I", data[i : i + 4])[0]
+#     i += 4
+#     uri = struct.unpack("<" + "B" * uri_len, data[i : i + uri_len])
+#     i += uri_len
+#     fee = struct.unpack("<h", data[i : i + 2])[0]
+#     i += 2
+#     has_creator = data[i]
+#     i += 1
+#     creators = []
+#     verified = []
+#     share = []
+#     if has_creator:
+#         creator_len = struct.unpack("<I", data[i : i + 4])[0]
+#         i += 4
+#         for _ in range(creator_len):
+#             creator = base58.b58encode(
+#                 bytes(struct.unpack("<" + "B" * 32, data[i : i + 32]))
+#             )
+#             creators.append(creator)
+#             i += 32
+#             verified.append(data[i])
+#             i += 1
+#             share.append(data[i])
+#             i += 1
+#     primary_sale_happened = bool(data[i])
+#     i += 1
+#     is_mutable = bool(data[i])
+#     # ===========
+#     i += 1
+#     edition_nonce = (
+#         bytes(struct.unpack("<" + "B" * 2, data[i : i + 2]))
+#         .decode("utf-8")
+#         .strip("\x00")
+#     )
+#     logger.info(f"edition_nonce: {edition_nonce}")
+#     i += 2
+#     token_standard = (
+#         bytes(struct.unpack("<" + "B" * 2, data[i : i + 2]))
+#         .decode("utf-8")
+#         .strip("\x00")
+#     )
+#     logger.info(f"token_standard: {token_standard}")
+#     i += 2
+#     # ===========
+#     metadata = {
+#         "update_authority": source_account,
+#         "mint": mint_account,
+#         "data": {
+#             "name": bytes(name).decode("utf-8").strip("\x00"),
+#             "symbol": bytes(symbol).decode("utf-8").strip("\x00"),
+#             "uri": bytes(uri).decode("utf-8").strip("\x00"),
+#             "seller_fee_basis_points": fee,
+#             "creators": creators,
+#             "verified": verified,
+#             "share": share,
+#         },
+#         "primary_sale_happened": primary_sale_happened,
+#         "is_mutable": is_mutable,
+#     }
+#     return metadata
 
 
 def _get_metadata_account(mint_address: str):
@@ -296,9 +385,17 @@ def _get_token_account_info(token_account):
 
 
 def _decode_metadata_account(metadata_account):
-    return base64.b64decode(
-        solana_client_manager.get_account_info(metadata_account)["value"]["data"][0]
-    )
+    account_info = solana_client_manager.get_account_info(metadata_account)
+    logger.info(f"account_info: {account_info}")
+    if (
+        (not account_info)
+        or ("value" not in account_info)
+        or (not account_info["value"])
+        or ("data" not in account_info["value"])
+        or (not account_info["value"]["data"])
+    ):
+        return None
+    return base64.b64decode(account_info["value"]["data"][0])
 
 
 async def _wrap_decode_metadata_account(metadata_account):
@@ -331,7 +428,9 @@ def _does_user_own_sol_nft_collection(
     for wallet in user_sol_wallets:
         try:
             result = solana_client_manager.get_token_accounts_by_owner(wallet)
+            logger.info(f"result: {result}")
             token_accounts = result["value"]
+            logger.info(f"token_accounts: {token_accounts}")
             nft_token_accounts = list(
                 filter(
                     lambda item: _get_token_account_info(item)["tokenAmount"]["amount"]
@@ -340,16 +439,24 @@ def _does_user_own_sol_nft_collection(
                     token_accounts,
                 )
             )
+            logger.info(f"nft_token_accounts: {nft_token_accounts}")
             nft_mints = list(
                 map(
                     lambda item: _get_token_account_info(item)["mint"],
                     nft_token_accounts,
                 )
             )
+            logger.info(f"nft_mints: {nft_mints}")
             metadata_accounts = list(map(_get_metadata_account, nft_mints))
+            logger.info(f"metadata_accounts: {metadata_accounts}")
             datas = asyncio.run(_decode_metadata_accounts_async(metadata_accounts))
+            logger.info(f"datas 1: {datas}")
+            datas = list(filter(lambda data: data, datas))
+            logger.info(f"datas 2: {datas}")
             metadatas = list(map(_unpack_metadata_account_for_metaplex_nft, datas))
+            logger.info(f"metadatas: {metadatas}")
             collections = list(map(lambda metadata: metadata["collection"], metadatas))
+            logger.info(f"collections: {collections}")
             has_collection_mint_address = list(
                 filter(
                     lambda collection: collection
