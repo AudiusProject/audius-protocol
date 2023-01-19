@@ -7,7 +7,11 @@ import {
   useLoadImageWithTimeout,
   FeatureFlags
 } from '@audius/common'
-import { PbIconPlay as IconPlay, PbIconPause as IconPause, IconLock } from '@audius/stems'
+import {
+  PbIconPlay as IconPlay,
+  PbIconPause as IconPause,
+  IconLock
+} from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -16,10 +20,10 @@ import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './Artwork.module.css'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 enum PlayStatus {
   Buffering = 'Buffering',
