@@ -8,7 +8,7 @@ from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.users import UserEventMetadata, update_user_events
+from src.tasks.entity_manager.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
