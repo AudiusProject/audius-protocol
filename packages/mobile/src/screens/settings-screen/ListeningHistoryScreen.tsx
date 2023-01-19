@@ -15,7 +15,12 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
-import { Screen, Tile, VirtualizedScrollView } from 'app/components/core'
+import {
+  Screen,
+  ScreenContent,
+  Tile,
+  VirtualizedScrollView
+} from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { TrackList } from 'app/components/track-list'
 import type { TracksMetadata } from 'app/components/track-list/types'
@@ -92,27 +97,29 @@ export const ListeningHistoryScreen = () => {
       topbarRight={null}
       variant='secondary'
     >
-      <WithLoader loading={status === Status.LOADING}>
-        {status === Status.SUCCESS && entries.length === 0 ? (
-          <EmptyTileCTA message={messages.noHistoryMessage} />
-        ) : (
-          <VirtualizedScrollView listKey='listening-history-screen'>
-            <Tile
-              styles={{
-                root: styles.container,
-                tile: styles.trackListContainer
-              }}
-            >
-              <TrackList
-                tracks={entries as TracksMetadata}
-                showDivider
-                togglePlay={togglePlay}
-                trackItemAction='overflow'
-              />
-            </Tile>
-          </VirtualizedScrollView>
-        )}
-      </WithLoader>
+      <ScreenContent>
+        <WithLoader loading={status === Status.LOADING}>
+          {status === Status.SUCCESS && entries.length === 0 ? (
+            <EmptyTileCTA message={messages.noHistoryMessage} />
+          ) : (
+            <VirtualizedScrollView listKey='listening-history-screen'>
+              <Tile
+                styles={{
+                  root: styles.container,
+                  tile: styles.trackListContainer
+                }}
+              >
+                <TrackList
+                  tracks={entries as TracksMetadata}
+                  showDivider
+                  togglePlay={togglePlay}
+                  trackItemAction='overflow'
+                />
+              </Tile>
+            </VirtualizedScrollView>
+          )}
+        </WithLoader>
+      </ScreenContent>
     </Screen>
   )
 }

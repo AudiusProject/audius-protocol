@@ -12,7 +12,7 @@ import PartyFace from 'app/assets/images/emojis/face-with-party-horn-and-party-h
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
-import { Button, Screen, Text } from 'app/components/core'
+import { Button, Screen, ScreenContent, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { SocialButton } from 'app/components/social-button'
 import { StatusMessage } from 'app/components/status-message'
@@ -376,7 +376,7 @@ export const AccountVerificationScreen = () => {
 
   return (
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
-      {getPageContent()}
+      <ScreenContent>{getPageContent()}</ScreenContent>
     </Screen>
   )
 }

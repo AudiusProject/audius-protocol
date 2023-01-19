@@ -6,7 +6,7 @@ import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
 import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import { Screen, ScreenHeader } from 'app/components/core'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import {
   TabNavigator,
   tabScreen
@@ -61,16 +61,18 @@ export const SearchResultsScreen = () => {
   return (
     <Screen topbarRight={null}>
       <ScreenHeader text={messages.header} />
-      <SearchFocusContext.Provider value={focusContext}>
-        <SearchQueryContext.Provider value={searchQueryContext}>
-          <TabNavigator initialScreenName='Profiles'>
-            {profilesScreen}
-            {tracksScreen}
-            {albumsScreen}
-            {playlistsScreen}
-          </TabNavigator>
-        </SearchQueryContext.Provider>
-      </SearchFocusContext.Provider>
+      <ScreenContent unboxed>
+        <SearchFocusContext.Provider value={focusContext}>
+          <SearchQueryContext.Provider value={searchQueryContext}>
+            <TabNavigator initialScreenName='Profiles'>
+              {profilesScreen}
+              {tracksScreen}
+              {albumsScreen}
+              {playlistsScreen}
+            </TabNavigator>
+          </SearchQueryContext.Provider>
+        </SearchFocusContext.Provider>
+      </ScreenContent>
     </Screen>
   )
 }

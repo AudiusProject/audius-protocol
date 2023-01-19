@@ -10,7 +10,7 @@ import {
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Screen, ScreenHeader } from 'app/components/core'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -107,30 +107,32 @@ export const TrackRemixesScreen = () => {
   return (
     <Screen>
       <ScreenHeader text={messages.header} />
-      <Lineup
-        lineup={lineup}
-        loadMore={loadMore}
-        header={
-          track && user ? (
-            <View style={styles.header}>
-              <Text style={styles.text}>{remixesCountText}</Text>
-              <Text style={styles.text}>
-                <Text style={styles.link} onPress={handlePressTrack}>
-                  {track.title}
-                </Text>{' '}
-                <Text>{messages.by}</Text>{' '}
-                <Text onPress={handlePressArtistName}>
-                  <Text style={styles.link}>{user.name}</Text>
-                  {user ? (
-                    <UserBadges user={user} badgeSize={10} hideName />
-                  ) : null}
+      <ScreenContent>
+        <Lineup
+          lineup={lineup}
+          loadMore={loadMore}
+          header={
+            track && user ? (
+              <View style={styles.header}>
+                <Text style={styles.text}>{remixesCountText}</Text>
+                <Text style={styles.text}>
+                  <Text style={styles.link} onPress={handlePressTrack}>
+                    {track.title}
+                  </Text>{' '}
+                  <Text>{messages.by}</Text>{' '}
+                  <Text onPress={handlePressArtistName}>
+                    <Text style={styles.link}>{user.name}</Text>
+                    {user ? (
+                      <UserBadges user={user} badgeSize={10} hideName />
+                    ) : null}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
-          ) : null
-        }
-        actions={tracksActions}
-      />
+              </View>
+            ) : null
+          }
+          actions={tracksActions}
+        />
+      </ScreenContent>
     </Screen>
   )
 }

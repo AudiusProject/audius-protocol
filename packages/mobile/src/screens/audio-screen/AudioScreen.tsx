@@ -33,7 +33,8 @@ import {
   Button,
   GradientText,
   Text,
-  Tile
+  Tile,
+  ScreenContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -437,14 +438,16 @@ export const AudioScreen = () => {
       icon={IconCrown}
       title={messages.title}
     >
-      <ScrollView style={styles.tiles}>
-        {renderAudioTile()}
-        {renderWalletTile()}
-        {renderRewardsTile()}
-        {renderTrendingTile()}
-        {renderTierTile()}
-        {renderWhatTile()}
-      </ScrollView>
+      <ScreenContent>
+        <ScrollView style={styles.tiles}>
+          {renderAudioTile()}
+          {renderWalletTile()}
+          {renderRewardsTile()}
+          {renderTrendingTile()}
+          {renderTierTile()}
+          {renderWhatTile()}
+        </ScrollView>
+      </ScreenContent>
     </Screen>
   )
 }

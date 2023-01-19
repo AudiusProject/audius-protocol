@@ -107,17 +107,9 @@ export const FavoritesScreen = () => {
           />
         )}
       </ScreenHeader>
-      {
-        // ScreenContent handles the offline indicator.
-        // Show favorites screen anyway when offline so users can see their downloads
-        isOfflineModeEnabled ? (
-          <TopTabNavigator screens={favoritesScreens} />
-        ) : (
-          <ScreenContent>
-            <TopTabNavigator screens={favoritesScreens} />
-          </ScreenContent>
-        )
-      }
+      <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
+        {<TopTabNavigator screens={favoritesScreens} />}
+      </ScreenContent>
     </Screen>
   )
 }

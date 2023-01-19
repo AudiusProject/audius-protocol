@@ -10,7 +10,7 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
-import { Screen, ScreenHeader } from 'app/components/core'
+import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 
 import { LET_THEM_DJ } from '../../collections'
@@ -35,11 +35,13 @@ export const LetThemDJScreen = () => {
   return (
     <Screen>
       <ScreenHeader text={LET_THEM_DJ.title} />
-      <View style={{ flex: 1 }}>
-        <WithLoader loading={status === Status.LOADING}>
-          <CollectionList collection={exploreData} />
-        </WithLoader>
-      </View>
+      <ScreenContent>
+        <View style={{ flex: 1 }}>
+          <WithLoader loading={status === Status.LOADING}>
+            <CollectionList collection={exploreData} />
+          </WithLoader>
+        </View>
+      </ScreenContent>
     </Screen>
   )
 }

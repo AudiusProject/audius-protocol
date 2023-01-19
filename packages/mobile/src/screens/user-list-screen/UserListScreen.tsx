@@ -2,7 +2,7 @@ import type { ComponentType, ReactElement, ReactNode } from 'react'
 
 import type { SvgProps } from 'react-native-svg'
 
-import { Screen } from 'app/components/core'
+import { Screen, ScreenContent } from 'app/components/core'
 
 type UserListScreenProps = {
   title: ReactNode
@@ -15,7 +15,7 @@ export const UserListScreen = (props: UserListScreenProps) => {
 
   return (
     <Screen variant='white' title={title} icon={titleIcon}>
-      {children}
+      <ScreenContent>{children}</ScreenContent>
     </Screen>
   )
 }

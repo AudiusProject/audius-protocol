@@ -11,8 +11,9 @@ import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button, Screen } from 'app/components/core'
+import { Button, Screen, ScreenContent } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -52,6 +53,7 @@ export const TrackScreen = () => {
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
@@ -120,43 +122,45 @@ export const TrackScreen = () => {
 
   return (
     <Screen url={track?.permalink}>
-      <Lineup
-        actions={tracksActions}
-        count={6}
-        header={
-          <TrackScreenMainContent
-            lineup={lineup}
-            remixParentTrack={remixParentTrack}
-            track={track}
-            user={user}
-            lineupHeader={
-              hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
-            }
-          />
-        }
-        leadingElementId={remixParentTrack?.track_id}
-        leadingElementDelineator={
-          <>
-            <View style={styles.buttonContainer}>
-              <Button
-                title={messages.viewOtherRemixes}
-                icon={IconArrow}
-                variant='primary'
-                size='small'
-                onPress={handlePressGoToRemixes}
-                fullWidth
-                styles={{
-                  root: styles.button
-                }}
-              />
-            </View>
-            {moreByArtistTitle}
-          </>
-        }
-        lineup={lineup}
-        start={1}
-        includeLineupStatus
-      />
+      <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
+        <Lineup
+          actions={tracksActions}
+          count={6}
+          header={
+            <TrackScreenMainContent
+              lineup={lineup}
+              remixParentTrack={remixParentTrack}
+              track={track}
+              user={user}
+              lineupHeader={
+                hasValidRemixParent ? originalTrackTitle : moreByArtistTitle
+              }
+            />
+          }
+          leadingElementId={remixParentTrack?.track_id}
+          leadingElementDelineator={
+            <>
+              <View style={styles.buttonContainer}>
+                <Button
+                  title={messages.viewOtherRemixes}
+                  icon={IconArrow}
+                  variant='primary'
+                  size='small'
+                  onPress={handlePressGoToRemixes}
+                  fullWidth
+                  styles={{
+                    root: styles.button
+                  }}
+                />
+              </View>
+              {moreByArtistTitle}
+            </>
+          }
+          lineup={lineup}
+          start={1}
+          includeLineupStatus
+        />
+      </ScreenContent>
     </Screen>
   )
 }

@@ -19,7 +19,7 @@ import IconMail from 'app/assets/images/iconMail.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import IconSignOut from 'app/assets/images/iconSignOut.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
-import { ScrollView, Screen } from 'app/components/core'
+import { ScrollView, Screen, ScreenContent } from 'app/components/core'
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -120,53 +120,55 @@ export const AccountSettingsScreen = () => {
 
   return (
     <Screen title={messages.title} topbarRight={null} variant='secondary'>
-      <ScrollView>
-        <View style={styles.header}>
-          <ProfilePicture profile={accountUser} style={styles.profilePhoto} />
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.handle}>@{handle}</Text>
-        </View>
-        <AccountSettingsItem
-          title={messages.recoveryTitle}
-          titleIconSource={Key}
-          description={messages.recoveryDescription}
-          buttonTitle={messages.recoveryButtonTitle}
-          buttonIcon={IconMail}
-          onPress={handlePressRecoveryEmail}
-        />
-        <AccountSettingsItem
-          title={messages.verifyTitle}
-          titleIconSource={Checkmark}
-          description={messages.verifyDescription}
-          buttonTitle={messages.verifyButtonTitle}
-          buttonIcon={IconVerified}
-          onPress={handlePressVerification}
-        />
-        <AccountSettingsItem
-          title={messages.passwordTitle}
-          titleIconSource={Lock}
-          description={messages.passwordDescription}
-          buttonTitle={messages.passwordButtonTitle}
-          buttonIcon={IconMail}
-          onPress={handlePressChangePassword}
-        />
-        <AccountSettingsItem
-          title={messages.deactivateAccountTitle}
-          titleIconSource={Door}
-          description={messages.deactivateAccountDescription}
-          buttonTitle={messages.deactivateAccountButtonTitle}
-          buttonIcon={IconRemove}
-          onPress={openDeactivateAccountDrawer}
-        />
-        <AccountSettingsItem
-          title={messages.signOutTitle}
-          titleIconSource={StopSign}
-          description={messages.signOutDescription}
-          buttonTitle={messages.signOutButtonTitle}
-          buttonIcon={IconSignOut}
-          onPress={openSignOutDrawer}
-        />
-      </ScrollView>
+      <ScreenContent>
+        <ScrollView>
+          <View style={styles.header}>
+            <ProfilePicture profile={accountUser} style={styles.profilePhoto} />
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.handle}>@{handle}</Text>
+          </View>
+          <AccountSettingsItem
+            title={messages.recoveryTitle}
+            titleIconSource={Key}
+            description={messages.recoveryDescription}
+            buttonTitle={messages.recoveryButtonTitle}
+            buttonIcon={IconMail}
+            onPress={handlePressRecoveryEmail}
+          />
+          <AccountSettingsItem
+            title={messages.verifyTitle}
+            titleIconSource={Checkmark}
+            description={messages.verifyDescription}
+            buttonTitle={messages.verifyButtonTitle}
+            buttonIcon={IconVerified}
+            onPress={handlePressVerification}
+          />
+          <AccountSettingsItem
+            title={messages.passwordTitle}
+            titleIconSource={Lock}
+            description={messages.passwordDescription}
+            buttonTitle={messages.passwordButtonTitle}
+            buttonIcon={IconMail}
+            onPress={handlePressChangePassword}
+          />
+          <AccountSettingsItem
+            title={messages.deactivateAccountTitle}
+            titleIconSource={Door}
+            description={messages.deactivateAccountDescription}
+            buttonTitle={messages.deactivateAccountButtonTitle}
+            buttonIcon={IconRemove}
+            onPress={openDeactivateAccountDrawer}
+          />
+          <AccountSettingsItem
+            title={messages.signOutTitle}
+            titleIconSource={StopSign}
+            description={messages.signOutDescription}
+            buttonTitle={messages.signOutButtonTitle}
+            buttonIcon={IconSignOut}
+            onPress={openSignOutDrawer}
+          />
+        </ScrollView>
+      </ScreenContent>
     </Screen>
   )
 }

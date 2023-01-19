@@ -14,7 +14,7 @@ import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconShare from 'app/assets/images/iconShare.svg'
-import { IconButton, Screen } from 'app/components/core'
+import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useRoute } from 'app/hooks/useRoute'
@@ -110,30 +110,32 @@ export const ProfileScreen = () => {
       topbarRight={topbarRight}
       url={handle && `/${encodeUrlName(handle)}`}
     >
-      {!profile ? (
-        <ProfileScreenSkeleton />
-      ) : (
-        <>
-          <View style={styles.navigator}>
-            {isNotReachable ? (
-              <>
-                {renderHeader()}
-                <OfflinePlaceholder />
-              </>
-            ) : (
-              <>
-                <PortalHost name='PullToRefreshPortalHost' />
-                <ProfileTabNavigator
-                  renderHeader={renderHeader}
-                  animatedValue={scrollY}
-                  refreshing={isRefreshing}
-                  onRefresh={handleRefresh}
-                />
-              </>
-            )}
-          </View>
-        </>
-      )}
+      <ScreenContent isOfflineCapable>
+        {!profile ? (
+          <ProfileScreenSkeleton />
+        ) : (
+          <>
+            <View style={styles.navigator}>
+              {isNotReachable ? (
+                <>
+                  {renderHeader()}
+                  <OfflinePlaceholder />
+                </>
+              ) : (
+                <>
+                  <PortalHost name='PullToRefreshPortalHost' />
+                  <ProfileTabNavigator
+                    renderHeader={renderHeader}
+                    animatedValue={scrollY}
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                  />
+                </>
+              )}
+            </View>
+          </>
+        )}
+      </ScreenContent>
     </Screen>
   )
 }

@@ -4,7 +4,7 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import type { ScreenProps } from 'app/components/core'
-import { Button, Screen } from 'app/components/core'
+import { ScreenContent, Button, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
 import { makeStyles } from 'app/styles'
@@ -48,12 +48,14 @@ export const FormScreen = (props: FormScreenProps) => {
 
   return (
     <Screen variant='secondary' style={[styles.root, styleProp]} {...other}>
-      {children}
-      {isKeyboardOpen ? null : (
-        <View style={styles.bottomSection}>
-          {bottomSection ?? defaultBottomSection}
-        </View>
-      )}
+      <ScreenContent>
+        {children}
+        {isKeyboardOpen ? null : (
+          <View style={styles.bottomSection}>
+            {bottomSection ?? defaultBottomSection}
+          </View>
+        )}
+      </ScreenContent>
     </Screen>
   )
 }
