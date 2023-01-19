@@ -959,6 +959,105 @@ router.get(
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.
  **/
-router.get('/tracks/cidstream/:CID', contentAccessMiddleware, getCID)
+router.get(
+  '/tracks/cidstream/:CID',
+  contentAccessMiddleware,
+  async (req, res, next) => {
+    const libs = req.app.get('audiusLibs')
+    const redisClient = req.app.get('redisClient')
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+
+    const trackId = req.params.trackId
+    const CID = req.params.CID
+
+    if (!trackId) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('Please provide a track ID')
+      )
+    }
+
+    const trackIdBlacklisted = await BlacklistManager.trackIdIsInBlacklist(
+      trackId
+    )
+    const cidBlacklisted = await BlacklistManager.CIDIsInBlacklist(CID)
+    const isNotServable = !cidBlacklisted && !trackIdBlacklisted
+    if (isNotServable) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseForbidden(
+          `trackId=${trackId} cannot be served by this node`
+        )
+      )
+    }
+
+    // attempt to fetch cached stream data for blockchainId
+    // if found, bypass the db and discovery queries and proceed to getCID
+    try {
+      const cachedData = await redisClient.get(`trackStreamCache:::${trackId}`)
+
+      if (cachedData) {
+        if (libs.identityService) {
+          req.logger.info(
+            `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
+          )
+          const signatureData = generateListenTimestampAndSignature(
+            config.get('delegatePrivateKey')
+          )
+          // Fire and forget listen recording
+          libs.identityService.logTrackListen(
+            trackId,
+            delegateOwnerWallet,
+            req.ip,
+            signatureData
+          )
+        }
+
+        req.params.CID = cachedData
+        req.params.streamable = true
+        res.set('Content-Type', 'audio/mpeg')
+        res.set('Copy320-CID', cachedData)
+        // early exit and call next() which continues to getCID
+        return next()
+      }
+    } catch (e) {
+      // do nothing if unable to fetch cached data from redis, continue with rest of the process
+      req.logger.debug(
+        `Could not fetch cached track stream data for track ${trackId}`
+      )
+    }
+
+    if (libs.identityService) {
+      req.logger.info(
+        `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
+      )
+      const signatureData = generateListenTimestampAndSignature(
+        config.get('delegatePrivateKey')
+      )
+      // Fire and forget listen recording
+      // TODO: Consider queueing these requests
+      libs.identityService.logTrackListen(
+        trackId,
+        delegateOwnerWallet,
+        req.ip,
+        signatureData
+      )
+    }
+
+    req.params.streamable = true
+    res.set('Content-Type', 'audio/mpeg')
+    res.set('Copy320-CID', CID)
+    await redisClient.set(
+      `trackStreamCache:::${trackId}`,
+      CID,
+      'EX',
+      60 * 60 /* one hour */
+    )
+    next()
+  },
+  getCID
+)
 
 module.exports = router
