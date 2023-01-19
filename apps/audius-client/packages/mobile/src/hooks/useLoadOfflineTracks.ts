@@ -54,20 +54,28 @@ export const useLoadOfflineData = () => {
     }[] = []
     for (const collectionId of offlineCollections) {
       try {
-        dispatch(addCollection(collectionId))
-        if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
-        const collection = await getCollectionJson(collectionId)
-        cacheCollections.push({
-          id: collectionId,
-          uid: makeUid(Kind.COLLECTIONS, parseInt(collectionId, 10)),
-          metadata: collection
-        })
-        if (collection.user) {
-          cacheUsers.push({
-            id: collection.user.user_id,
-            uid: makeUid(Kind.USERS, collection.user.user_id),
-            metadata: collection.user
+        if (collectionId === DOWNLOAD_REASON_FAVORITES) {
+          dispatch(addCollection({ collectionId, isFavoritesDownload: false }))
+        } else {
+          const collection = await getCollectionJson(collectionId)
+          dispatch(
+            addCollection({
+              collectionId,
+              isFavoritesDownload: !!collection.offline?.isFavoritesDownload
+            })
+          )
+          cacheCollections.push({
+            id: collectionId,
+            uid: makeUid(Kind.COLLECTIONS, parseInt(collectionId, 10)),
+            metadata: collection
           })
+          if (collection.user) {
+            cacheUsers.push({
+              id: collection.user.user_id,
+              uid: makeUid(Kind.USERS, collection.user.user_id),
+              metadata: collection.user
+            })
+          }
         }
       } catch (e) {
         console.warn('Failed to load offline collection', collectionId)

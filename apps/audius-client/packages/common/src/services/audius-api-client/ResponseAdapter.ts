@@ -268,7 +268,7 @@ export const makeTrack = (
     artwork: undefined,
     downloadable: undefined,
     favorite_count: undefined,
-    is_streamable: undefined,
+    is_streamable: undefined
   }
 
   delete marshalled.id

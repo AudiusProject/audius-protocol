@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import type { Collection, ID, Maybe, UID } from '@audius/common'
 import {
+  Variant,
   useProxySelector,
   collectionPageActions,
   playerSelectors,
@@ -221,16 +222,15 @@ export const CollectionScreenDetailsTile = ({
     [collectionId, entries]
   )
 
-  const renderHeader = useCallback(
-    () => (
+  const renderHeader = useCallback(() => {
+    return collection?.variant === Variant.SMART ? null : (
       <DownloadToggle
-        collectionId={collectionId}
+        collection={collection}
         tracksForDownload={tracksForDownload}
         labelText={headerText}
       />
-    ),
-    [collectionId, headerText, tracksForDownload]
-  )
+    )
+  }, [collection, headerText, tracksForDownload])
 
   const renderTrackList = () => {
     if (tracksLoading)

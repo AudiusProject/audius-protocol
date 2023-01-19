@@ -2,6 +2,7 @@ import path from 'path'
 
 import type {
   Collection,
+  CollectionMetadata,
   Track,
   User,
   UserMetadata,
@@ -50,7 +51,7 @@ export const getLocalCollectionJsonPath = (collectionId: string) => {
 
 export const writeCollectionJson = async (
   collectionId: string,
-  collectionToWrite: Collection,
+  collectionToWrite: CollectionMetadata,
   user: User
 ) => {
   const pathToWrite = getLocalCollectionJsonPath(collectionId)
@@ -105,7 +106,8 @@ export const purgeDownloadedCollection = async (collectionId: string) => {
   const collectionDir = getLocalCollectionDir(collectionId)
   if (!(await exists(collectionDir))) return
   await RNFS.unlink(collectionDir)
-  store.dispatch(removeCollection(collectionId))
+  store.dispatch(removeCollection({ collectionId, isFavoritesDownload: true }))
+  store.dispatch(removeCollection({ collectionId, isFavoritesDownload: false }))
 }
 
 // Track Json

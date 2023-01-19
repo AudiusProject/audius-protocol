@@ -2,6 +2,7 @@ import path from 'path'
 
 import type {
   Collection,
+  CollectionMetadata,
   CommonState,
   DownloadReason,
   Track,
@@ -9,8 +10,8 @@ import type {
   UserTrackMetadata
 } from '@audius/common'
 import {
+  Variant,
   FavoriteSource,
-  cacheCollectionsSelectors,
   Kind,
   makeUid,
   encodeHashId,
@@ -22,10 +23,12 @@ import { uniq, isEqual } from 'lodash'
 import RNFS, { exists } from 'react-native-fs'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
+import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { store } from 'app/store'
 import {
   getOfflineCollections,
+  getOfflineFavoritedCollections,
   getOfflineTracks
 } from 'app/store/offline-downloads/selectors'
 import {
@@ -35,7 +38,8 @@ import {
   completeDownload,
   errorDownload,
   loadTrack,
-  removeDownload
+  removeDownload,
+  removeCollection
 } from 'app/store/offline-downloads/slice'
 import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
 
@@ -60,50 +64,55 @@ import {
 
 const { saveCollection } = collectionsSocialActions
 const { getUserId } = accountSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { getUserFromCollection } = cacheUsersSelectors
 
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
-/** Main entrypoint - perform all steps required to complete a download for each track */
-export const downloadCollectionById = async (collectionId?: number | null) => {
-  const state = store.getState()
-  const collection = getCollection(state, { id: collectionId })
-  if (!collection) return
-  downloadCollection(collection)
-}
-
 export const downloadAllFavorites = async () => {
   const state = store.getState()
-  store.dispatch(addCollection(DOWNLOAD_REASON_FAVORITES))
+  const currentUserId = getUserId(state)
+  if (!currentUserId) return
+
+  store.dispatch(
+    addCollection({
+      collectionId: DOWNLOAD_REASON_FAVORITES,
+      isFavoritesDownload: false
+    })
+  )
   writeFavoritesCollectionJson()
+
+  const allFavoritedTracks = await fetchAllFavoritedTracks(currentUserId)
+  const tracksForDownload: TrackForDownload[] = allFavoritedTracks.map(
+    ({ trackId, favoriteCreatedAt }) => ({
+      trackId,
+      downloadReason: {
+        is_from_favorites: true,
+        collection_id: DOWNLOAD_REASON_FAVORITES,
+        favorite_created_at: favoriteCreatedAt
+      }
+    })
+  )
+  batchDownloadTrack(tracksForDownload)
+
   // @ts-ignore state is CommonState
-  const userCollections = getAccountCollections(state as CommonState, '')
-  userCollections.forEach(async (userCollection) => {
-    const user = getUserFromCollection(state, {
-      id: userCollection.playlist_id
-    })
-    if (!user) return
-    userCollection = await populateCoverArtSizes({
-      ...userCollection,
-      user
-    })
-    downloadCollectionCoverArt(userCollection)
-    writeCollectionJson(
-      userCollection.playlist_id.toString(),
-      userCollection,
-      user
-    )
+  const favoritedCollections = getAccountCollections(state as CommonState, '')
+  favoritedCollections.forEach(async (userCollection) => {
+    downloadCollection(userCollection, /* isFavoritesDownload */ true)
   })
 }
 
-export const downloadCollection = async (collection: Collection) => {
+export const downloadCollection = async (
+  collection: CollectionMetadata,
+  isFavoritesDownload?: boolean
+) => {
   const state = store.getState()
   const currentUserId = getUserId(state)
 
   // Prevent download of unavailable collections
   if (
     !collection ||
+    // @ts-ignore shouldn't be necessary, but not sure we trust the types all the way down
+    collection.variant === Variant.SMART ||
     collection.is_delete ||
     (collection.is_private && collection.playlist_owner_id !== currentUserId)
   )
@@ -111,18 +120,39 @@ export const downloadCollection = async (collection: Collection) => {
 
   const user = getUserFromCollection(state, { id: collection?.playlist_id })
   const collectionIdStr: string = collection.playlist_id.toString()
-  store.dispatch(addCollection(collectionIdStr))
+  store.dispatch(
+    addCollection({
+      collectionId: collectionIdStr,
+      isFavoritesDownload: !!isFavoritesDownload
+    })
+  )
 
   if (!user) return
   store.dispatch(
     saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
   )
-  collection = await populateCoverArtSizes({
+  const populatedCollection: Collection = await populateCoverArtSizes({
     ...collection,
     user
   })
-  downloadCollectionCoverArt(collection)
-  await writeCollectionJson(collectionIdStr, collection!, user)
+  downloadCollectionCoverArt(populatedCollection)
+  const collectionToWrite: CollectionMetadata = {
+    ...populatedCollection,
+    offline: {
+      isFavoritesDownload: !!isFavoritesDownload
+    }
+  }
+  await writeCollectionJson(collectionIdStr, collectionToWrite, user)
+  const tracksForDownload = collection.playlist_contents.track_ids.map(
+    ({ track: trackId }) => ({
+      trackId,
+      downloadReason: {
+        is_from_favorites: isFavoritesDownload,
+        collection_id: collection.playlist_id.toString()
+      }
+    })
+  )
+  batchDownloadTrack(tracksForDownload)
 }
 
 export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
@@ -274,12 +304,68 @@ const shouldAbortDownload = (downloadReason: DownloadReason) => {
   )
 }
 
+export const removeAllDownloadedFavorites = async () => {
+  const state = store.getState()
+  const currentUserId = getUserId(state)
+  if (!currentUserId) return
+  const downloadedCollections = getOfflineCollections(state)
+  const favoritedDownloadedCollections = getOfflineFavoritedCollections(state)
+
+  const allFavoritedTracks = await fetchAllFavoritedTracks(currentUserId)
+  const tracksForDownload: TrackForDownload[] = allFavoritedTracks.map(
+    ({ trackId, favoriteCreatedAt }) => ({
+      trackId,
+      downloadReason: {
+        is_from_favorites: true,
+        collection_id: DOWNLOAD_REASON_FAVORITES,
+        favorite_created_at: favoriteCreatedAt
+      }
+    })
+  )
+  batchDownloadTrack(tracksForDownload)
+
+  purgeDownloadedCollection(DOWNLOAD_REASON_FAVORITES)
+  batchRemoveTrackDownload(tracksForDownload)
+
+  // remove collections if they're not also downloaded separately
+  Object.entries(favoritedDownloadedCollections).forEach(
+    ([collectionId, isDownloaded]) => {
+      if (!isDownloaded) return
+      if (downloadedCollections[collectionId]) {
+        store.dispatch(
+          removeCollection({ collectionId, isFavoritesDownload: true })
+        )
+      } else {
+        purgeDownloadedCollection(collectionId)
+      }
+    }
+  )
+}
+
+export const removeDownloadedCollectionFromFavorites = async (
+  collectionId: string,
+  tracksForDownload: TrackForDownload[]
+) => {
+  const state = store.getState()
+  const downloadedCollections = getOfflineCollections(state)
+  const favoritedDownloadedCollections = getOfflineFavoritedCollections(state)
+  if (!favoritedDownloadedCollections[collectionId]) return
+  if (downloadedCollections[collectionId]) {
+    store.dispatch(
+      removeCollection({ collectionId, isFavoritesDownload: true })
+    )
+  } else {
+    purgeDownloadedCollection(collectionId)
+    batchRemoveTrackDownload(tracksForDownload)
+  }
+}
+
 export const removeCollectionDownload = async (
   collectionId: string,
   tracksForDownload: TrackForDownload[]
 ) => {
-  purgeDownloadedCollection(collectionId)
   batchRemoveTrackDownload(tracksForDownload)
+  purgeDownloadedCollection(collectionId)
 }
 
 export const batchRemoveTrackDownload = async (
