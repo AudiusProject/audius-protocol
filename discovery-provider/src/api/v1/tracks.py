@@ -462,8 +462,8 @@ class TrackStream(Resource):
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
         if not track_cid:
-            logger.info(
-                f"We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
+            logger.warning(
+                f"tracks.py | stream | We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
             )
             path = f"tracks/stream/{track_id}"
         elif not CID_STREAM_ENABLED:
