@@ -5,6 +5,7 @@ from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin, validate_field_helper
 from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.users.user import User
 
 
 class Playlist(Base, RepresentableMixin):
@@ -48,6 +49,15 @@ class Playlist(Base, RepresentableMixin):
         primaryjoin="and_(\
             remote(Playlist.playlist_id) == foreign(PlaylistRoute.playlist_id),\
             PlaylistRoute.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
+    user = relationship(  # type: ignore
+        User,
+        primaryjoin="and_(\
+            remote(Playlist.playlist_owner_id) == foreign(User.user_id),\
+            User.is_current)",
         lazy="joined",
         viewonly=True,
     )
