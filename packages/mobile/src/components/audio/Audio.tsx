@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 
 import type { Track } from '@audius/common'
 import {
-  accountSelectors,
   cacheUsersSelectors,
   cacheTracksSelectors,
   hlsUtils,
@@ -26,7 +25,6 @@ import TrackPlayer, {
   State,
   usePlaybackState,
   useTrackPlayerEvents,
-  useProgress,
   RepeatMode as TrackPlayerRepeatMode,
   TrackType
 } from 'react-native-track-player'
@@ -48,27 +46,12 @@ import type { PlayCountWorkerPayload } from 'app/services/offline-downloader/wor
 import { PLAY_COUNTER_WORKER } from 'app/services/offline-downloader/workers/playCounterWorker'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 
-import { useChromecast } from './GoogleCast'
-
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
 const { getIndex, getOrder, getRepeat, getShuffle } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
-
-const { getUserId } = accountSelectors
-
-type ProgressData = {
-  currentTime: number
-  duration?: number
-}
-
-// TODO: Probably don't use global for this
-declare global {
-  // eslint-disable-next-line no-var
-  var progress: ProgressData
-}
 
 // TODO: These constants are the same in now playing drawer. Move them to shared location
 const SKIP_DURATION_SEC = 15
@@ -89,21 +72,14 @@ const podcastCapabilities = [
 
 // Set options for controlling music on the lock screen when the app is in the background
 const updatePlayerOptions = async (isPodcast = false) => {
+  const coreCapabilities = isPodcast ? podcastCapabilities : defaultCapabilities
   return await TrackPlayer.updateOptions({
     // Media controls capabilities
-    capabilities: [
-      ...(isPodcast ? podcastCapabilities : defaultCapabilities),
-      Capability.Stop,
-      Capability.SeekTo
-    ],
+    capabilities: [...coreCapabilities, Capability.Stop, Capability.SeekTo],
     // Capabilities that will show up when the notification is in the compact form on Android
-    compactCapabilities: [
-      ...(isPodcast ? podcastCapabilities : defaultCapabilities)
-    ],
+    compactCapabilities: coreCapabilities,
     // Notification form capabilities
-    notificationCapabilities: [
-      ...(isPodcast ? podcastCapabilities : defaultCapabilities)
-    ],
+    notificationCapabilities: coreCapabilities,
     android: {
       appKilledPlaybackBehavior:
         AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification
@@ -129,14 +105,13 @@ export const Audio = () => {
   const { isEnabled: isStreamMp3Enabled } = useFeatureFlag(
     FeatureFlags.STREAM_MP3
   )
-  const progress = useProgress(100) // 100ms update interval
+  // const progress = useProgress(100) // 100ms update interval
   const playbackState = usePlaybackState()
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
-  const currentUserId = useSelector(getUserId)
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
@@ -159,12 +134,10 @@ export const Audio = () => {
     getUsers(state, { ids: queueTrackOwnerIds })
   )
 
-  const { isCasting } = useChromecast()
   const dispatch = useDispatch()
 
   const isPodcastRef = useRef<boolean>(false)
   const [isAudioSetup, setIsAudioSetup] = useState(false)
-  const [listenLoggedForTrack, setListenLoggedForTrack] = useState(false)
 
   const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
   const pause = useCallback(() => dispatch(playerActions.pause()), [dispatch])
@@ -202,11 +175,6 @@ export const Audio = () => {
 
   useEffectOnce(() => {
     setupTrackPlayer()
-
-    // Init progress tracking
-    global.progress = {
-      currentTime: 0
-    }
   })
 
   // When component unmounts (App is closed), reset
@@ -283,47 +251,21 @@ export const Audio = () => {
     }
   })
 
-  const onProgress = useCallback(async () => {
+  // Record play effect
+  useEffect(() => {
     const trackId = track?.track_id
-    if (!trackId || !currentUserId) return
-    if (progressInvalidator.current) {
-      progressInvalidator.current = false
-      return
-    }
+    if (!trackId) return
 
-    const duration = await TrackPlayer.getDuration()
-    const position = await TrackPlayer.getPosition()
-
-    if (position > RECORD_LISTEN_SECONDS && !listenLoggedForTrack) {
-      setListenLoggedForTrack(true)
+    const playCounterTimeout = setTimeout(() => {
       if (isReachable) {
         dispatch(recordListen(trackId))
       } else if (isOfflineModeEnabled) {
         queue.addJob<PlayCountWorkerPayload>(PLAY_COUNTER_WORKER, { trackId })
       }
-    }
+    }, RECORD_LISTEN_SECONDS)
 
-    if (!isCasting) {
-      // If we aren't casting, update the progress
-      global.progress = { duration, currentTime: position }
-    } else {
-      // If we are casting, only update the duration
-      // The currentTime is set via the effect in GoogleCast.tsx
-      global.progress.duration = duration
-    }
-  }, [
-    track?.track_id,
-    currentUserId,
-    listenLoggedForTrack,
-    isCasting,
-    isReachable,
-    isOfflineModeEnabled,
-    dispatch
-  ])
-
-  useEffect(() => {
-    onProgress()
-  }, [onProgress, progress])
+    return () => clearTimeout(playCounterTimeout)
+  }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
 
   // A ref to invalidate the current progress counter and prevent
   // stale values of audio progress from propagating back to the UI.
@@ -333,14 +275,8 @@ export const Audio = () => {
     (seek = 0) => {
       progressInvalidator.current = true
       TrackPlayer.seekTo(seek)
-
-      // If we are casting, don't update the internal
-      // seek clock. This is already handled by the effect in GoogleCast.tsx
-      if (!isCasting) {
-        global.progress.currentTime = seek
-      }
     },
-    [progressInvalidator, isCasting]
+    [progressInvalidator]
   )
 
   // Seek handler
@@ -367,7 +303,6 @@ export const Audio = () => {
       counterRef.current = counter
       resetPositionForSameTrack()
     }
-    setListenLoggedForTrack(false)
   }, [counter, resetPositionForSameTrack])
 
   // Ref to keep track of the queue in the track player vs the queue in state
