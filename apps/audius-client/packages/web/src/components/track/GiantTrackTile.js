@@ -337,6 +337,14 @@ class GiantTrackTile extends PureComponent {
     )
   }
 
+  handleFollow = () => {
+    const { doesUserHaveAccess, isPremium, premiumConditions, onUnlock } =
+      this.props
+    if (!doesUserHaveAccess && isPremium && premiumConditions.follow_user_id) {
+      onUnlock()
+    }
+  }
+
   render() {
     const {
       playing,
@@ -425,7 +433,10 @@ class GiantTrackTile extends PureComponent {
               <div className={styles.artistWrapper}>
                 <div className={cn(fadeIn)}>
                   <span>By</span>
-                  <ArtistPopover handle={artistHandle}>
+                  <ArtistPopover
+                    handle={artistHandle}
+                    onFollow={this.handleFollow}
+                  >
                     <h2 className={styles.artist} onClick={onClickArtistName}>
                       {artistName}
                       <UserBadges
@@ -490,9 +501,10 @@ class GiantTrackTile extends PureComponent {
           ) : null}
         </div>
 
-        {isPremium && (
+        {isPremium && !isOwner && (
           <PremiumTrackSection
             isLoading={isLoading}
+            trackId={trackId}
             premiumConditions={premiumConditions}
             doesUserHaveAccess={doesUserHaveAccess}
           />
@@ -539,7 +551,6 @@ GiantTrackTile.propTypes = {
   active: PropTypes.bool,
   trackTitle: PropTypes.string,
   trackId: PropTypes.number,
-  ownerId: PropTypes.number,
   artistName: PropTypes.string,
   artistHandle: PropTypes.string,
   coverArtSizes: PropTypes.object,
@@ -573,6 +584,7 @@ GiantTrackTile.propTypes = {
   onRepost: PropTypes.func,
   onSave: PropTypes.func,
   following: PropTypes.bool,
+  onUnlock: PropTypes.func,
   onFollow: PropTypes.func,
   onUnfollow: PropTypes.func,
   onDownload: PropTypes.func
@@ -603,6 +615,7 @@ GiantTrackTile.defaultProps = {
   onRepost: () => {},
   onSave: () => {},
   onFollow: () => {},
+  onUnlock: () => {},
   onDownload: () => {}
 }
 

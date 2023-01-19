@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux'
 
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
+import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './TipAudio.module.css'
@@ -33,6 +34,7 @@ export const TipAudioButton = () => {
       dispatch(beginTip({ user: profile, source: 'profile' }))
     } else {
       dispatch(pushRoute(SIGN_UP_PAGE))
+      dispatch(showRequiresAccountModal())
     }
   }, [dispatch, profile, account])
 

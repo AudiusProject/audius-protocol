@@ -31,7 +31,8 @@ import {
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  premiumContentActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -74,6 +75,7 @@ const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
+const { updatePremiumTrackStatus } = premiumContentActions
 const {
   getUser,
   getLineup,
@@ -408,6 +410,7 @@ class TrackPageProvider extends Component<
       // Follow Props
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
+      onUnlock: this.props.onUnlock,
       makePublic: this.props.makeTrackPublic,
       onClickReposts: this.onClickReposts,
       onClickFavorites: this.onClickFavorites
@@ -586,6 +589,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
+    onUnlock: () => dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' })),
     onFollow: (userId: ID) =>
       dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
     onUnfollow: (userId: ID) =>

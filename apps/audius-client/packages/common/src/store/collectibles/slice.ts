@@ -4,7 +4,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Chain, Collectible, ID } from '../../models'
 import { Nullable } from '../../utils'
 
-export type CollectiblesState = {
+type CollectiblesState = {
   userCollectibles: {
     [id: ID]: {
       [Chain.Eth]: Collectible[]

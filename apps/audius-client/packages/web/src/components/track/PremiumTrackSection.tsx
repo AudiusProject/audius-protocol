@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import {
   FeatureFlags,
@@ -9,29 +9,39 @@ import {
   Nullable,
   Chain,
   usersSocialActions as socialActions,
+  premiumContentActions,
   FollowSource,
   tippingSelectors,
-  tippingActions
+  tippingActions,
+  premiumContentSelectors,
+  accountSelectors
 } from '@audius/common'
 import { Button, ButtonType, IconLock, IconUnlocked } from '@audius/stems'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
+import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
 import FollowButton from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
+import { SIGN_UP_PAGE } from 'utils/route'
+import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import styles from './GiantTrackTile.module.css'
 
 const { getUsers } = cacheUsersSelectors
 const { getSendStatus } = tippingSelectors
 const { beginTip } = tippingActions
+const { getPremiumTrackStatus } = premiumContentSelectors
+const { updatePremiumTrackStatus, refreshPremiumTrack } = premiumContentActions
+const { getAccountUser } = accountSelectors
 
 const messages = {
   howToUnlock: 'HOW TO UNLOCK',
@@ -67,35 +77,50 @@ const LockedPremiumTrackSection = ({
   const dispatch = useDispatch()
   const sendStatus = useSelector(getSendStatus)
   const previousSendStatus = usePrevious(sendStatus)
-  const [isUnlocking, setIsUnlocking] = useState(false)
+  const premiumTrackStatus = useSelector(getPremiumTrackStatus)
+  const account = useSelector(getAccountUser)
 
   // Set unlocking state if send tip is successful and user closed the tip modal.
   useEffect(() => {
     if (previousSendStatus === 'SUCCESS' && sendStatus === null) {
-      setIsUnlocking(true)
+      dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' }))
+
       // Poll discovery to get user's premium content signature for this track.
-      // dispatch(refreshPremiumTrack())
+      const trackParams = parseTrackRoute(window.location.pathname)
+      dispatch(refreshPremiumTrack({ trackParams }))
     }
-  }, [previousSendStatus, sendStatus])
+  }, [dispatch, previousSendStatus, sendStatus])
 
   const handleSendTip = useCallback(() => {
-    dispatch(beginTip({ user: tippedUser, source: 'trackPage' }))
-  }, [dispatch, tippedUser])
+    if (account) {
+      dispatch(beginTip({ user: tippedUser, source: 'trackPage' }))
+    } else {
+      dispatch(pushRoute(SIGN_UP_PAGE))
+      dispatch(showRequiresAccountModal())
+    }
+  }, [dispatch, account, tippedUser])
 
   const handleFollow = useCallback(() => {
-    if (premiumConditions.follow_user_id) {
-      dispatch(
-        socialActions.followUser(
-          premiumConditions.follow_user_id,
-          FollowSource.TRACK_PAGE
+    if (account) {
+      if (premiumConditions.follow_user_id) {
+        dispatch(
+          socialActions.followUser(
+            premiumConditions.follow_user_id,
+            FollowSource.TRACK_PAGE
+          )
         )
-      )
-      // Set unlocking state if user has clicked on button to follow artist.
-      setIsUnlocking(true)
-      // Poll discovery to get user's premium content signature for this track.
-      // dispatch(refreshPremiumTrack())
+        // Set unlocking state if user has clicked on button to follow artist.
+        dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' }))
+
+        // Poll discovery to get user's premium content signature for this track.
+        const trackParams = parseTrackRoute(window.location.pathname)
+        dispatch(refreshPremiumTrack({ trackParams }))
+      }
+    } else {
+      dispatch(pushRoute(SIGN_UP_PAGE))
+      dispatch(showRequiresAccountModal())
     }
-  }, [dispatch, premiumConditions])
+  }, [dispatch, account, premiumConditions])
 
   const handleGoToCollection = useCallback(() => {
     const { chain, address, externalLink } =
@@ -168,7 +193,7 @@ const LockedPremiumTrackSection = ({
   }, [premiumConditions, followee, tippedUser])
 
   const renderButton = useCallback(() => {
-    if (isUnlocking) {
+    if (premiumTrackStatus === 'UNLOCKING') {
       return (
         <Button
           text={messages.unlocking}
@@ -229,7 +254,7 @@ const LockedPremiumTrackSection = ({
     handleGoToCollection,
     handleFollow,
     handleSendTip,
-    isUnlocking
+    premiumTrackStatus
   ])
 
   return (

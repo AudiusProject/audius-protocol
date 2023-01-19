@@ -51,6 +51,7 @@ export type OwnProps = {
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
   onUnfollow: () => void
+  onUnlock: () => void
   onClickReposts: () => void
   onClickFavorites: () => void
 
@@ -95,6 +96,7 @@ const TrackPage = ({
   onSaveTrack,
   onFollow,
   onUnfollow,
+  onUnlock,
   onDownloadTrack,
   makePublic,
   onExternalLinkClick,
@@ -115,7 +117,8 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
   const loading = !heroTrack
-  const doesUserHaveAccess = !!heroTrack?.premium_content_signature
+  const doesUserHaveAccess =
+    !heroTrack?.is_premium || isOwner || !!heroTrack?.premium_content_signature
 
   const onPlay = () => onHeroPlay(heroPlaying)
   const onSave = isOwner
@@ -154,7 +157,6 @@ const TrackPage = ({
       trackTitle={defaults.title}
       trackId={defaults.trackId}
       userId={user?.user_id ?? 0}
-      ownerId={heroTrack?.owner_id ?? 0}
       artistName={emptyStringGuard(user?.name)}
       artistHandle={emptyStringGuard(user?.handle)}
       coverArtSizes={defaults.coverArtSizes}
@@ -195,6 +197,7 @@ const TrackPage = ({
       following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
+      onUnlock={onUnlock}
       download={defaults.download}
       onDownload={onDownload}
       makePublic={makePublic}

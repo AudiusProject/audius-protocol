@@ -4,9 +4,10 @@ import {
   ID,
   SquareSizes,
   CoverArtSizes,
-  useLoadImageWithTimeout
+  useLoadImageWithTimeout,
+  FeatureFlags
 } from '@audius/common'
-import { PbIconPlay as IconPlay, PbIconPause as IconPause } from '@audius/stems'
+import { PbIconPlay as IconPlay, PbIconPause as IconPause, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -18,6 +19,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './Artwork.module.css'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 enum PlayStatus {
   Buffering = 'Buffering',
@@ -40,17 +42,26 @@ type TileArtworkProps = {
     user: { name: string; is_verified: boolean; user_id: ID }
   }
   callback: () => void
+  doesUserHaveAccess?: boolean
 }
 
 const ArtworkIcon = ({
   playStatus,
-  artworkIconClassName
+  artworkIconClassName,
+  doesUserHaveAccess
 }: {
   playStatus: PlayStatus
   artworkIconClassName?: string
+  doesUserHaveAccess?: boolean
 }) => {
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+
   let artworkIcon
-  if (playStatus === PlayStatus.Buffering) {
+  if (isPremiumContentEnabled && !doesUserHaveAccess) {
+    artworkIcon = <IconLock />
+  } else if (playStatus === PlayStatus.Buffering) {
     artworkIcon = (
       <div className={styles.loadingAnimation}>
         <Lottie
@@ -93,7 +104,8 @@ const Artwork = memo(
     isPlaying,
     image,
     coSign,
-    label
+    label,
+    doesUserHaveAccess
   }: ArtworkProps) => {
     const playStatus = isBuffering
       ? PlayStatus.Buffering
@@ -115,6 +127,7 @@ const Artwork = memo(
           <ArtworkIcon
             playStatus={playStatus}
             artworkIconClassName={artworkIconClassName}
+            doesUserHaveAccess={doesUserHaveAccess}
           />
         )}
       </DynamicImage>

@@ -9,7 +9,9 @@ import {
   Repost,
   FieldVisibility,
   LineupTrack,
-  Remix
+  Remix,
+  PremiumConditions,
+  Nullable
 } from '@audius/common'
 
 export enum TrackTileSize {
@@ -119,6 +121,15 @@ export type DesktopTrackTileProps = {
   /** If the track is unlisted/hidden */
   isUnlisted?: boolean
 
+  /** If the track is premium */
+  isPremium?: boolean
+
+  /** Premium conditions if track is premium */
+  premiumConditions?: Nullable<PremiumConditions>
+
+  /** If logged in user has access to track */
+  doesUserHaveAccess?: boolean
+
   /** If track metadata is loading in */
   isLoading?: boolean
 
@@ -199,6 +210,9 @@ export type DesktopTrackTileProps = {
 
   /** The relative link of the track */
   permalink: string
+
+  /** Whether the bottom bar can be overridden */
+  canOverrideBottomBar?: boolean
 }
 
 export type DesktopPlaylistTileProps = {
