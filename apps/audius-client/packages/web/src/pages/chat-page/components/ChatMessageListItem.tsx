@@ -7,7 +7,7 @@ import {
   ReactionTypes
 } from '@audius/common'
 import type { ChatMessage } from '@audius/sdk'
-import { IconSave, PopupPosition } from '@audius/stems'
+import { IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useDispatch } from 'react-redux'
@@ -75,7 +75,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
         <div className={styles.text}>{message.message}</div>
         <div
           ref={reactionButtonRef}
-          className={cn(styles.reaction, {
+          className={cn(styles.reactionsButton, {
             [styles.isOpened]: isReactionPopupVisible,
             [styles.hasReaction]:
               message.reactions && message.reactions.length > 0
@@ -91,14 +91,17 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                 return null
               }
               const Reaction = reactionMap[reaction.reaction as ReactionTypes]
-              return <Reaction key={reaction.user_id} width={48} height={48} />
+              return (
+                <Reaction
+                  className={styles.reactionEmoji}
+                  key={reaction.user_id}
+                  width={48}
+                  height={48}
+                />
+              )
             })
           ) : (
-            <IconSave
-              width={28}
-              height={28}
-              className={styles.addReactionIcon}
-            />
+            <IconPlus className={styles.addReactionIcon} />
           )}
         </div>
       </div>

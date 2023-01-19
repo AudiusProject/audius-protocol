@@ -12,6 +12,7 @@ import Lottie, { LottieProps } from 'react-lottie'
 import styles from './Reaction.module.css'
 
 export type ReactionProps = {
+  className?: string
   animationData: LottieProps['options']['animationData']
   isActive?: boolean
   isResponsive?: boolean
@@ -22,6 +23,7 @@ export type ReactionProps = {
 
 export const Reaction = (props: ReactionProps) => {
   const {
+    className,
     animationData,
     isActive,
     isResponsive,
@@ -69,7 +71,7 @@ export const Reaction = (props: ReactionProps) => {
 
   return (
     <div
-      className={cn(styles.root, {
+      className={cn(styles.root, className, {
         [styles.active]: isActive === true,
         [styles.inactive]: isActive === false,
         [styles.responsive]: isResponsive,

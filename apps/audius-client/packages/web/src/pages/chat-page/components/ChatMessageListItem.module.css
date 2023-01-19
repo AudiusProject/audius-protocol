@@ -48,51 +48,58 @@
   margin-bottom: var(--unit-4);
 }
 
-.reaction {
+.reactionsButton {
   display: none;
+  flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
   position: absolute;
   cursor: pointer;
-  bottom: -16px;
+  bottom: -24px;
 }
 
-.reaction:not(.hasReaction) {
+.reactionsButton:not(.hasReaction) {
   background-color: var(--white);
   border: 1px solid var(--neutral-light-6);
   width: var(--unit-8);
   height: var(--unit-8);
-  bottom: -8px;
+  bottom: -16px;
   border-radius: 50%;
 }
 
-.root.isAuthor .reaction {
-  left: -8px;
-}
-.root:not(.isAuthor) .reaction {
-  right: -8px;
-}
-
-.root.isAuthor .reaction.hasReaction {
+.root.isAuthor .reactionsButton {
   left: -16px;
 }
-.root:not(.isAuthor) .reaction {
+.root:not(.isAuthor) .reactionsButton {
   right: -16px;
+  direction: rtl;
 }
 
-.bubble:hover .reaction,
-.reaction.isOpened,
-.reaction.hasReaction {
+.root.isAuthor .reactionsButton.hasReaction {
+  left: -24px;
+}
+
+.root:not(.isAuthor) .reactionsButton.hasReaction {
+  right: -24px;
+}
+
+.bubble:hover .reactionsButton,
+.reactionsButton.isOpened,
+.reactionsButton.hasReaction {
   display: flex;
 }
 
-.reaction:not(.hasReaction) g path {
+.reactionsButton:not(.hasReaction) path {
   width: 24px;
   height: 24px;
   fill: var(--secondary);
 }
 
+.reactionsButton:not(.hasReaction):hover path {
+  fill: var(--primary);
+}
+
 .reactionEmoji {
-  width: var(--unit-10);
-  height: var(--unit-10);
+  margin-inline-end: -28px;
+  filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.15));
 }

@@ -6,7 +6,7 @@ import {
   useState
 } from 'react'
 
-import { IconArrow, IconButton } from '@audius/stems'
+import { IconButton, IconSend } from '@audius/stems'
 import cn from 'classnames'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
@@ -75,10 +75,11 @@ export const ChatComposer = (props: ChatComposerProps) => {
           resize
         >
           <IconButton
+            className={styles.sendButton}
             disabled={!value}
             aria-label={messages.sendMessage}
             type={'submit'}
-            icon={<IconArrow className={styles.icon} />}
+            icon={<IconSend className={styles.icon} />}
           />
         </TextAreaV2>
       </form>
