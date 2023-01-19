@@ -10,11 +10,11 @@ import {
 import {
   CastState,
   useCastState,
-  useRemoteMediaClient,
-  useStreamPosition
+  useRemoteMediaClient
 } from 'react-native-google-cast'
+import TrackPlayer from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
+import { useAsync, usePrevious } from 'react-use'
 
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -43,7 +43,6 @@ export const useChromecast = () => {
   // Cast hooks
   const client = useRemoteMediaClient()
   const castState = useCastState()
-  const streamPosition = useStreamPosition(0.5)
 
   const [internalCounter, setInternalCounter] = useState(0)
   const streamingUri = useMemo(() => {
@@ -110,15 +109,15 @@ export const useChromecast = () => {
   // when a new track is played
   useEffect(() => {
     if (prevTrack && prevTrack !== track && counter !== internalCounter) {
-      global.progress.currentTime = 0
       setInternalCounter(0)
     }
   }, [prevTrack, track, counter, internalCounter, setInternalCounter])
 
   // Load media when the cast connects
-  useEffect(() => {
+  useAsync(async () => {
     if (castState === CastState.CONNECTED) {
-      loadCast(track, global.progress.currentTime ?? 0)
+      const currentPosition = await TrackPlayer.getPosition()
+      loadCast(track, currentPosition)
     }
   }, [loadCast, track, prevTrack, castState])
 
@@ -132,14 +131,6 @@ export const useChromecast = () => {
       }
     }
   }, [playing, playCast, pauseCast, castState])
-
-  // Update the currentTime with the stream position from
-  // the cast device
-  useEffect(() => {
-    if (streamPosition !== null) {
-      global.progress.currentTime = streamPosition
-    }
-  }, [streamPosition])
 
   // Seek the cast device
   useEffect(() => {

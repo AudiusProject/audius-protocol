@@ -1,92 +1,129 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
-import { Animated, StyleSheet, View } from 'react-native'
+import { playerSelectors } from '@audius/common'
+import { Animated, Dimensions } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
+import TrackPlayer from 'react-native-track-player'
+import { useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { NOW_PLAYING_HEIGHT } from './constants'
 
-const SEEK_INTERVAL = 200
+const width = Dimensions.get('window').width
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    rail: {
-      height: 2,
-      width: '100%',
-      backgroundColor: themeColors.neutralLight7
-    },
-    tracker: {
-      height: 2,
-      backgroundColor: 'red'
-    }
-  })
+const { getSeek, getPlaying, getPaused } = playerSelectors
+
+const useStyles = makeStyles(({ palette }) => ({
+  rail: {
+    height: 2,
+    width: '100%',
+    backgroundColor: palette.neutralLight7,
+    overflow: 'hidden'
+  },
+  tracker: {
+    height: 3,
+    // flexGrow: 1,
+    backgroundColor: 'red'
+  }
+}))
 
 type TrackingBarProps = {
   /**
+   * A unique key to represent this instances of playback.
+   * If the user replays the same track, mediaKey should change
+   */
+  mediaKey: string
+  duration: number
+  /**
    * Animation that signals how "open" the now playing drawer is.
    */
-  translationAnim: Animated.Value
+  translateYAnimation: Animated.Value
 }
 
-export const TrackingBar = ({ translationAnim }: TrackingBarProps) => {
-  const styles = useThemedStyles(createStyles)
+export const TrackingBar = (props: TrackingBarProps) => {
+  const { mediaKey, duration, translateYAnimation } = props
+  const styles = useStyles()
   const { primaryLight2, primaryDark2 } = useThemeColors()
 
-  const [percentComplete, setPercentComplete] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const translateXAnimation = useRef(new Animated.Value(0))
+  const currentAnimation = useRef<Animated.CompositeAnimation>()
+
+  const seek = useSelector(getSeek) ?? 0
+  const playing = useSelector(getPlaying)
+  const paused = useSelector(getPaused)
+
+  const runTranslateXAnimation = useCallback((timeRemaining: number) => {
+    currentAnimation.current = Animated.timing(translateXAnimation.current, {
+      toValue: 1,
+      duration: timeRemaining * 1000,
+      useNativeDriver: true
+    })
+
+    currentAnimation.current.start()
+  }, [])
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      const { currentTime, duration } = global.progress
-      if (duration) {
-        setPercentComplete(currentTime / duration)
-      } else {
-        setPercentComplete(0)
-      }
-    }, SEEK_INTERVAL)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
+    if (duration) {
+      translateXAnimation.current.setValue(0)
+      runTranslateXAnimation(duration)
     }
-  }, [setPercentComplete, intervalRef])
+  }, [mediaKey, duration, runTranslateXAnimation])
+
+  useAsync(async () => {
+    if (paused) {
+      currentAnimation.current?.stop()
+    } else if (playing) {
+      const position = await TrackPlayer.getPosition()
+      runTranslateXAnimation(duration - position)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- no duration
+  }, [playing, paused, runTranslateXAnimation])
+
+  useEffect(() => {
+    const percentComplete = duration === 0 ? 0 : seek / duration
+    const timeRemaining = duration - seek
+
+    translateXAnimation.current.setValue(percentComplete)
+
+    if (playing) {
+      runTranslateXAnimation(timeRemaining)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- no duration
+  }, [seek, runTranslateXAnimation])
+
+  const rootOpacity = translateYAnimation.interpolate({
+    // Interpolate the animation such that the tracker fades out
+    // at 5% up the screen.
+    // The tracker is important to fade away shortly after
+    // the now playing drawer is opened so that the drawer may
+    // animate in corner radius without showing at the same time
+    // as the tracker.
+    inputRange: [0, 0.9 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
+    outputRange: [0, 0, 2]
+  })
+
+  const trackerTransform = [
+    {
+      translateX: translateXAnimation.current.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-1 * width, 0]
+      })
+    }
+  ]
 
   return (
-    <Animated.View
-      style={[
-        styles.rail,
-        {
-          opacity: translationAnim.interpolate({
-            // Interpolate the animation such that the tracker fades out
-            // at 5% up the screen.
-            // The tracker is important to fade away shortly after
-            // the now playing drawer is opened so that the drawer may
-            // animate in corner radius without showing at the same time
-            // as the tracker.
-            inputRange: [0, 0.9 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
-            outputRange: [0, 0, 2]
-          })
-        }
-      ]}
-    >
-      <View
-        style={[
-          styles.tracker,
-          {
-            width: `${percentComplete * 100}%`
-          }
-        ]}
-      >
+    <Animated.View style={[styles.rail, { opacity: rootOpacity }]}>
+      <Animated.View style={[styles.tracker, { transform: trackerTransform }]}>
         <LinearGradient
           useAngle
           angle={135}
           colors={[primaryLight2, primaryDark2]}
           style={{ flex: 1 }}
         />
-      </View>
+      </Animated.View>
     </Animated.View>
   )
 }

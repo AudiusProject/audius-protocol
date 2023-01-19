@@ -83,14 +83,11 @@ type PlayBarProps = {
   user: Nullable<User>
   onPress: () => void
   translationAnim: Animated.Value
+  mediaKey: string
 }
 
-export const PlayBar = ({
-  track,
-  user,
-  onPress,
-  translationAnim
-}: PlayBarProps) => {
+export const PlayBar = (props: PlayBarProps) => {
+  const { track, user, onPress, translationAnim, mediaKey } = props
   const styles = useStyles()
   const dispatch = useDispatch()
 
@@ -114,26 +111,25 @@ export const PlayBar = ({
     )
   }
 
+  const rootOpacityAnimation = translationAnim.interpolate({
+    // Interpolate the animation such that the play bar fades out
+    // at 25% up the screen.
+    inputRange: [
+      0,
+      0.75 * (NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT),
+      NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT
+    ],
+    outputRange: [0, 0, 1],
+    extrapolate: 'extend'
+  })
+
   return (
-    <Animated.View
-      style={[
-        styles.root,
-        {
-          opacity: translationAnim.interpolate({
-            // Interpolate the animation such that the play bar fades out
-            // at 25% up the screen.
-            inputRange: [
-              0,
-              0.75 * (NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT),
-              NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT
-            ],
-            outputRange: [0, 0, 1],
-            extrapolate: 'extend'
-          })
-        }
-      ]}
-    >
-      <TrackingBar translationAnim={translationAnim} />
+    <Animated.View style={[styles.root, { opacity: rootOpacityAnimation }]}>
+      <TrackingBar
+        duration={track?.duration ?? 0}
+        mediaKey={mediaKey}
+        translateYAnimation={translationAnim}
+      />
       <View style={styles.container}>
         {renderFavoriteButton()}
         <TouchableOpacity
