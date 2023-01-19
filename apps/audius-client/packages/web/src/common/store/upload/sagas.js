@@ -407,8 +407,8 @@ export function* handleUploads({
       id,
       track: value.track,
       metadata: {
-        is_playlist_upload: isCollection,
-        ...value.metadata
+        ...value.metadata,
+        is_playlist_upload: isCollection
       },
       index: value.index,
       artwork: isCollection ? null : value.artwork,
