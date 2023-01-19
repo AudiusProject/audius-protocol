@@ -967,7 +967,7 @@ router.get(
     const redisClient = req.app.get('redisClient')
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
-    const trackId = req.params.trackId
+    const trackId = req.query.trackId
     const CID = req.params.CID
 
     if (!trackId) {
