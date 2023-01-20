@@ -89,7 +89,8 @@ export const downloadAllFavorites = async () => {
         is_from_favorites: true,
         collection_id: DOWNLOAD_REASON_FAVORITES,
         favorite_created_at: favoriteCreatedAt
-      }
+      },
+      favoriteCreatedAt
     })
   )
   batchDownloadTrack(tracksForDownload)
