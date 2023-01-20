@@ -20,9 +20,9 @@ https://github.com/solana-mobile/app-publishing-spec/blob/main/packages/cli/READ
 cd android
 ./gradlew assembleRelease
 
-npx dapp-store create release -k <path_to_your_keypair> -b <path_to_your_android_sdk_build_tools> -u https://audius.rpcpool.com
+npx dapp-store create release -k <path_to_your_keypair> -b <path_to_your_android_sdk_build_tools> -u https://audius-fe.rpcpool.com
 
-npx dapp-store publish update -k <path_to_your_keypair> -u https://audius.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
+npx dapp-store publish update -k <path_to_your_keypair> -u https://audius-fe.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
 ```
 
 
