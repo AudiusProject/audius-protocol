@@ -10,7 +10,7 @@ reset::
 	docker compose down --volumes
 	docker compose up comdb -d
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait up
+		dbmate --wait --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
 psql::
@@ -55,8 +55,8 @@ build::
 # also... this is pretty much identical to doing a docker "multi-stage" build, but way simpler.
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-linux-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/wip-comms:latest
-	docker push audius/wip-comms:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/wip-comms:a1
+	docker push audius/wip-comms:a1
 
 
 tools::

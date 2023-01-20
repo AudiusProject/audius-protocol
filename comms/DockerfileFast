@@ -16,7 +16,7 @@ WORKDIR /app
 
 
 COPY build/comms-linux-amd64 /comms-linux
-COPY db/migrations ./db/migrations
+COPY discovery/db/migrations ./discovery/db/migrations
 
 EXPOSE 8925
 
