@@ -200,8 +200,21 @@ const healthCheckVerboseController = async (req) => {
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 
+  /**
+   * Ensure DB and redis connections are healthy
+   * - If redis connection is down, all monitors will be null
+   * - If DB connection is down, databaseSize value will be null
+   * - It is safe to do this falsey comparison since databaseSize should always be non-zero if healthy
+   */
+  const DBAndRedisConnectionIsHealthy = !!healthCheckResponse.databaseSize
+
   if (config.get('isReadOnlyMode')) {
     return errorResponseServerError(healthCheckResponse)
+  } else if (!DBAndRedisConnectionIsHealthy) {
+    return errorResponseServerError({
+      ...healthCheckResponse,
+      healthy: false
+    })
   } else {
     return successResponse(healthCheckResponse)
   }
