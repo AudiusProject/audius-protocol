@@ -50,7 +50,7 @@ export const contentAccessMiddleware = async (
     const { libs, redis } = serviceRegistry
     const logger = req.logger as Logger
 
-    const { isValidRequest, shouldCache, error } = await checkCIDAccess({
+    const cidAccess = await checkCIDAccess({
       cid,
       data,
       signature,
@@ -58,6 +58,7 @@ export const contentAccessMiddleware = async (
       logger,
       redis
     })
+    const { isValidRequest, shouldCache, error } = cidAccess
     if (!isValidRequest) {
       switch (error) {
         case 'InvalidDiscoveryNode':
@@ -92,6 +93,8 @@ export const contentAccessMiddleware = async (
     // We need the info because if the content is gated, then we need to set
     // the cache-control response header to no-cache so that nginx does not cache it.
     ;(req as any).shouldCache = shouldCache
+    // Set the trackId as the next middleware will need to check against the blacklist.
+    ;(req as any).trackId = cidAccess.trackId
 
     return next()
   } catch (e: any) {

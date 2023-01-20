@@ -28,7 +28,7 @@ export type SignedData = {
 }
 
 export type CheckAccessResponse =
-  | { isValidRequest: true; shouldCache: boolean; error: null }
+  | { isValidRequest: true; trackId: number; shouldCache: boolean; error: null }
   | {
       isValidRequest: false
       shouldCache: false
