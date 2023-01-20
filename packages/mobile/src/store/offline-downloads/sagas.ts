@@ -9,7 +9,8 @@ import {
   tracksSocialActions,
   collectionsSocialActions,
   accountSelectors,
-  cacheCollectionsSelectors
+  cacheCollectionsSelectors,
+  reachabilityActions
 } from '@audius/common'
 import { waitForBackendSetup } from 'audius-client/src/common/store/backend/sagas'
 import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
@@ -33,11 +34,17 @@ import {
   syncCollectionsTracks,
   downloadCollection
 } from 'app/services/offline-downloader'
+import {
+  blockedPlayCounterWorker,
+  playCounterWorker,
+  setPlayCounterWorker
+} from 'app/services/offline-downloader/workers'
 
 import { getOfflineCollections } from './selectors'
 import { clearOfflineDownloads, doneLoadingFromDisk } from './slice'
 const { fetchCollection, FETCH_COLLECTION_SUCCEEDED, FETCH_COLLECTION_FAILED } =
   collectionPageActions
+const { SET_REACHABLE, SET_UNREACHABLE } = reachabilityActions
 const { getUserId } = accountSelectors
 const { getCollections } = cacheCollectionsSelectors
 
@@ -166,11 +173,29 @@ export function* startSync() {
   }
 }
 
+export function* handleSetReachable() {
+  yield* call(setPlayCounterWorker, playCounterWorker)
+}
+
+export function* watchSetReachable() {
+  yield* takeLatest(SET_REACHABLE, handleSetReachable)
+}
+
+export function* handleSetUnreachable() {
+  yield* call(setPlayCounterWorker, blockedPlayCounterWorker)
+}
+
+export function* watchSetUnreachable() {
+  yield* takeLatest(SET_UNREACHABLE, handleSetUnreachable)
+}
+
 const sagas = () => {
   return [
     watchSaveTrack,
     watchSaveCollection,
     watchClearOfflineDownloads,
+    watchSetReachable,
+    watchSetUnreachable,
     startSync
   ]
 }
