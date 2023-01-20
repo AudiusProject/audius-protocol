@@ -34,6 +34,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { TrackEvent, make } from 'common/store/analytics/actions'
+import { confirmSaveCollection } from 'common/store/social/collections/sagas'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
@@ -227,7 +228,9 @@ const ConnectedPlaylistTile = memo(
         record
       ]
     )
-    const href = isAlbum
+    const href = isLoading
+      ? ''
+      : isAlbum
       ? albumPage(handle, title, id)
       : playlistPage(handle, title, id)
 
@@ -400,16 +403,12 @@ const ConnectedPlaylistTile = memo(
           kind={isAlbum ? 'album' : 'playlist'}
           id={id}
           isOwner={isOwner}
-          link={
-            isAlbum
-              ? fullAlbumPage(handle, title, id)
-              : fullPlaylistPage(handle, title, id)
-          }
+          link={href}
         >
           {children as any}
         </Draggable>
       ),
-      [id, disableActions, title, isAlbum, handle, isOwner]
+      [id, disableActions, title, isAlbum, isOwner, href]
     )
 
     const renderTrackList = useCallback(() => {
