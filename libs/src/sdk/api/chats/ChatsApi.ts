@@ -55,7 +55,9 @@ export class ChatsApi extends BaseAPI {
     const response = await this.getRaw(requestParameters.chatId)
     return {
       ...response,
-      data: await this.decryptLastChatMessage(response.data)
+      data: response.data
+        ? await this.decryptLastChatMessage(response.data)
+        : response.data
     }
   }
 
