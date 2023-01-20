@@ -18,20 +18,20 @@ export async function checkCIDAccess({
   logger,
   redis
 }: CheckAccessArgs): Promise<CheckAccessResponse> {
-  const discoveryNodeWallet = recoverWallet(data, signature)
-  const isRegisteredDN = await isRegisteredDiscoveryNode({
-    discoveryNodeDelegateOwnerWallet: discoveryNodeWallet,
-    libs,
-    logger,
-    redis
-  })
-  if (!isRegisteredDN) {
-    return {
-      isValidRequest: false,
-      error: 'InvalidDiscoveryNode',
-      shouldCache: false
-    }
-  }
+  // const discoveryNodeWallet = recoverWallet(data, signature)
+  // const isRegisteredDN = await isRegisteredDiscoveryNode({
+  //   discoveryNodeDelegateOwnerWallet: discoveryNodeWallet,
+  //   libs,
+  //   logger,
+  //   redis
+  // })
+  // if (!isRegisteredDN) {
+  //   return {
+  //     isValidRequest: false,
+  //     error: 'InvalidDiscoveryNode',
+  //     shouldCache: false
+  //   }
+  // }
 
   const {
     cid: copy320CID,
