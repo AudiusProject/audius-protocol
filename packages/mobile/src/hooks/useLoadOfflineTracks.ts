@@ -170,9 +170,9 @@ export const useOfflineCollectionLineup = (
           lineupActions.fetchLineupMetadatasSucceeded(
             sortedTracks,
             0,
-            lineupTracks.length,
-            false,
-            false
+            sortedTracks.length,
+            0,
+            0
           )
         )
       } else {
@@ -189,8 +189,8 @@ export const useOfflineCollectionLineup = (
             sortedTracks,
             0,
             lineupTracks.length,
-            false,
-            false
+            0,
+            0
           )
         )
       }

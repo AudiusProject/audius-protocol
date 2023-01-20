@@ -120,8 +120,8 @@ export class LineupActions {
     entries: unknown,
     offset: number,
     limit: number,
-    deleted: boolean,
-    nullCount: boolean,
+    deleted: number,
+    nullCount: number,
     handle?: string
   ) {
     return {
