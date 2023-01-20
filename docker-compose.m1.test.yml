@@ -29,6 +29,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - solana
 
   build-audius-libs:
     extends:
@@ -74,6 +78,16 @@ services:
       file: docker-compose.test.yml
       service: test-discovery-provider
 
+  test-discovery-provider-migrations:
+    extends:
+      file: docker-compose.test.yml
+      service: test-discovery-provider-migrations
+
+  discovery-provider-notifications:
+    extends:
+      file: docker-compose.test.yml
+      service: discovery-provider-notifications
+
   # identity-service
 
   identity-service-db:
@@ -90,6 +104,11 @@ services:
     extends:
       file: docker-compose.test.yml
       service: test-identity-service
+
+  test-identity-service-migrations:
+    extends:
+      file: docker-compose.test.yml
+      service: test-identity-service-migrations
 
 volumes:
   poa-contracts-abis:
