@@ -129,9 +129,10 @@ const healthCheckController = async (req) => {
   /**
    * Ensure DB and redis connections are healthy
    * - If redis connection is down, all monitors will be null
-   * - If DB connection is down, databaseConnections value will be null
+   * - If DB connection is down, databaseSize value will be null
+   * - It is safe to do this falsey comparison since databaseSize should always be non-zero if healthy
    */
-  const DBAndRedisConnectionIsHealthy = !!response.databaseConnections
+  const DBAndRedisConnectionIsHealthy = !!response.databaseSize
 
   if (config.get('isReadOnlyMode')) {
     return errorResponseServerError(response)
