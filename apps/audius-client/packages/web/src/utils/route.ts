@@ -288,7 +288,8 @@ export const playlistPage = (
       playlistName
     )}-${playlistId}`
   } else {
-    throw Error('Missing required arguments to get PlaylistPage route.')
+    console.error('Missing required arguments to get PlaylistPage route.')
+    return ''
   }
 }
 export const fullPlaylistPage = (
