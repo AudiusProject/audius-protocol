@@ -33,7 +33,12 @@ export async function checkCIDAccess({
     }
   }
 
-  const { cid: copy320CID, trackId, timestamp: signedTimestamp, shouldCache } = data
+  const {
+    cid: copy320CID,
+    trackId,
+    timestamp: signedTimestamp,
+    shouldCache
+  } = data
 
   if (copy320CID !== cid) {
     return {
