@@ -5,6 +5,7 @@ from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -109,6 +110,7 @@ def populate_mock_db(db, entities, block_offset=None):
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
         track_routes = entities.get("track_routes", [])
+        playlist_routes = entities.get("playlist_routes", [])
         remixes = entities.get("remixes", [])
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
@@ -386,6 +388,20 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=route_meta.get("blocknumber", i + block_offset),
                 owner_id=route_meta.get("owner_id", i + 1),
                 track_id=route_meta.get("track_id", i + 1),
+                is_current=route_meta.get("is_current", True),
+                txhash=route_meta.get("txhash", str(i + 1)),
+                collision_id=route_meta.get("collision_id", 0),
+            )
+            session.add(route)
+
+        for i, route_meta in enumerate(playlist_routes):
+            route = PlaylistRoute(
+                slug=route_meta.get("slug", ""),
+                title_slug=route_meta.get("title_slug", ""),
+                blockhash=hex(i + block_offset),
+                blocknumber=route_meta.get("blocknumber", i + block_offset),
+                owner_id=route_meta.get("owner_id", i + 1),
+                playlist_id=route_meta.get("playlist_id", i + 1),
                 is_current=route_meta.get("is_current", True),
                 txhash=route_meta.get("txhash", str(i + 1)),
                 collision_id=route_meta.get("collision_id", 0),
