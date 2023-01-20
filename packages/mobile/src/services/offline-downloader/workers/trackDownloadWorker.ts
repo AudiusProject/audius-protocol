@@ -3,10 +3,7 @@ import { Worker } from 'react-native-job-queue'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
-import {
-  errorDownload,
-  removeDownload
-} from 'app/store/offline-downloads/slice'
+import { errorDownload } from 'app/store/offline-downloads/slice'
 
 import { batchRemoveTrackDownload, downloadTrack } from '../offline-downloader'
 
@@ -21,7 +18,7 @@ const executor = (payload: TrackDownloadWorkerPayload) => {
   const promise: CancellablePromise<void> = downloadTrack(payload)
   promise.rn_job_queue_cancel = () => {
     promise.finally(() => {
-      store.dispatch(removeDownload(payload.trackId.toString()))
+      store.dispatch(errorDownload(payload.trackId.toString()))
       batchRemoveTrackDownload([payload])
     })
   }

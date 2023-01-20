@@ -93,6 +93,7 @@ export const downloadAllFavorites = async () => {
       favoriteCreatedAt
     })
   )
+
   batchDownloadTrack(tracksForDownload)
 
   // @ts-ignore state is CommonState
@@ -104,7 +105,8 @@ export const downloadAllFavorites = async () => {
 
 export const downloadCollection = async (
   collection: CollectionMetadata,
-  isFavoritesDownload?: boolean
+  isFavoritesDownload?: boolean,
+  skipTracks?: boolean
 ) => {
   const state = store.getState()
   const currentUserId = getUserId(state)
@@ -153,7 +155,10 @@ export const downloadCollection = async (
       }
     })
   )
-  batchDownloadTrack(tracksForDownload)
+
+  if (!skipTracks) {
+    batchDownloadTrack(tracksForDownload)
+  }
 }
 
 export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
