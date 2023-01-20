@@ -19,7 +19,6 @@ def get_feed_es(args, limit=10):
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
     load_orig = feed_filter in ["original", "all"]
-    exclude_premium = args.get("exclude_premium", False)
 
     explicit_ids = args.get("followee_user_ids", [])
 
@@ -237,22 +236,11 @@ def get_feed_es(args, limit=10):
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
 
-    if exclude_premium:
-        # filter out premium tracks from the feed before populating metadata
-        sorted_feed = list(
-            filter(
-                lambda item: "track_id" not in item or not item["is_premium"],
-                sorted_feed,
-            )
-        )
-    else:
-        # batch populate premium track metadata
-        db = get_db_read_replica()
-        with db.scoped_session() as session:
-            track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
-            _populate_premium_track_metadata(
-                session, track_items, current_user["user_id"]
-            )
+    # batch populate premium track metadata
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
+        _populate_premium_track_metadata(session, track_items, current_user["user_id"])
 
     # populate metadata + remove extra fields from items
     sorted_feed = [
