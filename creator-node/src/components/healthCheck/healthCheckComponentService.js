@@ -7,7 +7,7 @@ const utils = require('../../utils')
 const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
-const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
+const MIN_NUMBER_OF_CPUS = 8 // 8 cpu
 const MIN_TOTAL_MEMORY = 15500000000 // 15.5 GB of RAM
 const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
 
@@ -238,7 +238,7 @@ const healthCheck = async (
 
   if (
     !response.numberOfCPUs ||
-    response.numberOfCPUs < MIN_NUBMER_OF_CPUS ||
+    response.numberOfCPUs < MIN_NUMBER_OF_CPUS ||
     !response.totalMemory ||
     response.totalMemory < MIN_TOTAL_MEMORY ||
     !response.storagePathSize ||

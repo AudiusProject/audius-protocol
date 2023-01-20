@@ -126,8 +126,20 @@ const healthCheckController = async (req) => {
     }
   }
 
+  /**
+   * Ensure DB and redis connections are healthy
+   * - If redis connection is down, all monitors will be null
+   * - If DB connection is down, databaseConnections value will be null
+   */
+  const DBAndRedisConnectionIsHealthy = !!response.databaseConnections
+
   if (config.get('isReadOnlyMode')) {
     return errorResponseServerError(response)
+  } else if (!DBAndRedisConnectionIsHealthy) {
+    return errorResponseServerError({
+      ...response,
+      healthy: false
+    })
   } else {
     return successResponse(response)
   }
