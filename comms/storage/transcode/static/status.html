@@ -173,11 +173,11 @@ class JobTable extends LitElement {
             </td>
             <td>
               ${job.source_info && html`
-                <a href="/comms/storage/obj/${job.source_info.bucket}/${job.source_info.name}" target="_blank">input</a>
+                <a href="/storage/obj/${job.source_info.bucket}/${job.source_info.name}" target="_blank">input</a>
               `}
 
               ${job.result_info && html`
-                <a href="/comms/storage/obj/${job.result_info.bucket}/${job.result_info.name}" target="_blank">output</a>
+                <a href="/storage/obj/${job.result_info.bucket}/${job.result_info.name}" target="_blank">output</a>
               `}
             </td>
           </tr>

@@ -7,8 +7,6 @@ import (
 
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/jetstream"
-	"github.com/nats-io/nats-server/v2/server"
-	"github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 )
 
@@ -22,12 +20,6 @@ func TestMain(m *testing.M) {
 	}
 
 	// connect to NATS and create JetStream Context
-	opts := server.Options{
-		Host:      "127.0.0.1",
-		Port:      4222,
-		JetStream: true,
-	}
-	natsServer := test.RunServer(&opts)
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +36,6 @@ func TestMain(m *testing.M) {
 	// teardown
 	db.Conn.Close()
 	nc.Close()
-	natsServer.Shutdown()
 
 	os.Exit(code)
 }

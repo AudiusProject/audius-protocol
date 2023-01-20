@@ -24,6 +24,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 
 	routes := []*url.URL{}
 	nkeys := []*server.NkeyUser{}
+	tags := []string{}
 
 	for _, info := range peerMap {
 		if info == nil || info.NatsRoute == "" {
@@ -43,14 +44,24 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		nkeys = append(nkeys, user)
 	}
 
+	serverName := config.WalletAddress
+	if config.IsCreatorNode {
+		tags = append(tags, "storage")
+		serverName = "storage_" + config.WalletAddress
+	} else {
+		tags = append(tags, "discovery")
+	}
+
 	opts := &server.Options{
-		ServerName: config.WalletAddress,
+		ServerName: serverName,
 		HTTPPort:   8222,
 		Logtime:    true,
 		// Debug:      true,
 
 		JetStream: true,
 		StoreDir:  os.Getenv("NATS_STORE_DIR"),
+
+		Tags: tags,
 	}
 
 	if config.NatsReplicaCount < 2 {

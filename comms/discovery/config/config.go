@@ -31,7 +31,8 @@ var (
 	NatsUseNkeys        = true
 	NatsReplicaCount    = 3
 
-	IsStaging = Env == "stage"
+	IsStaging     = Env == "stage"
+	IsCreatorNode = false
 )
 
 func init() {
@@ -41,10 +42,13 @@ func init() {
 func Init() {
 	var err error
 
-	// todo: hack for creator node
+	// todo: hack for creator node config
 	if strings.Contains(os.Getenv("creatorNodeEndpoint"), "staging") {
 		Env = "stage"
 		IsStaging = true
+	}
+	if os.Getenv("delegateOwnerWallet") != "" {
+		IsCreatorNode = true
 	}
 
 	switch Env {

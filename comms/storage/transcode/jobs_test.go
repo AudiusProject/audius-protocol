@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"comms.audius.co/discovery/jetstream"
-	"github.com/nats-io/nats-server/v2/server"
-	"github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,12 +13,6 @@ import (
 func TestMain(m *testing.M) {
 
 	// connect to NATS and create JetStream Context
-	opts := server.Options{
-		Host:      "127.0.0.1",
-		Port:      4242,
-		JetStream: true,
-	}
-	natsServer := test.RunServer(&opts)
 	nc, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
 		log.Fatal(err)
@@ -36,14 +28,13 @@ func TestMain(m *testing.M) {
 
 	// teardown
 	nc.Close()
-	natsServer.Shutdown()
 
 	os.Exit(code)
 }
 
 func TestJobManager(t *testing.T) {
 
-	nc, err := nats.Connect("nats://127.0.0.1:4242")
+	nc, err := nats.Connect(nats.DefaultURL)
 	assert.NoError(t, err)
 
 	jsc, err := nc.JetStream()
