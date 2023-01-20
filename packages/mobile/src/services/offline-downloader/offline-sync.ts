@@ -171,7 +171,7 @@ export const syncCollectionTracks = async (
 
   downloadCollection(
     updatedCollectionWithArt,
-    /* isFavoritesDownload */ false,
+    isFavoritesDownload,
     /* skipTracks */ true
   )
   if (
