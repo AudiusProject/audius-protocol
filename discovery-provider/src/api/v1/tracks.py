@@ -461,15 +461,15 @@ class TrackStream(Resource):
         primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
-        if not track_cid:
-            logger.warning(
-                f"tracks.py | stream | We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
-            )
-            path = f"tracks/stream/{track_id}"
-        elif not CID_STREAM_ENABLED:
-            path = f"tracks/stream/{track_id}"
-        else:
+        if CID_STREAM_ENABLED:
+            if not track_cid:
+                logger.info(
+                    f"We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
+                )
+                abort_not_found(track_id, ns)
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+        else:
+            path = f"tracks/stream/{track_id}"
         stream_url = urljoin(primary_node, path)
 
         return stream_url
