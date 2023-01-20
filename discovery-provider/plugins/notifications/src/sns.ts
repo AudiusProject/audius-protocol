@@ -5,6 +5,7 @@ import {
   PublishBatchCommandInput,
   PublishCommandInput,
 } from "@aws-sdk/client-sns"
+import { DeviceType } from "./appNotifications/mappers/base"
 
 
 const region = process.env.AWS_REGION
@@ -104,13 +105,13 @@ export const sendAndroidMessage = async ({
 }
 
 type Device = {
-  type: string
+  type: DeviceType,
   targetARN: string
   badgeCount: number
 }
 type Message = { title: string, body: string, data: Object }
 
-export const sendPushNotifications = async (device: Device, message: Message) => {
+export const sendPushNotification = async (device: Device, message: Message) => {
   if (device.type == 'ios') {
     await sendIOSMessage({
       title: message.title,
@@ -129,5 +130,5 @@ export const sendPushNotifications = async (device: Device, message: Message) =>
       targetARN: device.targetARN,
     })
   }
-  // TODO: handle browser push notification: safari & chrome
+  // TODO: increment badge count
 }

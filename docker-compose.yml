@@ -300,7 +300,9 @@ services:
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
-      - ./discovery-provider/plugins/notifications:/notifications/
+      - ./discovery-provider/plugins/notifications:/notifications
+    deploy:
+      mode: global
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
