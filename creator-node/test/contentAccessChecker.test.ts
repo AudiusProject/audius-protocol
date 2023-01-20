@@ -128,6 +128,7 @@ describe('Test content access', function () {
       assert.deepStrictEqual(access, {
         isValidRequest: true,
         error: null,
+        trackId,
         shouldCache: true
       })
     })
