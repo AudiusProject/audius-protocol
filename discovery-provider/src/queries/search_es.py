@@ -28,7 +28,6 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
-    exclude_premium = args.get("exclude_premium", False)
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -51,7 +50,6 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
-                    exclude_premium=exclude_premium,
                 ),
             ]
         )
@@ -66,7 +64,6 @@ def search_es_full(args: dict):
                         current_user_id=current_user_id,
                         must_saved=True,
                         only_downloadable=only_downloadable,
-                        exclude_premium=exclude_premium,
                     ),
                 ]
             )
@@ -162,9 +159,7 @@ def search_es_full(args: dict):
     return response
 
 
-def search_tags_es(
-    q: str, kind="all", current_user_id=None, limit=10, offset=0, exclude_premium=False
-):
+def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0):
     if not esclient:
         raise Exception("esclient is None")
 
@@ -187,10 +182,6 @@ def search_tags_es(
 
     if do_tracks:
         dsl = tag_match("tag_list", "repost_count")
-        if exclude_premium:
-            dsl["query"]["bool"]["must"].append(
-                {"term": {"is_premium": {"value": False}}}
-            )
         mdsl.extend([{"index": ES_TRACKS}, dsl])
         if current_user_id:
             dsl = copy.deepcopy(dsl)
@@ -378,7 +369,6 @@ def track_dsl(
     current_user_id,
     must_saved=False,
     only_downloadable=False,
-    exclude_premium=False,
 ):
     dsl = {
         "must": [
@@ -404,9 +394,6 @@ def track_dsl(
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
-
-    if exclude_premium:
-        dsl["must"].append({"term": {"is_premium": {"value": False}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
