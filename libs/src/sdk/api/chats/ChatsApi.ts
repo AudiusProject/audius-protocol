@@ -77,12 +77,12 @@ export class ChatsApi extends BaseAPI {
       query: queryParameters
     })) as TypedCommsResponse<UserChat[]>
 
-    const unencrypted = await Promise.all(
-      response.data.map(async (c) => await this.decryptLastChatMessage(c))
+    const decrypted = await Promise.all(
+      response.data.map(this.decryptLastChatMessage)
     )
     return {
       ...response,
-      data: unencrypted
+      data: decrypted
     }
   }
 
@@ -113,7 +113,7 @@ export class ChatsApi extends BaseAPI {
       headers: await this.getSignatureHeader(path),
       query: queryParameters
     })) as TypedCommsResponse<ChatMessage[]>
-    const unencrypted = await Promise.all(
+    const decrypted = await Promise.all(
       response.data.map(async (m) => ({
         ...m,
         message: await this.decryptString(
@@ -124,7 +124,7 @@ export class ChatsApi extends BaseAPI {
     )
     return {
       ...response,
-      data: unencrypted
+      data: decrypted
     }
   }
 
