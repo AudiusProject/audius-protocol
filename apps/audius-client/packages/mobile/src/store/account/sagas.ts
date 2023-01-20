@@ -1,9 +1,11 @@
-import { accountActions, getContext } from '@audius/common'
+import { accountActions, getContext, WidthSizes } from '@audius/common'
 import accountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
+import { Image } from 'react-native'
 import { takeEvery, call } from 'typed-redux-saga'
 
 import { IS_MOBILE_USER } from 'app/constants/storage-keys'
+import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 const { signedIn } = accountActions
 
 // const RESET_REQUIRED_KEY = 'password-reset-required'
@@ -40,13 +42,38 @@ const { signedIn } = accountActions
 //   )
 // }
 
+/**
+ * Prefetch and cache the profile and cover photos so they are available offline
+ */
+function* cacheUserImages(account) {
+  const profileImageUrl = getImageSourceOptimistic({
+    cid: account.profile_picture_sizes,
+    user: account
+  })?.[0]?.uri
+
+  if (profileImageUrl) {
+    yield call(Image.prefetch, profileImageUrl)
+  }
+
+  const coverPhotoUrl = getImageSourceOptimistic({
+    cid: account.cover_photo_sizes,
+    user: account,
+    sizes: WidthSizes
+  })?.[0]?.uri
+
+  if (coverPhotoUrl) {
+    yield call(Image.prefetch, coverPhotoUrl)
+  }
+}
+
 // When successfully signed in
-function* onSignedIn({
-  payload: { account, isSignUp }
-}: ReturnType<typeof signedIn>) {
+function* onSignedIn({ payload: { account } }: ReturnType<typeof signedIn>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
   const isMobileUser = yield* call(localStorage.getItem, IS_MOBILE_USER)
+
+  yield call(cacheUserImages, account)
+
   if (!isMobileUser || isMobileUser !== 'true') {
     try {
       // Legacy method to update whether a user has signed in on
