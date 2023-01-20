@@ -27,6 +27,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - poa
 
   eth-ganache:
     build:
@@ -42,6 +46,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - eth
 
   solana-test-validator:
     build:
@@ -68,11 +76,18 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - solana
 
   build-audius-libs:
     extends:
       file: docker-compose.yml
       service: build-audius-libs
+    profiles:
+      - tests
+      - libs
 
   # creator-node
 
@@ -88,6 +103,9 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - creator
 
   creator-node-redis:
     image: redis:6.2
@@ -99,6 +117,9 @@ services:
     deploy:
       mode: global
       replicas: 1  # Override default replicas
+    profiles:
+      - tests
+      - creator
 
   test-creator-node:
     extends:
@@ -128,6 +149,7 @@ services:
       replicas: 1
     profiles:
       - tests
+      - creator
 
   # discovery-provider
 
@@ -138,6 +160,9 @@ services:
     deploy:
       mode: global
       replicas: 1  # Override default replicas
+    profiles:
+      - tests
+      - discovery
 
   discovery-provider-db:
     image: postgres:11.4
@@ -146,11 +171,15 @@ services:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
       test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
+      interval: 1s
+      timeout: 2s
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - notifications
+      - tests
+      - discovery
 
   discovery-provider-redis:
     image: redis:7.0
@@ -161,6 +190,29 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - notifications
+      - tests
+      - discovery
+
+
+  test-discovery-provider-migrations:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider
+    command: sh -c "./scripts/run-migrations.sh"
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: replicas
+      replicas: 1
+    profiles:
+      - tests
+      - notifications
 
   test-discovery-provider:
     extends:
@@ -191,6 +243,30 @@ services:
     profiles:
       - tests
       - elasticsearch
+      - discovery
+
+  discovery-provider-notifications:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider-notifications
+    command: sh -c "npm run test:watch"
+    environment:
+      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+    volumes:
+      - ./discovery-provider/plugins/notifications:/notifications
+    depends_on:
+      test-discovery-provider-migrations:
+        condition: service_completed_successfully
+      test-identity-service-migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
+    deploy:
+      mode: replicas
+      replicas: 1
+    profiles:
+      - tests
+      - notifications
 
   # identity-service
 
@@ -199,11 +275,15 @@ services:
     user: postgres
     healthcheck:
       test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
+      interval: 1s
+      timeout: 2s
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - notifications
+      - identity
 
   identity-service-redis:
     image: redis:7.0
@@ -215,6 +295,26 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - identity
+
+  test-identity-service-migrations:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
+    command: sh -c "npm run db:migrate"
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+    depends_on:
+      identity-service-db:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: global
+    profiles:
+      - tests
+      - notifications
 
   test-identity-service:
     extends:
@@ -224,6 +324,9 @@ services:
     environment:
       isTestRun: "true"
       environment: "test"
+    profiles:
+      - tests
+      - identity
 
 volumes:
   poa-contracts-abis:
