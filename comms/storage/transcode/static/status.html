@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>status</title>
+</head>
+<body>
+  <job-table />
+  <script type="module">
+
 import {LitElement, html, css} from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
 class JobTable extends LitElement {
@@ -41,7 +51,7 @@ class JobTable extends LitElement {
 
     const loc = window.location;
     const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
-    const uri = `${proto}${loc.host}/comms/storage/ws`
+    const uri = `${proto}${loc.host}/storage/ws`
     const ws = new WebSocket(uri)
 
     // hack since ws no work
@@ -86,7 +96,7 @@ class JobTable extends LitElement {
   }
 
   pollFallback() {
-    fetch('/comms/storage/jobs')
+    fetch('/storage/jobs')
     .then(r => r.json())
     .then(data => {
       this.jobs = data
@@ -101,9 +111,22 @@ class JobTable extends LitElement {
 
   render() {
     return html`<div>
-      <h2>${this.jobs.length} jobs</h2>
 
-      ${this.pollFallback && html`<div>falling back to polling</div>`}
+      <form style="display: flex; align-items: center; gap: 30px;" 
+          action="/storage/file?redirect=true" 
+          method="post" 
+          enctype="multipart/form-data">
+        <h2>${this.jobs.length} jobs</h2>
+        <input 
+          style="flex-grow: 1; background: #efefef; padding: 10px; border-radius: 10px;" 
+          type="file" 
+          name="files" 
+          onchange="form.submit()"
+          required
+          multiple /> 
+      </form>
+
+      ${this.fallback ? html`<div>falling back to polling</div>` : null}
 
       <table>
         <tr>
@@ -194,3 +217,7 @@ function showDuration(sec) {
   if (hours) arr.unshift(hours)
   return arr.join(':');
 }
+
+  </script>
+</body>
+</html>

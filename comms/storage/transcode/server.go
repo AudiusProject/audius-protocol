@@ -1,6 +1,12 @@
 package transcode
 
 import (
+	"embed"
+	"io/fs"
+	"net/http"
+	"os"
+
+	"comms.audius.co/discovery/config"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
@@ -22,11 +28,21 @@ func DemoTime(jsc nats.JetStreamContext, e *echo.Echo) {
 	// Routes
 	// e.Static("/", "public")
 
-	g := e.Group("/comms/storage")
+	g := e.Group("/storage")
 
-	g.GET("/status", func(c echo.Context) error {
-		return c.String(200, "ok")
-	})
+	staticFs := getFileSystem()
+	assetHandler := http.FileServer(staticFs)
+	g.GET("/static/*", echo.WrapHandler(http.StripPrefix("/storage/static/", assetHandler)))
+
+	serveStatusUI := func(c echo.Context) error {
+		f, err := staticFs.Open("status.html")
+		if err != nil {
+			return err
+		}
+		return c.Stream(200, "text/html", f)
+	}
+	g.GET("", serveStatusUI)
+	g.GET("/", serveStatusUI)
 
 	g.POST("/file", func(c echo.Context) error {
 
@@ -56,6 +72,10 @@ func DemoTime(jsc nats.JetStreamContext, e *echo.Echo) {
 			src.Close()
 			results = append(results, job)
 
+		}
+
+		if c.QueryParam("redirect") != "" {
+			return c.Redirect(302, c.Request().Referer())
 		}
 
 		return c.JSON(200, results)
@@ -94,4 +114,21 @@ func DemoTime(jsc nats.JetStreamContext, e *echo.Echo) {
 		return nil
 	})
 
+}
+
+//go:embed static
+var embededFiles embed.FS
+
+func getFileSystem() http.FileSystem {
+	devMode := config.Env == "standalone"
+	if devMode {
+		return http.FS(os.DirFS("storage/transcode/static"))
+	}
+
+	fsys, err := fs.Sub(embededFiles, "static")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
 }

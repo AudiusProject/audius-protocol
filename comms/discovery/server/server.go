@@ -1,15 +1,11 @@
 package server
 
 import (
-	"embed"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
-	"io/fs"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -437,37 +433,5 @@ func NewServer() *echo.Echo {
 		return c.JSON(200, info)
 	})
 
-	// static files
-	staticFs := getFileSystem()
-	assetHandler := http.FileServer(staticFs)
-	g.GET("/static/*", echo.WrapHandler(http.StripPrefix("/comms/static/", assetHandler)))
-
-	g.GET("/cool", func(c echo.Context) error {
-		f, err := staticFs.Open("cool.html")
-		if err != nil {
-			return err
-		}
-		return c.Stream(200, "text/html", f)
-	})
-
 	return e
-}
-
-//go:embed static
-var embededFiles embed.FS
-
-func getFileSystem() http.FileSystem {
-	devMode := config.Env == "standalone"
-	if devMode {
-		log.Println("_________________ using live mode")
-		return http.FS(os.DirFS("server/static"))
-	}
-
-	log.Println("using embed mode")
-	fsys, err := fs.Sub(embededFiles, "static")
-	if err != nil {
-		panic(err)
-	}
-
-	return http.FS(fsys)
 }

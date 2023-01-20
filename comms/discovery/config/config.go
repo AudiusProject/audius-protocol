@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/inconshreveable/log15"
@@ -40,6 +41,12 @@ func init() {
 func Init() {
 	var err error
 
+	// todo: hack for creator node
+	if strings.Contains(os.Getenv("creatorNodeEndpoint"), "staging") {
+		Env = "stage"
+		IsStaging = true
+	}
+
 	switch Env {
 	case "standalone":
 		envStandalone()
@@ -47,7 +54,7 @@ func Init() {
 		Logger.Info("no env defaults for: " + Env)
 	}
 
-	privateKeyHex := os.Getenv("audius_delegate_private_key")
+	privateKeyHex := mgetenv("audius_delegate_private_key", "delegatePrivateKey")
 	if privateKeyHex == "" {
 		privateKeyHex = generatePrivateKeyHex()
 		Logger.Warn("audius_delegate_private_key not provided. Using randomly generated private key.")
@@ -111,6 +118,16 @@ func Init() {
 		"ip", IP,
 		"nu", NatsClusterUsername,
 		"np", NatsClusterPassword)
+}
+
+func mgetenv(keys ...string) string {
+	for _, k := range keys {
+		v := os.Getenv(k)
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func dieOnErr(err error) {

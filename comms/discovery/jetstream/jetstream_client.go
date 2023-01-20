@@ -16,15 +16,21 @@ var (
 )
 
 func Dial(peerMap map[string]*peering.Info) error {
-	goodNatsUrls := []string{}
-	for _, peer := range peerMap {
-		natsUrl := fmt.Sprintf("nats://%s:4222", peer.IP)
-		ok := natsConnectionTest(natsUrl)
-		if ok {
-			goodNatsUrls = append(goodNatsUrls, natsUrl)
+	natsUrl := nats.DefaultURL
+
+	if peerMap != nil {
+		goodNatsUrls := []string{}
+		for _, peer := range peerMap {
+			u := fmt.Sprintf("nats://%s:4222", peer.IP)
+			ok := natsConnectionTest(u)
+			if ok {
+				goodNatsUrls = append(goodNatsUrls, u)
+			}
 		}
+		natsUrl = strings.Join(goodNatsUrls, ",")
 	}
-	nc, err := dialNatsUrl(strings.Join(goodNatsUrls, ","))
+
+	nc, err := dialNatsUrl(natsUrl)
 	if err != nil {
 		return err
 	}
