@@ -1,4 +1,4 @@
-import { PendingUpdates, startListener, takePending } from './listener'
+import { Listener } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
@@ -6,20 +6,24 @@ import { program } from 'commander'
 import { Knex } from 'knex'
 import { AppNotifications } from './appNotifications'
 
-class Processor {
+export class Processor {
 
   discoveryDB: Knex
   identityDB: Knex
   appNotifications: AppNotifications
+  isRunning: boolean
+  listener: Listener
 
   init = async () => {
     logger.info('starting!')
     // setup postgres listener
     await this.setupDB()
     await setupTriggers(this.discoveryDB)
-    await startListener(this.discoveryDB)
 
-    this.appNotifications = new AppNotifications()
+    this.listener = new Listener()
+    await this.listener.start(this.discoveryDB)
+
+    this.appNotifications = new AppNotifications(this.discoveryDB, this.identityDB)
   }
 
   setupDB = async () => {
@@ -35,7 +39,7 @@ class Processor {
     // process events
     logger.info('processing events')
     while (true) {
-      const pending = takePending()
+      const pending = this.listener.takePending()
       if (pending) {
 
         await Promise.all([
@@ -47,6 +51,7 @@ class Processor {
       await new Promise((r) => setTimeout(r, 500))
     }
   }
+
 }
 
 async function main() {
@@ -60,7 +65,9 @@ async function main() {
   }
 }
 
-main()
+if (require.main === module) {
+  main()
+}
 
 process
   .on('unhandledRejection', (reason, promise) => {

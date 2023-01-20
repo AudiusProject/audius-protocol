@@ -13,27 +13,38 @@ export class PendingUpdates {
   }
 }
 
-let pending = new PendingUpdates()
 
-export function takePending() {
-  if (pending.isEmpty()) return
-  const p = pending
-  pending = new PendingUpdates()
-  return p
-}
+export class Listener {
+  pending: PendingUpdates = new PendingUpdates()
+  db: Knex
+  connection: any
 
-const handler = (row: NotificationRow) => {
-  pending.appNotifications.push(row)
-}
+  takePending = () => {
+    if (this.pending.isEmpty()) return
+    const p = this.pending
+    this.pending = new PendingUpdates()
+    return p
+  }
 
-export async function startListener(db: Knex) {
-  const sql = 'LISTEN notification;'
-  const connection = await db.client.acquireConnection()
-  connection.on('notification', (msg: Notification) => {
-    const body = JSON.parse(msg.payload)
-    handler(body)
-  })
+  handler = (row: NotificationRow) => {
+    this.pending.appNotifications.push(row)
+  }
 
-  await connection.query(sql)
-  logger.info('LISTENER Started')
+  start = async (db: Knex) => {
+    this.db = db
+    const sql = 'LISTEN notification;'
+    this.connection = await db.client.acquireConnection()
+    this.connection.on('notification', (msg: Notification) => {
+      const body = JSON.parse(msg.payload)
+      this.handler(body)
+    })
+
+    await this.connection.query(sql)
+    logger.info('LISTENER Started')
+  }
+
+
+  close = async () => {
+    await this.db.client.releaseConnection(this.connection);
+  }
 }
