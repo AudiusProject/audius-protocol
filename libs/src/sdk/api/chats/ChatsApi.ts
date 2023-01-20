@@ -47,7 +47,12 @@ export class ChatsApi extends BaseAPI {
   // #region QUERY
 
   public async get(requestParameters: ChatGetRequest) {
-    const response = await this.getRaw(requestParameters)
+    this.assertNotNullOrUndefined(
+      requestParameters.chatId,
+      'requestParameters.chatId',
+      'getChat'
+    )
+    const response = await this.getRaw(requestParameters.chatId)
     return {
       ...response,
       data: await this.decryptLastChatMessage(response.data)
@@ -412,13 +417,8 @@ export class ChatsApi extends BaseAPI {
     }
   }
 
-  private async getRaw(requestParameters: ChatGetRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'getChat'
-    )
-    const path = `/comms/chats/${requestParameters.chatId}`
+  private async getRaw(chatId: string) {
+    const path = `/comms/chats/${chatId}`
     return (await this.request({
       method: 'GET',
       path,
@@ -429,7 +429,7 @@ export class ChatsApi extends BaseAPI {
   private async getChatSecret(chatId: string) {
     const existingChatSecret = this.chatSecrets[chatId]
     if (!existingChatSecret) {
-      const response = await this.getRaw({ chatId })
+      const response = await this.getRaw(chatId)
       const chatSecret = await this.readInviteCode(
         base64.decode(response.data.invite_code)
       )
