@@ -1,4 +1,5 @@
 import { Listener } from './listener'
+import { run } from 'graphile-worker'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
@@ -38,17 +39,19 @@ export class Processor {
   start = async () => {
     // process events
     logger.info('processing events')
-    while (true) {
-      const pending = this.listener.takePending()
-      if (pending) {
+    const runner = await run({
+      connectionString: process.env.DN_DB_URL,
+      noHandleSignals: false,
+      pollInterval: 2000,
+      taskDirectory: `${__dirname}/../tasks`
+    })
 
-        await Promise.all([
-          this.appNotifications.process(pending.appNotifications)
-        ])
-        logger.info('processed new updates')
-      }
-      // free up event loop + batch queries to postgres
-      await new Promise((r) => setTimeout(r, 500))
+    while (true) {
+      await runner.addJob("appNotifications", {
+        appNotifications: this.appNotifications,
+      })
+      await runner.addJob("dmNotifications")
+      await runner.promise // TODO remove
     }
   }
 

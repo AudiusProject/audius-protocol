@@ -6,6 +6,7 @@ import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 
 export class AppNotifications {
+
   dnDB: Knex
   identityDB: Knex
 
@@ -16,7 +17,7 @@ export class AppNotifications {
 
   async process(notifications: NotificationRow[]) {
     const mappedNotifications = notifications.map(this.mapNotification).filter(Boolean)
-    for (let notification of mappedNotifications) {
+    for (const notification of mappedNotifications) {
       await notification.pushNotification()
     }
 

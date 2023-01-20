@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
+import { DMNotification, DMReactionNotification } from '../../types/appNotifications'
 import { sendAndroidMessage, sendIOSMessage } from '../../sns'
 
 
@@ -54,17 +55,18 @@ type UserMobileSettings = {
 }
 
 export abstract class BaseNotification {
-  notification: NotificationRow
+  notification: NotificationRow | DMNotification | DMReactionNotification
   dnDB: Knex
   identityDB: Knex
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: NotificationRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: NotificationRow | DMNotification | DMReactionNotification) {
     this.notification = notification
     this.dnDB = dnDB
     this.identityDB = identityDB
   }
 
   abstract pushNotification(): Promise<void>
+
   /**
    * Fetches the user's mobile push notification settings
    * 
@@ -130,7 +132,6 @@ export abstract class BaseNotification {
     }, {})
     return userMobileSettings
   }
-
 
   /**
    * Fetches the user's mobile push notification settings

@@ -17,7 +17,7 @@
   "author": "",
   "devDependencies": {
     "@jest/globals": "^29.3.1",
-    "@rmp135/sql-ts": "^1.13.0",
+    "@rmp135/sql-ts": "^1.16.0",
     "@types/jest": "^29.2.5",
     "@types/lodash": "4.14.182",
     "@types/node": "17.0.29",
@@ -33,10 +33,13 @@
     "@aws-sdk/client-sns": "^3.245.0",
     "commander": "9.2.0",
     "knex": "2.4.1",
+    "graphile-worker": "^0.13.0",
+    "ini": "^3.0.1",
     "lodash": "4.17.21",
     "nodemon": "^2.0.20",
     "pg": "8.7.3",
     "pino": "7.11.0",
-    "pm2": "5.2.0"
+    "pm2": "5.2.0",
+    "redis": "^4.5.1"
   }
 }
