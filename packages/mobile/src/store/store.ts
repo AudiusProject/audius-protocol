@@ -1,5 +1,6 @@
 import type { CommonState, RemoteConfigState } from '@audius/common'
 import {
+  ErrorLevel,
   remoteConfigReducer as remoteConfig,
   reducers as commonReducers
 } from '@audius/common'
@@ -18,6 +19,8 @@ import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
+
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import type { DownloadState } from './download/slice'
 import downloads from './download/slice'
@@ -58,6 +61,23 @@ export type AppState = CommonState & {
   walletConnect: WalletConnectState
   shareToStoryProgress: ShareToStoryProgressState
 }
+
+const onSagaError = (
+  error: Error,
+  errorInfo: {
+    sagaStack: string
+  }
+) => {
+  console.error(
+    `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
+  )
+  reportToSentry({
+    level: ErrorLevel.Fatal,
+    error,
+    additionalInfo: errorInfo
+  })
+}
+
 const commonStoreReducers = commonReducers()
 
 const rootReducer = combineReducers({
@@ -82,9 +102,7 @@ const rootReducer = combineReducers({
 
 const sagaMiddleware = createSagaMiddleware({
   context: storeContext,
-  onError: (e) => {
-    console.error('Caught Saga Error', e, e.stack)
-  }
+  onError: onSagaError
 })
 
 const middlewares = [sagaMiddleware]
