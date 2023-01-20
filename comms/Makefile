@@ -1,16 +1,19 @@
 
-server::
+dev.discovery::
 	@	audius_discprov_env='standalone' \
 		audius_delegate_private_key='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
-		go run main.go
+		go run main.go discovery
 
+dev.storage::
+	@	audius_discprov_env='standalone' \
+		go run main.go storage
 
 reset::
 	docker compose down --volumes
-	docker compose up comdb -d
+	docker compose up comdb comnats -d
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait up
+		dbmate --wait --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
 psql::
@@ -55,8 +58,8 @@ build::
 # also... this is pretty much identical to doing a docker "multi-stage" build, but way simpler.
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-linux-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/wip-comms:latest
-	docker push audius/wip-comms:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/wip-comms:a1
+	docker push audius/wip-comms:a1
 
 
 tools::
@@ -68,5 +71,5 @@ sqlc:: reset
 	sqlc generate
 
 quicktype::
-	cp ../libs/src/sdk/api/chats/serverTypes.ts schema/schema.ts
-	npx quicktype --package schema --out schema/schema.go --just-types-and-package schema/*.ts
+	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
+	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/*.ts

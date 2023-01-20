@@ -2,6 +2,8 @@
 
 FROM golang:1.19
 
+RUN apt update && apt install -y ffmpeg 
+
 # install in-container tools: dbmate, nats cli
 RUN cd /tmp && \
   curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 && \
@@ -14,7 +16,7 @@ WORKDIR /app
 
 
 COPY build/comms-linux-amd64 /comms-linux
-COPY db/migrations ./db/migrations
+COPY discovery/db/migrations ./discovery/db/migrations
 
 EXPOSE 8925
 
