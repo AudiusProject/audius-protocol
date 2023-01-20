@@ -17,6 +17,7 @@ import {
   encodeHashId,
   accountSelectors,
   cacheUsersSelectors,
+  cacheActions,
   collectionsSocialActions
 } from '@audius/common'
 import { uniq, isEqual } from 'lodash'
@@ -65,7 +66,6 @@ import {
 const { saveCollection } = collectionsSocialActions
 const { getUserId } = accountSelectors
 const { getUserFromCollection } = cacheUsersSelectors
-
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 export const downloadAllFavorites = async () => {
@@ -246,6 +246,13 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
         uid: makeUid(Kind.TRACKS, track.track_id),
         ...trackToWrite
       }
+      const cacheTrack = {
+        id: track.track_id,
+        uid: lineupTrack.uid,
+        metadata: lineupTrack
+      }
+      store.dispatch(cacheActions.add(Kind.TRACKS, [cacheTrack], false, true))
+
       store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
       return
@@ -278,6 +285,12 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
         uid: makeUid(Kind.TRACKS, track.track_id),
         ...trackToWrite
       }
+      const cacheTrack = {
+        id: track.track_id,
+        uid: lineupTrack.uid,
+        metadata: lineupTrack
+      }
+      store.dispatch(cacheActions.add(Kind.TRACKS, [cacheTrack], false, true))
       store.dispatch(loadTrack(lineupTrack))
       store.dispatch(completeDownload(trackIdStr))
       return
@@ -322,7 +335,6 @@ export const removeAllDownloadedFavorites = async () => {
       }
     })
   )
-  batchDownloadTrack(tracksForDownload)
 
   purgeDownloadedCollection(DOWNLOAD_REASON_FAVORITES)
   batchRemoveTrackDownload(tracksForDownload)
