@@ -47,17 +47,11 @@ export class ChatsApi extends BaseAPI {
   // #region QUERY
 
   public async get(requestParameters: ChatGetRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'getChat'
-    )
-    const path = `/comms/chats/${requestParameters.chatId}`
-    return (await this.request({
-      method: 'GET',
-      path,
-      headers: await this.getSignatureHeader(path)
-    })) as TypedCommsResponse<UserChat>
+    const response = await this.getRaw(requestParameters)
+    return {
+      ...response,
+      data: await this.decryptLastChatMessage(response.data)
+    }
   }
 
   public async getAll(requestParameters?: ChatGetAllRequest) {
@@ -69,12 +63,20 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters?.cursor) {
       queryParameters.offset = requestParameters.cursor
     }
-    return (await this.request({
+    const response = (await this.request({
       method: 'GET',
       path,
       headers: await this.getSignatureHeader(path),
       query: queryParameters
     })) as TypedCommsResponse<UserChat[]>
+
+    const unencrypted = await Promise.all(
+      response.data.map(async (c) => await this.decryptLastChatMessage(c))
+    )
+    return {
+      ...response,
+      data: unencrypted
+    }
   }
 
   public async getMessages(
@@ -400,10 +402,34 @@ export class ChatsApi extends BaseAPI {
     return new TextDecoder().decode(await this.decrypt(secret, payload))
   }
 
+  private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
+    const sharedSecret = await this.getChatSecret(c.chat_id)
+    return {
+      ...c,
+      last_message: c.last_message
+        ? await this.decryptString(sharedSecret, base64.decode(c.last_message))
+        : ''
+    }
+  }
+
+  private async getRaw(requestParameters: ChatGetRequest) {
+    this.assertNotNullOrUndefined(
+      requestParameters.chatId,
+      'requestParameters.chatId',
+      'getChat'
+    )
+    const path = `/comms/chats/${requestParameters.chatId}`
+    return (await this.request({
+      method: 'GET',
+      path,
+      headers: await this.getSignatureHeader(path)
+    })) as TypedCommsResponse<UserChat>
+  }
+
   private async getChatSecret(chatId: string) {
     const existingChatSecret = this.chatSecrets[chatId]
     if (!existingChatSecret) {
-      const response = await this.get({ chatId })
+      const response = await this.getRaw({ chatId })
       const chatSecret = await this.readInviteCode(
         base64.decode(response.data.invite_code)
       )
