@@ -9,8 +9,22 @@ type CollectionRouteParams =
       handle: string
       collectionType: 'playlist' | 'album'
       title: string
+      permalink?: string
     }
-  | { collectionId: ID; handle: null; collectionType: null; title: null }
+  | {
+      collectionId: ID
+      handle: null
+      collectionType: null
+      title: null
+      permalink?: string
+    }
+  | {
+      collectionId: null
+      handle: null
+      collectionType: string
+      title: null
+      permalink: string
+    }
   | null
 
 /**
@@ -28,6 +42,26 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     if (collectionId === null) return null
     return { collectionId, handle: null, collectionType: null, title: null }
   }
+
+  // const playlistByPermalinkMatch = matchPath<{
+  //   handle: string
+  //   slug: string
+  // }>(route, {
+  //   path: PLAYLIST_BY_PERMALINK_PAGE,
+  //   exact: true
+  // })
+  // if (playlistByPermalinkMatch) {
+  //   const { handle, slug } = playlistByPermalinkMatch.params
+  //   const permalink = `${handle}/playlist/${slug}`
+  //   console.log('matched to permalink route')
+  //   return {
+  //     title: null,
+  //     collectionId: null,
+  //     permalink,
+  //     handle: null,
+  //     collectionType: 'playlist'
+  //   }
+  // }
 
   const playlistPageMatch = matchPath<{
     handle: string

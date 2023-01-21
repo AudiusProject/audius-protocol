@@ -15,6 +15,7 @@ export type CollectionTrack = LineupTrack & { dateAdded: Moment } & {
 }
 
 export type CollectionsPageState = {
+  permalink: string
   collectionId: ID | null
   collectionUid: UID | null
   status: Status | null

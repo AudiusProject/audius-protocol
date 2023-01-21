@@ -1,13 +1,13 @@
 import { CommonState } from 'store/commonStore'
 import { Uid } from 'utils/uid'
 
-import { Cache } from '../../models/Cache'
 import { Collection } from '../../models/Collection'
 import { ID, UID } from '../../models/Identifiers'
 import { Kind } from '../../models/Kind'
 import { Track } from '../../models/Track'
 import { User } from '../../models/User'
 
+import { CollectionsCacheState } from './collections/types'
 import { TracksCacheState } from './tracks/types'
 import { UsersCacheState } from './users/types'
 
@@ -71,7 +71,7 @@ export function getEntry(
  */
 export const getEntryTimestamp = (
   state: CommonState,
-  { kind, id }: { kind: Kind; id?: ID | null }
+  { kind, id }: { kind: Kind; id?: ID | string | null }
 ) => {
   if (kind && id) {
     const entries = getCache(state, { kind }).entries
@@ -117,7 +117,7 @@ export function getCache(
 export function getCache(
   state: CommonState,
   props: { kind: Kind.COLLECTIONS }
-): Cache<Collection>
+): CollectionsCacheState
 export function getCache(
   state: CommonState,
   props: { kind: Kind.TRACKS }
@@ -125,7 +125,7 @@ export function getCache(
 export function getCache(
   state: CommonState,
   props: { kind: Kind }
-): TracksCacheState | Cache<Collection> | UsersCacheState
+): TracksCacheState | CollectionsCacheState | UsersCacheState
 export function getCache(state: CommonState, props: { kind: Kind }) {
   switch (props.kind) {
     case Kind.TRACKS:
