@@ -6,6 +6,7 @@ import {
   audioRewardsPageActions,
   OptimisticUserChallenge
 } from '@audius/common'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
@@ -37,7 +38,12 @@ const RewardPanel = ({
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <div className={wm(styles.rewardPanelContainer)} onClick={onClickButton}>
+    <div
+      className={wm(
+        cn(styles.rewardPanelContainer, styles.trendingRewardPanelContainer)
+      )}
+      onClick={onClickButton}
+    >
       <span className={wm(styles.rewardTitle)}>
         {icon}
         {title}

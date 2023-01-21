@@ -220,3 +220,21 @@
 .emoji.love-letter {
   background-image: url('../fonts/emojis/love-letter.png');
 }
+.emoji.money-wings {
+  background-image: url('../fonts/emojis/money-with-wings.png');
+}
+.emoji.chart-bar {
+  background-image: url('../fonts/emojis/chart-bar.png');
+}
+.emoji.gear {
+  background-image: url('../fonts/emojis/gear.png');
+}
+.emoji.link-symbol {
+  background-image: url('../fonts/emojis/link-symbol.png');
+}
+.emoji.ballot-box-tick {
+  background-image: url('../fonts/emojis/ballot-box-tick.png');
+}
+.emoji.arrow-curve-up {
+  background-image: url('../fonts/emojis/right-arrow-curving-up.png');
+}
