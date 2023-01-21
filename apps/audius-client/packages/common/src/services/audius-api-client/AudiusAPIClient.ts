@@ -78,6 +78,8 @@ const FULL_ENDPOINT_MAP = {
   userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
   getRelatedArtists: (userId: OpaqueID) => `/users/${userId}/related`,
   getPlaylist: (playlistId: OpaqueID) => `/playlists/${playlistId}`,
+  getPlaylistByPermalink: (handle: string, slug: string) =>
+    `/playlists/by_permalink/${handle}/${slug}`,
   topGenreUsers: '/users/genre/top',
   topArtists: '/users/top',
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
@@ -265,6 +267,11 @@ type GetUserRepostsByHandleArgs = {
 
 type GetPlaylistArgs = {
   playlistId: ID
+  currentUserId: Nullable<ID>
+}
+
+type GetPlaylistByPermalinkArgs = {
+  permalink: string
   currentUserId: Nullable<ID>
 }
 
@@ -1174,6 +1181,36 @@ export class AudiusAPIClient {
     const response: Nullable<APIResponse<APIPlaylist[]>> =
       await this._getResponse(
         FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
+        params
+      )
+
+    if (!response) return []
+
+    const adapted = response.data
+      .map(adapter.makePlaylist)
+      .filter(removeNullable)
+    return adapted
+  }
+
+  async getPlaylistByPermalink({
+    permalink,
+    currentUserId
+  }: GetPlaylistByPermalinkArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedCurrentUserId || undefined
+    }
+    const splitPermalink = permalink.split('/')
+    if (splitPermalink.length !== 4) {
+      throw Error(
+        'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
+      )
+    }
+    const [, handle, , slug] = splitPermalink
+    const response: Nullable<APIResponse<APIPlaylist[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getPlaylistByPermalink(handle, slug),
         params
       )
 

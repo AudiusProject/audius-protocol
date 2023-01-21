@@ -1,5 +1,4 @@
 // @ts-nocheck
-// TODO(nkang) - convert to TS
 import tracksReducer from 'store/pages/collection/lineup/reducer'
 
 import { Status } from '../../../models/Status'
@@ -10,7 +9,8 @@ import {
   FETCH_COLLECTION_SUCCEEDED,
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
-  SET_SMART_COLLECTION
+  SET_SMART_COLLECTION,
+  SET_COLLECTION_PERMALINK
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
 
@@ -28,6 +28,12 @@ const actionsMap = {
       ...state,
       status: Status.LOADING,
       smartCollectionVariant: null
+    }
+  },
+  [SET_COLLECTION_PERMALINK](state, action) {
+    return {
+      ...state,
+      permalink: action.permalink
     }
   },
   [FETCH_COLLECTION_SUCCEEDED](state, action) {

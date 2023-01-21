@@ -1,10 +1,11 @@
 import { combineReducers } from 'redux'
 
-import { Kind, Cache, Collection } from '../models'
+import { Kind } from '../models'
 
 import accountSlice from './account/slice'
 import averageColorReducer from './average-color/slice'
 import collectionsReducer from './cache/collections/reducer'
+import { CollectionsCacheState } from './cache/collections/types'
 import { asCache } from './cache/reducer'
 import tracksReducer from './cache/tracks/reducer'
 import { TracksCacheState } from './cache/tracks/types'
@@ -126,6 +127,7 @@ export const reducers = () => ({
   reachability,
 
   // Cache
+  // @ts-ignore
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
@@ -241,7 +243,7 @@ export type CommonState = {
   // confirmer: ConfirmerState
 
   // Cache
-  collections: Cache<Collection>
+  collections: CollectionsCacheState
   tracks: TracksCacheState
   users: UsersCacheState
 

@@ -16,18 +16,24 @@ export const getCollectionStatus = (state: CommonState) =>
   state.pages.collection.status
 export const getSmartCollectionVariant = (state: CommonState) =>
   state.pages.collection.smartCollectionVariant
-
+export const getCollectionPermalink = (state: CommonState) =>
+  state.pages.collection.permalink
 export const getCollection = (state: CommonState, params?: { id: ID }) => {
   const smartCollectionVariant = getSmartCollectionVariant(state)
   if (smartCollectionVariant) {
     return getSmartCollection(state, { variant: smartCollectionVariant })
   }
 
-  const config = params?.id
-    ? { id: params.id }
-    : { uid: getCollectionUid(state) }
+  const permalink = getCollectionPermalink(state)
+  if (permalink) {
+    return getCachedCollection(state, { permalink })
+  } else {
+    const config = params?.id
+      ? { id: params.id }
+      : { uid: getCollectionUid(state) }
 
-  return getCachedCollection(state, config)
+    return getCachedCollection(state, config)
+  }
 }
 
 export const getUser = (state: CommonState, params?: { id?: ID }) => {

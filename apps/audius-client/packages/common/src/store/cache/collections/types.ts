@@ -1,4 +1,4 @@
-import { Track, UID, User } from '../../../models'
+import { Track, UID, User, ID, Cache, Collection } from '../../../models'
 
 export enum PlaylistOperations {
   ADD_TRACK = 'ADD_TRACK',
@@ -7,3 +7,7 @@ export enum PlaylistOperations {
 }
 
 export type EnhancedCollectionTrack = Track & { user: User; uid: UID }
+
+export interface CollectionsCacheState extends Cache<Collection> {
+  permalinks: { [permalink: string]: ID }
+}

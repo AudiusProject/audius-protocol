@@ -21,13 +21,22 @@ export const ORDER_PLAYLIST_FAILED = 'ORDER_PLAYLIST_FAILED'
 
 export const PUBLISH_PLAYLIST = 'PUBLISH_PLAYLIST'
 export const PUBLISH_PLAYLIST_FAILED = 'PUBLISH_PLAYLIST_FAILED'
-
+export const SET_COLLECTION_PERMALINKS = 'SET_COLLECTION_PERMALINKS'
 export const DELETE_PLAYLIST = 'DELETE_PLAYLIST'
 export const DELETE_PLAYLIST_REQUESTED = 'DELETE_PLAYLIST_REQUESTED'
 export const DELETE_PLAYLIST_SUCCEEDED = 'DELETE_PLAYLIST_SUCCEEDED'
 export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
 
 export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
+
+export const setCollectionPermalinks = (permalinksToIds: {
+  [permalink: string]: ID
+}) => {
+  return {
+    type: SET_COLLECTION_PERMALINKS,
+    permalinksToIds
+  }
+}
 
 /**
  * @param initTrackId optional track id to pull artwork from.

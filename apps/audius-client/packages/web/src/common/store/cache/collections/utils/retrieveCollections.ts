@@ -4,15 +4,17 @@ import {
   CollectionMetadata,
   UserCollectionMetadata,
   Kind,
+  Nullable,
   makeUid,
   accountSelectors,
   cacheCollectionsSelectors,
   cacheSelectors,
+  cacheCollectionsActions as collectionActions,
   CommonState,
   getContext
 } from '@audius/common'
 import { chunk } from 'lodash'
-import { all, call, select } from 'typed-redux-saga'
+import { all, call, select, put } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
@@ -28,7 +30,7 @@ const getUserId = accountSelectors.getUserId
 function* markCollectionDeleted(
   collectionMetadatas: CollectionMetadata[]
 ): Generator<any, CollectionMetadata[], any> {
-  const collections = yield select(getCollections, {
+  const collections = yield* select(getCollections, {
     ids: collectionMetadatas.map((c) => c.playlist_id)
   })
   return collectionMetadatas.map((metadata) => {
@@ -91,18 +93,128 @@ export function* retrieveTracksForCollections(
   })
 }
 
+type retrieveCollectionArgs = {
+  playlistId?: Nullable<ID>
+  permalink?: Nullable<string>
+}
+
 /**
  * Retrieves a single collection via API client
  */
-export function* retrieveCollection(playlistId: ID) {
+export function* retrieveCollection({
+  playlistId,
+  permalink
+}: retrieveCollectionArgs) {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
-  const userId = yield* select(getUserId)
-  const playlists = yield* call([apiClient, 'getPlaylist'], {
-    playlistId,
-    currentUserId: userId
+  const currentUserId = yield* select(getUserId)
+  if (permalink) {
+    const playlists = yield* call([apiClient, 'getPlaylistByPermalink'], {
+      currentUserId,
+      permalink
+    })
+    return playlists
+  }
+  if (playlistId) {
+    const playlists = yield* call([apiClient, 'getPlaylist'], {
+      currentUserId,
+      playlistId
+    })
+    return playlists
+  }
+  return []
+}
+
+function* selectEntriesTimestamp(ids: (ID | string)[]) {
+  const entriesTimestamps = (state: CommonState, ids: (ID | string)[]) =>
+    ids.reduce(
+      (acc: { [id: number | string]: number | null }, id: ID | string) => {
+        acc[id] = getEntryTimestamp(state, { kind: Kind.COLLECTIONS, id })
+        return acc
+      },
+      {}
+    )
+  const selectedEntries = yield* select(entriesTimestamps, ids)
+  return selectedEntries
+}
+
+export function* retrieveCollectionByPermalink(
+  permalink: string,
+  /**
+   * whether or not to fetch the tracks inside the playlist
+   */
+  fetchTracks = false,
+  /**
+   * whether or not fetching this collection requires it to have all its tracks.
+   * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
+   */
+  requiresAllTracks = false
+) {
+  // @ts-ignore retrieve should be refactored to ts first
+  const { entries, uids } = yield* call(retrieve, {
+    ids: [permalink],
+    selectFromCache: function* (permalinks: string[]) {
+      const cachedCollections = yield* select(
+        cacheCollectionsSelectors.getCollections,
+        {
+          permalinks
+        }
+      )
+      if (requiresAllTracks) {
+        const keys = Object.keys(cachedCollections) as unknown as number[]
+        keys.forEach((collectionId) => {
+          const fullTrackCount = cachedCollections[collectionId].track_count
+          const currentTrackCount =
+            cachedCollections[collectionId].tracks?.length ?? 0
+          if (currentTrackCount < fullTrackCount) {
+            // Remove the collection from the res so retrieve knows to get it from source
+            delete cachedCollections[collectionId]
+          }
+        })
+      }
+      return cachedCollections
+    },
+    getEntriesTimestamp: selectEntriesTimestamp,
+    retrieveFromSource: function* (permalinks: string[]) {
+      const metadatas = yield* call(retrieveCollection, {
+        permalink: permalinks[0]
+      })
+
+      // Process any local deletions on the client
+      const metadatasWithDeleted = yield* call(
+        markCollectionDeleted,
+        metadatas!
+      )
+
+      return metadatasWithDeleted
+    },
+    onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      yield* addUsersFromCollections(metadatas)
+      yield* addTracksFromCollections(metadatas)
+      yield* put(
+        collectionActions.setCollectionPermalinks({
+          [permalink]: metadatas[0].playlist_id
+        })
+      )
+      if (fetchTracks) {
+        yield* call(retrieveTracksForCollections, metadatas, new Set())
+      }
+
+      const reformattedCollections = metadatas.map((c) =>
+        reformat(c, audiusBackendInstance)
+      )
+
+      return reformattedCollections
+    },
+    kind: Kind.COLLECTIONS,
+    idField: 'playlist_id',
+    forceRetrieveFromSource: false,
+    shouldSetLoading: true,
+    deleteExistingEntry: false
   })
-  return playlists
+
+  return { collections: entries, uids }
 }
 
 /**
@@ -121,12 +233,12 @@ export function* retrieveCollections(
   requiresAllTracks = false
 ) {
   // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield call(retrieve, {
+  const { entries, uids } = yield* call(retrieve, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
       const res: {
         [id: number]: Collection
-      } = yield select(getCollections, { ids })
+      } = yield* select(getCollections, { ids })
       if (requiresAllTracks) {
         const keys = Object.keys(res) as any
         keys.forEach((collectionId: number) => {
@@ -140,41 +252,33 @@ export function* retrieveCollections(
       }
       return res
     },
-    getEntriesTimestamp: function* (ids: ID[]) {
-      const selector = (state: CommonState, ids: ID[]) =>
-        ids.reduce((acc, id) => {
-          acc[id] = getEntryTimestamp(state, { kind: Kind.COLLECTIONS, id })
-          return acc
-        }, {} as { [id: number]: number | null })
-      const selected: ReturnType<typeof selector> = yield select(selector, ids)
-      return selected
-    },
+    getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (ids: ID[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      let metadatas: UserCollectionMetadata[]
+      let metadatas
 
       if (ids.length === 1) {
-        metadatas = yield call(retrieveCollection, ids[0])
+        metadatas = yield* call(retrieveCollection, { playlistId: ids[0] })
       } else {
         // TODO: Remove this branch when we have batched endpoints in new V1 api.
-        metadatas = yield call(audiusBackendInstance.getPlaylists, userId, ids)
+        metadatas = yield* call(audiusBackendInstance.getPlaylists, userId, ids)
       }
 
       // Process any local deletions on the client
-      const metadatasWithDeleted: UserCollectionMetadata[] = yield call(
+      const metadatasWithDeleted = yield* call(
         markCollectionDeleted,
-        metadatas
+        metadatas!
       )
 
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield addUsersFromCollections(metadatas)
-      yield addTracksFromCollections(metadatas)
+      yield* addUsersFromCollections(metadatas)
+      yield* addTracksFromCollections(metadatas)
 
       if (fetchTracks) {
-        yield call(retrieveTracksForCollections, metadatas, new Set())
+        yield* call(retrieveTracksForCollections, metadatas, new Set())
       }
 
       const reformattedCollections = metadatas.map((c) =>
