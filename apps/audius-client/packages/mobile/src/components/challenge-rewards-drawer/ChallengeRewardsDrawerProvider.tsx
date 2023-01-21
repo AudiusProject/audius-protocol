@@ -124,48 +124,52 @@ export const ChallengeRewardsDrawerProvider = () => {
 
   // Challenge drawer contents
   let contents: Maybe<React.ReactElement>
-  switch (modalType) {
-    case 'referrals':
-    case 'ref-v':
-      contents = (
-        <ReferralRewardContents isVerified={!!config.isVerifiedChallenge} />
-      )
-      break
-    case 'track-upload':
-      contents = config?.buttonInfo && (
-        <Button
-          containerStyle={styles.button}
-          title={config.panelButtonText}
-          renderIcon={config.buttonInfo.renderIcon}
-          iconPosition='right'
-          type={
-            challenge?.state === 'completed' || challenge?.state === 'disbursed'
-              ? ButtonType.COMMON
-              : ButtonType.PRIMARY
-          }
-          onPress={openUploadModal}
-        />
-      )
-      break
-    case 'profile-completion':
-      contents = (
-        <ProfileCompletionChecks
-          isComplete={hasChallengeCompleted}
-          onClose={handleClose}
-        />
-      )
-      break
-    default:
-      contents = config?.buttonInfo && (
-        <Button
-          containerStyle={styles.button}
-          title={config.panelButtonText}
-          renderIcon={config.buttonInfo.renderIcon}
-          iconPosition={config.buttonInfo.iconPosition}
-          type={hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY}
-          onPress={handleNavigation}
-        />
-      )
+  if (challenge?.state && challenge?.state !== 'completed') {
+    switch (modalType) {
+      case 'referrals':
+      case 'ref-v':
+        contents = (
+          <ReferralRewardContents isVerified={!!config.isVerifiedChallenge} />
+        )
+        break
+      case 'track-upload':
+        contents = config?.buttonInfo && (
+          <Button
+            containerStyle={styles.button}
+            title={config.panelButtonText}
+            renderIcon={config.buttonInfo.renderIcon}
+            iconPosition='right'
+            type={
+              challenge?.state === 'disbursed'
+                ? ButtonType.COMMON
+                : ButtonType.PRIMARY
+            }
+            onPress={openUploadModal}
+          />
+        )
+        break
+      case 'profile-completion':
+        contents = (
+          <ProfileCompletionChecks
+            isComplete={hasChallengeCompleted}
+            onClose={handleClose}
+          />
+        )
+        break
+      default:
+        contents = config?.buttonInfo && (
+          <Button
+            containerStyle={styles.button}
+            title={config.panelButtonText}
+            renderIcon={config.buttonInfo.renderIcon}
+            iconPosition={config.buttonInfo.iconPosition}
+            type={
+              hasChallengeCompleted ? ButtonType.COMMON : ButtonType.PRIMARY
+            }
+            onPress={handleNavigation}
+          />
+        )
+    }
   }
 
   // Bail if not on challenges page/challenges aren't loaded

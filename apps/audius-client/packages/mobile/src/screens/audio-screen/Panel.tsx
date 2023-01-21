@@ -7,6 +7,7 @@ import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
+import IconCheck from 'app/assets/images/iconCheck.svg'
 import { Button, Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { makeStyles } from 'app/styles'
@@ -15,17 +16,43 @@ import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   completeLabel: 'COMPLETE',
-  claimReward: 'Claim Your Reward'
+  claimReward: 'Claim Your Reward',
+  readyToClaim: 'Ready to Claim'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
-    marginVertical: spacing(2),
-    borderRadius: spacing(4),
+    marginBottom: spacing(2),
+    borderRadius: spacing(2),
     borderColor: palette.neutralLight7,
     borderWidth: 2,
-    paddingVertical: spacing(10),
+    paddingBottom: spacing(8)
+  },
+  completed: {
+    backgroundColor: palette.neutralLight10
+  },
+  content: {
     paddingHorizontal: spacing(5)
+  },
+  pillContainer: {
+    height: spacing(6),
+    margin: spacing(2),
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
+  },
+  pillMessage: {
+    paddingVertical: spacing(1),
+    paddingHorizontal: spacing(2),
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.demiBold,
+    lineHeight: spacing(4),
+    color: palette.secondary,
+    backgroundColor: palette.background,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: palette.backgroundSecondary,
+    overflow: 'hidden'
   },
   header: {
     flexDirection: 'row',
@@ -45,7 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   description: {
     fontFamily: typography.fontByWeight.demiBold,
     fontSize: typography.fontSize.small,
-    color: palette.secondary,
+    color: palette.neutral,
     lineHeight: 17,
     marginBottom: spacing(6)
   },
@@ -53,10 +80,19 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.heavy,
     fontSize: typography.fontSize.medium,
     marginBottom: spacing(2),
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    color: palette.neutralLight4
   },
-  progressBar: {
-    marginBottom: spacing(2)
+  button: {
+    marginTop: spacing(4)
+  },
+  progressLabel: {
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  iconCheck: {
+    marginBottom: spacing(2),
+    marginRight: spacing(2)
   }
 }))
 
@@ -78,14 +114,15 @@ export const Panel = ({
   panelButtonText
 }: PanelProps) => {
   const styles = useStyles()
-  const { accentGreen, neutralLight4 } = useThemeColors()
+  const { neutralLight4 } = useThemeColors()
 
   const stepCount = challenge?.max_steps ?? 0
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const shouldShowProgressBar =
-    stepCount > 1 && challenge?.challenge_type !== 'aggregate'
+    stepCount > 1 && challenge?.challenge_type !== 'aggregate' && !hasDisbursed
 
   const shouldShowProgress = !!progressLabel
   let progressLabelFilled: string | null = null
@@ -110,46 +147,64 @@ export const Panel = ({
     }
   }
 
+  const buttonType =
+    challenge?.state === 'completed'
+      ? 'primary'
+      : hasDisbursed
+      ? 'commonAlt'
+      : 'common'
+
   return (
-    <TouchableOpacity style={styles.root} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.header}>
-        {icon ? <Image style={styles.headerImage} source={icon} /> : null}
-        <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.root, hasDisbursed ? styles.completed : null]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.pillContainer}>
+        {challenge?.state === 'completed' ? (
+          <Text style={styles.pillMessage}>{messages.readyToClaim}</Text>
+        ) : null}
       </View>
-      <Text style={styles.description}>
-        {shortDescription || description(challenge)}
-      </Text>
-      {shouldShowProgress ? (
-        <Text
-          style={[
-            styles.progress,
-            {
-              color: shouldShowCompleted ? accentGreen : neutralLight4
-            }
-          ]}
-        >
-          {progressLabelFilled}
-        </Text>
-      ) : null}
-      {shouldShowProgressBar ? (
-        <View style={styles.progressBar}>
-          <ProgressBar
-            progress={challenge?.current_step_count ?? 0}
-            max={stepCount}
-          />
+      <View style={styles.content}>
+        <View style={styles.header}>
+          {icon ? <Image style={styles.headerImage} source={icon} /> : null}
+          <Text style={styles.title}>{title}</Text>
         </View>
-      ) : null}
-      {
-        <Button
-          fullWidth
-          title={needsDisbursement ? messages.claimReward : panelButtonText}
-          variant='primary'
-          iconPosition='right'
-          size='medium'
-          icon={IconArrow}
-          onPress={onPress}
-        />
-      }
+        <Text style={styles.description}>
+          {shortDescription || description(challenge)}
+        </Text>
+        {shouldShowProgress ? (
+          <View style={styles.progressLabel}>
+            <IconCheck
+              style={styles.iconCheck}
+              fill={neutralLight4}
+              width={20}
+              height={20}
+            />
+            <Text style={styles.progress}>{progressLabelFilled}</Text>
+          </View>
+        ) : null}
+        {shouldShowProgressBar ? (
+          <View>
+            <ProgressBar
+              progress={challenge?.current_step_count ?? 0}
+              max={stepCount}
+            />
+          </View>
+        ) : null}
+        {
+          <Button
+            fullWidth
+            title={needsDisbursement ? messages.claimReward : panelButtonText}
+            variant={buttonType}
+            iconPosition='right'
+            size='medium'
+            icon={IconArrow}
+            onPress={onPress}
+            style={[styles.button, hasDisbursed ? styles.completed : null]}
+          />
+        }
+      </View>
     </TouchableOpacity>
   )
 }
