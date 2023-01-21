@@ -53,7 +53,10 @@ const messages = {
   buttonTextUnderground: 'Current Underground Trending Tracks',
   mobileButtonTextTracks: 'Trending Tracks',
   mobileButtonTextPlaylists: 'Trending Playlists',
-  mobileButtonTextUnderground: 'Underground Trending Tracks'
+  mobileButtonTextUnderground: 'Underground Trending Tracks',
+  arrowCurveUp: 'arrow-curve-up',
+  chartBar: 'chart-bar',
+  chartIncreasing: 'chart-increasing'
 }
 
 const TRENDING_PAGES = {
@@ -67,19 +70,22 @@ const textMap = {
     modalTitle: messages.playlistsModalTitle,
     title: messages.playlistTitle,
     button: messages.buttonTextPlaylists,
-    buttonMobile: messages.mobileButtonTextPlaylists
+    buttonMobile: messages.mobileButtonTextPlaylists,
+    icon: messages.arrowCurveUp
   },
   tracks: {
     modalTitle: messages.tracksModalTitle,
     title: messages.tracksTitle,
     button: messages.buttonTextTracks,
-    buttonMobile: messages.mobileButtonTextTracks
+    buttonMobile: messages.mobileButtonTextTracks,
+    icon: messages.chartIncreasing
   },
   underground: {
     modalTitle: messages.undergroundModalTitle,
     title: messages.undergroundTitle,
     button: messages.buttonTextUnderground,
-    buttonMobile: messages.mobileButtonTextUnderground
+    buttonMobile: messages.mobileButtonTextUnderground,
+    icon: messages.chartBar
   }
 }
 
@@ -224,7 +230,9 @@ export const TrendingRewardsModal = () => {
       onClose={() => setOpen(false)}
       title={
         <h2 className={styles.titleHeader}>
-          <i className={`emoji large chart-increasing ${styles.titleIcon}`} />
+          <i
+            className={`emoji large ${styles.titleIcon} ${textMap[modalType].icon}`}
+          />
           {textMap[modalType].modalTitle}
         </h2>
       }

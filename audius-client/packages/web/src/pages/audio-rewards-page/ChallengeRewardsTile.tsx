@@ -13,7 +13,7 @@ import {
   ChallengeRewardsModalType,
   audioRewardsPageSelectors
 } from '@audius/common'
-import { ProgressBar } from '@audius/stems'
+import { ProgressBar, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -38,7 +38,8 @@ const messages = {
   description2:
     'Opportunities to earn $AUDIO will change, so check back often for more chances to earn!',
   completeLabel: 'COMPLETE',
-  claimReward: 'Claim Your Reward'
+  claimReward: 'Claim Your Reward',
+  readyToClaim: 'Ready to Claim'
 }
 
 type RewardPanelProps = {
@@ -70,11 +71,13 @@ const RewardPanel = ({
   const challenge = userChallenges[id]
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const shouldShowProgressBar =
     challenge &&
     challenge.max_steps > 1 &&
-    challenge.challenge_type !== 'aggregate'
+    challenge.challenge_type !== 'aggregate' &&
+    !hasDisbursed
 
   let progressLabelFilled: string
   if (shouldShowCompleted) {
@@ -100,7 +103,19 @@ const RewardPanel = ({
   }
 
   return (
-    <div className={wm(styles.rewardPanelContainer)} onClick={openRewardModal}>
+    <div
+      className={wm(
+        cn(styles.rewardPanelContainer, hasDisbursed ? styles.completed : '')
+      )}
+      onClick={openRewardModal}
+    >
+      <div className={wm(styles.pillContainer)}>
+        {challenge?.state === 'completed' && (
+          <span className={wm(styles.pillMessage)}>
+            {messages.readyToClaim}
+          </span>
+        )}
+      </div>
       <span className={wm(styles.rewardTitle)}>
         {icon}
         {title}
@@ -109,13 +124,8 @@ const RewardPanel = ({
         {description(challenge)}
       </span>
       <div className={wm(styles.rewardProgress)}>
-        <p
-          className={cn(styles.rewardProgressLabel, {
-            [styles.complete]: shouldShowCompleted
-          })}
-        >
-          {progressLabelFilled}
-        </p>
+        {shouldShowCompleted && <IconCheck className={wm(styles.iconCheck)} />}
+        <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
         {shouldShowProgressBar && (
           <ProgressBar
             className={styles.rewardProgressBar}
@@ -125,7 +135,10 @@ const RewardPanel = ({
         )}
       </div>
       <ButtonWithArrow
-        className={wm(styles.panelButton)}
+        className={wm(
+          cn(styles.panelButton, hasDisbursed ? styles.completed : '')
+        )}
+        completed={challenge?.state}
         text={needsDisbursement ? messages.claimReward : panelButtonText}
         onClick={openRewardModal}
         textClassName={styles.panelButtonText}

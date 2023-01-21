@@ -71,7 +71,7 @@ export const ProfileCompletionChecks = ({
   const goToProfile = useCallback(() => {
     onClose()
     if (currentUser?.handle) {
-      navigation.goBack()
+      navigation.navigate('Profile', { handle: currentUser.handle })
     }
   }, [currentUser, onClose, navigation])
 
