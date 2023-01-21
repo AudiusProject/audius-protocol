@@ -41,7 +41,7 @@ export class Processor {
     // process events
     logger.info('processing events')
     while (true) {
-      await sendAppNotifications(this.appNotifications)
+      await sendAppNotifications(this.listener, this.appNotifications)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // free up event loop + batch queries to postgres

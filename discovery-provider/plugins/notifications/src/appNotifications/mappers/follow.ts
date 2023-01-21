@@ -2,7 +2,6 @@ import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { FollowNotification } from '../../types/appNotifications'
 import { BaseNotification } from './base'
-import { logger } from '../../logger'
 import { sendPushNotification } from '../../sns'
 
 export class Follow extends BaseNotification {

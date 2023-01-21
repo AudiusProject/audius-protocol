@@ -1,13 +1,13 @@
-import { takePending } from './../listener.ts'
-import { logger } = './../logger.ts'
+import { logger } from './../logger'
+import { Listener } from './../listener'
 import { AppNotifications } from './../appNotifications'
 
-export async function (appNotifications: AppNotifications) {
-  const pending = takePending()
+export async function sendAppNotifications(listener: Listener, appNotificationsProcessor: AppNotifications) {
+  const pending = listener.takePending()
   if (pending) {
 
     await Promise.all([
-      appNotifications.process(pending.appNotifications)
+      appNotificationsProcessor.process(pending.appNotifications)
     ])
     logger.info('processed new app updates')
   }
