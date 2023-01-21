@@ -97,7 +97,7 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Running alembic migrations"
     export PYTHONPATH='.'
     alembic upgrade head
-    echo "Finished running migrations"
+    echo "Finished running alembic migrations"
 fi
 
 # start es-indexer

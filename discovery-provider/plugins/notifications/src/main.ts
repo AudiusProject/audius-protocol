@@ -1,11 +1,12 @@
 import { Listener } from './listener'
-import { run } from 'graphile-worker'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
 import { program } from 'commander'
 import { Knex } from 'knex'
 import { AppNotifications } from './appNotifications'
+import { sendDMNotifications } from './tasks/dmNotifications'
+import { sendAppNotifications } from './tasks/appNotifications'
 
 export class Processor {
 
@@ -39,19 +40,12 @@ export class Processor {
   start = async () => {
     // process events
     logger.info('processing events')
-    const runner = await run({
-      connectionString: process.env.DN_DB_URL,
-      noHandleSignals: false,
-      pollInterval: 2000,
-      taskDirectory: `${__dirname}/../tasks`
-    })
-
     while (true) {
-      await runner.addJob("appNotifications", {
-        appNotifications: this.appNotifications,
-      })
-      await runner.addJob("dmNotifications")
-      await runner.promise // TODO remove
+      await sendAppNotifications(this.appNotifications)
+      await sendDMNotifications(this.discoveryDB, this.identityDB)
+
+      // free up event loop + batch queries to postgres
+      await new Promise((r) => setTimeout(r, 500))
     }
   }
 

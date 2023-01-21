@@ -1,8 +1,11 @@
-const { logger } = require('./../src/logger.ts')
-const { getDB } = require('./../src/conn.ts')
-const { getRedisConnection } = require('./../src/utils/redis_connection.ts')
+import { Knex } from 'knex'
+import { logger } from './../logger.ts'
+import { MessageNotification, MessageReactionNotification } from './../appNotifications/mappers/message'
+import { MessageReactionNotification } from './../appNotifications/mappers/messageReaction'
+import { DMNotification, DMReactionNotification } from './../types/appNotifications'
+import { getRedisConnection } from './../utils/redis_connection.ts'
 
-function notificationTimestampComparator(n1, n2) {
+function notificationTimestampComparator(n1: MessageNotification | MessageReactionNotification, n2: MessageNotification | MessageReactionNotification) {
   if (n1.notification.timestamp < n2.notification.timestamp) {
     return -1
   }
@@ -12,11 +15,9 @@ function notificationTimestampComparator(n1, n2) {
   return 0
 }
 
-module.exports = async () => {
+export async function sendDMNotifications(dnDB: Knex, identityDB: Knex) {
   const lastIndexedMessageRedisKey = 'latestDMNotificationTimestamp'
   const lastIndexedReactionRedisKey = 'latestDMReactionNotificationTimestamp'
-  const discoveryDBConnection = process.env.DN_DB_URL
-  dnDB = await getDB(discoveryDBConnection)
 
   // Delay in sending notifications for unread messages (in ms)
   const delay = 300000 // 5 minutes
@@ -28,8 +29,8 @@ module.exports = async () => {
   const minReactionCursor = await redis.get(lastIndexedReactionRedisKey) || maxCursor
 
   // Query DN for unread messages and reactions between min cursor and Date.now() - delay
-  const unreadMessages = []
-  const unreadReactions = []
+  const unreadMessages DMNotification[] = []
+  const unreadReactions DMReactionNotification[] = []
   // const unreadMessages = await dnDB
   //   .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.ciphertext as message', 'chat_message.created_at as timestamp')
   //   .from('chat_message')
@@ -45,11 +46,8 @@ module.exports = async () => {
   //   .where('chat_message_reactions.updated_at', '>', `max(user.last_active_at, ${minReactionCursor})`)
   //   .andWhere('chat_message_reactions.updated_at', '<=', maxCursor)
 
-  const identityDBConnection = process.env.IDENTITY_DB_URL
-  identityDB = await getDB(identityDBConnection)
-
-  const messageNotifications = unreadMessages.map(message => new MessageNotification(dnDB, identityDB, message))
-  const reactionNotifications = unreadReactions.map(reaction => new MessageReactionNotification(dnDB, identityDB, reaction))
+  const messageNotifications = unreadMessages.map(message: DMNotification => new MessageNotification(dnDB, identityDB, message))
+  const reactionNotifications = unreadReactions.map(reaction: DMReactionNotification => new MessageReactionNotification(dnDB, identityDB, reaction))
   const notifications = messageNotifications.concat(reactionNotifications)
   // Sort notifications by timestamp (asc)
   notifications.sort(notificationTimestampComparator)

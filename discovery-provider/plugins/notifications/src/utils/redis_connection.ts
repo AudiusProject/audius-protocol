@@ -1,12 +1,8 @@
 import type { RedisClientType } from 'redis'
 import { createClient } from 'redis'
-import { parse } from 'ini'
-import { readFileSync } from 'fs'
 
-// TODO how to manage config between DN and plugin
-// const config = parse(readFileSync(`${__dirname}/../../../../default_config.ini`, 'utf-8'))
-// const url = config.redis.url
-const url = "redis://localhost:5379/0" 
+const url = process.env.audius_redis_url || "redis://localhost:5379/0"
+console.log(`redis url: ${url}`)
 
 let redisClient: RedisClientType
 let isReady: boolean

@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  notifications:
+    build: discovery-provider/plugins/notifications
+    environment:
+      audius_redis_url: redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
+      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+    depends_on:
+      redis-server:
+        condition: service_started
+    volumes:
+      - ./discovery-provider/plugins/notifications:/notifications/
+    networks:
+      - audius_dev
+
+networks:
+  audius_dev:
+    external: true
