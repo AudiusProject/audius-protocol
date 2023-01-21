@@ -421,14 +421,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           </div>
         </div>
       )}
-      {buttonLink && (
+      {buttonLink && challenge?.state !== 'completed' && (
         <Button
           className={wm(cn(styles.button, styles.buttonLink))}
-          type={
-            challenge?.state === 'completed'
-              ? ButtonType.COMMON
-              : ButtonType.PRIMARY_ALT
-          }
+          type={ButtonType.PRIMARY_ALT}
           text={buttonInfo?.label}
           onClick={goToRoute}
           leftIcon={buttonInfo?.leftIcon}

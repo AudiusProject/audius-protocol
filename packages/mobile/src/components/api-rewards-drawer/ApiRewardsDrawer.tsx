@@ -13,7 +13,7 @@ const messages = {
   modalTitle: 'Audius API',
   title: "It's easy to build your own app on Audius",
   description: 'The top 10 Audius API apps each month win',
-  button: 'Learn More About The Audius API'
+  button: 'Learn More'
 }
 
 const MODAL_NAME = 'APIRewardsExplainer'
