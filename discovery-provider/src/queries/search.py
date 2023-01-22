@@ -42,7 +42,6 @@ def search_full():
         "limit": limit,
         "offset": offset,
         "only_downloadable": False,
-        "exclude_premium": True,
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -70,7 +69,6 @@ def search_autocomplete():
         "limit": limit,
         "offset": offset,
         "only_downloadable": False,
-        "exclude_premium": True,
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)

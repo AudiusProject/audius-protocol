@@ -7,7 +7,14 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ./db/docker-initdb:/docker-entrypoint-initdb.d
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+
+  comnats:
+    # container_name: nats
+    image: nats
+    command: -js
+    ports:
+      - "4222:4222"
 
   com1:
     container_name: com1

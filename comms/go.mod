@@ -18,12 +18,16 @@ require (
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/gobwas/httphead v0.1.0 // indirect
+	github.com/gobwas/pool v0.2.1 // indirect
+	github.com/gobwas/ws v1.1.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -38,6 +42,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
+	github.com/lucsky/cuid v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect

@@ -76,13 +76,23 @@ full_playlists_with_score_response = make_full_response(
 )
 
 
-def get_playlist(playlist_id, current_user_id):
-    """Returns a single playlist, or None"""
+def format_get_playlists_args(
+    current_user_id, playlist_id=None, route=None, with_users=True
+):
     args = {
-        "playlist_id": [playlist_id],
-        "with_users": True,
         "current_user_id": current_user_id,
+        "with_users": with_users,
     }
+    if playlist_id:
+        args["playlist_ids"] = [playlist_id]
+    if route:
+        args["routes"] = [route]
+    return args
+
+
+def get_playlist(current_user_id, playlist_id=None, route=None, with_users=True):
+    """Returns a single playlist, or None"""
+    args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
         return extend_playlist(playlists[0])
@@ -120,7 +130,10 @@ class Playlist(Resource):
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
-        playlist = get_playlist(playlist_id, None)
+        playlist = get_playlist(
+            current_user_id=None,
+            playlist_id=playlist_id,
+        )
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -139,12 +152,43 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-        playlist = get_playlist(playlist_id, current_user_id)
+        playlist = get_playlist(
+            current_user_id=current_user_id, playlist_id=playlist_id
+        )
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
         return response
+
+
+@full_ns.route("/by_permalink/<string:handle>/<string:slug>")
+class FullPlaylistByHandleAndSlug(Resource):
+    @ns.doc(
+        id="""Get Playlist By Handle and Slug""",
+        description="""Get a playlist by handle and slug""",
+        params={"handle": "playlist owner handle", "slug": "playlist slug"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(full_playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, handle, slug):
+        args = current_user_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+
+        route = {
+            "handle": handle,
+            "slug": slug,
+        }
+
+        playlist = get_playlist(current_user_id=current_user_id, route=route)
+        return_response = []
+        if playlist:
+            tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
+            playlist["tracks"] = tracks
+            return_response = [playlist]
+
+        return success_response(return_response)
 
 
 playlist_tracks_response = make_response(

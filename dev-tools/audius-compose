@@ -13,6 +13,36 @@ import eth_account
 import solana.keypair
 
 
+class DefaultCommandGroup(click.Group):
+    """allow a default command for a group"""
+
+    def command(self, *args, **kwargs):
+        default_command = kwargs.pop("default_command", False)
+        if default_command and not args:
+            kwargs["name"] = kwargs.get("name", "<>")
+        decorator = super(DefaultCommandGroup, self).command(*args, **kwargs)
+
+        if default_command:
+
+            def new_decorator(f):
+                cmd = decorator(f)
+                self.default_command = cmd.name
+                return cmd
+
+            return new_decorator
+
+        return decorator
+
+    def resolve_command(self, ctx, args):
+        try:
+            # test if the command parses
+            return super(DefaultCommandGroup, self).resolve_command(ctx, args)
+        except click.UsageError:
+            # command did not parse, assume it is the default command
+            args.insert(0, self.default_command)
+            return super(DefaultCommandGroup, self).resolve_command(ctx, args)
+
+
 def generate_env(
     protocol_dir,
     creator_node_replicas,
@@ -268,7 +298,27 @@ def down(protocol_dir):
     )
 
 
-@cli.group()
+@cli.command()
+@click.pass_obj
+@click.option("-r", "--remote", is_flag=True)
+def connect(protocol_dir, remote):
+    remote_host = os.environ["AUDIUS_REMOTE_DEV_HOST"]
+    host = remote_host if remote else "localhost"
+    subprocess.run(
+        [
+            "sshuttle",
+            "-N",
+            "--no-latency-control",
+            "-H",
+            "-r",
+            f"sshuttle@{host}:2222",
+            "-e",
+            f"ssh -i {protocol_dir}/dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
+        ]
+    )
+
+
+@cli.group(cls=DefaultCommandGroup)
 def test():
     pass
 
@@ -276,12 +326,7 @@ def test():
 @test.command(name="build")
 @click.pass_obj
 def test_build(protocol_dir):
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
     subprocess.run(
         [
@@ -306,17 +351,28 @@ def test_build(protocol_dir):
     )
 
 
-@test.command(name="run")
+@test.command(name="run", default_command=True)
 @click.argument("service")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_obj
 def test_run(protocol_dir, service, args):
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-    )
+    """
+    Runs tests for a given service.
+    """
+    generate_env(protocol_dir, 0, 0, 0)
+
+    if service == "discovery-provider":
+        cmd = "pytest"
+    elif service == "creator-node":
+        cmd = "node"
+    elif service == "identity-service":
+        cmd = "node"
+    else:
+        click.secho(
+            "Invalid service specified",
+            fg="red",
+        )
+        return
 
     sys.exit(
         subprocess.run(
@@ -329,8 +385,35 @@ def test_run(protocol_dir, service, args):
                 "run",
                 "--rm",
                 f"test-{service}",
+                cmd,
                 *args,
-            ],
+            ]
+        ).returncode
+    )
+
+
+@test.command(name="up")
+@click.argument("service")
+@click.pass_obj
+def test_up(protocol_dir, service):
+    """
+    Brings up a testing container for a given service.
+    """
+    generate_env(protocol_dir, 0, 0, 0)
+
+    sys.exit(
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                f"--file={protocol_dir / 'docker-compose.test.yml'}",
+                f"--project-name={protocol_dir.name}-test",
+                f"--project-directory={protocol_dir}",
+                "up",
+                "--build",
+                "-d",
+                f"test-{service}",
+            ]
         ).returncode
     )
 
@@ -338,12 +421,7 @@ def test_run(protocol_dir, service, args):
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
-    generate_env(
-        protocol_dir,
-        0,
-        0,
-        0,
-    )
+    generate_env(protocol_dir, 0, 0, 0)
 
     subprocess.run(
         [

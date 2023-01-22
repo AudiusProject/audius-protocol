@@ -1,13 +1,19 @@
-const { segmentFile } = require('../src/ffmpeg')
-
 const path = require('path')
 const fs = require('fs-extra')
 const assert = require('assert')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
+
+const { computeTranscodeDestinationPath, getAudioFileInformation } = require('./lib/helpers')
+
+const { segmentFile, transcodeFileTo320 } = require('../src/ffmpeg')
 
 describe('test segmentFile()', () => {
-  // Create the segments directory to store segments in.
-  // Middleware would normally handle this, however, in this test
-  // context, segmentFile() is unit tested directly without the middleware.
+  /**
+   * Create the segments directory to store segments in.
+   * Middleware would normally handle this, however, in this test
+   * context, segmentFile() is unit tested directly without the middleware.
+   */
   before(async () => {
     const segmentsDirPath = path.join(__dirname, 'segments')
     if (!(await fs.pathExists(segmentsDirPath))) {
@@ -89,6 +95,67 @@ describe('test segmentFile()', () => {
 
     // check that all the expected segments were found
     assert.deepStrictEqual(allSegmentsSet.size, 0)
+  })
+})
 
+describe('test transcodeFileTo320()', () => {
+  const fileDir = __dirname
+  const fileName = 'testTrack.mp3'
+  const inputFilePath = path.resolve(fileDir, fileName)
+
+  // Ensure no file exists at destinationPath
+  beforeEach(async () => {
+    const destinationPath = computeTranscodeDestinationPath(fileDir, fileName)
+    await fs.remove(destinationPath)
+  })
+
+  // Ensure no file exists at destinationPath
+  after(async () => {
+    const destinationPath = computeTranscodeDestinationPath(fileDir, fileName)
+    await fs.remove(destinationPath)
+  })
+
+  it('Happy path - Transcode file to 320kbps, ensure duration matches input file, and metadata properties correctly defined', async () => {
+    const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
+    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {})
+    const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
+    assert.strictEqual(inputFileDuration, outputFileDuration)
+  })
+
+  it('Happy path - Ensure works without overrideIfExists param set', async () => {
+    const { duration: inputFileDuration } = await getAudioFileInformation(inputFilePath)
+    const transcodeFilePath = await transcodeFileTo320(fileDir, fileName, {})
+    const { duration: outputFileDuration } = await getAudioFileInformation(transcodeFilePath)
+
+    assert.strictEqual(inputFileDuration, outputFileDuration)
+  })
+
+  it('Confirm same file transcoded with different metadata has different CID but same duration & fileSize', async () => {
+    const filePath1 = await transcodeFileTo320(fileDir, fileName, {})
+    const { duration: duration1, metadata: metadata1 } = await getAudioFileInformation(filePath1)
+    const { size: size1 } = await fs.stat(filePath1)
+    const cid1 = await Utils.fileHasher.generateNonImageCid(filePath1)
+
+    // Remove file before re-transcoding
+    await fs.remove(filePath1)
+
+    const filePath2 = await transcodeFileTo320(fileDir, fileName, {})
+    const { duration: duration2, metadata: metadata2 } = await getAudioFileInformation(filePath2)
+    const { size: size2 } = await fs.stat(filePath2)
+    const cid2 = await Utils.fileHasher.generateNonImageCid(filePath2)
+
+    assert.strictEqual(filePath1, filePath2)
+
+    // Assert duration and size are same
+    assert.strictEqual(duration1, duration2)
+    assert.strictEqual(size1, size2)
+
+    // Assert metadata values for fileName and encoder are same, but uuid is different
+    assert.strictEqual(metadata1.fileName, metadata2.fileName)
+    assert.strictEqual(metadata1.encoder, metadata2.encoder)
+    assert.notStrictEqual(metadata1.uuid, metadata2.uuid)
+
+    // Assert CIDs are different
+    assert.notStrictEqual(cid1, cid2)
   })
 })

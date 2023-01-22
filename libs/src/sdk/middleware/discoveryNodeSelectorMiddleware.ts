@@ -50,6 +50,7 @@ const isApiResponseHealthy = ({
     return false
   }
   if (
+    currentVersion &&
     data.version?.version &&
     semver.lt(data.version.version, currentVersion)
   ) {
@@ -119,7 +120,10 @@ const isDiscoveryNodeHealthy = async ({
     })
     return false
   }
-  if (!data.version || semver.lt(data.version, currentVersion)) {
+  if (
+    currentVersion &&
+    (!data.version || semver.lt(data.version, currentVersion))
+  ) {
     console.warn('Audius SDK discovery provider version unhealthy', {
       endpoint
     })

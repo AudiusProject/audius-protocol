@@ -262,10 +262,14 @@ function _M.validate_nethermind_rpc_request ()
         return
     end
     ngx.req.read_body()
-    local body = cjson.decode(ngx.req.get_body_data())
-    is_bad = utils.starts_with(body.method, "clique_")
-    if is_bad then
-        ngx.exit(405)
+
+    local data = ngx.req.get_body_data()
+    if data then
+        local body = cjson.decode(data)
+        is_bad = utils.starts_with(body.method, "clique_")
+        if is_bad then
+            ngx.exit(405)
+        end
     end
 end
 

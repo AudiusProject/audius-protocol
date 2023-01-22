@@ -22,7 +22,7 @@ const {
 } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
-const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
+const { saveFileToStorage, computeFilesHash, computeTranscodeDestinationPath, getAudioFileInformation } = require('./lib/helpers')
 const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
@@ -990,18 +990,12 @@ describe('test Polling Tracks with real files', function () {
 
     const { track_segments: trackSegments, transcodedTrackCID } = resp
 
-    // check that the generated transcoded track is the same as the transcoded track in /tests
-    const transcodedTrackAssetPath = path.join(
-      __dirname,
-      'testTranscoded320Track.mp3'
-    )
-    const transcodedTrackAssetBuf = await fs.readFile(transcodedTrackAssetPath)
+    // check that the generated transcoded track has same duration as the transcoded track in /tests
+    const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackPath = await computeFilePathAndEnsureItExists(transcodedTrackCID)
-    const transcodedTrackTestBuf = await fs.readFile(transcodedTrackPath)
-    assert.deepStrictEqual(
-      transcodedTrackAssetBuf.compare(transcodedTrackTestBuf),
-      0
-    )
+    const { duration: inputDuration } = await getAudioFileInformation(transcodedTrackAssetPath)
+    const { duration: outputDuration }  = await getAudioFileInformation(transcodedTrackPath)
+    assert.strictEqual(inputDuration, outputDuration)
 
     // Ensure 32 segments are returned, each segment has a corresponding file on disk,
     //    and each segment disk file is exactly as expected

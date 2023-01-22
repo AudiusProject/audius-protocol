@@ -124,6 +124,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
 
   test-creator-node:
     extends:
@@ -161,7 +162,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1
+      replicas: 1  # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -190,8 +191,7 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: pytest
-    command: ""
+    command: sleep infinity
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
@@ -201,7 +201,7 @@ services:
       audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
       audius_elasticsearch_run_indexer: "true"
     volumes:
-      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
+      - ./discovery-provider:/audius-discovery-provider
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -212,6 +212,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
     profiles:
       - tests
       - elasticsearch
