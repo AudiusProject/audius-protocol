@@ -240,9 +240,11 @@ export const TrackListItem = ({
               </Text>
             </View>
 
-            <View style={styles.downloadIndicator}>
-              <DownloadStatusIndicator trackId={track_id} size={18} />
-            </View>
+            {!isDeleted && (
+              <View style={styles.downloadIndicator}>
+                <DownloadStatusIndicator trackId={track_id} size={18} />
+              </View>
+            )}
           </View>
           <Text numberOfLines={1} style={styles.artistName}>
             {name}
