@@ -361,19 +361,6 @@ def test_run(protocol_dir, service, args):
     """
     generate_env(protocol_dir, 0, 0, 0)
 
-    if service == "discovery-provider":
-        cmd = "pytest"
-    elif service == "creator-node":
-        cmd = "npx mocha"
-    elif service == "identity-service":
-        cmd = "npx mocha"
-    else:
-        click.secho(
-            "Invalid service specified",
-            fg="red",
-        )
-        return
-
     sys.exit(
         subprocess.run(
             [
@@ -384,8 +371,9 @@ def test_run(protocol_dir, service, args):
                 f"--project-directory={protocol_dir}",
                 "run",
                 "--rm",
+                "--build",
                 f"test-{service}",
-                cmd,
+                "test",
                 *args,
             ]
         ).returncode

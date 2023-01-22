@@ -124,13 +124,14 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
 
   test-creator-node:
     extends:
       file: docker-compose.yml
       service: creator-node
-    command: "sleep infinity"
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npx mocha "$$@")' -
+    command: ""
     environment:
       storagePath: "./test_file_storage"
 
@@ -150,8 +151,6 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      # Override default replicas
-      replicas: 1
     profiles:
       - tests
 
@@ -163,7 +162,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -192,7 +191,8 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    command: sleep infinity
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
+    command: ""
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
@@ -213,7 +213,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
     profiles:
       - tests
       - elasticsearch
@@ -246,7 +246,8 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    command: sleep infinity
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npx mocha "$$@")' -
+    command: ""
     environment:
       isTestRun: "true"
       environment: "test"
