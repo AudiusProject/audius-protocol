@@ -45,7 +45,6 @@ const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
 const { sequelize } = require('../models')
-const { TypePredicateKind } = require('typescript')
 const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -945,23 +944,24 @@ router.post(
 router.post(
   '/segment_to_cid',
   handleResponse(async (req, _res) => {
-    const { trackSegment } = req.body
-    if (
-      !trackSegment ||
-      (trackSegment && (!trackSegment.cid || !trackSegment.wallet))
-    ) {
-      return errorResponseBadRequest(
-        `trackSegment is null or undefined or missing the cid/wallet field`
-      )
+    const { cid, wallet } = req.body
+    if (!cid || !wallet) {
+      return errorResponseBadRequest(`cid or wallet is missing`)
     }
 
-    const uuid = await models.track.findOne({
+    const uuid = await models.CNodeUser.findOne({
       attributes: ['cnodeUserUUID'],
       raw: true,
       where: {
-        walletPublicKey: trackSegment.wallet
+        walletPublicKey: wallet
       }
     })
+
+    if (!uuid) {
+      return errorResponseNotFound(
+        `could not find the user uuid with the wallet provided`
+      )
+    }
 
     const queryResults = await sequelize.query(
       `
@@ -977,7 +977,7 @@ router.post(
     `,
       {
         replacements: {
-          trackSegmentCid: trackSegment.cid,
+          trackSegmentCid: cid,
           cnodeUserUUID: uuid
         }
       }
