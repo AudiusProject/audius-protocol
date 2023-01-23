@@ -48,10 +48,8 @@ export class ContractClient {
 
     // Once initialized, contract address and contract are set up
     const contractAddresses = contractAddress ? contractAddress.split(',') : []
-    this._contractAddress = contractAddresses[0] ? contractAddresses[0] : null
-    this._nethermindContractAddress = contractAddresses[1]
-      ? contractAddresses[1]
-      : null
+    this._contractAddress = contractAddresses[0] ?? null
+    this._nethermindContractAddress = contractAddresses[1] ?? null
     this._contract = null
 
     // Initialization setup
