@@ -965,7 +965,7 @@ router.post(
 
     const queryResults = await sequelize.query(
       `
-      SELECT multihash, "trackBockchainId", "sourceFile"
+      SELECT multihash, "trackBlockchainId", "sourceFile"
       FROM "Files" 
       WHERE "sourceFile" in (
         SELECT "sourceFile" 
