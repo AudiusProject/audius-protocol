@@ -104,8 +104,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    entrypoint: npx mocha --require ts-node/register --exit --recursive --timeout 30000
-    command: ""
+    command: "sleep infinity"
     environment:
       storagePath: "./test_file_storage"
 
@@ -125,6 +124,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      # Override default replicas
+      replicas: 1
     profiles:
       - tests
 
@@ -219,8 +220,7 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    entrypoint: npx mocha --timeout 12000 --exit test/index.js
-    command: ""
+    command: sleep infinity
     environment:
       isTestRun: "true"
       environment: "test"
