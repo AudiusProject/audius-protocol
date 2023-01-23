@@ -134,7 +134,8 @@ function* getRestOfLineup(permalink, ownerHandle) {
 
 function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
-    const { trackId, handle, slug, canBeUnlisted } = action
+    const { trackId, handle, slug, canBeUnlisted, forceRetrieveFromSource } =
+      action
     try {
       let track
       if (!trackId) {
@@ -143,7 +144,8 @@ function* watchFetchTrack() {
           slug,
           withStems: true,
           withRemixes: true,
-          withRemixParents: true
+          withRemixParents: true,
+          forceRetrieveFromSource
         })
       } else {
         const ids = canBeUnlisted

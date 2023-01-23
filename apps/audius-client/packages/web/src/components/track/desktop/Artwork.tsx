@@ -52,18 +52,20 @@ type TileArtworkProps = {
 const ArtworkIcon = ({
   playStatus,
   artworkIconClassName,
-  doesUserHaveAccess
+  doesUserHaveAccess,
+  isTrack
 }: {
   playStatus: PlayStatus
   artworkIconClassName?: string
   doesUserHaveAccess?: boolean
+  isTrack?: boolean
 }) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   )
 
   let artworkIcon
-  if (isPremiumContentEnabled && !doesUserHaveAccess) {
+  if (isPremiumContentEnabled && isTrack && !doesUserHaveAccess) {
     artworkIcon = <IconLock />
   } else if (playStatus === PlayStatus.Buffering) {
     artworkIcon = (
@@ -96,6 +98,7 @@ const ArtworkIcon = ({
 type ArtworkProps = TileArtworkProps & {
   image: any
   label?: string
+  isTrack?: boolean
 }
 
 const Artwork = memo(
@@ -109,7 +112,8 @@ const Artwork = memo(
     image,
     coSign,
     label,
-    doesUserHaveAccess
+    doesUserHaveAccess,
+    isTrack
   }: ArtworkProps) => {
     const playStatus = isBuffering
       ? PlayStatus.Buffering
@@ -132,6 +136,7 @@ const Artwork = memo(
             playStatus={playStatus}
             artworkIconClassName={artworkIconClassName}
             doesUserHaveAccess={doesUserHaveAccess}
+            isTrack={isTrack}
           />
         )}
       </DynamicImage>
@@ -167,7 +172,7 @@ export const TrackArtwork = memo((props: TileArtworkProps) => {
 
   useLoadImageWithTimeout(image, callback)
 
-  return <Artwork {...props} image={image} />
+  return <Artwork {...props} image={image} isTrack />
 })
 
 export const CollectionArtwork = memo((props: TileArtworkProps) => {

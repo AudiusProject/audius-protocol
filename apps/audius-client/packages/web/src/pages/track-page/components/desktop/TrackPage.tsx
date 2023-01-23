@@ -42,6 +42,7 @@ export type OwnProps = {
   heroPlaying: boolean
   userId: ID | null
   badge: string | null
+  doesUserHaveAccess: boolean
   onHeroPlay: (isPlaying: boolean) => void
   goToProfilePage: (handle: string) => void
   goToSearchResultsPage: (tag: string) => void
@@ -52,6 +53,7 @@ export type OwnProps = {
   onFollow: () => void
   onUnfollow: () => void
   onUnlock: () => void
+  onLock: (trackId: ID) => void
   onClickReposts: () => void
   onClickFavorites: () => void
 
@@ -86,6 +88,7 @@ const TrackPage = ({
   heroPlaying,
   userId,
   badge,
+  doesUserHaveAccess,
   onHeroPlay,
   goToProfilePage,
   goToSearchResultsPage,
@@ -97,6 +100,7 @@ const TrackPage = ({
   onFollow,
   onUnfollow,
   onUnlock,
+  onLock,
   onDownloadTrack,
   makePublic,
   onExternalLinkClick,
@@ -117,8 +121,6 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
   const loading = !heroTrack
-  const doesUserHaveAccess =
-    !heroTrack?.is_premium || isOwner || !!heroTrack?.premium_content_signature
 
   const onPlay = () => onHeroPlay(heroPlaying)
   const onSave = isOwner
@@ -198,6 +200,7 @@ const TrackPage = ({
       onFollow={onFollow}
       onUnfollow={onUnfollow}
       onUnlock={onUnlock}
+      onLock={onLock}
       download={defaults.download}
       onDownload={onDownload}
       makePublic={makePublic}

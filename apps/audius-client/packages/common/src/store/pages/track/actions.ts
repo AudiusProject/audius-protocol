@@ -38,13 +38,15 @@ export const fetchTrack = (
   trackId: Nullable<number>,
   slug?: string,
   handle?: string,
-  canBeUnlisted?: boolean
+  canBeUnlisted?: boolean,
+  forceRetrieveFromSource?: boolean
 ) => ({
   type: FETCH_TRACK,
   trackId,
   slug,
   handle,
-  canBeUnlisted
+  canBeUnlisted,
+  forceRetrieveFromSource
 })
 export const fetchTrackSucceeded = (trackId) => ({
   type: FETCH_TRACK_SUCCEEDED,

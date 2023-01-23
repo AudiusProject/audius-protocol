@@ -17,13 +17,14 @@ import {
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
+  premiumContentSelectors,
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
@@ -60,6 +61,7 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getUserHandle } = accountSelectors
+const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 type OwnProps = {
   uid: UID
@@ -114,7 +116,6 @@ const ConnectedTrackTile = memo(
       is_unlisted: isUnlisted,
       is_premium: isPremium,
       premium_conditions: premiumConditions,
-      premium_content_signature: premiumContentSignature,
       track_id: trackId,
       title,
       permalink,
@@ -143,8 +144,10 @@ const ConnectedTrackTile = memo(
     const isTrackPlaying = isActive && isPlaying
     const isOwner = handle === userHandle
     const isArtistPick = showArtistPick && _artist_pick === trackId
-    const doesUserHaveAccess =
-      !isPremium || isOwner || !!premiumContentSignature
+
+    const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+    const hasPremiumContentSignature = !!premiumTrackSignatureMap[trackId]
+    const doesUserHaveAccess = !isPremium || hasPremiumContentSignature
 
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -390,7 +393,7 @@ const ConnectedTrackTile = memo(
           isTrending={isTrending}
           showRankIcon={showRankIcon}
           permalink={permalink}
-          canOverrideBottomBar
+          isTrack
         />
       </Draggable>
     )

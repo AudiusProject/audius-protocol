@@ -43,6 +43,7 @@ type RetrieveTrackByHandleAndSlugArgs = {
   withStems?: boolean
   withRemixes?: boolean
   withRemixParents?: boolean
+  forceRetrieveFromSource?: boolean
 }
 
 export function* retrieveTrackByHandleAndSlug({
@@ -50,7 +51,8 @@ export function* retrieveTrackByHandleAndSlug({
   slug,
   withStems,
   withRemixes,
-  withRemixParents
+  withRemixParents,
+  forceRetrieveFromSource = false
 }: RetrieveTrackByHandleAndSlugArgs) {
   const permalink = `/${handle}/${slug}`
   const tracks = (yield* call(
@@ -82,7 +84,7 @@ export function* retrieveTrackByHandleAndSlug({
       },
       kind: Kind.TRACKS,
       idField: 'track_id',
-      forceRetrieveFromSource: false,
+      forceRetrieveFromSource,
       shouldSetLoading: true,
       deleteExistingEntry: false,
       getEntriesTimestamp: function* (ids: ID[]) {

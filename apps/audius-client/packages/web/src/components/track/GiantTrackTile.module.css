@@ -404,3 +404,13 @@
 .spinner g path {
   stroke: var(--static-white) !important;
 }
+
+.premiumContentSectionDescription .spinner {
+  margin-right: 8px;
+  height: 24px;
+  width: 24px;
+}
+
+.premiumContentSectionDescription .spinner path {
+  stroke: var(--neutral-light-4) !important;
+}
