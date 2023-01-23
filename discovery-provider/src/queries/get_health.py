@@ -20,20 +20,6 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
-from src.tasks.index_rewards_manager_backfill import (
-    check_progress as rewards_manager_backfill_check_progress,
-)
-from src.tasks.index_rewards_manager_backfill import (
-    index_rewards_manager_backfill_complete,
-)
-from src.tasks.index_spl_token_backfill import (
-    check_progress as spl_token_backfill_check_progress,
-)
-from src.tasks.index_spl_token_backfill import index_spl_token_backfill_complete
-from src.tasks.index_user_bank_backfill import (
-    check_progress as user_bank_backfill_check_progress,
-)
-from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
@@ -175,9 +161,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_indexed_block_hash: Optional[str] = None
     last_track_unavailability_job_start_time: Optional[str] = None
     last_track_unavailability_job_end_time: Optional[str] = None
-    is_index_user_bank_backfill_complete: bool = False
-    is_index_rewards_manager_backfill_complete: bool = False
-    is_index_spl_token_backfill_complete: bool = False
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -276,36 +259,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
         last_track_unavailability_job_end_time = None
 
-    try:
-        is_index_user_bank_backfill_complete = bool(
-            redis.get(index_user_bank_backfill_complete)
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not check whether index_user_bank backfilling is complete: {e}"
-        )
-        is_index_user_bank_backfill_complete = False
-
-    try:
-        is_index_rewards_manager_backfill_complete = bool(
-            redis.get(index_rewards_manager_backfill_complete)
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not check whether index_rewards_manager backfilling is complete: {e}"
-        )
-        is_index_rewards_manager_backfill_complete = False
-
-    try:
-        is_index_spl_token_backfill_complete = bool(
-            redis.get(index_spl_token_backfill_complete)
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not check whether index_spl_token backfilling is complete: {e}"
-        )
-        is_index_spl_token_backfill_complete = False
-
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -369,11 +322,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "transactions_history_backfill": {
-            "user_bank_backfilling_complete": is_index_user_bank_backfill_complete,
-            "rewards_manager_backfilling_complete": is_index_rewards_manager_backfill_complete,
-            "spl_token_backfilling_complete": is_index_spl_token_backfill_complete,
-        },
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
@@ -440,20 +388,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
         health_results["tables"] = table_size_info_json
-
-        db = db_session.get_db_read_replica()
-        with db.scoped_session() as session:
-            spl_token_backfill_progress = spl_token_backfill_check_progress(session)
-            rewards_manager_backfill_progress = rewards_manager_backfill_check_progress(
-                session
-            )
-            user_bank_backfill_progress = user_bank_backfill_check_progress(session)
-
-        health_results["transactions_history_backfill_progress"] = {
-            "user_bank_backfilling_progress": user_bank_backfill_progress,
-            "rewards_manager_backfilling_progress": rewards_manager_backfill_progress,
-            "spl_token_backfilling_progress": spl_token_backfill_progress,
-        }
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
