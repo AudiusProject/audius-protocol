@@ -74,7 +74,7 @@ else
   TIMEOUT=12000
 fi
 
-./node_modules/mocha/bin/mocha test/index.js --timeout "${TIMEOUT}" --exit
+./node_modules/mocha/bin/mocha.js test/index.js --timeout "${TIMEOUT}" --exit
 
 # linter
 
