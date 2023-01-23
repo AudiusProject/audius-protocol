@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { squashNewLines, accountSelectors } from '@audius/common'
-import type { ImageStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -52,7 +51,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase'
   },
 
-  coverArtWrapper: {
+  coverArt: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: 4,
@@ -60,11 +59,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: 195,
     marginBottom: spacing(6),
     alignSelf: 'center'
-  },
-
-  coverArt: {
-    borderRadius: 4,
-    overflow: 'hidden'
   },
 
   title: {
@@ -230,7 +224,7 @@ export const DetailsTile = ({
   }
 
   const innerImageElement = renderImage({
-    styles: { image: styles.coverArt as ImageStyle }
+    style: styles.coverArt
   })
 
   const imageElement = coSign ? (
@@ -250,7 +244,7 @@ export const DetailsTile = ({
           </Text>
         )}
         <View style={styles.topContentBody}>
-          <View style={styles.coverArtWrapper}>{imageElement}</View>
+          {imageElement}
           <Text style={styles.title} weight='bold'>
             {title}
           </Text>

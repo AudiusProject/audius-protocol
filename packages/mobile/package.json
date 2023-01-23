@@ -112,6 +112,7 @@
     "react-native-draggable-flatlist": "3.0.7",
     "react-native-dynamic": "1.0.0",
     "react-native-fast-crypto": "2.2.0",
+    "react-native-fast-image": "8.6.3",
     "react-native-fs": "2.18.0",
     "react-native-gesture-handler": "1.10.3",
     "react-native-get-random-values": "1.8.0",

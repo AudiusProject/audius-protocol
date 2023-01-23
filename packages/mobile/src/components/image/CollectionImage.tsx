@@ -3,10 +3,11 @@ import { cacheUsersSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
-import type { DynamicImageProps } from 'app/components/core'
-import { DynamicImage } from 'app/components/core'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
+
+import type { FastImageProps } from './FastImage'
+import { FastImage } from './FastImage'
 
 const { getUser } = cacheUsersSelectors
 
@@ -21,11 +22,8 @@ type UseCollectionImageOptions = {
   user?: Pick<User, 'creator_node_endpoint'>
 }
 
-export const useCollectionImage = ({
-  collection,
-  size,
-  user
-}: UseCollectionImageOptions) => {
+export const useCollectionImage = (options: UseCollectionImageOptions) => {
+  const { collection, size, user } = options
   const cid = collection
     ? collection.cover_art_sizes || collection.cover_art
     : null
@@ -50,17 +48,17 @@ export const useCollectionImage = ({
   return loading ? null : contentNodeSource
 }
 
-type CollectionImageProps = UseCollectionImageOptions & DynamicImageProps
+type CollectionImageProps = UseCollectionImageOptions & Partial<FastImageProps>
 
 export const CollectionImage = (props: CollectionImageProps) => {
-  const { collection, size, user, ...imageProps } = props
+  const { collection, size, user, style, ...other } = props
   const collectionImageSource = useCollectionImage({ collection, size, user })
 
-  return collectionImageSource ? (
-    <DynamicImage
-      {...imageProps}
-      source={collectionImageSource.source}
-      onError={collectionImageSource.handleError}
-    />
-  ) : null
+  if (!collectionImageSource) return null
+
+  const { source, handleError } = collectionImageSource
+
+  return (
+    <FastImage {...other} style={style} source={source} onError={handleError} />
+  )
 }

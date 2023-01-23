@@ -27,7 +27,8 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import type { DynamicImageProps, TileProps } from '../core'
+import type { TileProps } from '../core'
+import type { ImageProps } from '../image/FastImage'
 
 import { LineupTile } from './LineupTile'
 
@@ -97,7 +98,7 @@ export const TrackTileComponent = ({
   } = track
 
   const renderImage = useCallback(
-    (props: DynamicImageProps) => (
+    (props: ImageProps) => (
       <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
     ),
     [track]

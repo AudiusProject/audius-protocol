@@ -140,7 +140,7 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
         track={track}
         size={SquareSizes.SIZE_150_BY_150}
         user={track.user}
-        styles={{ root: squareImageStyles, image: squareImageStyles }}
+        style={squareImageStyles}
       />
       <View style={styles.nameContainer}>
         <Text numberOfLines={1} style={nameStyle}>
@@ -184,7 +184,7 @@ const PlaylistSearchResult = ({
         collection={playlist}
         size={SquareSizes.SIZE_150_BY_150}
         user={playlist.user}
-        styles={{ root: squareImageStyles, image: squareImageStyles }}
+        style={squareImageStyles}
       />
       <View style={styles.nameContainer}>
         <Text numberOfLines={1} style={nameStyle}>
@@ -225,7 +225,7 @@ const AlbumSearchResult = ({ isLast, item: album }: AlbumSearchResultProps) => {
         collection={album}
         size={SquareSizes.SIZE_150_BY_150}
         user={album.user}
-        styles={{ root: squareImageStyles, image: squareImageStyles }}
+        style={squareImageStyles}
       />
       <View style={styles.nameContainer}>
         <Text numberOfLines={1} style={nameStyle}>
