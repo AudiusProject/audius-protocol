@@ -1,7 +1,8 @@
-import { Fragment, useLayoutEffect, useMemo, useRef } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
-import { useSelectTierInfo } from '@audius/common'
+import { cacheUsersActions, useSelectTierInfo } from '@audius/common'
 import { View, Animated } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Divider } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -15,6 +16,8 @@ import {
   TikTokSocialLink,
   TwitterSocialLink
 } from './SocialLink'
+
+const { fetchUserSocials } = cacheUsersActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -33,13 +36,22 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const { user_id, twitter_handle, instagram_handle, tiktok_handle } =
+  const { handle, user_id, twitter_handle, instagram_handle, tiktok_handle } =
     useSelectProfile([
+      'handle',
       'user_id',
       'twitter_handle',
       'instagram_handle',
       'tiktok_handle'
     ])
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (twitter_handle === undefined) {
+      dispatch(fetchUserSocials(handle))
+    }
+  }, [twitter_handle, dispatch, handle])
 
   const socialLinks = useMemo(() => {
     const links = [
