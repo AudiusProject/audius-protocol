@@ -16,12 +16,12 @@ type EditProfileProps = {
   name: string
   bio: string
   location: string
-  isVerified: boolean
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
   website: string
   donation: string
 
@@ -39,12 +39,12 @@ const EditProfile = ({
   name,
   bio,
   location,
-  isVerified,
   twitterHandle,
   instagramHandle,
   tikTokHandle,
   twitterVerified,
   instagramVerified,
+  tikTokVerified,
   website,
   donation,
   onUpdateName,
@@ -106,6 +106,7 @@ const EditProfile = ({
             onChange={onUpdateTikTokHandle}
             maxLength={200}
             inputPrefix='@'
+            isDisabled={!!tikTokVerified}
           />
           <EditableRow
             label={<IconLink className={styles.icon} />}

@@ -58,6 +58,7 @@ type ProfileLeftNavProps = {
   onUpdateBio: (bio: string) => void
   twitterVerified: boolean
   instagramVerified: boolean
+  tikTokVerified: boolean
   tags: string[]
   isOwner: boolean
 }
@@ -88,6 +89,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     onUpdateBio,
     twitterVerified,
     instagramVerified,
+    tikTokVerified,
     tags,
     isOwner
   } = props
@@ -155,6 +157,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           <SocialLinkInput
             defaultValue={tikTokHandle}
             className={styles.tikTokInput}
+            isDisabled={!!tikTokVerified}
             type={Type.TIKTOK}
             onChange={onUpdateTikTokHandle}
           />

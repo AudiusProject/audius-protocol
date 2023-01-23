@@ -47,6 +47,7 @@ const {
   fetchLocalAccount,
   twitterLogin,
   instagramLogin,
+  tikTokLogin,
   fetchSavedAlbums,
   fetchSavedPlaylists,
   addAccountPlaylist
@@ -331,6 +332,33 @@ function* associateInstagramAccount(action) {
   }
 }
 
+function* associateTikTokAccount(action) {
+  const { uuid, profile } = action.payload
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  try {
+    const userId = yield select(getUserId)
+    const handle = yield select(getUserHandle)
+    yield call(
+      audiusBackendInstance.associateTikTokAccount,
+      uuid,
+      userId,
+      handle
+    )
+
+    const account = yield select(getAccountUser)
+    const { is_verified: verified } = profile
+    if (!account.is_verified && verified) {
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          { id: userId, metadata: { is_verified: true } }
+        ])
+      )
+    }
+  } catch (err) {
+    console.error(err.message)
+  }
+}
+
 function* fetchSavedAlbumsAsync() {
   yield waitForRead()
   const cachedSavedAlbums = yield select(getAccountAlbumIds)
@@ -379,6 +407,10 @@ function* watchInstagramLogin() {
   yield takeEvery(instagramLogin.type, associateInstagramAccount)
 }
 
+function* watchTikTokLogin() {
+  yield takeEvery(tikTokLogin.type, associateTikTokAccount)
+}
+
 function* watchFetchSavedAlbums() {
   yield takeEvery(fetchSavedAlbums.type, fetchSavedAlbumsAsync)
 }
@@ -398,6 +430,7 @@ export default function sagas() {
     watchSignedIn,
     watchTwitterLogin,
     watchInstagramLogin,
+    watchTikTokLogin,
     watchFetchSavedAlbums,
     watchFetchSavedPlaylists,
     watchAddAccountPlaylist

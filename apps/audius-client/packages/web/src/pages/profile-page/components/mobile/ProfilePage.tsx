@@ -68,6 +68,7 @@ export type ProfilePageProps = {
   tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
   website: string
   donation: string
   coverPhotoSizes: CoverPhotoSizes | null
@@ -237,6 +238,7 @@ const ProfilePage = g(
     tikTokHandle,
     twitterVerified,
     instagramVerified,
+    tikTokVerified,
     website,
     donation,
     albums,
@@ -359,12 +361,12 @@ const ProfilePage = g(
           name={name}
           bio={bio}
           location={location}
-          isVerified={verified}
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
           twitterVerified={twitterVerified}
           instagramVerified={instagramVerified}
+          tikTokVerified={tikTokVerified}
           website={website}
           donation={donation}
           onUpdateName={updateName}

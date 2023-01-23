@@ -30,6 +30,7 @@ type ProfileWrappingProps = {
   tikTokHandle: string
   twitterVerified: boolean
   instagramVerified: boolean
+  tikTokVerified: boolean
   website: string
   donation: string
   created: string
@@ -71,6 +72,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     tikTokHandle,
     twitterVerified,
     instagramVerified,
+    tikTokVerified,
     website,
     donation,
     created,
@@ -143,6 +145,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             tikTokHandle={tikTokHandle}
             twitterVerified={twitterVerified}
             instagramVerified={instagramVerified}
+            tikTokVerified={tikTokVerified}
             website={website}
             donation={donation}
             created={created}
