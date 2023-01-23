@@ -92,6 +92,10 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<{ userId: ID }>
     ) => {},
+    fetchSupportersForUser: (
+      _state,
+      _action: PayloadAction<{ userId: ID }>
+    ) => {},
     beginTip: (
       state,
       action: PayloadAction<{ user: User | null; source: TipSource }>
@@ -163,6 +167,7 @@ export const {
   setSupportersOverridesForUser,
   refreshSupport,
   fetchSupportingForUser,
+  fetchSupportersForUser,
   beginTip,
   sendTip,
   confirmSendTip,
