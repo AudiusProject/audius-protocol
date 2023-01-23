@@ -34,6 +34,7 @@ class GetPlaylistArgs(TypedDict):
     user_id: int
     with_users: bool
     routes: List[RouteArgs]
+    allow_private_playlists: bool
 
 
 def _get_unpopulated_playlists(session, args):
@@ -41,6 +42,7 @@ def _get_unpopulated_playlists(session, args):
     routes = args.get("routes", None)
 
     current_user_id = args.get("current_user_id")
+    allow_private_playlists = args.get("allow_private_playlists")
 
     if routes:
         # Convert the handles to user_ids
@@ -89,7 +91,7 @@ def _get_unpopulated_playlists(session, args):
         playlist_query = playlist_query.filter(Playlist.playlist_owner_id == user_id)
 
     # If no current_user_id, never show hidden playlists
-    if not current_user_id:
+    if not current_user_id and not allow_private_playlists:
         playlist_query = playlist_query.filter(Playlist.is_private == False)
 
     # Filter out deletes unless we're fetching explicitly by id
@@ -102,7 +104,7 @@ def _get_unpopulated_playlists(session, args):
 
     # if we passed in a current_user_id, filter out all privte playlists where
     # the owner_id doesn't match the current_user_id
-    if current_user_id:
+    if current_user_id and not allow_private_playlists:
         playlists = list(
             filter(
                 lambda playlist: (not playlist["is_private"])

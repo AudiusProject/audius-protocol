@@ -54,6 +54,7 @@ def test_get_playlist_with_playlist_ids(app, test_entities):
                 GetPlaylistArgs(
                     current_user_id=2,
                     playlist_ids=[2],
+                    allow_private_playlists=False,
                 ),
             )
 
@@ -79,6 +80,7 @@ def test_get_playlist_with_permalink(app, test_entities):
                 GetPlaylistArgs(
                     current_user_id=1,
                     routes=[{"handle": "user1", "slug": "playlist-1"}],
+                    allow_private_playlists=False,
                 ),
             )
 
@@ -86,6 +88,7 @@ def test_get_playlist_with_permalink(app, test_entities):
                 GetPlaylistArgs(
                     current_user_id=2,
                     routes=[{"handle": "user1", "slug": "playlist-1"}],
+                    allow_private_playlists=False,
                 ),
             )
             assert len(playlist) == 1
@@ -112,6 +115,26 @@ def test_get_playlist_with_permalink_private_playlist(app, test_entities):
                 GetPlaylistArgs(
                     current_user_id=1,
                     routes=[{"handle": "user2", "slug": "playlist-2"}],
+                    allow_private_playlists=False,
                 ),
             )
             assert len(playlist) == 0
+
+
+def test_get_playlist_with_allow_private_playlist(app, test_entities):
+    with app.test_request_context(
+        # Request context and args are required for passing
+        # pagination info into paginate_query inside get_playlists
+        data={"limit": 5, "offset": 3},
+    ):
+        db = get_db()
+        populate_mock_db(db, test_entities)
+        with db.scoped_session():
+            playlist = get_playlists(
+                GetPlaylistArgs(
+                    current_user_id=None,
+                    playlist_ids=[2],
+                    allow_private_playlists=True,
+                ),
+            )
+            assert len(playlist) == 1
