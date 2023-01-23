@@ -125,7 +125,7 @@ const TrackTile = memo(
           [styles.standalone]: !!standalone
         })}
         onClick={
-          isLoading || isDisabled || !doesUserHaveAccess
+          isLoading || isDisabled || (isTrack && !doesUserHaveAccess)
             ? undefined
             : onTogglePlay
         }

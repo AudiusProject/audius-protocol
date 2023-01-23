@@ -95,7 +95,7 @@ const LockedPremiumTrackSection = ({
       const trackParams = parseTrackRoute(window.location.pathname)
       dispatch(refreshPremiumTrack({ trackParams, trackId }))
     }
-  }, [dispatch, previousSendStatus, sendStatus])
+  }, [dispatch, previousSendStatus, sendStatus, trackId])
 
   const handleSendTip = useCallback(() => {
     if (account) {
@@ -126,7 +126,7 @@ const LockedPremiumTrackSection = ({
       dispatch(pushRoute(SIGN_UP_PAGE))
       dispatch(showRequiresAccountModal())
     }
-  }, [dispatch, account, premiumConditions])
+  }, [dispatch, account, premiumConditions, trackId])
 
   const handleGoToCollection = useCallback(() => {
     const { chain, address, externalLink } =
