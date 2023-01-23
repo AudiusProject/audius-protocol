@@ -14,13 +14,11 @@ type TrackArtworkProps = {
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
-  artworkContainer: {
+  image: {
+    borderRadius: 4,
     height: 52,
     width: 52,
     marginRight: spacing(4)
-  },
-  image: {
-    borderRadius: 4
   },
   artworkIcon: {
     height: '100%',
@@ -42,7 +40,7 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
     <TrackImage
       track={track}
       size={SquareSizes.SIZE_150_BY_150}
-      styles={{ root: styles.artworkContainer, image: styles.image }}
+      style={styles.image}
     >
       {isActive ? (
         <View style={styles.artworkIcon}>

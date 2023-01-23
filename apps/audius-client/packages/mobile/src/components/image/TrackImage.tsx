@@ -3,10 +3,11 @@ import { cacheUsersSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
-import type { DynamicImageProps } from 'app/components/core'
-import { DynamicImage } from 'app/components/core'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { useLocalTrackImage } from 'app/hooks/useLocalImage'
+
+import type { FastImageProps } from './FastImage'
+import { FastImage } from './FastImage'
 
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
@@ -43,18 +44,18 @@ export const useTrackImage = ({ track, size, user }: UseTrackImageOptions) => {
   return loading ? null : contentNodeSource
 }
 
-type TrackImageProps = UseTrackImageOptions & DynamicImageProps
+type TrackImageProps = UseTrackImageOptions & Partial<FastImageProps>
 
 export const TrackImage = (props: TrackImageProps) => {
-  const { track, size, user, ...imageProps } = props
+  const { track, size, user, style, ...other } = props
 
   const trackImageSource = useTrackImage({ track, size, user })
 
-  return trackImageSource ? (
-    <DynamicImage
-      {...imageProps}
-      source={trackImageSource.source}
-      onError={trackImageSource.handleError}
-    />
-  ) : null
+  if (!trackImageSource) return null
+
+  const { source, handleError } = trackImageSource
+
+  return (
+    <FastImage {...other} style={style} source={source} onError={handleError} />
+  )
 }

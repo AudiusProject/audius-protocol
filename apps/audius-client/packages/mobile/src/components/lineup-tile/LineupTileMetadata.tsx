@@ -13,6 +13,8 @@ import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
+import { FadeInView } from '../core'
+
 import { LineupTileArt } from './LineupTileArt'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupTileProps } from './types'
@@ -58,7 +60,6 @@ type Props = {
   coSign?: Remix | null
   onPressTitle?: GestureResponderHandler
   renderImage: LineupTileProps['renderImage']
-  setArtworkLoaded: (loaded: boolean) => void
   title: string
   user: User
   uid: UID
@@ -70,7 +71,6 @@ export const LineupTileMetadata = ({
   coSign,
   onPressTitle,
   renderImage,
-  setArtworkLoaded,
   title,
   user,
   isPlayingUid
@@ -91,11 +91,14 @@ export const LineupTileMetadata = ({
     <View style={styles.metadata}>
       <LineupTileArt
         renderImage={renderImage}
-        onLoad={() => setArtworkLoaded(true)}
         coSign={coSign}
         style={trackTileStyles.imageContainer}
       />
-      <View style={trackTileStyles.titles}>
+      <FadeInView
+        style={trackTileStyles.titles}
+        startOpacity={0}
+        duration={500}
+      >
         <TouchableOpacity style={trackTileStyles.title} onPress={onPressTitle}>
           <>
             <Text
@@ -130,7 +133,7 @@ export const LineupTileMetadata = ({
             />
           </>
         </TouchableOpacity>
-      </View>
+      </FadeInView>
       {coSign && (
         <Text style={styles.coSignLabel} weight='heavy'>
           {messages.coSign}

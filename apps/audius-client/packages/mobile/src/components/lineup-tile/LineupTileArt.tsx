@@ -1,72 +1,47 @@
-import { useCallback, useEffect, useMemo } from 'react'
-
 import type { Remix } from '@audius/common'
-import { useInstanceVar } from '@audius/common'
-import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import CoSign, { Size } from 'app/components/co-sign'
+import { makeStyles } from 'app/styles'
+
+import { FadeInView } from '../core'
 
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupTileProps } from './types'
 
+const useStyles = makeStyles(({ palette }) => ({
+  imageRoot: {
+    position: 'relative'
+  },
+  image: {
+    position: 'absolute'
+  },
+  backdrop: {
+    position: 'absolute',
+    backgroundColor: palette.skeleton
+  }
+}))
+
 type LineupTileArtProps = {
   coSign?: Remix | null
-  onLoad: () => void
   renderImage: LineupTileProps['renderImage']
   style?: StyleProp<ViewStyle>
 }
 
-const ARTWORK_HAS_LOADED_TIMEOUT = 1000
-
-// We don't want to indefinitely delay tile loading
-// waiting for the image, so set a timeout before
-// we call callback().
-export const useLoadImageWithTimeout = (
-  callback: () => void,
-  timeout: number = ARTWORK_HAS_LOADED_TIMEOUT
-) => {
-  const [getDidCallback, setDidCallback] = useInstanceVar(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (!getDidCallback()) {
-        callback()
-        setDidCallback(true)
-      }
-    }, timeout)
-    return () => clearTimeout(t)
-  }, [callback, timeout, setDidCallback, getDidCallback])
-
-  return useCallback(() => {
-    if (!getDidCallback()) {
-      callback()
-      setDidCallback(true)
-    }
-  }, [callback, setDidCallback, getDidCallback])
-}
-
-export const LineupTileArt = ({
-  coSign,
-  onLoad,
-  renderImage,
-  style
-}: LineupTileArtProps) => {
+export const LineupTileArt = (props: LineupTileArtProps) => {
+  const { coSign, renderImage, style } = props
   const trackTileStyles = useTrackTileStyles()
+  const styles = useStyles()
 
-  const imageStyles = useMemo(
-    () => ({
-      image: trackTileStyles.image as ImageStyle
-    }),
-    [trackTileStyles]
+  const imageElement = (
+    <View style={styles.imageRoot}>
+      <View style={[trackTileStyles.image, styles.backdrop]} />
+      <FadeInView style={styles.image} startOpacity={0} duration={500}>
+        {renderImage({ style: trackTileStyles.image })}
+      </FadeInView>
+    </View>
   )
-
-  const onLoadWithTimeout = useLoadImageWithTimeout(onLoad)
-
-  const imageElement = renderImage({
-    styles: imageStyles,
-    onLoad: onLoadWithTimeout
-  })
 
   return coSign ? (
     <CoSign size={Size.SMALL} style={[style, trackTileStyles.image]}>
