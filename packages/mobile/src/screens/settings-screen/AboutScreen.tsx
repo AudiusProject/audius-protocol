@@ -50,7 +50,7 @@ export const AboutScreen = () => {
   const styles = useStyles()
   const [clickCount, setClickCount] = useState(0)
   const handleTitleClick = useCallback(() => {
-    if (clickCount >= 9) {
+    if (clickCount >= 19) {
       toggleLocalOfflineModeOverride()
       setClickCount(0)
     } else {
