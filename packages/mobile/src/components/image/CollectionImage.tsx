@@ -1,4 +1,4 @@
-import type { Collection, Nullable, User } from '@audius/common'
+import type { Collection, Nullable, SquareSizes, User } from '@audius/common'
 import { cacheUsersSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -10,15 +10,22 @@ import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
 
 const { getUser } = cacheUsersSelectors
 
-export const useCollectionImage = (
+type UseCollectionImageOptions = {
   collection: Nullable<
     Pick<
       Collection,
-      'cover_art_sizes' | 'cover_art' | 'playlist_owner_id' | 'playlist_id'
+      'playlist_id' | 'cover_art_sizes' | 'cover_art' | 'playlist_owner_id'
     >
-  >,
+  >
+  size: SquareSizes
   user?: Pick<User, 'creator_node_endpoint'>
-) => {
+}
+
+export const useCollectionImage = ({
+  collection,
+  size,
+  user
+}: UseCollectionImageOptions) => {
   const cid = collection
     ? collection.cover_art_sizes || collection.cover_art
     : null
@@ -27,12 +34,14 @@ export const useCollectionImage = (
     getUser(state, { id: collection?.playlist_owner_id })
   )
 
-  const { value: localSource, loading } = useLocalCollectionImage(
-    collection?.playlist_id.toString()
-  )
+  const { value: localSource, loading } = useLocalCollectionImage({
+    collectionId: collection?.playlist_id.toString(),
+    size
+  })
 
   const contentNodeSource = useContentNodeImage({
     cid,
+    size,
     user: selectedUser ?? user ?? null,
     fallbackImageSource: imageEmpty,
     localSource
@@ -41,14 +50,11 @@ export const useCollectionImage = (
   return loading ? null : contentNodeSource
 }
 
-type CollectionImageProps = {
-  collection: Parameters<typeof useCollectionImage>[0]
-  user?: Parameters<typeof useCollectionImage>[1]
-} & DynamicImageProps
+type CollectionImageProps = UseCollectionImageOptions & DynamicImageProps
 
 export const CollectionImage = (props: CollectionImageProps) => {
-  const { collection, user, ...imageProps } = props
-  const collectionImageSource = useCollectionImage(collection, user)
+  const { collection, size, user, ...imageProps } = props
+  const collectionImageSource = useCollectionImage({ collection, size, user })
 
   return collectionImageSource ? (
     <DynamicImage

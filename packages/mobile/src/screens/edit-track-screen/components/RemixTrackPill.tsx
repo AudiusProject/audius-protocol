@@ -1,4 +1,5 @@
 import type { Track, User } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
@@ -48,7 +49,11 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
 
   return (
     <Pill style={[styles.trackPill, style]}>
-      <TrackImage track={track} style={styles.trackArtwork} />
+      <TrackImage
+        track={track}
+        size={SquareSizes.SIZE_150_BY_150}
+        style={styles.trackArtwork}
+      />
       <View style={styles.trackTextContainer}>
         <Text style={styles.trackText} numberOfLines={1} ellipsizeMode='middle'>
           {track.title}{' '}

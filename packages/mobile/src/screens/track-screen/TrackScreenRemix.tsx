@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
 import type { ID, Track, User } from '@audius/common'
-import { cacheTracksSelectors, cacheUsersSelectors } from '@audius/common'
+import {
+  SquareSizes,
+  cacheTracksSelectors,
+  cacheUsersSelectors
+} from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -124,10 +128,10 @@ const TrackScreenRemixComponent = ({
   const images = (
     <>
       <View style={styles.profilePicture}>
-        <UserImage user={user} />
+        <UserImage user={user} size={SquareSizes.SIZE_150_BY_150} />
       </View>
       <View style={styles.coverArt}>
-        <TrackImage track={track} />
+        <TrackImage track={track} size={SquareSizes.SIZE_480_BY_480} />
       </View>
     </>
   )

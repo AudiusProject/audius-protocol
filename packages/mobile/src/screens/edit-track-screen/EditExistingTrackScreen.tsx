@@ -1,10 +1,15 @@
 import { useCallback } from 'react'
 
 import type { ExtendedTrackMetadata } from '@audius/common'
-import { cacheTracksActions, cacheTracksSelectors } from '@audius/common'
+import {
+  SquareSizes,
+  cacheTracksActions,
+  cacheTracksSelectors
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useTrackImage } from 'app/components/image/TrackImage'
+import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
@@ -26,7 +31,10 @@ export const EditExistingTrackScreen = () => {
 
   const track = useSelector((state) => getTrack(state, { id }))
 
-  const trackImage = useTrackImage(track)
+  const trackImage = useTrackImage({
+    track,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const handleSubmit = useCallback(
     (metadata: ExtendedTrackMetadata) => {
@@ -36,12 +44,15 @@ export const EditExistingTrackScreen = () => {
     [dispatch, id, navigation]
   )
 
-  if (!track || !trackImage) return null
+  if (!track) return null
 
   const initialValues = {
     ...track,
     artwork: null,
-    trackArtwork: trackImage?.source[2].uri
+    trackArtwork:
+      trackImage && isImageUriSource(trackImage.source)
+        ? trackImage.source.uri
+        : undefined
   }
 
   return (

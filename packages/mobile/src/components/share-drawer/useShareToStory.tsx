@@ -4,7 +4,13 @@ import EventEmitter from 'events'
 import path from 'path'
 
 import type { Color, Nullable, ShareModalContent } from '@audius/common'
-import { encodeHashId, ErrorLevel, modalsActions, uuid } from '@audius/common'
+import {
+  SquareSizes,
+  encodeHashId,
+  ErrorLevel,
+  modalsActions,
+  uuid
+} from '@audius/common'
 import {
   activateKeepAwake,
   deactivateKeepAwake
@@ -74,9 +80,10 @@ export const useShareToStory = ({
   const artistHandle =
     content?.type === 'track' ? content?.artist.handle : undefined
 
-  const trackImage = useTrackImage(
-    content?.type === 'track' ? content.track : null
-  )
+  const trackImage = useTrackImage({
+    track: content?.type === 'track' ? content.track : null,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const isStickerImageLoadedRef = useRef(false)
   const handleShareToStoryStickerLoad = () => {
     isStickerImageLoadedRef.current = true

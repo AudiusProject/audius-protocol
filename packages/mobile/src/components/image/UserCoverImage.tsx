@@ -16,7 +16,7 @@ export const useUserCoverImage = (
   return useContentNodeImage({
     cid,
     user,
-    sizes: WidthSizes,
+    size: WidthSizes.SIZE_640,
     fallbackImageSource: imageCoverPhotoBlank
   })
 }

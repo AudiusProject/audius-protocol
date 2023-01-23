@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { UID, Track, User } from '@audius/common'
 import {
+  SquareSizes,
   removeNullable,
   playerSelectors,
   FavoriteSource,
@@ -186,7 +187,9 @@ export const TrackScreenDetailsTile = ({
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const renderImage = useCallback(
-    (props: DynamicImageProps) => <TrackImage track={track} {...props} />,
+    (props: DynamicImageProps) => (
+      <TrackImage track={track} size={SquareSizes.SIZE_480_BY_480} {...props} />
+    ),
     [track]
   )
 

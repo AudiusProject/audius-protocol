@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 
 import type { Collection, Nullable, User } from '@audius/common'
 import {
+  SquareSizes,
   encodeUrlName,
   removeNullable,
   FavoriteSource,
@@ -147,7 +148,11 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const renderImage = useCallback(
     (props: DynamicImageProps) => (
-      <CollectionImage collection={collection} {...props} />
+      <CollectionImage
+        collection={collection}
+        size={SquareSizes.SIZE_480_BY_480}
+        {...props}
+      />
     ),
     [collection]
   )

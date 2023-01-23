@@ -1,4 +1,9 @@
-import { accountActions, getContext, WidthSizes } from '@audius/common'
+import {
+  accountActions,
+  getContext,
+  SquareSizes,
+  WidthSizes
+} from '@audius/common'
 import accountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { Image } from 'react-native'
@@ -48,8 +53,9 @@ const { signedIn } = accountActions
 function* cacheUserImages(account) {
   const profileImageUrl = getImageSourceOptimistic({
     cid: account.profile_picture_sizes,
-    user: account
-  })?.[0]?.uri
+    user: account,
+    size: SquareSizes.SIZE_150_BY_150
+  })?.uri
 
   if (profileImageUrl) {
     yield call(Image.prefetch, profileImageUrl)
@@ -58,8 +64,8 @@ function* cacheUserImages(account) {
   const coverPhotoUrl = getImageSourceOptimistic({
     cid: account.cover_photo_sizes,
     user: account,
-    sizes: WidthSizes
-  })?.[0]?.uri
+    size: WidthSizes.SIZE_640
+  })?.uri
 
   if (coverPhotoUrl) {
     yield call(Image.prefetch, coverPhotoUrl)
