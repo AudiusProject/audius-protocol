@@ -13,7 +13,8 @@ import {
   SETTINGS_PAGE,
   TRENDING_PAGE,
   UPLOAD_PAGE,
-  FAVORITES_PAGE
+  FAVORITES_PAGE,
+  EXPLORE_PAGE
 } from 'utils/route'
 
 type LinkButtonType =
@@ -75,7 +76,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     label: 'Discover Some Tracks',
     leftIcon: null,
     rightIcon: <IconArrow />,
-    link: () => FAVORITES_PAGE
+    link: () => EXPLORE_PAGE
   }
 }
 

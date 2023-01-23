@@ -59,10 +59,8 @@ const messages = {
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
   connect: 'Connect Wallets',
-  rewards: '$AUDIO Rewards',
+  rewards: 'Earn Rewards',
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
-  rewardsBody2:
-    'Opportunities to earn $AUDIO will change, so check back often for more chances to earn!',
   trending: 'Trending Competitions',
   trendingBody1: 'Win contests to earn $AUDIO tokens!',
   vipTiers: '$AUDIO VIP Tiers',
@@ -101,10 +99,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginBottom: 16
   },
   tileSubheader: {
-    fontFamily: typography.fontByWeight.regular,
-    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.medium,
     lineHeight: spacing(5),
-    textAlign: 'center'
+    textAlign: 'center',
+    marginBottom: spacing(6)
   },
   tileLink: {
     fontFamily: typography.fontByWeight.bold,
@@ -306,7 +305,6 @@ export const AudioScreen = () => {
           {messages.rewards}
         </GradientText>
         <Text style={styles.tileSubheader}>{messages.rewardsBody1}</Text>
-        <Text style={styles.tileSubheader}>{messages.rewardsBody2}</Text>
         <ChallengeRewards />
       </Tile>
     )
@@ -390,6 +388,7 @@ export const AudioScreen = () => {
           variant='commonAlt'
           size='medium'
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
+          fullWidth
         />
         <Button
           title={messages.launchDiscord}

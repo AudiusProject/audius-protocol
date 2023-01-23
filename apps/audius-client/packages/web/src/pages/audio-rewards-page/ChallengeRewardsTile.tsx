@@ -33,13 +33,12 @@ const { fetchUserChallenges, setChallengeRewardsModalType } =
 const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
-  title: '$AUDIO REWARDS',
+  title: 'EARN REWARDS',
   description1: 'Complete tasks to earn $AUDIO tokens!',
-  description2:
-    'Opportunities to earn $AUDIO will change, so check back often for more chances to earn!',
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
-  readyToClaim: 'Ready to Claim'
+  readyToClaim: 'Ready to Claim',
+  viewDetails: 'View Details'
 }
 
 type RewardPanelProps = {
@@ -71,6 +70,7 @@ const RewardPanel = ({
   const challenge = userChallenges[id]
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const hasCompleted = challenge?.state === 'completed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const shouldShowProgressBar =
@@ -101,6 +101,11 @@ const RewardPanel = ({
         )
       : ''
   }
+  const buttonMessage = needsDisbursement
+    ? messages.claimReward
+    : hasDisbursed
+    ? messages.viewDetails
+    : panelButtonText
 
   return (
     <div
@@ -110,7 +115,7 @@ const RewardPanel = ({
       onClick={openRewardModal}
     >
       <div className={wm(styles.pillContainer)}>
-        {challenge?.state === 'completed' && (
+        {hasCompleted && (
           <span className={wm(styles.pillMessage)}>
             {messages.readyToClaim}
           </span>
@@ -139,7 +144,7 @@ const RewardPanel = ({
           cn(styles.panelButton, hasDisbursed ? styles.completed : '')
         )}
         completed={challenge?.state}
-        text={needsDisbursement ? messages.claimReward : panelButtonText}
+        text={buttonMessage}
         onClick={openRewardModal}
         textClassName={styles.panelButtonText}
       />
@@ -226,7 +231,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
       <span className={wm(styles.title)}>{messages.title}</span>
       <div className={wm(styles.subtitle)}>
         <span>{messages.description1}</span>
-        <span>{messages.description2}</span>
       </div>
       <div className={styles.rewardsContainer}>
         {userChallengesLoading && !haveChallengesLoaded ? (
