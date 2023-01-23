@@ -192,9 +192,10 @@ export const makeGetProfile = () => {
           })
           .filter(removeNullable) ?? (emptyList as User[])
 
+      const user = users[userId]
       return {
         profile: {
-          ...users[userId],
+          ...user,
           followers: {
             status: followers?.status ?? Status.IDLE,
             users: followersPopulated

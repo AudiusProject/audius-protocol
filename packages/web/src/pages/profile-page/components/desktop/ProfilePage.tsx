@@ -75,6 +75,7 @@ export type ProfilePageProps = {
   tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
   website: string
   donation: string
   coverPhotoSizes: CoverPhotoSizes | null
@@ -208,6 +209,7 @@ const ProfilePage = ({
   tikTokHandle,
   twitterVerified,
   instagramVerified,
+  tikTokVerified,
   website,
   donation,
   coverPhotoSizes,
@@ -685,6 +687,7 @@ const ProfilePage = ({
           tikTokHandle={tikTokHandle}
           twitterVerified={!!twitterVerified}
           instagramVerified={!!instagramVerified}
+          tikTokVerified={!!tikTokVerified}
           website={website}
           donation={donation}
           created={created}

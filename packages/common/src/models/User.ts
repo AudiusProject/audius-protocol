@@ -53,6 +53,7 @@ export type UserMetadata = {
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
   balance?: Nullable<StringWei>
   total_balance?: Nullable<StringWei>
   associated_wallets?: Nullable<string[]>
