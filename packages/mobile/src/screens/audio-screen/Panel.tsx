@@ -17,7 +17,8 @@ import { useThemeColors } from 'app/utils/theme'
 const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
-  readyToClaim: 'Ready to Claim'
+  readyToClaim: 'Ready to Claim',
+  viewDetails: 'View Details'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -28,7 +29,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderWidth: 2,
     paddingBottom: spacing(8)
   },
-  completed: {
+  disbursed: {
     backgroundColor: palette.neutralLight10
   },
   content: {
@@ -119,8 +120,8 @@ export const Panel = ({
   const stepCount = challenge?.max_steps ?? 0
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const hasCompleted = challenge?.state === 'completed'
   const hasDisbursed = challenge?.state === 'disbursed'
-  const needsDisbursement = challenge && challenge.claimableAmount > 0
   const shouldShowProgressBar =
     stepCount > 1 && challenge?.challenge_type !== 'aggregate' && !hasDisbursed
 
@@ -147,21 +148,26 @@ export const Panel = ({
     }
   }
 
-  const buttonType =
-    challenge?.state === 'completed'
-      ? 'primary'
-      : hasDisbursed
-      ? 'commonAlt'
-      : 'common'
+  const buttonType = hasCompleted
+    ? 'primary'
+    : hasDisbursed
+    ? 'commonAlt'
+    : 'common'
+
+  const buttonMessage = hasCompleted
+    ? messages.claimReward
+    : hasDisbursed
+    ? messages.viewDetails
+    : panelButtonText
 
   return (
     <TouchableOpacity
-      style={[styles.root, hasDisbursed ? styles.completed : null]}
+      style={[styles.root, hasDisbursed ? styles.disbursed : null]}
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.pillContainer}>
-        {challenge?.state === 'completed' ? (
+        {hasCompleted ? (
           <Text style={styles.pillMessage}>{messages.readyToClaim}</Text>
         ) : null}
       </View>
@@ -195,13 +201,13 @@ export const Panel = ({
         {
           <Button
             fullWidth
-            title={needsDisbursement ? messages.claimReward : panelButtonText}
+            title={buttonMessage}
             variant={buttonType}
             iconPosition='right'
             size='medium'
-            icon={IconArrow}
+            icon={hasDisbursed ? undefined : IconArrow}
             onPress={onPress}
-            style={[styles.button, hasDisbursed ? styles.completed : null]}
+            style={[styles.button, hasDisbursed ? styles.disbursed : null]}
           />
         }
       </View>

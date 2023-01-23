@@ -56,7 +56,7 @@ export const challengeRewardsConfig: Record<
     id: 'connect-verified',
     title: 'Link Verified Accounts',
     description: (challenge) =>
-      `Link your verified social media accounts to earn ${challenge?.amount} $AUDIO`,
+      `Link your verified social media accounts to earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () =>
       'Get verified on Audius by linking your verified Twitter or Instagram account!',
     progressLabel: 'Not Linked',
@@ -66,7 +66,7 @@ export const challengeRewardsConfig: Record<
     id: 'listen-streak',
     title: 'Listening Streak: 7 Days',
     description: (challenge) =>
-      `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO`,
+      `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () =>
       'Sign in and listen to at least one track every day for 7 days',
     progressLabel: '%0/%1 Days',
@@ -75,7 +75,7 @@ export const challengeRewardsConfig: Record<
   'mobile-install': {
     id: 'mobile-install',
     title: 'Get the Audius Mobile App',
-    description: (challenge) => `Earn ${challenge?.amount} $AUDIO`,
+    description: (challenge) => `Earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () =>
       'Install the Audius app for iPhone and Android and Sign in to your account!',
     progressLabel: 'Not Installed',
@@ -85,7 +85,7 @@ export const challengeRewardsConfig: Record<
     id: 'profile-completion',
     title: 'Complete Your Profile',
     description: (challenge) =>
-      `Complete your Audius profile to earn ${challenge?.amount} $AUDIO`,
+      `Complete your Audius profile to earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () =>
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
@@ -94,7 +94,7 @@ export const challengeRewardsConfig: Record<
   'track-upload': {
     id: 'track-upload',
     title: 'Upload 3 Tracks',
-    description: (challenge) => `Earn ${challenge?.amount} $AUDIO`,
+    description: (challenge) => `Earn ${challenge?.amount} $AUDIO.`,
     fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     panelButtonText: 'Upload Tracks'
@@ -103,17 +103,17 @@ export const challengeRewardsConfig: Record<
     id: 'send-first-tip',
     title: 'Send Your First Tip',
     description: (_) =>
-      'Show some love to your favorite artist and send them a tip',
+      'Show some love to your favorite artist and send them a tip.',
     fullDescription: () =>
-      'Show some love to your favorite artist and send them a tip',
+      'Show some love to your favorite artist and send them a tip.',
     progressLabel: 'Not Earned',
     panelButtonText: 'Find Someone To Tip'
   },
   'first-playlist': {
     id: 'first-playlist',
     title: 'Create a Playlist',
-    description: (_) => 'Create a playlist and add a track to it',
-    fullDescription: () => 'Create a playlist and add a track to it',
+    description: (_) => 'Create a playlist and add a track to it.',
+    fullDescription: () => 'Create a playlist and add a track to it.',
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
@@ -131,14 +131,14 @@ export const challengeRewardsConfig: Record<
   },
   'top-api': {
     title: 'Top 10 API Apps',
-    description: () => 'The top 10 Audius API apps each month win',
+    description: () => 'The top 10 Audius API apps each month win.',
     panelButtonText: 'More Info',
     id: 'top-api'
   },
   'verified-upload': {
     title: 'First Upload With Your Verified Account',
     description: () =>
-      'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us',
+      'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us.',
     panelButtonText: 'More Info',
     id: 'verified-upload'
   },

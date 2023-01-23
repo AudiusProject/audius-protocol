@@ -14,7 +14,7 @@ const ButtonWithArrow = (props: { completed?: string } & ButtonProps) => {
     <Button
       className={cn(styles.rewardButton, props.className)}
       type={buttonType}
-      rightIcon={<IconArrow />}
+      rightIcon={props.completed !== 'disbursed' ? <IconArrow /> : null}
       iconClassName={styles.buttonIcon}
       textClassName={cn(styles.text, props.textClassName)}
       {...props}
